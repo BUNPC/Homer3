@@ -141,6 +141,7 @@ hmr.guiMain  = guiMain;
 
 % Display data from currently selected processing element
 DisplayCurrElem(currElem, guiMain);
+hmr.plotprobe = PlotProbe_Init();
 
 
 
@@ -196,6 +197,7 @@ currElem = hmr.currElem;
 group    = hmr.group;
 files    = hmr.files;
 guiMain  = hmr.guiMain;
+plotprobe = hmr.plotprobe;
 
 procTypeTag = get(hObject,'tag');
 switch(procTypeTag)
@@ -209,6 +211,8 @@ end
 currElem = LoadCurrElem(currElem, group, files);
 guiMain = UpdateAxesDataCondition(guiMain, group, currElem);
 DisplayCurrElem(currElem, guiMain);
+plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
+
 currElem = UpdateCurrElemProcStreamOptionsGUI(currElem);
 if ishandles(hmr.handles.stimGUI)
     group = MakeCondNamesGroup(group);
@@ -218,6 +222,7 @@ if ishandles(hmr.handles.stimGUI)
                                         group.CondNames);
 end
 hmr.currElem = currElem;
+hmr.plotprobe = plotprobe;
 
 
 
@@ -248,6 +253,7 @@ end
 group = hmr.group;
 currElem = hmr.currElem;
 guiMain = hmr.guiMain;
+plotprobe = hmr.plotprobe;
 
 currElem = LoadCurrElem(currElem, group, files);
 guiMain = UpdateAxesDataCondition(guiMain, group, currElem);
@@ -259,11 +265,13 @@ if ishandles(hmr.handles.stimGUI)
                                         group.CondNames);
 end
 DisplayCurrElem(currElem, guiMain);
+plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
 currElem = UpdateCurrElemProcStreamOptionsGUI(currElem);
 
 hmr.currElem = currElem;
 hmr.group = group;                                
+hmr.plotprobe = plotprobe;
 
 
 
@@ -274,6 +282,7 @@ global hmr
 currElem = hmr.currElem;
 files    = hmr.files;
 guiMain = hmr.guiMain;
+plotprobe = hmr.plotprobe;
 
 iSubj = currElem.iSubj;
 iRun  = currElem.iRun;
@@ -286,9 +295,11 @@ group    = hmr.group;
 currElem = LoadCurrElem(currElem, group, files, iSubj, iRun);
 
 DisplayCurrElem(currElem, guiMain);
+plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
 hmr.currElem = currElem;
 hmr.group = group;
+hmr.plotprobe = plotprobe;
 
 
 
@@ -309,9 +320,11 @@ global hmr
 
 guiMain = hmr.guiMain;
 currElem = hmr.currElem;
+plotprobe = hmr.plotprobe;
 
 guiMain = GetAxesDataType(guiMain);
 DisplayCurrElem(currElem, guiMain);
+plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
 if guiMain.datatype == guiMain.buttonVals.RAW | ...
    guiMain.datatype == guiMain.buttonVals.RAW_HRF
@@ -334,6 +347,7 @@ elseif guiMain.datatype == guiMain.buttonVals.CONC | ...
 end
 
 hmr.guiMain = guiMain;
+hmr.plotprobe = plotprobe;
 
 
 
@@ -343,15 +357,17 @@ global hmr
 
 guiMain = hmr.guiMain;
 currElem = hmr.currElem;
+plotprobe = hmr.plotprobe;
 
 guiMain = GetAxesDataType(guiMain);
 if get(hObject,'value')==1
     currElem = LoadCurrElem(currElem, hmr.group, hmr.files);
 end
 DisplayCurrElem(currElem, guiMain);
+plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
 hmr.guiMain = guiMain;
-
+hmr.plotprobe = plotprobe;
 
 
 
@@ -394,14 +410,17 @@ global hmr
 
 currElem = hmr.currElem;
 guiMain = hmr.guiMain;
+plotprobe = hmr.plotprobe;
 
 guiMain = GetAxesDataCondition(guiMain);
 
 % Update the display of the guiMain axes
 DisplayCurrElem(currElem, guiMain);
+plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
 % the the modified objects 
 hmr.guiMain = guiMain;
+hmr.plotprobe = plotprobe;
 
 
 
@@ -413,14 +432,17 @@ global hmr
 
 currElem = hmr.currElem;
 guiMain = hmr.guiMain;
+plotprobe = hmr.plotprobe;
 
 guiMain = GetAxesDataWl(guiMain, currElem.procElem.SD.Lambda);
 
 % Update the displays of the guiMain and axesSDG axes
 DisplayCurrElem(currElem, guiMain);
+plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
 % the the modified objects 
 hmr.guiMain = guiMain;
+hmr.plotprobe = plotprobe;
 
 
 
@@ -432,15 +454,18 @@ global hmr
 
 currElem = hmr.currElem;
 guiMain = hmr.guiMain;
+plotprobe = hmr.plotprobe;
 
 % Transfer the channels selection to guiMain
 guiMain = GetAxesDataHbType(guiMain);
 
 % Update the displays of the guiMain and axesSDG axes
 DisplayCurrElem(currElem, guiMain);
+plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
 % the the modified objects 
 hmr.guiMain = guiMain;
+hmr.plotprobe = plotprobe;
 
 
 
@@ -605,3 +630,38 @@ end
 DisplayCurrElem(currElem, guiMain);
 
 hmr.guiMain = guiMain;
+
+
+
+% ---------------------------------------------------------------------------
+function checkboxPlotProbe_Callback(hObject, eventdata, handles)
+global hmr
+
+currElem = hmr.currElem;
+guiMain = hmr.guiMain;
+plotprobe = hmr.plotprobe;
+
+val    = get(hObject,'value');
+enable = strcmpi(get(hObject,'enable'),'on');
+
+datatype    = guiMain.datatype;
+buttonVals  = guiMain.buttonVals;
+
+if datatype == buttonVals.OD_HRF
+    hrfEnable = true;
+elseif datatype == buttonVals.CONC_HRF
+    hrfEnable = true;
+else
+    hrfEnable = false;
+end
+
+if(val==1 & enable==1 & hrfEnable==true)
+    guiMain.plotprobeEnable = true;
+else
+    guiMain.plotprobeEnable = false;
+end
+
+plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
+
+hmr.plotprobe = plotprobe;
+hmr.guiMain   = guiMain;

@@ -75,6 +75,7 @@ function Homer3_OpeningFcn(hObject, eventdata, handles, varargin)
 global hmr
 
 hmr = [];
+
 hmr.handles.this = hObject;
 hmr.handles.stimGUI = [];
 hmr.handles.proccessOpt = [];
@@ -82,7 +83,7 @@ hmr.handles.plotProbe = [];
 hmr.files    = [];
 hmr.group    = [];
 hmr.currElem = [];
-hmr.axesData = [];
+hmr.guiMain             = [];
 
 % Choose default command line output for Homer3
 handles.output = hObject;
@@ -113,7 +114,7 @@ end
 %%%% Initialize essential objects
 
 % Load NIRS files to group
-[group files] = LoadNIRS2Group(files);
+[group, files] = LoadNIRS2Group(files);
 
 % Generate the CondNames for all members of group 
 group = MakeCondNamesGroup(group);
@@ -128,7 +129,7 @@ currElem = InitCurrElem(handles, @listboxFiles_Callback);
 currElem = LoadCurrElem(currElem, group, files, 1, 1);
 
 % Within the current element, initialize the data to display
-axesData = InitAxesData(handles, group, currElem);
+guiMain = InitGuiMain(handles, group, currElem);
 
 % If data set has no errors enable window gui objects
 Homer3_EnableDisableGUI(handles,'on');
@@ -136,11 +137,10 @@ Homer3_EnableDisableGUI(handles,'on');
 hmr.files    = files;
 hmr.group    = group;
 hmr.currElem = currElem;
-hmr.axesData = axesData;
+hmr.guiMain  = guiMain;
 
 % Display data from currently selected processing element
-DisplayCurrElem(currElem, axesData);
-
+DisplayCurrElem(currElem, guiMain);
 
 
 
@@ -195,7 +195,7 @@ global hmr
 currElem = hmr.currElem;
 group    = hmr.group;
 files    = hmr.files;
-axesData = hmr.axesData;
+guiMain  = hmr.guiMain;
 
 procTypeTag = get(hObject,'tag');
 switch(procTypeTag)
@@ -207,8 +207,8 @@ switch(procTypeTag)
         currElem.procType = 3;
 end
 currElem = LoadCurrElem(currElem, group, files);
-axesData = UpdateAxesDataCondition(axesData, group, currElem);
-DisplayCurrElem(currElem, axesData);
+guiMain = UpdateAxesDataCondition(guiMain, group, currElem);
+DisplayCurrElem(currElem, guiMain);
 currElem = UpdateCurrElemProcStreamOptionsGUI(currElem);
 if ishandles(hmr.handles.stimGUI)
     group = MakeCondNamesGroup(group);
@@ -247,10 +247,10 @@ end
 
 group = hmr.group;
 currElem = hmr.currElem;
-axesData = hmr.axesData;
+guiMain = hmr.guiMain;
 
 currElem = LoadCurrElem(currElem, group, files);
-axesData = UpdateAxesDataCondition(axesData, group, currElem);
+guiMain = UpdateAxesDataCondition(guiMain, group, currElem);
 if ishandles(hmr.handles.stimGUI)
     group = MakeCondNamesGroup(group);
     hmr.handles.stimGUI = launchStimGUI(hmr.handles.this, ...
@@ -258,7 +258,8 @@ if ishandles(hmr.handles.stimGUI)
                                         currElem, ...
                                         group.CondNames);
 end
-DisplayCurrElem(currElem, axesData);
+DisplayCurrElem(currElem, guiMain);
+
 currElem = UpdateCurrElemProcStreamOptionsGUI(currElem);
 
 hmr.currElem = currElem;
@@ -272,7 +273,7 @@ global hmr
 
 currElem = hmr.currElem;
 files    = hmr.files;
-axesData = hmr.axesData;
+guiMain = hmr.guiMain;
 
 iSubj = currElem.iSubj;
 iRun  = currElem.iRun;
@@ -284,7 +285,7 @@ group    = hmr.group;
 % Reload curren element selection
 currElem = LoadCurrElem(currElem, group, files, iSubj, iRun);
 
-DisplayCurrElem(currElem, axesData);
+DisplayCurrElem(currElem, guiMain);
 
 hmr.currElem = currElem;
 hmr.group = group;
@@ -300,39 +301,39 @@ function listboxFilesErr_Callback(hObject, eventdata, handles)
 
 
 
-%%%% axesData
+%%%% guiMain
 
 % --------------------------------------------------------------------
 function uipanelPlot_SelectionChangeFcn(hObject, eventdata, handles)
 global hmr
 
-axesData = hmr.axesData;
+guiMain = hmr.guiMain;
 currElem = hmr.currElem;
 
-axesData = GetAxesDataType(axesData);
-DisplayCurrElem(currElem, axesData);
+guiMain = GetAxesDataType(guiMain);
+DisplayCurrElem(currElem, guiMain);
 
-if axesData.datatype == axesData.guisetting.RAW | ...
-   axesData.datatype == axesData.guisetting.RAW_HRF
+if guiMain.datatype == guiMain.buttonVals.RAW | ...
+   guiMain.datatype == guiMain.buttonVals.RAW_HRF
 
-    set(axesData.handles.listboxPlotWavelength, 'visible','on');
-    set(axesData.handles.listboxPlotConc, 'visible','off');
+    set(guiMain.handles.listboxPlotWavelength, 'visible','on');
+    set(guiMain.handles.listboxPlotConc, 'visible','off');
     
-elseif axesData.datatype == axesData.guisetting.OD | ...
-       axesData.datatype == axesData.guisetting.OD_HRF
+elseif guiMain.datatype == guiMain.buttonVals.OD | ...
+       guiMain.datatype == guiMain.buttonVals.OD_HRF
     
-    set(axesData.handles.listboxPlotWavelength, 'visible','on');
-    set(axesData.handles.listboxPlotConc, 'visible','off');
+    set(guiMain.handles.listboxPlotWavelength, 'visible','on');
+    set(guiMain.handles.listboxPlotConc, 'visible','off');
     
-elseif axesData.datatype == axesData.guisetting.CONC | ...
-       axesData.datatype == axesData.guisetting.CONC_HRF
+elseif guiMain.datatype == guiMain.buttonVals.CONC | ...
+       guiMain.datatype == guiMain.buttonVals.CONC_HRF
     
-    set(axesData.handles.listboxPlotWavelength, 'visible','off');
-    set(axesData.handles.listboxPlotConc, 'visible','on');
+    set(guiMain.handles.listboxPlotWavelength, 'visible','off');
+    set(guiMain.handles.listboxPlotConc, 'visible','on');
     
 end
 
-hmr.axesData = axesData;
+hmr.guiMain = guiMain;
 
 
 
@@ -340,22 +341,22 @@ hmr.axesData = axesData;
 function checkboxPlotHRF_Callback(hObject, eventdata, handles)
 global hmr
 
-axesData = hmr.axesData;
+guiMain = hmr.guiMain;
 currElem = hmr.currElem;
 
-axesData = GetAxesDataType(axesData);
+guiMain = GetAxesDataType(guiMain);
 if get(hObject,'value')==1
     currElem = LoadCurrElem(currElem, hmr.group, hmr.files);
 end
-DisplayCurrElem(currElem, axesData);
+DisplayCurrElem(currElem, guiMain);
 
-hmr.axesData = axesData;
+hmr.guiMain = guiMain;
 
 
 
 
 % --------------------------------------------------------------------
-function axesData_ButtonDownFcn(hObject, eventdata, handles)
+function guiMain_ButtonDownFcn(hObject, eventdata, handles)
 
 % Make sure the user clicked on the axes and not 
 % some other object on top of the axes
@@ -372,17 +373,17 @@ function axesSDG_ButtonDownFcn(hObject, eventdata, handles)
 global hmr
 
 currElem = hmr.currElem;
-axesData = hmr.axesData;
+guiMain = hmr.guiMain;
 
-% Transfer the channels selection to axesData
-axesData = SetAxesDataCh(axesData, currElem);
+% Transfer the channels selection to guiMain
+guiMain = SetAxesDataCh(guiMain, currElem);
 
-% Update the displays of the axesData and axesSDG axes
-DisplayCurrElem(currElem, axesData);
+% Update the displays of the guiMain and axesSDG axes
+DisplayCurrElem(currElem, guiMain);
 
 % the the modified objects 
 hmr.currElem = currElem;
-hmr.axesData = axesData;
+hmr.guiMain = guiMain;
 
 
 
@@ -392,15 +393,15 @@ function popupmenuConditions_Callback(hObject, eventdata, handles)
 global hmr
 
 currElem = hmr.currElem;
-axesData = hmr.axesData;
+guiMain = hmr.guiMain;
 
-axesData = GetAxesDataCondition(axesData);
+guiMain = GetAxesDataCondition(guiMain);
 
-% Update the display of the axesData axes
-DisplayCurrElem(currElem, axesData);
+% Update the display of the guiMain axes
+DisplayCurrElem(currElem, guiMain);
 
 % the the modified objects 
-hmr.axesData = axesData;
+hmr.guiMain = guiMain;
 
 
 
@@ -411,15 +412,15 @@ function listboxPlotWavelength_Callback(hObject, eventdata, handles)
 global hmr
 
 currElem = hmr.currElem;
-axesData = hmr.axesData;
+guiMain = hmr.guiMain;
 
-axesData = GetAxesDataWl(axesData, currElem.procElem.SD.Lambda);
+guiMain = GetAxesDataWl(guiMain, currElem.procElem.SD.Lambda);
 
-% Update the displays of the axesData and axesSDG axes
-DisplayCurrElem(currElem, axesData);
+% Update the displays of the guiMain and axesSDG axes
+DisplayCurrElem(currElem, guiMain);
 
 % the the modified objects 
-hmr.axesData = axesData;
+hmr.guiMain = guiMain;
 
 
 
@@ -430,16 +431,16 @@ function listboxPlotConc_Callback(hObject, eventdata, handles)
 global hmr
 
 currElem = hmr.currElem;
-axesData = hmr.axesData;
+guiMain = hmr.guiMain;
 
-% Transfer the channels selection to axesData
-axesData = GetAxesDataHbType(axesData);
+% Transfer the channels selection to guiMain
+guiMain = GetAxesDataHbType(guiMain);
 
-% Update the displays of the axesData and axesSDG axes
-DisplayCurrElem(currElem, axesData);
+% Update the displays of the guiMain and axesSDG axes
+DisplayCurrElem(currElem, guiMain);
 
 % the the modified objects 
-hmr.axesData = axesData;
+hmr.guiMain = guiMain;
 
 
 
@@ -447,7 +448,7 @@ hmr.axesData = axesData;
 % --------------------------------------------------------------------
 function menuChangeDirectory_Callback(hObject, eventdata, handles)
 global hmr
-axesData = hmr.axesData;
+guiMain = hmr.guiMain;
 
 % Change directory
 pathnm = uigetdir( cd, 'Pick the new directory' );
@@ -481,7 +482,7 @@ global hmr
 
 currElem = hmr.currElem;
 files    = hmr.files;
-axesData = hmr.axesData;
+guiMain = hmr.guiMain;
 group    = hmr.group;
 
 currElem = ResetCurrElem(currElem);
@@ -496,7 +497,7 @@ group = MakeCondNamesGroup(group);
 currElem = LoadCurrElem(currElem, group, files);
 
 % Display data from currently selected processing element
-DisplayCurrElem(currElem, axesData);
+DisplayCurrElem(currElem, guiMain);
 
 hmr.group = group;
 hmr.currElem = currElem;
@@ -507,9 +508,9 @@ function menuCopyCurrentPlot_Callback(hObject, eventdata, handles)
 global hmr 
 
 currElem = hmr.currElem;
-axesData = hmr.axesData;
+guiMain = hmr.guiMain;
 
-[hf plotname] = CopyDisplayCurrElem(currElem, axesData);
+[hf plotname] = CopyDisplayCurrElem(currElem, guiMain);
 %{
 if strcmp(get(handles.menuAutosavePlotFigsToFile,'checked'),'on')
     filename = [plotname '.jpg'];
@@ -587,7 +588,7 @@ function menuItemViewHRFStdErr_Callback(hObject, eventdata, handles)
 global hmr
 
 currElem = hmr.currElem;
-axesData = hmr.axesData;
+guiMain = hmr.guiMain;
 
 if strcmp(get(hObject, 'checked'), 'on');
     set(hObject, 'checked', 'off')
@@ -596,11 +597,11 @@ elseif strcmp(get(hObject, 'checked'), 'off');
 end
 
 if strcmp(get(hObject, 'checked'), 'on');
-    axesData.showStdErr = true;
+    guiMain.showStdErr = true;
 elseif strcmp(get(hObject, 'checked'), 'off');
-    axesData.showStdErr = false;
+    guiMain.showStdErr = false;
 end
 
-DisplayCurrElem(currElem, axesData);
+DisplayCurrElem(currElem, guiMain);
 
-hmr.axesData = axesData;
+hmr.guiMain = guiMain;

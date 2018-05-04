@@ -1,6 +1,6 @@
-function DisplayRun(run, axesData)
+function DisplayRun(run, guiMain)
 
-hAxes = axesData.handles.axes;
+hAxes = guiMain.axesData.handles.axes;
 if ~ishandles(hAxes)
     return;
 end
@@ -9,16 +9,16 @@ axes(hAxes)
 cla;
 legend off
 
-linecolor  = axesData.linecolor;
-linestyle  = axesData.linestyle;
-datatype   = axesData.datatype;
-condition  = axesData.condition;
-ch         = axesData.ch;
-wl         = axesData.wl;
-hbType     = axesData.hbType;
-guisetting = axesData.guisetting;
-sclConc    = axesData.sclConc;        % convert Conc from Molar to uMolar
-showStdErr = axesData.showStdErr;
+linecolor  = guiMain.axesData.linecolor;
+linestyle  = guiMain.axesData.linestyle;
+datatype   = guiMain.datatype;
+condition  = guiMain.condition;
+ch         = guiMain.ch;
+wl         = guiMain.wl;
+hbType     = guiMain.hbType;
+buttonVals = guiMain.buttonVals;
+sclConc    = guiMain.sclConc;        % convert Conc from Molar to uMolar
+showStdErr = guiMain.showStdErr;
 
 condition = find(run.CondRun2Group == condition);
 
@@ -28,16 +28,16 @@ dStd    = [];
 t       = [];
 nTrials = [];
 
-if datatype == guisetting.RAW
+if datatype == buttonVals.RAW
     d = run.d;
     t = run.t;
-elseif datatype == guisetting.OD
+elseif datatype == buttonVals.OD
     d = run.procResult.dod;
     t = run.t;
-elseif datatype == guisetting.CONC
+elseif datatype == buttonVals.CONC
     d = run.procResult.dc;
     t = run.t;
-elseif datatype == guisetting.OD_HRF
+elseif datatype == buttonVals.OD_HRF
     d = run.procResult.dodAvg;
     t = run.procResult.tHRF;
     if showStdErr 
@@ -47,7 +47,7 @@ elseif datatype == guisetting.OD_HRF
     if isempty(condition)
         return;
     end    
-elseif datatype == guisetting.CONC_HRF
+elseif datatype == buttonVals.CONC_HRF
     d = run.procResult.dcAvg;
     t = run.procResult.tHRF;
     if showStdErr 
@@ -85,21 +85,21 @@ if ~isempty(d)
     chLst = find(SD.MeasListVis(ch)==1);
 
     % Plot data
-    if datatype == guisetting.RAW || ...
-       datatype == guisetting.OD || ...
-       datatype == guisetting.OD_HRF 
+    if datatype == buttonVals.RAW || ...
+       datatype == buttonVals.OD || ...
+       datatype == buttonVals.OD_HRF 
 
-        if  datatype == guisetting.OD_HRF 
+        if  datatype == buttonVals.OD_HRF 
             d = d(:,:,condition);
         end
         d = reshape_y(d, SD);
         
         DisplayDataRawOrOD(t, d, dStd, wl, ch, chLst, nTrials, condition, linecolor, linestyle);
         
-    elseif datatype == guisetting.CONC || ...
-           datatype == guisetting.CONC_HRF 
+    elseif datatype == buttonVals.CONC || ...
+           datatype == buttonVals.CONC_HRF 
 
-        if  datatype == guisetting.CONC_HRF 
+        if  datatype == buttonVals.CONC_HRF 
             d = d(:,:,:,condition);
         end
         d = d * sclConc;
@@ -108,17 +108,17 @@ if ~isempty(d)
     end
 end
 
-axesData.axesSDG = DisplayAxesSDG(axesData.axesSDG, run);
+guiMain.axesSDG = DisplayAxesSDG(guiMain.axesSDG, run);
 
 % If HRF display is set then exit display without showing stims
-if datatype == guisetting.CONC_HRF 
+if datatype == buttonVals.CONC_HRF 
     return;
 end
-if datatype == guisetting.OD_HRF 
+if datatype == buttonVals.OD_HRF 
     return;
 end
-if datatype == guisetting.RAW_HRF
+if datatype == buttonVals.RAW_HRF
     return;
 end
 
-DisplayStim(run, axesData);
+DisplayStim(run, guiMain);

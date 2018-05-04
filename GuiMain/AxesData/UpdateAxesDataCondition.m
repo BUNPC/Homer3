@@ -1,4 +1,4 @@
-function axesData = UpdateAxesDataCondition(axesData, group, currElem)
+function guiMain = UpdateAxesDataCondition(guiMain, group, currElem)
 
 CondNames = group.CondNames;
 
@@ -9,9 +9,9 @@ for jj=1:length(CondNames)
         CondNames{jj} = ['-- ', CondNames{jj}];
     end
 end
-set(axesData.handles.popupmenuConditions, 'string', CondNames);
-axesData.condition = getCondition(axesData);
-set(axesData.handles.popupmenuConditions, 'value', axesData.condition);
+set(guiMain.handles.popupmenuConditions, 'string', CondNames);
+guiMain.condition = getCondition(guiMain);
+set(guiMain.handles.popupmenuConditions, 'value', guiMain.condition);
 
 
 

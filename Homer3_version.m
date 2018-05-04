@@ -1,5 +1,3 @@
-function vrnnum = EasyNIRS_version()
+function vrnnum = Homer3_version()
 
-vrnnum{1} = '1.0';
-vrnnum{2} = '0';
-
+vrnnum = getVernum();

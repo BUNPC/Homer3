@@ -1,18 +1,18 @@
-function DisplayStim(run, axesData)
+function DisplayStim(run, guiMain)
 
-hAxes = axesData.handles.axes;
+hAxes = guiMain.axesData.handles.axes;
 if ~ishandles(hAxes)
     return;
 end
 axes(hAxes);
 
-guisetting = axesData.guisetting;
+buttonVals = guiMain.buttonVals;
 
-if axesData.datatype == guisetting.OD_HRF
+if guiMain.datatype == buttonVals.OD_HRF
     return;
 end
 
-if axesData.datatype == guisetting.CONC_HRF
+if guiMain.datatype == buttonVals.CONC_HRF
     return;
 end
 

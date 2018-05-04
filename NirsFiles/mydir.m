@@ -26,7 +26,7 @@ else
         dirs(jj).idx = 0;
         dirs(jj).subjdir = '';                    
         dirs(jj).subjdiridx = 0;
-        dirs(jj).filename = '';
+        dirs(jj).filename = dirs(jj).name;
         dirs(jj).map2group = struct('iSubj',0,'iRun',0);
     end 
 

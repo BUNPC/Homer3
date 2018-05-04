@@ -1,5 +1,5 @@
 %
-% [files filesErr pathnm listboxFiles listboxFiles2] = GetNIRSDataSet(varargin)
+% [files, filesErr, pathnm, listboxFiles, listboxFiles2] = GetNIRSDataSet(varargin)
 %
 % Find and return a set of valid .nirs files in the current or user-selected 
 % directory and sets handles of listboxFiles and listboxFilesErr to the names 
@@ -23,7 +23,7 @@
 %    files = GetNIRSDataSet(handles);
 %    files = GetNIRSDataSet(1);
 %
-function [files filesErr pathnm listboxFiles listboxFiles2] = GetNIRSDataSet(varargin)
+function [files, filesErr, pathnm, listboxFiles, listboxFiles2] = GetNIRSDataSet(varargin)
 
 
 if nargin==0

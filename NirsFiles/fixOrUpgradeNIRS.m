@@ -1,4 +1,4 @@
-function [err ch_all] = fixOrUpgradeNIRS(err,files)
+function [err, ch_all] = fixOrUpgradeNIRS(err,files)
 
 warning('off','MATLAB:load:variableNotFound');
 
@@ -166,9 +166,7 @@ for iF=1:nFiles
             
             % Error handling for SD_SpatialUnit
             if err(iF).SD_SpatialUnit~=0
-                if ~exist('SD','var')
-                    load(files(iF).name,'-mat','SD');
-                end
+                load(files(iF).name,'-mat','SD');
                 
                 if bitand(err(iF).SD_SpatialUnit,1)
                     err(iF).SD_SpatialUnit = bitxor(err(iF).SD_SpatialUnit,1);
@@ -202,6 +200,32 @@ for iF=1:nFiles
                         err(iF).errCount = err(iF).errCount-1;
                         savestr = [savestr '''SD'','];
                     end
+                end
+            end
+            
+            
+            % Error handling for SD_auxChannels
+            if err(iF).SD_auxChannels~=0
+                load(files(iF).name,'-mat','SD','aux','aux10');
+                if ~exist('aux','var')
+                    if ~exist('aux10','var')
+                        aux = zeros(n,1);
+                    else
+                        aux = aux10;
+                    end
+                end
+                
+                if bitand(err(iF).SD_auxChannels,1)
+                    SD.auxChannels = {};
+                    m=length(SD.auxChannels);
+                    for ii=1:size(aux,2)
+                        SD.auxChannels{ii} = ['Aux ',num2str(ii)];
+                    end
+                end
+                
+                if err(iF).SD_MeasList==0
+                    err(iF).errCount = err(iF).errCount-1;
+                    savestr = [savestr '''SD'','];
                 end
             end
             

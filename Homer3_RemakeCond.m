@@ -15,9 +15,9 @@ hmr.group.subjs(i).runs(j).CondRun2Group = hmr.currElem.procElem.CondRun2Group;
 
 hmr.group = MakeCondNamesGroup(hmr.group);
 
-DisplayCurrElem(hmr.currElem, hmr.axesData);
+DisplayCurrElem(hmr.currElem, hmr.guiMain);
 
-hmr.axesData = UpdateAxesDataCondition(hmr.axesData, hmr.group, hmr.currElem);
+hmr.guiMain = UpdateAxesDataCondition(hmr.guiMain, hmr.group, hmr.currElem);
 
 % saveGroup(hmr.group);
 

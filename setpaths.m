@@ -1,48 +1,34 @@
-function setpaths(add, fluence_simulate)
+function setpaths(add)
 
 %
 % USAGE: 
 %
-%   paths_str = setpaths(add, fluence_simulate)
+%   setpaths
+%   setpaths(1)
+%   setpaths(0)
 %
 % DESCRIPTION:
 %
-%   Sets all the paths needed by the homer3 and atlasViewer source code. 
+%   Sets all the paths needed by a tool 
 %
 % INPUTS:
 %
-%   add: if false or ommitted then setpaths adds all the homer3 paths,
-%           specified in getpaths. If true, adds all the homer3 paths 
+%   add: if false or ommitted then setpaths adds all the tool paths,
+%           specified in getpaths. If true, removes all the tool paths 
 %           specified in getpaths. 
 %
-%   fluence_simulate: If true, then setpaths searches for precalculated fluence
-%                       profile files used by AtlasViewer. When found it tries
-%                       to add a second fluence profile to the fluence file
-%                       to simulate a second wavelength if an actual
-%                       fluence profile at a second wavelength doesn't
-%                       already exist.
-%
-% OUTPUTS:
-%
-%   path homer3  
 %    
 % EXAMPLES:
 %
 %   setpaths;
-%   paths = setpaths(0);
-%   paths = setpaths(1);
-%   paths = setpaths(0,0);
-%   paths = setpaths(0,1);
-%   paths = setpaths([],1);
+%   setpaths(0);
+%   setpaths(1);
 %
 
-
+toolname = 'homer3';
 
 if ~exist('add','var') | isempty(add)
     add = true;
-end
-if ~exist('fluence_simulate','var') | isempty(fluence_simulate)
-    fluence_simulate = false;
 end
 
 paths = getpaths();
@@ -67,16 +53,19 @@ for ii=1:length(paths)
 end
 
 if err
-    menu('WARNING: The current folder does NOT look like a homer3 root folder. Please change current folder to the root homer3 folder and rerun setpaths.', 'OK');
+    errmsg = sprintf('WARNING: The current folder does NOT look like a %s root folder. Please change current folder to the root %s folder and rerun setpaths.', ...
+                     toolname, toolname);
+    menu(errmsg, 'OK');
     paths = {};
     return;
 end
 
-
 if add
-    fprintf('ADDED homer3 paths to matlab search paths:\n');
+    fprintf('ADDED %s paths to matlab search paths:\n', toolname);
     addpath(paths_str, '-end')
     
+    fprintf('\n');
+
     if isunix()
         idx = findExePaths(paths);
         for ii=1:length(idx)
@@ -87,11 +76,8 @@ if add
             end
         end
     end
-    if fluence_simulate
-        genMultWlFluenceFiles_CurrWorkspace;
-    end
 else
-    fprintf('REMOVED homer3 paths from matlab search paths:\n');
+    fprintf('REMOVED %s paths from matlab search paths:\n', toolname);
     rmpath(paths_str);
 end
 

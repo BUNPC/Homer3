@@ -1,9 +1,9 @@
-function DisplayCurrElem(currElem, axesData)
+function DisplayCurrElem(currElem, guiMain)
 
 if currElem.procType==1
-    DisplayGroup(currElem.procElem, axesData);
+    DisplayGroup(currElem.procElem, guiMain);
 elseif currElem.procType==2
-    DisplaySubj(currElem.procElem, axesData);
+    DisplaySubj(currElem.procElem, guiMain);
 elseif currElem.procType==3
-    DisplayRun(currElem.procElem, axesData);
+    DisplayRun(currElem.procElem, guiMain);
 end

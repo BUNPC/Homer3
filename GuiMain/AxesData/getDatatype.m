@@ -1,13 +1,13 @@
-function datatype = getDatatype(axesData)
+function datatype = getDatatype(guiMain)
 
 datatype=0;
 
-plotRawVal  = get(axesData.handles.radiobuttonPlotRaw, 'value');
-plotODVal   = get(axesData.handles.radiobuttonPlotOD, 'value');
-plotConcVal = get(axesData.handles.radiobuttonPlotConc, 'value');
-plotHRFVal  = get(axesData.handles.checkboxPlotHRF, 'value');
+plotRawVal  = get(guiMain.handles.radiobuttonPlotRaw, 'value');
+plotODVal   = get(guiMain.handles.radiobuttonPlotOD, 'value');
+plotConcVal = get(guiMain.handles.radiobuttonPlotConc, 'value');
+plotHRFVal  = get(guiMain.handles.checkboxPlotHRF, 'value');
 
-c = axesData.guisetting;
+c = guiMain.buttonVals;
 
 if plotRawVal && ~plotHRFVal
     datatype      = c.RAW;

@@ -1,8 +1,8 @@
-function iWl = getWl(axesData, Lambda)
+function iWl = getWl(guiMain, Lambda)
 
 iWl=[];
-val = get(axesData.handles.listboxPlotWavelength, 'value');
-strs = get(axesData.handles.listboxPlotWavelength, 'string');
+val = get(guiMain.handles.listboxPlotWavelength, 'value');
+strs = get(guiMain.handles.listboxPlotWavelength, 'string');
 if isempty(strs)
     return;
 end

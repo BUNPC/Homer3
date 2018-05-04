@@ -1,6 +1,6 @@
-function DisplayGroup(group, axesData)
+function DisplayGroup(group, guiMain)
 
-hAxes = axesData.handles.axes;
+hAxes = guiMain.axesData.handles.axes;
 if ~ishandles(hAxes)
     return;
 end
@@ -9,30 +9,30 @@ axes(hAxes)
 cla;
 legend off
 
-linecolor  = axesData.linecolor;
-linestyle  = axesData.linestyle;
-datatype   = axesData.datatype;
-condition  = axesData.condition;
-ch         = axesData.ch;
-wl         = axesData.wl;
-hbType     = axesData.hbType;
-guisetting = axesData.guisetting;
-sclConc    = axesData.sclConc;        % convert Conc from Molar to uMolar
-showStdErr = axesData.showStdErr;
+linecolor  = guiMain.axesData.linecolor;
+linestyle  = guiMain.axesData.linestyle;
+datatype   = guiMain.datatype;
+condition  = guiMain.condition;
+ch         = guiMain.ch;
+wl         = guiMain.wl;
+hbType     = guiMain.hbType;
+buttonVals = guiMain.buttonVals;
+sclConc    = guiMain.sclConc;        % convert Conc from Molar to uMolar
+showStdErr = guiMain.showStdErr;
 
 d       = [];
 dStd    = [];
 t       = [];
 nTrials = [];
 
-if datatype == guisetting.OD_HRF
+if datatype == buttonVals.OD_HRF
     t = group.procResult.tHRF;
     d = group.procResult.dodAvg;
     if showStdErr 
         dStd = group.procResult.dodAvgStd;
     end
     nTrials = group.procResult.nTrials;
-elseif datatype == guisetting.CONC_HRF
+elseif datatype == buttonVals.CONC_HRF
     t = group.procResult.tHRF;
     d = group.procResult.dcAvg;
     if showStdErr 
@@ -70,14 +70,14 @@ if ~isempty(d)
     chLst = find(SD.MeasListVis(ch)==1);
 
     % Plot data
-    if datatype == guisetting.OD_HRF 
+    if datatype == buttonVals.OD_HRF 
 
         d = d(:,:,condition);
         d = reshape_y(d, SD);
                 
         DisplayDataRawOrOD(t, d, dStd, wl, ch, chLst, nTrials, condition, linecolor, linestyle);
 
-    elseif datatype == guisetting.CONC_HRF 
+    elseif datatype == buttonVals.CONC_HRF 
 
         d = d(:,:,:,condition) * sclConc;
 
@@ -86,4 +86,4 @@ if ~isempty(d)
     end
 end        
 
-axesData.axesSDG = DisplayAxesSDG(axesData.axesSDG, group);
+guiMain.axesSDG = DisplayAxesSDG(guiMain.axesSDG, group);

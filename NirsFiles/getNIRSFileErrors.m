@@ -1,4 +1,4 @@
-function [files filesErr errmsg] = getNIRSFileErrors(files)
+function [files, filesErr, errmsg] = getNIRSFileErrors(files)
 
 %
 % [files filesErr errmsg] = getNIRSFileErrors(files)
@@ -63,6 +63,12 @@ for iF=1:nFiles
     if flags(iF).SD_SpatialUnit~=0
         flags(iF).errCount = flags(iF).errCount+1;
         errmsg_tmp = [errmsg_tmp sprintf('%d) Error: SD has invalid SpatialUnit;  ',flags(iF).errCount)];
+    end
+    if flags(iF).SD_auxChannels~=0
+        flags(iF).errCount = flags(iF).errCount+1;
+        if bitand(flags(iF).SD_auxChannels,1)        
+            errmsg_tmp = [errmsg_tmp sprintf('%d) Error: SD auxChannels must be an array of string names;  ',flags(iF).errCount)];
+        end
     end
 
     % t

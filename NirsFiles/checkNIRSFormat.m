@@ -90,6 +90,19 @@ for iF=1:nFiles
     if ~isfield(SD,'SpatialUnit')
         flags(iF).SD_SpatialUnit=bitor(flags(iF).SD_SpatialUnit,1);
     end
+    if isfield(SD,'auxChannels')
+        if ~isempty(SD.auxChannels)
+            if ~exist('aux')
+                load( files(iF).name, '-mat','aux10');
+                if exist('aux10','var')
+                    aux = aux10;
+                end
+            end
+            if ~iscell(SD.auxChannels)
+                flags(iF).SD_auxChannels=bitor(flags(iF).SD_auxChannels,1);
+            end
+        end
+    end
     
 
     %%%%% s
@@ -132,11 +145,6 @@ for iF=1:nFiles
         if isempty(aux)
             flags(iF).aux = bitor(flags(iF).aux,16);
         end
-        %{
-        if ~isfield(SD,'auxChannels') || size(aux,2)~=length(SD.auxChannels)
-            flags(iF).aux = bitor(flags(iF).aux,8);
-        end
-        %}
     end
 
     

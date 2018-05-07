@@ -50,7 +50,7 @@ fprintf(fid,'helpReg = {...\n');
 nFuncs = length(procInputReg.procFunc.funcName);
 iFunc=1;
 while 1
-    C = procStreamGenHelpFunc(procInputReg.procFunc.funcName{iFunc});
+    C = procStreamGenHelpFunc(procInputReg.procFunc(iFunc).funcName);
     funcDescr = C{1};
     fprintf(fid,'{...\n');
     iLine=1;

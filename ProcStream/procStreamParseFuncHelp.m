@@ -1,4 +1,4 @@
-function funcHelp = procStreamParseFuncHelp(procFunc, iFunc, currElem)
+function funcHelp = procStreamParseFuncHelp(procFunc, iFunc)
 
 % This function parses the help of a proc stream function 
 % into a help structure. The following is the help format 
@@ -47,11 +47,11 @@ function funcHelp = procStreamParseFuncHelp(procFunc, iFunc, currElem)
 % used for the generic function description.
 %
 
-funcName       = procFunc.funcName{iFunc};
-funcHelpStrArr = procFunc.funcHelpStrArr{iFunc};
-funcParam      = procFunc.funcParam{iFunc};
-funcArgIn      = procFunc.funcArgIn{iFunc};
-funcArgOut     = procFunc.funcArgOut{iFunc};
+funcName       = procFunc(iFunc).funcName;
+funcHelpStr    = procFunc(iFunc).funcHelpStr;
+funcParam      = procFunc(iFunc).funcParam;
+funcArgIn      = procFunc(iFunc).funcArgIn;
+funcArgOut     = procFunc(iFunc).funcArgOut;
 
 funcArgIn = procStreamParseArgsIn(funcArgIn);
 funcArgOut = procStreamParseArgsOut(funcArgOut);
@@ -69,25 +69,25 @@ funcHelp.argOutDescr = '';
 
 usageLines = [0 0];
 nameLines = [0 0];
-genDescrLines = [1,length(funcHelpStrArr)];
+genDescrLines = [1,length(funcHelpStr)];
 argInDescrLines = [0,0];
 paramDescrLines = [0,0];
 argOutDescrLines = [0,0];
 logDescrLines = [0,0];
 toDoDescrLines = [0,0];
 
-for iLine=1:length(funcHelpStrArr)
-    if isempty(funcHelpStrArr{iLine})
+for iLine=1:length(funcHelpStr)
+    if isempty(funcHelpStr{iLine})
         continue;
     end
 
-    if isFuncUsage(funcHelpStrArr{iLine},funcName,funcArgIn,funcParam,funcArgOut)
+    if isFuncUsage(funcHelpStr{iLine},funcName,funcArgIn,funcParam,funcArgOut)
         usageLines(1) = iLine;
         usageLines(2) = iLine;
         genDescrLines(1) = iLine+1;
     end
 
-    if ~isempty(strfind(funcHelpStrArr{iLine},'UI NAME'))
+    if ~isempty(strfind(funcHelpStr{iLine},'UI NAME'))
         if usageLines(1)>0
             usageLines(2) = iLine-1;
         end
@@ -96,7 +96,7 @@ for iLine=1:length(funcHelpStrArr)
         genDescrLines(1) = iLine+2;
     end
 
-    if ~isempty(strfind(funcHelpStrArr{iLine},'DESCRIPTION'))
+    if ~isempty(strfind(funcHelpStr{iLine},'DESCRIPTION'))
         if nameLines(1)==0 && (usageLines(1)>0 && usageLines(2)==0)
             usageLines(2) = iLine-1;
         elseif nameLines(1)>0
@@ -105,7 +105,7 @@ for iLine=1:length(funcHelpStrArr)
         genDescrLines(1) = iLine;
     end
 
-    if ~isempty(strfind(funcHelpStrArr{iLine},'INPUT'))
+    if ~isempty(strfind(funcHelpStr{iLine},'INPUT'))
         genDescrLines(2) = iLine-1;
         if nArgIn>0
             argInDescrLines(1) = iLine+1;
@@ -113,7 +113,7 @@ for iLine=1:length(funcHelpStrArr)
     end
 
     if argInDescrLines(1)>0 && argOutDescrLines(1)==0 
-        iParam = isParam(funcHelpStrArr{iLine},funcParam);
+        iParam = isParam(funcHelpStr{iLine},funcParam);
         if iParam>0
             if iParam==1 && nArgIn>0
                 argInDescrLines(2) = iLine-1;
@@ -125,7 +125,7 @@ for iLine=1:length(funcHelpStrArr)
         end
     end
 
-    if ~isempty(strfind(funcHelpStrArr{iLine},'OUTPUT'))
+    if ~isempty(strfind(funcHelpStr{iLine},'OUTPUT'))
         if nParam>0
             paramDescrLines(end,2) = iLine-1;
         elseif nArgIn>0
@@ -133,74 +133,74 @@ for iLine=1:length(funcHelpStrArr)
         end
         if nArgOut>0
             argOutDescrLines(1) = iLine+1;
-            argOutDescrLines(2) = length(funcHelpStrArr);
+            argOutDescrLines(2) = length(funcHelpStr);
         end
     end
 
-    if ~isempty(strfind(funcHelpStrArr{iLine},'LOG'))
+    if ~isempty(strfind(funcHelpStr{iLine},'LOG'))
         if nArgOut>0
             argOutDescrLines(2) = iLine-1;
         elseif nParam>0
             paramDescrLines(end,2) = iLine-1;
         end
         logDescrLines(1) = iLine+1;
-        logDescrLines(2) = length(funcHelpStrArr);
+        logDescrLines(2) = length(funcHelpStr);
     end
 
-    if ~isempty(strfind(funcHelpStrArr{iLine},'TO DO'))
+    if ~isempty(strfind(funcHelpStr{iLine},'TO DO'))
         if logDescrLines(1)>0
             logDescrLines(2) = iLine-1;
         elseif nArgOut>0
             argOutDescrLines(2) = iLine-1;
         end
         toDoDescrLines(1) = iLine+1;
-        toDoDescrLines(2) = length(funcHelpStrArr);
+        toDoDescrLines(2) = length(funcHelpStr);
     end
 end
 
 for iLine = nameLines(1):nameLines(2)
-    if iLine < 1 || isempty(funcHelpStrArr{iLine})
+    if iLine < 1 || isempty(funcHelpStr{iLine})
         continue;
     end
-    funcHelp.funcNameUI = sprintf('%s%s\n', funcHelp.funcNameUI, funcHelpStrArr{iLine});
+    funcHelp.funcNameUI = sprintf('%s%s\n', funcHelp.funcNameUI, funcHelpStr{iLine});
 end
 
 for iLine = usageLines(1):usageLines(2)
-    if iLine < 1 || isempty(funcHelpStrArr{iLine})
+    if iLine < 1 || isempty(funcHelpStr{iLine})
         continue;
     end
-    funcHelp.usage = sprintf('%s%s\n', funcHelp.usage, funcHelpStrArr{iLine});
+    funcHelp.usage = sprintf('%s%s\n', funcHelp.usage, funcHelpStr{iLine});
 end
 
 for iLine = genDescrLines(1):genDescrLines(2)
-    if iLine < 1 || isempty(funcHelpStrArr{iLine})
+    if iLine < 1 || isempty(funcHelpStr{iLine})
         continue;
     end
-    funcHelp.genDescr = sprintf('%s%s\n', funcHelp.genDescr, funcHelpStrArr{iLine});
+    funcHelp.genDescr = sprintf('%s%s\n', funcHelp.genDescr, funcHelpStr{iLine});
 end
 
 for iLine = argInDescrLines(1):argInDescrLines(2)
-    if iLine < 1 || isempty(funcHelpStrArr{iLine})
+    if iLine < 1 || isempty(funcHelpStr{iLine})
         continue;
     end
-    funcHelp.argInDescr = sprintf('%s%s\n', funcHelp.argInDescr, funcHelpStrArr{iLine});
+    funcHelp.argInDescr = sprintf('%s%s\n', funcHelp.argInDescr, funcHelpStr{iLine});
 end
 
 for iParam=1:size(paramDescrLines,1)
     for iLine = paramDescrLines(iParam,1):paramDescrLines(iParam,2)
-        if iLine < 1 || isempty(funcHelpStrArr{iLine})
+        if iLine < 1 || isempty(funcHelpStr{iLine})
             continue;
         end
         funcHelp.paramDescr{iParam} = sprintf('%s%s\n', funcHelp.paramDescr{iParam}, ...
-                                              funcHelpStrArr{iLine});
+                                              funcHelpStr{iLine});
     end
 end
 
 for iLine = argOutDescrLines(1):argOutDescrLines(2)
-    if iLine < 1 || isempty(funcHelpStrArr{iLine})
+    if iLine < 1 || isempty(funcHelpStr{iLine})
         continue;
     end
-    funcHelp.argOutDescr = sprintf('%s%s\n', funcHelp.argOutDescr,funcHelpStrArr{iLine});
+    funcHelp.argOutDescr = sprintf('%s%s\n', funcHelp.argOutDescr,funcHelpStr{iLine});
 end
 
 

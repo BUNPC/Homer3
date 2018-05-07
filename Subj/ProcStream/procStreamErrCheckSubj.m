@@ -9,6 +9,6 @@ if isempty(procFunc)
 end
 
 % Search for procFun functions in procFuncStrReg
-errflags = zeros(procFunc.nFunc,1);
-iReg = zeros(procFunc.nFunc,1);
+errflags = zeros(length(procFunc),1);
+iReg = zeros(length(procFunc),1);
 

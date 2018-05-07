@@ -53,44 +53,31 @@ function [procFunc, procParam] = parseSection(C, externVars)
 % funcParamFormat{nFunc}{nParam}, funcParamVal{nFunc}{nParam}()
 
 procParam = struct([]);
-nFunc           = 0 ;
-funcName        = {};
-funcNameUI      = {};
-funcArgOut      = {};
-funcArgIn       = {};
-nFuncParam      = 0 ;
-nFuncParamVar   = 0 ;
-funcParam       = {};
-funcParamFormat = {};
-funcParamVal    = {};
+procFunc = repmat(InitProcFunc(),0,3);
 
 nstr = length(C);
-nfunc = 0;
+ifunc = 0;
 flag = 0;
 for ii=1:nstr
     if flag==0 || C{ii}(1)=='@'
         if C{ii}=='%'
             flag = 999;
         elseif C{ii}=='@'
-            nfunc = nfunc + 1;
+            ifunc = ifunc+1;
             
             k = findstr(C{ii+1},',');
+            procFunc(ifunc) = InitProcFunc();
             if ~isempty(k)
-                funcName{nfunc} = C{ii+1}(1:k-1);
-                funcNameUI{nfunc} = C{ii+1}(k+1:end);
-                k = findstr(funcNameUI{nfunc},'_');
-                funcNameUI{nfunc}(k)=' ';
+                procFunc(ifunc).funcName = C{ii+1}(1:k-1);
+                procFunc(ifunc).funcNameUI = C{ii+1}(k+1:end);
+                k = findstr(procFunc(ifunc).funcNameUI,'_');
+                procFunc(ifunc).funcNameUI(k)=' ';
             else
-                funcName{nfunc} = C{ii+1};
-                funcNameUI{nfunc} = funcName{nfunc};               
+                procFunc(ifunc).funcName = C{ii+1};
+                procFunc(ifunc).funcNameUI = procFunc(ifunc).funcName;
             end
-            funcArgOut{nfunc} = C{ii+2};
-            funcArgIn{nfunc} = C{ii+3};
-            nFuncParam(nfunc) = 0;
-            nFuncParamVar(nfunc) = 0;
-            funcParam{nfunc} = [];
-            funcParamFormat{nfunc} = [];
-            funcParamVal{nfunc} = [];
+            procFunc(ifunc).funcArgOut = C{ii+2};
+            procFunc(ifunc).funcArgIn = C{ii+3};
             flag = 3;
         else
             if(C{ii} == '*')
@@ -98,32 +85,32 @@ for ii=1:nstr
                     % We're about to call the function to find out it's parameter list. 
                     % Before calling it we need to get the input arguments from the 
                     % external variables list.
-                    argIn = procStreamParseArgsIn(funcArgIn{nfunc});
+                    argIn = procStreamParseArgsIn(procFunc(ifunc).funcArgIn);
                     for ii = 1:length(argIn)
                         if ~exist(argIn{ii},'var')
                             eval(sprintf('%s = externVars.%s;',argIn{ii},argIn{ii}));
                         end
                     end                
-                    eval(sprintf('%s = %s%s);',funcArgOut{nfunc},funcName{nfunc},funcArgIn{nfunc}));
-                    nFuncParam(nfunc) = nFuncParam0;       
-                    funcParam{nfunc} = funcParam0;
-                    funcParamFormat{nfunc} = funcParamFormat0;
-                    funcParamVal{nfunc} = funcParamVal0;
-                    for jj=1:nFuncParam(nfunc)
-                        eval( sprintf('procParam(1).%s_%s = funcParamVal{nfunc}{jj};',funcName{nfunc},funcParam{nfunc}{jj}) );
+                    eval(sprintf('%s = %s%s);',procFunc(ifunc).funcArgOut, procFunc(ifunc).funcName, procFunc(ifunc).funcArgIn));
+                    procFunc(ifunc).nFuncParam = nFuncParam0;       
+                    procFunc(ifunc).funcParam = funcParam0;
+                    procFunc(ifunc).funcParamFormat = funcParamFormat0;
+                    procFunc(ifunc).funcParamVal = funcParamVal0;
+                    for jj=1:procFunc(ifunc).nFuncParam
+                        eval( sprintf('procParam(1).%s_%s = procFunc(ifunc).funcParamVal{jj};', procFunc(ifunc).funcName, procFunc(ifunc).funcParam{jj}) );
                     end
                 end
-                nFuncParamVar(nfunc) = 1;
+                procFunc(ifunc).nFuncParamVar = 1;
             elseif(C{ii} ~= '*') 
-                nFuncParam(nfunc) = nFuncParam(nfunc) + 1;
-                funcParam{nfunc}{nFuncParam(nfunc)} = C{ii};
+                procFunc(ifunc).nFuncParam = procFunc(ifunc).nFuncParam + 1;
+                procFunc(ifunc).funcParam{procFunc(ifunc).nFuncParam} = C{ii};
 
                 for jj = 1:length(C{ii+1})
                     if C{ii+1}(jj)=='_'
                         C{ii+1}(jj) = ' ';
                     end
                 end
-                funcParamFormat{nfunc}{nFuncParam(nfunc)} = C{ii+1};
+                procFunc(ifunc).funcParamFormat{procFunc(ifunc).nFuncParam} = C{ii+1};
                 
                 for jj = 1:length(C{ii+2})
                     if C{ii+2}(jj)=='_'
@@ -131,26 +118,17 @@ for ii=1:nstr
                     end
                 end
                 val = str2num(C{ii+2});
-                funcParamVal{nfunc}{nFuncParam(nfunc)} = val;    
+                procFunc(ifunc).funcParamVal{procFunc(ifunc).nFuncParam} = val;    
                 if(C{ii} ~= '*')
-                    eval( sprintf('procParam(1).%s_%s = val;',funcName{nfunc},funcParam{nfunc}{nFuncParam(nfunc)}) );
+                    eval( sprintf('procParam(1).%s_%s = val;',procFunc(ifunc).funcName, procFunc(ifunc).funcParam{procFunc(ifunc).nFuncParam}) );
                 end
-                nFuncParamVar(nfunc) = 0;
+                procFunc(ifunc).nFuncParamVar = 0;
             end
             flag = 2;
         end
     else
-        flag = flag - 1;
+        flag = flag-1;
     end
 end
-procFunc.nFunc           = nfunc;
-procFunc.funcName        = funcName;
-procFunc.funcNameUI      = funcNameUI;
-procFunc.funcArgOut      = funcArgOut;
-procFunc.funcArgIn       = funcArgIn;
-procFunc.nFuncParam      = nFuncParam;
-procFunc.nFuncParamVar   = nFuncParamVar;
-procFunc.funcParam       = funcParam;
-procFunc.funcParamFormat = funcParamFormat;
-procFunc.funcParamVal    = funcParamVal;
+
 

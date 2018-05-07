@@ -5,14 +5,14 @@ diff = 0;
 procFunc1 = procInput1.procFunc;
 procFunc2 = procInput2.procFunc;
 
-if procFunc1.nFunc ~= procFunc2.nFunc
+if length(procFunc1) ~= length(procFunc2)
     diff = 1;
     return;
 end
 
-for ii=1:procFunc1.nFunc
-    if ii<=procFunc2.nFunc
-        if ~strcmp(procFunc1.funcName{ii}, procFunc2.funcName{ii})
+for ii=1:length(procFunc1)
+    if ii<=length(procFunc2)
+        if ~strcmp(procFunc1(ii).funcName, procFunc2(ii).funcName)
             diff = 0;
         end
     end

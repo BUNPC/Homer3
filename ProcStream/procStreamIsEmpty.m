@@ -12,8 +12,3 @@ if isempty(procFunc)
    b=1;
    return;
 end
-
-if procFunc.nFunc==0
-   b=1;
-   return;
-end

@@ -18,10 +18,10 @@ fcallList = {};
 hwait = waitbar(0, 'Processing...' );
 for iFunc = 1:procInput.procFunc.nFunc
     
-    waitbar( iFunc/procInput.procFunc.nFunc, hwait, sprintf('Processing... %s',procInput.procFunc.funcName{iFunc}) );
+    waitbar( iFunc/procInput.procFunc.nFunc, hwait, sprintf('Processing... %s',procInput.procFunc(iFunc).funcName) );
     
     % Extract input arguments from run
-    argIn = parseProcessFuncArgsIn(procInput.procFunc.funcArgIn{iFunc});
+    argIn = parseProcessFuncArgsIn(procInput.procFunc(iFunc).funcArgIn);
     for ii = 1:length(argIn)
         if ~exist(argIn{ii},'var')
             if isfield(run,argIn{ii})
@@ -36,14 +36,14 @@ for iFunc = 1:procInput.procFunc.nFunc
     p = [];
     sargin = '';
     sarginVal = '';
-    for iP = 1:procInput.procFunc.nFuncParam(iFunc)
-        if ~procInput.procFunc.nFuncParamVar(iFunc)
-            p{iP} = procInput.procFunc.funcParamVal{iFunc}{iP};
+    for iP = 1:procInput.procFunc(iFunc).nFuncParam
+        if ~procInput.procFunc(iFunc).nFuncParamVar
+            p{iP} = procInput.procFunc(iFunc).funcParamVal{iP};
         else
-            p{iP}.name = procInput.procFunc.funcParam{iFunc}{iP};
-            p{iP}.val = procInput.procFunc.funcParamVal{iFunc}{iP};
+            p{iP}.name = procInput.procFunc(iFunc).funcParam{iP};
+            p{iP}.val = procInput.procFunc(iFunc).funcParamVal{iP};
         end
-        if length(procInput.procFunc.funcArgIn{iFunc})==1 & iP==1
+        if length(procInput.procFunc(iFunc).funcArgIn)==1 & iP==1
             sargin = sprintf('%sp{%d}',sargin,iP);
             if isnumeric(p{iP})
                 if length(p{iP})==1
@@ -73,8 +73,8 @@ for iFunc = 1:procInput.procFunc.nFunc
     end
     
     % set up output format
-    sargout = procInput.procFunc.funcArgOut{iFunc};
-    for ii=1:length(procInput.procFunc.funcArgOut{iFunc})
+    sargout = procInput.procFunc(iFunc).funcArgOut;
+    for ii=1:length(procInput.procFunc(iFunc).funcArgOut)
         if sargout(ii)=='#'
             sargout(ii) = ' ';
         end
@@ -82,17 +82,17 @@ for iFunc = 1:procInput.procFunc.nFunc
     
     % call function
     fcall = sprintf( '%s = %s%s%s);', sargout, ...
-        procInput.procFunc.funcName{iFunc}, ...
-        procInput.procFunc.funcArgIn{iFunc}, sargin );
+        procInput.procFunc(iFunc).funcName, ...
+        procInput.procFunc(iFunc).funcArgIn, sargin );
     if flagNoRun==0
         eval( fcall );
     end
     fcallList{end+1} = sprintf( '%s = %s%s%s);', sargout, ...
-        procInput.procFunc.funcName{iFunc}, ...
-        procInput.procFunc.funcArgIn{iFunc}, sarginVal );
+        procInput.procFunc(iFunc).funcName, ...
+        procInput.procFunc(iFunc).funcArgIn, sarginVal );
     
     % parse output parameters
-    foos = procInput.procFunc.funcArgOut{iFunc};
+    foos = procInput.procFunc(iFunc).funcArgOut;
     % remove '[', ']', and ','
     for ii=1:length(foos)
         if foos(ii)=='[' | foos(ii)==']' | foos(ii)==',' | foos(ii)=='#'

@@ -20,7 +20,7 @@ while ~all(~err1) || ~all(~err2)
     % Load Processing stream file
     if isempty(filename)
         
-        [filename, pathname] = createDefaultConfigFile();
+        [filename, ~] = createDefaultConfigFile();
         
         % Load procInput from config file
         fid = fopen(filename,'r');
@@ -65,7 +65,7 @@ while ~all(~err1) || ~all(~err2)
             filename = './processOpt_default.cfg';
             procStreamFileGen(filename);
             fid = fopen(filename,'r');
-            [procInput, err1] = procStreamParseRun(fid, run);
+            procInput = procStreamParseRun(fid, run);
             fclose(fid);
             break;
         elseif ch==3

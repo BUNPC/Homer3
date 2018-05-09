@@ -641,25 +641,10 @@ currElem = hmr.currElem;
 guiMain = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
-val    = get(hObject,'value');
-enable = strcmpi(get(hObject,'enable'),'on');
-
 datatype    = guiMain.datatype;
 buttonVals  = guiMain.buttonVals;
 
-if datatype == buttonVals.OD_HRF
-    hrfEnable = true;
-elseif datatype == buttonVals.CONC_HRF
-    hrfEnable = true;
-else
-    hrfEnable = false;
-end
-
-if(val==1 & enable==1 & hrfEnable==true)
-    guiMain.plotprobeEnable = true;
-else
-    guiMain.plotprobeEnable = false;
-end
+val    = get(hObject,'value');
 
 plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 

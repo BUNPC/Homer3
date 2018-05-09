@@ -22,6 +22,9 @@ buttonVals  = guiMain.buttonVals;
 sclConc     = guiMain.sclConc;        % convert Conc from Molar to uMolar
 showStdErr  = guiMain.showStdErr;
 
+
+
+
 if currElem.procType==1
     condition  = guiMain.condition;
 elseif currElem.procType==2
@@ -31,10 +34,10 @@ elseif currElem.procType==3
 end
 
 y = [];
-if datatype == buttonVals.OD_HRF
+if datatype == buttonVals.OD_HRF_PLOT_PROBE
     y = procResult.dodAvg(:, :, condition);
     tMarkUnits='(AU)';
-elseif datatype == buttonVals.CONC_HRF
+elseif datatype == buttonVals.CONC_HRF_PLOT_PROBE
     y = procResult.dcAvg(:, :, :, condition);
     tMarkAmp = tMarkAmp*1e6;
     tMarkUnits='(micro-molars)';
@@ -53,8 +56,6 @@ BttnHidMeas  = drawPlotProbeHiddenMeas( BttnHidMeas, CtrlPanel.h, hidMeasShow, h
 TmarkPanel   = drawPlotProbeTimeMarkers( TmarkPanel, CtrlPanel.h, tMarkInt, tMarkAmp, ...
                                          tMarkShow, tMarkUnits, hFig );
 showHiddenObjs( 2*hidMeasShow+tMarkShow, SD, y, hData );
-
-
 
 
 % Save the plot probe control panel handles

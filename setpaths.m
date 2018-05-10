@@ -63,9 +63,6 @@ end
 if add
     fprintf('ADDED %s paths to matlab search paths:\n', toolname);
     addpath(paths_str, '-end')
-    
-    fprintf('\n');
-
     if isunix()
         idx = findExePaths(paths);
         for ii=1:length(idx)

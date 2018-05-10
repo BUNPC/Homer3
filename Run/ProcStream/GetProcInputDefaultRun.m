@@ -53,7 +53,7 @@ while ~all(~err1) || ~all(~err2)
         i=find(err2==1);
         str1 = 'Error in functions\n\n';
         for j=1:length(i)
-            str2 = sprintf('%s%s',procInput.procFunc.funcName{i(j)},'\n');
+            str2 = sprintf('%s%s',procInput.procFunc(i(j)).funcName,'\n');
             str1 = strcat(str1,str2);
         end
         str1 = strcat(str1,'\n');

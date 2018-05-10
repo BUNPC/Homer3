@@ -25,14 +25,14 @@ dStd    = [];
 t       = [];
 nTrials = [];
 
-if datatype == buttonVals.OD_HRF
+if datatype == buttonVals.OD_HRF || datatype == buttonVals.OD_HRF_PLOT_PROBE
     t = group.procResult.tHRF;
     d = group.procResult.dodAvg;
     if showStdErr 
         dStd = group.procResult.dodAvgStd;
     end
     nTrials = group.procResult.nTrials;
-elseif datatype == buttonVals.CONC_HRF
+elseif datatype == buttonVals.CONC_HRF || datatype == buttonVals.CONC_HRF_PLOT_PROBE
     t = group.procResult.tHRF;
     d = group.procResult.dcAvg;
     if showStdErr 
@@ -70,14 +70,14 @@ if ~isempty(d)
     chLst = find(SD.MeasListVis(ch)==1);
 
     % Plot data
-    if datatype == buttonVals.OD_HRF 
+    if datatype == buttonVals.OD_HRF || datatype == buttonVals.OD_HRF_PLOT_PROBE
 
         d = d(:,:,condition);
         d = reshape_y(d, SD);
                 
         DisplayDataRawOrOD(t, d, dStd, wl, ch, chLst, nTrials, condition, linecolor, linestyle);
 
-    elseif datatype == buttonVals.CONC_HRF 
+    elseif datatype == buttonVals.CONC_HRF || datatype == buttonVals.CONC_HRF_PLOT_PROBE
 
         d = d(:,:,:,condition) * sclConc;
 

@@ -1,4 +1,8 @@
-function showHiddenObjs(bitmask,SD,y,h)
+function showHiddenObjs(bitmask, SD, y, h)
+
+if isempty(y)
+    return;
+end
 
 ampYmean = 0;
 nDataTypes = ndims(y);

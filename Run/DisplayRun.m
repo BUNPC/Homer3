@@ -37,7 +37,7 @@ elseif datatype == buttonVals.OD
 elseif datatype == buttonVals.CONC
     d = run.procResult.dc;
     t = run.t;
-elseif datatype == buttonVals.OD_HRF
+elseif datatype == buttonVals.OD_HRF || datatype == buttonVals.OD_HRF_PLOT_PROBE
     d = run.procResult.dodAvg;
     t = run.procResult.tHRF;
     if showStdErr 
@@ -47,7 +47,7 @@ elseif datatype == buttonVals.OD_HRF
     if isempty(condition)
         return;
     end    
-elseif datatype == buttonVals.CONC_HRF
+elseif datatype == buttonVals.CONC_HRF || datatype == buttonVals.CONC_HRF_PLOT_PROBE
     d = run.procResult.dcAvg;
     t = run.procResult.tHRF;
     if showStdErr 
@@ -85,21 +85,18 @@ if ~isempty(d)
     chLst = find(SD.MeasListVis(ch)==1);
 
     % Plot data
-    if datatype == buttonVals.RAW || ...
-       datatype == buttonVals.OD || ...
-       datatype == buttonVals.OD_HRF 
+    if datatype == buttonVals.RAW || datatype == buttonVals.OD || datatype == buttonVals.OD_HRF || datatype == buttonVals.OD_HRF_PLOT_PROBE       
 
-        if  datatype == buttonVals.OD_HRF 
+        if  datatype == buttonVals.OD_HRF || datatype == buttonVals.OD_HRF_PLOT_PROBE
             d = d(:,:,condition);
         end
         d = reshape_y(d, SD);
         
         DisplayDataRawOrOD(t, d, dStd, wl, ch, chLst, nTrials, condition, linecolor, linestyle);
         
-    elseif datatype == buttonVals.CONC || ...
-           datatype == buttonVals.CONC_HRF 
+    elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF || datatype == buttonVals.CONC_HRF_PLOT_PROBE
 
-        if  datatype == buttonVals.CONC_HRF 
+        if  datatype == buttonVals.CONC_HRF || datatype == buttonVals.CONC_HRF_PLOT_PROBE
             d = d(:,:,:,condition);
         end
         d = d * sclConc;
@@ -109,16 +106,5 @@ if ~isempty(d)
 end
 
 guiMain.axesSDG = DisplayAxesSDG(guiMain.axesSDG, run);
-
-% If HRF display is set then exit display without showing stims
-if datatype == buttonVals.CONC_HRF 
-    return;
-end
-if datatype == buttonVals.OD_HRF 
-    return;
-end
-if datatype == buttonVals.RAW_HRF
-    return;
-end
 
 DisplayStim(run, guiMain);

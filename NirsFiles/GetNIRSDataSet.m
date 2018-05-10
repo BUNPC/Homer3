@@ -129,21 +129,14 @@ end
 if exist('./groupResults.mat','file')
     load( './groupResults.mat' );
     groupPrev = group;
-    [group err] = getGroupErrors(group,'group');    
+    [group, err] = getGroupErrors(group, 'group');
     if err
-        q = menu('Error in groupResults.mat file...will fix and save original in groupResults.mat.orig', 'OK');
+        fprintf('Looks like groupResults.mat is from an outdated Homer version...\nUpgrading groupResults.mat to current version\n');
+        group = fixGroupErrors(group,'group');
         if ~exist('./groupResults.mat.orig','file')
-            movefile('./groupResults.mat','./groupResults.mat.orig');
-        else
-            q = menu('Save groupResults Options:', 'Ovewrite existing .orig file and save fixed', 'Just save fixed file', 'Do nothing');
-            if q==1
-                movefile('./groupResults.mat','./groupResults.mat.orig');
-            end
+            movefile('./groupResults.mat', './groupResults.mat.orig');
         end
-        if q ~= 3
-            group = fixGroupErrors(group,'group');
-            save( './groupResults.mat','group' );
-        end
+        save('./groupResults.mat','group');
     end
 end
 

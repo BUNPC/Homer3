@@ -51,20 +51,17 @@ elseif strcmp(get(handles.menuItemViewHRFStdErr, 'checked'), 'off');
     guiMain.showStdErr = false;
 end
 
-if guiMain.datatype == guiMain.buttonVals.RAW | ...
-   guiMain.datatype == guiMain.buttonVals.RAW_HRF
+if guiMain.datatype == guiMain.buttonVals.RAW || guiMain.datatype == guiMain.buttonVals.RAW_HRF || guiMain.datatype == guiMain.buttonVals.RAW_HRF_PLOT_PROBE
 
     set(guiMain.handles.listboxPlotWavelength, 'visible','on');
     set(guiMain.handles.listboxPlotConc, 'visible','off');
     
-elseif guiMain.datatype == guiMain.buttonVals.OD | ...
-       guiMain.datatype == guiMain.buttonVals.OD_HRF
+elseif guiMain.datatype == guiMain.buttonVals.OD || guiMain.datatype == guiMain.buttonVals.OD_HRF || guiMain.datatype == guiMain.buttonVals.OD_HRF_PLOT_PROBE
     
     set(guiMain.handles.listboxPlotWavelength, 'visible','on');
     set(guiMain.handles.listboxPlotConc, 'visible','off');
     
-elseif guiMain.datatype == guiMain.buttonVals.CONC | ...
-       guiMain.datatype == guiMain.buttonVals.CONC_HRF
+elseif guiMain.datatype == guiMain.buttonVals.CONC || guiMain.datatype == guiMain.buttonVals.CONC_HRF || guiMain.datatype == guiMain.buttonVals.CONC_HRF_PLOT_PROBE
     
     set(guiMain.handles.listboxPlotWavelength, 'visible','off');
     set(guiMain.handles.listboxPlotConc, 'visible','on');

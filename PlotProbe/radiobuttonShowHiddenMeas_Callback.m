@@ -27,9 +27,9 @@ elseif currElem.procType==3
     condition  = find(currElem.procElem.CondRun2Group == guiMain.condition);
 end
 
-if datatype == buttonVals.OD_HRF
+if datatype == buttonVals.OD_HRF_PLOT_PROBE
     y = procResult.dodAvg(:, :, condition);
-elseif datatype == buttonVals.CONC_HRF
+elseif datatype == buttonVals.CONC_HRF_PLOT_PROBE
     y = procResult.dcAvg(:, :, :, condition);
 end
 

@@ -326,20 +326,19 @@ guiMain = GetAxesDataType(guiMain);
 DisplayCurrElem(currElem, guiMain);
 plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
-if guiMain.datatype == guiMain.buttonVals.RAW | ...
-   guiMain.datatype == guiMain.buttonVals.RAW_HRF
+datatype   = guiMain.datatype;
+buttonVals = guiMain.buttonVals;
+if datatype == buttonVals.RAW || datatype == buttonVals.RAW_HRF || datatype == buttonVals.RAW_HRF_PLOT_PROBE
 
     set(guiMain.handles.listboxPlotWavelength, 'visible','on');
     set(guiMain.handles.listboxPlotConc, 'visible','off');
     
-elseif guiMain.datatype == guiMain.buttonVals.OD | ...
-       guiMain.datatype == guiMain.buttonVals.OD_HRF
+elseif datatype == buttonVals.OD || datatype == buttonVals.OD_HRF || datatype == buttonVals.OD_HRF_PLOT_PROBE
     
     set(guiMain.handles.listboxPlotWavelength, 'visible','on');
     set(guiMain.handles.listboxPlotConc, 'visible','off');
     
-elseif guiMain.datatype == guiMain.buttonVals.CONC | ...
-       guiMain.datatype == guiMain.buttonVals.CONC_HRF
+elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF || datatype == buttonVals.CONC_HRF_PLOT_PROBE
     
     set(guiMain.handles.listboxPlotWavelength, 'visible','off');
     set(guiMain.handles.listboxPlotConc, 'visible','on');
@@ -535,7 +534,7 @@ global hmr
 currElem = hmr.currElem;
 guiMain = hmr.guiMain;
 
-[hf plotname] = CopyDisplayCurrElem(currElem, guiMain);
+[hf, plotname] = CopyDisplayCurrElem(currElem, guiMain);
 %{
 if strcmp(get(handles.menuAutosavePlotFigsToFile,'checked'),'on')
     filename = [plotname '.jpg'];
@@ -641,11 +640,7 @@ currElem = hmr.currElem;
 guiMain = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
-datatype    = guiMain.datatype;
-buttonVals  = guiMain.buttonVals;
-
-val    = get(hObject,'value');
-
+guiMain = GetAxesDataType(guiMain);
 plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
 hmr.plotprobe = plotprobe;

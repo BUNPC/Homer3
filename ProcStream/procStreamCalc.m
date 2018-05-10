@@ -16,11 +16,7 @@ fcallList = {};
 hwait = waitbar(0, 'Processing...' );
 for iFunc = 1:length(procInput.procFunc)
     
-    try 
-        waitbar( iFunc/length(procInput.procFunc), hwait, sprintf('Processing... %s', procInput.procFunc(iFunc).funcName) );
-    catch
-        dbg=1;
-    end
+    waitbar( iFunc/length(procInput.procFunc), hwait, sprintf('Processing... %s', procInput.procFunc(iFunc).funcName) );
     
     % Extract input arguments from procElem
     argIn = procStreamParseArgsIn(procInput.procFunc(iFunc).funcArgIn);

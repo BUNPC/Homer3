@@ -8,11 +8,13 @@ axes(hAxes);
 
 buttonVals = guiMain.buttonVals;
 
-if guiMain.datatype == buttonVals.OD_HRF
+if guiMain.datatype == buttonVals.RAW_HRF || guiMain.datatype == buttonVals.RAW_HRF_PLOT_PROBE
     return;
 end
-
-if guiMain.datatype == buttonVals.CONC_HRF
+if guiMain.datatype == buttonVals.OD_HRF || guiMain.datatype == buttonVals.OD_HRF_PLOT_PROBE
+    return;
+end
+if guiMain.datatype == buttonVals.CONC_HRF || guiMain.datatype == buttonVals.CONC_HRF_PLOT_PROBE
     return;
 end
 

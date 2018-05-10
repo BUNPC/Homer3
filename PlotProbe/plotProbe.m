@@ -359,15 +359,6 @@ try
             set(ht,'color',[0 0 1])
             
         end        
-        if isempty(y)
-            for iML = 1:size(ml,1)                
-                hl = line([sPos(ml(iML,1),1) dPos(ml(iML,2),1)]-axXoff+0.5,[sPos(ml(iML,1),2) dPos(ml(iML,2),2)]-axYoff+0.5);
-%                 if MLact(iML)==0   % this breaks because MLact is half
-%                                    %  the length of ml
-%                     set(hl,'linestyle',':')
-%                 end
-            end
-        end
     end
     
     if(isinitfig)

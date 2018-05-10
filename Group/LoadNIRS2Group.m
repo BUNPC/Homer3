@@ -24,7 +24,7 @@ for ii=2:length(files)
 
     else
         
-        [sname rnum_tmp iExt] = getSubjNameAndRun(fname, rnum);
+        [sname, rnum_tmp, iExt] = getSubjNameAndRun(fname, rnum);
         if rnum_tmp ~= rnum
             rnum = rnum_tmp;
         end
@@ -126,15 +126,22 @@ end
 
 % Copy default procInput to all uninitialized nodes in the group
 if procStreamIsEmpty(groupCurr(1).procInput)
-    groupCurr(1).procInput = procInputGroupDefault;
+    groupCurr(1).procInput = procStreamCopy2Native(procInputGroupDefault);
 end
 for jj=1:length(groupCurr(1).subjs)
     if procStreamIsEmpty(groupCurr(1).subjs(jj).procInput)
-        groupCurr(1).subjs(jj).procInput = procInputSubjDefault;
+        groupCurr(1).subjs(jj).procInput = procStreamCopy2Native(procInputSubjDefault);
     end 
     for kk=1:length(groupCurr(1).subjs(jj).runs)
+        
+        % Backwards compatibility code between homer3 and homer2 formats: use 
+        % procStreamCopy to make sure that a homer2 generated .nirs file is
+        % converted to homer3 procInput format
+        groupCurr(1).subjs(jj).runs(kk).procInput = ...
+            procStreamCopy2Native(groupCurr(1).subjs(jj).runs(kk).procInput);
+        
         if procStreamIsEmpty(groupCurr(1).subjs(jj).runs(kk).procInput)
-            groupCurr(1).subjs(jj).runs(kk).procInput = procInputRunDefault;
+            groupCurr(1).subjs(jj).runs(kk).procInput = procStreamCopy2Native(procInputRunDefault);
         end
     end
 end
@@ -242,6 +249,7 @@ case {'run'}
     if strcmp(N1.name,N2.name)
         N1 = copyProcParamsFieldByField(N1,N2,'run');
     end
+    
 end
 
 
@@ -396,8 +404,8 @@ function j=existRun(R,S)
 
 j=0;
 for i=1:length(S.runs)
-    [sname1 rnum1] = getSubjNameAndRun(R.name,i);
-    [sname2 rnum2] = getSubjNameAndRun(S.runs(i).name,i);
+    [sname1, rnum1] = getSubjNameAndRun(R.name,i);
+    [sname2, rnum2] = getSubjNameAndRun(S.runs(i).name,i);
     if strcmp(sname1,sname2) && rnum1==rnum2
         j=i;
         break;
@@ -412,6 +420,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function b = isnumber(str)    
 b = ~isempty(str2num(str));
+
+
 
 
 

@@ -60,12 +60,7 @@ nParam = length(funcParam);
 nArgIn = length(funcArgIn);
 nArgOut = length(funcArgOut);
 
-funcHelp.usage = '';
-funcHelp.funcNameUI = '';
-funcHelp.genDescr = '';
-funcHelp.argInDescr = '';
-funcHelp.paramDescr = repmat({''},nParam,1);
-funcHelp.argOutDescr = '';
+funcHelp = InitHelp(nParam);
 
 usageLines = [0 0];
 nameLines = [0 0];

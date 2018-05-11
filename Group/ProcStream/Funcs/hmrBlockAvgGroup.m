@@ -15,6 +15,10 @@ for iSubj = 1:nSubj
     nTrials   = nTrialsSubjs{iSubj};
     SD        = SDSubjs{iSubj};
     
+    if isempty(yAvg)
+        break;
+    end
+    
     nCond = size(CondGroup2Subj,2);
     
     if ndims(yAvg) == (4-(nCond<2))

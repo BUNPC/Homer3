@@ -166,9 +166,6 @@ group = groupCurr;
 
 
 
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Extract the subject name and run number from a .nirs 
 % filename.
@@ -265,9 +262,13 @@ case {'group','grp'}
 
     % procInput
     if isfield(N2,'procInput') && ~isempty(N2.procInput)
-        N1.procInput = copyStructFieldByField(N1.procInput,N2.procInput,'procInput');
+        if isfield(N2.procInput,'procFunc') && ~isempty(N2.procInput.procFunc)
+            N1.procInput = copyStructFieldByField(N1.procInput,N2.procInput,'procInput');
+        else
+            [N1.procInput.procFunc, N1.procInput.procParam] = procStreamDefault(type);
+        end
     end
-
+    
     % procResult
     if isfield(N2,'procResult') && ~isempty(N2.procResult)
         N1.procResult = copyStructFieldByField(N1.procResult,N2.procResult);
@@ -292,7 +293,11 @@ case {'subj','subject'}
 
     % procInput
     if isfield(N2,'procInput')
-        N1.procInput = copyStructFieldByField(N1.procInput,N2.procInput,'procInput');
+        if isfield(N2.procInput,'procFunc') && ~isempty(N2.procInput.procFunc)
+            N1.procInput = copyStructFieldByField(N1.procInput,N2.procInput,'procInput');
+        else
+            [N1.procInput.procFunc, N1.procInput.procParam] = procStreamDefault(type);
+        end
     end
 
     % procResult

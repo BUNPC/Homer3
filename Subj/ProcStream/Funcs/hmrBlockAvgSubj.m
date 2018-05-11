@@ -13,8 +13,7 @@ for iRun = 1:length(yAvgRuns)
     ySum2     = ySum2Runs{iRun};
     tHRF      = tHRFRuns{iRun};
     nTrials   = nTrialsRuns{iRun};
-    SD        = SDRuns{iRun};
-    
+    SD        = SDRuns{iRun};    
     
     if isempty(yAvg)
         break;

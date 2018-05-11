@@ -62,7 +62,7 @@ if strcmpi(mode, 'savetodisk') || strcmpi(mode, 'saveuseredits')
     paramsLst{iP} = 'userdata';
     iP=iP+1;
 
-    procInput = procStreamCopy2Old(run.procInput);
+    procInput = run.procInput;
     paramsLst{iP} = 'procInput';
     iP=iP+1;
 

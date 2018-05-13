@@ -3,11 +3,11 @@ function varargout = Homer3(varargin)
 % Start initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @Homer3_OpeningFcn, ...
-                   'gui_OutputFcn',  @Homer3_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @Homer3_OpeningFcn, ...
+    'gui_OutputFcn',  @Homer3_OutputFcn, ...
+    'gui_LayoutFcn',  [] , ...
+    'gui_Callback',   []);
 if nargin && ischar(varargin{1}) && ~strcmp(varargin{end},'userargs')
     gui_State.gui_Callback = str2func(varargin{1});
 end
@@ -24,23 +24,23 @@ end
 % ---------------------------------------------------------------------
 function Homer3_Init(handles, args)
 
-% Set the figure renderer. Some renderers aren't compatible 
-% with certain OSs or graphics cards. Homer3 uses the figure renderer 
-% when displaying patches. Allow user to set the renderer that is best 
-% for the host system. 
-% 
+% Set the figure renderer. Some renderers aren't compatible
+% with certain OSs or graphics cards. Homer3 uses the figure renderer
+% when displaying patches. Allow user to set the renderer that is best
+% for the host system.
+%
 
 hFig = handles.Homer3;
 if ~isempty(args)
     if strcmpi(args{1},'zbuffer') || ...
-       strcmpi(args{1},'painters') || ...
-       strcmpi(args{1},'opengl')
-
+            strcmpi(args{1},'painters') || ...
+            strcmpi(args{1},'opengl')
+        
         set(hFig,'renderer',args{1});
         set(hFig,'renderermode','manual');
-
+        
     elseif strcmpi(args{1},'rendererauto')
-
+        
         if isunix()
             set(hObject,'renderer','zbuffer');
         elseif ispc()
@@ -49,7 +49,7 @@ if ~isempty(args)
             set(hFig,'renderer','zbuffer');
         end
         set(hFig,'renderermode','manual');
-
+        
     end
 end
 
@@ -89,7 +89,7 @@ hmr.guiMain             = [];
 handles.output = hObject;
 guidata(hObject, handles);
 
-% Display window name which includes version # and data set path. Do this 
+% Display window name which includes version # and data set path. Do this
 % regardless of whether it's an empty gui because the user pressed cancel.
 % We want them to see the gui and version no matter what.
 V = Homer3_version();
@@ -104,8 +104,8 @@ Homer3_EnableDisableGUI(handles,'off');
 
 Homer3_Init(handles, {'zbuffer'});
 
-% Check NIRS data set for errors. If there are no valid 
-% nirs files don't attempt to load them. 
+% Check NIRS data set for errors. If there are no valid
+% nirs files don't attempt to load them.
 files = GetNIRSDataSet(handles);
 if isempty(files)
     return;
@@ -116,7 +116,7 @@ end
 % Load NIRS files to group
 [group, files] = LoadNIRS2Group(files);
 
-% Generate the CondNames for all members of group 
+% Generate the CondNames for all members of group
 group = MakeCondNamesGroup(group);
 
 
@@ -125,7 +125,7 @@ currElem = InitCurrElem(handles, @listboxFiles_Callback);
 
 %%%% Load essential objects
 
-% Load the currently selected processing element from the group 
+% Load the currently selected processing element from the group
 currElem = LoadCurrElem(currElem, group, files, 1, 1);
 
 % Within the current element, initialize the data to display
@@ -147,7 +147,7 @@ hmr.plotprobe = PlotProbe_Init();
 
 
 % --------------------------------------------------------------------
-function varargout = Homer3_OutputFcn(hObject, eventdata, handles) 
+function varargout = Homer3_OutputFcn(hObject, eventdata, handles)
 global hmr
 varargout{1} = hmr.handles.this;
 
@@ -217,9 +217,9 @@ currElem = UpdateCurrElemProcStreamOptionsGUI(currElem);
 if ishandles(hmr.handles.stimGUI)
     group = MakeCondNamesGroup(group);
     hmr.handles.stimGUI = launchStimGUI(hmr.handles.this, ...
-                                        hmr.handles.stimGUI, ...
-                                        currElem, ...
-                                        group.CondNames);
+        hmr.handles.stimGUI, ...
+        currElem, ...
+        group.CondNames);
 end
 hmr.currElem = currElem;
 hmr.plotprobe = plotprobe;
@@ -260,9 +260,9 @@ guiMain = UpdateAxesDataCondition(guiMain, group, currElem);
 if ishandles(hmr.handles.stimGUI)
     group = MakeCondNamesGroup(group);
     hmr.handles.stimGUI = launchStimGUI(hmr.handles.this, ...
-                                        hmr.handles.stimGUI, ...
-                                        currElem, ...
-                                        group.CondNames);
+        hmr.handles.stimGUI, ...
+        currElem, ...
+        group.CondNames);
 end
 DisplayCurrElem(currElem, guiMain);
 plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
@@ -270,7 +270,7 @@ plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 currElem = UpdateCurrElemProcStreamOptionsGUI(currElem);
 
 hmr.currElem = currElem;
-hmr.group = group;                                
+hmr.group = group;
 hmr.plotprobe = plotprobe;
 
 
@@ -329,7 +329,7 @@ plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 datatype   = guiMain.datatype;
 buttonVals = guiMain.buttonVals;
 if datatype == buttonVals.RAW || datatype == buttonVals.RAW_HRF || datatype == buttonVals.RAW_HRF_PLOT_PROBE
-
+    
     set(guiMain.handles.listboxPlotWavelength, 'visible','on');
     set(guiMain.handles.listboxPlotConc, 'visible','off');
     
@@ -373,7 +373,7 @@ hmr.plotprobe = plotprobe;
 % --------------------------------------------------------------------
 function guiMain_ButtonDownFcn(hObject, eventdata, handles)
 
-% Make sure the user clicked on the axes and not 
+% Make sure the user clicked on the axes and not
 % some other object on top of the axes
 if ~strcmp(get(hObject,'type'),'axes')
     return;
@@ -396,7 +396,7 @@ guiMain = SetAxesDataCh(guiMain, currElem);
 % Update the displays of the guiMain and axesSDG axes
 DisplayCurrElem(currElem, guiMain);
 
-% the the modified objects 
+% the the modified objects
 hmr.currElem = currElem;
 hmr.guiMain = guiMain;
 
@@ -417,7 +417,7 @@ guiMain = GetAxesDataCondition(guiMain);
 DisplayCurrElem(currElem, guiMain);
 plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
-% the the modified objects 
+% the the modified objects
 hmr.guiMain = guiMain;
 hmr.plotprobe = plotprobe;
 
@@ -439,7 +439,7 @@ guiMain = GetAxesDataWl(guiMain, currElem.procElem.SD.Lambda);
 DisplayCurrElem(currElem, guiMain);
 plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
-% the the modified objects 
+% the the modified objects
 hmr.guiMain = guiMain;
 hmr.plotprobe = plotprobe;
 
@@ -462,7 +462,7 @@ guiMain = GetAxesDataHbType(guiMain);
 DisplayCurrElem(currElem, guiMain);
 plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
-% the the modified objects 
+% the the modified objects
 hmr.guiMain = guiMain;
 hmr.plotprobe = plotprobe;
 
@@ -514,10 +514,10 @@ group = SaveCurrElem(currElem, group);
 
 group = LoadNIRS2Group(files);
 
-% Generate the CondNames for all members of group 
+% Generate the CondNames for all members of group
 group = MakeCondNamesGroup(group);
 
-% Load the currently selected processing element from the group 
+% Load the currently selected processing element from the group
 currElem = LoadCurrElem(currElem, group, files);
 
 % Display data from currently selected processing element
@@ -529,7 +529,7 @@ hmr.currElem = currElem;
 
 % --------------------------------------------------------------------
 function menuCopyCurrentPlot_Callback(hObject, eventdata, handles)
-global hmr 
+global hmr
 
 currElem = hmr.currElem;
 guiMain = hmr.guiMain;
@@ -569,9 +569,9 @@ group = hmr.group;
 currElem = hmr.currElem;
 
 hmr.handles.stimGUI = launchStimGUI(hmr.handles.this, ...
-                                    hmr.handles.stimGUI, ...
-                                    currElem, ...
-                                    group.CondNames);
+    hmr.handles.stimGUI, ...
+    currElem, ...
+    group.CondNames);
 
 
 
@@ -589,7 +589,7 @@ p0 = get(hObject, 'position');
 
 set(hStimGUI, 'units','normalized');
 p1 = get(hStimGUI, 'position');
-if p0(1)>.5 
+if p0(1)>.5
     p1(1)=.01;
 elseif ((.99-p1(3)) - p0(1)) < .1
     p1(1)=.01;
@@ -640,8 +640,16 @@ currElem = hmr.currElem;
 guiMain = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
-guiMain = GetAxesDataType(guiMain);
-plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
+if get(hObject, 'value')
+    guiMain = GetAxesDataType(guiMain);
+    plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
+else
+    if ishandles(plotprobe.objs.Figure.h)
+        delete(plotprobe.objs.Figure.h);
+    end
+    plotprobe.objs.Figure.h = [];
+end
 
 hmr.plotprobe = plotprobe;
 hmr.guiMain   = guiMain;
+

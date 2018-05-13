@@ -55,6 +55,9 @@ funcArgOut     = procFunc(iFunc).funcArgOut;
 funcArgIn      = procStreamParseArgsIn(funcArgIn);
 funcArgOut     = procStreamParseArgsOut(funcArgOut);
 
+% funcHelpStr is a cell array of strings. The first element of the cell
+% array is the call string (the kind you'd find in proceccOpt.cfg file. 
+% The rest of the strings make up the help text. 
 funcHelpStr    = procFunc(iFunc).funcHelp.strs(2:end);
 
 nParam = length(funcParam);

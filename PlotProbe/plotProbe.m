@@ -141,7 +141,7 @@ else
     set(hFig,'toolbar','figure', 'NumberTitle', 'off', 'name','Plot Probe', ...
        'color',[1 1 1], 'paperpositionmode','auto', 'deletefcn',@PlotProbe_Delete);
     p = get(hFig,'Position');
-    set(hFig, 'Position', [p(1)/2, p(2)/2.2,  p(3)*1.5, p(4)*1.5])
+    set(hFig, 'Position', [p(1)/2, p(2)/2.2,  p(3)*1.3, p(4)*1.3])
 end
 
 

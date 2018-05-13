@@ -1,4 +1,4 @@
-function [procInput filename] = GetProcInputDefaultGroup(group, filename)
+function [procInput, filename] = GetProcInputDefaultGroup(group, filename)
 
 procInput = struct([]); 
 if ~exist('filename','var') || isempty(filename)

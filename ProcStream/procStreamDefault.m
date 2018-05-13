@@ -1,7 +1,7 @@
 function [procFunc, procParam] = procStreamDefault(type)
 
 procParam = struct([]);
-procFunc = repmat(InitProcFunc(),0,3);
+procFunc = repmat(InitProcFunc(),0,1);
 switch(type)
     case 'group'
         [~, filecontents_str] = procStreamDefaultFileGroup();

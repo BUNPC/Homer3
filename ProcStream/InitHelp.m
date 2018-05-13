@@ -1,5 +1,7 @@
 function funcHelp = InitHelp(nParam)
 
+funcHelp.strs = {};
+funcHelp.callstr = '';
 funcHelp.usage = '';
 funcHelp.funcNameUI = '';
 funcHelp.genDescr = '';

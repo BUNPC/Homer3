@@ -1,25 +1,14 @@
-function procFunc = procStreamHelpParse(currElem)
-
-procFunc = currElem.procElem.procInput.procFunc;
-
-calls    = procStreamReg(currElem.procElem);
-helpstrs = procStreamRegHelp(currElem);
-for ii=1:length(calls)
-    procInputReg = procStreamParse(calls{ii}, currElem.procElem);
-    temp.procFunc(ii) = procInputReg.procFunc(1);
-    temp.procFunc(ii).funcHelpStr  = helpstrs{ii};
-end
-procInputReg.procFunc = temp.procFunc;
+function procFunc = procStreamHelpParse(procFuncReg, procFunc)
 
 for iFunc=1:length(procFunc)
-    for jj=1:length(procInputReg.procFunc)
-        if strcmp(procFunc(iFunc).funcName, procInputReg.procFunc(jj).funcName)
+    for jj=1:length(procFuncReg)
+        if strcmp(procFunc(iFunc).funcName, procFuncReg(jj).funcName)
             f1 = procFunc(iFunc);
-            f2 = procInputReg.procFunc(jj);
+            f2 = procFuncReg(jj);
 
             if procStreamFuncMatch(f1,f2)
 
-                procFunc(iFunc).funcHelp = procStreamParseFuncHelp(procInputReg.procFunc, jj);
+                procFunc(iFunc).funcHelp = procStreamParseFuncHelp(procFuncReg, jj);
                 if ~isempty(procFunc(iFunc).funcHelp.funcNameUI)
                     procFunc(iFunc).funcNameUI = procFunc(iFunc).funcHelp.funcNameUI;
                 end

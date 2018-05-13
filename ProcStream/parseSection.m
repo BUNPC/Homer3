@@ -6,7 +6,7 @@ function [procFunc, procParam] = parseSection(C, externVars)
 % funcParamFormat{nFunc}{nParam}, funcParamVal{nFunc}{nParam}()
 
 procParam = struct([]);
-procFunc = repmat(InitProcFunc(),0,3);
+procFunc = repmat(InitProcFunc(),0,1);
 
 nstr = length(C);
 ifunc = 0;

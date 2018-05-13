@@ -66,7 +66,6 @@ if isempty(procFunc)
 end
 
 clf(hObject);
-procFunc = procStreamHelpParse(currElem);
 set(hObject, 'units','characters');
 nfunc = length(procFunc);
 
@@ -108,10 +107,10 @@ ypos = ysize_tot-5;
 for iFunc = 1:nfunc
     
     % Draw function name
-    xsize = length(procFunc(iFunc).funcNameUI);
+    xsize = length(procFunc(iFunc).funcName);
     xsize = xsize+(5-mod(xsize,5));
     h_fname = uicontrol(hObject, 'style','text', 'units','characters', 'position',[2 ypos xsize 1],...
-                        'string',procFunc(iFunc).funcNameUI);
+                        'string',procFunc(iFunc).funcName);
     set(h_fname,'backgroundcolor',[1 1 1], 'units','normalized');
     set(h_fname, 'horizontalalignment','left');
     set(h_fname, 'tooltipstring',procFunc(iFunc).funcHelp.genDescr);

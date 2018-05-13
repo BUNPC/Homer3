@@ -9,7 +9,7 @@ procFunc.nFuncParamVar   = 0;
 procFunc.funcParam       = {};
 procFunc.funcParamFormat = {};
 procFunc.funcParamVal    = {};
-procFunc.funcHelpStr     = '';
+procFunc.funcHelp        = InitHelp(0);
 
 
 

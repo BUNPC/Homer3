@@ -17,6 +17,7 @@ end
 
 switch(procElem.type)
 case 'group'
+    
     % generate default contents for group section if there's no % group header. 
     % This can happen if homer2-style config file was read    
     if isempty(G) | ~strcmpi(deblank([G{1},G{2}]), '%group')
@@ -26,7 +27,9 @@ case 'group'
 	end
     procInput = InitProcInputGroup();    
     [procInput.procFunc, procInput.procParam] = parseSection(G, procElem);
+    
 case 'subj'
+    
     % generate default contents for subject section if scanned contents is
     % from a file and there's no % subj header. This can happen if
     % homer2-style config file was loaded
@@ -37,10 +40,13 @@ case 'subj'
     end
     procInput = InitProcInputSubj();
     [procInput.procFunc, procInput.procParam] = parseSection(S, procElem);
+    
 case 'run'
+    
     procInput = InitProcInputRun();
     [procInput.procFunc, procInput.procParam] = parseSection(R, procElem);
+    
 end
 
-
-
+procElem.procInput = procInput;
+procInput.procFunc = procStreamSetHelp(procElem);

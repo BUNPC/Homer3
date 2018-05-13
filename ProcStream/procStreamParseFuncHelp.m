@@ -48,13 +48,14 @@ function funcHelp = procStreamParseFuncHelp(procFunc, iFunc)
 %
 
 funcName       = procFunc(iFunc).funcName;
-funcHelpStr    = procFunc(iFunc).funcHelpStr;
 funcParam      = procFunc(iFunc).funcParam;
 funcArgIn      = procFunc(iFunc).funcArgIn;
 funcArgOut     = procFunc(iFunc).funcArgOut;
 
-funcArgIn = procStreamParseArgsIn(funcArgIn);
-funcArgOut = procStreamParseArgsOut(funcArgOut);
+funcArgIn      = procStreamParseArgsIn(funcArgIn);
+funcArgOut     = procStreamParseArgsOut(funcArgOut);
+
+funcHelpStr    = procFunc(iFunc).funcHelp.strs(2:end);
 
 nParam = length(funcParam);
 nArgIn = length(funcArgIn);

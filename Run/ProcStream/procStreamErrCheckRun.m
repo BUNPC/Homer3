@@ -9,9 +9,9 @@ if isempty(procFunc)
 end
 
 % Build func database of registered functions
-procStreamRegStr = procStreamReg(run);
-for ii=1:length(procStreamRegStr)
-    procInputReg = procStreamParse(procStreamRegStr{ii}, run);
+reg = procStreamReg(run);
+for ii=1:length(reg)
+    procInputReg = procStreamParse(reg{ii}{1}, run);
     procFuncReg(ii) = procInputReg.procFunc(1);
     fields = fieldnames(procInputReg.procParam);
     for jj=1:length(fields)

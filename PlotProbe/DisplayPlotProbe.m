@@ -1,5 +1,13 @@
 function plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain)
 
+if ~plotprobe.active
+    if ishandles(plotprobe.objs.Figure.h)
+        delete(plotprobe.objs.Figure.h);
+    end
+    plotprobe.objs.Figure.h = [];
+    return;    
+end
+
 axScl       = plotprobe.axScl;
 tMarkInt    = plotprobe.tMarkInt;
 tMarkAmp    = plotprobe.tMarkAmp;
@@ -21,8 +29,6 @@ hbType      = guiMain.hbType;
 buttonVals  = guiMain.buttonVals;
 sclConc     = guiMain.sclConc;        % convert Conc from Molar to uMolar
 showStdErr  = guiMain.showStdErr;
-
-
 
 
 if currElem.procType==1

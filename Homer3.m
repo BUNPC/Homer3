@@ -141,8 +141,8 @@ hmr.guiMain  = guiMain;
 
 % Display data from currently selected processing element
 DisplayCurrElem(currElem, guiMain);
-hmr.plotprobe = PlotProbe_Init();
 
+hmr.plotprobe = PlotProbe_Init(handles);
 
 
 
@@ -640,15 +640,9 @@ currElem = hmr.currElem;
 guiMain = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
-if get(hObject, 'value')
-    guiMain = GetAxesDataType(guiMain);
-    plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
-else
-    if ishandles(plotprobe.objs.Figure.h)
-        delete(plotprobe.objs.Figure.h);
-    end
-    plotprobe.objs.Figure.h = [];
-end
+guiMain = GetAxesDataType(guiMain);
+plotprobe.active = get(hObject, 'value');
+plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
 hmr.plotprobe = plotprobe;
 hmr.guiMain   = guiMain;

@@ -1,4 +1,4 @@
-function plotprobe = PlotProbe_Init()
+function plotprobe = PlotProbe_Init(handles)
 
 plotprobe = [];
 
@@ -13,6 +13,12 @@ plotprobe.tMarkShow = 0;
 plotprobe.hidMeasShow = 0;
 plotprobe.plotCondition_run = 1;
 plotprobe.plotCondition = 1;
+
+if exist('handles','var')
+    plotprobe.active = get(handles.checkboxPlotProbe, 'value');
+else
+    plotprobe.active = 0;
+end
 
 
 plotprobe.objs.Data.h = [];

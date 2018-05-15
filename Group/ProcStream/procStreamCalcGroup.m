@@ -1,6 +1,6 @@
 function procResult = procStreamCalcGroup(group, hListboxFiles, listboxFilesFuncPtr)
 
-procResult = InitProcResultGroup();
+procResult = InitProcResult();
 
 % Calculate all runs in this session
 subjs = group.subjs;

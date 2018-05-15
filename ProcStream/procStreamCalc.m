@@ -1,13 +1,6 @@
 
 % Initialize output struct
-if strcmpi(procElem.type,'group')
-    procResult = InitProcResultGroup();
-elseif strcmpi(procElem.type,'subj')
-    procResult = InitProcResultSubj();
-elseif strcmpi(procElem.type,'run')
-    procResult = InitProcResultRun();
-end
-
+procResult = InitProcResult();
 procInput = procElem.procInput;
 
 % loop over functions

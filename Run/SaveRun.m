@@ -26,7 +26,7 @@ if ~strcmp(mode, 'none')
 	paramsLst{iP} = 'procResult';
 	iP=iP+1;
 else
-    run.procResult = InitProcResultRun();
+    run.procResult = InitProcResult();
 end
 
 if strcmpi(mode, 'savetodisk') || strcmpi(mode, 'saveuseredits')

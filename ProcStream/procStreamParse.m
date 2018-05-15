@@ -5,7 +5,7 @@ function [procInput, err, errstr] = procStreamParse(fid_or_str, procElem)
 % group, subj and run processing stream parameters
 %
 
-procInput = [];
+procInput = InitProcInput();
 err=0;
 errstr='';
 
@@ -25,7 +25,6 @@ case 'group'
         foo = textscan(str, '%s');
         G = foo{1};
 	end
-    procInput = InitProcInputGroup();    
     [procInput.procFunc, procInput.procParam] = parseSection(G, procElem);
     
 case 'subj'
@@ -38,12 +37,10 @@ case 'subj'
         foo = textscan(str, '%s');
         S = foo{1};
     end
-    procInput = InitProcInputSubj();
     [procInput.procFunc, procInput.procParam] = parseSection(S, procElem);
     
 case 'run'
     
-    procInput = InitProcInputRun();
     [procInput.procFunc, procInput.procParam] = parseSection(R, procElem);
     
 end

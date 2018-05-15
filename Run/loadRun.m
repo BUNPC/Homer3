@@ -139,7 +139,7 @@ if exist('procInput','var') && ismember('procInput', paramsLst)
         run.procInput = procInput;
     end
 elseif (ismember('procInput', paramsLst) && ~exist('procInput','var')) || ~isfield(run, 'procInput')
-    run.procInput = InitProcInputRun();
+    run.procInput = InitProcInput();
 end
    
 if exist('procResult','var') && ismember('procResult', paramsLst)
@@ -149,7 +149,7 @@ if exist('procResult','var') && ismember('procResult', paramsLst)
         run.procResult = procResult;
     end
 elseif (ismember('procResult', paramsLst) && ~exist('procResult','var')) || ~isfield(run, 'procResult')
-    run.procResult = InitProcResultRun();
+    run.procResult = InitProcResult();
 end
 
 warning('on', 'MATLAB:load:variableNotFound');

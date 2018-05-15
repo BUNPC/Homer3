@@ -1,6 +1,7 @@
 function PlotProbe_DeleteFcn(hObject,eventdata,handles)
-global plotprobe
 global hmr
+
+plotprobe = hmr.plotprobe;
 
 plotprobe.objs.Data.h = [];
 
@@ -15,4 +16,6 @@ plotprobe.objs.BttnHidMeas.h = [];
 plotprobe.objs.SclPanel.h = [];
 
 plotprobe.objs.TmarkPanel.h = [];
+
+hmr.plotprobe = plotprobe;
 

@@ -1,8 +1,6 @@
-function procFunc = procStreamSetHelp(procElem)
+function procFunc = procStreamSetHelp(procFunc)
 
-procFunc = procElem.procInput.procFunc;
-procFuncR = repmat(InitProcFunc(),0,1);
-
-procFuncR = procStreamReg2ProcFunc(procElem);
-procFunc = procStreamHelpParse(procFuncR, procFunc);
+for ii=1:length(procFunc)
+    procFunc(ii).funcHelp = procStreamParseFuncHelp(procFunc(ii));
+end
 

@@ -47,5 +47,5 @@ end
 
 % Lastly set the funcHelp field values for all procFunc functions. 
 procElem.procInput = procInput;
-procInput.procFunc = procStreamSetHelp(procElem);
+procInput.procFunc = procStreamSetHelp(procInput.procFunc);
 

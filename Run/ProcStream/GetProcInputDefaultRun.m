@@ -38,8 +38,7 @@ while ~all(~err1) || ~all(~err2)
         
         err1=0;
     
-    end
-    
+    end    
 
     % Check loaded procInput for syntax and semantic errors
     if procStreamIsEmpty(procInput) && err1==0
@@ -48,7 +47,7 @@ while ~all(~err1) || ~all(~err2)
         ch = menu('Syntax error in config file.','Okay');
     end
 
-    [err2, iReg, procInputReg] = procStreamErrCheckRun(procInput, run);
+    [err2, iReg] = procStreamErrCheck(procInput);
     if ~all(~err2)
         i=find(err2==1);
         str1 = 'Error in functions\n\n';
@@ -60,18 +59,18 @@ while ~all(~err1) || ~all(~err2)
         str1 = strcat(str1,'Do you want to keep current proc stream or load another file?...');
         ch = menu(sprintf(str1), 'Fix and load this config file','Create and use default config','Cancel');
         if ch==1
-            [procInput, err2] = procStreamFixErr(err2, procInput, run, iReg, procInputReg);            
+            [procInput, err2] = procStreamFixErr(err2, procInput, iReg);            
         elseif ch==2
             filename = './processOpt_default.cfg';
             procStreamFileGen(filename);
             fid = fopen(filename,'r');
-            procInput = procStreamParseRun(fid, run);
+            procInput = procStreamParse(fid, run);
             fclose(fid);
             break;
         elseif ch==3
             return;
         end
     end
-    filename = [];
+    filename = '';
 end
 

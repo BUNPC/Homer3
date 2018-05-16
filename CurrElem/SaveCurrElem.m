@@ -1,7 +1,7 @@
 function group = SaveCurrElem(currElem, group, duration, varargin)
 
 if ~exist('duration','var') | isempty(duration)
-    duration = 'permanent';
+    duration = 'non-permanent';
 end
 
 iRun  =  currElem.iRun;

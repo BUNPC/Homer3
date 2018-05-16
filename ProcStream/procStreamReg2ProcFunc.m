@@ -1,4 +1,14 @@
-function [procFunc, reg] = procStreamReg2ProcFunc(type)
+function [procFunc, reg] = procStreamReg2ProcFunc(varargin)
+
+if nargin>0
+    if isstruct(varargin{1})
+        type = varargin{1}.type;
+    elseif ischar(varargin{1})
+        type = varargin{1};
+    end    
+else
+    type = '';
+end
 
 procFunc = InitProcFunc();
 reg      = procStreamReg(type);

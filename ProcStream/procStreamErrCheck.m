@@ -1,15 +1,15 @@
-function [errflags, iReg, procInputReg] = procStreamErrCheckRun(procInput, run)
+function [errflags, iReg] = procStreamErrCheck(procInput)
 
 errflags = [];
 iReg     = [];
-procInputReg = [];
+
 procFunc = procInput.procFunc;
 if isempty(procFunc)
     return
 end
 
 % Build func database of registered functions
-procFuncReg = procStreamReg2ProcFunc(run);
+procFuncReg = procStreamReg2ProcFunc();
 
 % Search for procFun functions in procFuncStrReg
 errflags = ones(length(procFunc),1);

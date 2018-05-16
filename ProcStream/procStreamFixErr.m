@@ -1,4 +1,6 @@
-function [procInput, err] = procStreamFixErr(err, procInput, procElem, iReg, procInputReg)
+function [procInput, err] = procStreamFixErr(err, procInput, iReg)
+
+procFuncReg = procStreamReg2ProcFunc();
 
 i=find(err==1);
 for jj=length(i):-1:1
@@ -6,7 +8,7 @@ for jj=length(i):-1:1
     % If function exists in registry, replace the bad or outdated version with
     % the current version of this function from the registry
     if iReg(i(jj))~=0
-        procInput.procFunc(i(jj)) = procInputReg.procFunc(iReg(i(jj)));               
+        procInput.procFunc(i(jj)) = procFuncReg(iReg(i(jj)));               
         for p=1:length(procInput.procFunc(i(jj)).funcParam)
             assignmentStr = sprintf('procInput.procParam.%s_%s = [%s];', ...
                                     procInput.procFunc(i(jj)).funcName,...
@@ -29,12 +31,4 @@ for jj=length(i):-1:1
 end
 
 
-switch(procElem.type)
-    case 'group'
-        err = procStreamErrCheckGroup(procElem.procInput);
-    case 'subj'
-        err = procStreamErrCheckSubj(procElem.procInput);
-    case 'run'
-        err = procStreamErrCheckRun(procElem.procInput);
-end
-
+err = procStreamErrCheck(procInput);

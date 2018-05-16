@@ -85,6 +85,8 @@ hmr.group    = [];
 hmr.currElem = [];
 hmr.guiMain             = [];
 
+set(hObject, 'units', 'normalized', 'position',[.25, .20, .65, .75])
+
 % Choose default command line output for Homer3
 handles.output = hObject;
 guidata(hObject, handles);
@@ -646,4 +648,10 @@ plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
 hmr.plotprobe = plotprobe;
 hmr.guiMain   = guiMain;
+
+
+% --------------------------------------------------------------------
+function menuItemProcStreamEdit_Callback(hObject, eventdata, handles)
+
+procStreamGUI();
 

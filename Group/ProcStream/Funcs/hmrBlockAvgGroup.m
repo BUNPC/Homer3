@@ -1,4 +1,31 @@
 function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrBlockAvgGroup(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondGroup2Subj, tRange, thresh)
+% [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrBlockAvgGroup(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondGroup2Subj, tRange, thresh)
+%
+% UI NAME:
+% Block_Average_Group
+%
+%
+% Calculate the block average for all subjects, for all common stimuli accross subjects
+% over the time range trange. 
+%
+% INPUTS:
+% yAvgSubjs:
+% yAvgStdSubjs:
+% tHRFSubjs: 
+% SDSubjs:
+% nTrialsSubjs:
+% CondGroup2Subj: 
+% trange: Defines the range for the block average
+% thresh: Threshold for excluding channels if it's data deviates too much
+%         from mean 
+%
+% OUTPUTS:
+% yavg: the averaged results
+% yAvgStd: the standard deviation across trials
+% tHRF: the time vector
+% nTrials: the number of trials averaged for each condition across all
+%          subjects
+% grpAvgPass:
 
 subjCh = [];
 nStim = 0;

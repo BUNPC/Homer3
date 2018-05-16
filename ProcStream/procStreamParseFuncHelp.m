@@ -1,4 +1,4 @@
-function funcHelp = procStreamParseFuncHelp(procFunc, iFunc)
+function funcHelp = procStreamParseFuncHelp(procFunc)
 
 % This function parses the help of a proc stream function 
 % into a help structure. The following is the help format 
@@ -47,10 +47,10 @@ function funcHelp = procStreamParseFuncHelp(procFunc, iFunc)
 % used for the generic function description.
 %
 
-funcName       = procFunc(iFunc).funcName;
-funcParam      = procFunc(iFunc).funcParam;
-funcArgIn      = procFunc(iFunc).funcArgIn;
-funcArgOut     = procFunc(iFunc).funcArgOut;
+funcName       = procFunc.funcName;
+funcParam      = procFunc.funcParam;
+funcArgIn      = procFunc.funcArgIn;
+funcArgOut     = procFunc.funcArgOut;
 
 funcArgIn      = procStreamParseArgsIn(funcArgIn);
 funcArgOut     = procStreamParseArgsOut(funcArgOut);
@@ -58,7 +58,7 @@ funcArgOut     = procStreamParseArgsOut(funcArgOut);
 % funcHelpStr is a cell array of strings. The first element of the cell
 % array is the call string (the kind you'd find in proceccOpt.cfg file. 
 % The rest of the strings make up the help text. 
-funcHelpStr    = procFunc(iFunc).funcHelp.strs(2:end);
+funcHelpStr    = str2cell(help(funcName));
 
 nParam = length(funcParam);
 nArgIn = length(funcArgIn);
@@ -75,6 +75,8 @@ argOutDescrLines = [0,0];
 logDescrLines = [0,0];
 toDoDescrLines = [0,0];
 
+
+% Find the lines in the help string that belong to each funcHelp field
 for iLine=1:length(funcHelpStr)
     if isempty(funcHelpStr{iLine})
         continue;
@@ -157,6 +159,9 @@ for iLine=1:length(funcHelpStr)
     end
 end
 
+
+% Now that we have the lines associated with each help section, assign the
+% lines to corresponding funcHelp fields. 
 for iLine = nameLines(1):nameLines(2)
     if iLine < 1 || isempty(funcHelpStr{iLine})
         continue;

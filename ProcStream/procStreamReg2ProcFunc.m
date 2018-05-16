@@ -4,11 +4,10 @@ procFunc = InitProcFunc();
 reg      = procStreamReg(type);
 
 for ii=1:length(reg)
-    S = textscan(reg{ii}{1}, '%s');
-    procFunc(ii) = parseSection(S{1}, type);
-    procFunc(ii).funcHelp.strs = reg{ii};   
+    S = textscan(reg{ii}, '%s');
+    procFunc(ii) = parseSection(S{1}, type);    
+    procFunc(ii).funcHelp = procStreamParseFuncHelp(procFunc(ii));
 end
-
 
 
 % -------------------------------------------------------------------

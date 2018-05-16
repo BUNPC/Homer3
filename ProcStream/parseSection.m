@@ -34,7 +34,7 @@ for ii=1:nstr
             flag = 3;
         else
             if(C{ii} == '*')
-                if exist('externVars','var') & ~isempty(externVars)
+                if exist('externVars','var') & ~isempty(externVars) & isstruct(externVars)
                     % We're about to call the function to find out it's parameter list. 
                     % Before calling it we need to get the input arguments from the 
                     % external variables list.

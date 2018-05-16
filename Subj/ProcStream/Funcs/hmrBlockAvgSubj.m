@@ -1,5 +1,31 @@
-function [yAvg yAvgStd tHRF nTrials] = hmrBlockAvgSubj(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondSubj2Run)
-
+function [yAvg, yAvgStd, tHRF, nTrials] = hmrBlockAvgSubj(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondSubj2Run)
+% [yAvg, yAvgStd, tHRF, nTrials] = hmrBlockAvgSubj(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondSubj2Run)
+%
+% UI NAME:
+% Block_Average_Subjs
+%
+%
+% Calculate the block average for all subjects, for all common stimuli
+% accross runs over the time range trange. 
+%
+% INPUTS:
+% yAvgRuns:
+% yAvgStdRuns:
+% tHRFRuns: 
+% SDRuns:
+% nTrialsRuns:
+% CondSubj2Run: 
+% trange: defines the range for the block average
+% thresh: Threshold for excluding channels if it's data deviates too much
+%         from mean 
+%
+% OUTPUTS:
+% yavg: the averaged results
+% yAvgStd: the standard deviation across trials
+% tHRF: the time vector
+% nTrials: the number of trials averaged for each condition across all runs
+%
+%
 
 yAvg = [];
 yAvgStd = [];

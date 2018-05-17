@@ -23,8 +23,8 @@ end
 function procStreamGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
 global hmr
-global currIdx
-currIdx = [];
+global iReg
+iReg = [];
 
 % Choose default command line output for procStreamGUI
 handles.output = hObject;
@@ -119,22 +119,22 @@ set(handles.textHelp,'string',foos);
 
 % -------------------------------------------------------------
 function pushbuttonAddFunc_Callback(hObject, eventdata, handles)
-global currIdx
+global iReg
 
 iFunc = get(handles.listboxFunctions,'value');
 iPS = get(handles.listboxPSFunc,'value');
 
-n = length(currIdx);
+n = length(iReg);
 if n>0
-    currIdxTmp(1:iPS) = currIdx(1:iPS);
-    currIdxTmp(iPS+1) = iFunc;
-    currIdxTmp((iPS+2):(n+1)) = currIdx((iPS+1):n);
+    iRegTmp(1:iPS) = iReg(1:iPS);
+    iRegTmp(iPS+1) = iFunc;
+    iRegTmp((iPS+2):(n+1)) = iReg((iPS+1):n);
     iPS2 = iPS+1;
 else
-    currIdxTmp(1) = iFunc;
+    iRegTmp(1) = iFunc;
     iPS2 = 1;
 end
-currIdx = currIdxTmp;
+iReg = iRegTmp;
 
 updateProcStreamList(handles,iPS2);
 
@@ -143,9 +143,9 @@ updateProcStreamList(handles,iPS2);
 
 % -------------------------------------------------------------
 function pushbuttonDeleteFunc_Callback(hObject, eventdata, handles)
-global currIdx
+global iReg
 
-n = length(currIdx);
+n = length(iReg);
 if n<1
     return
 end
@@ -153,14 +153,14 @@ end
 iPS = get(handles.listboxPSFunc,'value');
 
 if n>1
-    currIdxTmp = currIdx;
-    currIdxTmp(iPS) = [];
+    iRegTmp = iReg;
+    iRegTmp(iPS) = [];
     iPS2 = max(iPS-1,1);
 else
-    currIdxTmp = [];
+    iRegTmp = [];
     iPS2 = 1;
 end
-currIdx = currIdxTmp;
+iReg = iRegTmp;
 
 updateProcStreamList(handles,iPS2);
 
@@ -169,7 +169,7 @@ updateProcStreamList(handles,iPS2);
 
 % -------------------------------------------------------------
 function pushbuttonMoveUp_Callback(hObject, eventdata, handles)
-global currIdx
+global iReg
 
 iPS = get(handles.listboxPSFunc,'value');
 
@@ -181,29 +181,29 @@ FArgOut = get(handles.listboxFuncArgOut,'string');
 FArgIn = get(handles.listboxFuncArgIn,'string');
 FFunc = get(handles.listboxFunctions,'string');
 
-currIdxTmp = currIdx;
-currIdxTmp([iPS-1 iPS]) = currIdx([iPS iPS-1]);
+iRegTmp = iReg;
+iRegTmp([iPS-1 iPS]) = iReg([iPS iPS-1]);
 iPS2 = max(iPS-1,1);
-currIdx = currIdxTmp;
+iReg = iRegTmp;
 
 updateProcStreamList(handles,iPS2);
 
 
 % -------------------------------------------------------------
 function pushbuttonMoveDown_Callback(hObject, eventdata, handles)
-global currIdx
+global iReg
 
 iPS = get(handles.listboxPSFunc,'value');
-n = length(currIdx);
+n = length(iReg);
 
 if iPS == n
     return
 end
 
-currIdxTmp = currIdx;
-currIdxTmp([iPS iPS+1]) = currIdx([iPS+1 iPS]);
+iRegTmp = iReg;
+iRegTmp([iPS iPS+1]) = iReg([iPS+1 iPS]);
 iPS2 = iPS+1;
-currIdx = currIdxTmp;
+iReg = iRegTmp;
 
 updateProcStreamList(handles,iPS2);
 
@@ -211,9 +211,9 @@ updateProcStreamList(handles,iPS2);
 
 % -------------------------------------------------------------
 function updateProcStreamList(handles,idx)
-global currIdx
+global iReg
 
-n = length(currIdx);
+n = length(iReg);
 FArgOut = get(handles.listboxFuncArgOut,'string');
 FArgIn = get(handles.listboxFuncArgIn,'string');
 FFunc = get(handles.listboxFunctions,'string');
@@ -221,21 +221,21 @@ FFunc = get(handles.listboxFunctions,'string');
 
 foos = [];
 for ii = 1:n
-    foos{ii} = FArgOut{currIdx(ii)};
+    foos{ii} = FArgOut{iReg(ii)};
 end
 set(handles.listboxPSArgOut,'string',foos)
 set(handles.listboxPSArgOut,'value',idx)
 
 foos = [];
 for ii = 1:n
-    foos{ii} = FArgIn{currIdx(ii)};
+    foos{ii} = FArgIn{iReg(ii)};
 end
 set(handles.listboxPSArgIn,'string',foos)
 set(handles.listboxPSArgIn,'value',idx)
 
 foos = [];
 for ii = 1:n
-    foos{ii} = FFunc{currIdx(ii)};
+    foos{ii} = FFunc{iReg(ii)};
 end
 set(handles.listboxPSFunc,'string',foos)
 set(handles.listboxPSFunc,'value',idx)
@@ -281,31 +281,28 @@ set(handles.textHelp,'string',foos);
 
 % -------------------------------------------------------------
 function pushbuttonSave_Callback(hObject, eventdata, handles)
-global currIdx
+global iReg
 global hmr
 
+procElem = hmr.currElem.procElem;
+group = hmr.group;
+
 % Build func database of registered functions
-funcStr=procStreamReg();
-foos='';
-for ii=1:length(funcStr)
-    foos = sprintf('%s%s\n',foos,funcStr{ii});
-end
-procInputReg = parseProcessOpt( foos, hmr );
-procFunc = procInputReg.procFunc(currIdx);
+procFuncReg = procStreamReg2ProcFunc(procElem);
+procFunc = procFuncReg(iReg);
 
 ch = menu('Save to current processing stream or config file?','Current processing stream','Config file');
 if ch==1
     procParam=[];
     for iFunc = 1:length(procFunc)
         for iParam=1:length(procFunc(iFunc).funcParam)
-                eval( sprintf('procParam(1).%s_%s = procFunc.funcParamVal{iFunc}{iParam};',...
-                              procFunc(iFunc).funcName, procFunc.funcParam{iParam}) );
+                eval( sprintf('procParam.%s_%s = procFunc(iFunc).funcParamVal{iParam};',...
+                              procFunc(iFunc).funcName, procFunc(iFunc).funcParam{iParam}) );
         end
     end
-    procInput.procFunc = procFunc;
-    procInput.procParam = procParam;
-    EasyNIRS_ProcessOpt_Init(procInput);
-    EasyNIRS_CopyOptions();
+    procElem.procInput.procFunc = procFunc;
+    procElem.procInput.procParam = procParam;    
+    group = CopyProcInput(group, procElem);
 else
     [filenm,pathnm] = uiputfile( '*.cfg','Save Config File');
     if filenm==0
@@ -314,8 +311,7 @@ else
     procStreamSave([pathnm filenm],procFunc);
 end
 
-
-
+hmr.group = group;
 
 
 % -------------------------------------------------------------
@@ -330,16 +326,17 @@ set(handles.textHelp,'string',foos);
 
 % -------------------------------------------------------------
 function pushbuttonLoad_Callback(hObject, eventdata, handles)
-global currIdx
+global iReg
+global hmr
+
+procElem = hmr.currElem.procElem;
 
 ch = menu('Load current processing stream or config file?','Current processing stream','Config file','Cancel');
 if ch==3
-    return
+    return;
 end
-if ch==1
-    global hmr
-    procInput = hmr.procInput;
-else
+
+if ch==2
     [filename,pathname] = uigetfile( '*.cfg', 'Process Options Config File');
     if filename == 0
         return;
@@ -347,24 +344,27 @@ else
 
     % load cfg file
     fid = fopen([pathname filename],'r');
-    [procInput err] = parseProcessOpt(fid);
+    [procElem.procInput, ~] = procStreamParse(fid, procElem);
     fclose(fid);
 end
 
 % Search for procFun functions in procStreamReg
-[err currIdx procInputReg] = EasyNIRS_ProcessOpt_ErrorCheck(procInput.procFunc,{});
-if ~all(~err)
-    i=find(err==1);
-    str1 = 'Error in saved procInput functions\n\n';
+[err2, iReg] = procStreamErrCheck(procElem);
+if ~all(~err2)
+    i=find(err2==1);
+    str1 = 'Error in functions\n\n';
     for j=1:length(i)
-        str2 = sprintf('%s%s',procInput.procFunc.funcName{i(j)},'\n');
+        str2 = sprintf('%s%s', procElem.procInput.procFunc(i(j)).funcName,'\n');
         str1 = strcat(str1,str2);
     end
     str1 = strcat(str1,'\n');
-    str1 = strcat(str1,'Will remove or replace these functions with with updated versions...');
-    ch = menu( sprintf(str1), 'OK');
-    procInput = fixProcStreamErr(err, procInput, currIdx, procInputReg);
+    str1 = strcat(str1,'Do you want to keep current proc stream or load another file?...');
+    ch = menu(sprintf(str1), 'Fix and load this config file','Create and use default config','Cancel');
+    if ch==1
+        [procElem.procInput, err2] = procStreamFixErr(err2, procElem.procInput, iReg);
+    end
 end
+
 updateProcStreamList(handles,1);
 
 

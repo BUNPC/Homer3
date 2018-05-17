@@ -1,4 +1,17 @@
-function [errflags, iReg] = procStreamErrCheck(procInput)
+function [errflags, iReg] = procStreamErrCheck(argIn)
+
+procInput = InitProcInput();
+if isfield(argIn, 'procElem')
+    type = argIn.procElem.type;
+    procInput = argIn.procElem.procInput;
+elseif isfield(argIn, 'procInput')
+    type = argIn.type;
+    procInput = argIn.procInput;
+elseif isfield(argIn, 'procFunc')
+    type = '';
+    procInput = argIn;
+end
+
 
 errflags = [];
 iReg     = [];
@@ -9,7 +22,7 @@ if isempty(procFunc)
 end
 
 % Build func database of registered functions
-procFuncReg = procStreamReg2ProcFunc();
+procFuncReg = procStreamReg2ProcFunc(type);
 
 % Search for procFun functions in procFuncStrReg
 errflags = ones(length(procFunc),1);

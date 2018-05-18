@@ -1,13 +1,18 @@
-function group = CopyProcInput(group, argIn)
+function group = CopyProcInput(group, varargin)
 
 procInput = InitProcInput();
 
-if isfield(argIn, 'procElem')
-    type = argIn.procElem.type;
-    procInput = argIn.procElem.procInput;
-elseif isfield(argIn, 'procInput')
-    type = argIn.type;
-    procInput = argIn.procInput;
+if nargin==2
+    if isfield(varargin{1}, 'procElem')
+        type = varargin{1}.procElem.type;
+        procInput = varargin{1}.procElem.procInput;
+    elseif isfield(varargin{1}, 'procInput')
+        type = varargin{1}.type;
+        procInput = varargin{1}.procInput;
+    end
+elseif nargin==3
+    type = varargin{1};
+    procInput = varargin{2};
 end
 
 switch(type)

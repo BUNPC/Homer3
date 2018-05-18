@@ -288,7 +288,7 @@ procElem = hmr.currElem.procElem;
 group = hmr.group;
 
 % Build func database of registered functions
-procFuncReg = procStreamReg2ProcFunc(procElem);
+procFuncReg = procStreamReg2ProcFunc(procElem.type);
 procFunc = procFuncReg(iReg);
 
 ch = menu('Save to current processing stream or config file?','Current processing stream','Config file');
@@ -302,7 +302,7 @@ if ch==1
     end
     procElem.procInput.procFunc = procFunc;
     procElem.procInput.procParam = procParam;    
-    group = CopyProcInput(group, procElem);
+    group = CopyProcInput(group, procElem.type, procElem.procInput);
 else
     [filenm,pathnm] = uiputfile( '*.cfg','Save Config File');
     if filenm==0
@@ -344,12 +344,12 @@ if ch==2
 
     % load cfg file
     fid = fopen([pathname filename],'r');
-    [procElem.procInput, ~] = procStreamParse(fid, procElem);
+    [procElem.procInput, ~] = procStreamParse(fid, procElem.type);
     fclose(fid);
 end
 
 % Search for procFun functions in procStreamReg
-[err2, iReg] = procStreamErrCheck(procElem);
+[err2, iReg] = procStreamErrCheck(procElem.type, procElem.procInput);
 if ~all(~err2)
     i=find(err2==1);
     str1 = 'Error in functions\n\n';
@@ -376,7 +376,7 @@ global hmr;
 
 procElem = hmr.currElem.procElem;
 
-procFunc = procStreamReg2ProcFunc(procElem);
+procFunc = procStreamReg2ProcFunc(procElem.type);
 helpstr = procStreamGenerateHelpStr(procFunc(iFunc).funcHelp);
 
 
@@ -390,7 +390,7 @@ procElem = hmr.currElem.procElem;
 
 helpstr = '';
 
-procFunc = procStreamReg2ProcFunc(procElem);
+procFunc = procStreamReg2ProcFunc(procElem.type);
 match=0;
 for ii=1:length(procFunc)
     if strcmp(funcName, procFunc(ii).funcName)

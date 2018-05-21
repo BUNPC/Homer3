@@ -10,9 +10,7 @@ else
     type = '';
 end
 
-procFunc = InitProcFunc();
 reg      = procStreamReg(type);
-
 for ii=1:length(reg)
     S = textscan(reg{ii}, '%s');
     procFunc(ii) = parseSection(S{1}, type);    

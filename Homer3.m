@@ -554,7 +554,7 @@ files = hmr.files;
 group = hmr.group;
 currElem = hmr.currElem;
 
-% Reload curren element selection
+% Reload current element selection
 currElem = LoadCurrElem(currElem, group, files);
 currElem = OpenCurrElemProcStreamOptionsGUI(currElem,'close');
 

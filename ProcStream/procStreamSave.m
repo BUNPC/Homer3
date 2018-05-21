@@ -1,36 +1,44 @@
-function procStreamSave(filenm,procFunc)
+function procStreamSave(filenm, procElem)
 
 
 fid = fopen(filenm,'w');
+for iPanel=1:length(procElem)
 
-for iFunc=1:length(procFunc)
-    fprintf( fid, '@ %s %s %s',...
-        procFunc(iFunc).funcName, procFunc(iFunc).funcArgOut, ...
-        procFunc(iFunc).funcArgIn );
-    for iParam=1:procFunc(iFunc).nFuncParam
-        fprintf( fid,' %s', procFunc(iFunc).funcParam{iParam} );
+    fprintf( fid, '%% %s\n', procElem{iPanel}.type );    
+    procFunc = procElem{iPanel}.procInput.procFunc;
+    for iFunc=1:length(procFunc)
 
-        foos = procFunc(iFunc).funcParamFormat{iParam};
-        boos = sprintf( foos, procFunc(iFunc).funcParamVal{iParam} );
-        for ii=1:length(foos)
-            if foos(ii)==' '
-                foos(ii) = '_';
+        fprintf( fid, '@ %s %s %s',...
+            procFunc(iFunc).funcName, procFunc(iFunc).funcArgOut, ...
+            procFunc(iFunc).funcArgIn );
+        for iParam=1:procFunc(iFunc).nFuncParam
+            fprintf( fid,' %s', procFunc(iFunc).funcParam{iParam} );
+            
+            foos = procFunc(iFunc).funcParamFormat{iParam};
+            boos = sprintf( foos, procFunc(iFunc).funcParamVal{iParam} );
+            for ii=1:length(foos)
+                if foos(ii)==' '
+                    foos(ii) = '_';
+                end
+            end
+            for ii=1:length(boos)
+                if boos(ii)==' '
+                    boos(ii) = '_';
+                end
+            end
+            if ~strcmp(procFunc(iFunc).funcParam{iParam},'*')
+                fprintf( fid,' %s %s', foos, boos );
             end
         end
-        for ii=1:length(boos)
-            if boos(ii)==' '
-                boos(ii) = '_';
-            end
+        if procFunc(iFunc).nFuncParamVar>0
+            fprintf( fid,' *');
         end
-        if ~strcmp(procFunc(iFunc).funcParam{iParam},'*')
-            fprintf( fid,' %s %s', foos, boos );        
-        end
+        
+        fprintf( fid, '\n' );
+        
     end
-    if procFunc(iFunc).nFuncParamVar>0
-        fprintf( fid,' *');
-    end
-
     fprintf( fid, '\n' );
+    
 end
 
 fclose(fid);

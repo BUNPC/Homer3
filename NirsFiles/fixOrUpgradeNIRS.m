@@ -130,6 +130,29 @@ for iF=1:nFiles
             end
             
             
+            % Error handling for SD_Lambda
+            if err(iF).SD_Lambda~=0
+                load(files(iF).name,'-mat','SD');
+                                               
+                if bitand(err(iF).SD_Lambda,1)
+                    q = menu('Wavelengths missing from file. Do you want to enter it here?','YES','Cancel');
+                    if q==1
+                        name = 'Enter missing wavelengths:';
+                        vals = inputdlg({'wavelength 1','wavelength 1'}, name, [1, length(name)+22]);
+                        if length(vals)==2
+                            SD.Lambda = [str2num(vals{1}), str2num(vals{2})];
+                            err(iF).SD_Lambda = bitxor(err(iF).SD_Lambda,1);                    
+                        end
+                    end
+                end
+                                
+                if err(iF).SD_Lambda==0
+                    err(iF).errCount = err(iF).errCount-1;
+                    savestr = [savestr '''SD'','];
+                end
+            end
+            
+            
             % Error handling for SD_MeasList
             if err(iF).SD_MeasList~=0
                 load(files(iF).name,'-mat','SD');
@@ -163,6 +186,7 @@ for iF=1:nFiles
                     savestr = [savestr '''SD'','];
                 end
             end
+            
             
             % Error handling for SD_SpatialUnit
             if err(iF).SD_SpatialUnit~=0

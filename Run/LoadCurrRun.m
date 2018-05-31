@@ -91,14 +91,18 @@ run = loadRun(run, paramsLst);
 function b = isParamEmpty(param)
 
 b=1;
-if ~isstruct(param) 
+if isempty(param) 
     b = isempty(param);
     return;
 end
+if ~isstruct(param(1))
+    b = isempty(param(1));
+    return;
+end
 
-fields = fieldnames(param);
+fields = fieldnames(param(1));
 for ii=1:length(fields)
-    eval( sprintf('b = isParamEmpty(param.%s);', fields{ii}) );
+    eval( sprintf('b = isParamEmpty(param(1).%s);', fields{ii}) );
     if b==0
         return;
     end

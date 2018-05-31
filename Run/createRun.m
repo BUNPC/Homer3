@@ -60,7 +60,7 @@ if isfield(run0,'userdata')
     run(1).userdata   = run0.userdata;
 end
 if isfield(run0,'procInput')
-    run(1).procInput  = run0.procInput;
+    run(1).procInput  = procStreamCopy2Native(run0.procInput);
 end
 if isfield(run0,'procResult')
     run(1).procResult = run0.procResult;

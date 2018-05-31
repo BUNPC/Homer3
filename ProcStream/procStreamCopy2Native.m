@@ -18,18 +18,19 @@ if exist('ver','var') & ~isempty(ver)
 end
 
 % If no version info then check data compatibility directly by looking at
-% the data
-if isfield(procFunc, 'funcHelpStr')
-    return;
-end
-if ~isfield(procFunc, 'nFunc')
-    return;
-end
+% the data. 
 if isempty(procFunc)
     return;
 end
+if isfield(procFunc(1), 'funcName') && ischar(procFunc(1).funcName)
+    return;
+end
+if ~isfield(procFunc(1), 'nFunc')
+    return;
+end
 
-% We determined that procInput is an older format that has to be converted to the native format      
+
+% We determined that procInput is an older format that has to be converted to the native format
 procFunc2 = struct([]);
 for ii=1:procFunc.nFunc
     procFunc2(ii).funcName        = procFunc.funcName       {ii};

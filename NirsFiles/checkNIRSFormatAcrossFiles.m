@@ -1,4 +1,4 @@
-function [loadDataOut uniqueSD] = checkNIRSFormatAcrossFiles( files )
+function [loadDataOut, uniqueSD] = checkNIRSFormatAcrossFiles( files )
 
 loadDataOut=0;
 nFiles = length(files);
@@ -86,8 +86,8 @@ if nSD > 1
         count = count+jj+1;
     end
 
-    hFig = figure('numbertitle','off','menubar','none','name','NIRS Group Error Report','units','pixels',...
-                  'position',[200 500 300 450],'resize','on'); 
+    hFig = figure('numbertitle','off','menubar','none','name','NIRS Group Error Report','units','normalized',...
+                  'position',[.20, .20, .25, .60], 'resize','on'); 
 
     hErrListbox = uicontrol('parent',hFig,'style','listbox','string',errmsg,...
                             'units','normalized','position',[.1 .25 .8 .7],'value',1);

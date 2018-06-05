@@ -89,8 +89,8 @@ for ii=1:length(lst2)
     set(h,'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
 end
 
-if isfield(procResult,'SD')
-    if isfield(procResult.SD,'MeasListActAuto')
+if isproperty(procResult,'SD')
+    if isproperty(procResult.SD,'MeasListActAuto')
         lst2 = find(procResult.SD.MeasListActAuto(1:length(lstML))==0);
         for ii=1:length(lst2)
             h = line( [SD.SrcPos(ml(lstML(lst2(ii)),1),1) SD.DetPos(ml(lstML(lst2(ii)),2),1)], ...

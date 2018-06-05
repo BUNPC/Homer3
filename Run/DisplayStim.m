@@ -39,7 +39,7 @@ if ~isempty(run.s)
         lstS          = find(run.s(:,iS)==1 | run.s(:,iS)==-1);
         lstExclS_Auto = [];
         lstExclS_Man  = find(s(:,iS)==-1);
-        if isfield(procResult,'s') && ~isempty(procResult.s)
+        if isproperty(procResult,'s') && ~isempty(procResult.s)
             lstExclS_Auto = find(s(:,iS)==1 & sum(procResult.s,2)<=-1);
         end
          

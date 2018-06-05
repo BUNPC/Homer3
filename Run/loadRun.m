@@ -58,7 +58,7 @@ if ~exist('paramsLst','var')
     paramsLst = {};
 end
 
-[paramsStr paramsLst] = getParamsStr(run, paramsLst);
+[paramsStr, paramsLst] = getParamsStr(run, paramsLst);
 eval(sprintf('load(run.name,''-mat'', %s);', paramsStr));
 
 
@@ -76,31 +76,31 @@ eval(sprintf('load(run.name,''-mat'', %s);', paramsStr));
 
 if exist('d', 'var')
     run.d = d;
-elseif ismember('d', paramsLst) || ~isfield(run, 'd')
+elseif ismember('d', paramsLst) || ~isprop(run, 'd')
     run.d = [];
 end
 
 if exist('t', 'var')
     run.t = t;
-elseif ismember('t', paramsLst) || ~isfield(run, 't')
+elseif ismember('t', paramsLst) || ~isprop(run, 't')
     run.t = [];
 end
 
 if exist('SD', 'var')
     run.SD = SetSDRun(SD);
-elseif ismember('SD', paramsLst) || ~isfield(run, 'SD')
+elseif ismember('SD', paramsLst) || ~isprop(run, 'SD')
     run.SD = struct([]);
 end
 
 if exist('s', 'var')
     run.s = s;
-elseif ismember('s',paramsLst) || ~isfield(run, 's')
+elseif ismember('s',paramsLst) || ~isprop(run, 's')
     run.s = [];   
 end
 
 if exist('aux', 'var')
     run.aux = aux;
-elseif ismember('aux',paramsLst) || ~isfield(run, 'aux')
+elseif ismember('aux',paramsLst) || ~isprop(run, 'aux')
     run.aux = [];
 end
 
@@ -110,7 +110,7 @@ end
 
 if exist('CondNames','var')
     run.CondNames = CondNames;
-elseif (ismember('CondNames', paramsLst) && ~exist('CondNames','var')) || ~isfield(run, 'CondNames')
+elseif (ismember('CondNames', paramsLst) && ~exist('CondNames','var')) || ~isprop(run, 'CondNames')
     if  exist('s','var')
         run.CondNames = InitCondNamesRun(s);
     end
@@ -118,7 +118,7 @@ end
 
 if exist('tIncMan','var') && ismember('tIncMan', paramsLst)
     run.tIncMan = tIncMan;
-elseif (ismember('tIncMan', paramsLst) && ~exist('tIncMan','var')) || ~isfield(run, 'tIncMan')
+elseif (ismember('tIncMan', paramsLst) && ~exist('tIncMan','var')) || ~isprop(run, 'tIncMan')
     if exist('t','var')
         run.tIncMan = ones(length(run.t),1);
     end
@@ -126,29 +126,29 @@ end
 
 if exist('userdata','var') && ismember('userdata', paramsLst)
     run.userdata = userdata;
-elseif (ismember('userdata', paramsLst) && ~exist('userdata','var')) || ~isfield(run, 'userdata')
+elseif (ismember('userdata', paramsLst) && ~exist('userdata','var')) || ~isprop(run, 'userdata')
     if exist('s','var') && exist('t','var')
         run.userdata = InitUserdata(s, t);
     end
 end
 
 if exist('procInput','var') && ismember('procInput', paramsLst)
-    if isfield(run, 'procInput') && ~isempty(run.procInput)
+    if isproperty(run, 'procInput') && ~isempty(run.procInput)
         run.procInput = copyStructFieldByField(run.procInput, procInput, 'procInput');
     else
         run.procInput = procInput;
     end
-elseif (ismember('procInput', paramsLst) && ~exist('procInput','var')) || ~isfield(run, 'procInput')
+elseif (ismember('procInput', paramsLst) && ~exist('procInput','var')) || ~isproperty(run, 'procInput')
     run.procInput = InitProcInput();
 end
    
 if exist('procResult','var') && ismember('procResult', paramsLst)
-    if isfield(run, 'procResult') && ~isempty(run.procResult)
+    if isproperty(run, 'procResult') && ~isempty(run.procResult)
         run.procResult = copyStructFieldByField(run.procResult, procResult, 'procResult');
     else    
         run.procResult = procResult;
     end
-elseif (ismember('procResult', paramsLst) && ~exist('procResult','var')) || ~isfield(run, 'procResult')
+elseif (ismember('procResult', paramsLst) && ~exist('procResult','var')) || ~isproperty(run, 'procResult')
     run.procResult = InitProcResult();
 end
 
@@ -158,7 +158,7 @@ warning('on', 'MATLAB:load:variableNotFound');
 
 
 % ---------------------------------------------------------
-function [paramsStr paramsLst] = getParamsStr(run, paramsLst)
+function [paramsStr, paramsLst] = getParamsStr(run, paramsLst)
 
 paramsLstReadOnly  = {'d','aux','procResult'};
 paramsLstReadWrite = {'t','SD','s','tIncMan','CondNames','userdata','procInput'};
@@ -171,10 +171,10 @@ end
 
 for ii=1:length(paramsLstAll)
     
-    if ~ismember(paramsLstAll{ii}, paramsLst) & ~isfield(run, paramsLstAll{ii}) & ismember(paramsLstAll{ii},paramsLstReadWrite)
+    if ~ismember(paramsLstAll{ii}, paramsLst) & ~isprop(run, paramsLstAll{ii}) & ismember(paramsLstAll{ii},paramsLstReadWrite)
         paramsLst{end+1} = paramsLstAll{ii};
     end
-    if ~ismember(paramsLstAll{ii}, paramsLst)  & isfield(run, paramsLstAll{ii}) & eval(sprintf('isemptyRunParam(run.%s)',paramsLstAll{ii}))
+    if ~ismember(paramsLstAll{ii}, paramsLst)  & isprop(run, paramsLstAll{ii}) & eval(sprintf('isemptyRunParam(run.%s)',paramsLstAll{ii}))
         paramsLst{end+1} = paramsLstAll{ii};
     end
  

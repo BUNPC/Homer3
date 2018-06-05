@@ -2,10 +2,10 @@ function [errflags, iReg] = procStreamErrCheck(varargin)
 
 procInput = InitProcInput();
 if nargin==1
-    if isfield(varargin{1}, 'procElem')
+    if isproperty(varargin{1}, 'procElem')
         type = varargin{1}.procElem.type;
         procInput = varargin{1}.procElem.procInput;
-    elseif isfield(varargin{1}, 'procInput')
+    elseif isproperty(varargin{1}, 'procInput')
         type = varargin{1}.type;
         procInput = varargin{1}.procInput;
     end

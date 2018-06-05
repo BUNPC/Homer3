@@ -75,11 +75,13 @@ switch(hmr.currElem.procElem.type)
 end
 set(htabgroup,'SelectedTab',htab);
 
-procElem{iRunPanel} = hmr.group(1).subjs(1).runs(1);
-procElem{iSubjPanel} = hmr.group(1).subjs(1);
-procElem{iGroupPanel} = hmr.group(1);
+% Assign to procElem by value instead of reference - we don't 
+% want to change anything in hmr.currElem in this GUI
+procElem{iRunPanel} = hmr.group(1).subjs(1).runs(1).copy();
+procElem{iSubjPanel} = hmr.group(1).subjs(1).copy();
+procElem{iGroupPanel} = hmr.group(1).copy();
 
-setappdata(hObject,'this',struct('iReg',{{[],[],[]}}, ...                      % registry indices of selected procStream functions
+setappdata(hObject,'this',struct('iReg',{{[],[],[]}}, ...    % registry indices of the selected procStream functions (as shown in listboxPsFunc lisbox)
                                  'iRunPanel',iRunPanel, ...
                                  'iSubjPanel',iSubjPanel, ...
                                  'iGroupPanel',iGroupPanel, ...
@@ -181,6 +183,100 @@ set(handles.listboxFunctions(iPanel),'value',ii);
 set(handles.listboxFuncArgIn(iPanel),'value',ii);
 
 foos = procStreamHelpLookupByIndex(ii, handles);
+set(handles.textHelp(iPanel),'string',foos);
+
+
+
+% -------------------------------------------------------------
+function updateProcStreamList(handles,idx)
+this = getappdata(handles.figure1, 'this');
+iPanel = this.iPanel;
+iReg = this.iReg{iPanel};
+
+n = length(iReg);
+FArgOut = get(handles.listboxFuncArgOut(iPanel),'string');
+FArgIn = get(handles.listboxFuncArgIn(iPanel),'string');
+FFunc = get(handles.listboxFunctions(iPanel),'string');
+
+
+foos = [];
+for ii = 1:n
+    foos{ii} = FArgOut{iReg(ii)};
+end
+set(handles.listboxPSArgOut(iPanel),'string',foos)
+set(handles.listboxPSArgOut(iPanel),'value',idx)
+
+foos = [];
+for ii = 1:n
+    foos{ii} = FArgIn{iReg(ii)};
+end
+set(handles.listboxPSArgIn(iPanel),'string',foos)
+set(handles.listboxPSArgIn(iPanel),'value',idx)
+
+foos = [];
+for ii = 1:n
+    foos{ii} = FFunc{iReg(ii)};
+end
+set(handles.listboxPSFunc(iPanel),'string',foos)
+set(handles.listboxPSFunc(iPanel),'value',idx)
+
+
+
+
+% -------------------------------------------------------------
+function listboxPSFunc_Callback(hObject, eventdata, handles)
+this = getappdata(handles.figure1, 'this');
+iPanel = this.iPanel;
+
+ii = get(hObject,'value');
+if isempty(ii)
+    return;
+end
+
+set(handles.listboxPSArgIn(iPanel),'value',ii);
+set(handles.listboxPSArgOut(iPanel),'value',ii);
+
+FFunc = get(handles.listboxPSFunc(iPanel),'string');
+foos = procStreamHelpLookupByName(FFunc{ii}, handles);
+set(handles.textHelp(iPanel),'string',foos);
+
+
+
+
+% -------------------------------------------------------------
+function listboxPSArgOut_Callback(hObject, eventdata, handles)
+this = getappdata(handles.figure1, 'this');
+iPanel = this.iPanel;
+
+ii = get(hObject,'value');
+if isempty(ii)
+    return;
+end
+
+set(handles.listboxPSArgIn(iPanel),'value',ii);
+set(handles.listboxPSFunc(iPanel),'value',ii);
+
+FFunc = get(handles.listboxPSFunc(iPanel),'string');
+foos = procStreamHelpLookupByName(FFunc{ii}, handles);
+set(handles.textHelp(iPanel),'string',foos);
+
+
+
+% -------------------------------------------------------------
+function listboxPSArgIn_Callback(hObject, eventdata, handles)
+this = getappdata(handles.figure1, 'this');
+iPanel = this.iPanel;
+
+ii = get(hObject,'value');
+if isempty(ii)
+    return;
+end
+
+set(handles.listboxPSArgOut(iPanel),'value',ii);
+set(handles.listboxPSFunc(iPanel),'value',ii);
+
+FFunc = get(handles.listboxPSFunc(iPanel),'string');
+foos = procStreamHelpLookupByName(FFunc{ii}, handles);
 set(handles.textHelp(iPanel),'string',foos);
 
 
@@ -294,102 +390,11 @@ setappdata(handles.figure1, 'this', this);
 updateProcStreamList(handles,iPS2);
 
 
-% -------------------------------------------------------------
-function updateProcStreamList(handles,idx)
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
-iReg = this.iReg{iPanel};
-
-n = length(iReg);
-FArgOut = get(handles.listboxFuncArgOut(iPanel),'string');
-FArgIn = get(handles.listboxFuncArgIn(iPanel),'string');
-FFunc = get(handles.listboxFunctions(iPanel),'string');
-
-
-foos = [];
-for ii = 1:n
-    foos{ii} = FArgOut{iReg(ii)};
-end
-set(handles.listboxPSArgOut(iPanel),'string',foos)
-set(handles.listboxPSArgOut(iPanel),'value',idx)
-
-foos = [];
-for ii = 1:n
-    foos{ii} = FArgIn{iReg(ii)};
-end
-set(handles.listboxPSArgIn(iPanel),'string',foos)
-set(handles.listboxPSArgIn(iPanel),'value',idx)
-
-foos = [];
-for ii = 1:n
-    foos{ii} = FFunc{iReg(ii)};
-end
-set(handles.listboxPSFunc(iPanel),'string',foos)
-set(handles.listboxPSFunc(iPanel),'value',idx)
-
-
-
-
-% -------------------------------------------------------------
-function listboxPSFunc_Callback(hObject, eventdata, handles)
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
-
-ii = get(hObject,'value');
-if isempty(ii)
-    return;
-end
-
-set(handles.listboxPSArgIn(iPanel),'value',ii);
-set(handles.listboxPSArgOut(iPanel),'value',ii);
-
-FFunc = get(handles.listboxPSFunc(iPanel),'string');
-foos = procStreamHelpLookupByName(FFunc{ii}, handles);
-set(handles.textHelp(iPanel),'string',foos);
-
-
-
-
-% -------------------------------------------------------------
-function listboxPSArgOut_Callback(hObject, eventdata, handles)
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
-
-ii = get(hObject,'value');
-if isempty(ii)
-    return;
-end
-
-set(handles.listboxPSArgIn(iPanel),'value',ii);
-set(handles.listboxPSFunc(iPanel),'value',ii);
-
-foos = procStreamHelpLookupByIndex(ii, handles);
-set(handles.textHelp(iPanel),'string',foos);
-
-
-
-% -------------------------------------------------------------
-function listboxPSArgIn_Callback(hObject, eventdata, handles)
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
-
-ii = get(hObject,'value');
-if isempty(ii)
-    return;
-end
-
-set(handles.listboxPSArgOut(iPanel),'value',ii);
-set(handles.listboxPSFunc(iPanel),'value',ii);
-
-FFunc = get(handles.listboxPSFunc(iPanel),'string');
-foos = procStreamHelpLookupByName(FFunc{ii}, handles);
-set(handles.textHelp(iPanel),'string',foos);
-
-
 
 % -------------------------------------------------------------
 function pushbuttonLoad_Callback(hObject, eventdata, handles)
 this = getappdata(handles.figure1, 'this');
+iPanel_0 = this.iPanel;
 
 ch = menu('Load current processing stream or config file?','Current processing stream','Config file','Cancel');
 if ch==3
@@ -440,6 +445,11 @@ for iPanel=1:3
     
 end
 
+% Return iPanel to value at the beginning of this function 
+this.iPanel = iPanel_0;
+setappdata(handles.figure1, 'this', this);
+
+
 if ch==2
     fclose(fid);
 end
@@ -488,11 +498,10 @@ if ch==1
 
     group = hmr.group;
     
-    group = CopyProcInput(group, procElem{iRunPanel}.type, procElem{iRunPanel}.procInput);
-    group = CopyProcInput(group, procElem{iSubjPanel}.type, procElem{iSubjPanel}.procInput);
-    group = CopyProcInput(group, procElem{iGroupPanel}.type, procElem{iGroupPanel}.procInput);
+    group.CopyProcInput(procElem{iRunPanel}.type, procElem{iRunPanel}.procInput);
+    group.CopyProcInput(procElem{iSubjPanel}.type, procElem{iSubjPanel}.procInput);
+    group.CopyProcInput(procElem{iGroupPanel}.type, procElem{iGroupPanel}.procInput);
     
-    hmr.group = group;
 else
     [filenm,pathnm] = uiputfile( '*.cfg','Save Config File');
     if filenm==0

@@ -86,8 +86,8 @@ for ii=1:length(lst2)
     set(h,'ButtonDownFcn',get(axesSDG,'ButtonDownFcn'));
 end
 
-if isfield(procResult,'SD')
-    if isfield(procResult.SD,'MeasListActAuto')
+if isproperty(procResult,'SD')
+    if isproperty(procResult.SD,'MeasListActAuto')
         lst2 = find(procResult.SD.MeasListActAuto(1:length(lstML))==0);
 %        lst2 = find(procResult.SD.MeasListActAuto(lstML)==0);
         for ii=1:length(lst2)
@@ -123,7 +123,7 @@ end
 % ITEMS ADDED TO THE AXES
 % FOR CHANNEL TOGGLING TO WORK WITH
 % cw6_sdgToggleLines()
-if isfield( hmr, 'plot' )
+if isproperty( hmr, 'plot' )
     if ~isempty(hmr.plot)
         if hmr.plot(1,1)~=0
             ChLst = hmr.plotLst;
@@ -142,16 +142,16 @@ if isfield( hmr, 'plot' )
                 set(h,'color',hmr.color(idx,:));
                 set(h,'ButtonDownFcn',sprintf('EasyNIRS_sdgToggleLines(gcbo,[%d],guidata(gcbo))',idx));
                 set(h,'linewidth',2);
-                if isfield(hmr,'plotLst') && ...
+                if isproperty(hmr,'plotLst') && ...
                    (~SD.MeasListAct(plotLst(idx)) & ~SD.MeasListVis(plotLst(idx)))
                     set(h,'linewidth',2);
                     set(h,'linestyle','-.');
                 else               
-                    if isfield(hmr,'plotLst') && ~SD.MeasListAct(plotLst(idx))
+                    if isproperty(hmr,'plotLst') && ~SD.MeasListAct(plotLst(idx))
                         set(h,'linewidth',2);
                         set(h,'linestyle','--');
                     end
-                    if isfield(hmr,'plotLst') && ~SD.MeasListVis(plotLst(idx))
+                    if isproperty(hmr,'plotLst') && ~SD.MeasListVis(plotLst(idx))
                         set(h,'linewidth',1);
                         set(h,'linestyle',':');
                     end

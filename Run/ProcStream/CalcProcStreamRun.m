@@ -24,7 +24,7 @@ for iFunc = 1:procInput.procFunc.nFunc
     argIn = parseProcessFuncArgsIn(procInput.procFunc(iFunc).funcArgIn);
     for ii = 1:length(argIn)
         if ~exist(argIn{ii},'var')
-            if isfield(run,argIn{ii})
+            if isproperty(run,argIn{ii})
                 eval(sprintf('%s = run.%s;',argIn{ii},argIn{ii}));
             else
                 eval(sprintf('%s = [];',argIn{ii}));  % if variable doesn't exist and not in run then make it empty DAB 11/8/11

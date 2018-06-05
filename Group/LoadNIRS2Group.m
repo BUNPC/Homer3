@@ -11,7 +11,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 rnum = 1;
-groupCurr = createGroup(files(1).name);
+groupCurr = GroupClass(files(1).name);
 files(1) = MapFile2Group(files(1),1,1);
 for ii=2:length(files)
     
@@ -19,7 +19,7 @@ for ii=2:length(files)
     if files(ii).isdir
         
         jj = length(groupCurr(1).subjs)+1;
-        groupCurr(1).subjs(jj) = createSubj(fname, jj, 0, rnum);
+        groupCurr(1).subjs(jj) = SubjClass(fname, jj, 0, rnum);
         files(ii) = MapFile2Group(files(ii),jj,rnum);
 
     else
@@ -55,7 +55,7 @@ for ii=2:length(files)
                 end
                 
                 % Create new run in existing subject
-                groupCurr(1).subjs(jj).runs(nRuns+1) = createRun(fname, jj, nRuns+1, rnum);
+                groupCurr(1).subjs(jj).runs(nRuns+1) = RunClass(fname, jj, nRuns+1, rnum);
                 groupCurr(1).nFiles = groupCurr(1).nFiles+1;
                         files(ii) = MapFile2Group(files(ii), jj, nRuns+1);
 
@@ -68,7 +68,7 @@ for ii=2:length(files)
         % Create new subject with one run
         if(jj>length(groupCurr(1).subjs))
 
-            groupCurr(1).subjs(jj) = createSubj(fname, jj, 1, rnum);
+            groupCurr(1).subjs(jj) = SubjClass(fname, jj, 1, rnum);
             groupCurr(1).nFiles = groupCurr(1).nFiles+1;
             files(ii) = MapFile2Group(files(ii), jj, 1);
 
@@ -261,8 +261,8 @@ switch lower(type)
 case {'group','grp'}
 
     % procInput
-    if isfield(N2,'procInput') && ~isempty(N2.procInput)
-        if isfield(N2.procInput,'procFunc') && ~isempty(N2.procInput.procFunc)
+    if isproperty(N2,'procInput') && ~isempty(N2.procInput)
+        if isproperty(N2.procInput,'procFunc') && ~isempty(N2.procInput.procFunc)
             N1.procInput = copyStructFieldByField(N1.procInput,N2.procInput,'procInput');
         else
             [N1.procInput.procFunc, N1.procInput.procParam] = procStreamDefault(type);
@@ -270,30 +270,30 @@ case {'group','grp'}
     end
     
     % procResult
-    if isfield(N2,'procResult') && ~isempty(N2.procResult)
+    if isproperty(N2,'procResult') && ~isempty(N2.procResult)
         N1.procResult = copyStructFieldByField(N1.procResult,N2.procResult);
     end
 
     % CondNames
-    if isfield(N2,'CondNames') && ~isempty(N2.CondNames)
+    if isproperty(N2,'CondNames') && ~isempty(N2.CondNames)
         N1.CondNames = copyStructFieldByField(N1.CondNames, N2.CondNames);
     end
 
     % CondGroup2Subj
-    if isfield(N2,'CondGroup2Subj') && ~isempty(N2.CondGroup2Subj)
+    if isproperty(N2,'CondGroup2Subj') && ~isempty(N2.CondGroup2Subj)
         N1.CondGroup2Subj = copyStructFieldByField(N1.CondGroup2Subj, N2.CondGroup2Subj);
     end
 
     % SD
-    if isfield(N2,'SD') && ~isempty(N2.SD)
+    if isproperty(N2,'SD') && ~isempty(N2.SD)
         N1.SD = copyStructFieldByField(N1.SD, N2.SD);
     end
 
 case {'subj','subject'}
 
     % procInput
-    if isfield(N2,'procInput')
-        if isfield(N2.procInput,'procFunc') && ~isempty(N2.procInput.procFunc)
+    if isproperty(N2,'procInput')
+        if isproperty(N2.procInput,'procFunc') && ~isempty(N2.procInput.procFunc)
             N1.procInput = copyStructFieldByField(N1.procInput,N2.procInput,'procInput');
         else
             [N1.procInput.procFunc, N1.procInput.procParam] = procStreamDefault(type);
@@ -301,22 +301,22 @@ case {'subj','subject'}
     end
 
     % procResult
-    if isfield(N2,'procResult') && ~isempty(N2.procResult)
+    if isproperty(N2,'procResult') && ~isempty(N2.procResult)
         N1.procResult = copyStructFieldByField(N1.procResult,N2.procResult);
     end
 
     % CondNames
-    if isfield(N2,'CondNames') && ~isempty(N2.CondNames)
+    if isproperty(N2,'CondNames') && ~isempty(N2.CondNames)
         N1.CondNames = copyStructFieldByField(N1.CondNames, N2.CondNames);
     end
 
     % CondSubj2Run
-    if isfield(N2,'CondSubj2Run') && ~isempty(N2.CondSubj2Run)
+    if isproperty(N2,'CondSubj2Run') && ~isempty(N2.CondSubj2Run)
         N1.CondSubj2Run = copyStructFieldByField(N1.CondSubj2Run, N2.CondSubj2Run);
     end
 
     % SD
-    if isfield(N2,'SD') && ~isempty(N2.SD)
+    if isproperty(N2,'SD') && ~isempty(N2.SD)
         N1.SD = copyStructFieldByField(N1.SD, N2.SD);
     end
     

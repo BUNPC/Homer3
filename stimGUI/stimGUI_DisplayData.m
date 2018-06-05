@@ -66,7 +66,7 @@ elseif get(stim.handles.radiobuttonStim,'value')==1 % Stim
 end
 
 
-if(~isfield(stim,'userdata') | isempty(stim.userdata))
+if(~isproperty(stim,'userdata') | isempty(stim.userdata))
     data = repmat({0,''},length(lstR),1);
     for ii=1:length(lstR)
         data{ii,1} = stim.currElem.procElem.t(lstR(ii));
@@ -74,7 +74,7 @@ if(~isfield(stim,'userdata') | isempty(stim.userdata))
     cnames={'1'};
     cwidth={100};
     ceditable=logical([1]);
-elseif(isfield(stim,'userdata') & isfield(stim.userdata,'data') & isempty(stim.userdata.data))
+elseif(isproperty(stim,'userdata') & isproperty(stim.userdata,'data') & isempty(stim.userdata.data))
     ncols = length(stim.userdata.cnames);
     data = [repmat({0},length(lstR),1) repmat({''},length(lstR),ncols)];
     for ii=1:length(lstR)

@@ -47,7 +47,7 @@ for iF=1:nFiles
         if size(d,1)~=length(t)
             flags(iF).d = bitor(flags(iF).d,4);
         end
-        if exist('SD','var') && isfield(SD,'MeasList')            
+        if exist('SD','var') && isproperty(SD,'MeasList')            
             if size(d,2)~=size(SD.MeasList,1)
                 flags(iF).d = bitor(flags(iF).d,8);
             end           
@@ -59,38 +59,38 @@ for iF=1:nFiles
     if ~exist('SD','var') || isempty(SD)
         flags(iF).SD=bitor(flags(iF).SD,1)
     end
-    if ~isfield(SD,'Lambda') || isempty(SD.Lambda)
+    if ~isproperty(SD,'Lambda') || isempty(SD.Lambda)
         flags(iF).SD_Lambda=bitor(flags(iF).SD_Lambda,1);
     end
-    if ~isfield(SD,'SrcPos') || isempty(SD.SrcPos)
+    if ~isproperty(SD,'SrcPos') || isempty(SD.SrcPos)
         flags(iF).SD_SrcPos=bitor(flags(iF).SD_SrcPos,1);
     end
-    if ~isfield(SD,'nSrcs')
+    if ~isproperty(SD,'nSrcs')
         flags(iF).SD_nSrcs=bitor(flags(iF).SD_nSrcs,1);
     end
-    if ~isfield(SD,'DetPos') || isempty(SD.DetPos)
+    if ~isproperty(SD,'DetPos') || isempty(SD.DetPos)
         flags(iF).SD_DetPos=bitor(flags(iF).SD_DetPos,1);
     end
-    if ~isfield(SD,'nDets')
+    if ~isproperty(SD,'nDets')
         flags(iF).SD_nDets=bitor(flags(iF).SD_nDets,1);
     end
-    if ~isfield(SD,'MeasList') || isempty(SD.MeasList)
+    if ~isproperty(SD,'MeasList') || isempty(SD.MeasList)
         flags(iF).SD_MeasList=bitor(flags(iF).SD_MeasList,1);
     end
-    if isfield(SD,'MeasList') && isfield(SD,'MeasListAct')
+    if isproperty(SD,'MeasList') && isproperty(SD,'MeasListAct')
         if size(SD.MeasList,1) ~= size(SD.MeasListAct,1)
             flags(iF).SD_MeasList=bitor(flags(iF).SD_MeasList,2);
         end
     end
-    if isfield(SD,'MeasList') && isfield(SD,'MeasListVis')
+    if isproperty(SD,'MeasList') && isproperty(SD,'MeasListVis')
         if size(SD.MeasList,1) ~= size(SD.MeasListVis,1)
             flags(iF).SD_MeasList=bitor(flags(iF).SD_MeasList,4);
         end
     end
-    if ~isfield(SD,'SpatialUnit')
+    if ~isproperty(SD,'SpatialUnit')
         flags(iF).SD_SpatialUnit=bitor(flags(iF).SD_SpatialUnit,1);
     end
-    if isfield(SD,'auxChannels')
+    if isproperty(SD,'auxChannels')
         if ~isempty(SD.auxChannels)
             if ~exist('aux')
                 load( files(iF).name, '-mat','aux10');
@@ -153,18 +153,18 @@ for iF=1:nFiles
         if ~isstruct(procInput)
             flags(iF).procInput=bitor(flags(iF).procInput,1);
         else
-            if ~isfield(procInput,'procFunc')
+            if ~isproperty(procInput,'procFunc')
                 flags(iF).procInput_procFunc=bitor(flags(iF).procInput_procFun,1);
             end
-            if ~isfield(procInput,'procParam')
+            if ~isproperty(procInput,'procParam')
                 flags(iF).procInput_procParam=bitor(flags(iF).procInput_procParam,1);
             end
-            if ~isfield(procInput,'changeFlag')
+            if ~isproperty(procInput,'changeFlag')
                 flags(iF).procInput_changeFlag=bitor(flags(iF).procInput_changeFlag,1);
             end
         end
         %{
-        if ~isfield(procInput,'SD')
+        if ~isproperty(procInput,'SD')
             flags(iF).procInput.SD=1;
         end
         %}

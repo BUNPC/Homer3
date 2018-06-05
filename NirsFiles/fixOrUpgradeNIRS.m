@@ -206,7 +206,7 @@ for iF=1:nFiles
                         SD.SpatialUnit = 'mm';
                         SD.SrcPos = SD.SrcPos * 10;
                         SD.DetPos = SD.DetPos * 10;
-                        if isfield(SD,'SpringList')
+                        if isproperty(SD,'SpringList')
                             if ~isempty(SD.SpringList)
 	                            lst = find(SD.SpringList(:,3)~=-1);
 	                            SD.SpringList(lst,3) = SD.SpringList(lst,3) * 10;

@@ -22,10 +22,10 @@ end
 if isempty(procFunc)
     return;
 end
-if isfield(procFunc(1), 'funcName') && ischar(procFunc(1).funcName)
+if isproperty(procFunc(1), 'funcName') && ischar(procFunc(1).funcName)
     return;
 end
-if ~isfield(procFunc(1), 'nFunc')
+if ~isproperty(procFunc(1), 'nFunc')
     return;
 end
 

@@ -17,7 +17,7 @@ case {'subj','subject'}
         N.err = 0;
     end
     for ii=1:length(N.runs)
-        if ~isfield(N.runs(ii), 'name')
+        if ~isproperty(N.runs(ii), 'name')
             N.runs(ii).name = '';
         end
         N.runs(ii) = fixGroupErrors(N.runs(ii), 'run');
@@ -25,7 +25,7 @@ case {'subj','subject'}
 
 case {'run'}
 
-    if N.err && isfield(N, 'filename')
+    if N.err && isproperty(N, 'filename')
         N.name = N.filename;
         N.err = 0;
     end

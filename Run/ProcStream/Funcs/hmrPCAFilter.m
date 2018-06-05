@@ -15,7 +15,7 @@ for ii=1:nLambda
     nMeasPerLambda(ii) = length(find(ml(:,4)==ii));
 end
 
-if ~isfield(SD,'MeasListAct')
+if ~isproperty(SD,'MeasListAct')
     SD.MeasListAct = ones(nMeas,1);
 end
 

@@ -9,12 +9,13 @@ end
 iSubj = run.iSubj;
 iRun = run.iRun;
 
-group.subjs(iSubj).runs(iRun).SD         = run.SD;        
-group.subjs(iSubj).runs(iRun).s          = run.s;         
-group.subjs(iSubj).runs(iRun).tIncMan    = run.tIncMan;   
-group.subjs(iSubj).runs(iRun).CondNames  = run.CondNames; 
-group.subjs(iSubj).runs(iRun).userdata   = run.userdata;  
+group.subjs(iSubj).runs(iRun).SD         = run.SD;
+group.subjs(iSubj).runs(iRun).s          = run.s;
+group.subjs(iSubj).runs(iRun).tIncMan    = run.tIncMan;
+group.subjs(iSubj).runs(iRun).CondNames  = run.CondNames;
+group.subjs(iSubj).runs(iRun).userdata   = run.userdata;
 group.subjs(iSubj).runs(iRun).procInput  = run.procInput;
+
 % Do not save procResult in memory. Too big.
 % group.subjs(iSubj).runs(iRun).procResult = run.procResult;
 

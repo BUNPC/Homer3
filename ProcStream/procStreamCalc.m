@@ -15,7 +15,7 @@ for iFunc = 1:length(procInput.procFunc)
     argIn = procStreamParseArgsIn(procInput.procFunc(iFunc).funcArgIn);
     for ii = 1:length(argIn)
         if ~exist(argIn{ii},'var')
-            if isfield(procElem,argIn{ii})
+            if isproperty(procElem,argIn{ii})
                 eval(sprintf('%s = procElem.%s;',argIn{ii},argIn{ii}));
             else
                 eval(sprintf('%s = [];',argIn{ii}));  % if variable doesn't exist and not in procElem then make it empty DAB 11/8/11

@@ -93,7 +93,7 @@ if isempty(currElem.procElem.aux)
 else
     foos = [];
     for ii=1:size(currElem.procElem.aux,2)
-        if isfield(SD,'auxChannels')
+        if isproperty(SD,'auxChannels')
             foos{end+1} = SD.auxChannels{ii};
         else
             foos{end+1} = sprintf('Aux %d',ii);
@@ -181,7 +181,7 @@ stim.currElem.procElem.t = t;
 % set Aux listbox
 foos = [];
 for ii=1:size(aux,2)
-    if isfield(SD,'auxChannels')
+    if isproperty(SD,'auxChannels')
         foos{end+1} = SD.auxChannels{ii};
     else
         foos{end+1} = sprintf('Aux %d',ii);

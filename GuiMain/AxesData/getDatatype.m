@@ -18,7 +18,7 @@ elseif plotRawVal && plotHRFVal && plotProbe
     datatype      = c.RAW_HRF_PLOT_PROBE;
 elseif plotODVal && ~plotHRFVal && ~plotProbe
     datatype      = c.OD;
-elseif plotODVal && ploHRFVal && ~plotProbe
+elseif plotODVal && plotHRFVal && ~plotProbe
     datatype      = c.OD_HRF;
 elseif plotODVal && plotHRFVal && plotProbe
     datatype      = c.OD_HRF_PLOT_PROBE;

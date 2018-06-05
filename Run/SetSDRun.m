@@ -24,9 +24,9 @@ SD.ymax = max( [SD.SrcPos(:,2); SD.DetPos(:,2)] +1/2*meanSD);
 SD.nSrcs = size(SD.SrcPos,1);
 SD.nDets = size(SD.DetPos,1);
 
-if ~isfield(SD,'MeasListAct')
+if ~isproperty(SD,'MeasListAct')
     SD.MeasListAct = ones(size(SD.MeasList,1),1);
 end
-if ~isfield(SD,'MeasListVis')
+if ~isproperty(SD,'MeasListVis')
     SD.MeasListVis = ones(size(SD.MeasList,1),1);
 end

@@ -40,7 +40,7 @@ lstInc = find(tInc==1);
 d = d(lstInc,:);
 
 %
-if ~isfield(SD,'MeasListAct') | resetFlag==1
+if ~isproperty(SD,'MeasListAct') | resetFlag==1
     SD.MeasListAct = ones(size(SD.MeasList,1),1);
 end
 

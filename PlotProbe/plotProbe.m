@@ -153,7 +153,7 @@ try
     idx = 0;
 
     ml = SD.MeasList;
-    if isfield(SD,'MeasListAct')
+    if isproperty(SD,'MeasListAct')
         lst = find(SD.MeasList(:,4)==1);
         MLact = SD.MeasListAct(lst);
     else
@@ -338,7 +338,7 @@ try
     
     
     %This code adds the probe src-det lines to the figure
-    if 1 %isfield(AdvOptions,'ImgOptions') && AdvOptions.ImgOptions.ShowProbe==1
+    if 1 %isproperty(AdvOptions,'ImgOptions') && AdvOptions.ImgOptions.ShowProbe==1
         %Draw the probe on the image
         optWid=axWid/5; optHgt=axHgt/5;
         for idx2=1:size(sPos,1)

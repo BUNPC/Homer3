@@ -9,7 +9,7 @@ switch(type)
     
 case {'group','grp'}
 
-    if ~isfield(N, 'name')
+    if ~isproperty(N, 'name')
         N.err = 1;
         err = 1;
     end
@@ -20,7 +20,7 @@ case {'group','grp'}
 
 case {'subj','subject'}
 
-    if ~isfield(N, 'name')
+    if ~isproperty(N, 'name')
         N.err = 1;
         err = 1;
     end
@@ -31,7 +31,7 @@ case {'subj','subject'}
 
 case {'run'}
 
-    if ~isfield(N, 'name')
+    if ~isproperty(N, 'name')
         N.err = 1;
         err = 1;
     end

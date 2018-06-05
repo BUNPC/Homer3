@@ -8,7 +8,7 @@ load(run.name, '-mat','paramsOrig');
 if exist('paramsOrig','var')
     SD = paramsOrig.SD;
     s = paramsOrig.s;
-elseif isfield(run,'SD') & isfield(run,'s')
+elseif isproperty(run,'SD') & isproperty(run,'s')
     SD = run.SD;
     s = run.s;
 else
@@ -19,8 +19,8 @@ end
 load(run.name, '-mat','t','d','aux');
 save(run.name, '-mat','SD','t','s','d','aux');
 
-if isfield(run,'iSubj') & isfield(run,'iRun') & isfield(run,'rnum')
-    run = createRun(run.name, run.iSubj, run.iRun, run.rnum);
+if isproperty(run,'iSubj') & isproperty(run,'iRun') & isproperty(run,'rnum')
+    run = RunClass(run.name, run.iSubj, run.iRun, run.rnum);
 end
 
 warning('on', 'MATLAB:load:variableNotFound');

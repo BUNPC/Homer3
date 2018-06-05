@@ -16,7 +16,7 @@ if strcmp(class(s1),'struct')
             s1 = struct();
         end
         field_class = eval(sprintf('class(s2.%s)',fields{ii}));
-        if ~isfield(s1,fields{ii})
+        if ~isproperty(s1,fields{ii})
             if strcmp(field_class,'cell')
                 field_arg='{}';
             else
@@ -38,20 +38,20 @@ end
 % ------------------------------------------------------------
 function procInput = convertProcInputToCurrentVer(procInput)
 
-if isfield(procInput,'procFunc') && ~isempty(procInput.procFunc)
-    if isfield(procInput.procFunc,'funcCall')
+if isproperty(procInput,'procFunc') && ~isempty(procInput.procFunc)
+    if isproperty(procInput.procFunc,'funcCall')
         procInput.procFunc.funcName = procInput.procFunc.funcCall;
         procInput.procFunc = rmfield(procInput.procFunc,'funcCall');
     end
-    if isfield(procInput.procFunc,'funcCallArgIn')
+    if isproperty(procInput.procFunc,'funcCallArgIn')
         procInput.procFunc.funcArgIn = procInput.procFunc.funcCallArgIn;
         procInput.procFunc = rmfield(procInput.procFunc,'funcCallArgIn');
     end
-    if isfield(procInput.procFunc,'funcCallArgOut')
+    if isproperty(procInput.procFunc,'funcCallArgOut')
         procInput.procFunc.funcArgOut = procInput.procFunc.funcCallArgOut;
         procInput.procFunc = rmfield(procInput.procFunc,'funcCallArgOut');
     end
-    if ~isfield(procInput.procFunc,'funcNameUI')
+    if ~isproperty(procInput.procFunc,'funcNameUI')
         procInput.procFunc.funcNameUI = procInput.procFunc.funcName;
     end
 end

@@ -584,22 +584,8 @@ if ishandles(hStimGUI)
     delete(hStimGUI);
 end
 hStimGUI = stimGUI(currElem, CondNamesGroup, hObject);
-
-u0 = get(hObject, 'units');
-set(hObject, 'units','normalized');
-p0 = get(hObject, 'position');
-
 set(hStimGUI, 'units','normalized');
-p1 = get(hStimGUI, 'position');
-if p0(1)>.5
-    p1(1)=.01;
-elseif ((.99-p1(3)) - p0(1)) < .1
-    p1(1)=.01;
-else
-    p1(1)=.99-p1(3);
-end
-set(hStimGUI, 'position',p1);
-set(hObject, 'units',u0);
+set(hStimGUI, 'position',[.01, .05, .60, .80]);
 
 
 % --------------------------------------------------------------------
@@ -654,4 +640,3 @@ hmr.guiMain   = guiMain;
 function menuItemProcStreamEdit_Callback(hObject, eventdata, handles)
 
 procStreamGUI();
-

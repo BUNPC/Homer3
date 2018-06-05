@@ -23,10 +23,10 @@ for iF=1:nFiles
     load( files(iF).name, '-mat','SD');
     
     % Easy fix if nSrcs or nDets aren't there
-    if ~isfield(SD,'nSrcs')
+    if ~isproperty(SD,'nSrcs')
         SD.nSrcs = size(SD.SrcPos,1);
     end
-    if ~isfield(SD,'nDets')
+    if ~isproperty(SD,'nDets')
         SD.nDets = size(SD.DetPos,1);
     end
     

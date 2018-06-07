@@ -71,7 +71,6 @@ classdef SubjClass < TreeNodeClass
                     
             % procInput
             if isproperty(S,'procInput')
-                S.procInput = convertProcInputToCurrentVer(S.procInput);
                 if isproperty(S.procInput,'procFunc') && ~isempty(S.procInput.procFunc)
                     obj.procInput = copyStructFieldByField(obj.procInput, S.procInput);
                 else

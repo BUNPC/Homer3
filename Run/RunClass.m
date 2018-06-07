@@ -18,7 +18,7 @@ classdef RunClass < TreeNodeClass
     methods
         
         
-        % -------------------------------------------------
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function obj = RunClass(varargin)
             
             if nargin==4
@@ -40,7 +40,7 @@ classdef RunClass < TreeNodeClass
             obj.tIncMan = [];
             obj.CondRun2Group = [];
             obj.userdata = struct([]);
-
+            
             run0 = loadRun(filename);
             
             obj.name       = filename;
@@ -81,7 +81,33 @@ classdef RunClass < TreeNodeClass
             if isproperty(run0,'procResult')
                 obj.procResult = run0.procResult;
             end
-                                
+            
+        end
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Copy processing params (procInut and procResult) from
+        % N2 to N1 if N1 and N2 are same nodes
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function copyProcParams(obj, R)
+            
+            if obj == R
+                obj.copyProcParamsFieldByField(R);
+            end
+            
+        end
+   
+        
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Copy processing params (procInut and procResult) from
+        % N2 to N1
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function copyProcParamsFieldByField(obj, R)
+
+            % Nothing to do here. We load the run data when we load the .nirs files
+            % which is the first thing we do in LoadNIRS2Group
+            
+            ;
         end
         
     end

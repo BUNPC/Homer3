@@ -498,9 +498,9 @@ if ch==1
 
     group = hmr.group;
     
-    group.CopyProcInput(procElem{iRunPanel}.type, procElem{iRunPanel}.procInput);
-    group.CopyProcInput(procElem{iSubjPanel}.type, procElem{iSubjPanel}.procInput);
-    group.CopyProcInput(procElem{iGroupPanel}.type, procElem{iGroupPanel}.procInput);
+    group.OverwriteProcInput(procElem{iRunPanel}.type, procElem{iRunPanel}.procInput);
+    group.OverwriteProcInput(procElem{iSubjPanel}.type, procElem{iSubjPanel}.procInput);
+    group.OverwriteProcInput(procElem{iGroupPanel}.type, procElem{iGroupPanel}.procInput);
     
 else
     [filenm,pathnm] = uiputfile( '*.cfg','Save Config File');

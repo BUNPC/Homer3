@@ -13,4 +13,5 @@ end
 
 S = textscan(filecontents_str,'%s');
 [procFunc, procParam] = parseSection(S{1});
+procFunc = procStreamSetHelp(procFunc);
 

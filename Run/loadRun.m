@@ -134,7 +134,7 @@ end
 
 if exist('procInput','var') && ismember('procInput', paramsLst)
     if isproperty(run, 'procInput') && ~isempty(run.procInput)
-        run.procInput = copyStructFieldByField(run.procInput, procInput, 'procInput');
+        run.procInput = copyStructFieldByField(run.procInput, procInput);
     else
         run.procInput = procInput;
     end
@@ -144,7 +144,7 @@ end
    
 if exist('procResult','var') && ismember('procResult', paramsLst)
     if isproperty(run, 'procResult') && ~isempty(run.procResult)
-        run.procResult = copyStructFieldByField(run.procResult, procResult, 'procResult');
+        run.procResult = copyStructFieldByField(run.procResult, procResult);
     else    
         run.procResult = procResult;
     end

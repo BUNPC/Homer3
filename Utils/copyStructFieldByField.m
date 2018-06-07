@@ -1,14 +1,14 @@
-function s1=copyStructFieldByField(s1,s2,type)
+function s1=copyStructFieldByField(s1,s2)
 
-if exist('type','var') && strcmp(type,'procInput')
-    s2 = convertProcInputToCurrentVer(s2);
+if ~strcmp(class(s1),class(s2)) 
+    if ~(isa(s1,'handle') && ~isa(s2,'struct'))
+        if ~(isa(s1,'struct') && ~isa(s2,'handle'))
+            return;
+        end
+    end
 end
 
-if ~strcmp(class(s1),class(s2))
-    return;
-end
-
-if strcmp(class(s1),'struct')
+if isa(s1,'struct') || isa(s1,'handle')
 
     fields = fieldnames(s2);
     for ii=1:length(fields)
@@ -31,27 +31,4 @@ else
 
     s1 = s2;
 
-end
-
-
-
-% ------------------------------------------------------------
-function procInput = convertProcInputToCurrentVer(procInput)
-
-if isproperty(procInput,'procFunc') && ~isempty(procInput.procFunc)
-    if isproperty(procInput.procFunc,'funcCall')
-        procInput.procFunc.funcName = procInput.procFunc.funcCall;
-        procInput.procFunc = rmfield(procInput.procFunc,'funcCall');
-    end
-    if isproperty(procInput.procFunc,'funcCallArgIn')
-        procInput.procFunc.funcArgIn = procInput.procFunc.funcCallArgIn;
-        procInput.procFunc = rmfield(procInput.procFunc,'funcCallArgIn');
-    end
-    if isproperty(procInput.procFunc,'funcCallArgOut')
-        procInput.procFunc.funcArgOut = procInput.procFunc.funcCallArgOut;
-        procInput.procFunc = rmfield(procInput.procFunc,'funcCallArgOut');
-    end
-    if ~isproperty(procInput.procFunc,'funcNameUI')
-        procInput.procFunc.funcNameUI = procInput.procFunc.funcName;
-    end
 end

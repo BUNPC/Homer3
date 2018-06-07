@@ -317,7 +317,6 @@ classdef GroupClass < TreeNodeClass
             
             % procInput
             if isproperty(G,'procInput') && ~isempty(G.procInput)
-                G.procInput = convertProcInputToCurrentVer(G.procInput);
                 if isproperty(G.procInput,'procFunc') && ~isempty(G.procInput.procFunc)
                     obj.procInput = copyStructFieldByField(obj.procInput, G.procInput);
                 else

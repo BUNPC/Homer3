@@ -24,14 +24,11 @@ function setpaths(add)
 %   setpaths(0);
 %   setpaths(1);
 %
-
-toolname = 'homer3';
-
 if ~exist('add','var') | isempty(add)
     add = true;
 end
 
-paths = getpaths();
+paths = getpaths()';
 
 rootpath = pwd;
 k = find(rootpath=='\');
@@ -41,7 +38,14 @@ paths_str = '';
 err = false;
 for ii=1:length(paths)
     paths{ii} = [rootpath, paths{ii}];
+    if add
+        fprintf('Adding path %s\n', paths{ii});
+    else
+        fprintf('Removing path %s\n', paths{ii});
+    end
+    
     if ~exist(paths{ii}, 'dir')
+        fprintf('Path %s does not exist\n', paths{ii});
         err = true;
         continue;
     end
@@ -53,16 +57,16 @@ for ii=1:length(paths)
 end
 
 if err
-    errmsg = sprintf('WARNING: The current folder does NOT look like a %s root folder. Please change current folder to the root %s folder and rerun setpaths.', ...
-                     toolname, toolname);
-    menu(errmsg, 'OK');
+    menu('WARNING: The current folder does NOT look like the application root folder. Please change current folder to the root application folder and rerun setpaths.', 'OK');
     paths = {};
     return;
 end
 
+
 if add
-    fprintf('ADDED %s paths to matlab search paths:\n', toolname);
+    fprintf('ADDED application paths to matlab search paths:\n');
     addpath(paths_str, '-end')
+    
     if isunix()
         idx = findExePaths(paths);
         for ii=1:length(idx)
@@ -73,12 +77,14 @@ if add
             end
         end
     end
+    
+    if exist('./setpaths_proprietary.m','file')
+        setpaths_proprietary();
+    end
 else
-    fprintf('REMOVED %s paths from matlab search paths:\n', toolname);
+    fprintf('REMOVED application paths from matlab search paths:\n');
     rmpath(paths_str);
 end
-
-checkToolboxDep();
 
 
 
@@ -91,40 +97,6 @@ for ii=1:length(paths)
     if ~isempty(findstr(paths{ii}, '/bin'))
         idx(kk) = ii;
         kk=kk+1;
-    end
-end
-
-
-
-
-% -----------------------------------------------------
-function toolboxes = getToolboxesUsed()
-    toolboxes = struct(...
-        'Name', { ...
-        'MATLAB', ...
-        'Signal Processing Toolbox', ...
-        'Symbolic Math Toolbox' ...
-        }, ...
-        'Appl', { ...
-        'Homer3', ...
-        'Homer3', ...
-        'Homer3' ...
-        } ...
-        );
-
-
-% -----------------------------------------------------
-function checkToolboxDep()
-
-v = ver;
-toolboxesAvail = cellstr(char(v.Name));
-toolboxesUsed = getToolboxesUsed();
-
-for ii=1:length(toolboxesUsed)
-    if all(~strcmp(toolboxesUsed(ii).Name, toolboxesAvail))
-        warning(sprintf('%s required by %s is missing from this Matlab installation ...', ...
-            toolboxesUsed(ii).Name, toolboxesUsed(ii).Appl));
-        fprintf('\n');
     end
 end
 

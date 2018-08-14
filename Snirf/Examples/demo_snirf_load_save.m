@@ -1,33 +1,38 @@
-function [snirf, snirf2] = demo_snirf_load_save(nirsfile)
+function [snirf_saved, snirf_loaded] = demo_snirf_load_save(infile, outfile)
 
 % 
 % Function:
 %   
-%  [snirf, snirf2] = demo_snirf_load_save(nirsfile)
+%  [snirf_saved, snirf_loaded] = demo_snirf_load_save(infile, outfile)
 %  
 % Usage examples:
 %   
-%  [snirf, snirf2] = demo_snirf_load_save();
-%
-%  [snirf, snirf2] = demo_snirf_load_save('./Simple_Probe1.nirs');
-%
-%  [snirf, snirf2] = demo_snirf_load_save('./neuro_run01.nirs');
+%  [snirf_saved, snirf_loaded] = demo_snirf_load_save();
+%  [snirf_saved, snirf_loaded] = demo_snirf_load_save('./Simple_Probe1.nirs');
+%  [snirf_saved, snirf_loaded] = demo_snirf_load_save('./neuro_run01.nirs', 'myfile.h5');
 %
 %
 
 
-if ~exist('nirsfile','var')
-    nirsfile = './neuro_run01.nirs';
+if ~exist('infile','var')
+    infile = './neuro_run01.nirs';
+end
+if ~exist('outfile','var')
+    outfile = './myfile.h5';
 end
 
-if exist('myfile.h5','file')
-    delete('myfile.h5');
+if exist(outfile,'file')
+    delete(outfile);
 end
 
-nirs = load(nirsfile,'-mat');
-snirf = SNIRFClass(nirs.d, nirs.t, nirs.s, nirs.SD, nirs.aux);
-snirf.Save('myfile.h5')
+fprintf('Saving ...\n'); pause(4);
+nirs = load(infile,'-mat');
+snirf_saved = SnirfClass(nirs.d, nirs.t, nirs.s, nirs.SD, nirs.aux);
+snirf_saved.Save(outfile);
 
-snirf2 = SNIRFClass();
-snirf2.Load('myfile.h5');
+fprintf('\n');
+
+fprintf('Loading ...\n'); pause(4);
+snirf_loaded = SnirfClass();
+snirf_loaded.Load(outfile);
 

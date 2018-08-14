@@ -1,7 +1,7 @@
 classdef AuxClass  < matlab.mixin.Copyable
     
     properties
-        Name
+        name
         d
         t
     end
@@ -9,7 +9,7 @@ classdef AuxClass  < matlab.mixin.Copyable
     methods
         
         function obj = AuxClass(aux)
-            obj.Name = '';
+            obj.name = '';
             if nargin>0
                 obj.d = aux;
                 obj.t = [];

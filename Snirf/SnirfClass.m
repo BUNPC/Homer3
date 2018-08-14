@@ -1,33 +1,38 @@
-classdef SNIRFClass  < matlab.mixin.Copyable
+classdef SnirfClass  < matlab.mixin.Copyable
     
     properties
-        format_version
+        formatVersion
         data
         stim
-        SD
+        sd
         aux
-        timeoffset
-        metadatatags
+        timeOffset
+        metaDataTags
     end
     
     methods
 
         % -------------------------------------------------------
-        function obj = SNIRFClass(d, t, s, SD, aux)
-            obj.format_version = '';
-            obj.timeoffset     = 0;
-            obj.metadatatags   = { {'K1','V1'}, {'K2','V2'}, {'K3','V3'}, {'K4','V4'} };
+        function obj = SnirfClass(d, t, s, SD, aux)
+            obj.formatVersion = '';
+            obj.timeOffset     = 0;
+            obj.metaDataTags   = { 
+                                   {'SubjectID','subj1'}
+                                   {'MeasurementDate','19700401'}
+                                   {'MeasurementTime','150127.34'}
+                                   {'SpatialUnit','mm'} 
+                                 };
             obj.data           = DataClass();
 
             if nargin>0
                 obj.data(1) = DataClass(d,t,SD.MeasList);
                 obj.stim    = StimClass(s);
-                obj.SD      = SDClass(SD);
+                obj.sd      = SdClass(SD);
                 obj.aux     = AuxClass(aux);                
             else
                 obj.data(1) = DataClass();
                 obj.stim    = StimClass();
-                obj.SD      = SDClass();
+                obj.sd      = SdClass();
                 obj.aux     = AuxClass();
             end
 

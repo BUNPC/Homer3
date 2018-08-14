@@ -1,18 +1,18 @@
 classdef StimClass  < matlab.mixin.Copyable
     
     properties
-        Name
-        Data
+        name
+        data
     end
     
     methods
         
         function obj = StimClass(s)
-            obj.Name = '';
+            obj.name = '';
             if nargin>0
-                obj.Data = s;
+                obj.data = s;
             else
-                obj.Data = [];
+                obj.data = [];
             end
         end
         

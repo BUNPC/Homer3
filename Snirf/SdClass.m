@@ -18,6 +18,7 @@ classdef SdClass  < matlab.mixin.Copyable
     
     methods
         
+        % -------------------------------------------------------
         function obj = SdClass(SD)
             
             if nargin>0
@@ -53,7 +54,52 @@ classdef SdClass  < matlab.mixin.Copyable
             end
 
         end
+
+        % -------------------------------------------------------
+        function obj = Load(obj, fname, parent)
+            
+            if ~exist(fname, 'file')
+                return;
+            end
+              
+            obj.lambda                    = h5read_safe(fname, [parent, '/lambda'], obj.lambda);
+            obj.lambdaEmission            = h5read_safe(fname, [parent, '/lambdaEmission'], obj.lambdaEmission);
+            obj.srcPos                    = h5read_safe(fname, [parent, '/srcPos'], obj.srcPos);
+            obj.detPos                    = h5read_safe(fname, [parent, '/detPos'], obj.detPos);
+            obj.frequency                 = h5read(fname, [parent, '/frequency']);
+            obj.timeDelay                 = h5read(fname, [parent, '/timeDelay']);
+            obj.timeDelayWidth            = h5read(fname, [parent, '/timeDelayWidth']);
+            obj.momentOrder               = h5read_safe(fname, [parent, '/momentOrder'], obj.momentOrder);
+            obj.correlationTimeDelay      = h5read(fname, [parent, '/correlationTimeDelay']);
+            obj.correlationTimeDelayWidth = h5read(fname, [parent, '/correlationTimeDelayWidth']);
+            obj.srcLabels                 = deblank(h5read_safe(fname, [parent, '/srcLabels'], obj.srcLabels));
+            obj.detLabels                 = deblank(h5read_safe(fname, [parent, '/detLabels'], obj.detLabels));
+            
+        end
+
         
+        % -------------------------------------------------------
+        function Save(obj, fname, parent)
+            
+            if ~exist(fname, 'file')
+                fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+                H5F.close(fid);
+            end     
+            
+            hdf5write_safe(fname, [parent, '/lambda'], obj.lambda);
+            hdf5write_safe(fname, [parent, '/lambdaEmission'], obj.lambdaEmission);
+            hdf5write_safe(fname, [parent, '/srcPos'], obj.srcPos);
+            hdf5write_safe(fname, [parent, '/detPos'], obj.detPos);
+            hdf5write(fname, [parent, '/frequency'], obj.frequency, 'WriteMode','append');
+            hdf5write(fname, [parent, '/timeDelay'], obj.timeDelay, 'WriteMode','append');
+            hdf5write(fname, [parent, '/timeDelayWidth'], obj.timeDelayWidth, 'WriteMode','append');
+            hdf5write_safe(fname, [parent, '/momentOrder'], obj.momentOrder);
+            hdf5write(fname, [parent, '/correlationTimeDelay'], obj.correlationTimeDelay, 'WriteMode','append');
+            hdf5write(fname, [parent, '/correlationTimeDelayWidth'], obj.correlationTimeDelayWidth, 'WriteMode','append');
+            hdf5write_safe(fname, [parent, '/srcLabels'], obj.srcLabels);
+            hdf5write_safe(fname, [parent, '/detLabels'], obj.detLabels);
+                        
+        end
         
     end
     

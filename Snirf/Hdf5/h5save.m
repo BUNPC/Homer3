@@ -23,16 +23,11 @@ if ~isstruct(varval) && ~isobject(varval)
     if ~exist(fname, 'file') || ~h5exist(h5info(fname), varname)
         % Since HDF5 does not support empty or null variable, if varval is null 
         % add a _0 suffix to the var name and then don't write to it.          
-        if isempty(varval)
-            cmdstr = sprintf('hdf5write(fname, ''%s_0'', 0, ''WriteMode'',''append'');', varname);
+        if ~isempty(varval)
+            hdf5write(fname, varname, varval, 'WriteMode','append');
         else
-            cmdstr = sprintf('hdf5write(fname, ''%s'', varval, ''WriteMode'',''append'');', varname);
-        end
-        fprintf('%s\n', cmdstr);
-        try
-            eval( cmdstr );
-        catch
-            dbg=1;
+            varname_0 = eval( sprintf('''%s_0'';', varname) );
+            hdf5write(fname, varname_0, 0, 'WriteMode','append');
         end
     end
   

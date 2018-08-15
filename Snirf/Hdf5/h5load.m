@@ -15,13 +15,7 @@ if ~isstruct(varval) && ~isobject(varval)
     
     % Create new leaf variable if it doesn't exist. 
     if exist(fname, 'file') && h5exist(h5info(fname), varname)
-        cmdstr = sprintf('varval = h5read(fname, ''%s'');', varname);
-        fprintf('%s\n', cmdstr);
-        try
-            eval( cmdstr );
-        catch
-            dbg=1;
-        end
+        varval = h5read(fname, varname);
     elseif exist(fname, 'file') && h5exist(h5info(fname), [varname, '_0'])
         switch(class(varval))
             case 'char'
@@ -62,7 +56,9 @@ else
                     eval( sprintf('varval(jj) = %s();', class(varval(1))) );
                 end
             end
-            eval( sprintf('varval(jj).%s = h5loadvar(fname, varval(jj).%s, subvarname);', props{ii}, props{ii}) );
+            varval_jj_prop = eval( sprintf('varval(jj).%s', props{ii}) );
+            varval_jj_prop = h5loadvar(fname, varval_jj_prop, subvarname);
+            eval( sprintf('varval(jj).%s = varval_jj_prop;', props{ii}) );
         end
         jj=jj+1;
     end

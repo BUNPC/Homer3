@@ -36,8 +36,8 @@ classdef DataClass  < matlab.mixin.Copyable
                 return;
             end
               
-            obj.d = h5read_safe(fname, [parent, '/d'], obj.d);
-            obj.t = h5read_safe(fname, [parent, '/t'], obj.t);
+            obj.d = hdf5read_safe(fname, [parent, '/d'], obj.d);
+            obj.t = hdf5read_safe(fname, [parent, '/t'], obj.t);
             
             ii=1;
             info = h5info(fname);

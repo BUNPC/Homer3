@@ -1,4 +1,4 @@
-function b = h5exist(info, varname)
+function b = h5exist(info0, varname)
 
 % 
 % b = h5exist(h5info('S_struct_file.h5'), '/S_struct')
@@ -7,6 +7,12 @@ function b = h5exist(info, varname)
 %
 
 b = false;
+
+if ~isstruct(info0) && ~isfield(info0, 'Group') && ~isfield(info0, 'GroupHierarchy')
+    info = h5info(info0);
+else
+    info = info0;
+end
 
 if strcmp(varname, info.Name)
     b = true;

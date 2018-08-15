@@ -25,7 +25,7 @@ classdef StimClass  < matlab.mixin.Copyable
             end
               
             obj.name = h5read_safe(fname, [parent, '/name'], obj.name);
-            obj.data = h5read_safe(fname, [parent, '/data'], obj.data);
+            obj.data = hdf5read_safe(fname, [parent, '/data'], obj.data);
 
         end
 

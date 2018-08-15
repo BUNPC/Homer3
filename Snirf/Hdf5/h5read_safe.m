@@ -1,8 +1,8 @@
 function val = h5read_safe(fname, name, val)
 
-if h5exist(h5info(fname), name)
+try
     val = h5read(fname, name);
-elseif h5exist(h5info(fname), [name, '_0'])
+catch
     switch(class(val))
         case 'char'
             val = '';

@@ -27,9 +27,9 @@ classdef AuxClass  < matlab.mixin.Copyable
                 return;
             end
               
-            obj.name = h5read(fname, [parent, '/name']);
-            obj.d    = h5read_safe(fname, [parent, '/d'], obj.d);
-            obj.t    = h5read_safe(fname, [parent, '/t'], obj.t);
+            obj.name = deblank(h5read(fname, [parent, '/name']));
+            obj.d    = hdf5read_safe(fname, [parent, '/d'], obj.d);
+            obj.t    = hdf5read_safe(fname, [parent, '/t'], obj.t);
 
         end
 

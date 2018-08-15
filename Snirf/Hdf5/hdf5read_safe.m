@@ -1,9 +1,14 @@
-function val = hdf5read_safe(fname, name)
+function val = hdf5read_safe(fname, name, val)
 
-info = h5info(fname);
-if h5exist(info, name)
-    val = h5read(fname, name);
-elseif h5exist(info, name)
-    val = '';
+try
+    val = hdf5read(fname, name);
+catch
+    switch(class(val))
+        case 'char'
+            val = '';
+        case 'cell'
+            val = {};
+        otherwise            
+            val = [];
+    end
 end
-

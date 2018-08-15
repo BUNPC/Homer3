@@ -40,14 +40,14 @@ classdef MeasListClass  < matlab.mixin.Copyable
                 return;
             end
               
-            obj.sourceIndex = h5read(fname, [parent, '/sourceIndex']);
-            obj.detectorIndex = h5read(fname, [parent, '/detectorIndex']);
-            obj.wavelengthIndex = h5read(fname, [parent, '/wavelengthIndex']);
-            obj.dataType = h5read(fname, [parent, '/dataType']);
-            obj.dataTypeIndex = h5read(fname, [parent, '/dataTypeIndex']);
-            obj.sourcePower = h5read(fname, [parent, '/sourcePower']);
+            obj.sourceIndex = hdf5read(fname, [parent, '/sourceIndex']);
+            obj.detectorIndex = hdf5read(fname, [parent, '/detectorIndex']);
+            obj.wavelengthIndex = hdf5read(fname, [parent, '/wavelengthIndex']);
+            obj.dataType = hdf5read(fname, [parent, '/dataType']);
+            obj.dataTypeIndex = hdf5read(fname, [parent, '/dataTypeIndex']);
+            obj.sourcePower = hdf5read(fname, [parent, '/sourcePower']);
             obj.sourcePowerUnit = h5read_safe(fname, [parent, '/sourcePowerUnit'], obj.sourcePowerUnit);
-            obj.detectorGain = h5read(fname, [parent, '/detectorGain']);
+            obj.detectorGain = hdf5read(fname, [parent, '/detectorGain']);
 
         end
 

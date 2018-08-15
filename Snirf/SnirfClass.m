@@ -55,8 +55,8 @@ classdef SnirfClass  < matlab.mixin.Copyable
             finfo = h5info(fname);
             
             obj.formatVersion = deblank(h5read(fname, [parent, '/formatVersion']));
-            obj.timeOffset = h5read(fname, [parent, '/timeOffset']);
-            obj.metaDataTags = h5read(fname, [parent, '/metaDataTags']);
+            obj.timeOffset = hdf5read(fname, [parent, '/timeOffset']);
+            obj.metaDataTags = hdf5read_safe(fname, [parent, '/metaDataTags'], obj.metaDataTags);
             
             ii=1;
             while h5exist(finfo, [parent, '/data_', num2str(ii)])
@@ -77,10 +77,12 @@ classdef SnirfClass  < matlab.mixin.Copyable
         function Save(obj, fname, parent)
             
             % Args
-            if ~exist(fname, 'file')
-                fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
-                H5F.close(fid);
+            if exist(fname, 'file')
+                delete(fname);
             end
+            fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+            H5F.close(fid);
+
             if ~exist('parent', 'var')
                 parent = '/snirf';
             elseif parent(1)~='/'

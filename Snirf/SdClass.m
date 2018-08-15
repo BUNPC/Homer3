@@ -62,16 +62,16 @@ classdef SdClass  < matlab.mixin.Copyable
                 return;
             end
               
-            obj.lambda                    = h5read_safe(fname, [parent, '/lambda'], obj.lambda);
-            obj.lambdaEmission            = h5read_safe(fname, [parent, '/lambdaEmission'], obj.lambdaEmission);
-            obj.srcPos                    = h5read_safe(fname, [parent, '/srcPos'], obj.srcPos);
-            obj.detPos                    = h5read_safe(fname, [parent, '/detPos'], obj.detPos);
-            obj.frequency                 = h5read(fname, [parent, '/frequency']);
-            obj.timeDelay                 = h5read(fname, [parent, '/timeDelay']);
-            obj.timeDelayWidth            = h5read(fname, [parent, '/timeDelayWidth']);
-            obj.momentOrder               = h5read_safe(fname, [parent, '/momentOrder'], obj.momentOrder);
-            obj.correlationTimeDelay      = h5read(fname, [parent, '/correlationTimeDelay']);
-            obj.correlationTimeDelayWidth = h5read(fname, [parent, '/correlationTimeDelayWidth']);
+            obj.lambda                    = hdf5read_safe(fname, [parent, '/lambda'], obj.lambda);
+            obj.lambdaEmission            = hdf5read_safe(fname, [parent, '/lambdaEmission'], obj.lambdaEmission);
+            obj.srcPos                    = hdf5read_safe(fname, [parent, '/srcPos'], obj.srcPos);
+            obj.detPos                    = hdf5read_safe(fname, [parent, '/detPos'], obj.detPos);
+            obj.frequency                 = hdf5read(fname, [parent, '/frequency']);
+            obj.timeDelay                 = hdf5read(fname, [parent, '/timeDelay']);
+            obj.timeDelayWidth            = hdf5read(fname, [parent, '/timeDelayWidth']);
+            obj.momentOrder               = hdf5read_safe(fname, [parent, '/momentOrder'], obj.momentOrder);
+            obj.correlationTimeDelay      = hdf5read(fname, [parent, '/correlationTimeDelay']);
+            obj.correlationTimeDelayWidth = hdf5read(fname, [parent, '/correlationTimeDelayWidth']);
             obj.srcLabels                 = deblank(h5read_safe(fname, [parent, '/srcLabels'], obj.srcLabels));
             obj.detLabels                 = deblank(h5read_safe(fname, [parent, '/detLabels'], obj.detLabels));
             

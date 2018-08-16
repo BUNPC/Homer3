@@ -26,7 +26,7 @@ classdef SnirfClass  < matlab.mixin.Copyable
 
             if nargin>0
                 obj.data(1) = DataClass(d,t,SD.MeasList);
-                obj.stim    = StimClass(s);
+                obj.stim    = StimClass(s,t);
                 obj.sd      = SdClass(SD);
                 obj.aux     = AuxClass(aux,t);                
             else
@@ -87,7 +87,7 @@ classdef SnirfClass  < matlab.mixin.Copyable
                 parent = '/snirf';
             elseif parent(1)~='/'
                 parent = ['/',parent];
-            end            
+            end
             
             hdf5write(fname, [parent, '/formatVersion'], obj.formatVersion, 'WriteMode','append');
             hdf5write(fname, [parent, '/timeOffset'], obj.timeOffset, 'WriteMode','append');

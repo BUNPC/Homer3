@@ -8,39 +8,40 @@ classdef StimClass  < matlab.mixin.Copyable
     methods
         
         % -------------------------------------------------------
-        function obj = StimClass(s,t)
-            obj.name = '';
-            if nargin>0
-                kk=1;
-                for ii=1:size(s,2)
-                    k = find(s(:,ii)>0);
-                    for jj=1:length(k)
-                        obj.data(kk,1) = t(k(jj));
-                        obj.data(kk,2) = 10;
-                        obj.data(kk,3) = ii;
-                        kk=kk+1;
-                    end
-                end
-            else
+        function obj = StimClass(s, t, CondName)
+            
+            if nargin==3
+                
+                k = s>0;
+                obj.data = [t(k), 5*ones(length(t(k)),1), ones(length(t(k)),1)];
+                obj.name = CondName;
+
+            elseif nargin==0
+
+                obj.name = '';
                 obj.data = [];
+
             end
         end
         
         % -------------------------------------------------------
-        function obj = Load(obj, fname, parent)
-            %
-            % Example:
-            %
-            %     s = snirf.stim.Load('Simple_Probe.h5','/snirf/stim');
-            %
+        function err = Load(obj, fname, parent)
+
+            err = 0;
             
             if ~exist(fname, 'file')
+                err = -1;
                 return;
             end
-            
-            obj.name = h5read_safe(fname, [parent, '/name'], obj.name);
-            obj.data = hdf5read_safe(fname, [parent, '/data'], obj.data);
-            
+              
+            try
+                obj.name = deblank(h5read(fname, [parent, '/name']));
+                obj.data = h5read(fname, [parent, '/data']);
+            catch
+                err = -1;
+                return;
+            end
+                        
         end
         
         
@@ -57,7 +58,7 @@ classdef StimClass  < matlab.mixin.Copyable
             % use h5create and specify 'Inf' for the number of rows to
             % indicate variable number of rows
             h5create(fname, [parent, '/data'], [Inf,3],'ChunkSize',[3,3]);
-            h5write('myfile.h5',[parent, '/data'], obj.data, [1,1], size(obj.data));
+            h5write(fname,[parent, '/data'], obj.data, [1,1], size(obj.data));
 
         end
         

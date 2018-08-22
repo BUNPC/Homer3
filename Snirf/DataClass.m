@@ -30,14 +30,22 @@ classdef DataClass  < matlab.mixin.Copyable
 
 
         % -------------------------------------------------------
-        function obj = Load(obj, fname, parent)
+        function err = Load(obj, fname, parent)
+            
+            err = 0;
             
             if ~exist(fname, 'file')
+                err = -1;
                 return;
             end
               
-            obj.d = hdf5read_safe(fname, [parent, '/d'], obj.d);
-            obj.t = hdf5read_safe(fname, [parent, '/t'], obj.t);
+            try
+                obj.d = h5read(fname, [parent, '/d']);
+                obj.t = h5read(fname, [parent, '/t']);
+            catch
+                err = -1;
+                return;
+            end
             
             ii=1;
             info = h5info(fname);
@@ -68,7 +76,19 @@ classdef DataClass  < matlab.mixin.Copyable
             end
             
         end
-                
+
+        
+        
+        % -------------------------------------------------------
+        function b = Empty(obj)
+            
+            b = false;
+            if isempty(obj.d) && isempty(obj.t)
+                b = true;
+            end
+            
+        end
+        
     end
     
 end

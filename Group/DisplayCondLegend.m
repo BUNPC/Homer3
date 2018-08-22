@@ -1,6 +1,7 @@
 function DisplayCondLegend(hLg, idxLg)
 global hmr
 
+[idxLg, k] = sort(idxLg);
 if ishandles(hLg)
-    legend(hLg, hmr.group.CondNames(idxLg));
+    legend(hLg(k), hmr.group.CondNames(idxLg));
 end

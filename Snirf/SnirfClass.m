@@ -13,7 +13,8 @@ classdef SnirfClass  < matlab.mixin.Copyable
     methods
 
         % -------------------------------------------------------
-        function obj = SnirfClass(d, t, s, SD, aux, CondNames)
+        function obj = SnirfClass(d, t, SD, aux, s, CondNames)
+            
             obj.formatVersion = '1.0';
             obj.timeOffset     = 0;
             obj.metaDataTags   = { 

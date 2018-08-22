@@ -46,7 +46,6 @@ classdef MeasListClass  < matlab.mixin.Copyable
             obj.dataType = hdf5read(fname, [parent, '/dataType']);
             obj.dataTypeIndex = hdf5read(fname, [parent, '/dataTypeIndex']);
             obj.sourcePower = hdf5read(fname, [parent, '/sourcePower']);
-            obj.sourcePowerUnit = h5read_safe(fname, [parent, '/sourcePowerUnit'], obj.sourcePowerUnit);
             obj.detectorGain = hdf5read(fname, [parent, '/detectorGain']);
 
         end
@@ -66,7 +65,6 @@ classdef MeasListClass  < matlab.mixin.Copyable
             hdf5write(fname, [parent, '/dataType'], obj.dataType, 'WriteMode','append');
             hdf5write(fname, [parent, '/dataTypeIndex'], obj.dataTypeIndex, 'WriteMode','append');
             hdf5write(fname, [parent, '/sourcePower'], obj.sourcePower, 'WriteMode','append');
-            hdf5write_safe(fname, [parent, '/sourcePowerUnit'], obj.sourcePower);
             hdf5write(fname, [parent, '/detectorGain'], obj.detectorGain, 'WriteMode','append');
             
         end

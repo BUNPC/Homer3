@@ -70,7 +70,7 @@ if ~isempty(run.s)
             idxLg(kk) = iCond;
             kk=kk+1;
         end
-        DisplayCondLegend(hLg, idxLg);
     end    
+    DisplayCondLegend(hLg, idxLg);
 end
 hold off

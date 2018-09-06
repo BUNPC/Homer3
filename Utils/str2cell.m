@@ -1,17 +1,26 @@
-function C = str2cell(S)
+function C = str2cell(str, delimiters)
 
-% Convert a single string with a bunch of newlines into a cell array of
-% lines strings
-
-C = {};
-k = find(S == sprintf('\n'));
-if isempty(k)
-    C{1} = S;
-    return;
+if ~exist('delimiters','var')
+    delimiter = sprintf('\n');
 end
 
-k = [0,k];
-for ii=2:length(k)
-    C{ii-1,1} = strtrim(S( k(ii-1)+1:k(ii)-1 ));
+% Get indices of all the delimiters
+k=1;
+for kk=1:length(delimiters)
+    k = [k, find(str==delimiters(kk))];
 end
+k = [k, length(str)];
 
+% 
+C = cell(length(k)-1,1);
+for ii=1:length(C)
+    if ii==1 && ii==length(C)
+        C{ii} = str(k(ii):k(ii+1));
+    elseif ii==1
+        C{ii} = str(k(ii):k(ii+1)-1);
+    elseif ii==length(C)
+        C{ii} = str(k(ii)+1:k(ii+1));
+    else
+        C{ii} = str(k(ii)+1:k(ii+1)-1);
+    end
+end

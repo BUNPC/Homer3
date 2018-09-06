@@ -24,16 +24,16 @@ function setpaths(add)
 %   setpaths(0);
 %   setpaths(1);
 %
-if ~exist('add','var') | isempty(add)
+
+if ~exist('add','var') || isempty(add)
     add = true;
 end
 
-paths = getpaths()';
+paths = getpaths();
 
+% Add or remove paths for this application
 rootpath = pwd;
-k = find(rootpath=='\');
-rootpath(k)='/';
-
+rootpath(rootpath=='\')='/';
 paths_str = '';
 err = false;
 for ii=1:length(paths)
@@ -76,10 +76,6 @@ if add
                 system(sprintf('chmod 755 %s/*', paths{idx(ii)}));
             end
         end
-    end
-    
-    if exist('./setpaths_proprietary.m','file')
-        setpaths_proprietary();
     end
 else
     fprintf('REMOVED application paths from matlab search paths:\n');

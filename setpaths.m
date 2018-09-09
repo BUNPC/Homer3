@@ -115,7 +115,7 @@ addpath(paths_excl_str{1}, '-end');
 
 if length(wspaths)>1
     fprintf('\n');
-    fprintf('Order of precedence for conflicting workspaces:\n');
+    fprintf('Order of precedence of similar workspaces:\n');
 else
     return;
 end

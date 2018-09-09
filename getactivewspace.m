@@ -11,8 +11,7 @@ if isempty(wsname)
 end
 
 for ii=1:length(paths_all)
-    
-    if ~isempty(strfind(paths_all{ii}, wsname))
+    if ~all(strcmp(getpathparts(paths_all{ii}), wsname)==0)
         paths_excl{kk,1} = paths_all{ii};
         kk=kk+1;
     end

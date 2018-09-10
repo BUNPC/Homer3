@@ -1,7 +1,7 @@
 function C = str2cell(str, delimiters)
 
 if ~exist('delimiters','var')
-    delimiter = sprintf('\n');
+    delimiters = sprintf('\n');
 end
 
 % Get indices of all the delimiters

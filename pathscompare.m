@@ -31,7 +31,7 @@ fullpath2 = path2;
 currdir = pwd;
 
 if exist(path1,'dir')==7
-    cd(path1);
+    cd_safe(path1);
     fullpath1 = pwd;
 else
     return;
@@ -40,7 +40,7 @@ end
 cd(currdir);
 
 if exist(path2,'dir')==7
-    cd(path2);
+    cd_safe(path2);
     fullpath2 = pwd;
 else
     return;

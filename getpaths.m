@@ -40,7 +40,7 @@ paths_excl_str = {};
 if isempty(strfind(mode, 'noerrcheck'))  && ~isempty(strfind(mode, 'errcheck'))
         
     % Get all workspace paths that have similar functions sets with current applications
-    appmainfunc = {'Homer3.m','Homer2_UI.m'};
+    appmainfunc = {'Homer3.m','Homer2_UI.m','brainScape.m'};
     
     kk=1;
     wsidx = [];

@@ -1,13 +1,16 @@
 function C = str2cell(str, delimiters)
 
 if ~exist('delimiters','var')
-    delimiters = sprintf('\n');
+    delimiters{1} = sprintf('\n');
+elseif ~iscell(delimiters)
+    foo{1} = delimiters;
+    delimiters = foo;
 end
 
 % Get indices of all the delimiters
 k=1;
 for kk=1:length(delimiters)
-    k = [k, find(str==delimiters(kk))];
+    k = [k, find(str==delimiters{kk})];
 end
 k = [k, length(str)];
 
@@ -24,3 +27,4 @@ for ii=1:length(C)
         C{ii} = str(k(ii)+1:k(ii+1)-1);
     end
 end
+

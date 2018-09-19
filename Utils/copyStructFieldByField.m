@@ -10,6 +10,10 @@ end
 
 if isa(s1,'struct') || isa(s1,'handle')
 
+    if ~isa(s2,'struct')
+        return;
+    end
+    
     fields = fieldnames(s2);
     for ii=1:length(fields)
         if isempty(s1)

@@ -22,7 +22,9 @@ classdef StimClass  < matlab.mixin.Copyable
                 obj.data = [];
 
             end
+            
         end
+        
         
         % -------------------------------------------------------
         function err = Load(obj, fname, parent)
@@ -59,7 +61,9 @@ classdef StimClass  < matlab.mixin.Copyable
             % use h5create and specify 'Inf' for the number of rows to
             % indicate variable number of rows
             h5create(fname, [parent, '/data'], [Inf,3],'ChunkSize',[3,3]);
-            h5write(fname,[parent, '/data'], obj.data, [1,1], size(obj.data));
+            if ~isempty(obj.data)
+                h5write(fname,[parent, '/data'], obj.data, [1,1], size(obj.data));
+            end
 
         end
         

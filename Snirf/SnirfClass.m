@@ -46,6 +46,21 @@ classdef SnirfClass  < matlab.mixin.Copyable
                 obj.sd      = SdClass(SD);
                 obj.aux     = AuxClass(aux,t);
                 
+            elseif nargin==1
+                
+                nirs = d;
+                
+                obj.data(1) = DataClass(nirs.d, nirs.t, nirs.SD.MeasList);
+                for ii=1:size(nirs.s,2)
+                    if isfield(nirs, 'CondNames')
+                        obj.stim(ii) = StimClass(nirs.s(:,ii), nirs.t, nirs.CondNames{ii});
+                    else
+                        obj.stim(ii) = StimClass(nirs.s(:,ii), nirs.t, num2str(ii));
+                    end
+                end
+                obj.sd      = SdClass(nirs.SD);
+                obj.aux     = AuxClass(nirs.aux, nirs.t);                
+                
             else
                 
                 obj.data(1) = DataClass();

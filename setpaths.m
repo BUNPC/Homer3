@@ -1,4 +1,4 @@
-function setpaths(add, mode)
+function setpaths(add, mode, options)
 
 %
 % USAGE: 
@@ -31,6 +31,9 @@ end
 if ~exist('mode','var') || isempty(mode)
     mode = 'errcheck';
 end
+if ~exist('options','var') | isempty(options)
+    options = '';
+end
 
 if ~add
     mode = 'noerrcheck';
@@ -40,7 +43,7 @@ end
 if ~isempty(wspaths)
     if pathscompare(wspaths{1}, pwd)
         fprintf('Current workspace %s already at the top of the search path.\n', wspaths{1});
-        addwspaths(wspaths, paths_excl_str);
+        addwspaths(wspaths, paths_excl_str, options);
         return;
     end
 end
@@ -80,7 +83,7 @@ paths_excl_str = [paths_str, paths_excl_str];
 % current one, depending on user selection 
 if add
     fprintf('ADDED search paths for worspace %s\n', pwd);    
-    addwspaths(wspaths, paths_excl_str);
+    addwspaths(wspaths, paths_excl_str, options);
     setpermissions(paths);
 else
     fprintf('REMOVED search paths for worspace %s\n', pwd);
@@ -105,23 +108,27 @@ end
 
 
 % ---------------------------------------------------
-function addwspaths(wspaths, paths_excl_str)
+function addwspaths(wspaths, paths_excl_str, options)
 
 if isempty(wspaths)
     return;
 end
 
+% Add the primary workspace to the search path
 addpath(paths_excl_str{1}, '-end');
 
+% Add all the other similar workspaces that have been found and removed
 if length(wspaths)>1
     fprintf('\n');
     fprintf('Order of precedence of similar workspaces:\n');
-else
-    return;
-end
 for ii=1:length(wspaths)
     fprintf('  %s\n', wspaths{ii});
     addpath(paths_excl_str{ii}, '-end');
+    end
+end
+
+if exist('./setpaths_proprietary.m','file')
+    setpaths_proprietary(options);
 end
 
 

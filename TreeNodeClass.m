@@ -18,6 +18,7 @@ classdef TreeNodeClass < matlab.mixin.Copyable
         procInput;
         procResult;
         err;
+        debug = 1;
     end
     
     methods

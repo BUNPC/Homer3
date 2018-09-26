@@ -9,5 +9,4 @@ else
         h5create(fname, [name,'_0'], [1,1]);
         h5write(fname, [name,'_0'], 0);
     end
-    
 end

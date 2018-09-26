@@ -2,31 +2,16 @@ classdef NirsFilesClass < DataFilesClass
     
     properties
         flags
-        loadData
     end
     
     methods
         
         % -----------------------------------------------------------------------------------
         function obj = NirsFilesClass(varargin)
-                 
-            if nargin==0
-                obj.handles = [];
-                obj.pathnm = pwd;
-            elseif nargin==1
-                if isstruct(varargin{1})
-                    obj.handles = varargin{1};
-                    obj.pathnm = pwd;
-                elseif ischar(varargin{1})
-                    obj.handles = [];
-                    obj.pathnm = varargin{1};
-                end
-            elseif nargin==2
-                obj.handles = varargin{1};
-                obj.pathnm = varargin{2};
-            end
-            obj.loadData = -1;
 
+            % Call base class constructor explicitly in order to pass 
+            % our derived class arguments. 
+            obj@DataFilesClass(varargin);            
             obj.GetDataSet();
             
         end
@@ -74,6 +59,40 @@ classdef NirsFilesClass < DataFilesClass
             
         end
         
+        
+        
+        % -----------------------------------------------------------------------------------
+        function initErrFlags(obj, n)
+            
+            flag = struct(...
+                'FileCorrupt',0, ...
+                'SD',0, ...
+                'SD_Lambda',0, ...
+                'SD_SrcPos',0, ...
+                'SD_nSrcs',0, ...
+                'SD_DetPos',0, ...
+                'SD_nDets',0, ...
+                'SD_MeasList',0, ...
+                'SD_auxChannels',0, ...
+                'SD_SpatialUnit',0, ...
+                'd',0, ...
+                't',0, ...
+                's',0, ...
+                'aux',0, ...
+                'ml',0, ...
+                'procInput',0, ...
+                'procInput_procFunc',0, ...
+                'procInput_procParam',0, ...
+                'procInput_changeFlag',0, ...
+                'procInput_SD',0, ...
+                'CondNames',0, ...
+                'status',0, ...
+                'subj',0 ...
+                );
+            
+            obj.flags = repmat(flag,n,1);
+            
+        end
         
         
         % -----------------------------------------------------------------------------------
@@ -180,12 +199,12 @@ classdef NirsFilesClass < DataFilesClass
                 end
                 if obj.flags(iF).procInput_changeFlag~=0
                     obj.flags(iF).warningCount = obj.flags(iF).warningCount+1;
-                    errmsg_tmp = [errmsg_tmp sprintf('%d) Warning: Older format - missing changeFlag in procInput;  ',...
+                    errmsg_tmp = [errmsg_tmp sprintf('%d) Warning: Older format - missing changeFlag in procInput;  ', ...
                         obj.flags(iF).errCount+obj.flags(iF).warningCount)];
                 end
                 if obj.flags(iF).procInput_SD~=0
                     obj.flags(iF).warningCount=obj.flags(iF).warningCount+1;
-                    errmsg_tmp = [errmsg_tmp sprintf('%d) Warning: Older format - missing SD in procInput;  ',...
+                    errmsg_tmp = [errmsg_tmp sprintf('%d) Warning: Older format - missing SD in procInput;  ', ...
                         obj.flags(iF).errCount+obj.flags(iF).warningCount)];
                 end
                 
@@ -194,13 +213,13 @@ classdef NirsFilesClass < DataFilesClass
                 if obj.flags(iF).CondNames~=0
                     obj.flags(iF).errCount = obj.flags(iF).errCount+1;
                     if bitand(obj.flags(iF).CondNames,1)
-                        errmsg_tmp = [errmsg_tmp sprintf('%d) Error: CondNames has unassigned conditions;  ',...
+                        errmsg_tmp = [errmsg_tmp sprintf('%d) Error: CondNames has unassigned conditions;  ', ...
                             obj.flags(iF).errCount+obj.flags(iF).warningCount)];
                     elseif bitand(obj.flags(iF).CondNames,2)
-                        errmsg_tmp = [errmsg_tmp sprintf('%d) Error: CondNames has duplicate conditions names;  ',...
+                        errmsg_tmp = [errmsg_tmp sprintf('%d) Error: CondNames has duplicate conditions names;  ', ...
                             obj.flags(iF).errCount+obj.flags(iF).warningCount)];
                     elseif bitand(obj.flags(iF).CondNames,4)
-                        errmsg_tmp = [errmsg_tmp sprintf('%d) Error: length(CondNames) ~= Columns in s;  ',...
+                        errmsg_tmp = [errmsg_tmp sprintf('%d) Error: length(CondNames) ~= Columns in s;  ', ...
                             obj.flags(iF).errCount+obj.flags(iF).warningCount)];
                     end
                 end
@@ -227,14 +246,13 @@ classdef NirsFilesClass < DataFilesClass
         end
    
     
-
         % -----------------------------------------------------------------------------------
         function checkFormat(obj)
         
             warning('off','MATLAB:load:variableNotFound');
             
             nFiles = length(obj.files);
-            obj.flags = initErrFlagsStruct(nFiles);
+            obj.initErrFlags(nFiles);
                         
             % NIRS data set format
             hwait = waitbar(0,sprintf('Checking .nirs format for individual files') );
@@ -287,38 +305,38 @@ classdef NirsFilesClass < DataFilesClass
                 
                 %%%% SD
                 if ~exist('SD','var') || isempty(SD)
-                    obj.flags(iF).SD=bitor(obj.flags(iF).SD,1)
+                    obj.flags(iF).SD = bitor(obj.flags(iF).SD,1);
                 end
                 if ~isproperty(SD,'Lambda') || isempty(SD.Lambda)
-                    obj.flags(iF).SD_Lambda=bitor(obj.flags(iF).SD_Lambda,1);
+                    obj.flags(iF).SD_Lambda = bitor(obj.flags(iF).SD_Lambda,1);
                 end
                 if ~isproperty(SD,'SrcPos') || isempty(SD.SrcPos)
-                    obj.flags(iF).SD_SrcPos=bitor(obj.flags(iF).SD_SrcPos,1);
+                    obj.flags(iF).SD_SrcPos = bitor(obj.flags(iF).SD_SrcPos,1);
                 end
                 if ~isproperty(SD,'nSrcs')
-                    obj.flags(iF).SD_nSrcs=bitor(obj.flags(iF).SD_nSrcs,1);
+                    obj.flags(iF).SD_nSrcs = bitor(obj.flags(iF).SD_nSrcs,1);
                 end
                 if ~isproperty(SD,'DetPos') || isempty(SD.DetPos)
-                    obj.flags(iF).SD_DetPos=bitor(obj.flags(iF).SD_DetPos,1);
+                    obj.flags(iF).SD_DetPos = bitor(obj.flags(iF).SD_DetPos,1);
                 end
                 if ~isproperty(SD,'nDets')
-                    obj.flags(iF).SD_nDets=bitor(obj.flags(iF).SD_nDets,1);
+                    obj.flags(iF).SD_nDets = bitor(obj.flags(iF).SD_nDets,1);
                 end
                 if ~isproperty(SD,'MeasList') || isempty(SD.MeasList)
-                    obj.flags(iF).SD_MeasList=bitor(obj.flags(iF).SD_MeasList,1);
+                    obj.flags(iF).SD_MeasList = bitor(obj.flags(iF).SD_MeasList,1);
                 end
                 if isproperty(SD,'MeasList') && isproperty(SD,'MeasListAct')
                     if size(SD.MeasList,1) ~= size(SD.MeasListAct,1)
-                        obj.flags(iF).SD_MeasList=bitor(obj.flags(iF).SD_MeasList,2);
+                        obj.flags(iF).SD_MeasList = bitor(obj.flags(iF).SD_MeasList,2);
                     end
                 end
                 if isproperty(SD,'MeasList') && isproperty(SD,'MeasListVis')
                     if size(SD.MeasList,1) ~= size(SD.MeasListVis,1)
-                        obj.flags(iF).SD_MeasList=bitor(obj.flags(iF).SD_MeasList,4);
+                        obj.flags(iF).SD_MeasList = bitor(obj.flags(iF).SD_MeasList,4);
                     end
                 end
                 if ~isproperty(SD,'SpatialUnit')
-                    obj.flags(iF).SD_SpatialUnit=bitor(obj.flags(iF).SD_SpatialUnit,1);
+                    obj.flags(iF).SD_SpatialUnit = bitor(obj.flags(iF).SD_SpatialUnit,1);
                 end
                 if isproperty(SD,'auxChannels')
                     if ~isempty(SD.auxChannels)
@@ -329,7 +347,7 @@ classdef NirsFilesClass < DataFilesClass
                             end
                         end
                         if ~iscell(SD.auxChannels)
-                            obj.flags(iF).SD_auxChannels=bitor(obj.flags(iF).SD_auxChannels,1);
+                            obj.flags(iF).SD_auxChannels = bitor(obj.flags(iF).SD_auxChannels,1);
                         end
                     end
                 end
@@ -381,16 +399,16 @@ classdef NirsFilesClass < DataFilesClass
                 %%%%% procInput
                 if exist('procInput','var')
                     if ~isstruct(procInput)
-                        obj.flags(iF).procInput=bitor(obj.flags(iF).procInput,1);
+                        obj.flags(iF).procInput = bitor(obj.flags(iF).procInput,1);
                     else
                         if ~isproperty(procInput,'procFunc')
-                            obj.flags(iF).procInput_procFunc=bitor(obj.flags(iF).procInput_procFun,1);
+                            obj.flags(iF).procInput_procFunc = bitor(obj.flags(iF).procInput_procFun,1);
                         end
                         if ~isproperty(procInput,'procParam')
-                            obj.flags(iF).procInput_procParam=bitor(obj.flags(iF).procInput_procParam,1);
+                            obj.flags(iF).procInput_procParam = bitor(obj.flags(iF).procInput_procParam,1);
                         end
                         if ~isproperty(procInput,'changeFlag')
-                            obj.flags(iF).procInput_changeFlag=bitor(obj.flags(iF).procInput_changeFlag,1);
+                            obj.flags(iF).procInput_changeFlag = bitor(obj.flags(iF).procInput_changeFlag,1);
                         end
                     end
                 end
@@ -442,10 +460,10 @@ classdef NirsFilesClass < DataFilesClass
                         ch=2;
                     else
                         if obj.flags(iF).errCount>0
-                            ch = menu(sprintf('Error in %s files.\nDo you want to try to fix it?',obj.files(iF).name),...
+                            ch = menu(sprintf('Error in %s files.\nDo you want to try to fix it?',obj.files(iF).name), ...
                                 'Yes','Yes to All','No','No to All');
                         elseif obj.flags(iF).warningCount>0
-                            ch = menu(sprintf('Obsolete format in %s files.\nDo you want to try to upgrade to current format?',obj.files(iF).name),...
+                            ch = menu(sprintf('Obsolete format in %s files.\nDo you want to try to upgrade to current format?',obj.files(iF).name), ...
                                 'Yes','Yes to All','No','No to All');
                         end
                     end
@@ -475,7 +493,7 @@ classdef NirsFilesClass < DataFilesClass
                             
                             if obj.flags(iF).d==0
                                 obj.flags(iF).errCount = obj.flags(iF).errCount-1;
-                                savestr = [savestr '''d'','];
+                                savestr = [savestr, '''d'','];
                             end
                         end
                         
@@ -517,7 +535,7 @@ classdef NirsFilesClass < DataFilesClass
                             
                             if obj.flags(iF).s==0
                                 obj.flags(iF).errCount = obj.flags(iF).errCount-1;
-                                savestr = [savestr '''s'','];
+                                savestr = [savestr, '''s'','];
                             end
                         end
                         
@@ -552,7 +570,7 @@ classdef NirsFilesClass < DataFilesClass
                             
                             if obj.flags(iF).aux==0
                                 obj.flags(iF).errCount = obj.flags(iF).errCount-1;
-                                savestr = [savestr '''aux'','];
+                                savestr = [savestr, '''aux'','];
                             end
                         end
                         
@@ -575,7 +593,7 @@ classdef NirsFilesClass < DataFilesClass
                             
                             if obj.flags(iF).SD_Lambda==0
                                 obj.flags(iF).errCount = obj.flags(iF).errCount-1;
-                                savestr = [savestr '''SD'','];
+                                savestr = [savestr, '''SD'','];
                             end
                         end
                         
@@ -610,7 +628,7 @@ classdef NirsFilesClass < DataFilesClass
                             
                             if obj.flags(iF).SD_MeasList==0
                                 obj.flags(iF).errCount = obj.flags(iF).errCount-1;
-                                savestr = [savestr '''SD'','];
+                                savestr = [savestr, '''SD'','];
                             end
                         end
                         
@@ -649,7 +667,7 @@ classdef NirsFilesClass < DataFilesClass
                             if flagFix==1
                                 if obj.flags(iF).SD_SpatialUnit==0
                                     obj.flags(iF).errCount = obj.flags(iF).errCount-1;
-                                    savestr = [savestr '''SD'','];
+                                    savestr = [savestr, '''SD'','];
                                 end
                             end
                         end
@@ -670,13 +688,13 @@ classdef NirsFilesClass < DataFilesClass
                                 SD.auxChannels = {};
                                 m=length(SD.auxChannels);
                                 for ii=1:size(aux,2)
-                                    SD.auxChannels{ii} = ['Aux ',num2str(ii)];
+                                    SD.auxChannels{ii} = ['Aux, ',num2str(ii)];
                                 end
                             end
                             
                             if obj.flags(iF).SD_MeasList==0
                                 obj.flags(iF).errCount = obj.flags(iF).errCount-1;
-                                savestr = [savestr '''SD'','];
+                                savestr = [savestr, '''SD'','];
                             end
                         end
                         
@@ -693,7 +711,7 @@ classdef NirsFilesClass < DataFilesClass
                             
                             if obj.flags(iF).procInput_SD==0
                                 obj.flags(iF).errCount = obj.flags(iF).errCount-1;
-                                savestr = [savestr '''procInput'','];
+                                savestr = [savestr, '''procInput'','];
                             end
                         end
                         
@@ -713,9 +731,9 @@ classdef NirsFilesClass < DataFilesClass
                             if bitand(obj.flags(iF).CondNames,4)
                                 if length(CondNames)<size(s,2)
                                     for ii=length(CondNames)+1:size(s,2)
-                                        jj = ii;
+                                        jj=ii;
                                         while ~isempty(find(strcmp(CondNames, num2str(jj))))
-                                            jj = jj + 10;
+                                            jj=jj+10;
                                         end
                                         CondNames{ii} = num2str(jj);
                                     end
@@ -730,7 +748,7 @@ classdef NirsFilesClass < DataFilesClass
                             
                             if obj.flags(iF).CondNames==0
                                 obj.flags(iF).errCount = obj.flags(iF).errCount-1;
-                                savestr = [savestr '''CondNames'','];
+                                savestr = [savestr, '''CondNames'','];
                             end
                         end
                         
@@ -797,16 +815,16 @@ classdef NirsFilesClass < DataFilesClass
                 return;
             end
                        
-            SDo = {};
+            sd_common = {};
             
-            hwait = waitbar(0,sprintf('Checking .nirs format consistency across files: processing 1 of %d',nFiles) );
+            hwait = waitbar(0,sprintf('Checking .nirs format consistency across files: processing 1 of %d', nFiles) );
             for iF=1:nFiles
                 
-                waitbar(iF/nFiles,hwait,sprintf('Checking .nirs format consistency across files: processing %d of %d',iF,nFiles));
+                waitbar(iF/nFiles,hwait,sprintf('Checking .nirs format consistency across files: processing %d of %d', iF, nFiles));
                 if obj.files(iF).isdir
                     continue;
                 end
-                load( obj.files(iF).name, '-mat','SD');
+                load( obj.files(iF).name, '-mat','SD' );
                 
                 % Easy fix if nSrcs or nDets aren't there
                 if ~isproperty(SD,'nSrcs')
@@ -816,8 +834,8 @@ classdef NirsFilesClass < DataFilesClass
                     SD.nDets = size(SD.DetPos,1);
                 end
                 
-                if isempty(SDo)
-                    SDo{1} = SD;
+                if isempty(sd_common)
+                    sd_common{1} = SD;
                     nSD = 1;
                     uniqueSD(iF) = 1;
                 end
@@ -827,16 +845,16 @@ classdef NirsFilesClass < DataFilesClass
                 flag = [];
                 for iSD = 1:nSD
                     flag(iSD) = 0;
-                    if ~isequal(SD.Lambda, SDo{iSD}.Lambda)
+                    if ~isequal(SD.Lambda, sd_common{iSD}.Lambda)
                         flag(iSD) = 1;
                     end
-                    if ~isequal(SD.SrcPos, SDo{iSD}.SrcPos)
+                    if ~isequal(SD.SrcPos, sd_common{iSD}.SrcPos)
                         flag(iSD) = 1;
                     end
-                    if ~isequal(SD.DetPos, SDo{iSD}.DetPos)
+                    if ~isequal(SD.DetPos, sd_common{iSD}.DetPos)
                         flag(iSD) = 1;
                     end
-                    if ~isequal(SD.MeasList, SDo{iSD}.MeasList)
+                    if ~isequal(SD.MeasList, sd_common{iSD}.MeasList)
                         flag(iSD) = 1;
                     end
                 end
@@ -849,87 +867,17 @@ classdef NirsFilesClass < DataFilesClass
                 % incompatibility
                 if uniqueSD(iF)==0
                     nSD = nSD + 1;
-                    SDo{nSD} = SD;
+                    sd_common{nSD} = SD;
                     uniqueSD(iF) = nSD;
                 end
                 
             end
             close(hwait);
             
-            
             % Report results
-            nSD = length(SDo);
-            if nSD > 1
-                
-                count = 1;
-                for ii=1:nSD
-                    errmsg{count} = sprintf('SD%d',ii);
-                    kk = find(uniqueSD==ii);
-                    for jj=1:length(kk)
-                        errmsg{count+jj} = sprintf('  %s',files(kk(jj)).name);
-                    end
-                    count = count+jj+1;
-                end
-                
-                hFig = figure('numbertitle','off','menubar','none','name','NIRS Group Error Report','units','normalized',...
-                    'position',[.20, .20, .25, .60], 'resize','on');
-                
-                hErrListbox = uicontrol('parent',hFig,'style','listbox','string',errmsg,...
-                    'units','normalized','position',[.1 .25 .8 .7],'value',1);
-                hErrText = uicontrol('parent',hFig,'style','text','string','WARNING: More than one SD geometry found. Might cause errors.',...
-                    'units','normalized',    'position',[.1 .15 .7 .055],'horizontalalignment','left');
-                hErrText2 = uicontrol('parent',hFig,'style','text','string','Do you still want to load this data set or select a different one?',...
-                    'units','normalized',   'position',[.1 .095 .7 .055],'horizontalalignment','left');
-                hButtnLoad = uicontrol('parent',hFig,'style','pushbutton','tag','pushbuttonLoad',...
-                    'string','Load','units','normalized','position',[.2 .03 .20 .05],...
-                    'callback',@pushbuttonLoadDataset_Callback);
-                hButtnSelectAnother = uicontrol('parent',hFig,'style','pushbutton','tag','pushbuttonSelectAnother',...
-                    'string','Select Another','units','normalized','position',[.4 .03 .30 .05],...
-                    'callback',@obj.pushbuttonLoadDataset_Callback);
-                
-                set(hErrText,'units','pixels');
-                set(hErrText2,'units','pixels');
-                set(hButtnLoad,'units','pixels');
-                set(hButtnSelectAnother,'units','pixels');
-                
-                % Block execution thread until user presses the Ok button
-                while obj.loadData==-1
-                    pause(1);
-                end
-                
-            else
-                obj.loadData = 1;
-            end
-                                               
-        end
-        
-        
-        % -------------------------------------------------------
-        function pushbuttonLoadDataset_Callback(obj, hObject)
+            obj.reportGroupErrors();
             
-            hp = get(hObject,'parent');
-            hc = get(hp,'children');
-            for ii=1:length(hc)
-                
-                if strcmp(get(hc(ii),'tag'),'pushbuttonLoad')
-                    hButtnLoad = hc(ii);
-                elseif strcmp(get(hc(ii),'tag'),'pushbuttonSelectAnother')
-                    hButtnSelectAnother = hc(ii);
-                end
-                
-            end
-            
-            if hObject==hButtnLoad
-                delete(hButtnSelectAnother);
-                obj.loadData = 1;
-            elseif hObject==hButtnSelectAnother
-                delete(hButtnLoad);
-                obj.loadData = 0;
-            end
-            delete(hp);
-            
-        end
-        
+        end        
         
     end
     

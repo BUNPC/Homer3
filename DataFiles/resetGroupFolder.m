@@ -8,7 +8,7 @@ if exist([dirname, 'groupResults.mat'],'file')
     delete([dirname, 'groupResults.mat']);
 end
 
-files = findNIRSDataSet();
+files = NirsFilesClass().files;
 for ii=1:length(files)
     if files(ii).isdir
         continue;

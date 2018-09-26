@@ -262,7 +262,7 @@ classdef GroupClass < TreeNodeClass
         
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        function LoadGroupFile(obj, files)
+        function LoadGroupFile(obj)
             
             if exist('./groupResults.mat','file')
                 

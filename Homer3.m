@@ -162,7 +162,7 @@ global hmr;
 if isempty(hmr)
     return;
 end
-if ~exist('eventdata','var') | isempty(eventdata)
+if ~exist('eventdata','var') || isempty(eventdata)
     eventdata = [];
 end
 if isempty(hmr.handles)
@@ -602,15 +602,15 @@ global hmr
 currElem = hmr.currElem;
 guiMain = hmr.guiMain;
 
-if strcmp(get(hObject, 'checked'), 'on');
+if strcmp(get(hObject, 'checked'), 'on')
     set(hObject, 'checked', 'off')
-elseif strcmp(get(hObject, 'checked'), 'off');
+elseif strcmp(get(hObject, 'checked'), 'off')
     set(hObject, 'checked', 'on')
 end
 
-if strcmp(get(hObject, 'checked'), 'on');
+if strcmp(get(hObject, 'checked'), 'on')
     guiMain.showStdErr = true;
-elseif strcmp(get(hObject, 'checked'), 'off');
+elseif strcmp(get(hObject, 'checked'), 'off')
     guiMain.showStdErr = false;
 end
 

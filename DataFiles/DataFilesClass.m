@@ -5,10 +5,12 @@ classdef DataFilesClass < handle
         filesErr;
         err;
         errmsg;
+        sd_common;
         pathnm;
         handles;
         listboxFiles; 
         listboxFiles2;
+        loadData;        
     end
     
     methods
@@ -16,19 +18,27 @@ classdef DataFilesClass < handle
         % ----------------------------------------------------
         function obj = DataFilesClass(varargin)
             
-            if nargin==0
+            args = varargin{1};
+            nargs = length(args);
+            if nargs==0
+                obj.handles = [];
                 obj.pathnm = pwd;
-                obj.handles = [];
-            elseif nargin==1
-                obj.pathnm = varargin{1};
-                obj.handles = [];
-            elseif nargin==2
-                obj.pathnm = varargin{1};
-                obj.handles = varargin{2};
+            elseif nargs==1
+                if isstruct(args{1})
+                    obj.handles = args{1};
+                    obj.pathnm = pwd;
+                elseif ischar(args{1})
+                    obj.handles = [];
+                    obj.pathnm = args{1};
+                end
+            elseif nargs==2
+                obj.handles = args{1};
+                obj.pathnm = args{2};
             end
             obj.filesErr = struct([]);
-            obj.err = struct([]);
-            obj.errmsg = {};                      
+            obj.errmsg = {};
+            obj.sd_common = {};
+            obj.loadData = -1;
             
         end
         
@@ -224,6 +234,82 @@ classdef DataFilesClass < handle
         
         end
 
+
+        % --------------------------------------------------------------------------------------------
+        function reportGroupErrors(obj)
+            
+            nSD = length(obj.sd_common);
+            if nSD > 1
+                
+                count = 1;
+                for ii=1:nSD
+                    obj.errmsg{count} = sprintf('SD%d',ii);
+                    kk = find(uniqueSD==ii);
+                    for jj=1:length(kk)
+                        obj.errmsg{count+jj} = sprintf('  %s', obj.files(kk(jj)).name);
+                    end
+                    count = count+jj+1;
+                end
+                
+                hFig = figure('numbertitle','off','menubar','none','name','File Group Error Report','units','normalized',...
+                    'position',[.20, .20, .25, .60], 'resize','on');
+                
+                hErrListbox = uicontrol('parent',hFig,'style','listbox','string',obj.errmsg,...
+                    'units','normalized','position',[.1 .25 .8 .7],'value',1);
+                hErrText = uicontrol('parent',hFig,'style','text','string','WARNING: More than one SD geometry found. Might cause errors.',...
+                    'units','normalized',    'position',[.1 .15 .7 .055],'horizontalalignment','left');
+                hErrText2 = uicontrol('parent',hFig,'style','text','string','Do you still want to load this data set or select a different one?',...
+                    'units','normalized',   'position',[.1 .095 .7 .055],'horizontalalignment','left');
+                hButtnLoad = uicontrol('parent',hFig,'style','pushbutton','tag','pushbuttonLoad',...
+                    'string','Load','units','normalized','position',[.2 .03 .20 .05],...
+                    'callback',@obj.pushbuttonLoadDataset_Callback);
+                hButtnSelectAnother = uicontrol('parent',hFig,'style','pushbutton','tag','pushbuttonSelectAnother',...
+                    'string','Select Another','units','normalized','position',[.4 .03 .30 .05],...
+                    'callback',@obj.pushbuttonLoadDataset_Callback);
+                
+                set(hErrText,'units','pixels');
+                set(hErrText2,'units','pixels');
+                set(hButtnLoad,'units','pixels');
+                set(hButtnSelectAnother,'units','pixels');
+                
+                % Block execution thread until user presses the Ok button
+                while obj.loadData==-1
+                    pause(1);
+                end
+                
+            else
+                obj.loadData = 1;
+            end
+
+        end
+        
+        
+        
+        % -------------------------------------------------------
+        function pushbuttonLoadDataset_Callback(obj, hObject)
+            
+            hp = get(hObject,'parent');
+            hc = get(hp,'children');
+            for ii=1:length(hc)
+                
+                if strcmp(get(hc(ii),'tag'),'pushbuttonLoad')
+                    hButtnLoad = hc(ii);
+                elseif strcmp(get(hc(ii),'tag'),'pushbuttonSelectAnother')
+                    hButtnSelectAnother = hc(ii);
+                end
+                
+            end
+            
+            if hObject==hButtnLoad
+                delete(hButtnSelectAnother);
+                obj.loadData = 1;
+            elseif hObject==hButtnSelectAnother
+                delete(hButtnLoad);
+                obj.loadData = 0;
+            end
+            delete(hp);
+            
+        end
         
     end
     

@@ -79,7 +79,7 @@ classdef GroupClass < TreeNodeClass
             % Overwrite procInput of group tree members of a single level
             % (ie., group, subject, run)
             
-            procInput = InitProcInput();
+            procInput = ProcInputClass();
             
             if nargin==2
                 if isproperty(varargin{1}, 'procElem')
@@ -125,7 +125,7 @@ classdef GroupClass < TreeNodeClass
             % Copy procInput only to those group tree members at a single level
             % (ie., group, subject, run) with empty procInput
             
-            procInput = InitProcInput();
+            procInput = ProcInputClass();
             
             if nargin==2
                 if isproperty(varargin{1}, 'procElem')
@@ -351,6 +351,7 @@ classdef GroupClass < TreeNodeClass
         % Check whether subject k'th subject from this group exists in group G and return
         % its index in G if it does exist. Else return 0.
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
         function j = existSubj(obj, k, G)
             
             j=0;

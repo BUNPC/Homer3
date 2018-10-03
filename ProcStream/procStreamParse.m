@@ -5,7 +5,7 @@ function [procInput, err, errstr] = procStreamParse(fid_or_str, procElem)
 % group, subj and run processing stream parameters
 %
 
-procInput = InitProcInput();
+procInput = ProcInputClass();
 err=0;
 errstr='';
 

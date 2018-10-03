@@ -1,6 +1,6 @@
 
 % Initialize output struct
-procResult = InitProcResult();
+procResult = ProcResultClass();
 procInput = procElem.procInput;
 
 % loop over functions
@@ -114,7 +114,9 @@ end
 
 % Copy paramOut to procResult
 for ii=1:length(paramOut)
-    eval( sprintf('procResult.%s = %s;',paramOut{ii}, paramOut{ii}) );
+    if eval( sprintf('isproperty(procResult, ''%s'');', paramOut{ii}) );
+	    eval( sprintf('procResult.%s = %s;',paramOut{ii}, paramOut{ii}) );
+    end
 end
 
 close(hwait)

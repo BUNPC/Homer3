@@ -10,7 +10,7 @@ end
 
 rnum = 1;
 groupCurr = GroupClass(files(1).name);
-files(1) = MapFile2Group(files(1),1,1);ls
+files(1) = MapFile2Group(files(1),1,1);
 for ii=2:length(files)
     
     fname = files(ii).name;

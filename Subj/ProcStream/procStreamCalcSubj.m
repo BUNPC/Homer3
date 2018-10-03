@@ -1,6 +1,6 @@
 function procResult = procStreamCalcSubj(subj, hListboxFiles, listboxFilesFuncPtr)
 
-procResult = InitProcResult();
+procResult = ProcResultClass();
 
 % Calculate all runs in this session
 runs = subj.runs;

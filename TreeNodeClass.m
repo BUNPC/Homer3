@@ -18,7 +18,6 @@ classdef TreeNodeClass < matlab.mixin.Copyable
         procInput;
         procResult;
         err;
-        debug = 1;
     end
     
     methods
@@ -30,8 +29,8 @@ classdef TreeNodeClass < matlab.mixin.Copyable
             obj.type = '';
             obj.SD = struct([]);
             obj.CondNames = {};
-            obj.procInput = InitProcInput();
-            obj.procResult = InitProcResult();
+            obj.procInput = ProcInputClass();
+            obj.procResult = ProcResultClass();
             obj.err = 0;
         end
         

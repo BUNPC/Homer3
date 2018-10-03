@@ -231,10 +231,10 @@ classdef NirsFilesClass < DataFilesClass
                 end
                 obj.flags(iF).subj = 1;
                 if obj.flags(iF).errCount>0 && obj.files(iF).subjdiridx
-                    obj.flags(files(iF).subjdiridx).errCount=1;
+                    obj.flags(obj.files(iF).subjdiridx).errCount=1;
                 end
                 if obj.flags(iF).warningCount>0 && obj.files(iF).subjdiridx
-                    obj.flags(files(iF).subjdiridx).warningCount=1;
+                    obj.flags(obj.files(iF).subjdiridx).warningCount=1;
                 end
                 obj.errmsg{count} = errmsg_tmp;
                 count=count+1;

@@ -1,4 +1,4 @@
-function [sname rnum k2] = getSubjNameAndRun(fname,rnum)
+function [sname, rnum, k2] = getSubjNameAndRun(fname,rnum)
 
 sname='';
 k1=findstr(fname,'/');

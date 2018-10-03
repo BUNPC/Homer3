@@ -11,24 +11,14 @@ iRun = run.iRun;
 
 group.subjs(iSubj).runs(iRun).SD         = run.SD;
 group.subjs(iSubj).runs(iRun).s          = run.s;
-group.subjs(iSubj).runs(iRun).tIncMan    = run.tIncMan;
 group.subjs(iSubj).runs(iRun).CondNames  = run.CondNames;
+group.subjs(iSubj).runs(iRun).tIncMan    = run.tIncMan;
 group.subjs(iSubj).runs(iRun).userdata   = run.userdata;
 group.subjs(iSubj).runs(iRun).procInput  = run.procInput;
-
-% Do not save procResult in memory. Too big.
-% group.subjs(iSubj).runs(iRun).procResult = run.procResult;
+group.subjs(iSubj).runs(iRun).procResult = run.procResult;
 
 paramsLst = {};
 iP=1;
-
-if ~strcmp(mode, 'none')
-	procResult = run.procResult;
-	paramsLst{iP} = 'procResult';
-	iP=iP+1;
-else
-    run.procResult = InitProcResult();
-end
 
 if strcmpi(mode, 'savetodisk') || strcmpi(mode, 'saveuseredits')
     
@@ -51,20 +41,8 @@ if strcmpi(mode, 'savetodisk') || strcmpi(mode, 'saveuseredits')
     paramsLst{iP} = 's';
     iP=iP+1;
 
-    tIncMan = run.tIncMan;
-    paramsLst{iP} = 'tIncMan';
-    iP=iP+1;
-
     CondNames = run.CondNames;
     paramsLst{iP} = 'CondNames';
-    iP=iP+1;
-
-    userdata = run.userdata;
-    paramsLst{iP} = 'userdata';
-    iP=iP+1;
-
-    procInput = run.procInput;
-    paramsLst{iP} = 'procInput';
     iP=iP+1;
 
 end
@@ -79,12 +57,12 @@ hmr.group = group;
 
 
 % ---------------------------------------------------------
-function [paramsStr paramsLst] = extractParams(paramsLst)
+function [paramsStr, paramsLst] = extractParams(paramsLst)
 
 
 % Determine the preliminary list of params
 if isempty(paramsLst) | strcmp(paramsLst{1},'+')
-    paramsLst = {'t','SD','d','s','aux','tIncMan','CondNames','userdata','procInput','procResult'};
+    paramsLst = {'t','SD','d','s','aux','CondNames'};
 end
 
 % Convert final list of params to single string

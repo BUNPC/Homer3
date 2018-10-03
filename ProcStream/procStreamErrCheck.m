@@ -1,6 +1,6 @@
 function [errflags, iReg] = procStreamErrCheck(varargin)
 
-procInput = InitProcInput();
+procInput = ProcInputClass();
 if nargin==1
     if isproperty(varargin{1}, 'procElem')
         type = varargin{1}.procElem.type;

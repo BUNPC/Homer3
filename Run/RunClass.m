@@ -63,23 +63,8 @@ classdef RunClass < TreeNodeClass
             if isproperty(run0,'aux')
                 obj.aux        = run0.aux;
             end
-            if isproperty(run0,'tIncMan')
-                obj.tIncMan    = run0.tIncMan;
-            end
             if isproperty(run0,'CondNames')
                 obj.CondNames  = run0.CondNames;
-            end
-            if isproperty(run0,'CondRun2Group')
-                obj.CondRun2Group = run0.CondRun2Group;
-            end
-            if isproperty(run0,'userdata')
-                obj.userdata   = run0.userdata;
-            end
-            if isproperty(run0,'procInput')
-                obj.procInput  = procStreamCopy2Native(run0.procInput);
-            end
-            if isproperty(run0,'procResult')
-                obj.procResult = run0.procResult;
             end
             
         end
@@ -104,10 +89,54 @@ classdef RunClass < TreeNodeClass
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function copyProcParamsFieldByField(obj, R)
 
-            % Nothing to do here. We load the run data when we load the .nirs files
-            % which is the first thing we do in LoadNIRS2Group
+            % procInput
+            if isproperty(R,'procInput')
+                if isproperty(R.procInput,'procFunc') && ~isempty(R.procInput.procFunc)
+                    obj.procInput.Copy(R.procInput);
+                else
+                    [obj.procInput.procFunc, obj.procInput.procParam] = procStreamDefault('run');
+                end
+            end
             
-            ;
+            % procResult
+            if isproperty(R,'procResult') && ~isempty(R.procResult)
+                obj.procResult = copyStructFieldByField(obj.procResult, R.procResult);
+            end
+            
+            % CondNames
+            if isproperty(R,'CondNames') && ~isempty(R.CondNames)
+                obj.CondNames = copyStructFieldByField(obj.CondNames, R.CondNames);
+            end
+            
+            % CondSubj2Run
+            if isproperty(R,'CondRun2Group') && ~isempty(R.CondRun2Group)
+                obj.CondRun2Group = copyStructFieldByField(obj.CondRun2Group, R.CondRun2Group);
+            end
+            
+            % tIncMan
+            if isproperty(R,'tIncMan') && ~isempty(R.tIncMan)
+                obj.tIncMan = copyStructFieldByField(obj.tIncMan, R.tIncMan);
+            end
+            
+            % userdata
+            if isproperty(R,'userdata') && ~isempty(R.userdata)
+                obj.userdata = copyStructFieldByField(obj.userdata, R.userdata);
+        end
+        
+    end
+    
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Subjects obj1 and obj2 are considered equivalent if their names
+        % are equivalent and their sets of runs are equivalent. 
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function B = equivalent(obj1, obj2)
+            
+            B=1;
+            if ~strcmp(obj1.name, obj2.name)
+                B=0;
+                return;
+            end
+            
         end
         
     end

@@ -115,42 +115,42 @@ elseif (ismember('CondNames', paramsLst) && ~exist('CondNames','var')) || ~ispro
         run.CondNames = InitCondNamesRun(s);
     end
 end
-
-if exist('tIncMan','var') && ismember('tIncMan', paramsLst)
-    run.tIncMan = tIncMan;
-elseif (ismember('tIncMan', paramsLst) && ~exist('tIncMan','var')) || ~isprop(run, 'tIncMan')
-    if exist('t','var')
-        run.tIncMan = ones(length(run.t),1);
-    end
-end
-
-if exist('userdata','var') && ismember('userdata', paramsLst)
-    run.userdata = userdata;
-elseif (ismember('userdata', paramsLst) && ~exist('userdata','var')) || ~isprop(run, 'userdata')
-    if exist('s','var') && exist('t','var')
-        run.userdata = InitUserdata(s, t);
-    end
-end
-
-if exist('procInput','var') && ismember('procInput', paramsLst)
-    if isproperty(run, 'procInput') && ~isempty(run.procInput)
-        run.procInput = copyStructFieldByField(run.procInput, procInput);
-    else
-        run.procInput = procInput;
-    end
-elseif (ismember('procInput', paramsLst) && ~exist('procInput','var')) || ~isproperty(run, 'procInput')
-    run.procInput = InitProcInput();
-end
-   
-if exist('procResult','var') && ismember('procResult', paramsLst)
-    if isproperty(run, 'procResult') && ~isempty(run.procResult)
-        run.procResult = copyStructFieldByField(run.procResult, procResult);
-    else    
-        run.procResult = procResult;
-    end
-elseif (ismember('procResult', paramsLst) && ~exist('procResult','var')) || ~isproperty(run, 'procResult')
-    run.procResult = InitProcResult();
-end
+ 
+% if exist('tIncMan','var') && ismember('tIncMan', paramsLst)
+%     run.tIncMan = tIncMan;
+% elseif (ismember('tIncMan', paramsLst) && ~exist('tIncMan','var')) || ~isprop(run, 'tIncMan')
+%     if exist('t','var')
+%         run.tIncMan = ones(length(run.t),1);
+%     end
+% end
+% 
+% if exist('userdata','var') && ismember('userdata', paramsLst)
+%     run.userdata = userdata;
+% elseif (ismember('userdata', paramsLst) && ~exist('userdata','var')) || ~isprop(run, 'userdata')
+%     if exist('s','var') && exist('t','var')
+%         run.userdata = InitUserdata(s,t);
+%     end
+% end
+% 
+% if exist('procInput','var') && ismember('procInput', paramsLst)
+%     if isproperty(run, 'procInput') && ~isempty(run.procInput)
+%         run.procInput = copyStructFieldByField(run.procInput, procInput);
+%     else
+%         run.procInput = procInput;
+%     end
+% elseif (ismember('procInput', paramsLst) && ~exist('procInput','var')) || ~isproperty(run, 'procInput')
+%     run.procInput = ProcInputClass();
+% end
+%    
+% if exist('procResult','var') && ismember('procResult', paramsLst)
+%     if isproperty(run, 'procResult') && ~isempty(run.procResult)
+%         run.procResult = copyStructFieldByField(run.procResult, procResult);
+%     else    
+%         run.procResult = procResult;
+%     end
+% elseif (ismember('procResult', paramsLst) && ~exist('procResult','var')) || ~isproperty(run, 'procResult')
+%     run.procResult = ProcResultClass();
+% end
 
 warning('on', 'MATLAB:load:variableNotFound');
 

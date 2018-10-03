@@ -95,7 +95,7 @@ if isempty(param)
     b = isempty(param);
     return;
 end
-if ~isstruct(param(1))
+if ~isstruct(param(1)) && ~isobject(param(1))
     b = isempty(param(1));
     return;
 end

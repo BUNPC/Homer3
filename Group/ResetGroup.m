@@ -1,6 +1,6 @@
 function group = ResetGroup(group)
 
-group.procResult = InitProcResult();
+group.procResult = ProcResultClass();
 group.SD = [];
 for jj=1:length(group.subjs)
     group.subjs(jj) = ResetSubj(group.subjs(jj));

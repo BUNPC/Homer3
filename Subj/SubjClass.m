@@ -50,9 +50,12 @@ classdef SubjClass < TreeNodeClass
         function copyProcParams(obj, S)
             
             if strcmp(obj.name, S.name)
-                % No need to copy run data from previous S's runs to obj.
-                % All run data was loaded from .nirs file when the current
-                % group was initialized.
+                for i=1:length(obj.runs)
+                    j = obj.existRun(i,S);
+                    if (j>0)
+                        obj.runs(i).copyProcParams(S.runs(j));
+                    end
+                end
                 if obj == S
                     obj.copyProcParamsFieldByField(S);
                 else
@@ -109,9 +112,11 @@ classdef SubjClass < TreeNodeClass
             
             j=0;
             for i=1:length(S.runs)
-                [sname1, rnum1] = getSubjNameAndRun(obj.runs(k).name, i);
-                [sname2, rnum2] = getSubjNameAndRun(S.runs(i).name, i);
-                if strcmp(sname1,sname2) && rnum1==rnum2
+                [sname1, ~, w1] = getSubjNameAndRun(obj.runs(k).name, i);
+                [sname2, ~, w2] = getSubjNameAndRun(S.runs(i).name, i);
+                rname1 = obj.runs(k).name;
+                rname2 = S.runs(i).name;
+                if strcmp(rname1,rname2)
                     j=i;
                     break;
                 end

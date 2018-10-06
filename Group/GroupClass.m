@@ -10,9 +10,9 @@ classdef GroupClass < TreeNodeClass
         
     end
     
-    %%%% Public methods 
+    %%%% Public methods
     methods
-                
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function obj = GroupClass(varargin)
             
@@ -207,7 +207,7 @@ classdef GroupClass < TreeNodeClass
                     
                     err1=0;
                     
-                end                
+                end
                 
                 % Check loaded procInput for syntax and semantic errors
                 if procStreamIsEmpty(procInput) && err1==0
@@ -262,7 +262,7 @@ classdef GroupClass < TreeNodeClass
         
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        function LoadGroupFile(obj)
+        function Load(obj)
             
             if exist('./groupResults.mat','file')
                 
@@ -274,16 +274,44 @@ classdef GroupClass < TreeNodeClass
                 obj.copyProcParams(group);
                 close(hwait);
                 
+            else
+                
+                group = obj;
+                save( './groupResults.mat','group' );
+                
             end
             
-        end        
+        end
+        
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function Save(obj, options)
+            
+            if ~exist('optionsstr','var')
+                options = 'acquired:derived';
+            end
+            options_s = obj.parseSaveOptions(options);
+            
+            % Save derived data
+            if options_s.derived
+                group = obj;
+                save( './groupResults.mat','group' );
+            end
+            
+            % Save acquired data
+            if options_s.acquired
+                for ii=1:length(obj.subjs)
+                    obj.subjs(ii).Save('acquired');
+                end
+            end
+        end
         
     end  % Public methods
     
     
-    %%%% Private methods 
+    %%%% Private methods
     methods  (Access = {})
-                
+        
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Copy processing params (procInut and procResult) from
@@ -304,11 +332,11 @@ classdef GroupClass < TreeNodeClass
                     obj.procInput.changeFlag=1;
                 end
             end
-                    
+            
             
         end
         
-                
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Copy processing params (procInut and procResult) from
         % G to obj
@@ -343,9 +371,9 @@ classdef GroupClass < TreeNodeClass
             if isproperty(G,'SD') && ~isempty(G.SD)
                 obj.SD = copyStructFieldByField(obj.SD, G.SD);
             end
-
+            
         end
-
+        
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Check whether subject k'th subject from this group exists in group G and return
@@ -364,8 +392,8 @@ classdef GroupClass < TreeNodeClass
             
         end
         
-                                
+        
     end  % Private methods
-       
+    
 end % classdef GroupClass < TreeNodeClass
 

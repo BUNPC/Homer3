@@ -237,7 +237,6 @@ hmr.currElem = currElem;
 function edit_Callback(hObject, eventdata, handles) 
 global hmr
 currElem = hmr.currElem;
-group    = hmr.group;
 files    = hmr.files;
 
 procInput = currElem.procElem.procInput;
@@ -253,12 +252,6 @@ set( hObject, 'string', sprintf(procInput.procFunc(f).funcParamFormat{p}, val ) 
 
 currElem.procElem.procInput = procInput;
 
-group = SaveCurrElem(currElem, group);
-currElem = LoadCurrElem(currElem, group, files);
-
-% fprintf('%0.4f\n', hmr.group(1).subjs(1).runs(1).procInput.procFunc.funcParamVal{2}{1});
-
-hmr.group    = group;
 hmr.currElem = currElem;
 
 

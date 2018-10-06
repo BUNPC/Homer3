@@ -282,25 +282,16 @@ function pushbuttonCalcProcStream_Callback(hObject, eventdata, handles)
 global hmr
 
 currElem = hmr.currElem;
-files    = hmr.files;
 guiMain = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
-iSubj = currElem.iSubj;
-iRun  = currElem.iRun;
-
 currElem = CalcCurrElem(currElem);
-
-group    = hmr.group;
-
-% Reload curren element selection
-currElem = LoadCurrElem(currElem, group, files, iSubj, iRun);
+currElem.procElem.Save();
 
 DisplayCurrElem(currElem, guiMain);
 plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
 hmr.currElem = currElem;
-hmr.group = group;
 hmr.plotprobe = plotprobe;
 
 
@@ -508,11 +499,11 @@ global hmr
 
 currElem = hmr.currElem;
 files    = hmr.files;
-guiMain = hmr.guiMain;
+guiMain  = hmr.guiMain;
 group    = hmr.group;
 
 currElem = ResetCurrElem(currElem);
-group = SaveCurrElem(currElem, group);
+currElem.procElem.Save();
 
 group = LoadNIRS2Group(files);
 

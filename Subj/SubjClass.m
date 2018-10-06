@@ -3,8 +3,6 @@ classdef SubjClass < TreeNodeClass
     properties % (Access = private)
         
         iSubj;
-        iRun;
-        rnum;
         CondSubj2Run;
         CondSubj2Group;
         runs;
@@ -70,8 +68,8 @@ classdef SubjClass < TreeNodeClass
         % Copy processing params (procInut and procResult) from
         % S to obj
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        function copyProcParamsFieldByField(obj, S)            
-                    
+        function copyProcParamsFieldByField(obj, S)
+            
             % procInput
             if isproperty(S,'procInput')
                 if isproperty(S.procInput,'procFunc') && ~isempty(S.procInput.procFunc)
@@ -123,11 +121,11 @@ classdef SubjClass < TreeNodeClass
             end
             
         end
-
-
+        
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Subjects obj1 and obj2 are considered equivalent if their names
-        % are equivalent and their sets of runs are equivalent. 
+        % are equivalent and their sets of runs are equivalent.
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function B = equivalent(obj1, obj2)
             
@@ -152,6 +150,33 @@ classdef SubjClass < TreeNodeClass
             end
             
         end
+        
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function Save(obj, options)
+            
+            if ~exist('options','var')
+                options = 'acquired:derived';
+            end
+            options_s = obj.parseSaveOptions(options);
+            
+            % Save derived data
+            if options_s.derived
+                if exist('./groupResults.mat','file')
+                    load( './groupResults.mat' );
+                    group.subjs(obj.iSubj) = obj;
+                    save( './groupResults.mat','group' );
+                end
+            end
+            
+            % Save acquired data
+            if options_s.acquired
+                for ii=1:length(obj.runs)
+                    obj.runs(ii).Save('acquired');
+                end
+            end
+        end
+        
         
     end
     

@@ -12,7 +12,5 @@ wspath = fileparts(which(appname));
 wspacename = [rootdir, ext];
 
 cd(currdir);
-if isempty(dir([dummydir, '*']))
-    rmdir(dummydir);
-end    
+rmdir(dummydir, 's');
 

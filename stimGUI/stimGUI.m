@@ -559,8 +559,5 @@ CondNames     = stim.currElem.procElem.CondNames;
 CondRun2Group = stim.currElem.procElem.CondRun2Group;
 procInput     = stim.currElem.procElem.procInput;
 
-procInput.userdata = stim.userdata;
-% save(stim.currElem.procElem.name, '-mat','-append','s','CondNames','CondRun2Group','procInput');
-
 % Redisplay Homer3 gui display
 Homer3_RemakeCond(stim);

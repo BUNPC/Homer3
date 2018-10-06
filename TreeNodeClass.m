@@ -133,6 +133,22 @@ classdef TreeNodeClass < matlab.mixin.Copyable
         end
         
         
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % 
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function options_s = parseSaveOptions(obj, options)
+            
+            options_s = struct('derived',false, 'acquired',false);
+            C = str2cell(options, {':',',','+',' '});
+            
+            for ii=1:length(C)
+                if isproperty(options_s, C{ii})
+                    eval( sprintf('options_s.%s = true;', C{ii}) );
+                end
+            end
+            
+        end
+        
     end
     
 end

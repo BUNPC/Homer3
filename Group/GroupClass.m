@@ -247,16 +247,20 @@ classdef GroupClass < TreeNodeClass
         
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        function CopySD(obj)
+        function SetSD(obj)
             
             for jj=1:length(obj.subjs)
-                if isempty(obj.subjs(jj).SD)
-                    obj.subjs(jj).SD = SetSDSubj(obj.subjs(jj).runs(1).SD);
-                end
+                obj.subjs(jj).SetSD();
             end
-            if isempty(obj.SD)
-                obj.SD = SetSDGroup(obj.subjs(1).SD);
-            end
+            obj.SD = obj.subjs(1).GetSD();
+            
+        end
+        
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function SD = GetSD(obj)
+            
+            SD = obj.subjs(1).GetSD();
             
         end
         

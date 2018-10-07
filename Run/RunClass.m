@@ -315,6 +315,16 @@ classdef RunClass < TreeNodeClass
             nTrials = sum(obj.s,1);
             
         end
+        
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function SD = GetSD(obj)
+            
+            SD = obj.SD;
+            
+        end
+        
+        
     end
 
 end

@@ -178,6 +178,21 @@ classdef SubjClass < TreeNodeClass
         end
         
         
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function SetSD(obj)
+            
+            obj.SD = obj.runs(1).GetSD();
+            
+        end
+        
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function SD = GetSD(obj)
+            
+            SD = obj.SD;
+            
+        end
+        
     end
     
 end

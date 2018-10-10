@@ -22,7 +22,8 @@ TmarkPanel  = plotprobe.objs.TmarkPanel;
 hFig        = plotprobe.objs.Figure.h;
 
 procResult  = currElem.procElem.procResult;
-SD          = currElem.procElem.SD;
+SD          = currElem.procElem.GetSD();
+ch          = currElem.procElem.GetMeasList();
 
 datatype    = guiMain.datatype;
 hbType      = guiMain.hbType;
@@ -34,9 +35,9 @@ showStdErr  = guiMain.showStdErr;
 if currElem.procType==1
     condition  = guiMain.condition;
 elseif currElem.procType==2
-    condition = find(currElem.procElem.CondSubj2Group == guiMain.condition);
+    condition = find(currElem.procElem.CondName2Group == guiMain.condition);
 elseif currElem.procType==3
-    condition  = find(currElem.procElem.CondRun2Group == guiMain.condition);
+    condition  = find(currElem.procElem.CondName2Group == guiMain.condition);
 end
 
 y = [];
@@ -52,7 +53,7 @@ else
 end
 tHRF = procResult.tHRF;
 
-[hData, hFig, tMarkAmp] = plotProbe( y, tHRF, SD, hFig, [], axScl, tMarkInt, tMarkAmp );
+[hData, hFig, tMarkAmp] = plotProbe( y, tHRF, SD, ch, hFig, [], axScl, tMarkInt, tMarkAmp );
 
 % Modify and add graphics objects in plot probe figure
 CtrlPanel    = drawPlotProbeControlsPanel( CtrlPanel, hFig );
@@ -61,13 +62,14 @@ BttnDup      = drawPlotProbeDuplicate( BttnDup, CtrlPanel.h, hFig );
 BttnHidMeas  = drawPlotProbeHiddenMeas( BttnHidMeas, CtrlPanel.h, hidMeasShow, hFig );
 TmarkPanel   = drawPlotProbeTimeMarkers( TmarkPanel, CtrlPanel.h, tMarkInt, tMarkAmp, ...
                                          tMarkShow, tMarkUnits, hFig );
-showHiddenObjs( 2*hidMeasShow+tMarkShow, SD, y, hData );
+showHiddenObjs( 2*hidMeasShow+tMarkShow, SD, ch, y, hData );
 
 
 % Save the plot probe control panel handles
 plotprobe.y                = y;
 plotprobe.tHRF             = tHRF;
 plotprobe.SD               = SD;
+plotprobe.ch               = ch;
 plotprobe.objs.CtrlPanel   = CtrlPanel;
 plotprobe.objs.SclPanel    = SclPanel;
 plotprobe.objs.BttnDup     = BttnDup;

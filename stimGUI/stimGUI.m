@@ -51,7 +51,7 @@ elseif ischar(args{1})
     end
     stim.currElem.procElem = run;
     stim.currElem.procType = 3;
-    stim.currElem.procElem.CondRun2Group = ...
+    stim.currElem.procElem.CondName2Group = ...
         MakeCondRun2Group(stim.currElem.procElem, stim.CondNamesGroup);
     stim.CondNamesGroup = stim.currElem.procElem.CondNames;
     if nargin>1
@@ -554,10 +554,10 @@ delete(hObject);
 function pushbuttonUpdate_Callback(hObject, eventdata, handles)
 global stim 
 
-s             = stim.currElem.procElem.s;
-CondNames     = stim.currElem.procElem.CondNames;
-CondRun2Group = stim.currElem.procElem.CondRun2Group;
-procInput     = stim.currElem.procElem.procInput;
+s              = stim.currElem.procElem.s;
+CondNames      = stim.currElem.procElem.CondNames;
+CondName2Group = stim.currElem.procElem.CondName2Group;
+procInput      = stim.currElem.procElem.procInput;
 
 % Redisplay Homer3 gui display
 Homer3_RemakeCond(stim);

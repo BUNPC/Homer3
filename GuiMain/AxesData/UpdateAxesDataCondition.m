@@ -21,11 +21,12 @@ function CondNames = getCondUtil(procElem)
 % Function to determine which conditions at any level are being utilized by 
 % having a stim there. It marks the conditions being used by 
 % adding a prefix '-- ' to the condition name.  
-CondNames = procElem.CondNames;
+CondNames = procElem.GetCondNames();
 
 if strcmp(procElem.type,'run')
-    for ii=1:size(procElem.s,2)
-        if ismember(abs(1), procElem.s(:,ii))
+    s = procElem.GetStims();
+    for ii=1:size(s,2)
+        if ismember(abs(1), s(:,ii))
             CondNames{ii} = ['-- ', CondNames{ii}];
         end
     end

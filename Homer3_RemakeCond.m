@@ -11,11 +11,10 @@ i = hmr.currElem.iSubj;
 j = hmr.currElem.iRun;
 hmr.group.subjs(i).runs(j).s             = hmr.currElem.procElem.s;
 hmr.group.subjs(i).runs(j).CondNames     = hmr.currElem.procElem.CondNames;
-hmr.group.subjs(i).runs(j).CondRun2Group = hmr.currElem.procElem.CondRun2Group;
+hmr.group.subjs(i).runs(j).CondName2Group = hmr.currElem.procElem.CondName2Group;
 
 hmr.group = MakeCondNamesGroup(hmr.group);
-
-DisplayCurrElem(hmr.currElem, hmr.guiMain);
+DisplayCurrElem(hmr.currElem, hmr.guiMain)
 
 hmr.guiMain = UpdateAxesDataCondition(hmr.guiMain, hmr.group, hmr.currElem);
 

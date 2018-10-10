@@ -1,4 +1,4 @@
-% [h hFig tAmp] = plotProbe( y, t, SD, hFig, ystd, axFactor, tStep, tAmp )
+% [h hFig tAmp] = plotProbe( y, t, SD, ml, hFig, ystd, axFactor, tStep, tAmp )
 %
 % Plot the data in the probe format. If no data is provided,
 % this plots the probe geometry given in SD.
@@ -14,9 +14,9 @@
 %          <DATA TIME POINTS> x <CHANNELS OF ALL WAVELENGTHS>
 %
 %     If empty, then the probe is plotted with lines joining sources 
-%     and detectors in the SD.MeasList with solid line and
+%     and detectors in the ch.MeasList with solid line and
 %     dotted line distringuishing active measurements as indicated in
-%     SD.MeasListAct
+%     ch.MeasListAct
 %
 % t - is the corresponding time vector
 %
@@ -40,7 +40,7 @@
 % toggle nearest neighbors
 % assuming y is concentration data... need to check dimensions
 
-function [h hFig tAmp]=plotProbe( y, t, SD, hFig, ystd, axFactor, tStep, tAmp )
+function [h hFig tAmp]=plotProbe( y, t, SD, ch, hFig, ystd, axFactor, tStep, tAmp )
 
 h=[];
 isinitfig=0;
@@ -94,9 +94,9 @@ end
 % This section will give the option to display subsections of the probe
 % based on nearest-neighbor etc distances.  If the probe only has one
 % distance, this option is not given
-Distances=((SD.SrcPos(SD.MeasList(:,1),1) - SD.DetPos(SD.MeasList(:,2),1)).^2 +...
-           (SD.SrcPos(SD.MeasList(:,1),2) - SD.DetPos(SD.MeasList(:,2),2)).^2 +...
-           (SD.SrcPos(SD.MeasList(:,1),3) - SD.DetPos(SD.MeasList(:,2),3)).^2).^0.5;
+Distances=((SD.SrcPos(ch.MeasList(:,1),1) - SD.DetPos(ch.MeasList(:,2),1)).^2 +...
+           (SD.SrcPos(ch.MeasList(:,1),2) - SD.DetPos(ch.MeasList(:,2),2)).^2 +...
+           (SD.SrcPos(ch.MeasList(:,1),3) - SD.DetPos(ch.MeasList(:,2),3)).^2).^0.5;
 nearneighborLst=ones(length(Distances),1);
 lstNN=find(nearneighborLst==1);
 
@@ -152,12 +152,12 @@ try
     % error ocurred.
     idx = 0;
 
-    ml = SD.MeasList;
+    ml = ch.MeasList;
     if isproperty(SD,'MeasListAct')
-        lst = find(SD.MeasList(:,4)==1);
-        MLact = SD.MeasListAct(lst);
+        lst = find(ch.MeasList(:,4)==1);
+        MLact = ch.MeasListAct(lst);
     else
-        lst = find(SD.MeasList(:,4)==1);
+        lst = find(ch.MeasList(:,4)==1);
         MLact = ones(length(lst),1);
     end
 

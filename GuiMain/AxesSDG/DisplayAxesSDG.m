@@ -43,13 +43,17 @@ function axesSDG = DisplayAxesSDG(axesSDG, procElem)
 % plotAxes_SDG(guidata(gcbo),bool);
 %
 
-hAxesSDG   = axesSDG.handles.axes;
-iCh        = axesSDG.iCh;
-iSrcDet    = axesSDG.iSrcDet;
-color      = axesSDG.linecolor;
+hAxesSDG    = axesSDG.handles.axes;
+iCh         = axesSDG.iCh;
+iSrcDet     = axesSDG.iSrcDet;
+color       = axesSDG.linecolor;
+SD          = procElem.GetSD();
+ch          = procElem.GetMeasList();
+bbox        = procElem.GetSdgBbox();
+procResult  = procElem.procResult;
 
-SD         = procElem.SD;
-procResult = procElem.procResult;
+nSrcs       = size(SD.SrcPos,1);
+nDets       = size(SD.DetPos,1);
 
 
 if ~ishandles(hAxesSDG)
@@ -58,20 +62,19 @@ end
 
 axes(hAxesSDG);
 cla
-axis(hAxesSDG, [SD.xmin SD.xmax SD.ymin SD.ymax]);
-% axis(hAxesSDG, 'image')
+axis(hAxesSDG, [bbox(1), bbox(2), bbox(3), bbox(4)]);
 
 set(gca,'xticklabel','')
 set(gca,'yticklabel','')
 set(gca,'ygrid','off')
 
-% get procResult and replace SD.MeasListAct if it exists
+% get procResult and replace MeasListAct if it exists
 
-lst   = find(SD.MeasList(:,1)>0);
-ml    = SD.MeasList(lst,:);
+lst   = find(ch.MeasList(:,1)>0);
+ml    = ch.MeasList(lst,:);
 lstML = find(ml(:,4)==1); %cw6info.displayLambda);
 
-lst2 = find(SD.MeasListAct(1:length(lstML))==0);
+lst2 = find(ch.MeasListAct(1:length(lstML))==0);
 for ii=1:length(lst2)
     h = line( [SD.SrcPos(ml(lstML(lst2(ii)),1),1) SD.DetPos(ml(lstML(lst2(ii)),2),1)], ...
               [SD.SrcPos(ml(lstML(lst2(ii)),1),2) SD.DetPos(ml(lstML(lst2(ii)),2),2)] );
@@ -80,7 +83,7 @@ for ii=1:length(lst2)
     set(h,'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
 end
 
-lst2 = find(SD.MeasListAct(1:length(lstML))==1);
+lst2 = find(ch.MeasListAct(1:length(lstML))==1);
 for ii=1:length(lst2)
     h = line( [SD.SrcPos(ml(lstML(lst2(ii)),1),1) SD.DetPos(ml(lstML(lst2(ii)),2),1)], ...
               [SD.SrcPos(ml(lstML(lst2(ii)),1),2) SD.DetPos(ml(lstML(lst2(ii)),2),2)] );
@@ -102,18 +105,15 @@ if isproperty(procResult,'SD')
     end
 end
 
-
-
-
 % ADD SOURCE AND DETECTOR LABELS
-for idx=1:SD.nSrcs
-    if ~isempty(find(SD.MeasList(:,1)==idx))
+for idx=1:nSrcs
+    if ~isempty(find(ch.MeasList(:,1)==idx))
         h = text( SD.SrcPos(idx,1), SD.SrcPos(idx,2), sprintf('%c', 64+idx), 'fontweight','bold' );
         set(h,'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
     end
 end
-for idx=1:SD.nDets
-    if ~isempty(find(SD.MeasList(:,2)==idx))
+for idx=1:nDets
+    if ~isempty(find(ch.MeasList(:,2)==idx))
         h = text( SD.DetPos(idx,1), SD.DetPos(idx,2), sprintf('%d', idx), 'fontweight','bold' );
         set(h,'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
     end
@@ -127,10 +127,10 @@ end
 % cw6_sdgToggleLines()
 if ~isempty(iSrcDet) && iSrcDet(1,1)~=0
     lst2 = [];
-    lst3 = find(SD.MeasList(:,4)==1);
+    lst3 = find(ch.MeasList(:,4)==1);
     for ii=1:length(iCh);
-        lst2(ii) = find(SD.MeasList(lst3,1)==SD.MeasList(iCh(ii),1) & ...
-                        SD.MeasList(lst3,2)==SD.MeasList(iCh(ii),2) );
+        lst2(ii) = find(ch.MeasList(lst3,1)==ch.MeasList(iCh(ii),1) & ...
+                        ch.MeasList(lst3,2)==ch.MeasList(iCh(ii),2) );
     end
     iCh2 = lst2;
     
@@ -141,15 +141,15 @@ if ~isempty(iSrcDet) && iSrcDet(1,1)~=0
         set(h,'ButtonDownFcn',sprintf('toggleLinesAxesSDG_ButtonDownFcn(gcbo,[%d],guidata(gcbo))',idx));
         set(h,'linewidth',2);
         if ~isempty(iCh) && ...
-           (~SD.MeasListAct(iCh2(idx)) & ~SD.MeasListVis(iCh2(idx)))
+           (~ch.MeasListAct(iCh2(idx)) & ~ch.MeasListVis(iCh2(idx)))
             set(h,'linewidth',2);
             set(h,'linestyle','-.');
         else               
-            if ~isempty(iCh) && ~SD.MeasListAct(iCh2(idx))
+            if ~isempty(iCh) && ~ch.MeasListAct(iCh2(idx))
                 set(h,'linewidth',2);
                 set(h,'linestyle','--');
             end
-            if ~isempty(iCh) && ~SD.MeasListVis(iCh2(idx))
+            if ~isempty(iCh) && ~ch.MeasListVis(iCh2(idx))
                 set(h,'linewidth',1);
                 set(h,'linestyle',':');
             end

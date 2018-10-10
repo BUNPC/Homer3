@@ -1,5 +1,5 @@
-function [yAvg, yAvgStd, tHRF, nTrials] = hmrBlockAvgSubj(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondSubj2Run)
-% [yAvg, yAvgStd, tHRF, nTrials] = hmrBlockAvgSubj(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondSubj2Run)
+function [yAvg, yAvgStd, tHRF, nTrials] = hmrBlockAvgSubj(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondName2Run)
+% [yAvg, yAvgStd, tHRF, nTrials] = hmrBlockAvgSubj(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondName2Run)
 %
 % UI NAME:
 % Block_Average_Subjs
@@ -14,7 +14,7 @@ function [yAvg, yAvgStd, tHRF, nTrials] = hmrBlockAvgSubj(yAvgRuns, yAvgStdRuns,
 % tHRFRuns: 
 % SDRuns:
 % nTrialsRuns:
-% CondSubj2Run: 
+% CondName2Run: 
 % trange: defines the range for the block average
 % thresh: Threshold for excluding channels if it's data deviates too much
 %         from mean 
@@ -45,7 +45,7 @@ for iRun = 1:length(yAvgRuns)
         break;
     end
     
-    nCond = size(CondSubj2Run,2);
+    nCond = size(CondName2Run,2);
     
     if ndims(yAvg) == (3-(nCond<2))
         
@@ -58,7 +58,7 @@ for iRun = 1:length(yAvgRuns)
         
         lstChInc = find(SD.MeasListAct==1);
         for iC = 1:nCond
-            iS = CondSubj2Run(iRun,iC);
+            iS = CondName2Run(iRun,iC);
             if(iS==0)
                 nT = 0;
             else
@@ -111,7 +111,7 @@ for iRun = 1:length(yAvgRuns)
         lst1 = find(SD.MeasList(:,4)==1);
         lstChInc = find(SD.MeasListAct(lst1)==1);
         for iC = 1:1:nCond
-            iS = CondSubj2Run(iRun,iC);
+            iS = CondName2Run(iRun,iC);
             if(iS==0)
                 nT = 0;
             else

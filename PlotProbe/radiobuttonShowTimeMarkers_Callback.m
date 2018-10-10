@@ -20,9 +20,9 @@ buttonVals  = guiMain.buttonVals;
 if currElem.procType==1
     condition  = guiMain.condition;
 elseif currElem.procType==2
-    condition = find(currElem.procElem.CondSubj2Group == guiMain.condition);
+    condition = find(currElem.procElem.CondName2Group == guiMain.condition);
 elseif currElem.procType==3
-    condition  = find(currElem.procElem.CondRun2Group == guiMain.condition);
+    condition  = find(currElem.procElem.CondName2Group == guiMain.condition);
 end
 
 if datatype == buttonVals.OD_HRF_PLOT_PROBE

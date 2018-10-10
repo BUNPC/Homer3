@@ -256,11 +256,10 @@ plotprobe = hmr.plotprobe;
 currElem = LoadCurrElem(currElem, group, files);
 guiMain = UpdateAxesDataCondition(guiMain, group, currElem);
 if ishandles(hmr.handles.stimGUI)
-    group = MakeCondNamesGroup(group);
     hmr.handles.stimGUI = launchStimGUI(hmr.handles.this, ...
         hmr.handles.stimGUI, ...
         currElem, ...
-        group.CondNames);
+        group.GetCondNames());
 end
 DisplayCurrElem(currElem, guiMain);
 plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);

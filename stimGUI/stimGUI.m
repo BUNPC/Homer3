@@ -80,7 +80,7 @@ if isempty(stim.currElem) | isempty(stim.currElem.procElem)
 end
 
 currElem = stim.currElem;
-SD = currElem.procElem.SD;
+aux = currElem.procElem.GetAux();
 
 % For now handle stims only on run level
 if currElem.procType ~= 3
@@ -88,18 +88,10 @@ if currElem.procType ~= 3
     return;
 end
 
-if isempty(currElem.procElem.aux)
+if isempty(aux)
     stim.iAux = 0;
 else
-    foos = [];
-    for ii=1:size(currElem.procElem.aux,2)
-        if isproperty(SD,'auxChannels')
-            foos{end+1} = SD.auxChannels{ii};
-        else
-            foos{end+1} = sprintf('Aux %d',ii);
-        end
-    end
-    set(handles.listboxAux,'string',foos);
+    set(handles.listboxAux,'string',aux.names);
     set(handles.listboxAux,'value',1);
     stim.iAux = 1;    
 end
@@ -126,7 +118,7 @@ set(stim.handles.pushbuttonRenameCondition, 'enable','on');
 set(stim.handles.textTimePts, 'enable','on');
 set(stim.handles.stimMarksEdit, 'enable','on');
 
-if ~isempty(currElem.procElem.aux)   
+if ~isempty(aux)   
     set(handles.pushbuttonApply, 'enable','off');
     set(handles.editTmin, 'enable','off');
     set(handles.editThreshold, 'enable','off');

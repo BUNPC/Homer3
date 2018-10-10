@@ -328,6 +328,13 @@ classdef TreeNodeClass < matlab.mixin.Copyable
             end          
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function aux = GetAux(obj)
+            aux = [];
+        end
+        
+        
     end
     
 end

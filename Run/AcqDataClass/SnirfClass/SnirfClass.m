@@ -1,4 +1,4 @@
-classdef SnirfClass  < matlab.mixin.Copyable
+classdef SnirfClass < AcqDataClass
     
     properties
         formatVersion

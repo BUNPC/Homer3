@@ -1,20 +1,20 @@
-function y = reshape_y(y, SD)
+function y = reshape_y(y, MeasList, Lambda)
 
 yold = y;
-lst1 = find(SD.MeasList(:,4)==1);
+lst1 = find(MeasList(:,4)==1);
 
 if ndims(y)==2
-    y = zeros(size(yold,1),length(lst1),length(SD.Lambda));
+    y = zeros(size(yold,1),length(lst1),length(Lambda));
 elseif ndims(y)==3
-    y = zeros(size(yold,1),length(lst1),length(SD.Lambda),size(yold,3));
+    y = zeros(size(yold,1),length(lst1),length(Lambda),size(yold,3));
 end
 
 for iML = 1:length(lst1)
-    for iLambda = 1:length(SD.Lambda)
+    for iLambda = 1:length(Lambda)
         
-        idx = find(SD.MeasList(:,1)==SD.MeasList(lst1(iML),1) & ...
-                   SD.MeasList(:,2)==SD.MeasList(lst1(iML),2) & ...
-                   SD.MeasList(:,4)==iLambda );
+        idx = find(MeasList(:,1)==MeasList(lst1(iML),1) & ...
+                   MeasList(:,2)==MeasList(lst1(iML),2) & ...
+                   MeasList(:,4)==iLambda );
                
         if ndims(yold)==2
             y(:,iML,iLambda) = yold(:,idx);

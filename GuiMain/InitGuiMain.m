@@ -38,11 +38,11 @@ guiMain = struct(...
                  );
 
 guiMain = UpdateAxesDataCondition(guiMain, group, currElem);
-setWl(guiMain, currElem.procElem.SD.Lambda);
+setWl(guiMain, currElem.procElem.GetWls());
 
 guiMain.datatype  = getDatatype(guiMain);
 guiMain.condition = getCondition(guiMain);
-guiMain.wl        = getWl(guiMain, currElem.procElem.SD.Lambda);
+guiMain.wl        = getWl(guiMain, currElem.procElem.GetWls());
 guiMain.hbType    = getHbType(guiMain);
 guiMain.ch        = GetAxesSDGSelection(guiMain.axesSDG);
 if strcmp(get(handles.menuItemViewHRFStdErr, 'checked'), 'on');

@@ -14,11 +14,9 @@ axesSDG  = guiMain.axesSDG;
 hAxesSDG = axesSDG.handles.axes;
 iSrcDet  = axesSDG.iSrcDet;
 
-SD       = currElem.procElem.SD;
-
-if isempty(SD) 
-    return;
-end
+SD       = currElem.procElem.GetSD();
+ch       = currElem.procElem.GetMeasList();
+Lambda   = currElem.procElem.GetWls();
 
 idx = eventdata;
 
@@ -28,10 +26,10 @@ mouseevent = get(get(get(hObject,'parent'),'parent'),'selectiontype');
 h2=get(hAxesSDG,'children');  %The list of all the lines currently displayed
 
 lst = [];
-for ii=1:length(SD.Lambda)
-    lst1 = find(SD.MeasList(:,4)==ii);
-    lst2  = find(SD.MeasList(lst1,1)==iSrcDet(idx,1) &...
-                 SD.MeasList(lst1,2)==iSrcDet(idx,2) );
+for ii=1:length(Lambda)
+    lst1 = find(ch.MeasList(:,4)==ii);
+    lst2  = find(ch.MeasList(lst1,1)==iSrcDet(idx,1) &...
+                 ch.MeasList(lst1,2)==iSrcDet(idx,2) );
     lst = [lst, length(lst1)*(ii-1)+lst2];
 end
 
@@ -41,32 +39,32 @@ end
 if strcmp(mouseevent,'alt')
     if strcmp(get(h2(idx),'linestyle'), '-')
         set(h2(idx),'linestyle',':')
-        SD.MeasListVis(lst)=0;
+        ch.MeasListVis(lst)=0;
     elseif strcmp(get(h2(idx),'linestyle'), '--')
         set(h2(idx),'linestyle','-.')
-        SD.MeasListVis(lst)=0;
+        ch.MeasListVis(lst)=0;
     elseif strcmp(get(h2(idx),'linestyle'), ':')
         set(h2(idx),'linestyle','-')
-        SD.MeasListVis(lst)=1;
+        ch.MeasListVis(lst)=1;
     elseif strcmp(get(h2(idx),'linestyle'), '-.')
         set(h2(idx),'linestyle','--')
-        SD.MeasListVis(lst)=1;
+        ch.MeasListVis(lst)=1;
     end
     
 %%%% If mouse nromal left click, prune channel data 
 elseif strcmp(mouseevent,'normal')
     if strcmp(get(h2(idx),'linestyle'), '-')
         set(h2(idx),'linestyle','--')
-        SD.MeasListAct(lst)=0;
+        ch.MeasListAct(lst)=0;
     elseif strcmp(get(h2(idx),'linestyle'), '--')
         set(h2(idx),'linestyle','-.')
-        SD.MeasListAct(lst)=1;
+        ch.MeasListAct(lst)=1;
     elseif strcmp(get(h2(idx),'linestyle'), ':')
         set(h2(idx),'linestyle','-')
-        SD.MeasListAct(lst)=0;
+        ch.MeasListAct(lst)=0;
     elseif strcmp(get(h2(idx),'linestyle'), '-.')
         set(h2(idx),'linestyle','--')
-        SD.MeasListAct(lst)=1;
+        ch.MeasListAct(lst)=1;
     end
     
 %%%% Exit function for any other mouse event 

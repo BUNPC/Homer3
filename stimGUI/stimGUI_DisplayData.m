@@ -29,8 +29,7 @@ for ii=1:nStim
         stim.Lines(ii).handle = plot([1 1]*stim.currElem.procElem.t(lstR(ii)), yy,'--');
     end
 
-    %iCond = find(stim.CondRunIdx(stim.iFile,:)==lstC(ii));
-    iCond = stim.currElem.procElem.CondRun2Group(lstC(ii));
+    iCond = stim.currElem.procElem.CondName2Group(lstC(ii));
     stim.Lines(ii).color = stim.CondColTbl(iCond,1:3);
     try 
         set(stim.Lines(ii).handle,'color',stim.Lines(ii).color);

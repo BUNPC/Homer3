@@ -118,10 +118,6 @@ end
 % Load NIRS files to group
 [group, files] = LoadNIRS2Group(files);
 
-% Generate the CondNames for all members of group
-group = MakeCondNamesGroup(group);
-
-
 % Find and initialize the current processing element within the group
 currElem = InitCurrElem(handles, @listboxFiles_Callback);
 

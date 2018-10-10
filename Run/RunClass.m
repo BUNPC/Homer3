@@ -5,12 +5,9 @@ classdef RunClass < TreeNodeClass
         iSubj;
         iRun;
         rnum;
-        t;
-        s;
-        d;
-        aux;
+        acquired;
         tIncMan;
-        CondRun2Group;
+        CondName2Group;
         userdata;
         
     end
@@ -18,156 +15,41 @@ classdef RunClass < TreeNodeClass
     methods
         
         
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % ----------------------------------------------------------------------------------
         function obj = RunClass(varargin)
             
-            if nargin==4
-                filename = varargin{1};
-                iSubj    = varargin{2};
-                iRun     = varargin{3};
-                rnum     = varargin{4};
-            else
-                return;
-            end
-            
-            obj.name  = filename;
             obj.type  = 'run';
-            obj.iSubj = iSubj;
-            obj.iRun  = iRun;
-            obj.rnum  = rnum;
+            if nargin==4
+                obj.name  = varargin{1};
+                obj.iSubj = varargin{2};
+                obj.iRun  = varargin{3};
+                obj.rnum  = varargin{4};
+            else
+                obj.name  = '';
+                obj.iSubj = 0;
+                obj.iRun  = 0;
+                obj.rnum  = 0;
+            end            
 
-            obj.t       = [];
-            obj.s       = [];
-            obj.d       = [];
-            obj.aux     = [];
+            obj.acquired = NirsClass(obj.name);
             obj.tIncMan = [];
             obj.userdata = [];
-            obj.CondRun2Group = [];
-            
+            obj.CondName2Group = [];
             obj.Load();
                         
         end
+                
         
-
-        
-        % ---------------------------------------------------------
-        function [paramsStr, paramsLst] = getParamsStr(obj, paramsLst)
             
-            paramsLstReadOnly  = {'d','aux'};
-            paramsLstReadWrite = {'t','SD','s','CondNames'};
-            paramsLstAll = [paramsLstReadOnly, paramsLstReadWrite];
+        % ----------------------------------------------------------------------------------
+        function Load(obj)
             
-            % Determine the preliminary list of params
-            if isempty(paramsLst)
-                paramsLst = paramsLstReadWrite;
-            end
-            
-            for ii=1:length(paramsLstAll)
-                
-                if ~ismember(paramsLstAll{ii}, paramsLst) & ~isprop(obj, paramsLstAll{ii}) & ismember(paramsLstAll{ii},paramsLstReadWrite)
-                    paramsLst{end+1} = paramsLstAll{ii};
-                end
-                if ~ismember(paramsLstAll{ii}, paramsLst)  & isprop(obj, paramsLstAll{ii}) & eval(sprintf('obj.isemptyParam(obj.%s)',paramsLstAll{ii}))
-                    paramsLst{end+1} = paramsLstAll{ii};
-                end
-                
-            end
-            
-            % Convert final list of params to single string
-            paramsStr='';
-            for ii=1:length(paramsLst)
-                paramsStr = strcat(paramsStr,['''' paramsLst{ii} '''']);
-                if ii<length(paramsLst)
-                    paramsStr = strcat(paramsStr,',');
-                end
-            end
-            
-        end
-           
-        
-        % ---------------------------------------------------------
-        function b = isemptyParam(obj, param)
-            
-            b=1;
-            if isstruct(param)
-                
-                fields=fieldnames(param);
-                for ii=1:length(fields)
-                    if eval(sprintf('~isempty(param.%s);', fields{ii}))
-                        b=0;
-                    end
-                end
-                
-            elseif ~isempty(param)
-                
-                b=0;
-                
-            end
+            obj.acquired.Load();
             
         end
         
         
-            
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        function Load(obj, paramsLst)
-            
-            if isempty(obj.name) || ~exist(obj.name, 'file')
-                return;
-            end
-
-            if ~exist('paramsLst','var')
-                paramsLst = [];
-            end
-            
-            warning('off', 'MATLAB:load:variableNotFound');
-                       
-            [paramsStr, paramsLst] = obj.getParamsStr(paramsLst);
-            eval(sprintf('fdata = load(obj.name,''-mat'', %s);', paramsStr));
-                        
-            if isproperty(fdata,'d')
-                obj.d = fdata.d;
-            elseif ismember('d', paramsLst)
-                obj.d = [];
-            end
-            
-            if isproperty(fdata,'t')
-                obj.t = fdata.t;
-            elseif ismember('t', paramsLst)
-                obj.t = [];
-            end
-            
-            if isproperty(fdata,'SD')
-                obj.SD = SetSDRun(fdata.SD);
-            elseif ismember('SD', paramsLst)
-                obj.SD = struct([]);
-            end
-            
-            if isproperty(fdata,'s')
-                obj.s = fdata.s;
-            elseif ismember('s',paramsLst)
-                obj.s = [];
-            end
-            
-            if isproperty(fdata,'aux')
-                obj.aux = fdata.aux;
-            elseif ismember('aux',paramsLst)
-                obj.aux = [];
-            end
-            
-            if isproperty(fdata,'CondNames')
-                obj.CondNames = fdata.CondNames;
-            elseif ismember('CondNames', paramsLst) && ~isproperty(fdata,'CondNames')
-                obj.InitCondNames();
-            end
-            
-            warning('on', 'MATLAB:load:variableNotFound');
-            
-        end
-        
-        
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % ----------------------------------------------------------------------------------
         function Save(obj, options)
             
             if ~exist('options','var')
@@ -186,17 +68,17 @@ classdef RunClass < TreeNodeClass
             
             % Save acquired data
             if options_s.acquired
-                ;
+                obj.acquired.Save();
             end
                         
         end
         
         
         
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % ----------------------------------------------------------------------------------
         % Copy processing params (procInut and procResult) from
         % N2 to N1 if N1 and N2 are same nodes
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % ----------------------------------------------------------------------------------
         function copyProcParams(obj, R)
             
             if obj == R
@@ -205,12 +87,12 @@ classdef RunClass < TreeNodeClass
             
         end
         
+    
         
-        
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % ----------------------------------------------------------------------------------
         % Copy processing params (procInut and procResult) from
         % N2 to N1
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % ----------------------------------------------------------------------------------
         function copyProcParamsFieldByField(obj, R)
             
             % procInput
@@ -232,9 +114,9 @@ classdef RunClass < TreeNodeClass
                 obj.CondNames = copyStructFieldByField(obj.CondNames, R.CondNames);
             end
             
-            % CondSubj2Run
-            if isproperty(R,'CondRun2Group') && ~isempty(R.CondRun2Group)
-                obj.CondRun2Group = copyStructFieldByField(obj.CondRun2Group, R.CondRun2Group);
+            % CondName2Run
+            if isproperty(R,'CondName2Group') && ~isempty(R.CondName2Group)
+                obj.CondName2Group = copyStructFieldByField(obj.CondName2Group, R.CondName2Group);
             end
             
             % tIncMan
@@ -250,10 +132,10 @@ classdef RunClass < TreeNodeClass
         end
         
         
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % ----------------------------------------------------------------------------------
         % Subjects obj1 and obj2 are considered equivalent if their names
         % are equivalent and their sets of runs are equivalent.
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % ----------------------------------------------------------------------------------
         function B = equivalent(obj1, obj2)
             
             B=1;
@@ -264,67 +146,330 @@ classdef RunClass < TreeNodeClass
             
         end
         
-        
-        
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % 
-        % 
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        function nTrials = InitCondNames(obj)
+    end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Data Display methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
             
-            if isempty(obj.CondNames)
-                obj.CondNames = repmat({''},1,size(obj.s,2));
+
+        % ----------------------------------------------------------------------------------
+        function Display(obj, guiMain)
+            
+            hAxes = guiMain.axesData.handles.axes;
+            if ~ishandles(hAxes)
+                return;
             end
             
-            for ii=1:size(obj.s,2)
+            axes(hAxes)
+            cla;
+            legend off
+            
+            linecolor  = guiMain.axesData.linecolor;
+            linestyle  = guiMain.axesData.linestyle;
+            datatype   = guiMain.datatype;
+            condition  = guiMain.condition;
+            iCh         = guiMain.ch;
+            iWl         = guiMain.wl;
+            hbType     = guiMain.hbType;
+            buttonVals = guiMain.buttonVals;
+            sclConc    = guiMain.sclConc;        % convert Conc from Molar to uMolar
+            showStdErr = guiMain.showStdErr;
+            
+            condition = find(obj.CondName2Group == condition);
+            
+            
+            d       = [];
+            dStd    = [];
+            t       = [];
+            nTrials = [];
+            
+            if datatype == buttonVals.RAW
+                d = obj.GetDataMatrix();
+                t = obj.GetTime();
+            elseif datatype == buttonVals.OD
+                d = obj.procResult.dod;
+                t = obj.GetTime();
+            elseif datatype == buttonVals.CONC
+                d = obj.procResult.dc;
+                t = obj.GetTime();
+            elseif datatype == buttonVals.OD_HRF || datatype == buttonVals.OD_HRF_PLOT_PROBE
+                d = obj.procResult.dodAvg;
+                t = obj.procResult.tHRF;
+                if showStdErr
+                    dStd = obj.procResult.dodAvgStd;
+                end
+                nTrials = obj.procResult.nTrials;
+                if isempty(condition)
+                    return;
+                end
+            elseif datatype == buttonVals.CONC_HRF || datatype == buttonVals.CONC_HRF_PLOT_PROBE
+                d = obj.procResult.dcAvg;
+                t = obj.procResult.tHRF;
+                if showStdErr
+                    dStd = obj.procResult.dcAvgStd * sclConc;
+                end
+                nTrials = obj.procResult.nTrials;
+                if isempty(condition)
+                    return;
+                end
+            end
+            ch      = obj.GetMeasList();
+            Lambda  = obj.GetWls();
+            
+            %%% Plot data
+            if ~isempty(d)
                 
-                if isempty(obj.CondNames{ii})
-                    
-                    % Make sure not to duplicate a condition name
-                    jj=0;
-                    kk=ii+jj;
-                    condName = num2str(kk);
-                    while ~isempty(find(strcmp(condName, obj.CondNames)))
-                        jj=jj+1;
-                        kk=ii+jj;
-                        condName = num2str(kk);
-                    end
-                    obj.CondNames{ii} = condName;
-                    
+                xx = xlim();
+                yy = ylim();
+                if strcmpi(get(hAxes,'ylimmode'),'manual')
+                    flagReset = 0;
                 else
+                    flagReset = 1;
+                end
+                hold on
+                
+                % Set the axes ranges
+                if flagReset==1
+                    set(hAxes,'xlim',[floor(min(t)) ceil(max(t))]);
+                    set(hAxes,'ylimmode','auto');
+                else
+                    xlim(xx);
+                    ylim(yy);
+                end
+                
+                chLst = find(ch.MeasListVis(iCh)==1);
+                
+                % Plot data
+                if datatype == buttonVals.RAW || datatype == buttonVals.OD || datatype == buttonVals.OD_HRF || datatype == buttonVals.OD_HRF_PLOT_PROBE
                     
-                    % Check if CondNames{ii} has a name. If not name it but
-                    % make sure not to duplicate a condition name
-                    k = find(strcmp(obj.CondNames{ii}, obj.CondNames));
-                    if length(k)>1
-                        % Unname and then rename duplicate condition
-                        obj.CondNames{ii} = '';
-                        
-                        jj=0;
-                        while find(strcmp(num2str(ii), obj.CondNames))
-                            kk=ii+jj;
-                            obj.CondNames{ii} = num2str(kk);
-                            jj=jj+1;
+                    if  datatype == buttonVals.OD_HRF || datatype == buttonVals.OD_HRF_PLOT_PROBE
+                        d = d(:,:,condition);
+                    end
+                    d = reshape_y(d, ch.MeasList, Lambda);
+                    
+                    DisplayDataRawOrOD(t, d, dStd, iWl, iCh, chLst, nTrials, condition, linecolor, linestyle);
+                    
+                elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF || datatype == buttonVals.CONC_HRF_PLOT_PROBE
+                    
+                    if  datatype == buttonVals.CONC_HRF || datatype == buttonVals.CONC_HRF_PLOT_PROBE
+                        d = d(:,:,:,condition);
+                    end
+                    d = d * sclConc;
+                    
+                    DisplayDataConc(t, d, dStd, hbType, iCh, chLst, nTrials, condition, linecolor, linestyle);
+                end
+            end
+            
+            guiMain.axesSDG = DisplayAxesSDG(guiMain.axesSDG, obj);
+            
+            obj.DisplayStim(guiMain);
+            
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function DisplayStim(obj, guiMain)
+            
+            hAxes = guiMain.axesData.handles.axes;
+            if ~ishandles(hAxes)
+                return;
+            end
+            axes(hAxes);
+            
+            buttonVals = guiMain.buttonVals;
+            
+            if guiMain.datatype == buttonVals.RAW_HRF || guiMain.datatype == buttonVals.RAW_HRF_PLOT_PROBE
+                return;
+            end
+            if guiMain.datatype == buttonVals.OD_HRF || guiMain.datatype == buttonVals.OD_HRF_PLOT_PROBE
+                return;
+            end
+            if guiMain.datatype == buttonVals.CONC_HRF || guiMain.datatype == buttonVals.CONC_HRF_PLOT_PROBE
+                return;
+            end
+            
+            procResult = obj.procResult;
+            
+            %%% Plot stim marks. This has to be done before plotting exclude time
+            %%% patches because stim legend doesn't work otherwise.
+            if ~isempty(obj.GetStims())
+                s = enStimRejection(obj.acquired.GetTime(), obj.acquired.GetStims(), [], obj.tIncMan, [0 0]);
+                obj.acquired.SetStims(s);
+                s = obj.acquired.GetStims();
+                t = obj.acquired.GetTime();
+                
+                % Plot included and excluded stims
+                yrange=ylim();
+                hLg=[];
+                idxLg=[];
+                kk=1;
+                CondColTbl = obj.CondColTbl;
+                for iS = 1:size(s,2)
+                    iCond = obj.CondName2Group(iS);
+                    
+                    lstS          = find(s(:,iS)==1 | s(:,iS)==-1);
+                    lstExclS_Auto = [];
+                    lstExclS_Man  = find(s(:,iS)==-1);
+                    if isproperty(procResult,'s') && ~isempty(procResult.s)
+                        lstExclS_Auto = find(s(:,iS)==1 & sum(procResult.s,2)<=-1);
+                    end
+                    
+                    for iS2=1:length(lstS)
+                        if ~isempty(find(lstS(iS2) == lstExclS_Auto))
+                            hl = plot(t(lstS(iS2))*[1 1],yrange,'-.');
+                            set(hl,'linewidth',1);
+                            set(hl,'color',CondColTbl(iCond,:));
+                        elseif ~isempty(find(lstS(iS2) == lstExclS_Man))
+                            hl = plot(t(lstS(iS2))*[1 1],yrange,'--');
+                            set(hl,'linewidth',1);
+                            set(hl,'color',CondColTbl(iCond,:));
+                        else
+                            hl = plot(t(lstS(iS2))*[1 1],yrange,'-');
+                            set(hl,'linewidth',1);
+                            set(hl,'color',CondColTbl(iCond,:));
                         end
                     end
                     
+                    % Get handles and indices of each stim condition
+                    % for legend display
+                    if ~isempty(lstS)
+                        % We don't want dashed lines appearing in legend, so
+                        % we draw invisible solid stims over all stims to
+                        % trick the legend into only showing solid lines.
+                        hLg(kk) = plot(t(lstS(iS2))*[1 1],yrange,'-','visible','off');
+                        set(hLg(kk),'color',CondColTbl(iCond,:));
+                        idxLg(kk) = iCond;
+                        kk=kk+1;
+                    end
                 end
-                
+                obj.DisplayCondLegend(hLg, idxLg);
+            end
+            hold off
+            
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function DisplayCondLegend(obj, hLg, idxLg)
+            
+            [idxLg, k] = sort(idxLg);
+            CondNamesAll = obj.CondNamesAll;
+            if ishandles(hLg)
+                legend(hLg(k), CondNamesAll(idxLg));
             end
             
-            nTrials = sum(obj.s,1);
+        end
+        
+    end    % Public methods
+    
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Pubic Set/Get methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+            
+        % ----------------------------------------------------------------------------------
+        function t = GetTime(obj)
+            
+            t = obj.acquired.GetTime();
             
         end
         
         
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % ----------------------------------------------------------------------------------
+        function d = GetDataMatrix(obj, idx)
+            
+            if nargin<2
+                idx = 1;
+            end
+            
+            d = obj.acquired.GetDataMatrix(idx);
+            
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function SD = GetSD(obj)
             
-            SD = obj.SD;
+            SD = obj.acquired.GetSD();
             
         end
         
         
-    end
+        % ----------------------------------------------------------------------------------
+        function ch = GetMeasList(obj)
+            
+            ch.MeasList = obj.acquired.GetMeasList();
+            ch.MeasListAct = ones(size(ch.MeasList,1), 1);
+            ch.MeasListVis = ones(size(ch.MeasList,1), 1);
+            
+        end
 
+        
+        % ----------------------------------------------------------------------------------
+        function SetStims(obj,s)
+            
+            obj.acquired.SetStims(s);
+            
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function s = GetStims(obj)
+            
+            s = obj.acquired.GetStims();
+            
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetCondNames(obj)
+            
+            obj.CondNames = obj.acquired.GetCondNames();
+            
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function CondNames = GetCondNames(obj)
+            
+            CondNames = obj.acquired.GetCondNames();
+            
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetCondName2Group(obj, CondNamesGroup)
+                        
+            obj.CondName2Group = zeros(1, length(obj.CondNames));
+            for ii=1:length(obj.CondNames)
+                obj.CondName2Group(ii) = find(strcmp(CondNamesGroup, obj.CondNames{ii}));
+            end
+            
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function wls = GetWls(obj)
+
+            wls = obj.acquired.GetWls();
+        
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function bbox = GetSdgBbox(obj)
+            
+            bbox = obj.acquired.GetSdgBbox();
+            
+        end
+
+    end        % Public Set/Get methods
+    
 end

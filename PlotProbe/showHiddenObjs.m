@@ -1,4 +1,4 @@
-function showHiddenObjs(bitmask, SD, y, h)
+function showHiddenObjs(bitmask, SD, ch, y, h)
 
 if isempty(y)
     return;
@@ -6,8 +6,8 @@ end
 
 ampYmean = 0;
 nDataTypes = ndims(y);
-lst = find(SD.MeasList(:,4)==1);
-MLact = SD.MeasListAct(lst); % option for future
+lst = find(ch.MeasList(:,4)==1);
+MLact = ch.MeasListAct(lst); % option for future
 
 j1 = find(MLact~=0);
 j2 = find(MLact==0);

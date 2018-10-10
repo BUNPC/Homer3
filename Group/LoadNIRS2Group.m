@@ -115,7 +115,7 @@ groupCurr.CopyProcInput('run', procInputRunDefault);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Copy SD to subject and group procInput 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-groupCurr.SetSD();
+groupCurr.SetCondNames();
 
 
 group = groupCurr;

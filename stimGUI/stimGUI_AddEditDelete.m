@@ -70,7 +70,7 @@ if(isempty(iS_lst))
         end
         stim.currElem.procElem.CondNames{end+1} = CondNameNew{1};
         stim.currElem.procElem.s(tPts,end+1) = 1;
-        stim.currElem.procElem.CondRun2Group(end+1) = ch;
+        stim.currElem.procElem.CondName2Group(end+1) = ch;
         stim.CondNamesGroup{ch} = CondNameNew{1};
 
     % Add new stim to exiting group condition. Condition 
@@ -89,7 +89,7 @@ if(isempty(iS_lst))
         if flag==0
             iS = length(stim.currElem.procElem.CondNames)+1;
             stim.currElem.procElem.CondNames{iS} = stim.CondNamesGroup{ch};
-            stim.currElem.procElem.CondRun2Group(iS) = ch;
+            stim.currElem.procElem.CondName2Group(iS) = ch;
         end
         stim.currElem.procElem.s(tPts,iS) = 1;
 
@@ -171,7 +171,7 @@ else
             end            
             stim.currElem.procElem.CondNames{end+1} = CondNameNew{1};
             stim.currElem.procElem.s(tPts(iS_lst(lstR)),end+1) = v;
-            stim.currElem.procElem.CondRun2Group(end+1) = ch;       
+            stim.currElem.procElem.CondName2Group(end+1) = ch;       
             stim.CondNamesGroup{ch} = CondNameNew{1};
             
         else
@@ -186,7 +186,7 @@ else
             end
             if flag==0
                 iS = length(stim.currElem.procElem.CondNames)+1;
-                stim.currElem.procElem.CondRun2Group(iS) = ch;
+                stim.currElem.procElem.CondName2Group(iS) = ch;
             end
             stim.currElem.procElem.CondNames{iS} = stim.CondNamesGroup{ch};
             stim.currElem.procElem.s(tPts(iS_lst(lstR)),iS) = v;

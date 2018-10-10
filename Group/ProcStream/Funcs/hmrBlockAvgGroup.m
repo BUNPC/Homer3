@@ -1,5 +1,5 @@
-function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrBlockAvgGroup(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondGroup2Subj, tRange, thresh)
-% [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrBlockAvgGroup(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondGroup2Subj, tRange, thresh)
+function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrBlockAvgGroup(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
+% [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrBlockAvgGroup(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
 %
 % UI NAME:
 % Block_Average_Group
@@ -14,7 +14,7 @@ function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrBlockAvgGroup(yAvgSubjs
 % tHRFSubjs: 
 % SDSubjs:
 % nTrialsSubjs:
-% CondGroup2Subj: 
+% CondName2Subj: 
 % trange: Defines the range for the block average
 % thresh: Threshold for excluding channels if it's data deviates too much
 %         from mean 
@@ -46,7 +46,7 @@ for iSubj = 1:nSubj
         break;
     end
     
-    nCond = size(CondGroup2Subj,2);
+    nCond = size(CondName2Subj,2);
     
     if ndims(yAvg) == (4-(nCond<2))
         
@@ -61,7 +61,7 @@ for iSubj = 1:nSubj
         end
         
         for iC = 1:nCond
-            iS = CondGroup2Subj(iSubj,iC);
+            iS = CondName2Subj(iSubj,iC);
             
             if iS==0
                 continue;
@@ -118,7 +118,7 @@ for iSubj = 1:nSubj
             grpAvgPass = zeros(size(yAvg,2),nCond,nSubj);
         end
         for iC = 1:nCond
-            iS = CondGroup2Subj(iSubj,iC);
+            iS = CondName2Subj(iSubj,iC);
             
             for iWl = 1:2
                 % Calculate which channels to include and exclude from the group HRF avg,

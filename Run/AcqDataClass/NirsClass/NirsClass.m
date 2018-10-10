@@ -90,7 +90,7 @@ classdef NirsClass < AcqDataClass
             
         end
         
-
+        
         
         % ---------------------------------------------------------
         function nTrials = InitCondNames(obj)
@@ -162,7 +162,7 @@ classdef NirsClass < AcqDataClass
             SD = obj.SD;
             
         end
-                
+        
         
         % ---------------------------------------------------------
         function SetSD(obj, SD)
@@ -170,20 +170,20 @@ classdef NirsClass < AcqDataClass
             obj.SD = SD;
             
         end
-                
+        
         
         % ---------------------------------------------------------
         function ml = GetMeasList(obj)
             
             ml = obj.SD.MeasList;
             
-        end        
+        end
         
         % ---------------------------------------------------------
         function wls = GetWls(obj)
-
+            
             wls = obj.SD.Lambda;
-        
+            
         end
         
         
@@ -210,7 +210,7 @@ classdef NirsClass < AcqDataClass
             
         end
         
-
+        
         
         % ---------------------------------------------------------
         function bbox = GetSdgBbox(obj)
@@ -218,7 +218,7 @@ classdef NirsClass < AcqDataClass
             bbox = [obj.SD.xmin, obj.SD.xmax, obj.SD.ymin, obj.SD.ymax];
             
         end
-
+        
         
         % ---------------------------------------------------------
         function srcpos = GetSrcPos(obj)
@@ -233,8 +233,24 @@ classdef NirsClass < AcqDataClass
             
             detpos = obj.SD.DetPos;
             
-        end                
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function aux = GetAux(obj)
+            
+            aux = struct('data', obj.aux, 'names',{{}});
+            
+            for ii=1:size(obj.aux, 2)
+                if isproperty(obj.SD,'auxChannels')
+                    aux.names{end+1} = obj.SD.auxChannels{ii};
+                else
+                    aux.names{end+1} = sprintf('Aux%d',ii);
+                end
+            end
+            
+        end
         
     end
-
+    
 end

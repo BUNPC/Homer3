@@ -469,6 +469,15 @@ classdef RunClass < TreeNodeClass
             bbox = obj.acquired.GetSdgBbox();
             
         end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function aux = GetAux(obj)
+            
+            aux = obj.acquired.GetAux();            
+            
+        end
+        
 
     end        % Public Set/Get methods
     

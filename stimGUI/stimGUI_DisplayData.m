@@ -1,6 +1,8 @@
 function stimGUI_DisplayData(userdata_curr_row)
 global stim
-aux = stim.currElem.procElem.aux;
+aux = stim.currElem.procElem.GetAux();
+t = stim.currElem.procElem.GetTime();
+s = stim.currElem.procElem.GetStims();
 
 if ~exist('userdata_curr_row')
     userdata_curr_row=0;
@@ -11,9 +13,9 @@ cla
 hold on 
 
 if(~isempty(aux))
-    h=plot(stim.currElem.procElem.t, aux(:,stim.iAux),'color','k');
+    h=plot(t, aux.data(:,stim.iAux),'color','k');
 end
-[lstR,lstC] = find(abs(stim.currElem.procElem.s)==1);
+[lstR,lstC] = find(abs(s)==1);
 [lstR,k] = sort(lstR);
 lstC = lstC(k);
 nStim = length(lstR);
@@ -23,10 +25,10 @@ idxLg=[];
 hLg=[];
 kk=1;
 for ii=1:nStim
-    if(stim.currElem.procElem.s(lstR(ii),lstC(ii))==1)
-        stim.Lines(ii).handle = plot([1 1]*stim.currElem.procElem.t(lstR(ii)), yy,'-');
+    if(s(lstR(ii),lstC(ii))==1)
+        stim.Lines(ii).handle = plot([1 1]*t(lstR(ii)), yy,'-');
     elseif(stim.currElem.procElem.s(lstR(ii),lstC(ii))==-1)
-        stim.Lines(ii).handle = plot([1 1]*stim.currElem.procElem.t(lstR(ii)), yy,'--');
+        stim.Lines(ii).handle = plot([1 1]*t(lstR(ii)), yy,'--');
     end
 
     iCond = stim.currElem.procElem.CondName2Group(lstC(ii));
@@ -45,7 +47,7 @@ for ii=1:nStim
     % Check which conditions are represented in S for the conditions 
     % legend display. 
     if isempty(find(idxLg == iCond))
-        hLg(kk) = plot([1 1]*stim.currElem.procElem.t(1), yy,'-','color',stim.Lines(ii).color,'visible','off');
+        hLg(kk) = plot([1 1]*t(1), yy,'-','color',stim.Lines(ii).color,'visible','off');
         idxLg(kk) = iCond;
         kk=kk+1;
     end
@@ -68,7 +70,7 @@ end
 if(~isproperty(stim,'userdata') | isempty(stim.userdata))
     data = repmat({0,''},length(lstR),1);
     for ii=1:length(lstR)
-        data{ii,1} = stim.currElem.procElem.t(lstR(ii));
+        data{ii,1} = t(lstR(ii));
     end
     cnames={'1'};
     cwidth={100};
@@ -95,7 +97,7 @@ else
     for ii=1:length(lstR)
         % Search for stim in current table
         data(ii,:) = [{0} repmat({''},1,ncols-1)];
-        data{ii,1} = stim.currElem.procElem.t(lstR(ii));
+        data{ii,1} = t(lstR(ii));
         for jj=1:size(data0,1)
             tol=0.001; % ms tolerance
             if abs(data{ii,1}-data0{jj,1})<tol
@@ -117,7 +119,7 @@ if ~isempty(hLg)
     stim.LegendHdl = legend(hLg,stim.CondNamesGroup(idxLg));
 end
 
-set(stim.handles.axes,'xlim', [stim.currElem.procElem.t(1), stim.currElem.procElem.t(end)])
+set(stim.handles.axes,'xlim', [t(1), t(end)])
 
 
 

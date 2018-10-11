@@ -11,7 +11,7 @@ bit1 = plotprobe.hidMeasShow;
 h = plotprobe.objs.Data.h;
 
 procResult  = currElem.procElem.procResult;
-SD          = currElem.procElem.SD;
+ch          = currElem.procElem.GetMeasList();
 
 datatype    = guiMain.datatype;
 buttonVals  = guiMain.buttonVals;
@@ -34,7 +34,7 @@ else
 end
 
 guiSettings = 2*bit1 + bit0;
-showHiddenObjs(guiSettings,SD,y,h);
+showHiddenObjs(guiSettings,ch,y,h);
 
 hmr.plotprobe = plotprobe;
 

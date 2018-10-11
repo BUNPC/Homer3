@@ -2,7 +2,7 @@ classdef SubjClass < TreeNodeClass
     
     properties % (Access = private)
         
-        iRun;
+        iSubj;
         CondName2Run
         CondName2Group;
         runs;
@@ -17,7 +17,7 @@ classdef SubjClass < TreeNodeClass
             
             if nargin==4
                 fname = varargin{1};
-                iRun = varargin{2};
+                iSubj = varargin{2};
                 iRun  = varargin{3};
                 rnum  = varargin{4};
             else
@@ -28,15 +28,14 @@ classdef SubjClass < TreeNodeClass
             if isempty(fname) || exist(fname,'file')~=2
                 run = RunClass().empty;
             else
-                run = RunClass(fname, iRun, iRun, rnum);
+                run = RunClass(fname, iSubj, iRun, rnum);
             end
             
             obj.name = sname;
             obj.type = 'subj';
-            obj.iRun = iRun;
+            obj.iSubj = iSubj;
             obj.CondName2Run = [];
             obj.CondName2Group = [];
-            obj.iRun = iRun;
             obj.runs = run;
             
         end
@@ -159,7 +158,7 @@ classdef SubjClass < TreeNodeClass
             if options_s.derived
                 if exist('./groupResults.mat','file')
                     load( './groupResults.mat' );
-                    group.subjs(obj.iRun) = obj;
+                    group.subjs(obj.iSubj) = obj;
                     save( './groupResults.mat','group' );
                 end
             end
@@ -171,6 +170,21 @@ classdef SubjClass < TreeNodeClass
                 end
             end
         end
+        
+        
+        % ----------------------------------------------------------------------------------
+        % Deletes derived data in procResult
+        % ----------------------------------------------------------------------------------
+        function Reset(obj)
+            
+            obj.procResult = ProcResultClass();
+            for jj=1:length(obj.runs)
+                obj.runs(jj).Reset();
+            end
+            
+        end
+        
+        
         
     end
     
@@ -219,6 +233,16 @@ classdef SubjClass < TreeNodeClass
             
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function SetMeasList(obj)
+            
+            for ii=1:length(obj.runs)
+                obj.runs(ii).SetMeasList();
+            end
+            
+        end
+
         
         % ----------------------------------------------------------------------------------
         function ch = GetMeasList(obj)

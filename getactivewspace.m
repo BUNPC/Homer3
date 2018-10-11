@@ -15,6 +15,5 @@ for ii=1:length(paths_all)
         paths_excl{kk,1} = paths_all{ii};
         kk=kk+1;
     end
-    
 end
 

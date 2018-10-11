@@ -58,7 +58,7 @@ elseif ischar(args{1})
         stim.handles.parentgui = args{2};
     end
 end
-stim.CondColTbl = MakeCondColTbl(stim.CondNamesGroup);
+stim.CondColTbl = stim.currElem.procElem.CondColTbl();
 
 
 

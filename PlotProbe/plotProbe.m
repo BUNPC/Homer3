@@ -1,4 +1,4 @@
-% [h hFig tAmp] = plotProbe( y, t, SD, ml, hFig, ystd, axFactor, tStep, tAmp )
+% [h, hFig, tAmp] = plotProbe( y, t, SD, ml, hFig, ystd, axFactor, tStep, tAmp )
 %
 % Plot the data in the probe format. If no data is provided,
 % this plots the probe geometry given in SD.
@@ -40,7 +40,7 @@
 % toggle nearest neighbors
 % assuming y is concentration data... need to check dimensions
 
-function [h hFig tAmp]=plotProbe( y, t, SD, ch, hFig, ystd, axFactor, tStep, tAmp )
+function [h, hFig, tAmp] = plotProbe( y, t, SD, ch, hFig, ystd, axFactor, tStep, tAmp )
 
 h=[];
 isinitfig=0;
@@ -171,7 +171,7 @@ try
                0.50 0.80 0.30
               ];
     else
-        if SD.Lambda(1)<SD.Lambda(2)
+        if ch.Lambda(1)<ch.Lambda(2)
             color=[
                     0.00 0.00 1.00;
                     1.00 0.00 0.00;

@@ -16,7 +16,6 @@ classdef TreeNodeClass < matlab.mixin.Copyable
         procResult;
         err;
         ch;
-        SD;
         CondNames;        
     end
         
@@ -33,8 +32,7 @@ classdef TreeNodeClass < matlab.mixin.Copyable
             obj.procResult = ProcResultClass();
             obj.err = 0;
             obj.CondNames = {};
-            obj.ch = struct('MeasList',[],'MeasListVis',[],'MeasListAct',[]);
-            obj.SD = struct('SrcPos',[],'DetPos',[]);
+            obj.ch = struct('MeasList',[],'MeasListVis',[],'MeasListAct',[], 'Lambda',[]);
             
         end
         
@@ -173,6 +171,7 @@ classdef TreeNodeClass < matlab.mixin.Copyable
             axes(hAxes)
             cla;
             legend off
+            set(hAxes,'ygrid','on');
             
             linecolor  = guiMain.axesData.linecolor;
             linestyle  = guiMain.axesData.linestyle;
@@ -259,6 +258,18 @@ classdef TreeNodeClass < matlab.mixin.Copyable
             
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function varval = FindVar(obj, varname)
+
+            if isproperty(obj, varname)
+                varval = eval( sprintf('obj.%s', varname) );
+            else
+                varval = [];
+            end
+            
+        end
+                
     end
     
     
@@ -312,6 +323,8 @@ classdef TreeNodeClass < matlab.mixin.Copyable
             end
         end
         
+        
+        
         % ----------------------------------------------------------------------------------
         function out = CondNamesAll(arg)
             persistent cond;
@@ -333,7 +346,6 @@ classdef TreeNodeClass < matlab.mixin.Copyable
         function aux = GetAux(obj)
             aux = [];
         end
-        
         
     end
     

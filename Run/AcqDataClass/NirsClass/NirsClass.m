@@ -86,7 +86,7 @@ classdef NirsClass < AcqDataClass
             s         = obj.s;
             CondNames = obj.CondNames;
             
-            save(obj.filename,'-mat', 'SD','s','CondNames');
+            save(obj.filename, '-mat', '-append', 'SD','s','CondNames');
             
         end
         

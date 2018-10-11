@@ -15,11 +15,7 @@ for iFunc = 1:length(procInput.procFunc)
     argIn = procStreamParseArgsIn(procInput.procFunc(iFunc).funcArgIn);
     for ii = 1:length(argIn)
         if ~exist(argIn{ii},'var')
-            if isproperty(procElem,argIn{ii})
-                eval(sprintf('%s = procElem.%s;',argIn{ii},argIn{ii}));
-            else
-                eval(sprintf('%s = [];',argIn{ii}));  % if variable doesn't exist and not in procElem then make it empty DAB 11/8/11
-            end
+            eval(sprintf('%s = procElem.FindVar(''%s'');', argIn{ii}, argIn{ii}));
         end
     end
 
@@ -35,28 +31,28 @@ for iFunc = 1:length(procInput.procFunc)
             p{iP}.val = procInput.procFunc(iFunc).funcParamVal{iP};
         end
         if length(procInput.procFunc(iFunc).funcArgIn)==1 & iP==1
-            sargin = sprintf('%sp{%d}',sargin,iP);
+            sargin = sprintf('%sp{%d}', sargin, iP);
             if isnumeric(p{iP})
                 if length(p{iP})==1
-                    sarginVal = sprintf('%s%s',sarginVal,num2str(p{iP}));
+                    sarginVal = sprintf('%s%s', sarginVal, num2str(p{iP}));
                 else
-                    sarginVal = sprintf('%s[%s]',sarginVal,num2str(p{iP}));
+                    sarginVal = sprintf('%s[%s]', sarginVal, num2str(p{iP}));
                 end
             elseif ~isstruct(p{iP})
-                sarginVal = sprintf('%s,%s',sarginVal,p{iP});
+                sarginVal = sprintf('%s,%s', sarginVal, p{iP});
             else
-                sarginVal = sprintf('%s,[XXX]',sarginVal);
+                sarginVal = sprintf('%s,[XXX]', sarginVal);
             end
         else
-            sargin = sprintf('%s,p{%d}',sargin,iP);
+            sargin = sprintf('%s,p{%d}', sargin, iP);
             if isnumeric(p{iP})
                 if length(p{iP})==1
-                    sarginVal = sprintf('%s,%s',sarginVal,num2str(p{iP}));
+                    sarginVal = sprintf('%s,%s', sarginVal, num2str(p{iP}));
                 else
-                    sarginVal = sprintf('%s,[%s]',sarginVal,num2str(p{iP}));
+                    sarginVal = sprintf('%s,[%s]', sarginVal, num2str(p{iP}));
                 end
             elseif ~isstruct(p{iP})
-                sarginVal = sprintf('%s,%s',sarginVal,p{iP});
+                sarginVal = sprintf('%s,%s', sarginVal, p{iP});
             else
                 sarginVal = sprintf('%s,[XXX]',sarginVal);
             end
@@ -83,6 +79,7 @@ for iFunc = 1:length(procInput.procFunc)
         assert(logical(0), msg);
     end
 
+    
     fcallList{end+1} = sprintf( '%s = %s%s%s);', sargout, ...
         procInput.procFunc(iFunc).funcName, ...
         procInput.procFunc(iFunc).funcArgIn, sarginVal );

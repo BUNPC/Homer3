@@ -236,22 +236,20 @@ hmr.currElem = currElem;
 % ----------------------------------------------------------
 function edit_Callback(hObject, eventdata, handles) 
 global hmr
-currElem = hmr.currElem;
-files    = hmr.files;
 
+currElem = hmr.currElem;
 procInput = currElem.procElem.procInput;
 
-f=eventdata(1);
-p=eventdata(2);
-
-val = str2num( get(hObject,'string') ); % need to check if it is valid @@@
-
-procInput.procFunc(f).funcParamVal{p} = val;
-eval( sprintf('procInput.procParam.%s_%s = val;',procInput.procFunc(f).funcName, procInput.procFunc(f).funcParam{p}) );
-set( hObject, 'string', sprintf(procInput.procFunc(f).funcParamFormat{p}, val ) );
+iFunc  = eventdata(1);
+iParam = eventdata(2);
+val = str2num( get(hObject,'string') ); % need to check if it is a valid string
+procInput.procFunc(iFunc).funcParamVal{iParam} = val;
+eval( sprintf('procInput.procParam.%s_%s = val;', ...
+              procInput.procFunc(iFunc).funcName, ...
+              procInput.procFunc(iFunc).funcParam{iParam}) );
+set( hObject, 'string', sprintf(procInput.procFunc(iFunc).funcParamFormat{iParam}, val) );
 
 currElem.procElem.procInput = procInput;
-
 hmr.currElem = currElem;
 
 

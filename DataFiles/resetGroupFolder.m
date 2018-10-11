@@ -9,10 +9,7 @@ if exist([dirname, 'groupResults.mat'],'file')
 end
 
 files = NirsFilesClass().files;
-for ii=1:length(files)
-    if files(ii).isdir
-        continue;
-    end
-    ResetRun(files(ii));
-end
+group = LoadNIRS2Group(files);
+group.Reset();
+group.Save();
 

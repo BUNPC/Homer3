@@ -245,6 +245,26 @@ classdef GroupClass < TreeNodeClass
         end
         
         
+        % ----------------------------------------------------------------------------------
+        % Deletes derived data in procResult
+        % ----------------------------------------------------------------------------------
+        function Reset(obj)
+            
+            obj.procResult = ProcResultClass();
+            for jj=1:length(obj.subjs)
+                obj.subjs(jj).Reset();
+            end
+            
+        end
+        
+        
+    end   % Public methods
+        
+        
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Public Save/Load methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
         
         % ----------------------------------------------------------------------------------
         function Load(obj)
@@ -292,7 +312,7 @@ classdef GroupClass < TreeNodeClass
         end
         
                
-    end  % Public methods
+    end  % Public Save/Load methods
         
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -318,13 +338,23 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function SetMeasList(obj)
+            
+            for ii=1:length(obj.subjs)
+                obj.subjs(ii).SetMeasList();
+            end
+            
+        end
+
+        
+        % ----------------------------------------------------------------------------------
         function ch = GetMeasList(obj)
             
             ch = obj.subjs(1).GetMeasList();
             
         end
+
         
-                
         % ----------------------------------------------------------------------------------
         function wls = GetWls(obj)
 

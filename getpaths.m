@@ -1,11 +1,6 @@
-function [paths, wspaths, paths_excl_str] = getpaths(mode)
+function [paths, wspaths, paths_excl_str] = getpaths(options)
 
 DEBUG = 0;
-
-if ~exist('mode','var') || isempty(mode)
-    mode = 'errcheck';
-end
-
 
 paths = {...
     '/'; ...
@@ -39,10 +34,10 @@ paths = {...
 wspaths = {};
 paths_excl_str = {};
 
-if isempty(strfind(mode, 'noerrcheck'))  && ~isempty(strfind(mode, 'errcheck'))
+if options.conflcheck
         
     % Get all workspace paths that have similar functions sets with current applications
-    appmainfunc = {'Homer3.m','Homer2_UI.m','brainScape.m'};
+    appmainfunc = {'Homer2_UI.m','Homer3.m','brainScape.m'};
     
     kk=1;
     wsidx = [];

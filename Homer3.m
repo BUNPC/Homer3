@@ -213,7 +213,7 @@ plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
 currElem = UpdateCurrElemProcStreamOptionsGUI(currElem);
 if ishandles(hmr.handles.stimGUI)
-    group = MakeCondNamesGroup(group);
+    group.SetCondNames();
     hmr.handles.stimGUI = launchStimGUI(hmr.handles.this, ...
         hmr.handles.stimGUI, ...
         currElem, ...
@@ -493,25 +493,12 @@ function menuItemReset_Callback(hObject, eventdata, handles)
 global hmr
 
 currElem = hmr.currElem;
-files    = hmr.files;
 guiMain  = hmr.guiMain;
-group    = hmr.group;
 
-currElem = ResetCurrElem(currElem);
+currElem.procElem.Reset();
 currElem.procElem.Save();
+currElem.procElem.Display(guiMain);
 
-group = LoadNIRS2Group(files);
-
-% Generate the CondNames for all members of group
-group = MakeCondNamesGroup(group);
-
-% Load the currently selected processing element from the group
-currElem = LoadCurrElem(currElem, group, files);
-
-% Display data from currently selected processing element
-DisplayCurrElem(currElem, guiMain);
-
-hmr.group = group;
 hmr.currElem = currElem;
 
 
@@ -578,7 +565,9 @@ set(hStimGUI, 'position',[.01, .05, .60, .80]);
 function pushbuttonSave_Callback(hObject, eventdata, handles)
 global hmr
 
-saveGroup(hmr.group, 'saveruns');
+hmr.currElem.procElem.Save();
+
+
 
 
 % --------------------------------------------------------------------

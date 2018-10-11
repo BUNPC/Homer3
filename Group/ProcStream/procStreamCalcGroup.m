@@ -37,10 +37,10 @@ for iSubj = 1:nSubjs
     dcAvgStdSubjs{iSubj}  = procResult_subjs{iSubj}.dcAvgStd;
     tHRFSubjs{iSubj}      = procResult_subjs{iSubj}.tHRF;
     nTrialsSubjs{iSubj}   = procResult_subjs{iSubj}.nTrials;
-    if ~isempty(procResult_subjs{iSubj}.SD)
-        SDSubjs{iSubj}    = procResult_subjs{iSubj}.SD;
+    if ~isempty(procResult_subjs{iSubj}.ch)
+        chSubjs{iSubj}    = procResult_subjs{iSubj}.ch;
     else
-        SDSubjs{iSubj}    = subjs(iSubj).SD;
+        chSubjs{iSubj}    = subjs(iSubj).ch;
     end    
 end
 

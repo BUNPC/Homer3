@@ -266,7 +266,7 @@ classdef NirsFilesClass < DataFilesClass
                 %%%% Before checking the .nirs format make sure first that it's a .mat
                 %%%% format. If not we have nothing to work with.
                 try
-                    load( obj.files(iF).name, '-mat','d','t','SD','s','aux','procInput','CondNames');
+                    load( obj.files(iF).name, '-mat', 'd','t','SD','s','aux','CondNames');
                 catch
                     obj.flags(iF).FileCorrupt = 1;
                     continue;

@@ -62,7 +62,7 @@ BttnDup      = drawPlotProbeDuplicate( BttnDup, CtrlPanel.h, hFig );
 BttnHidMeas  = drawPlotProbeHiddenMeas( BttnHidMeas, CtrlPanel.h, hidMeasShow, hFig );
 TmarkPanel   = drawPlotProbeTimeMarkers( TmarkPanel, CtrlPanel.h, tMarkInt, tMarkAmp, ...
                                          tMarkShow, tMarkUnits, hFig );
-showHiddenObjs( 2*hidMeasShow+tMarkShow, SD, ch, y, hData );
+showHiddenObjs( 2*hidMeasShow+tMarkShow, ch, y, hData );
 
 
 % Save the plot probe control panel handles

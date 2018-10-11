@@ -39,10 +39,10 @@ for iRun = 1:nRun
     dcSum2Runs{iRun}    = procResult_runs{iRun}.dcSum2;
     tHRFRuns{iRun}      = procResult_runs{iRun}.tHRF;
     nTrialsRuns{iRun}   = procResult_runs{iRun}.nTrials;
-    if ~isempty(procResult_runs{iRun}.SD)
-        SDRuns{iRun}    = procResult_runs{iRun}.SD;
+    if ~isempty(procResult_runs{iRun}.ch)
+        chRuns{iRun}    = procResult_runs{iRun}.ch;
     else
-        SDRuns{iRun}    = runs(iRun).SD;
+        chRuns{iRun}    = runs(iRun).GetMeasList();
     end
 end
 

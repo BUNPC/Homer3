@@ -74,6 +74,16 @@ classdef RunClass < TreeNodeClass
         end
         
         
+        % ----------------------------------------------------------------------------------
+        % Deletes derived data in procResult
+        % ----------------------------------------------------------------------------------
+        function Reset(obj)
+            
+            obj.procResult = ProcResultClass();
+            
+        end
+        
+        
         
         % ----------------------------------------------------------------------------------
         % Copy processing params (procInut and procResult) from
@@ -166,6 +176,8 @@ classdef RunClass < TreeNodeClass
             axes(hAxes)
             cla;
             legend off
+            set(hAxes,'ygrid','on');
+            
             
             linecolor  = guiMain.axesData.linecolor;
             linestyle  = guiMain.axesData.linestyle;
@@ -349,6 +361,7 @@ classdef RunClass < TreeNodeClass
                 obj.DisplayCondLegend(hLg, idxLg);
             end
             hold off
+            set(hAxes,'ygrid','on');
             
         end
         
@@ -361,6 +374,17 @@ classdef RunClass < TreeNodeClass
             CondNamesAll = obj.CondNamesAll;
             if ishandles(hLg)
                 legend(hLg(k), CondNamesAll(idxLg));
+            end
+            
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function varval = FindVar(obj, varname)
+
+            if isproperty(obj, varname)
+                varval = eval( sprintf('obj.%s', varname) );
+            else
+                varval = obj.acquired.FindVar(varname);
             end
             
         end
@@ -403,9 +427,22 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function SetMeasList(obj)
+            
+            obj.ch.Lambda      = obj.acquired.GetWls();
+            obj.ch.MeasList    = obj.acquired.GetMeasList();
+            obj.ch.MeasListAct = ones(size(obj.ch.MeasList,1), 1);
+            obj.ch.MeasListVis = ones(size(obj.ch.MeasList,1), 1);
+            
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
         function ch = GetMeasList(obj)
             
-            ch.MeasList = obj.acquired.GetMeasList();
+            ch.Lambda      = obj.acquired.GetWls();
+            ch.MeasList    = obj.acquired.GetMeasList();
             ch.MeasListAct = ones(size(ch.MeasList,1), 1);
             ch.MeasListVis = ones(size(ch.MeasList,1), 1);
             

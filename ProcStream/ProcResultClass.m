@@ -11,7 +11,7 @@ classdef ProcResultClass < handle
         dcSum2;
         tHRF;
         nTrials;
-        SD;
+        ch;
         grpAvgPass;
     end
     
@@ -29,7 +29,7 @@ classdef ProcResultClass < handle
             obj.dcSum2 = [];
             obj.tHRF = [];
             obj.nTrials = [];
-            obj.SD = [];
+            obj.ch = [];
             obj.grpAvgPass = [];
         end
         

@@ -1,4 +1,4 @@
-function showHiddenObjs(bitmask, SD, ch, y, h)
+function showHiddenObjs(bitmask, ch, y, h)
 
 if isempty(y)
     return;

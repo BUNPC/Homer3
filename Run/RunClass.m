@@ -377,7 +377,9 @@ classdef RunClass < TreeNodeClass
             end
             
         end
+
         
+
         % ----------------------------------------------------------------------------------
         function varval = FindVar(obj, varname)
 
@@ -386,6 +388,19 @@ classdef RunClass < TreeNodeClass
             else
                 varval = obj.acquired.FindVar(varname);
             end
+            
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Calc(obj, hListbox, listboxFuncPtr)
+
+            % Change and display position of current processing
+            listboxFuncPtr(hListbox, [obj.iSubj, obj.iRun]);   
+            
+            % Calculate processing stream
+            procStreamCalc();
             
         end
         

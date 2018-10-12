@@ -185,8 +185,58 @@ classdef SubjClass < TreeNodeClass
         end
         
         
+        % ----------------------------------------------------------------------------------
+        function Calc(obj, hListbox, listboxFuncPtr)
+            
+            % Calculate all runs in this session
+            runs = obj.runs;
+            nRun = length(runs);
+            for iRun = 1:nRun
+                runs(iRun).Calc(hListbox, listboxFuncPtr);
+                
+                % Find smallest tHRF among the runs. We should make this the common one.
+                if iRun==1
+                    tHRF_common = runs(iRun).procResult.tHRF;
+                elseif length(runs(iRun).procResult.tHRF) < length(tHRF_common)
+                    tHRF_common = runs(iRun).procResult.tHRF;
+                end
+            end
+            
+            % Change and display position of current processing
+            listboxFuncPtr(hListbox, [obj.iSubj, 0]);
+            
+            % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
+            % all runs. Use smallest tHRF as the common one.
+            for iRun = 1:nRun
+                runs(iRun).procResult.SettHRFCommon(tHRF_common, runs(iRun).name, runs(iRun).type);
+            end            
+            
+            % Instantiate all the variables that might be needed by
+            % procStreamCalc to calculate proc stream for this subject
+            nTrials = zeros(1,length(obj.CondNames));
+            for iRun = 1:nRun
+                dodAvgRuns{iRun}    = runs(iRun).procResult.dodAvg;
+                dodAvgStdRuns{iRun} = runs(iRun).procResult.dodAvgStd;
+                dodSum2Runs{iRun}   = runs(iRun).procResult.dodSum2;
+                dcAvgRuns{iRun}     = runs(iRun).procResult.dcAvg;
+                dcAvgStdRuns{iRun}  = runs(iRun).procResult.dcAvgStd;
+                dcSum2Runs{iRun}    = runs(iRun).procResult.dcSum2;
+                tHRFRuns{iRun}      = runs(iRun).procResult.tHRF;
+                nTrialsRuns{iRun}   = runs(iRun).procResult.nTrials;
+                if ~isempty(runs(iRun).procResult.ch)
+                    chRuns{iRun}    = runs(iRun).procResult.ch;
+                else
+                    chRuns{iRun}    = runs(iRun).GetMeasList();
+                end
+            end
+
+            % Calculate processing stream
+            procStreamCalc();
+            
+        end
         
     end
+    
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

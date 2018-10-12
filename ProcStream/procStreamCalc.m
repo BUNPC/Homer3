@@ -1,7 +1,7 @@
 
 % Initialize output struct
-procResult = ProcResultClass();
-procInput = procElem.procInput;
+obj.procResult = ProcResultClass();
+procInput = obj.procInput;
 
 % loop over functions
 paramOut = {};
@@ -15,7 +15,7 @@ for iFunc = 1:length(procInput.procFunc)
     argIn = procStreamParseArgsIn(procInput.procFunc(iFunc).funcArgIn);
     for ii = 1:length(argIn)
         if ~exist(argIn{ii},'var')
-            eval(sprintf('%s = procElem.FindVar(''%s'');', argIn{ii}, argIn{ii}));
+            eval(sprintf('%s = obj.FindVar(''%s'');', argIn{ii}, argIn{ii}));
         end
     end
 
@@ -94,7 +94,7 @@ for iFunc = 1:length(procInput.procFunc)
         end
     end
     
-    % get parameters for Output to procElem.procResult
+    % get parameters for Output to obj.procResult
     lst = strfind(foos,' ');
     lst = [0 lst length(foos)+1];
     param = [];
@@ -111,8 +111,8 @@ end
 
 % Copy paramOut to procResult
 for ii=1:length(paramOut)
-    if eval( sprintf('isproperty(procResult, ''%s'');', paramOut{ii}) );
-	    eval( sprintf('procResult.%s = %s;',paramOut{ii}, paramOut{ii}) );
+    if eval( sprintf('isproperty(obj.procResult, ''%s'');', paramOut{ii}) );
+	    eval( sprintf('obj.procResult.%s = %s;',paramOut{ii}, paramOut{ii}) );
     end
 end
 

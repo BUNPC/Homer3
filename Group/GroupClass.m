@@ -245,6 +245,56 @@ classdef GroupClass < TreeNodeClass
         end
         
         
+        
+        % ----------------------------------------------------------------------------------
+        function Calc(obj, hListbox, listboxFuncPtr)
+            
+            % Calculate all subjs in this session
+            subjs = obj.subjs;
+            nSubj = length(subjs);
+            for iSubj = 1:nSubj
+                subjs(iSubj).Calc(hListbox, listboxFuncPtr);
+                
+                % Find smallest tHRF among the subjs. We should make this the common one.
+                if iSubj==1
+                    tHRF_common = subjs(iSubj).procResult.tHRF;
+                elseif length(subjs(iSubj).procResult.tHRF) < length(tHRF_common)
+                    tHRF_common = subjs(iSubj).procResult.tHRF;
+                end
+            end
+                        
+            % Change and display position of current processing
+            listboxFuncPtr(hListbox, [0,0]);
+            
+            % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
+            % all subjs. Use smallest tHRF as the common one.
+            for iSubj = 1:nSubj
+                subjs(iSubj).procResult.SettHRFCommon(tHRF_common, subjs(iSubj).name, subjs(iSubj).type);
+            end
+            
+            
+            % Instantiate all the variables that might be needed by
+            % procStreamCalc to calculate proc stream for this group
+            for iSubj = 1:nSubj
+                dodAvgSubjs{iSubj}    = subjs(iSubj).procResult.dodAvg;
+                dodAvgStdSubjs{iSubj} = subjs(iSubj).procResult.dodAvgStd;
+                dcAvgSubjs{iSubj}     = subjs(iSubj).procResult.dcAvg;
+                dcAvgStdSubjs{iSubj}  = subjs(iSubj).procResult.dcAvgStd;
+                tHRFSubjs{iSubj}      = subjs(iSubj).procResult.tHRF;
+                nTrialsSubjs{iSubj}   = subjs(iSubj).procResult.nTrials;
+                if ~isempty(subjs(iSubj).procResult.ch)
+                    chSubjs{iSubj}    = subjs(iSubj).procResult.ch;
+                else
+                    chSubjs{iSubj}    = subjs(iSubj).ch;
+                end
+            end
+                        
+            procStreamCalc();
+            
+        end
+        
+        
+        
         % ----------------------------------------------------------------------------------
         % Deletes derived data in procResult
         % ----------------------------------------------------------------------------------
@@ -494,8 +544,8 @@ classdef GroupClass < TreeNodeClass
                 end
             end
             
-        end            
-        
+        end
+                
     end  % Private methods
 
 end % classdef GroupClass < TreeNodeClass

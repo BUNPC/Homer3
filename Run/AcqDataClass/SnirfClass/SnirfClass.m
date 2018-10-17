@@ -127,9 +127,7 @@ classdef SnirfClass < AcqDataClass
             elseif parent(1)~='/'
                 parent = ['/',parent];
             end
-            
-            finfo = h5info(fname);
-            
+                       
             obj.formatVersion = deblank(h5read(fname, [parent, '/formatVersion']));
             obj.timeOffset = hdf5read(fname, [parent, '/timeOffset']);
             
@@ -248,8 +246,14 @@ classdef SnirfClass < AcqDataClass
             end
                         
         end
-                      
-                   
+                
+    end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Pubic Set/Get methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+
         % ---------------------------------------------------------
         function t = GetTime(obj, idx)
             
@@ -275,8 +279,8 @@ classdef SnirfClass < AcqDataClass
         % ---------------------------------------------------------
         function SD = GetSD(obj)
             
-            SD.srcpos = obj.sd.GetSrcPos();
-            SD.detpos = obj.sd.GetDetPos();
+            SD.SrcPos = obj.sd.GetSrcPos();
+            SD.DetPos = obj.sd.GetDetPos();
             
         end
         
@@ -398,5 +402,40 @@ classdef SnirfClass < AcqDataClass
         
     end
     
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Pubic interface for older processing stream
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+        
+        % ----------------------------------------------------------------------------------
+        function var = Get_d(obj)
+            var = obj.GetDataMatrix();
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function var = Get_t(obj)
+            var = obj.GetTime();
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function var = Get_SD(obj)
+            var = obj.GetSD();
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function var = Get_aux(obj)
+            var = obj.GetAux();
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function var = Get_s(obj)
+            
+            var = obj.GetStims();
+            
+        end
+        
+    end
+        
 end
 

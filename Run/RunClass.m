@@ -31,7 +31,12 @@ classdef RunClass < TreeNodeClass
                 obj.rnum  = 0;
             end            
 
-            obj.acquired = NirsClass(obj.name);
+            if obj.IsNirs()
+                obj.acquired = NirsClass(obj.name);
+            else
+                obj.acquired = SnirfClass(obj.name);
+            end
+            
             obj.tIncMan = [];
             obj.userdata = [];
             obj.CondName2Group = [];
@@ -149,7 +154,9 @@ classdef RunClass < TreeNodeClass
         function B = equivalent(obj1, obj2)
             
             B=1;
-            if ~strcmp(obj1.name, obj2.name)
+            [p1,n1] = fileparts(obj1.name);
+            [p2,n2] = fileparts(obj2.name);
+            if ~strcmp([p1,'/',n1],[p2,'/',n2])
                 B=0;
                 return;
             end
@@ -164,7 +171,18 @@ classdef RunClass < TreeNodeClass
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
             
-
+        % ----------------------------------------------------------------------------------
+        function b = IsNirs(obj)
+            
+            b = false;
+            [~,~,ext] = fileparts(obj.name);
+            if strcmp(ext,'.nirs')
+                b = true;
+            end
+            
+        end
+        
+        
         % ----------------------------------------------------------------------------------
         function Display(obj, guiMain)
             
@@ -414,9 +432,12 @@ classdef RunClass < TreeNodeClass
     methods
             
         % ----------------------------------------------------------------------------------
-        function t = GetTime(obj)
+        function t = GetTime(obj, idx)
+            if nargin==1
+                idx=1;
+            end
             
-            t = obj.acquired.GetTime();
+            t = obj.acquired.GetTime(idx);
             
         end
         
@@ -436,7 +457,8 @@ classdef RunClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function SD = GetSD(obj)
             
-            SD = obj.acquired.GetSD();
+            SD.SrcPos = obj.acquired.GetSrcPos();
+            SD.DetPos = obj.acquired.GetDetPos();
             
         end
         
@@ -481,10 +503,13 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetCondNames(obj)
+        function SetCondNames(obj, varargin)
             
-            obj.CondNames = obj.acquired.GetCondNames();
-            
+            if nargin==1
+                obj.CondNames = obj.acquired.GetCondNames();
+            else nargin==2
+                obj.CondNames = obj.acquired.SetCondNames(varargin{1});                
+            end
         end
         
         

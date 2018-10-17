@@ -27,7 +27,7 @@ nWav = length(ch.Lambda);
 ml = ch.MeasList;
 
 if length(ppf)~=nWav
-    errordlg('The length of PPF must match the number of wavelengths in ml.Lambda');
+    errordlg('The length of PPF must match the number of wavelengths in ch.Lambda');
     dc = zeros(size(dod,1),3,length(find(ml(:,4)==1)));
     return
 end

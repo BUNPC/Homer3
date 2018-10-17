@@ -1,9 +1,14 @@
 classdef AcqDataClass < matlab.mixin.Copyable
     
+    properties
+        filename;
+    end
+    
+    
     methods(Abstract)
         
         % ---------------------------------------------------------
-        t         = GetTime(obj)
+        t         = GetTime(obj, idx)
         
         % ---------------------------------------------------------
         datamat   = GetDataMatrix(obj, idx)
@@ -18,7 +23,7 @@ classdef AcqDataClass < matlab.mixin.Copyable
         detpos    = GetDetPos(obj)
         
         % ---------------------------------------------------------
-        ml        = GetMeasList(obj)
+        ml        = GetMeasList(obj, idx)
                 
         % ---------------------------------------------------------
         wls       = GetWls(obj)
@@ -27,7 +32,13 @@ classdef AcqDataClass < matlab.mixin.Copyable
         bbox      = GetSdgBbox(obj)
         
         % ---------------------------------------------------------
+        SetStims(obj, s)
+        
+        % ---------------------------------------------------------
         s         = GetStims(obj)
+        
+        % ---------------------------------------------------------
+        SetCondNames(obj, CondNames)
         
         % ---------------------------------------------------------
         CondNames = GetCondNames(obj)

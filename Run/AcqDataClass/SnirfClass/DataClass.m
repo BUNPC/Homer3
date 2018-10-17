@@ -88,6 +88,44 @@ classdef DataClass  < matlab.mixin.Copyable
             end
             
         end
+    
+        
+        % ---------------------------------------------------------
+        function wls = GetWls(obj)
+            
+            wls = obj.ml(1).GetWls();
+            
+        end
+        
+        
+        % ---------------------------------------------------------
+        function ml = GetMeasList(obj)
+            
+            ml = zeros(length(obj.ml), 4);
+            for ii=1:length(obj.ml)
+                ml(ii,:) = [obj.ml(ii).GetSourceIndex(), obj.ml(ii).GetDetectorIndex(), 1, obj.ml(ii).GetWavelengthIndex()];
+            end
+            
+        end
+        
+        
+        % ---------------------------------------------------------
+        function t = GetTime(obj)
+            
+            t = obj.t;
+            
+        end
+        
+        
+        % ---------------------------------------------------------
+        function datamat = GetDataMatrix(obj)
+            
+            datamat = obj.d;
+            
+        end
+        
+        
+        
         
     end
     

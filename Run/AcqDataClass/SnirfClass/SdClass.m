@@ -1,6 +1,7 @@
 classdef SdClass  < matlab.mixin.Copyable
     
     properties
+        filename
         lambda
         lambdaEmission
         srcPos
@@ -19,24 +20,31 @@ classdef SdClass  < matlab.mixin.Copyable
     methods
         
         % -------------------------------------------------------
-        function obj = SdClass(SD)
+        function obj = SdClass(varargin)
             
+            obj.filename = '';
             if nargin>0
-                obj.lambda = SD.Lambda;
-                obj.lambdaEmission  = [];
-                obj.srcPos  = SD.SrcPos;
-                obj.detPos  = SD.DetPos;
-                obj.frequency  = 1;
-                obj.timeDelay  = 0;
-                obj.timeDelayWidth  = 0;
-                obj.momentOrder = [];
-                obj.correlationTimeDelay = 0;
-                obj.correlationTimeDelayWidth = 0;
-                for ii=1:size(SD.SrcPos)
-                    obj.srcLabels{ii} = ['S',num2str(ii)];
-                end
-                for ii=1:size(SD.DetPos)
-                    obj.detLabels{ii} = ['D',num2str(ii)];
+                if isstruct(varargin{1})
+                    SD = varargin{1};
+                    obj.lambda = SD.Lambda;
+                    obj.lambdaEmission  = [];
+                    obj.srcPos  = SD.SrcPos;
+                    obj.detPos  = SD.DetPos;
+                    obj.frequency  = 1;
+                    obj.timeDelay  = 0;
+                    obj.timeDelayWidth  = 0;
+                    obj.momentOrder = [];
+                    obj.correlationTimeDelay = 0;
+                    obj.correlationTimeDelayWidth = 0;
+                    for ii=1:size(SD.SrcPos)
+                        obj.srcLabels{ii} = ['S',num2str(ii)];
+                    end
+                    for ii=1:size(SD.DetPos)
+                        obj.detLabels{ii} = ['D',num2str(ii)];
+                    end
+                elseif ischar(varargin{1})
+                    obj.filename = varargin{1};
+                    obj.Load(varargin{1});
                 end
             else
                 obj.lambda          = [];
@@ -55,11 +63,29 @@ classdef SdClass  < matlab.mixin.Copyable
 
         end
 
+        
+        
         % -------------------------------------------------------
         function obj = Load(obj, fname, parent)
             
-            if ~exist(fname, 'file')
+            % Overwrite 1st argument if the property filename is NOT empty
+            if ~isempty(obj.filename)
+                fname = obj.filename;
+            end
+            
+            % Arg 1
+            if ~exist('fname','var')
                 return;
+            end
+            if ~exist(fname,'file')
+                return;
+            end
+            
+            % Arg 2
+            if ~exist('parent', 'var')
+                parent = '/snirf/sd';
+            elseif parent(1)~='/'
+                parent = ['/',parent];
             end
               
             obj.lambda                    = hdf5read_safe(fname, [parent, '/lambda'], obj.lambda);
@@ -88,8 +114,8 @@ classdef SdClass  < matlab.mixin.Copyable
             
             hdf5write_safe(fname, [parent, '/lambda'], obj.lambda);
             hdf5write_safe(fname, [parent, '/lambdaEmission'], obj.lambdaEmission);
-            hdf5write_safe(fname, [parent, '/srcPos'], obj.srcPos);
-            hdf5write_safe(fname, [parent, '/detPos'], obj.detPos);
+            h5write_safe(fname, [parent, '/srcPos'], obj.srcPos);
+            h5write_safe(fname, [parent, '/detPos'], obj.detPos);
             hdf5write(fname, [parent, '/frequency'], obj.frequency, 'WriteMode','append');
             hdf5write(fname, [parent, '/timeDelay'], obj.timeDelay, 'WriteMode','append');
             hdf5write(fname, [parent, '/timeDelayWidth'], obj.timeDelayWidth, 'WriteMode','append');
@@ -99,6 +125,32 @@ classdef SdClass  < matlab.mixin.Copyable
             hdf5write_safe(fname, [parent, '/srcLabels'], obj.srcLabels);
             hdf5write_safe(fname, [parent, '/detLabels'], obj.detLabels);
                         
+        end
+        
+        
+        
+        % ---------------------------------------------------------
+        function wls = GetWls(obj)
+            
+            wls = obj.lambda;
+            
+        end
+        
+        
+        
+        % ---------------------------------------------------------
+        function srcpos = GetSrcPos(obj)
+            
+            srcpos = obj.srcPos;
+            
+        end
+        
+        
+        % ---------------------------------------------------------
+        function detpos = GetDetPos(obj)
+            
+            detpos = obj.detPos;
+            
         end
         
     end

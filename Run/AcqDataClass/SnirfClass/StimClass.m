@@ -1,6 +1,7 @@
 classdef StimClass  < matlab.mixin.Copyable
     
     properties
+        filename
         name
         data
     end
@@ -9,6 +10,8 @@ classdef StimClass  < matlab.mixin.Copyable
         
         % -------------------------------------------------------
         function obj = StimClass(s, t, CondName)
+            
+            filename = '';
             
             if nargin==3
                 
@@ -31,11 +34,28 @@ classdef StimClass  < matlab.mixin.Copyable
 
             err = 0;
             
+            % Overwrite 1st argument if the property filename is NOT empty
+            if ~isempty(obj.filename)
+                fname = obj.filename;
+            end
+            
+            % Arg 1
             if ~exist(fname, 'file')
                 err = -1;
                 return;
             end
-              
+            if ~exist(fname,'file')
+                err = -1;
+                return;
+            end
+                          
+            % Arg 2
+            if ~exist('parent', 'var')
+                parent = '/snirf/stim_1';
+            elseif parent(1)~='/'
+                parent = ['/',parent];
+            end
+            
             try
                 name = deblank(h5read(fname, [parent, '/name']));
                 obj.name = name{1};
@@ -80,6 +100,23 @@ classdef StimClass  < matlab.mixin.Copyable
             h5write_safe(fname, [parent, '/data'], obj.data);
             
         end
+        
+        
+        % -------------------------------------------------------
+        function CondName = GetCondName(obj)
+            
+            CondName = obj.name;
+            
+        end
+        
+        
+        % -------------------------------------------------------
+        function ts = GetStim(obj)
+            
+            ts = obj.data(:,1);
+            
+        end
+        
         
     end
     

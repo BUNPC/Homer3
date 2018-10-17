@@ -1,4 +1,4 @@
-function [p2_closest, ip2_closest, dmin] = nearest_point(p2, p1, ith_closest, ndim)
+function [p2_closest, ip2_closest, dmin] = nearest_point(p2, p1, ith_closest)
 %
 % Usage:
 %
@@ -19,15 +19,24 @@ function [p2_closest, ip2_closest, dmin] = nearest_point(p2, p1, ith_closest, nd
 
 % Output arguments
 p2_closest  = [];
-ip2_closest = 0;
+ip2_closest = [];
 dmin        = -1;
 
+% Error check input args
+if nargin<2
+    return;
+end
+if isempty(p2) || isempty(p1)
+    return;
+end
+if ndims(p2) ~= ndims(p1)
+    return;
+end
 if ~exist('ith_closest','var') | isempty(ith_closest)
     ith_closest = 1;
 end
-if ~exist('ndim','var')
-    ndim = 3;
-end
+
+ndim = getNdim([p2;p1]);
 
 m=size(p1,1);
 n=size(p2,1);
@@ -38,34 +47,22 @@ if ith_closest>n
     return;
 end
 
-ERRMAR = .00001;
-
-if ndim==3
-    if(~isempty(p2) & ~isempty(p1))
-        p2_closest  = zeros(m,3);
-        ip2_closest = zeros(m,1);
-        dmin = zeros(m,1);
-        for k=1:m
-            d = sqrt((p2(:,1)-p1(k,1)).^2+(p2(:,2)-p1(k,2)).^2+(p2(:,3)-p1(k,3)).^2);
-            [d2, j] = sort(d);
-            dmin(k) = d2(ith_closest);
-            
-            ip2_closest(k)  = j(ith_closest);
-            p2_closest(k,:) = p2(ip2_closest(k),:);
-        end
+p2_closest  = zeros(m,ndim);
+ip2_closest = zeros(m,1);
+dmin = zeros(m,1);
+for k=1:m
+    if ndim==3
+        d = dist3(p2, p1(k,:));
+    elseif ndim==2
+        d = dist2(p2, p1(k,:));
+    elseif ndim==1
+        d = abs(p2-p1(k));
     end
-elseif ndim==1
-    if(~isempty(p2) & ~isempty(p1))
-        p2_closest  = zeros(m,1);
-        ip2_closest = zeros(m,1);
-        dmin = zeros(m,1);
-        for k=1:m
-            d = sqrt((p2(:)-p1(k)).^2);
-            [d2, j] = sort(d);
-            dmin(k) = d2(ith_closest);
-            
-            ip2_closest(k) = j(ith_closest);
-            p2_closest(k)  = p2(ip2_closest(k));
-        end
-    end
+    [d2, j] = sort(d);
+    dmin(k) = d2(ith_closest);
+    ip2_closest(k)  = j(ith_closest);
+    p2_closest(k,:) = p2(ip2_closest(k),:);
 end
+
+
+

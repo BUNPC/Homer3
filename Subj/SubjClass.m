@@ -104,10 +104,8 @@ classdef SubjClass < TreeNodeClass
             
             j=0;
             for i=1:length(S.runs)
-                [sname1, ~, w1] = getSubjNameAndRun(obj.runs(k).name, i);
-                [sname2, ~, w2] = getSubjNameAndRun(S.runs(i).name, i);
-                rname1 = obj.runs(k).name;
-                rname2 = S.runs(i).name;
+                [~,rname1] = fileparts(obj.runs(k).name);
+                [~,rname2] = fileparts(S.runs(i).name);
                 if strcmp(rname1,rname2)
                     j=i;
                     break;
@@ -310,14 +308,21 @@ classdef SubjClass < TreeNodeClass
         end
         
         % ----------------------------------------------------------------------------------
-        function SetCondNames(obj)
+        function SetCondNames(obj, varargin)
             
-            CondNames = {};
-            for ii=1:length(obj.runs)
-                obj.runs(ii).SetCondNames();
-                CondNames = [CondNames, obj.runs(ii).GetCondNames()];
+            if nargin==1
+                CondNames = {};
+                for ii=1:length(obj.runs)
+                    obj.runs(ii).SetCondNames();
+                    CondNames = [CondNames, obj.runs(ii).GetCondNames()];
+                end
+                obj.CondNames = unique(CondNames);
+            else nargin==2
+                obj.CondNames = varargin{1};
+                for ii=1:length(obj.runs)
+                    obj.runs(ii).SetCondNames(varargin{1});
+                end
             end
-            obj.CondNames = unique(CondNames);
             
         end
         

@@ -11,8 +11,13 @@ end
 rnum = 1;
 groupCurr = GroupClass(files(1).name);
 files(1) = MapFile2Group(files(1),1,1);
+hwait = waitbar(0, sprintf('Loading proc elements') );
+p = get(hwait,'position');
+set(hwait, 'Position',[p(1), p(2), p(3)*1.5, p(4)]);
 for ii=2:length(files)
     
+    waitbar(ii/length(files), hwait, sprintf('Loading %s: %d of %d', ...
+            sprintf_s(files(ii).name), ii, length(files)) );
     fname = files(ii).name;
     if files(ii).isdir
         
@@ -75,7 +80,7 @@ for ii=2:length(files)
         end
     end
 end
-
+close(hwait);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load group results from a file if it exists 

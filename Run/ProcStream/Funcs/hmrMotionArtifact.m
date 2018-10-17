@@ -1,4 +1,4 @@
-% tInc = hmrMotionArtifact(d, fs, ch, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+% tInc = hmrMotionArtifact(d, fs, SD, ch, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % UI NAME:   
 % Motion_Artifacts

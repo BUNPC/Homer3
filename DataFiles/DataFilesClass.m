@@ -68,7 +68,7 @@ classdef DataFilesClass < handle
                                 foos(jj).subjdiridx   = dirs(ii).idx;
                                 foos(jj).idx          = dirs(ii).idx+jj;
                                 foos(jj).filename     = foos(jj).name;
-                                foos(jj).name         = [dirs(ii).name '/' foos(jj).name];
+                                foos(jj).name         = [dirs(ii).name, '/', foos(jj).name];
                                 foos(jj).map2group    = struct('iSubj',0,'iRun',0);
                             end
                             

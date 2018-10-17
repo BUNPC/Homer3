@@ -176,7 +176,6 @@ classdef SnirfFilesClass < DataFilesClass
                 
                 waitbar(iF/nFiles,hwait,sprintf('Checking .snir5 format consistency across files: processing %d of %d',iF,nFiles));                
                 snirf(iF).Load( obj.files(iF).name );
-                pause(1);
 
             end                
             close(hwait);

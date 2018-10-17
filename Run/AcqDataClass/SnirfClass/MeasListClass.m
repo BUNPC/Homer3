@@ -68,6 +68,39 @@ classdef MeasListClass  < matlab.mixin.Copyable
             hdf5write(fname, [parent, '/detectorGain'], obj.detectorGain, 'WriteMode','append');
             
         end
+
+        
+        % ---------------------------------------------------------
+        function wls = GetWls(obj)
+            
+            wls = obj.GetWls();
+            
+        end
+        
+        
+        % ---------------------------------------------------------
+        function idx = GetSourceIndex(obj)
+            
+            idx = obj.sourceIndex;
+            
+        end
+        
+        
+        % ---------------------------------------------------------
+        function idx = GetDetectorIndex(obj)
+            
+            idx = obj.detectorIndex;
+            
+        end
+        
+        
+        % ---------------------------------------------------------
+        function idx = GetWavelengthIndex(obj)
+            
+            idx = obj.wavelengthIndex;
+            
+        end
+        
         
     end
     

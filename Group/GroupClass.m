@@ -414,20 +414,26 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetCondNames(obj)
+        function SetCondNames(obj, varargin)
             
-            CondNames = {};
-            for ii=1:length(obj.subjs)
-                obj.subjs(ii).SetCondNames();
-                CondNames = [CondNames, obj.subjs(ii).GetCondNames()];
-            end
-            obj.CondNames    = unique(CondNames);
-            obj.CondNamesAll(obj.CondNames);
-                        
+            if nargin==1
+	            CondNames = {};
+	            for ii=1:length(obj.subjs)
+	                obj.subjs(ii).SetCondNames();
+	                CondNames = [CondNames, obj.subjs(ii).GetCondNames()];
+	            end
+	            obj.CondNames    = unique(CondNames);
+	            obj.CondNamesAll(obj.CondNames);
+			elseif nargin==2
+	            obj.CondNames    = varargin{1};
+	            for ii=1:length(obj.subjs)
+	                obj.subjs(ii).SetCondNames(varargin{1});
+	            end
+			end
+	
             % Generate mapping of group conditions to subject conditions
             % used when averaging subject HRF to get group HRF
-            obj.SetCondName2Subj();
-            
+            obj.SetCondName2Subj();            
             for iSubj=1:length(obj.subjs)
                 obj.subjs(iSubj).SetCondName2Run();
                 obj.subjs(iSubj).SetCondName2Group(obj.CondNames);

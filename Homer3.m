@@ -108,9 +108,14 @@ Homer3_Init(handles, {'zbuffer'});
 
 % Check NIRS data set for errors. If there are no valid
 % nirs files don't attempt to load them.
-files = NirsFilesClass(handles).files;
+files = SnirfFilesClass(handles).files;
 if isempty(files)
-    return;
+    files = NirsFilesClass(handles).files;
+    if isempty(files)
+        return;
+    end
+    Nirs2Snirf();
+    files = SnirfFilesClass(handles).files;
 end
 
 %%%% Initialize essential objects

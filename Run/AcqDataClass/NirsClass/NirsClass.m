@@ -1,7 +1,6 @@
 classdef NirsClass < AcqDataClass
     
     properties
-        filename;
         SD;
         t;
         s;
@@ -73,8 +72,6 @@ classdef NirsClass < AcqDataClass
                 obj.InitCondNames();
             end
             
-            warning('on', 'MATLAB:load:variableNotFound');
-            
         end
         
         
@@ -141,7 +138,7 @@ classdef NirsClass < AcqDataClass
         
         
         % ---------------------------------------------------------
-        function t = GetTime(obj)
+        function t = GetTime(obj, idx)
             
             t = obj.t;
             
@@ -173,7 +170,7 @@ classdef NirsClass < AcqDataClass
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasList(obj)
+        function ml = GetMeasList(obj, idx)
             
             ml = obj.SD.MeasList;
             
@@ -193,7 +190,7 @@ classdef NirsClass < AcqDataClass
             obj.s = s;
             
         end
-        
+                
         
         % ---------------------------------------------------------
         function s = GetStims(obj)
@@ -204,12 +201,19 @@ classdef NirsClass < AcqDataClass
         
         
         % ---------------------------------------------------------
+        function SetCondNames(obj, CondNames)
+            
+            ;
+            
+        end
+
+            
+        % ---------------------------------------------------------
         function CondNames = GetCondNames(obj)
             
             CondNames = obj.CondNames;
             
         end
-        
         
         
         % ---------------------------------------------------------

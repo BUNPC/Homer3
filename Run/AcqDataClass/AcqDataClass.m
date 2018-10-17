@@ -56,8 +56,10 @@ classdef AcqDataClass < matlab.mixin.Copyable
 
             if isproperty(obj, varname)
                 varval = eval( sprintf('obj.%s', varname) );
-            elseif isproperty(obj.SD, varname)
-                varval = eval( sprintf('obj.SD.%s', varname) );
+            elseif ismethod(obj,['Get', varname])
+                varval = eval( sprintf('obj.Get%s()', varname) );
+            elseif ismethod(obj,['Get_', varname])
+                varval = eval( sprintf('obj.Get_%s()', varname) );                
             else
                 varval = [];
             end

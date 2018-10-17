@@ -76,6 +76,13 @@ global hmr
 
 hmr = [];
 
+if isempty(varargin)    
+    hmr.format = 'snirf';
+else
+    hmr.format = varargin{1};
+end
+
+
 hmr.handles.this = hObject;
 hmr.handles.stimGUI = [];
 hmr.handles.proccessOpt = [];
@@ -83,7 +90,7 @@ hmr.handles.plotProbe = [];
 hmr.files    = [];
 hmr.group    = [];
 hmr.currElem = [];
-hmr.guiMain             = [];
+hmr.guiMain  = [];
 
 set(hObject, 'units', 'normalized', 'position',[.25, .20, .65, .75])
 
@@ -108,7 +115,12 @@ Homer3_Init(handles, {'zbuffer'});
 
 % Check NIRS data set for errors. If there are no valid
 % nirs files don't attempt to load them.
-files = SnirfFilesClass(handles).files;
+if strcmp(hmr.format, 'snirf')
+    files = SnirfFilesClass(handles).files;
+else
+    files = NirsFilesClass(handles).files;
+end
+
 if isempty(files)
     files = NirsFilesClass(handles).files;
     if isempty(files)

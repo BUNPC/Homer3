@@ -10,9 +10,7 @@ classdef StimClass  < matlab.mixin.Copyable
         
         % -------------------------------------------------------
         function obj = StimClass(s, t, CondName)
-            
-            filename = '';
-            
+                        
             if nargin==3
                 
                 k = s>0;
@@ -104,17 +102,24 @@ classdef StimClass  < matlab.mixin.Copyable
         
         % -------------------------------------------------------
         function CondName = GetCondName(obj)
-            
             CondName = obj.name;
-            
+        end
+        
+        
+        % -------------------------------------------------------
+        function SetStim(obj, data, name)
+            obj.data = data;
+            obj.name = name;
         end
         
         
         % -------------------------------------------------------
         function ts = GetStim(obj)
-            
+            ts = [];
+            if isempty(obj.data)
+                return;
+            end
             ts = obj.data(:,1);
-            
         end
         
         

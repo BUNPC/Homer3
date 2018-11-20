@@ -47,7 +47,7 @@ hAxesSDG    = axesSDG.handles.axes;
 iCh         = axesSDG.iCh;
 iSrcDet     = axesSDG.iSrcDet;
 color       = axesSDG.linecolor;
-SD          = procElem.GetSD();
+SD          = procElem.GetSDG();
 ch          = procElem.GetMeasList();
 bbox        = procElem.GetSdgBbox();
 procResult  = procElem.procResult;
@@ -64,9 +64,9 @@ axes(hAxesSDG);
 cla
 axis(hAxesSDG, [bbox(1), bbox(2), bbox(3), bbox(4)]);
 
-set(gca,'xticklabel','')
-set(gca,'yticklabel','')
-set(gca,'ygrid','off')
+set(gca, 'xticklabel','')
+set(gca, 'yticklabel','')
+set(gca, 'ygrid','off')
 
 % get procResult and replace MeasListAct if it exists
 
@@ -78,18 +78,18 @@ lst2 = find(ch.MeasListAct(1:length(lstML))==0);
 for ii=1:length(lst2)
     h = line( [SD.SrcPos(ml(lstML(lst2(ii)),1),1) SD.DetPos(ml(lstML(lst2(ii)),2),1)], ...
               [SD.SrcPos(ml(lstML(lst2(ii)),1),2) SD.DetPos(ml(lstML(lst2(ii)),2),2)] );
-    set(h,'color',[1 .85 .85]*1);
-    set(h,'linewidth',6);
-    set(h,'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
+    set(h, 'color',[1 .85 .85]*1);
+    set(h, 'linewidth',6);
+    set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
 end
 
 lst2 = find(ch.MeasListAct(1:length(lstML))==1);
 for ii=1:length(lst2)
     h = line( [SD.SrcPos(ml(lstML(lst2(ii)),1),1) SD.DetPos(ml(lstML(lst2(ii)),2),1)], ...
               [SD.SrcPos(ml(lstML(lst2(ii)),1),2) SD.DetPos(ml(lstML(lst2(ii)),2),2)] );
-    set(h,'color',[1 1 1]*.85);
-    set(h,'linewidth',4);
-    set(h,'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
+    set(h, 'color',[1 1 1]*.85);
+    set(h, 'linewidth',4);
+    set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
 end
 
 if isproperty(procResult,'SD')
@@ -98,9 +98,9 @@ if isproperty(procResult,'SD')
         for ii=1:length(lst2)
             h = line( [SD.SrcPos(ml(lstML(lst2(ii)),1),1) SD.DetPos(ml(lstML(lst2(ii)),2),1)], ...
                       [SD.SrcPos(ml(lstML(lst2(ii)),1),2) SD.DetPos(ml(lstML(lst2(ii)),2),2)] );
-            set(h,'color',[1 1 .85]*1);
-            set(h,'linewidth',6);
-            set(h,'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
+            set(h, 'color',[1 1 .85]*1);
+            set(h, 'linewidth',6);
+            set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
         end
     end
 end
@@ -109,13 +109,15 @@ end
 for idx=1:nSrcs
     if ~isempty(find(ch.MeasList(:,1)==idx))
         h = text( SD.SrcPos(idx,1), SD.SrcPos(idx,2), sprintf('%c', 64+idx), 'fontweight','bold' );
-        set(h,'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
+        set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
+        set(h, 'horizontalalignment','center');
     end
 end
 for idx=1:nDets
     if ~isempty(find(ch.MeasList(:,2)==idx))
         h = text( SD.DetPos(idx,1), SD.DetPos(idx,2), sprintf('%d', idx), 'fontweight','bold' );
         set(h,'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
+        set(h, 'horizontalalignment','center');
     end
 end
 

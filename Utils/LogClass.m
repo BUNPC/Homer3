@@ -40,8 +40,8 @@ classdef LogClass < handle
             else
                 linefeed = '';
             end
-            fprintf(obj.fid, '%s%s', obj.msg, linefeed);
-            % fprintf('%s%s', obj.msg, linefeed);
+            % fprintf(obj.fid, '%s%s', obj.msg, linefeed);
+            fprintf('%s%s', obj.msg, linefeed);
             
         end
         

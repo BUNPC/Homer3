@@ -120,7 +120,7 @@ groupCurr.CopyProcInput('run', procInputRunDefault);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Copy input variables for group, subjects and runs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-groupCurr.SetCondNames();
+groupCurr.SetConditions();
 groupCurr.SetMeasList();
 
 group = groupCurr;

@@ -153,10 +153,8 @@ classdef TreeNodeClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function CondNames = GetCondNames(obj)
-            
+        function CondNames = GetConditions(obj)
             CondNames = obj.CondNames;
-            
         end
         
         
@@ -343,7 +341,7 @@ classdef TreeNodeClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function aux = GetAux(obj)
+        function aux = GetAuxiliary(obj)
             aux = [];
         end
         

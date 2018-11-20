@@ -69,7 +69,7 @@ clf(hObject);
 set(hObject, 'units','characters');
 nfunc = length(procFunc);
 
-% If not function throw up empty gui
+% If no functions, throw up empty gui
 if nfunc==0
     uicontrol(hObject, 'style','text', 'string','');
 	% Need to make sure position data is saved in pixel units at end of function 
@@ -84,6 +84,7 @@ for iFunc = 1:nfunc
     funcHeight(iFunc) = 1+procFunc(iFunc).nFuncParam-1;
 end
 ystep = 1.8;
+ysize = 1.5;
 ysize_tot = sum(funcHeight)*ystep + nfunc*2 + 5;
 xsize_fname = getFuncNameMaxStrLength(procFunc);
 xsize_pname = getParamNameMaxStrLength(procFunc);
@@ -109,7 +110,7 @@ for iFunc = 1:nfunc
     % Draw function name
     xsize = length(procFunc(iFunc).funcName);
     xsize = xsize+(5-mod(xsize,5));
-    h_fname = uicontrol(hObject, 'style','text', 'units','characters', 'position',[2 ypos xsize 1],...
+    h_fname = uicontrol(hObject, 'style','text', 'units','characters', 'position',[2 ypos xsize ysize],...
                         'string',procFunc(iFunc).funcName);
     set(h_fname,'backgroundcolor',[1 1 1], 'units','normalized');
     set(h_fname, 'horizontalalignment','left');
@@ -117,7 +118,7 @@ for iFunc = 1:nfunc
     
     % Draw pushbutton to see output results if requested in config file
     if procFunc(iFunc).funcArgOut(1)=='#'
-        h_bttn = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',[xpos_pbttn ypos 10 1.3],...
+        h_bttn = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',[xpos_pbttn ypos 10 ysize],...
                           'string','Results');
         eval( sprintf(' fcn = @(hObject,eventdata)ProcStreamOptionsGUI(''pushbuttonProc_Callback'',hObject,%d,guidata(hObject));',iFunc) );
         set( h_bttn, 'Callback',fcn, 'units','normalized')
@@ -128,7 +129,7 @@ for iFunc = 1:nfunc
         % Draw parameter names
         xsize = length(procFunc(iFunc).funcParam);
         xsize = xsize+(5-mod(xsize,5))+5;
-        h_pname=uicontrol(hObject, 'style','text', 'units','characters', 'position',[xpos_pname ypos xsize 1],...
+        h_pname=uicontrol(hObject, 'style','text', 'units','characters', 'position',[xpos_pname ypos xsize ysize],...
                           'string',procFunc(iFunc).funcParam{iParam});
         set(h_pname,'backgroundcolor',[1 1 1], 'units','normalized');
         set(h_pname, 'horizontalalignment', 'left');
@@ -154,8 +155,7 @@ for iFunc = 1:nfunc
     
     % Draw divider between functions and function parameter lists
     if iFunc<nfunc
-        h_linebttn = uicontrol(hObject,'style','pushbutton','units','characters','position', ...
-                               [0 ypos xsize_tot .3],...
+        h_linebttn = uicontrol(hObject,'style','pushbutton','units','characters','position',[0 ypos xsize_tot .3],...
                                'enable','off');
         set(h_linebttn, 'units','normalized');
         ypos = ypos - ystep;
@@ -177,10 +177,9 @@ hmr.currElem = currElem;
 
 % Make sure the options GUI fits on screen
 set(hObject, 'units','normalized')
-p = get(hObject,'position');
-if (p(2)+p(4))>.9
-    set(hObject, 'position',[.10, .10, p(3), .80]);
-end
+h = ysize_tot/100;
+k = 1-h;
+positionGUI(hObject, 0.10, 0.12, 0.38, k*h+h);
 
 
 % Why do we save this? Matlab doesn't take into account multiple monitors 

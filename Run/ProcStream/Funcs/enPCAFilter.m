@@ -1,17 +1,17 @@
-% [yc, svs, nSV] = enPCAFilter( y, ch, tInc, nSV )
+% [yc, svs, nSV] = enPCAFilter( y, SD, tInc, nSV )
 %
 % UI NAME:
 % PCA_Filter
 %
-% [yc, svs, nSV] = enPCAFilter( y, ch, tInc, nSV )
+% [yc, svs, nSV] = enPCAFilter( y, SD, tInc, nSV )
 % Perform a PCA filter on the data matrix y. 
 %
 % INPUT:
 % y: This is the data matrix where rows are time points. If y is wavelength
-%    data, then the columns are channels as described in ch.MeasList. If
+%    data, then the columns are channels as described in SD.MeasList. If
 %    y is concentration data, then the third dimension is channels and the
 %    second dimension indicates HbO and HbR.
-% ch: This is the source detector structure.
+% SD: This is the source detector structure.
 % tInc: This is a vector of length number of time points and is 1 to
 %    indicate that a time point is included in the analysis and 0 if it is to
 %    be excluded. This is useful for ignoring periods of time with strong
@@ -32,17 +32,17 @@
 % nSV: This is the number of components filtered from the data.
 %
 
-function [yc, svs, nSV] = enPCAFilter( y, ch, tInc, nSV )
+function [yc, svs, nSV] = enPCAFilter( y, SD, tInc, nSV )
 
 if ~exist('nSV')
-    disp('USAGE: [yc,svs,nSV] = enPCAFilter( y, ch, tInc, nSV )');
+    disp('USAGE: [yc,svs,nSV] = enPCAFilter( y, SD, tInc, nSV )');
     yc = [];
     svs = [];
     nSV = [];
     return
 end
 if any(isinf(y(:)))
-    disp('WARNING: [yc,svs,nSV] = enPCAFilter( y, ch, tInc, nSV )');
+    disp('WARNING: [yc,svs,nSV] = enPCAFilter( y, SD, tInc, nSV )');
     disp('      The data matrix y can not have any Inf numbers.');
     yc = [];
     svs = [];
@@ -52,15 +52,15 @@ end
 
 lstInc = find(tInc==1);
 
-ml = ch.MeasList;
+ml = SD.MeasList;
 nMeas = size(ml,1);
-nLambda = length(ch.Lambda);
+nLambda = length(SD.Lambda);
 for ii=1:nLambda
     nMeasPerLambda(ii) = length(find(ml(:,4)==ii));
 end
 
-if ~isproperty(ch,'MeasListAct')
-    ch.MeasListAct = ones(nMeas,1);
+if ~isproperty(SD,'MeasListAct')
+    SD.MeasListAct = ones(nMeas,1);
 end
 
 % do the PCA
@@ -68,7 +68,7 @@ ndim = ndims(y);
 
 if ndim==3
     % PCA on Concentration
-    lstAct = find(ch.MeasListAct==1);
+    lstAct = find(SD.MeasListAct==1);
     lstAct = lstAct( find(ml(lstAct,4)==1) );
     yo = y(lstInc,:,lstAct);
     yc = y;
@@ -101,7 +101,7 @@ else
     
     if length(nSV)==1
         % apply PCA to all data
-        lstAct = find(ch.MeasListAct==1);
+        lstAct = find(SD.MeasListAct==1);
         yc = y;
         yo = y(lstInc,lstAct);
         y = squeeze(yo);
@@ -131,7 +131,7 @@ else
         % verify that length(nSV)==length(wavelengths)
         yc = y;
         for iW=1:2
-            lstAct = find(ch.MeasListAct==1 & ch.MeasList(:,4)==iW);
+            lstAct = find(SD.MeasListAct==1 & SD.MeasList(:,4)==iW);
             yo = y(lstInc,lstAct);
             yo = squeeze(yo);
             

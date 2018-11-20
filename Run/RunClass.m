@@ -327,10 +327,10 @@ classdef RunClass < TreeNodeClass
             %%% Plot stim marks. This has to be done before plotting exclude time
             %%% patches because stim legend doesn't work otherwise.
             if ~isempty(obj.GetStims())
-                s = enStimRejection(obj.acquired.GetTime(), obj.acquired.GetStims(), [], obj.tIncMan, [0 0]);
-                obj.acquired.SetStims(s);
-                s = obj.acquired.GetStims();
                 t = obj.acquired.GetTime();
+                s = enStimRejection(t, obj.acquired.GetStims(), [], obj.tIncMan, [0 0]);
+                obj.acquired.SetStims_MatInput(s, t, obj.CondNames);
+                s = obj.acquired.GetStims();
                 
                 % Plot included and excluded stims
                 yrange=ylim();
@@ -455,7 +455,7 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SD = GetSD(obj)
+        function SD = GetSDG(obj)
             
             SD.SrcPos = obj.acquired.GetSrcPos();
             SD.DetPos = obj.acquired.GetDetPos();
@@ -487,9 +487,9 @@ classdef RunClass < TreeNodeClass
 
         
         % ----------------------------------------------------------------------------------
-        function SetStims(obj,s)
+        function SetStims_MatInput(obj,s,t,CondNames)
             
-            obj.acquired.SetStims(s);
+            obj.acquired.SetStims_MatInput(s,t,CondNames);
             
         end
         
@@ -503,20 +503,20 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetCondNames(obj, varargin)
+        function SetConditions(obj, varargin)
             
             if nargin==1
-                obj.CondNames = obj.acquired.GetCondNames();
-            else nargin==2
-                obj.CondNames = obj.acquired.SetCondNames(varargin{1});                
+                obj.CondNames = obj.acquired.GetConditions();
+            elseif nargin==2
+                obj.CondNames = obj.acquired.SetConditions(varargin{1});                
             end
         end
         
         
         % ----------------------------------------------------------------------------------
-        function CondNames = GetCondNames(obj)
+        function CondNames = GetConditions(obj)
             
-            CondNames = obj.acquired.GetCondNames();
+            CondNames = obj.acquired.GetConditions();
             
         end
         

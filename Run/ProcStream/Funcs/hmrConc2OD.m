@@ -21,10 +21,10 @@
 % dod: the change in OD (#time points x #channels)
 %
 
-function dod = hmrConc2OD( dc, SD, ch, ppf )
+function dod = hmrConc2OD( dc, SD, ppf )
 
-nWav = length(ch.Lambda);
-ml = ch.MeasList;
+nWav = length(SD.Lambda);
+ml = SD.MeasList;
 
 if length(ppf)~=nWav
     errordlg('The length of PPF must match the number of wavelengths in SD.Lambda');

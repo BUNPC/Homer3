@@ -222,9 +222,9 @@ classdef SubjClass < TreeNodeClass
                 tHRFRuns{iRun}      = runs(iRun).procResult.tHRF;
                 nTrialsRuns{iRun}   = runs(iRun).procResult.nTrials;
                 if ~isempty(runs(iRun).procResult.ch)
-                    chRuns{iRun}    = runs(iRun).procResult.ch;
+                    SDRuns{iRun}    = runs(iRun).procResult.ch;
                 else
-                    chRuns{iRun}    = runs(iRun).GetMeasList();
+                    SDRuns{iRun}    = runs(iRun).GetMeasList();
                 end
             end
 
@@ -243,17 +243,17 @@ classdef SubjClass < TreeNodeClass
     methods
         
         % ----------------------------------------------------------------------------------
-        function SetSD(obj)
+        function SetSDG(obj)
             
-            obj.SD = obj.runs(1).GetSD();
+            obj.SD = obj.runs(1).GetSDG();
             
         end
         
         
         % ----------------------------------------------------------------------------------
-        function SD = GetSD(obj)
+        function SD = GetSDG(obj)
             
-            SD = obj.runs(1).GetSD();
+            SD = obj.runs(1).GetSDG();
             
         end
         
@@ -308,19 +308,19 @@ classdef SubjClass < TreeNodeClass
         end
         
         % ----------------------------------------------------------------------------------
-        function SetCondNames(obj, varargin)
+        function SetConditions(obj, varargin)
             
             if nargin==1
                 CondNames = {};
                 for ii=1:length(obj.runs)
-                    obj.runs(ii).SetCondNames();
-                    CondNames = [CondNames, obj.runs(ii).GetCondNames()];
+                    obj.runs(ii).SetConditions();
+                    CondNames = [CondNames, obj.runs(ii).GetConditions()];
                 end
                 obj.CondNames = unique(CondNames);
             else nargin==2
                 obj.CondNames = varargin{1};
                 for ii=1:length(obj.runs)
-                    obj.runs(ii).SetCondNames(varargin{1});
+                    obj.runs(ii).SetConditions(varargin{1});
                 end
             end
             
@@ -348,7 +348,7 @@ classdef SubjClass < TreeNodeClass
             obj.CondName2Run = zeros(length(obj.runs), length(obj.CondNames));
             for iC=1:length(obj.CondNames)
                 for iRun=1:length(obj.runs)
-                    k = find(strcmp(obj.CondNames{iC}, obj.runs(iRun).GetCondNames()));
+                    k = find(strcmp(obj.CondNames{iC}, obj.runs(iRun).GetConditions()));
                     if isempty(k)
                         obj.CondName2Run(iRun,iC) = 0;
                     else

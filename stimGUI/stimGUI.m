@@ -80,7 +80,7 @@ if isempty(stim.currElem) | isempty(stim.currElem.procElem)
 end
 
 currElem = stim.currElem;
-aux = currElem.procElem.GetAux();
+aux = currElem.procElem.GetAuxiliary();
 
 % For now handle stims only on run level
 if currElem.procType ~= 3

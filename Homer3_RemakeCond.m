@@ -13,7 +13,7 @@ hmr.group.subjs(i).runs(j).s             = hmr.currElem.procElem.s;
 hmr.group.subjs(i).runs(j).CondNames     = hmr.currElem.procElem.CondNames;
 hmr.group.subjs(i).runs(j).CondName2Group = hmr.currElem.procElem.CondName2Group;
 
-hmr.group.SetCondNames();
+hmr.group.SetConditions();
 
 DisplayCurrElem(hmr.currElem, hmr.guiMain)
 

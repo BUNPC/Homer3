@@ -1,4 +1,4 @@
-% dc = hmrOD2Conc( dod, SD, ml, ppf )
+% dc = hmrOD2Conc( dod, SD, ppf )
 %
 % UI NAME:
 % OD_to_Conc
@@ -21,20 +21,20 @@
 %     3 concentrations are returned (HbO, HbR, HbT)
 %
 
-function dc = hmrOD2Conc( dod, SD, ch, ppf )
+function dc = hmrOD2Conc( dod, SD, ppf )
 
-nWav = length(ch.Lambda);
-ml = ch.MeasList;
+nWav = length(SD.Lambda);
+ml = SD.MeasList;
 
 if length(ppf)~=nWav
-    errordlg('The length of PPF must match the number of wavelengths in ch.Lambda');
+    errordlg('The length of PPF must match the number of wavelengths in SD.Lambda');
     dc = zeros(size(dod,1),3,length(find(ml(:,4)==1)));
     return
 end
 
 nTpts = size(dod,1);
 
-e = GetExtinctions( ch.Lambda );
+e = GetExtinctions( SD.Lambda );
 e = e(:,1:2) / 10; % convert from /cm to /mm
 einv = inv( e'*e )*e';
 

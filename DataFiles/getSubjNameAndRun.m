@@ -32,7 +32,7 @@ else
             rnum = str2num(rnum);
         end
     else
-        sname = pname(1:iext-1);
+        sname = name(1:iext-1);
         rnum = 1;
     end
 end

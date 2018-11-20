@@ -136,115 +136,163 @@ classdef NirsClass < AcqDataClass
             
         end
         
+    end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Basic methods to Set/Get native variable 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+
+        % ---------------------------------------------------------
+        function SetD(obj, val)
+            obj.d = val;            
+        end
         
         % ---------------------------------------------------------
+        function val = GetD(obj)
+            val = obj.d;
+        end
+        
+        % ---------------------------------------------------------
+        function SetT(obj, val)
+            obj.t = val;
+        end
+        
+        % ---------------------------------------------------------
+        function val = GetT(obj)
+            val = obj.t;
+        end
+        
+        % ---------------------------------------------------------
+        function SetSD(obj, val)
+            obj.SD = val;            
+        end
+        
+        % ---------------------------------------------------------
+        function val = GetSD(obj)
+            val = obj.SD;
+        end
+        
+        % ---------------------------------------------------------
+        function SetS(obj, val)
+            obj.s = val;
+        end
+        
+        % ---------------------------------------------------------
+        function val = GetS(obj)
+            val = obj.s;
+        end
+        
+        % ---------------------------------------------------------
+        function SetAux(obj, val)
+            obj.aux = val;        
+        end
+        
+        % ---------------------------------------------------------
+        function val = GetAux(obj)
+            val = obj.aux;
+        end
+        
+        % ---------------------------------------------------------
+        function SetCondNames(obj, val)
+            obj.CondNames = val;            
+        end
+        
+        % ---------------------------------------------------------
+        function val = GetCondNames(obj)
+            val = obj.CondNames;
+        end
+        
+    end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Acquired data class methods that must be implemented
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+
+        % ---------------------------------------------------------
         function t = GetTime(obj, idx)
-            
             t = obj.t;
-            
         end
         
         
         % ---------------------------------------------------------
         function datamat = GetDataMatrix(obj, idx)
-            
             datamat = obj.d;
-            
         end
         
         
         % ---------------------------------------------------------
-        function SD = GetSD(obj)
-            
+        function SD = GetSDG(obj)
             SD = obj.SD;
-            
         end
         
         
         % ---------------------------------------------------------
-        function SetSD(obj, SD)
-            
+        function SetSDG(obj, SD)
             obj.SD = SD;
-            
         end
         
         
         % ---------------------------------------------------------
         function ml = GetMeasList(obj, idx)
-            
             ml = obj.SD.MeasList;
-            
         end
+        
         
         % ---------------------------------------------------------
         function wls = GetWls(obj)
-            
             wls = obj.SD.Lambda;
-            
         end
         
         
         % ---------------------------------------------------------
-        function SetStims(obj,s)
-            
+        function SetStims_MatInput(obj,s,t,CondNames)
             obj.s = s;
-            
         end
                 
         
         % ---------------------------------------------------------
         function s = GetStims(obj)
-            
             s = obj.s;
-            
         end
         
         
         % ---------------------------------------------------------
-        function SetCondNames(obj, CondNames)
-            
-            ;
-            
+        function SetConditions(obj, CondNames)
+            obj.CondNames = CondNames;
         end
 
             
         % ---------------------------------------------------------
-        function CondNames = GetCondNames(obj)
-            
+        function CondNames = GetConditions(obj)
             CondNames = obj.CondNames;
-            
         end
         
         
         % ---------------------------------------------------------
         function bbox = GetSdgBbox(obj)
-            
             bbox = [obj.SD.xmin, obj.SD.xmax, obj.SD.ymin, obj.SD.ymax];
-            
         end
         
         
         % ---------------------------------------------------------
         function srcpos = GetSrcPos(obj)
-            
             srcpos = obj.SD.SrcPos;
-            
         end
         
         
         % ---------------------------------------------------------
         function detpos = GetDetPos(obj)
-            
             detpos = obj.SD.DetPos;
-            
         end
         
         
         % ----------------------------------------------------------------------------------
-        function aux = GetAux(obj)
-            
+        function aux = GetAuxiliary(obj)
             aux = struct('data', obj.aux, 'names',{{}});
-            
             for ii=1:size(obj.aux, 2)
                 if isproperty(obj.SD,'auxChannels')
                     aux.names{end+1} = obj.SD.auxChannels{ii};
@@ -252,9 +300,47 @@ classdef NirsClass < AcqDataClass
                     aux.names{end+1} = sprintf('Aux%d',ii);
                 end
             end
-            
         end
         
     end
     
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Public interface for older processing stream
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+        
+        % ----------------------------------------------------------------------------------
+        function d = Get_d(obj)
+            d = obj.d;
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function t = Get_t(obj)
+            t = obj.t;
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function SD = Get_SD(obj)
+            SD = obj.SD;
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function aux = Get_aux(obj)
+            aux = obj.aux;
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function s = Get_s(obj)
+            s = obj.s;
+        end
+
+        % ----------------------------------------------------------------------------------
+        function CondNames = Get_CondNames(obj)
+            CondNames = obj.CondNames;
+        end
+                
+    end
+    
 end
+

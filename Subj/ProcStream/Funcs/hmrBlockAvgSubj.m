@@ -1,5 +1,5 @@
-function [yAvg, yAvgStd, tHRF, nTrials] = hmrBlockAvgSubj(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, chRuns, nTrialsRuns, CondName2Run)
-% [yAvg, yAvgStd, tHRF, nTrials] = hmrBlockAvgSubj(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, chRuns, nTrialsRuns, CondName2Run)
+function [yAvg, yAvgStd, tHRF, nTrials] = hmrBlockAvgSubj(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondName2Run)
+% [yAvg, yAvgStd, tHRF, nTrials] = hmrBlockAvgSubj(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondName2Run)
 %
 % UI NAME:
 % Block_Average_Subjs
@@ -12,7 +12,7 @@ function [yAvg, yAvgStd, tHRF, nTrials] = hmrBlockAvgSubj(yAvgRuns, yAvgStdRuns,
 % yAvgRuns:
 % yAvgStdRuns:
 % tHRFRuns: 
-% chRuns:
+% SDRuns:
 % nTrialsRuns:
 % CondName2Run: 
 % trange: defines the range for the block average
@@ -39,7 +39,7 @@ for iRun = 1:length(yAvgRuns)
     ySum2     = ySum2Runs{iRun};
     tHRF      = tHRFRuns{iRun};
     nTrials   = nTrialsRuns{iRun};
-    ch        = chRuns{iRun};    
+    SD        = SDRuns{iRun};    
     
     if isempty(yAvg)
         break;
@@ -56,7 +56,7 @@ for iRun = 1:length(yAvgRuns)
             nTrials_tot = zeros(size(yAvg,2), nCond);
         end
         
-        lstChInc = find(ch.MeasListAct==1);
+        lstChInc = find(SD.MeasListAct==1);
         for iC = 1:nCond
             iS = CondName2Run(iRun,iC);
             if(iS==0)
@@ -108,8 +108,8 @@ for iRun = 1:length(yAvgRuns)
             nTrials_tot = zeros(size(yAvg,3), nCond);
         end
         
-        lst1 = find(ch.MeasList(:,4)==1);
-        lstChInc = find(ch.MeasListAct(lst1)==1);
+        lst1 = find(SD.MeasList(:,4)==1);
+        lstChInc = find(SD.MeasListAct(lst1)==1);
         for iC = 1:1:nCond
             iS = CondName2Run(iRun,iC);
             if(iS==0)

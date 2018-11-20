@@ -14,7 +14,7 @@ classdef AcqDataClass < matlab.mixin.Copyable
         datamat   = GetDataMatrix(obj, idx)
         
         % ---------------------------------------------------------
-        SD        = GetSD(obj)
+        SD        = GetSDG(obj)
         
         % ---------------------------------------------------------
         srcpos    = GetSrcPos(obj)
@@ -32,19 +32,19 @@ classdef AcqDataClass < matlab.mixin.Copyable
         bbox      = GetSdgBbox(obj)
         
         % ---------------------------------------------------------
-        SetStims(obj, s)
+        SetStims_MatInput(obj, s, t, CondNames)
         
         % ---------------------------------------------------------
         s         = GetStims(obj)
         
         % ---------------------------------------------------------
-        SetCondNames(obj, CondNames)
+        SetConditions(obj, CondNames)
         
         % ---------------------------------------------------------
-        CondNames = GetCondNames(obj)
+        CondNames = GetConditions(obj)
         
         % ---------------------------------------------------------
-        aux       = GetAux(obj)
+        aux       = GetAuxiliary(obj)
         
     end
     

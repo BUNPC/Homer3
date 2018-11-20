@@ -54,7 +54,7 @@ classdef SnirfClass < AcqDataClass
             end
             
             
-            % The basic 5 of a .nirs format
+            % The basic 5 of a .nirs format in a struct 
             if nargin==1
                 
                 if ischar(varargin{1})
@@ -77,6 +77,7 @@ classdef SnirfClass < AcqDataClass
                     end
                 end
                 
+            % The basic 5 of a .nirs format as separate args
             elseif nargin==5
                 
                 obj.data(1) = DataClass(d,t,SD.MeasList);
@@ -88,7 +89,7 @@ classdef SnirfClass < AcqDataClass
                     obj.aux(ii) = AuxClass(aux, t, sprintf('aux%d',ii));
                 end
                 
-                % The basic 5 of a .nirs format plus the condition names
+            % The basic 5 of a .nirs format plus condition names
             elseif nargin==6
                 
                 obj.data(1) = DataClass(d,t,SD.MeasList);
@@ -250,79 +251,134 @@ classdef SnirfClass < AcqDataClass
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Pubic Set/Get methods
+    % Basic methods to Set/Get native variable 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+
+        % ---------------------------------------------------------
+        function SetFormatVersion(obj, val)
+            obj.formatVersion = val;            
+        end
+        
+        % ---------------------------------------------------------
+        function val = GetFormatVersion(obj)
+            val = obj.formatVersion;
+        end
+        
+        % ---------------------------------------------------------
+        function SetData(obj, val)
+            obj.data = val;            
+        end
+        
+        % ---------------------------------------------------------
+        function val = GetData(obj)
+            val = obj.data;
+        end
+        
+        % ---------------------------------------------------------
+        function SetStim(obj, val)
+            obj.stim = val;            
+        end
+        
+        % ---------------------------------------------------------
+        function val = GetStim(obj)
+            val = obj.stim;
+        end
+        
+        % ---------------------------------------------------------
+        function SetSd(obj, val)
+            obj.sd = val;            
+        end
+        
+        % ---------------------------------------------------------
+        function val = GetSd(obj)
+            val = obj.sd;
+        end
+        
+        % ---------------------------------------------------------
+        function SetAux(obj, val)
+            obj.aux = val;            
+        end
+        
+        % ---------------------------------------------------------
+        function val = GetAux(obj)
+            val = obj.aux;
+        end
+        
+        % ---------------------------------------------------------
+        function SetTimeOffset(obj, val)
+            obj.timeOffset = val;        
+        end
+        
+        % ---------------------------------------------------------
+        function val = GetTimeOffset(obj)
+            val = obj.timeOffset;
+        end
+        
+        % ---------------------------------------------------------
+        function SetMetaDataTags(obj, val)
+            obj.metaDataTags = val;            
+        end
+        
+        % ---------------------------------------------------------
+        function val = GetMetaDataTags(obj)
+            val = obj.metaDataTags;
+        end
+        
+    end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Acquired data class methods that must be implemented
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
 
         % ---------------------------------------------------------
         function t = GetTime(obj, idx)
-            
             if nargin==1
                 idx=1;
             end
             t = obj.data(idx).GetTime();
-            
         end
         
         
         % ---------------------------------------------------------
         function datamat = GetDataMatrix(obj, idx)
-            
             if nargin==1
                 idx=1;
             end
             datamat = obj.data(idx).GetDataMatrix();
-                        
-        end
-        
-        
-        % ---------------------------------------------------------
-        function SD = GetSD(obj)
-            
-            SD.SrcPos = obj.sd.GetSrcPos();
-            SD.DetPos = obj.sd.GetDetPos();
-            
-        end
-        
-        
-        % ---------------------------------------------------------
-        function SetSD(obj, SD)
-            
-            %obj.SD = SD;
-            
         end
         
         
         % ---------------------------------------------------------
         function ml = GetMeasList(obj, idx)
-            
             if nargin==1
                 idx=1;
             end
             ml = obj.data(idx).GetMeasList();
-            
         end
         
         
         % ---------------------------------------------------------
         function wls = GetWls(obj)
-            
             wls = obj.sd.GetWls();
-            
         end
         
         
         % ---------------------------------------------------------
-        function SetStims(obj, s)
-            
-            %obj.s = s;
-            
+        function SetStims_MatInput(obj, s, t, CondNames)
+            if ~exist('CondNames', 'var')
+                CondNames = str2cell(num2str(1:size(s,2)));
+            end
+            for ii=1:size(s,2)
+                obj.stim(ii) = StimClass(s(:,ii), t, CondNames{ii});
+            end
         end
         
         
         % ---------------------------------------------------------
         function s = GetStims(obj)
-            
             t = obj.data(1).GetTime();
             s = zeros(length(t), length(obj.stim));
             for ii=1:length(obj.stim)
@@ -333,34 +389,34 @@ classdef SnirfClass < AcqDataClass
                 end
                 s(k,ii) = 1;
             end
-            
         end
         
         
         % ---------------------------------------------------------
-        function SetCondNames(obj)
-            
+        function SetConditions(obj)
             ;
-            
         end
         
         
         % ---------------------------------------------------------
-        function CondNames = GetCondNames(obj)
-            
-            CondNames = {};
+        function CondNames = GetConditions(obj)
+            CondNames = cell(1,length(obj.stim));
             for ii=1:length(obj.stim)
                 CondNames{ii} = obj.stim(ii).GetCondName();
             end
-            
         end
         
+        
+        
+        % ---------------------------------------------------------
+        function SD = GetSDG(obj)
+            SD.SrcPos = obj.sd.GetSrcPos();
+            SD.DetPos = obj.sd.GetDetPos();
+        end
         
         
         % ---------------------------------------------------------
         function bbox = GetSdgBbox(obj)
-            
-            %bbox = [obj.SD.xmin, obj.SD.xmax, obj.SD.ymin, obj.SD.ymax];
             optpos = [obj.sd.GetSrcPos(); obj.sd.GetDetPos()];
             
             xmin = min(optpos(:,1));
@@ -368,74 +424,100 @@ classdef SnirfClass < AcqDataClass
             ymin = min(optpos(:,2));
             ymax = max(optpos(:,2));
             
-            bbox = [xmin, xmax, ymin, ymax];
+            width = xmax-xmin;
+            height = ymax-ymin;
             
+            px = width * 0.10; 
+            py = height * 0.10; 
+
+            bbox = [xmin-px, xmax+px, ymin-py, ymax+py];
         end
         
         
         % ---------------------------------------------------------
         function srcpos = GetSrcPos(obj)
-            
             srcpos = obj.sd.GetSrcPos();
-            
         end
         
         
         % ---------------------------------------------------------
         function detpos = GetDetPos(obj)
-            
             detpos = obj.sd.GetDetPos();
-            
         end
         
         
         % ----------------------------------------------------------------------------------
-        function aux = GetAux(obj)
-            
+        function aux = GetAuxiliary(obj)
             aux = struct('data',[], 'names',{{}});            
             for ii=1:size(obj.aux,2)
                 aux.data(:,ii) = obj.aux(ii).GetData();
                 aux.names{ii} = obj.aux(ii).GetName();
             end
-            
         end
         
     end
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Pubic interface for older processing stream
+    % Pubic interface for .nirs processing stream
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
         % ----------------------------------------------------------------------------------
-        function var = Get_d(obj)
-            var = obj.GetDataMatrix();
+        function d = Get_d(obj, idx)
+            if ~exist('idx','var')
+                idx = 1;
+            end
+            d = obj.data(idx).GetDataMatrix();
         end
         
         % ----------------------------------------------------------------------------------
-        function var = Get_t(obj)
-            var = obj.GetTime();
+        function t = Get_t(obj, idx)
+            if ~exist('idx','var')
+                idx = 1;
+            end
+            t = obj.data(idx).GetTime();
         end
         
         % ----------------------------------------------------------------------------------
-        function var = Get_SD(obj)
-            var = obj.GetSD();
+        function SD = Get_SD(obj, idx)
+            if ~exist('idx','var')
+                idx = 1;
+            end
+            SD.Lambda   = obj.sd.GetWls();
+            SD.SrcPos   = obj.sd.GetSrcPos();
+            SD.DetPos   = obj.sd.GetDetPos();
+            SD.MeasList = obj.data(idx).GetMeasList();
+            SD.MeasListAct = ones(1,size(SD.MeasList,1));
         end
         
         % ----------------------------------------------------------------------------------
-        function var = Get_aux(obj)
-            var = obj.GetAux();
+        function aux = Get_aux(obj)
+            aux = [];
+            for ii=1:size(obj.aux,2)
+                aux(:,ii) = obj.aux(ii).GetData();
+            end
         end
         
         % ----------------------------------------------------------------------------------
-        function var = Get_s(obj)
-            
-            var = obj.GetStims();
-            
+        function s = Get_s(obj, idx)
+            if ~exist('idx','var')
+                idx = 1;
+            end            
+            t = obj.data(idx).GetTime();
+            s = zeros(length(t), length(obj.stim));
+            for ii=1:length(obj.stim)
+                ts = obj.stim(ii).GetStim();
+                [~, k] = nearest_point(t, ts);
+                if isempty(k)
+                    continue;
+                end
+                s(k,ii) = 1;
+            end
         end
         
     end
         
 end
+
 

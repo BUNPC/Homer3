@@ -1,7 +1,7 @@
 function stimGUI_DisplayData_StimCallback( )
 global stim
 
-t = stim.currElem.procElem.t;
+t = stim.currElem.procElem.GetTime();
 
 point1 = get(gca,'CurrentPoint');    % button down detected
 finalRect = rbbox;                   % return figure units
@@ -17,7 +17,8 @@ else
     t1 = (t(end)-t(1))/length(t);
     lst = min(find(abs(t-p1(1))<t1));
 end
-s = sum(abs(stim.currElem.procElem.s(lst,:)),2);
+s = stim.currElem.procElem.GetStims();
+s = sum(abs(s(lst,:)),2);
 lst2 = find(s>=1);
 
 if isempty(lst2) & ~(p1(1)==p2(1))

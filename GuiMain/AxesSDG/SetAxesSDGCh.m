@@ -4,7 +4,7 @@ function axesSDG = SetAxesSDGCh(axesSDG, currElem)
 hAxesSDG = axesSDG.handles.axes;
 iCh      = axesSDG.iCh;
 iSrcDet  = axesSDG.iSrcDet;
-SD       = currElem.procElem.GetSD();
+SD       = currElem.procElem.GetSDG();
 ch       = currElem.procElem.GetMeasList();
 
 h = hAxesSDG;

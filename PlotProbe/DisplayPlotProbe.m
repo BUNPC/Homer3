@@ -22,7 +22,7 @@ TmarkPanel  = plotprobe.objs.TmarkPanel;
 hFig        = plotprobe.objs.Figure.h;
 
 procResult  = currElem.procElem.procResult;
-SD          = currElem.procElem.GetSD();
+SD          = currElem.procElem.GetSDG();
 ch          = currElem.procElem.GetMeasList();
 
 datatype    = guiMain.datatype;

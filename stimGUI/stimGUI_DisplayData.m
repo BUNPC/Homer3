@@ -1,6 +1,6 @@
 function stimGUI_DisplayData(userdata_curr_row)
 global stim
-aux = stim.currElem.procElem.GetAux();
+aux = stim.currElem.procElem.GetAuxiliary();
 t = stim.currElem.procElem.GetTime();
 s = stim.currElem.procElem.GetStims();
 

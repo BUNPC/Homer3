@@ -1,5 +1,7 @@
 function C = str2cell(str, delimiters)
 
+str = deblank(str);
+
 if ~exist('delimiters','var')
     delimiters{1} = sprintf('\n');
 elseif ~iscell(delimiters)
@@ -8,23 +10,22 @@ elseif ~iscell(delimiters)
 end
 
 % Get indices of all the delimiters
-k=1;
+k=[];
 for kk=1:length(delimiters)
     k = [k, find(str==delimiters{kk})];
 end
-k = [k, length(str)];
+j = find(~ismember([1:length(str)],k));
 
 % 
-C = cell(length(k)-1,1);
-for ii=1:length(C)
-    if ii==1 && ii==length(C)
-        C{ii} = str(k(ii):k(ii+1));
-    elseif ii==1
-        C{ii} = str(k(ii):k(ii+1)-1);
-    elseif ii==length(C)
-        C{ii} = str(k(ii)+1:k(ii+1));
-    else
-        C{ii} = str(k(ii)+1:k(ii+1)-1);
+C = {};
+ii=1; kk=1;
+while ii<=length(j)
+    C{kk} = str(j(ii));
+    ii=ii+1;
+    while (ii<=length(j)) && ((j(ii)-j(ii-1))==1)
+        C{kk}(end+1) = str(j(ii));
+        ii=ii+1;
     end
+    kk=kk+1;
 end
 

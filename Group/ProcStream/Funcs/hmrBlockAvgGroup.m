@@ -1,5 +1,5 @@
-function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrBlockAvgGroup(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, chSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
-% [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrBlockAvgGroup(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, chSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
+function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrBlockAvgGroup(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
+% [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrBlockAvgGroup(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
 %
 % UI NAME:
 % Block_Average_Group
@@ -12,7 +12,7 @@ function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrBlockAvgGroup(yAvgSubjs
 % yAvgSubjs:
 % yAvgStdSubjs:
 % tHRFSubjs: 
-% chSubjs:
+% SDSubjs:
 % nTrialsSubjs:
 % CondName2Subj: 
 % trange: Defines the range for the block average
@@ -40,7 +40,7 @@ for iSubj = 1:nSubj
     yAvgStd   = yAvgStdSubjs{iSubj};
     tHRF      = tHRFSubjs{iSubj};
     nTrials   = nTrialsSubjs{iSubj};
-    ch        = chSubjs{iSubj};
+    SD        = SDSubjs{iSubj};
     
     if isempty(yAvg)
         break;
@@ -123,7 +123,7 @@ for iSubj = 1:nSubj
             for iWl = 1:2
                 % Calculate which channels to include and exclude from the group HRF avg,
                 % based on the subjects' standard error and store result in lstPass
-                lstWl = find(ch.MeasList(:,4)==iWl);
+                lstWl = find(SD.MeasList(:,4)==iWl);
                 lstPass = find( ((squeeze(mean(yAvgStd(lstT,lstWl,iS),1))./sqrt(nTrials(lstWl,iS)'+eps)) <= thresh) &...
                                  nTrials(lstWl,iS)'>0 );
                 lstPass = lstWl(lstPass);

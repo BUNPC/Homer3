@@ -14,7 +14,7 @@ axesSDG  = guiMain.axesSDG;
 hAxesSDG = axesSDG.handles.axes;
 iSrcDet  = axesSDG.iSrcDet;
 
-SD       = currElem.procElem.GetSD();
+SD       = currElem.procElem.GetSDG();
 ch       = currElem.procElem.GetMeasList();
 Lambda   = currElem.procElem.GetWls();
 

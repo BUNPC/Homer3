@@ -283,9 +283,9 @@ classdef GroupClass < TreeNodeClass
                 tHRFSubjs{iSubj}      = subjs(iSubj).procResult.tHRF;
                 nTrialsSubjs{iSubj}   = subjs(iSubj).procResult.nTrials;
                 if ~isempty(subjs(iSubj).procResult.ch)
-                    chSubjs{iSubj}    = subjs(iSubj).procResult.ch;
+                    SDSubjs{iSubj}    = subjs(iSubj).procResult.ch;
                 else
-                    chSubjs{iSubj}    = subjs(iSubj).ch;
+                    SDSubjs{iSubj}    = subjs(iSubj).ch;
                 end
             end
                         
@@ -372,9 +372,9 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SD = GetSD(obj)
+        function SD = GetSDG(obj)
             
-            SD = obj.subjs(1).GetSD();
+            SD = obj.subjs(1).GetSDG();
             
         end
         
@@ -414,20 +414,20 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetCondNames(obj, varargin)
+        function SetConditions(obj, varargin)
             
             if nargin==1
 	            CondNames = {};
 	            for ii=1:length(obj.subjs)
-	                obj.subjs(ii).SetCondNames();
-	                CondNames = [CondNames, obj.subjs(ii).GetCondNames()];
+	                obj.subjs(ii).SetConditions();
+	                CondNames = [CondNames, obj.subjs(ii).GetConditions()];
 	            end
 	            obj.CondNames    = unique(CondNames);
 	            obj.CondNamesAll(obj.CondNames);
 			elseif nargin==2
 	            obj.CondNames    = varargin{1};
 	            for ii=1:length(obj.subjs)
-	                obj.subjs(ii).SetCondNames(varargin{1});
+	                obj.subjs(ii).SetConditions(varargin{1});
 	            end
 			end
 	
@@ -451,7 +451,7 @@ classdef GroupClass < TreeNodeClass
             obj.CondName2Subj = zeros(length(obj.subjs),length(obj.CondNames));
             for iC=1:length(obj.CondNames)
                 for iSubj=1:length(obj.subjs)
-                    k = find(strcmp(obj.CondNames{iC}, obj.subjs(iSubj).GetCondNames()));
+                    k = find(strcmp(obj.CondNames{iC}, obj.subjs(iSubj).GetConditions()));
                     if isempty(k)
                         obj.CondName2Subj(iSubj,iC) = 0;
                     else

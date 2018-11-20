@@ -1,4 +1,4 @@
-% tInc = hmrMotionArtifact(d, fs, SD, ch, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+% tInc = hmrMotionArtifact(d, fs, SD, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % UI NAME:   
 % Motion_Artifacts
@@ -14,8 +14,8 @@
 % d: data matrix, timepoints x sd pairs
 % fs: sample frequency in Hz. You can send the time vector and fs will be
 %     calculated
-% ch: Source Detector Structure. The active data channels are indicated in
-%     ch.MeasListAct.
+% SD: Source Detector Structure. The active data channels are indicated in
+%     SD.MeasListAct.
 % tIncMan: Data that has been manually excluded. 0-excluded. 1-included.
 %          Vector same length as d.
 % tMotion: Check for signal change indicative of a motion artifact over
@@ -53,11 +53,11 @@
 % TO DO:
 % Consider tIncMan
 
-function tInc = hmrMotionArtifact(d, fs, ch, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
+function tInc = hmrMotionArtifact(d, fs, SD, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
 
 % Input processing.  Check required inputs, throw errors if necessary.
 if nargin<3
-    error('Must use inputs d, fs, ch.  See help MC for details.')
+    error('Must use inputs d, fs, SD.  See help MC for details.')
 end
 
 if ~isnumeric(d)
@@ -88,15 +88,15 @@ diff_d=diff(d);
 art_buffer=round(tMask*fs); % time in seconds times sample rate
 
 % get list of active channels
-lstAct = zeros(size(ch.MeasList,1),1);
-nLambda = length(ch.Lambda);
-lst1 = find(ch.MeasList(:,4)==1);
+lstAct = zeros(size(SD.MeasList,1),1);
+nLambda = length(SD.Lambda);
+lst1 = find(SD.MeasList(:,4)==1);
 for ii=1:nLambda
     for jj=1:length(lst1)
-        lst(jj) = find(ch.MeasList(:,1)==ch.MeasList(lst1(jj),1) & ...
-            ch.MeasList(:,2)==ch.MeasList(lst1(jj),2) & ...
-            ch.MeasList(:,4)==ii );
-        lstAct(lst(jj)) = ch.MeasListAct(jj);
+        lst(jj) = find(SD.MeasList(:,1)==SD.MeasList(lst1(jj),1) & ...
+            SD.MeasList(:,2)==SD.MeasList(lst1(jj),2) & ...
+            SD.MeasList(:,4)==ii );
+        lstAct(lst(jj)) = SD.MeasListAct(jj);
     end
 end
 lstAct = find(lstAct==1);

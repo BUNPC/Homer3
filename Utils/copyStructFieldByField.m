@@ -29,11 +29,7 @@ if isstruct(s1) || isobject(s1)
                 end
                 eval(sprintf('s1(jj).%s = %s(%s);',fields{ii},field_class,field_arg));
             end
-            try
-                eval(sprintf('s1(jj).%s = copyStructFieldByField(s1(jj).%s, s2(jj).%s);', fields{ii}, fields{ii}, fields{ii}));
-            catch
-                dbg=1;
-            end
+            eval(sprintf('s1(jj).%s = copyStructFieldByField(s1(jj).%s, s2(jj).%s);', fields{ii}, fields{ii}, fields{ii}));
         end
     end
     

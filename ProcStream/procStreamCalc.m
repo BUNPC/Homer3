@@ -4,10 +4,11 @@ obj.procResult = ProcResultClass();
 procInput = obj.procInput;
 
 % loop over functions
+nFunc = length(procInput.procFunc);
 paramOut = {};
-fcallList = {};
+fcallList = cell(1,nFunc);
 hwait = waitbar(0, 'Processing...' );
-for iFunc = 1:length(procInput.procFunc)
+for iFunc = 1:nFunc
     
     waitbar( iFunc/length(procInput.procFunc), hwait, sprintf('Processing... %s', procInput.procFunc(iFunc).funcName) );
     
@@ -76,13 +77,13 @@ for iFunc = 1:length(procInput.procFunc)
         msg = sprintf('Function %s generated error at line %d: %s', procInput.procFunc(iFunc).funcName, ME.stack(1).line, ME.message);
         menu(msg,'OK');
         close(hwait);
-        assert(logical(0), msg);
+        assert(false, msg);
     end
-
     
-    fcallList{end+1} = sprintf( '%s = %s%s%s);', sargout, ...
-        procInput.procFunc(iFunc).funcName, ...
-        procInput.procFunc(iFunc).funcArgIn, sarginVal );
+    fcallList{iFunc} = sprintf( '%s = %s%s%s);', sargout, ...
+                                                 procInput.procFunc(iFunc).funcName, ...
+                                                 procInput.procFunc(iFunc).funcArgIn, ...
+                                                 sarginVal );
     
     % parse output parameters
     foos = procInput.procFunc(iFunc).funcArgOut;

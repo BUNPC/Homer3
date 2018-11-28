@@ -267,7 +267,23 @@ classdef TreeNodeClass < matlab.mixin.Copyable
             end
             
         end
+
                 
+        % ----------------------------------------------------------------------------------
+        function str = EditProcParam(obj, iFunc, iParam, val)
+            if isempty(iFunc)
+                return;
+            end
+            if isempty(iParam)
+                return;
+            end
+            obj.procInput.procFunc(iFunc).funcParamVal{iParam} = val;
+            eval( sprintf('obj.procInput.procParam.%s_%s = val;', ...
+                obj.procInput.procFunc(iFunc).funcName, ...
+                obj.procInput.procFunc(iFunc).funcParam{iParam}) );
+            str = sprintf(obj.procInput.procFunc(iFunc).funcParamFormat{iParam}, val);
+        end
+        
     end
     
     
@@ -344,7 +360,7 @@ classdef TreeNodeClass < matlab.mixin.Copyable
         function aux = GetAuxiliary(obj)
             aux = [];
         end
-        
+                
     end
     
 end

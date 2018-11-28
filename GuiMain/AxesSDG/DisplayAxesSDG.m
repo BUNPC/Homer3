@@ -105,22 +105,6 @@ if isproperty(procResult,'SD')
     end
 end
 
-% ADD SOURCE AND DETECTOR LABELS
-for idx=1:nSrcs
-    if ~isempty(find(ch.MeasList(:,1)==idx))
-        h = text( SD.SrcPos(idx,1), SD.SrcPos(idx,2), sprintf('%c', 64+idx), 'fontweight','bold' );
-        set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
-        set(h, 'horizontalalignment','center');
-    end
-end
-for idx=1:nDets
-    if ~isempty(find(ch.MeasList(:,2)==idx))
-        h = text( SD.DetPos(idx,1), SD.DetPos(idx,2), sprintf('%d', idx), 'fontweight','bold' );
-        set(h,'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
-        set(h, 'horizontalalignment','center');
-    end
-end
-
 
 % DRAW PLOT LINES
 % THESE LINES HAVE TO BE THE LAST
@@ -158,6 +142,24 @@ if ~isempty(iSrcDet) && iSrcDet(1,1)~=0
         end
     end
 end
+
+% ADD SOURCE AND DETECTOR LABELS
+for idx=1:nSrcs
+    if ~isempty(find(ch.MeasList(:,1)==idx))
+        h = text( SD.SrcPos(idx,1), SD.SrcPos(idx,2), sprintf('%d', idx), 'fontweight','bold', 'color','r' );
+        set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
+        set(h, 'horizontalalignment','center');
+    end
+end
+for idx=1:nDets
+    if ~isempty(find(ch.MeasList(:,2)==idx))
+        h = text( SD.DetPos(idx,1), SD.DetPos(idx,2), sprintf('%d', idx), 'fontweight','bold', 'color','b' );
+        set(h,'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
+        set(h, 'horizontalalignment','center');
+    end
+end
+
+
 
 
 h=zoom;

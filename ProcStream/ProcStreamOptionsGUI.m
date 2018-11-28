@@ -1,30 +1,5 @@
 function varargout = ProcStreamOptionsGUI(varargin)
-% PROCSTREAMUPTIONSGUI M-file for ProcStreamOptionsGUI.fig
-%      PROCSTREAMUPTIONSGUI, by itself, creates a new PROCSTREAMUPTIONSGUI or raises the existing
-%      singleton*.
-%
-%      H = PROCSTREAMUPTIONSGUI returns the handle to a new PROCSTREAMUPTIONSGUI or the handle to
-%      the existing singleton*.
-%
-%      PROCSTREAMUPTIONSGUI('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in PROCSTREAMUPTIONSGUI.M with the given input arguments.
-%
-%      PROCSTREAMUPTIONSGUI('Property','Value',...) creates a new PROCSTREAMUPTIONSGUI or raises the
-%      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before ProcStreamOptionsGUI_OpeningFcn gets called.  An
-%      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to ProcStreamOptionsGUI_OpeningFcn via varargin.
-%
-%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
-%      instance to run (singleton)".
-%
-% See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help ProcStreamOptionsGUI
-
-% Last Modified by GUIDE v2.5 30-Jul-2013 16:29:37
-
-% Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
@@ -41,7 +16,6 @@ if nargout
 else
     gui_mainfcn(gui_State, varargin{:});
 end
-% End initialization code - DO NOT EDIT
 
 
 
@@ -66,7 +40,6 @@ if isempty(procFunc)
 end
 
 clf(hObject);
-set(hObject, 'units','characters');
 nfunc = length(procFunc);
 
 % If no functions, throw up empty gui
@@ -74,7 +47,7 @@ if nfunc==0
     uicontrol(hObject, 'style','text', 'string','');
 	% Need to make sure position data is saved in pixel units at end of function 
 	% to as these are the units used to reposition GUI later if needed
-    set(hObject, 'units','pixels');
+    set(hObject, 'units','characters');
     setappdata(hObject,'position',get(hObject, 'position'));
     return;
 end
@@ -99,9 +72,8 @@ if length(varargin)>2 && ~isempty( varargin{2})
 else
     pos = get(hObject, 'position');
 end
-set(hObject, 'position',[pos(1),pos(2),xsize_tot,ysize_tot]);
-set(hObject, 'units','pixels');
 set(hObject, 'color',[1 1 1]);
+set(hObject, 'position',[pos(1),pos(2),xsize_tot,ysize_tot]);
 
 % Display functions and parameters in figure
 ypos = ysize_tot-5;
@@ -129,7 +101,7 @@ for iFunc = 1:nfunc
         % Draw parameter names
         xsize = length(procFunc(iFunc).funcParam);
         xsize = xsize+(5-mod(xsize,5))+5;
-        h_pname=uicontrol(hObject, 'style','text', 'units','characters', 'position',[xpos_pname ypos xsize ysize],...
+        h_pname=uicontrol(hObject, 'style','text', 'units','characters', 'position',[xpos_pname, ypos, xsize_pname, ysize],...
                           'string',procFunc(iFunc).funcParam{iParam});
         set(h_pname,'backgroundcolor',[1 1 1], 'units','normalized');
         set(h_pname, 'horizontalalignment', 'left');
@@ -176,11 +148,12 @@ currElem.procInput = procInput;
 hmr.currElem = currElem;
 
 % Make sure the options GUI fits on screen
-set(hObject, 'units','normalized')
-h = ysize_tot/100;
-k = 1-h;
-positionGUI(hObject, 0.10, 0.12, 0.38, k*h+h);
-
+[b, p] = guiOutsideScreenborders(hObject);
+if abs(b(4))>0 || abs(b(2))>0
+    h = ysize_tot/100;
+    k = 1-h;
+    positionGUI(hObject, p(1), 0.12, p(3), k*h+h);
+end
 
 % Why do we save this? Matlab doesn't take into account multiple monitors 
 % when deciding whether a figure is going beyond it seems that whatever position is assigned to
@@ -191,9 +164,6 @@ positionGUI(hObject, 0.10, 0.12, 0.38, k*h+h);
 % reposition if back to this setting in the ProcStreamOptionsGUI_OutputFcn
 % which is called function after matlab's meddling. 
 
-% Need to make sure position data is saved in pixel units at end of function 
-% to as these are the units used to reposition GUI later if needed
-set(hObject, 'units','pixels');
 setappdata(hObject,'position',get(hObject, 'position'));
 
 
@@ -205,14 +175,8 @@ function varargout = ProcStreamOptionsGUI_OutputFcn(hObject, eventdata, handles)
 varargout{1} = hObject;
 
 % Restore the gui position set in ProcStreamOptionsGUI_OpeningFcn
-set(hObject,'units','pixels')
-pos_curr = get(hObject,'position');
-pos_saved = getappdata(hObject,'position');
-[posx_adjust, posy_adjust] = posAdjust(pos_curr, pos_saved);
-set(hObject, 'position',[pos_saved(1)+posx_adjust, ...
-                         pos_saved(2)+posy_adjust, ...
-                         pos_saved(3), ...
-                         pos_saved(4)]);
+p = getappdata(hObject,'position');
+set(hObject, 'position',[p(1), p(2), p(3), p(4)]);
 set(hObject,'visible','on');
 
 
@@ -237,20 +201,30 @@ function edit_Callback(hObject, eventdata, handles)
 global hmr
 
 currElem = hmr.currElem;
-procInput = currElem.procElem.procInput;
 
 iFunc  = eventdata(1);
 iParam = eventdata(2);
 val = str2num( get(hObject,'string') ); % need to check if it is a valid string
-procInput.procFunc(iFunc).funcParamVal{iParam} = val;
-eval( sprintf('procInput.procParam.%s_%s = val;', ...
-              procInput.procFunc(iFunc).funcName, ...
-              procInput.procFunc(iFunc).funcParam{iParam}) );
-set( hObject, 'string', sprintf(procInput.procFunc(iFunc).funcParamFormat{iParam}, val) );
 
-currElem.procElem.procInput = procInput;
-hmr.currElem = currElem;
+str = currElem.procElem.EditProcParam(iFunc, iParam, val);
+set( hObject, 'string', str);
 
+% Check if we should apply the param edit to all nodes of the current nodes
+% level
+if ~hmr.guiMain.applyEditCurrNodeOnly
+    group = hmr.group;
+    if currElem.procType==2
+        for ii=1:length(group.subjs)
+            group.subjs(ii).EditProcParam(iFunc, iParam, val);
+        end
+    elseif currElem.procType==3
+        for ii=1:length(group.subjs)
+            for jj=1:length(group.subjs(ii).runs)
+                group.subjs(ii).runs(jj).EditProcParam(iFunc, iParam, val);
+            end
+        end
+    end
+end
 
 
 % ----------------------------------------------------------
@@ -259,7 +233,6 @@ global hmr
 
 currElem = hmr.currElem;
 procInput = currElem.procInput;
-procResult = currElem.procResult;
 
 % parse output parameters
 foos = procInput.procFunc(eventdata).funcArgOut;
@@ -299,7 +272,7 @@ function maxnamelen = getFuncNameMaxStrLength(procFunc)
 maxnamelen=0;
 for iFunc =1:length(procFunc)
     if length(procFunc(iFunc).funcName) > maxnamelen
-        maxnamelen = length(procFunc(iFunc).funcName);
+        maxnamelen = length(procFunc(iFunc).funcName)+1;
     end
 end
 
@@ -313,7 +286,7 @@ maxnamelen=0;
 for iFunc=1:length(procFunc)
     for iParam=1:length(procFunc(iFunc).funcParam)
         if length(procFunc(iFunc).funcParam{iParam})>maxnamelen
-            maxnamelen = length(procFunc(iFunc).funcParam{iParam});
+            maxnamelen = length(procFunc(iFunc).funcParam{iParam})+1;
         end
     end
 end
@@ -329,43 +302,34 @@ close(hGui);
 
 
 
-% --------------------------------------------------------------------
-% Function to readjust window position when it's outside the borders of 
-% the screen. It also takes into account multiple monitor screens. 
-% This function assumes pixel units.
-function [posx_adjust, posy_adjust] = posAdjust(pos_curr, pos_saved)
+% -------------------------------------------------------------------
+function [b, p] = guiOutsideScreenborders(hObject)
 
-posx_adjust = 0;
-posy_adjust = 0;
-
-if ~all(pos_curr==pos_saved)
-    mp = get(0, 'MonitorPositions');    
-    screensize = [1 1 max(mp(:,3)) min(mp(:,4))];
-    posx_min_offset = pos_saved(1)-screensize(1);
-    posx_max_offset = (screensize(1)+screensize(3)) - (pos_saved(1)+pos_saved(3));
-    posy_min_offset = pos_saved(2)-screensize(2);
-    posy_max_offset = (screensize(2)+screensize(4)) - (pos_saved(2)+pos_saved(4));
-    extrapixels = 10;
-    
-    % When adjusting window position down, important to add extra pixels of
-    % adjustment to uncover the figures positioning bar which might be 10-20
-    % pixels thick. Somehow on windows the positioning math fails to
-    % unhide it and it's annoyingly impossible to move or kill the
-    % figure window
-    size_window_pos_bar = 40;
-
-    if posx_min_offset<0
-        posx_adjust = posx_adjust-(posx_min_offset+extrapixels);
-    end
-    if posx_max_offset<0
-        posx_adjust = posx_adjust+(posx_max_offset-extrapixels);
-    end
-    if posy_min_offset<0
-        posy_adjust = posy_adjust-(posy_min_offset+extrapixels);
-    end
-    if posy_max_offset<0
-        posy_adjust = posy_adjust+(posy_max_offset-size_window_pos_bar);
+b = [0, 0, 0, 0];
+units_orig = get(hObject,'units');
+set(hObject,'units','normalized');
+p = get(hObject,'position');
+if p(1)+p(3)>=1 || p(1)<0
+    if p(1)+p(3)>=1
+        b(1)=(p(1)+p(3))-1;
+    else
+        b(1)=0-p(1);
     end
 end
+if p(2)+p(4)>=1 || p(2)<0
+    if p(2)+p(4)>=1
+        b(2)=(p(2)+p(4))-1;
+    else
+        b(2)=0-p(2);
+    end
+end
+if p(3)>=1
+    b(3)=p(3)-1;
+end
+if p(4)>=1
+    b(4)=p(4)-1;
+end
+set(hObject,'units',units_orig);
+
 
 

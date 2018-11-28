@@ -632,3 +632,14 @@ hmr.guiMain   = guiMain;
 function menuItemProcStreamEdit_Callback(hObject, eventdata, handles)
 
 procStreamGUI();
+
+
+% --------------------------------------------------------------------
+function checkboxApplyProcStreamEditToAll_Callback(hObject, eventdata, handles)
+global hmr
+
+if get(hObject, 'value')
+    hmr.guiMain.applyEditCurrNodeOnly = false;
+else
+    hmr.guiMain.applyEditCurrNodeOnly = true;
+end

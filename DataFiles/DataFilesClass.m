@@ -30,10 +30,16 @@ classdef DataFilesClass < handle
                 elseif ischar(args{1})
                     obj.handles = [];
                     obj.pathnm = args{1};
+                else
+                    obj.handles = [];
+                    obj.pathnm = pwd;                    
                 end
             elseif nargs==2
                 obj.handles = args{1};
                 obj.pathnm = args{2};
+            else
+                obj.handles = [];
+                obj.pathnm = pwd;
             end
             obj.filesErr = struct([]);
             obj.errmsg = {};

@@ -27,6 +27,5 @@ if isempty(lst2) & ~(p1(1)==p2(1))
 end
 
 stimGUI_AddEditDelete(lst,lst2);
-set(stim.handles.pushbuttonUpdate,'enable','on');
 stimGUI_DisplayData();
 

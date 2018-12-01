@@ -22,7 +22,8 @@ end
 stim0 = stim;
 actionLst = {};
 nCond = length(stim.CondNamesGroup);
-CondNameNew = '';
+CondNameNew = {};
+tc = stim.currElem.procElem.GetTime();
 
 % Create menu actions list
 for ii=1:nCond
@@ -33,11 +34,11 @@ if ~isempty(iS_lst)
     actionLst{end+1} = 'Toggle active on/off';
     actionLst{end+1}='Delete';
     menuTitleStr = sprintf('Edit/Delete stim mark(s) at t=%0.1f-%0.1f to...', ...
-                           stim.currElem.procElem.t(tPts(iS_lst(1))), ...
-                           stim.currElem.procElem.t(tPts(iS_lst(end))));
+                           tc(tPts(iS_lst(1))), ...
+                           tc(tPts(iS_lst(end))));
 else
     menuTitleStr = sprintf('Add stim mark at t=%0.1f...', ...
-                           stim.currElem.procElem.t(tPts(1)));
+                           tc(tPts(1)));
 end
 actionLst{end+1} = 'Cancel';
 nActions = length(actionLst);
@@ -68,9 +69,7 @@ if(isempty(iS_lst))
                 return;
             end
         end
-        stim.currElem.procElem.CondNames{end+1} = CondNameNew{1};
-        stim.currElem.procElem.s(tPts,end+1) = 1;
-        stim.currElem.procElem.CondName2Group(end+1) = ch;
+        stim.currElem.procElem.AddStims(CondNameNew{1}, tPts);
         stim.CondNamesGroup{ch} = CondNameNew{1};
 
     % Add new stim to exiting group condition. Condition 
@@ -98,7 +97,7 @@ if(isempty(iS_lst))
     % Add new stim entry to userdata
     data = {};
     for ii=1:length(tPts)
-        t = stim.currElem.procElem.t(tPts(ii));
+        t = tc(tPts(ii));
         for jj=1:size(stim.userdata.data,1)
             if(stim.userdata.data{jj,1} > t)
                 break;

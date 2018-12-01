@@ -270,13 +270,7 @@ classdef NirsClass < AcqDataClass
         function CondNames = GetConditions(obj)
             CondNames = obj.CondNames;
         end
-        
-        
-        % ---------------------------------------------------------
-        function bbox = GetSdgBbox(obj)
-            bbox = [obj.SD.xmin, obj.SD.xmax, obj.SD.ymin, obj.SD.ymax];
-        end
-        
+                
         
         % ---------------------------------------------------------
         function srcpos = GetSrcPos(obj)

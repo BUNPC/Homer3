@@ -68,6 +68,8 @@ set(gca, 'xticklabel','')
 set(gca, 'yticklabel','')
 set(gca, 'ygrid','off')
 
+edgecol = [0.2, 0.2, 0.2];
+
 % get procResult and replace MeasListAct if it exists
 
 lst   = find(ch.MeasList(:,1)>0);
@@ -76,8 +78,7 @@ lstML = find(ml(:,4)==1); %cw6info.displayLambda);
 
 lst2 = find(ch.MeasListAct(1:length(lstML))==0);
 for ii=1:length(lst2)
-    h = line( [SD.SrcPos(ml(lstML(lst2(ii)),1),1) SD.DetPos(ml(lstML(lst2(ii)),2),1)], ...
-              [SD.SrcPos(ml(lstML(lst2(ii)),1),2) SD.DetPos(ml(lstML(lst2(ii)),2),2)] );
+    h = line2(SD.SrcPos(ml(lstML(lst2(ii)),1),:), SD.DetPos(ml(lstML(lst2(ii)),2),:));
     set(h, 'color',[1 .85 .85]*1);
     set(h, 'linewidth',6);
     set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
@@ -85,8 +86,7 @@ end
 
 lst2 = find(ch.MeasListAct(1:length(lstML))==1);
 for ii=1:length(lst2)
-    h = line( [SD.SrcPos(ml(lstML(lst2(ii)),1),1) SD.DetPos(ml(lstML(lst2(ii)),2),1)], ...
-              [SD.SrcPos(ml(lstML(lst2(ii)),1),2) SD.DetPos(ml(lstML(lst2(ii)),2),2)] );
+    h = line2(SD.SrcPos(ml(lstML(lst2(ii)),1),:), SD.DetPos(ml(lstML(lst2(ii)),2),:));
     set(h, 'color',[1 1 1]*.85);
     set(h, 'linewidth',4);
     set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
@@ -96,8 +96,7 @@ if isproperty(procResult,'SD')
     if isproperty(procResult.SD,'MeasListActAuto')
         lst2 = find(procResult.SD.MeasListActAuto(1:length(lstML))==0);
         for ii=1:length(lst2)
-            h = line( [SD.SrcPos(ml(lstML(lst2(ii)),1),1) SD.DetPos(ml(lstML(lst2(ii)),2),1)], ...
-                      [SD.SrcPos(ml(lstML(lst2(ii)),1),2) SD.DetPos(ml(lstML(lst2(ii)),2),2)] );
+            h = line2(SD.SrcPos(ml(lstML(lst2(ii)),1),:), SD.DetPos(ml(lstML(lst2(ii)),2),:));
             set(h, 'color',[1 1 .85]*1);
             set(h, 'linewidth',6);
             set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
@@ -121,8 +120,7 @@ if ~isempty(iSrcDet) && iSrcDet(1,1)~=0
     iCh2 = lst2;
     
     for idx=size(iSrcDet,1):-1:1
-        h = line( [SD.SrcPos(iSrcDet(idx,1),1) SD.DetPos(iSrcDet(idx,2),1)], ...
-                  [SD.SrcPos(iSrcDet(idx,1),2) SD.DetPos(iSrcDet(idx,2),2)] );
+        h = line2(SD.SrcPos(iSrcDet(idx,1),:), SD.DetPos(iSrcDet(idx,2),:));
         set(h,'color',color(idx,:));
         set(h,'ButtonDownFcn',sprintf('toggleLinesAxesSDG_ButtonDownFcn(gcbo,[%d],guidata(gcbo))',idx));
         set(h,'linewidth',2);
@@ -146,21 +144,18 @@ end
 % ADD SOURCE AND DETECTOR LABELS
 for idx=1:nSrcs
     if ~isempty(find(ch.MeasList(:,1)==idx))
-        h = text( SD.SrcPos(idx,1), SD.SrcPos(idx,2), sprintf('%d', idx), 'fontweight','bold', 'color','r' );
-        set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
-        set(h, 'horizontalalignment','center');
+        h = text( SD.SrcPos(idx,1), SD.SrcPos(idx,2), sprintf('%d', idx), 'fontsize',12, 'fontweight','bold', 'color','r' );
+        set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
     end
 end
 for idx=1:nDets
     if ~isempty(find(ch.MeasList(:,2)==idx))
-        h = text( SD.DetPos(idx,1), SD.DetPos(idx,2), sprintf('%d', idx), 'fontweight','bold', 'color','b' );
-        set(h,'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
-        set(h, 'horizontalalignment','center');
+        h = text( SD.DetPos(idx,1), SD.DetPos(idx,2), sprintf('%d', idx), 'fontsize',12, 'fontweight','bold', 'color','b' );
+        set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
     end
 end
 
-
-
-
 h=zoom;
 setAllowAxesZoom(h, hAxesSDG, 0);
+
+

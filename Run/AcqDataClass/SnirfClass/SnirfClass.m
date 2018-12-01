@@ -413,26 +413,7 @@ classdef SnirfClass < AcqDataClass
             SD.SrcPos = obj.sd.GetSrcPos();
             SD.DetPos = obj.sd.GetDetPos();
         end
-        
-        
-        % ---------------------------------------------------------
-        function bbox = GetSdgBbox(obj)
-            optpos = [obj.sd.GetSrcPos(); obj.sd.GetDetPos()];
-            
-            xmin = min(optpos(:,1));
-            xmax = max(optpos(:,1));
-            ymin = min(optpos(:,2));
-            ymax = max(optpos(:,2));
-            
-            width = xmax-xmin;
-            height = ymax-ymin;
-            
-            px = width * 0.10; 
-            py = height * 0.10; 
-
-            bbox = [xmin-px, xmax+px, ymin-py, ymax+py];
-        end
-        
+                
         
         % ---------------------------------------------------------
         function srcpos = GetSrcPos(obj)

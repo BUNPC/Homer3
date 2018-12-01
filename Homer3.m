@@ -9,6 +9,9 @@ gui_State = struct('gui_Name',       mfilename, ...
     'gui_LayoutFcn',  [] , ...
     'gui_Callback',   []);
 if nargin && ischar(varargin{1}) && ~strcmp(varargin{end},'userargs')
+    if varargin{1}(1)=='.';
+        varargin{1}(1) = '';
+    end
     gui_State.gui_Callback = str2func(varargin{1});
 end
 
@@ -113,24 +116,8 @@ Homer3_EnableDisableGUI(handles,'off');
 
 Homer3_Init(handles, {'zbuffer'});
 
-% Check NIRS data set for errors. If there are no valid
-% nirs files don't attempt to load them.
-if strcmp(hmr.format, 'snirf')
-    files = SnirfFilesClass(handles).files;
-else
-    files = NirsFilesClass(handles).files;
-end
-
-if isempty(files)
-    files = NirsFilesClass(handles).files;
-    if isempty(files)
-        return;
-    end
-    Nirs2Snirf();
-    files = SnirfFilesClass(handles).files;
-end
-
-%%%% Initialize essential objects
+% Get file names 
+files = FindFiles(handles);
 
 % Load NIRS files to group
 [group, files] = LoadNIRS2Group(files);

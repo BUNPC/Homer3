@@ -29,9 +29,6 @@ classdef AcqDataClass < matlab.mixin.Copyable
         wls       = GetWls(obj)
         
         % ---------------------------------------------------------
-        bbox      = GetSdgBbox(obj)
-        
-        % ---------------------------------------------------------
         SetStims_MatInput(obj, s, t, CondNames)
         
         % ---------------------------------------------------------
@@ -51,6 +48,25 @@ classdef AcqDataClass < matlab.mixin.Copyable
     
     methods
 
+        % ---------------------------------------------------------
+        function bbox = GetSdgBbox(obj)
+            optpos = [obj.GetSrcPos(); obj.GetDetPos()];
+            
+            xmin = min(optpos(:,1));
+            xmax = max(optpos(:,1));
+            ymin = min(optpos(:,2));
+            ymax = max(optpos(:,2));
+            
+            width = xmax-xmin;
+            height = ymax-ymin;
+            
+            px = width * 0.10; 
+            py = height * 0.10; 
+
+            bbox = [xmin-px, xmax+px, ymin-py, ymax+py];
+        end
+        
+        
         % ----------------------------------------------------------------------------------
         function varval = FindVar(obj, varname)
 

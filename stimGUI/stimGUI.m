@@ -104,7 +104,6 @@ stim.handles.axes = handles.axes1;
 stim.handles.radiobuttonZoom = handles.radiobuttonZoom;
 stim.handles.radiobuttonStim = handles.radiobuttonStim;
 stim.handles.tableUserData = handles.tableUserData;
-stim.handles.pushbuttonUpdate = handles.pushbuttonUpdate;
 stim.handles.pushbuttonRenameCondition = handles.pushbuttonRenameCondition;
 stim.handles.textTimePts = handles.textTimePts;
 stim.handles.stimMarksEdit = handles.stimMarksEdit;
@@ -276,18 +275,6 @@ end
 
 
 %---------------------------------------------------------------------------
-function stimGUI_ButtonDownFcn(hObject, eventdata, handles)
-global stim
-
-if sum(ishandles(stim.Lines))<length(stim.Lines)
-    return;
-end
-for ii=1:length(stim.Lines)
-    set(stim.Lines(ii).handle,'color',stim.Lines(ii).color,'linewidth',stim.linewidthReg);
-end
-
-
-%---------------------------------------------------------------------------
 function tableUserData_CreateFcn(hObject, eventdata, handles)
 global stim
 
@@ -439,16 +426,6 @@ stimGUI_AddEditDelete(lst, lst2);
 set(stim.handles.pushbuttonUpdate,'enable','on');
 
 stimGUI_DisplayData();
-
-
-
-%---------------------------------------------------------------------------
-function stimMarksEdit_CreateFcn(hObject, eventdata, handles)
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-set(hObject,'string','');
-
 
 
 %--------------------------------------------------------------------------

@@ -25,3 +25,7 @@ axesSDG = struct(...
                               ] ...
                );
 
+
+% additional_colors = rand_seeded(345,10,3);
+% axesSDG.linecolor(end+1:end+size(additional_colors,1),:) = additional_colors;
+

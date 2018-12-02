@@ -1,11 +1,13 @@
-function axesSDG = SetAxesSDGCh(axesSDG, currElem)
-
+function axesSDG = SetAxesSDGCh(axesSDG, currElem, maxCh)
 
 hAxesSDG = axesSDG.handles.axes;
 iCh      = axesSDG.iCh;
 iSrcDet  = axesSDG.iSrcDet;
 SD       = currElem.procElem.GetSDG();
 ch       = currElem.procElem.GetMeasList();
+
+% Maximum number of channels that can be selected simultaneously
+maxCh    = size(axesSDG.linecolor,1);
 
 h = hAxesSDG;
 while ~strcmpi(get(h,'type'),'figure')
@@ -67,6 +69,10 @@ elseif strcmp(mouseevent,'extend')
     end
 end
 
+if length(iCh) > maxCh
+    menu('Number of selected channels exceeds max for waterfall display.','OK');
+    return;
+end
 axesSDG.iCh     = iCh;
 axesSDG.iSrcDet = iSrcDet;
 

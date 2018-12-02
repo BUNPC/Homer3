@@ -68,7 +68,12 @@ set(gca, 'xticklabel','')
 set(gca, 'yticklabel','')
 set(gca, 'ygrid','off')
 
-edgecol = [0.2, 0.2, 0.2];
+edgecol = 'none';
+if ismac() || islinux()
+	fs = 12;
+else
+	fs = 10;
+end
 
 % get procResult and replace MeasListAct if it exists
 
@@ -144,13 +149,13 @@ end
 % ADD SOURCE AND DETECTOR LABELS
 for idx=1:nSrcs
     if ~isempty(find(ch.MeasList(:,1)==idx))
-        h = text( SD.SrcPos(idx,1), SD.SrcPos(idx,2), sprintf('%d', idx), 'fontsize',12, 'fontweight','bold', 'color','r' );
+        h = text( SD.SrcPos(idx,1), SD.SrcPos(idx,2), sprintf('%d', idx), 'fontsize',fs, 'fontweight','bold', 'color','r' );
         set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
     end
 end
 for idx=1:nDets
     if ~isempty(find(ch.MeasList(:,2)==idx))
-        h = text( SD.DetPos(idx,1), SD.DetPos(idx,2), sprintf('%d', idx), 'fontsize',12, 'fontweight','bold', 'color','b' );
+        h = text( SD.DetPos(idx,1), SD.DetPos(idx,2), sprintf('%d', idx), 'fontsize',fs, 'fontweight','bold', 'color','b' );
         set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
     end
 end

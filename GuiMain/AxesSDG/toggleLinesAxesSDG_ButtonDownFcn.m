@@ -72,12 +72,6 @@ else
     return;
 end
 
-% Next 3 lines need to be replaces by a class method
-% currElem.procElem.ToggleChannel(SD);
-currElem.procElem.SD = SD;
-% group = SaveCurrElem(currElem, hmr.group, 'temp', 'SD');
-% group = UpdateGroupSD(group);
-
 DisplayAxesSDG(axesSDG, currElem.procElem);
 DisplayCurrElem(currElem, guiMain);
 

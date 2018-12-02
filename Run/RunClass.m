@@ -201,8 +201,8 @@ classdef RunClass < TreeNodeClass
             linestyle  = guiMain.axesData.linestyle;
             datatype   = guiMain.datatype;
             condition  = guiMain.condition;
-            iCh         = guiMain.ch;
-            iWl         = guiMain.wl;
+            iCh        = guiMain.ch;
+            iWl        = guiMain.wl;
             hbType     = guiMain.hbType;
             buttonVals = guiMain.buttonVals;
             sclConc    = guiMain.sclConc;        % convert Conc from Molar to uMolar
@@ -274,27 +274,20 @@ classdef RunClass < TreeNodeClass
                 
                 % Plot data
                 if datatype == buttonVals.RAW || datatype == buttonVals.OD || datatype == buttonVals.OD_HRF || datatype == buttonVals.OD_HRF_PLOT_PROBE
-                    
                     if  datatype == buttonVals.OD_HRF || datatype == buttonVals.OD_HRF_PLOT_PROBE
                         d = d(:,:,condition);
                     end
                     d = reshape_y(d, ch.MeasList, Lambda);
-                    
                     DisplayDataRawOrOD(t, d, dStd, iWl, iCh, chLst, nTrials, condition, linecolor, linestyle);
-                    
-                elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF || datatype == buttonVals.CONC_HRF_PLOT_PROBE
-                    
+                elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF || datatype == buttonVals.CONC_HRF_PLOT_PROBE                    
                     if  datatype == buttonVals.CONC_HRF || datatype == buttonVals.CONC_HRF_PLOT_PROBE
                         d = d(:,:,:,condition);
                     end
-                    d = d * sclConc;
-                    
+                    d = d * sclConc;                    
                     DisplayDataConc(t, d, dStd, hbType, iCh, chLst, nTrials, condition, linecolor, linestyle);
                 end
             end
-            
             guiMain.axesSDG = DisplayAxesSDG(guiMain.axesSDG, obj);
-            
             obj.DisplayStim(guiMain);
             
         end

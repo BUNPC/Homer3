@@ -60,6 +60,8 @@ if ~exist('k','var')
     
     if len_edge/len_griddiag >= 1.00
         percent_offset = 0;
+    elseif len_edge/len_griddiag <= 0.05
+        percent_offset = 0;
     elseif len_edge/len_griddiag >= 0.95
         percent_offset = 2;
     else

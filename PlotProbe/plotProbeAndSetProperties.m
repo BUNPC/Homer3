@@ -5,7 +5,6 @@ tHRF     = plotprobe.tHRF;
 SD       = plotprobe.SD;
 ch       = plotprobe.ch;
 tMarkInt = plotprobe.tMarkInt;
-tMarkInt = plotprobe.tMarkInt;
 axScl    = plotprobe.axScl;
 bit0     = plotprobe.tMarkShow;
 bit1     = plotprobe.hidMeasShow;

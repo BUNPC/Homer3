@@ -7,7 +7,6 @@ classdef RunClass < TreeNodeClass
         rnum;
         acquired;
         tIncMan;
-        CondName2Group;
         userdata;
         
     end
@@ -17,7 +16,6 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function obj = RunClass(varargin)
-            
             obj.type  = 'run';
             if nargin==4
                 obj.name  = varargin{1};
@@ -40,23 +38,19 @@ classdef RunClass < TreeNodeClass
             obj.tIncMan = [];
             obj.userdata = [];
             obj.CondName2Group = [];
-            obj.Load();
-                        
+            obj.Load();       
         end
                 
         
             
         % ----------------------------------------------------------------------------------
         function Load(obj)
-            
             obj.acquired.Load();
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function Save(obj, options)
-            
             if ~exist('options','var')
                 options = 'acquired:derived';
             end
@@ -75,7 +69,6 @@ classdef RunClass < TreeNodeClass
             if options_s.acquired
                 obj.acquired.Save();
             end
-                        
         end
         
         
@@ -83,9 +76,7 @@ classdef RunClass < TreeNodeClass
         % Deletes derived data in procResult
         % ----------------------------------------------------------------------------------
         function Reset(obj)
-            
             obj.procResult = ProcResultClass();
-            
         end
         
         
@@ -95,11 +86,9 @@ classdef RunClass < TreeNodeClass
         % N2 to N1 if N1 and N2 are same nodes
         % ----------------------------------------------------------------------------------
         function copyProcParams(obj, R)
-            
             if obj == R
                 obj.copyProcParamsFieldByField(R);
             end
-            
         end
         
     
@@ -109,7 +98,6 @@ classdef RunClass < TreeNodeClass
         % N2 to N1
         % ----------------------------------------------------------------------------------
         function copyProcParamsFieldByField(obj, R)
-            
             % procInput
             if isproperty(R,'procInput')
                 if isproperty(R.procInput,'procFunc') && ~isempty(R.procInput.procFunc)
@@ -143,7 +131,6 @@ classdef RunClass < TreeNodeClass
             if isproperty(R,'userdata') && ~isempty(R.userdata)
                 obj.userdata = copyStructFieldByField(obj.userdata, R.userdata);
             end
-            
         end
         
         
@@ -152,7 +139,6 @@ classdef RunClass < TreeNodeClass
         % are equivalent and their sets of runs are equivalent.
         % ----------------------------------------------------------------------------------
         function B = equivalent(obj1, obj2)
-            
             B=1;
             [p1,n1] = fileparts(obj1.name);
             [p2,n2] = fileparts(obj2.name);
@@ -160,7 +146,6 @@ classdef RunClass < TreeNodeClass
                 B=0;
                 return;
             end
-            
         end
         
     end
@@ -173,13 +158,11 @@ classdef RunClass < TreeNodeClass
             
         % ----------------------------------------------------------------------------------
         function b = IsNirs(obj)
-            
             b = false;
             [~,~,ext] = fileparts(obj.name);
             if strcmp(ext,'.nirs')
                 b = true;
             end
-            
         end
         
         
@@ -380,13 +363,11 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function DisplayCondLegend(obj, hLg, idxLg)
-            
             [idxLg, k] = sort(idxLg);
             CondNamesAll = obj.CondNamesAll;
             if ishandles(hLg)
                 legend(hLg(k), CondNamesAll(idxLg));
             end
-            
         end
 
         
@@ -431,67 +412,53 @@ classdef RunClass < TreeNodeClass
             end
             
             t = obj.acquired.GetTime(idx);
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function d = GetDataMatrix(obj, idx)
-            
             if nargin<2
                 idx = 1;
             end
-            
             d = obj.acquired.GetDataMatrix(idx);
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function SD = GetSDG(obj)
-            
             SD.SrcPos = obj.acquired.GetSrcPos();
             SD.DetPos = obj.acquired.GetDetPos();
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function SetMeasList(obj)
-            
             obj.ch.Lambda      = obj.acquired.GetWls();
             obj.ch.MeasList    = obj.acquired.GetMeasList();
             obj.ch.MeasListAct = ones(size(obj.ch.MeasList,1), 1);
             obj.ch.MeasListVis = ones(size(obj.ch.MeasList,1), 1);
-            
         end
         
         
         
         % ----------------------------------------------------------------------------------
         function ch = GetMeasList(obj)
-            
             ch.Lambda      = obj.acquired.GetWls();
             ch.MeasList    = obj.acquired.GetMeasList();
             ch.MeasListAct = ones(size(ch.MeasList,1), 1);
             ch.MeasListVis = ones(size(ch.MeasList,1), 1);
-            
         end
 
         
         % ----------------------------------------------------------------------------------
         function SetStims_MatInput(obj,s,t,CondNames)
-            
             obj.acquired.SetStims_MatInput(s,t,CondNames);
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function s = GetStims(obj)
-            
             s = obj.acquired.GetStims();
-            
         end
         
         
@@ -508,10 +475,9 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function CondNames = GetConditions(obj)
-            
             CondNames = obj.acquired.GetConditions();
-            
         end
+        
         
         % ----------------------------------------------------------------------------------
         function CondNames = GetConditionsActive(obj)
@@ -522,45 +488,35 @@ classdef RunClass < TreeNodeClass
                     CondNames{ii} = ['-- ', CondNames{ii}];
                 end
             end
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function SetCondName2Group(obj, CondNamesGroup)
-                        
             obj.CondName2Group = zeros(1, length(obj.CondNames));
             for ii=1:length(obj.CondNames)
                 obj.CondName2Group(ii) = find(strcmp(CondNamesGroup, obj.CondNames{ii}));
             end
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function wls = GetWls(obj)
-
             wls = obj.acquired.GetWls();
-        
         end
         
         
         % ----------------------------------------------------------------------------------
         function bbox = GetSdgBbox(obj)
-            
             bbox = obj.acquired.GetSdgBbox();
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function aux = GetAux(obj)
-            
             aux = obj.acquired.GetAux();            
-            
         end
         
-
     end        % Public Set/Get methods
     
 end

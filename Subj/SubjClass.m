@@ -367,6 +367,21 @@ classdef SubjClass < TreeNodeClass
             
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function CondNames = GetConditionsActive(obj)
+            CondNames = obj.CondNames;
+            for ii=1:length(obj.runs)
+                CondNamesRun = obj.runs(ii).GetConditionsActive();
+                for jj=1:length(CondNames)
+                    k = find(strcmp(['-- ', CondNames{jj}], CondNamesRun));
+                    if ~isempty(k)
+                        CondNames{jj} = ['-- ', CondNames{jj}];
+                    end
+                end
+            end
+        end
+        
     end       % Public Set/Get methods
         
 end

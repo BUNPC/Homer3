@@ -39,13 +39,21 @@ classdef DataFilesClass < handle
                 obj.pathnm = args{2};
             else
                 obj.handles = [];
-                obj.pathnm = pwd;
+                if ischar(args)
+                    obj.pathnm = args;
+                else
+	                obj.pathnm = pwd;
+	            end
             end
             obj.filesErr = struct([]);
             obj.errmsg = {};
             obj.sd_common = {};
             obj.loadData = -1;
             
+            foo = mydir(obj.pathnm);
+            if ~isempty(foo) && ~foo(1).isdir
+                obj.files = foo;
+            end
         end
         
         
@@ -94,6 +102,11 @@ classdef DataFilesClass < handle
             
         end
         
+        
+        % ----------------------------------------------------
+        function getDataFile(obj, filename)
+            obj.files = mydir(filename);
+        end
         
         
         
@@ -290,7 +303,6 @@ classdef DataFilesClass < handle
         end
         
         
-        
         % -------------------------------------------------------
         function pushbuttonLoadDataset_Callback(obj, hObject)
             
@@ -317,6 +329,24 @@ classdef DataFilesClass < handle
             
         end
         
+    
+        % ------------------------------------------------------------
+        function MapFiles2Group(obj, group)
+            
+            % for ii=1:length(group.subjs)
+            % for jj=1:length(subjs(ii).runs)
+            % obj.files(ii).map2group.iSubj = ii;
+            % if ~obj.files().isdir
+            %     files(ii).map2group.iRun  = jj;
+            % else
+            %     files(ii).map2group.iRun  = 0;
+            % end
+            % end
+            % end
+            
+        end
+        
     end
+    
     
 end

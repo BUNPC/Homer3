@@ -184,7 +184,7 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function Display(obj, guiMain)
+        function DisplayGuiMain(obj, guiMain)
             
             hAxes = guiMain.axesData.handles.axes;
             if ~ishandles(hAxes)
@@ -510,6 +510,18 @@ classdef RunClass < TreeNodeClass
         function CondNames = GetConditions(obj)
             
             CondNames = obj.acquired.GetConditions();
+            
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function CondNames = GetConditionsActive(obj)
+            CondNames = obj.CondNames;
+            s = obj.GetStims();
+            for ii=1:size(s,2)
+                if ismember(abs(1), s(:,ii))
+                    CondNames{ii} = ['-- ', CondNames{ii}];
+                end
+            end
             
         end
         

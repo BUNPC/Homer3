@@ -66,10 +66,6 @@ showHiddenObjs( 2*hidMeasShow+tMarkShow, ch, y, hData );
 
 
 % Save the plot probe control panel handles
-plotprobe.y                = y;
-plotprobe.tHRF             = tHRF;
-plotprobe.SD               = SD;
-plotprobe.ch               = ch;
 plotprobe.objs.CtrlPanel   = CtrlPanel;
 plotprobe.objs.SclPanel    = SclPanel;
 plotprobe.objs.BttnDup     = BttnDup;

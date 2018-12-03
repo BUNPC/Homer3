@@ -131,7 +131,8 @@ currElem = InitCurrElem(handles, @listboxFiles_Callback);
 currElem = LoadCurrElem(currElem, group, files, 1, 1);
 
 % Within the current element, initialize the data to display
-guiMain = InitGuiMain(handles, group, currElem);
+guiMain   = InitGuiMain(handles, group, currElem);
+plotprobe = InitPlotProbe(handles);
 
 % If data set has no errors enable window gui objects
 Homer3_EnableDisableGUI(handles,'on');
@@ -140,11 +141,11 @@ hmr.files    = files;
 hmr.group    = group;
 hmr.currElem = currElem;
 hmr.guiMain  = guiMain;
+hmr.plotprobe = plotprobe;
 
 % Display data from currently selected processing element
 DisplayCurrElem(currElem, guiMain);
 
-hmr.plotprobe = PlotProbe_Init(handles);
 
 
 
@@ -346,14 +347,11 @@ hmr.plotprobe = plotprobe;
 function checkboxPlotHRF_Callback(hObject, eventdata, handles)
 global hmr
 
-guiMain = hmr.guiMain;
-currElem = hmr.currElem;
+guiMain   = hmr.guiMain;
+currElem  = hmr.currElem;
 plotprobe = hmr.plotprobe;
 
 guiMain = GetAxesDataType(guiMain);
-if get(hObject,'value')==1
-    currElem = LoadCurrElem(currElem, hmr.group, hmr.files);
-end
 DisplayCurrElem(currElem, guiMain);
 plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
 
@@ -501,7 +499,7 @@ guiMain  = hmr.guiMain;
 
 currElem.procElem.Reset();
 currElem.procElem.Save();
-currElem.procElem.Display(guiMain);
+currElem.procElem.DisplayGuiMain(guiMain);
 
 hmr.currElem = currElem;
 
@@ -527,13 +525,16 @@ end
 function pushbuttonProcStreamOptionsEdit_Callback(hObject, eventdata, handles)
 global hmr
 
-files = hmr.files;
-group = hmr.group;
 currElem = hmr.currElem;
 
+if get(hObject, 'value')
+    action = 'open';
+else
+    action = 'close';
+end
+
 % Reload current element selection
-currElem = LoadCurrElem(currElem, group, files);
-currElem = OpenCurrElemProcStreamOptionsGUI(currElem,'close');
+currElem = OpenCurrElemProcStreamOptionsGUI(currElem, action);
 
 hmr.handles.proccessOpt = currElem.handles.ProcStreamOptionsGUI;
 hmr.currElem = currElem;

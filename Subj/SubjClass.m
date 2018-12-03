@@ -4,7 +4,6 @@ classdef SubjClass < TreeNodeClass
         
         iSubj;
         CondName2Run
-        CondName2Group;
         runs;
         
     end

@@ -415,7 +415,7 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function SetConditions(obj, varargin)
-            
+                       
             if nargin==1
 	            CondNames = {};
 	            for ii=1:length(obj.subjs)
@@ -438,6 +438,9 @@ classdef GroupClass < TreeNodeClass
                 obj.subjs(iSubj).SetCondName2Run();
                 obj.subjs(iSubj).SetCondName2Group(obj.CondNames);
             end
+            
+            % For group this is an identity table
+            obj.CondName2Group = 1:length(obj.CondNames);
             
         end
         

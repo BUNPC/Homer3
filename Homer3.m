@@ -132,7 +132,7 @@ currElem = LoadCurrElem(currElem, group, files, 1, 1);
 
 % Within the current element, initialize the data to display
 guiMain   = InitGuiMain(handles, group, currElem);
-plotprobe = InitPlotProbe(handles);
+plotprobe = PlotProbeClass(handles);
 
 % If data set has no errors enable window gui objects
 Homer3_EnableDisableGUI(handles,'on');
@@ -214,7 +214,7 @@ end
 currElem = LoadCurrElem(currElem, group, files);
 guiMain = UpdateAxesDataCondition(guiMain, group, currElem);
 DisplayCurrElem(currElem, guiMain);
-plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
+DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition); 
 
 currElem = UpdateCurrElemProcStreamOptionsGUI(currElem);
 if ishandles(hmr.handles.stimGUI)
@@ -225,7 +225,6 @@ if ishandles(hmr.handles.stimGUI)
         group.CondNames);
 end
 hmr.currElem = currElem;
-hmr.plotprobe = plotprobe;
 
 
 
@@ -262,18 +261,17 @@ currElem = LoadCurrElem(currElem, group, files);
 guiMain = UpdateAxesDataCondition(guiMain, group, currElem);
 if ishandles(hmr.handles.stimGUI)
     hmr.handles.stimGUI = launchStimGUI(hmr.handles.this, ...
-        hmr.handles.stimGUI, ...
-        currElem, ...
-        group.GetConditions());
+                                        hmr.handles.stimGUI, ...
+                                        currElem, ...
+                                        group.GetConditions());
 end
 DisplayCurrElem(currElem, guiMain);
-plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
+DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition); 
 
 currElem = UpdateCurrElemProcStreamOptionsGUI(currElem);
 
 hmr.currElem = currElem;
 hmr.group = group;
-hmr.plotprobe = plotprobe;
 
 
 
@@ -289,10 +287,9 @@ currElem = CalcCurrElem(currElem);
 currElem.procElem.Save();
 
 DisplayCurrElem(currElem, guiMain);
-plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
+DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition); 
 
 hmr.currElem = currElem;
-hmr.plotprobe = plotprobe;
 
 
 
@@ -317,7 +314,7 @@ plotprobe = hmr.plotprobe;
 
 guiMain = GetAxesDataType(guiMain);
 DisplayCurrElem(currElem, guiMain);
-plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
+DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition);
 
 datatype   = guiMain.datatype;
 buttonVals = guiMain.buttonVals;
@@ -339,7 +336,6 @@ elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF || datatyp
 end
 
 hmr.guiMain = guiMain;
-hmr.plotprobe = plotprobe;
 
 
 
@@ -353,7 +349,7 @@ plotprobe = hmr.plotprobe;
 
 guiMain = GetAxesDataType(guiMain);
 DisplayCurrElem(currElem, guiMain);
-plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
+DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition); 
 
 hmr.guiMain = guiMain;
 hmr.plotprobe = plotprobe;
@@ -405,11 +401,10 @@ guiMain = GetAxesDataCondition(guiMain);
 
 % Update the display of the guiMain axes
 DisplayCurrElem(currElem, guiMain);
-plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
+DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition); 
 
 % the the modified objects
 hmr.guiMain = guiMain;
-hmr.plotprobe = plotprobe;
 
 
 
@@ -427,11 +422,10 @@ guiMain = GetAxesDataWl(guiMain, currElem.procElem.SD.Lambda);
 
 % Update the displays of the guiMain and axesSDG axes
 DisplayCurrElem(currElem, guiMain);
-plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
+DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition); 
 
 % the the modified objects
 hmr.guiMain = guiMain;
-hmr.plotprobe = plotprobe;
 
 
 
@@ -450,7 +444,7 @@ guiMain = GetAxesDataHbType(guiMain);
 
 % Update the displays of the guiMain and axesSDG axes
 DisplayCurrElem(currElem, guiMain);
-plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
+DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition); 
 
 % the the modified objects
 hmr.guiMain = guiMain;
@@ -610,9 +604,8 @@ plotprobe = hmr.plotprobe;
 
 guiMain = GetAxesDataType(guiMain);
 plotprobe.active = get(hObject, 'value');
-plotprobe = DisplayPlotProbe(plotprobe, currElem, guiMain);
+DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition); 
 
-hmr.plotprobe = plotprobe;
 hmr.guiMain   = guiMain;
 
 

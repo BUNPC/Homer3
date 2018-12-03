@@ -139,7 +139,7 @@ else
     % it's set to 'auto' which makes it disappear
     % when the zoom is displayed
     set(hFig,'toolbar','figure', 'NumberTitle', 'off', 'name','Plot Probe', ...
-       'color',[1 1 1], 'paperpositionmode','auto', 'deletefcn',@PlotProbe_Delete);
+       'color',[1 1 1], 'paperpositionmode','auto', 'deletefcn',@DeletePlotProbe);
     p = get(hFig,'Position');
     set(hFig, 'Position', [p(1)/2, p(2)/2.2,  p(3)*1.3, p(4)*1.3])
 end

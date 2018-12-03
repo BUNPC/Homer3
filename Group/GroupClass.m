@@ -470,6 +470,20 @@ classdef GroupClass < TreeNodeClass
             
         end
              
+        % ----------------------------------------------------------------------------------
+        function CondNames = GetConditionsActive(obj)
+            CondNames = obj.CondNames;
+            for ii=1:length(obj.subjs)
+                CondNamesSubj = obj.subjs(ii).GetConditionsActive();
+                for jj=1:length(CondNames)
+                    k = find(strcmp(['-- ', CondNames{jj}], CondNamesSubj));
+                    if ~isempty(k)
+                        CondNames{jj} = ['-- ', CondNames{jj}];
+                    end
+                end
+            end
+        end
+        
     end      % Public Set/Get methods
     
     

@@ -159,7 +159,7 @@ classdef TreeNodeClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function Display(obj, guiMain)
+        function DisplayGuiMain(obj, guiMain)
             
             hAxes = guiMain.axesData.handles.axes;
             if ~ishandles(hAxes)

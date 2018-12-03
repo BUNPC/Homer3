@@ -1,10 +1,7 @@
-function plotprobe = PlotProbe_Init(handles)
+function plotprobe = InitPlotProbe(handles)
 
 plotprobe = [];
 
-plotprobe.y = [];
-plotprobe.tHRF = [];
-plotprobe.SD = [];
 plotprobe.axScl = [1,1];
 plotprobe.plotname = [];
 plotprobe.tMarkInt = 5;

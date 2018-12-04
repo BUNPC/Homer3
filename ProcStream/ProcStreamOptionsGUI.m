@@ -181,46 +181,30 @@ set(hObject,'visible','on');
 
 
 
-
-% --------------------------------------------------------------------
-function ProcStreamOptionsGUI_DeleteFcn(hObject, eventdata, handles)
-global hmr
-
-if isempty(hmr)
-    return;
-end
-currElem = hmr.currElem;
-
-currElem.handles.ProcStreamOptionsGUI = [];
-hmr.currElem = currElem;
-
-
-
 % ----------------------------------------------------------
 function edit_Callback(hObject, eventdata, handles) 
 global hmr
 
-currElem = hmr.currElem;
+dataTree = hmr.dataTree;
 
 iFunc  = eventdata(1);
 iParam = eventdata(2);
 val = str2num( get(hObject,'string') ); % need to check if it is a valid string
 
-str = currElem.procElem.EditProcParam(iFunc, iParam, val);
+str = dataTree.currElem.procElem.EditProcParam(iFunc, iParam, val);
 set( hObject, 'string', str);
 
 % Check if we should apply the param edit to all nodes of the current nodes
 % level
 if ~hmr.guiMain.applyEditCurrNodeOnly
-    group = hmr.group;
-    if currElem.procType==2
-        for ii=1:length(group.subjs)
-            group.subjs(ii).EditProcParam(iFunc, iParam, val);
+    if dataTree.currElem.procType==2
+        for ii=1:length(dataTree.group.subjs)
+            dataTree.group.subjs(ii).EditProcParam(iFunc, iParam, val);
         end
-    elseif currElem.procType==3
-        for ii=1:length(group.subjs)
-            for jj=1:length(group.subjs(ii).runs)
-                group.subjs(ii).runs(jj).EditProcParam(iFunc, iParam, val);
+    elseif dataTree.currElem.procType==3
+        for ii=1:length(dataTree.group.subjs)
+            for jj=1:length(dataTree.group.subjs(ii).runs)
+                dataTree.group.subjs(ii).runs(jj).EditProcParam(iFunc, iParam, val);
             end
         end
     end
@@ -231,8 +215,8 @@ end
 function pushbutton_Callback(hObject, eventdata, handles) 
 global hmr
 
-currElem = hmr.currElem;
-procInput = currElem.procInput;
+dataTree = hmr.dataTree;
+procInput = dataTree.currElem.procInput;
 
 % parse output parameters
 foos = procInput.procFunc(eventdata).funcArgOut;
@@ -261,7 +245,7 @@ end
 
 eval( sprintf( '%s_result( %s );', procInput.procFunc(eventdata).funcName, sargin(2:end) ) );
 
-hmr.currElem.procInput = procInput;
+hmr.dataTree.currElem.procInput = procInput;
 
 
 

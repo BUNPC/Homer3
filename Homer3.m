@@ -91,8 +91,7 @@ hmr.handles.stimGUI = [];
 hmr.handles.proccessOpt = [];
 hmr.handles.plotProbe = [];
 hmr.files    = [];
-hmr.group    = [];
-hmr.currElem = [];
+hmr.dataTree = [];
 hmr.guiMain  = [];
 
 set(hObject, 'units', 'normalized', 'position',[.25, .20, .65, .75])
@@ -119,32 +118,22 @@ Homer3_Init(handles, {'zbuffer'});
 % Get file names 
 files = FindFiles(handles);
 
-% Load NIRS files to group
-[group, files] = LoadNIRS2Group(files);
+% Load date files into group tree object
+dataTree = DataTreeClass(files, handles, @listboxFiles_Callback);
 
-% Find and initialize the current processing element within the group
-currElem = InitCurrElem(handles, @listboxFiles_Callback);
-
-%%%% Load essential objects
-
-% Load the currently selected processing element from the group
-currElem = LoadCurrElem(currElem, group, files, 1, 1);
-
-% Within the current element, initialize the data to display
-guiMain   = InitGuiMain(handles, group, currElem);
+guiMain   = InitGuiMain(handles, dataTree);
 plotprobe = PlotProbeClass(handles);
 
 % If data set has no errors enable window gui objects
 Homer3_EnableDisableGUI(handles,'on');
 
-hmr.files    = files;
-hmr.group    = group;
-hmr.currElem = currElem;
-hmr.guiMain  = guiMain;
+hmr.files     = files;
+hmr.dataTree  = dataTree;
+hmr.guiMain   = guiMain;
 hmr.plotprobe = plotprobe;
 
 % Display data from currently selected processing element
-DisplayCurrElem(currElem, guiMain);
+hmr.dataTree.DisplayCurrElem(guiMain);
 
 
 
@@ -170,16 +159,11 @@ if isempty(hmr.handles)
     return;
 end
 
+
+delete(hmr.plotprobe);
+delete(hmr.dataTree);
 if ishandle(hmr.handles.stimGUI)
     delete(hmr.handles.stimGUI);
-end
-if ishandle(hmr.handles.plotProbe)
-    delete(hmr.handles.plotProbe);
-end
-if ~isempty(hmr.currElem)
-    if ishandle(hmr.currElem.handles.ProcStreamOptionsGUI)
-        delete(hmr.currElem.handles.ProcStreamOptionsGUI);
-    end
 end
 if ishandle(hmr.handles.this)
     delete(hmr.handles.this);
@@ -196,35 +180,33 @@ clear hmr;
 function uipanelProcessingType_SelectionChangeFcn(hObject, eventdata, handles)
 global hmr
 
-currElem = hmr.currElem;
-group    = hmr.group;
-files    = hmr.files;
-guiMain  = hmr.guiMain;
+dataTree  = hmr.dataTree;
+files     = hmr.files;
+guiMain   = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
-procTypeTag = get(hObject,'tag');
-switch(procTypeTag)
+procType = get(hObject,'tag');
+switch(procType)
     case 'radiobuttonProcTypeGroup'
-        currElem.procType = 1;
+        dataTree.currElem.procType = 1;
     case 'radiobuttonProcTypeSubj'
-        currElem.procType = 2;
+        dataTree.currElem.procType = 2;
     case 'radiobuttonProcTypeRun'
-        currElem.procType = 3;
+        dataTree.currElem.procType = 3;
 end
-currElem = LoadCurrElem(currElem, group, files);
-guiMain = UpdateAxesDataCondition(guiMain, group, currElem);
-DisplayCurrElem(currElem, guiMain);
-DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition); 
+dataTree.LoadCurrElem(files);
+guiMain = UpdateAxesDataCondition(guiMain, dataTree);
+dataTree.DisplayCurrElem(guiMain);
+dataTree.DisplayCurrElem(plotprobe, guiMain); 
+dataTree.UpdateCurrElemProcStreamOptionsGUI();
 
-currElem = UpdateCurrElemProcStreamOptionsGUI(currElem);
 if ishandles(hmr.handles.stimGUI)
-    group.SetConditions();
+    dataTree.group.SetConditions();
     hmr.handles.stimGUI = launchStimGUI(hmr.handles.this, ...
-        hmr.handles.stimGUI, ...
-        currElem, ...
-        group.CondNames);
+                                        hmr.handles.stimGUI, ...
+                                        dataTree.currElem, ...
+                                        dataTree.group.CondNames);
 end
-hmr.currElem = currElem;
 
 
 
@@ -252,26 +234,21 @@ if isempty(idx==0)
     return;
 end
 
-group = hmr.group;
-currElem = hmr.currElem;
+dataTree = hmr.dataTree;
 guiMain = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
-currElem = LoadCurrElem(currElem, group, files);
-guiMain = UpdateAxesDataCondition(guiMain, group, currElem);
+dataTree.LoadCurrElem(files);
+guiMain = UpdateAxesDataCondition(guiMain, dataTree);
 if ishandles(hmr.handles.stimGUI)
     hmr.handles.stimGUI = launchStimGUI(hmr.handles.this, ...
                                         hmr.handles.stimGUI, ...
                                         currElem, ...
                                         group.GetConditions());
 end
-DisplayCurrElem(currElem, guiMain);
-DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition); 
-
-currElem = UpdateCurrElemProcStreamOptionsGUI(currElem);
-
-hmr.currElem = currElem;
-hmr.group = group;
+dataTree.DisplayCurrElem(guiMain);
+dataTree.DisplayCurrElem(plotprobe, guiMain); 
+dataTree.UpdateCurrElemProcStreamOptionsGUI();
 
 
 
@@ -279,17 +256,15 @@ hmr.group = group;
 function pushbuttonCalcProcStream_Callback(hObject, eventdata, handles)
 global hmr
 
-currElem = hmr.currElem;
+dataTree = hmr.dataTree;
 guiMain = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
-currElem = CalcCurrElem(currElem);
-currElem.procElem.Save();
+dataTree.CalcCurrElem();
+dataTree.SaveCurrElem();
 
-DisplayCurrElem(currElem, guiMain);
-DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition); 
-
-hmr.currElem = currElem;
+dataTree.DisplayCurrElem(guiMain);
+dataTree.DisplayCurrElem(plotprobe, guiMain); 
 
 
 
@@ -308,13 +283,13 @@ function listboxFilesErr_Callback(hObject, eventdata, handles)
 function uipanelPlot_SelectionChangeFcn(hObject, eventdata, handles)
 global hmr
 
-guiMain = hmr.guiMain;
-currElem = hmr.currElem;
+dataTree  = hmr.dataTree;
+guiMain   = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
 guiMain = GetAxesDataType(guiMain);
-DisplayCurrElem(currElem, guiMain);
-DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition);
+dataTree.DisplayCurrElem(guiMain);
+dataTree.DisplayCurrElem(plotprobe, guiMain);
 
 datatype   = guiMain.datatype;
 buttonVals = guiMain.buttonVals;
@@ -334,7 +309,6 @@ elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF || datatyp
     set(guiMain.handles.listboxPlotConc, 'visible','on');
     
 end
-
 hmr.guiMain = guiMain;
 
 
@@ -343,13 +317,13 @@ hmr.guiMain = guiMain;
 function checkboxPlotHRF_Callback(hObject, eventdata, handles)
 global hmr
 
+dataTree  = hmr.dataTree;
 guiMain   = hmr.guiMain;
-currElem  = hmr.currElem;
 plotprobe = hmr.plotprobe;
 
 guiMain = GetAxesDataType(guiMain);
-DisplayCurrElem(currElem, guiMain);
-DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition); 
+dataTree.DisplayCurrElem(guiMain);
+dataTree.DisplayCurrElem(plotprobe, guiMain);
 
 hmr.guiMain = guiMain;
 hmr.plotprobe = plotprobe;
@@ -373,17 +347,16 @@ end
 function axesSDG_ButtonDownFcn(hObject, eventdata, handles)
 global hmr
 
-currElem = hmr.currElem;
+dataTree = hmr.dataTree;
 guiMain = hmr.guiMain;
 
 % Transfer the channels selection to guiMain
-guiMain = SetAxesDataCh(guiMain, currElem);
+guiMain = SetAxesDataCh(guiMain, dataTree.currElem);
 
 % Update the displays of the guiMain and axesSDG axes
-DisplayCurrElem(currElem, guiMain);
+dataTree.DisplayCurrElem(guiMain);
 
 % the the modified objects
-hmr.currElem = currElem;
 hmr.guiMain = guiMain;
 
 
@@ -393,15 +366,15 @@ hmr.guiMain = guiMain;
 function popupmenuConditions_Callback(hObject, eventdata, handles)
 global hmr
 
-currElem = hmr.currElem;
+dataTree = hmr.dataTree;
 guiMain = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
 guiMain = GetAxesDataCondition(guiMain);
 
 % Update the display of the guiMain axes
-DisplayCurrElem(currElem, guiMain);
-DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition); 
+dataTree.DisplayCurrElem(guiMain);
+dataTree.DisplayCurrElem(plotprobe, guiMain);
 
 % the the modified objects
 hmr.guiMain = guiMain;
@@ -414,15 +387,15 @@ hmr.guiMain = guiMain;
 function listboxPlotWavelength_Callback(hObject, eventdata, handles)
 global hmr
 
-currElem = hmr.currElem;
-guiMain = hmr.guiMain;
+dataTree  = hmr.dataTree;
+guiMain   = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
 guiMain = GetAxesDataWl(guiMain, currElem.procElem.SD.Lambda);
 
 % Update the displays of the guiMain and axesSDG axes
-DisplayCurrElem(currElem, guiMain);
-DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition); 
+dataTree.DisplayCurrElem(guiMain);
+dataTree.DisplayCurrElem(plotprobe, guiMain);
 
 % the the modified objects
 hmr.guiMain = guiMain;
@@ -435,16 +408,16 @@ hmr.guiMain = guiMain;
 function listboxPlotConc_Callback(hObject, eventdata, handles)
 global hmr
 
-currElem = hmr.currElem;
-guiMain = hmr.guiMain;
+dataTree  = hmr.dataTree;
+guiMain   = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
 % Transfer the channels selection to guiMain
 guiMain = GetAxesDataHbType(guiMain);
 
 % Update the displays of the guiMain and axesSDG axes
-DisplayCurrElem(currElem, guiMain);
-DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition); 
+dataTree.DisplayCurrElem(guiMain);
+dataTree.DisplayCurrElem(plotprobe, guiMain);
 
 % the the modified objects
 hmr.guiMain = guiMain;
@@ -488,14 +461,13 @@ Homer3_DeleteFcn(hGui,eventdata,handles);
 function menuItemReset_Callback(hObject, eventdata, handles)
 global hmr
 
-currElem = hmr.currElem;
+dataTree = hmr.dataTree;
 guiMain  = hmr.guiMain;
 
-currElem.procElem.Reset();
-currElem.procElem.Save();
-currElem.procElem.DisplayGuiMain(guiMain);
+dataTree.currElem.procElem.Reset();
+dataTree.currElem.procElem.Save();
+dataTree.currElem.procElem.DisplayGuiMain(guiMain);
 
-hmr.currElem = currElem;
 
 
 % --------------------------------------------------------------------
@@ -519,7 +491,7 @@ end
 function pushbuttonProcStreamOptionsEdit_Callback(hObject, eventdata, handles)
 global hmr
 
-currElem = hmr.currElem;
+dataTree  = hmr.dataTree;
 
 if get(hObject, 'value')
     action = 'open';
@@ -528,10 +500,9 @@ else
 end
 
 % Reload current element selection
-currElem = OpenCurrElemProcStreamOptionsGUI(currElem, action);
+dataTree.currElem = OpenCurrElemProcStreamOptionsGUI(dataTree.currElem, action);
 
-hmr.handles.proccessOpt = currElem.handles.ProcStreamOptionsGUI;
-hmr.currElem = currElem;
+hmr.handles.proccessOpt = dataTree.currElem.handles.ProcStreamOptionsGUI;
 
 
 
@@ -540,12 +511,11 @@ function menuItemLaunchStimGUI_Callback(hObject, eventdata, handles)
 global hmr
 
 group = hmr.group;
-currElem = hmr.currElem;
 
 hmr.handles.stimGUI = launchStimGUI(hmr.handles.this, ...
-    hmr.handles.stimGUI, ...
-    currElem, ...
-    group.CondNames);
+                                    hmr.handles.stimGUI, ...
+                                    dataTree.currElem, ...
+                                    dataTree.group.CondNames);
 
 
 
@@ -564,7 +534,7 @@ set(hStimGUI, 'position',[.01, .05, .60, .80]);
 function pushbuttonSave_Callback(hObject, eventdata, handles)
 global hmr
 
-hmr.currElem.procElem.Save();
+hmr.dataTree.currElem.procElem.Save();
 
 
 
@@ -573,7 +543,7 @@ hmr.currElem.procElem.Save();
 function menuItemViewHRFStdErr_Callback(hObject, eventdata, handles)
 global hmr
 
-currElem = hmr.currElem;
+dataTree = hmr.dataTree;
 guiMain = hmr.guiMain;
 
 if strcmp(get(hObject, 'checked'), 'on')
@@ -588,7 +558,7 @@ elseif strcmp(get(hObject, 'checked'), 'off')
     guiMain.showStdErr = false;
 end
 
-DisplayCurrElem(currElem, guiMain);
+DisplayCurrElem(dataTree.currElem, guiMain);
 
 hmr.guiMain = guiMain;
 
@@ -598,13 +568,13 @@ hmr.guiMain = guiMain;
 function checkboxPlotProbe_Callback(hObject, eventdata, handles)
 global hmr
 
-currElem = hmr.currElem;
-guiMain = hmr.guiMain;
+dataTree  = hmr.dataTree;
+guiMain   = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
 guiMain = GetAxesDataType(guiMain);
 plotprobe.active = get(hObject, 'value');
-DisplayCurrElem(currElem, plotprobe, guiMain.datatype, guiMain.buttonVals, guiMain.condition); 
+dataTree.DisplayCurrElem(plotprobe, guiMain);
 
 hmr.guiMain   = guiMain;
 

@@ -62,7 +62,7 @@ set(handles.uipanelSubj, 'parent',htabSubj, 'position',[0, 0, 1, 1]);
 set(handles.uipanelGroup, 'parent',htabGroup, 'position',[0, 0, 1, 1]);
 
 htab = -1;
-switch(hmr.currElem.procElem.type)
+switch(hmr.dataTree.currElem.procElem.type)
     case 'run'
         htab = htabRun;
         iPanel = iRunPanel;
@@ -76,10 +76,10 @@ end
 set(htabgroup,'SelectedTab',htab);
 
 % Assign to procElem by value instead of reference - we don't 
-% want to change anything in hmr.currElem in this GUI
-procElem{iRunPanel} = hmr.group(1).subjs(1).runs(1).copy();
-procElem{iSubjPanel} = hmr.group(1).subjs(1).copy();
-procElem{iGroupPanel} = hmr.group(1).copy();
+% want to change anything in hmr.dataTree.currElem in this GUI
+procElem{iRunPanel} = hmr.dataTree.group(1).subjs(1).runs(1).copy();
+procElem{iSubjPanel} = hmr.dataTree.group(1).subjs(1).copy();
+procElem{iGroupPanel} = hmr.dataTree.group(1).copy();
 
 setappdata(hObject,'this',struct('iReg',{{[],[],[]}}, ...    % registry indices of the selected procStream functions (as shown in listboxPsFunc lisbox)
                                  'iRunPanel',iRunPanel, ...
@@ -496,7 +496,7 @@ end
 if ch==1
     global hmr
 
-    group = hmr.group;
+    group = hmr.dataTree.group;
     
     group.OverwriteProcInput(procElem{iRunPanel}.type, procElem{iRunPanel}.procInput);
     group.OverwriteProcInput(procElem{iSubjPanel}.type, procElem{iSubjPanel}.procInput);

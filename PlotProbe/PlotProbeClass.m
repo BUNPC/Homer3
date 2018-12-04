@@ -66,6 +66,13 @@ classdef PlotProbeClass < handle
         
 
         % --------------------------------------------------------------
+        function delete(obj)
+            if ishandle(obj.objs.Figure.h)
+                delete(obj.objs.Figure.h);
+            end
+        end
+        
+        % --------------------------------------------------------------
         function Reset(obj)
             obj.axScl = [1,1];
             obj.plotname = '';

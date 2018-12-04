@@ -15,11 +15,10 @@ currElem = struct(...
     'iSubj',0, ...
     'iRun',0, ...
     'procType',0, ...
-    'procElem', [] ...
+    'procElem',[] ...
 );
 
-if exist('handles','var')
-
+if exist('handles','var') && ~isempty(handles)
     currElem.handles.listboxFiles = handles.listboxFiles;
     set(currElem.handles.listboxFiles,'enable','off');
     currElem.iFile = get(currElem.handles.listboxFiles,'value');
@@ -40,10 +39,9 @@ if exist('handles','var')
     set(currElem.handles.radiobuttonProcTypeRun,'enable','off');
     
     currElem = getProcType(currElem);
-
 end
 
-if exist('funcptr','var')
+if exist('funcptr','var') && ~isempty(funcptr)
    currElem.funcPtrListboxFiles = funcptr;
 end
 

@@ -328,11 +328,10 @@ classdef DataFilesClass < handle
             delete(hp);
             
         end
-        
-    
+            
         % ------------------------------------------------------------
         function MapFiles2Group(obj, group)
-            
+            for kk=1:length(obj.files)
             % for ii=1:length(group.subjs)
             % for jj=1:length(subjs(ii).runs)
             % obj.files(ii).map2group.iSubj = ii;
@@ -343,8 +342,21 @@ classdef DataFilesClass < handle
             % end
             % end
             % end
-            
+            end
         end
+
+
+        % ----------------------------------------------------------
+        function iFile = MapGroup2File(iSubj, iRun)
+            iFile = 0;
+            for ii=1:length(obj.files)
+                if obj.files(ii).map2group.iSubj==iSubj && obj.files(ii).map2group.iRun==iRun
+                    iFile = ii;
+                    break;
+                end
+            end 
+        end
+
         
     end
     

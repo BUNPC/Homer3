@@ -16,7 +16,7 @@ end
 % Check files data set for errors. If there are no valid
 % nirs files don't attempt to load them.
 files = -1;
-while ~isstruct(files) 
+while ~isobject(files) 
     switch fmt
         case {'snirf','.snirf'}
             files = SnirfFilesClass(handles).files;

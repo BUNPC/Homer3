@@ -20,6 +20,10 @@ classdef NirsFilesClass < DataFilesClass
         % -----------------------------------------------------------------------------------
         function GetDataSet(obj)
             
+            if exist(obj.pathnm, 'dir')~=7
+                error(sprintf('Invalid subject folder: ''%s''', obj.pathnm));
+            end
+
             cd(obj.pathnm);
             currdir = obj.pathnm;
             

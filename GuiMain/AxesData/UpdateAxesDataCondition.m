@@ -1,8 +1,7 @@
-function guiMain = UpdateAxesDataCondition(guiMain, group, currElem)
+function guiMain = UpdateAxesDataCondition(guiMain, dataTree)
 
-CondNames = group.GetConditions();
-
-CondNamesCurrElem = currElem.procElem.GetConditionsActive();
+CondNames = dataTree.group.GetConditions();
+CondNamesCurrElem = dataTree.currElem.procElem.GetConditionsActive();
 for jj=1:length(CondNames)
     k = find(strcmp(['-- ', CondNames{jj}], CondNamesCurrElem));
     if ~isempty(k)

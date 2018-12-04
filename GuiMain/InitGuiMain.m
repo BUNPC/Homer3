@@ -1,4 +1,4 @@
-function guiMain = InitGuiMain(handles, group, currElem)
+function guiMain = InitGuiMain(handles, dataTree)
 
 axesSDG = InitAxesSDG(handles);
 axesData = InitAxesData(handles, axesSDG);
@@ -39,12 +39,12 @@ guiMain = struct(...
                      'applyEditCurrNodeOnly', true ...
                  );
 
-guiMain = UpdateAxesDataCondition(guiMain, group, currElem);
-setWl(guiMain, currElem.procElem.GetWls());
+guiMain = UpdateAxesDataCondition(guiMain, dataTree);
+setWl(guiMain, dataTree.currElem.procElem.GetWls());
 
 guiMain.datatype  = getDatatype(guiMain);
 guiMain.condition = getCondition(guiMain);
-guiMain.wl        = getWl(guiMain, currElem.procElem.GetWls());
+guiMain.wl        = getWl(guiMain, dataTree.currElem.procElem.GetWls());
 guiMain.hbType    = getHbType(guiMain);
 guiMain.ch        = GetAxesSDGSelection(guiMain.axesSDG);
 if strcmp(get(handles.menuItemViewHRFStdErr, 'checked'), 'on');

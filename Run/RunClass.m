@@ -304,7 +304,7 @@ classdef RunClass < TreeNodeClass
             %%% patches because stim legend doesn't work otherwise.
             if ~isempty(obj.GetStims())
                 t = obj.acquired.GetTime();
-                s = enStimRejection(t, obj.acquired.GetStims(), [], obj.tIncMan, [0 0]);
+                s = hmrStimRejection(t, obj.acquired.GetStims(), [], obj.tIncMan, [0 0]);
                 obj.acquired.SetStims_MatInput(s, t, obj.CondNames);
                 s = obj.acquired.GetStims();
                 

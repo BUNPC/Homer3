@@ -469,7 +469,7 @@ classdef SnirfClass < AcqDataClass
             SD.SrcPos   = obj.sd.GetSrcPos();
             SD.DetPos   = obj.sd.GetDetPos();
             SD.MeasList = obj.data(idx).GetMeasList();
-            SD.MeasListAct = ones(1,size(SD.MeasList,1));
+            SD.MeasListAct = ones(size(SD.MeasList,1),1);
         end
         
         % ----------------------------------------------------------------------------------

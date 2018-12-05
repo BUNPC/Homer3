@@ -82,7 +82,8 @@
 %
 % LOG:
 
-function [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, yR] = hmrDeconvHRF_DriftSS(y, s, t, SD, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+function [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, yR] = ...
+    hmrDeconvHRF_DriftSS(y, s, t, SD, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 
 
 dt = t(2)-t(1);

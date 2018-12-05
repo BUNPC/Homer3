@@ -1,12 +1,56 @@
-% TO DO
-% working on Conc, all data, or wavelengths
-% check nSV
-function [yc, svs, nSV] = hmrPCAFilter( y, SD, nSV )
+% [yc, svs, nSV] = hmrPCAFilter( y, SD, tInc, nSV )
+%
+% UI NAME:
+% PCA_Filter
+%
+% [yc, svs, nSV] = hmrPCAFilter( y, SD, tInc, nSV )
+% Perform a PCA filter on the data matrix y. 
+%
+% INPUT:
+% y: This is the data matrix where rows are time points. If y is wavelength
+%    data, then the columns are channels as described in SD.MeasList. If
+%    y is concentration data, then the third dimension is channels and the
+%    second dimension indicates HbO and HbR.
+% SD: This is the source detector structure.
+% tInc: This is a vector of length number of time points and is 1 to
+%    indicate that a time point is included in the analysis and 0 if it is to
+%    be excluded. This is useful for ignoring periods of time with strong
+%    artifacts.
+% nSV: This is the number of principle components to remove filter from the
+%    data. This can be an integer to indicate the number of components to
+%    remove. Or it can be a fraction less than 1 to indicate that enough
+%    components should be removed to remove up to that fraction of the
+%    variance in the data. If nSV is a single number it is applied to all
+%    channels of data. This is useful for filtering motion artifacts. If it is
+%    2 or more numbers, then it is applied to each wavelength or concentration
+%    separately using the corresponding number.
+%
+%
+% OUTPUT:
+% yc: The filtered data matrix.
+% svs: The singuler value spectrum from the PCA.
+% nSV: This is the number of components filtered from the data.
+%
+
+function [yc, svs, nSV] = hmrPCAFilter( y, SD, tInc, nSV )
 
 if ~exist('nSV')
-    disp('USAGE: [yc,svs] = hmrPCAFilter( y, SD, nSV )');
+    disp('USAGE: [yc,svs,nSV] = hmrPCAFilter( y, SD, tInc, nSV )');
+    yc = [];
+    svs = [];
+    nSV = [];
     return
 end
+if any(isinf(y(:)))
+    disp('WARNING: [yc,svs,nSV] = hmrPCAFilter( y, SD, tInc, nSV )');
+    disp('      The data matrix y can not have any Inf numbers.');
+    yc = [];
+    svs = [];
+    nSV = [];
+    return
+end
+
+lstInc = find(tInc==1);
 
 ml = SD.MeasList;
 nMeas = size(ml,1);
@@ -26,7 +70,7 @@ if ndim==3
     % PCA on Concentration
     lstAct = find(SD.MeasListAct==1);
     lstAct = lstAct( find(ml(lstAct,4)==1) );
-    yo = y(:,:,lstAct);
+    yo = y(lstInc,:,lstAct);
     yc = y;
     for iConc = 1:2
         y = squeeze(yo(:,iConc,:));
@@ -48,7 +92,7 @@ if ndim==3
             ev = diag(ev);
         end
         lst = 1:nSV(iConc);
-        yc(:,iConc,lstAct) = y - u(:,lst)*s(lst,lst)*v(:,lst)';
+        yc(lstInc,iConc,lstAct) = y - u(:,lst)*s(lst,lst)*v(:,lst)';
     end
     yc(:,3,:) = yc(:,1,:) + yc(:,2,:);
     
@@ -59,7 +103,7 @@ else
         % apply PCA to all data
         lstAct = find(SD.MeasListAct==1);
         yc = y;
-        yo = y(:,lstAct);
+        yo = y(lstInc,lstAct);
         y = squeeze(yo);
 
         c = y.' * y;
@@ -80,7 +124,7 @@ else
             ev(1:nSV) = 1;
             ev = diag(ev);
         end        
-        yc(:,lstAct) = yo - y*V*ev*V';
+        yc(lstInc,lstAct) = yo - y*V*ev*V';
 
     elseif length(nSV)==2
         % apply to each wavelength individually
@@ -88,7 +132,7 @@ else
         yc = y;
         for iW=1:2
             lstAct = find(SD.MeasListAct==1 & SD.MeasList(:,4)==iW);
-            yo = y(:,lstAct);
+            yo = y(lstInc,lstAct);
             yo = squeeze(yo);
             
             c = yo.' * yo;
@@ -109,7 +153,7 @@ else
                 ev(1:nSV(iW)) = 1;
                 ev = diag(ev);
             end
-            yc(:,lstAct) = yo - yo*V*ev*V';
+            yc(lstInc,lstAct) = yo - yo*V*ev*V';
         end
 
     else

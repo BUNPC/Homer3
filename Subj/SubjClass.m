@@ -162,9 +162,14 @@ classdef SubjClass < TreeNodeClass
             
             % Save acquired data
             if options_s.acquired
-                for ii=1:length(obj.runs)
+                h = waitbar(0, sprintf('Saving subject %s', obj.name));
+                pause(1);
+                n = length(obj.runs);
+                for ii=1:n
                     obj.runs(ii).Save('acquired');
+                    waitbar(ii/n, h, sprintf('Saving run %d of %d of subject %s', ii, n, obj.name))
                 end
+                close(h);
             end
         end
         

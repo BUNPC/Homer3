@@ -26,7 +26,7 @@ classdef SnirfFilesClass < DataFilesClass
             % Init output parameters
             % Get .nirs file names from current directory. If there are none
             % check sub-directories.
-            obj.findDataSet('snir5');
+            obj.findDataSet('snirf');
             
             files0 = obj.files;
             
@@ -41,13 +41,13 @@ classdef SnirfFilesClass < DataFilesClass
                 obj.files = mydir('');
                 obj.filesErr = files0;
                 if isempty( obj.files )
-                    fprintf('No loadable .snir5 files found. Choose another directory\n');
+                    fprintf('No loadable .snirf files found. Choose another directory\n');
                     
                     % This pause is a workaround for a matlab bug in version
                     % 7.xx for Linux, where uigetfile/uigetdir won't block unless there's
                     % a breakpoint.
                     pause(.5);
-                    obj.pathnm = uigetdir(currdir,'No loadable .snir5 files found. Choose another directory' );
+                    obj.pathnm = uigetdir(currdir,'No loadable .snirf files found. Choose another directory' );
                     if obj.pathnm~=0
                         obj.GetDataSet();
                     end
@@ -167,14 +167,14 @@ classdef SnirfFilesClass < DataFilesClass
             end
             
             snirf = repmat(SnirfClass(), nFiles, 1);
-            hwait = waitbar(0,sprintf('Checking .snir5 format consistency across files: processing 1 of %d',nFiles) );
+            hwait = waitbar(0,sprintf('Checking .snirf format consistency across files: processing 1 of %d',nFiles) );
             for iF=1:nFiles
                 
                 if obj.files(iF).isdir
                     continue;
                 end
                 
-                waitbar(iF/nFiles,hwait,sprintf('Checking .snir5 format consistency across files: processing %d of %d',iF,nFiles));                
+                waitbar(iF/nFiles,hwait,sprintf('Checking .snirf format consistency across files: processing %d of %d',iF,nFiles));                
                 snirf(iF).Load( obj.files(iF).name );
 
             end                

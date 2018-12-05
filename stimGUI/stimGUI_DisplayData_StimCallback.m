@@ -1,7 +1,9 @@
 function stimGUI_DisplayData_StimCallback( )
-global stim
+global hmr
 
-t = stim.currElem.procElem.GetTime();
+currElem = hmr.dataTree.currElem;
+
+t = currElem.procElem.GetTime();
 
 point1 = get(gca,'CurrentPoint');    % button down detected
 finalRect = rbbox;                   % return figure units

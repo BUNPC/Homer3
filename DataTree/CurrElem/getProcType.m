@@ -1,7 +1,7 @@
 function currElem = getProcType(currElem)
 
-if ~ishandle(currElem.handles.radiobuttonProcTypeGroup)
-    currElem.procType = 1;
+if ~ishandles(currElem.handles.radiobuttonProcTypeGroup)
+    currElem.procType = 3;
     return;
 end
 

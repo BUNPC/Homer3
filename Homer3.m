@@ -119,10 +119,10 @@ Homer3_Init(handles, {'zbuffer'});
 files = FindFiles(handles);
 
 % Load date files into group tree object
-dataTree = DataTreeClass(files, handles, @listboxFiles_Callback);
-
+dataTree  = DataTreeClass(files, handles, @listboxFiles_Callback);
 guiMain   = InitGuiMain(handles, dataTree);
 plotprobe = PlotProbeClass(handles);
+stimGui   = StimGuiClass(dataTree);
 
 % If data set has no errors enable window gui objects
 Homer3_EnableDisableGUI(handles,'on');
@@ -131,6 +131,7 @@ hmr.files     = files;
 hmr.dataTree  = dataTree;
 hmr.guiMain   = guiMain;
 hmr.plotprobe = plotprobe;
+hmr.stimGui   = stimGui;
 
 % Display data from currently selected processing element
 hmr.dataTree.DisplayCurrElem(guiMain);
@@ -159,12 +160,9 @@ if isempty(hmr.handles)
     return;
 end
 
-
+delete(hmr.stimGui);
 delete(hmr.plotprobe);
 delete(hmr.dataTree);
-if ishandle(hmr.handles.stimGUI)
-    delete(hmr.handles.stimGUI);
-end
 if ishandle(hmr.handles.this)
     delete(hmr.handles.this);
 end
@@ -200,13 +198,8 @@ dataTree.DisplayCurrElem(guiMain);
 dataTree.DisplayCurrElem(plotprobe, guiMain); 
 dataTree.UpdateCurrElemProcStreamOptionsGUI();
 
-if ishandles(hmr.handles.stimGUI)
-    dataTree.group.SetConditions();
-    hmr.handles.stimGUI = launchStimGUI(hmr.handles.this, ...
-                                        hmr.handles.stimGUI, ...
-                                        dataTree.currElem, ...
-                                        dataTree.group.CondNames);
-end
+hmr.stimGui.Update();
+
 
 
 
@@ -240,12 +233,8 @@ plotprobe = hmr.plotprobe;
 
 dataTree.LoadCurrElem(files);
 guiMain = UpdateAxesDataCondition(guiMain, dataTree);
-if ishandles(hmr.handles.stimGUI)
-    hmr.handles.stimGUI = launchStimGUI(hmr.handles.this, ...
-                                        hmr.handles.stimGUI, ...
-                                        currElem, ...
-                                        group.GetConditions());
-end
+hmr.stimGui.Update();
+
 dataTree.DisplayCurrElem(guiMain);
 dataTree.DisplayCurrElem(plotprobe, guiMain); 
 dataTree.UpdateCurrElemProcStreamOptionsGUI();
@@ -510,24 +499,7 @@ hmr.handles.proccessOpt = dataTree.currElem.handles.ProcStreamOptionsGUI;
 function menuItemLaunchStimGUI_Callback(hObject, eventdata, handles)
 global hmr
 
-group = hmr.group;
-
-hmr.handles.stimGUI = launchStimGUI(hmr.handles.this, ...
-                                    hmr.handles.stimGUI, ...
-                                    dataTree.currElem, ...
-                                    dataTree.group.CondNames);
-
-
-
-% -------------------------------------------------------------------
-function hStimGUI = launchStimGUI(hObject, hStimGUI, currElem, CondNamesGroup)
-
-if ishandles(hStimGUI)
-    delete(hStimGUI);
-end
-hStimGUI = stimGUI(currElem, CondNamesGroup, hObject);
-set(hStimGUI, 'units','normalized');
-set(hStimGUI, 'position',[.01, .05, .60, .80]);
+hmr.stimGui.Launch();
 
 
 % --------------------------------------------------------------------
@@ -535,8 +507,6 @@ function pushbuttonSave_Callback(hObject, eventdata, handles)
 global hmr
 
 hmr.dataTree.currElem.procElem.Save();
-
-
 
 
 % --------------------------------------------------------------------
@@ -558,7 +528,7 @@ elseif strcmp(get(hObject, 'checked'), 'off')
     guiMain.showStdErr = false;
 end
 
-DisplayCurrElem(dataTree.currElem, guiMain);
+dataTree.DisplayCurrElem(guiMain);
 
 hmr.guiMain = guiMain;
 

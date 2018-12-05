@@ -16,10 +16,10 @@ for ii=1:length(nirsfiles)
     end
     
     [pname,fname,ext] = fileparts([nirsfiles(ii).pathfull, '/', nirsfiles(ii).filename]);
-    fprintf('Converting %s to %s\n', [pname,'/',fname,ext], [pname,'/',fname,'.snir5']);    
+    fprintf('Converting %s to %s\n', [pname,'/',fname,ext], [pname,'/',fname,'.snirf']);    
     nirs = load([pname,'/',fname,ext],'-mat');
     snirf(ii) = SnirfClass(nirs);    
-    snirf(ii).Save([pname,'/',fname,'.snir5']);
+    snirf(ii).Save([pname,'/',fname,'.snirf']);
     if replace
         delete([pname,'/',fname,ext]);
     end

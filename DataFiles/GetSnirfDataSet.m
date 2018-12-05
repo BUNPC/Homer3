@@ -1,11 +1,11 @@
 %
 % [files, filesErr, pathnm, listboxFiles, listboxFiles2] = GetSnirfDataSet(varargin)
 %
-% Find and return a set of valid .snir5 files in the current or user-selected 
+% Find and return a set of valid .snirf files in the current or user-selected 
 % directory and sets handles of listboxFiles and listboxFilesErr to the names 
 % of valid and invalid .nirs files. 
 % 
-% If there are no .snir5 files in the current directory, then this function 
+% If there are no .snirf files in the current directory, then this function 
 % searches all the subdirectories for .nirs files and prepends the subdir 
 % name to the name of the files entry.
 % 
@@ -55,7 +55,7 @@ currdir = pathnm;
 % Init output parameters
 % Get .nirs file names from current directory. If there are none
 % check sub-directories.
-files = findNIRSDataSet('.snir5');
+files = findNIRSDataSet('.snirf');
 filesErr = struct([]);
 pathnm = [];
 listboxFiles = cell(length(files),1);

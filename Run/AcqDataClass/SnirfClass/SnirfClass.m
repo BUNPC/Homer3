@@ -3,7 +3,7 @@ classdef SnirfClass < AcqDataClass
     %
     % Example usage:
     %
-    %     snirf = SnirfClass('./Simple_Probe1_run04.snir5');
+    %     snirf = SnirfClass('./Simple_Probe1_run04.snirf');
     %     t = snirf.GetTime();
     %     s = snirf.GetStims();
     %     

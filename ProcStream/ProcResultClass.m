@@ -13,6 +13,7 @@ classdef ProcResultClass < handle
         nTrials;
         ch;
         grpAvgPass;
+        misc;
     end
     
     methods
@@ -31,6 +32,7 @@ classdef ProcResultClass < handle
             obj.nTrials = [];
             obj.ch = [];
             obj.grpAvgPass = [];
+            obj.misc = [];
         end
         
         

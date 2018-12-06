@@ -212,38 +212,43 @@ end
 
 
 % ----------------------------------------------------------
-function pushbutton_Callback(hObject, eventdata, handles) 
+function pushbuttonProc_Callback(hObject, eventdata, handles) 
 global hmr
 
 dataTree = hmr.dataTree;
-procInput = dataTree.currElem.procInput;
+procInput = dataTree.currElem.procElem.procInput;
+procResult = dataTree.currElem.procElem.procResult;
 
 % parse output parameters
-foos = procInput.procFunc(eventdata).funcArgOut;
+sargout = procInput.procFunc(eventdata).funcArgOut;
 
 % remove '[', ']', and ','
-for ii=1:length(foos)
-    if foos(ii)=='[' | foos(ii)==']' | foos(ii)==',' | foos(ii)=='#'
-        foos(ii) = ' ';
+for ii=1:length(sargout)
+    if sargout(ii)=='[' | sargout(ii)==']' | sargout(ii)==',' | sargout(ii)=='#'
+        sargout(ii) = ' ';
     end
 end
+sargout_arr = str2cell(sargout, ' ');
 
 % get parameters for Output to procResult
 sargin = '';
-lst = strfind(foos,' ');
-lst = [0 lst length(foos)+1];
-flag = 1;
-for ii=1:length(lst)-1
-    foo2 = foos(lst(ii)+1:lst(ii+1)-1);
-    idx = strfind(foo2,'foo');
-    if (isempty(idx) || idx>1) && ~isempty(foo2)
-        sargin = sprintf( '%s, hmr.procResult.%s',sargin,foo2);
-    elseif idx==1
-        sargin = sprintf( '%s, []',sargin);
+for ii=1:length(sargout_arr)
+    if isempty(sargin)
+        if isproperty(procResult, sargout_arr{ii})
+            sargin = sprintf('procResult.%s', sargout_arr{ii});
+        elseif isproperty(procResult.misc, sargout_arr{ii})
+            sargin = sprintf('procResult.misc.%s', sargout_arr{ii});
+        end
+    else
+        if isproperty(procResult, sargout_arr{ii})
+            sargin = sprintf('%s, procResult.%s', sargin, sargout_arr{ii});
+        elseif isproperty(procResult.misc, sargout_arr{ii})
+            sargin = sprintf('%s, procResult.misc.%s', sargin, sargout_arr{ii});
+        end
     end
 end
 
-eval( sprintf( '%s_result( %s );', procInput.procFunc(eventdata).funcName, sargin(2:end) ) );
+eval( sprintf( '%s_result( %s );', procInput.procFunc(eventdata).funcName, sargin ) );
 
 hmr.dataTree.currElem.procInput = procInput;
 

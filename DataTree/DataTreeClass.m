@@ -180,12 +180,29 @@ classdef DataTreeClass < handle
                 datatype = varargin{2}.datatype;
                 buttonVals = varargin{2}.buttonVals;
                 condition = varargin{2}.condition;
+            else
+                datatype = canvas.datatype;
+                buttonVals = canvas.buttonVals;
+                condition = canvas.condition;
+            end
+
+            % Display current elem unless the data is undefined for current
+            % elem, for instance raw data is undefined for group and
+            % subject. In that case, display current run.
+            procElem = obj.currElem.procElem;
+            if obj.currElem.procType ~= 3
+                if ~ismember(datatype, [buttonVals.OD_HRF, buttonVals.OD_HRF_PLOT_PROBE, buttonVals.CONC_HRF, buttonVals.CONC_HRF_PLOT_PROBE])
+                    iSubj = obj.currElem.iSubj;
+                    iRun = obj.currElem.iRun;
+                    if iRun==0, iRun=1; end
+                    procElem = obj.group.subjs(iSubj).runs(iRun);                    
+                end
             end
             
             if strcmp(canvas.name, 'guiMain')
-                obj.currElem.procElem.DisplayGuiMain(canvas);
+                procElem.DisplayGuiMain(canvas);
             elseif strcmp(canvas.name, 'plotprobe')
-                obj.currElem.procElem.DisplayPlotProbe(canvas, datatype, buttonVals, condition);
+                procElem.DisplayPlotProbe(canvas, datatype, buttonVals, condition);
             end
         end
 
@@ -224,7 +241,7 @@ classdef DataTreeClass < handle
                 elseif iSubj>0 && iRun==0
                     
                     set(obj.currElem.handles.radiobuttonProcTypeSubj,'enable','on');
-                    set(obj.currElem.handles.radiobuttonProcTypeRun,'enable','off');
+                    set(obj.currElem.handles.radiobuttonProcTypeRun,'enable','on');
                     
                     % Don't change the value of the button group unless it is
                     % currently set to an illegal value

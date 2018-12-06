@@ -77,6 +77,7 @@ set(htabgroup,'SelectedTab',htab);
 
 % Assign to procElem by value instead of reference - we don't 
 % want to change anything in hmr.dataTree.currElem in this GUI
+% until we click Save button
 procElem{iRunPanel} = hmr.dataTree.group(1).subjs(1).runs(1).copy();
 procElem{iSubjPanel} = hmr.dataTree.group(1).subjs(1).copy();
 procElem{iGroupPanel} = hmr.dataTree.group(1).copy();

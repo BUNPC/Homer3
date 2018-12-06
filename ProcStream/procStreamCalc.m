@@ -114,6 +114,8 @@ end
 for ii=1:length(paramOut)
     if eval( sprintf('isproperty(obj.procResult, ''%s'');', paramOut{ii}) );
 	    eval( sprintf('obj.procResult.%s = %s;',paramOut{ii}, paramOut{ii}) );
+    else
+	    eval( sprintf('obj.procResult.misc.%s = %s;',paramOut{ii}, paramOut{ii}) );        
     end
 end
 

@@ -37,6 +37,9 @@ classdef StimGuiClass < handle
         
         % -----------------------------------------------------------
         function delete(obj)
+            if isempty(obj.handles)
+                return;
+            end
             if ishandles(obj.handles.stimGUI)
                 delete(obj.handles.stimGUI);
             end            

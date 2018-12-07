@@ -16,8 +16,12 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function obj = GroupClass(varargin)
-            
+            obj@TreeNodeClass(varargin);
+
             if nargin>0
+                if ischar(varargin{1}) && strcmp(varargin{1},'copy')
+                    return;
+                end
                 fname = varargin{1};
             else
                 return;

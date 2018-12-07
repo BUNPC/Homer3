@@ -1,4 +1,4 @@
-classdef ProcInputClass < handle
+classdef ProcInputClass < matlab.mixin.Copyable
     
     properties
         procParam;
@@ -35,6 +35,18 @@ classdef ProcInputClass < handle
             end
         end
         
+        
+        % --------------------------------------------------
+        function b = isempty(obj)
+            b = true;
+            if isempty(obj.procFunc)
+                return
+            end
+            if isempty(obj.procFunc(1).funcName)
+                return;
+            end
+            b = false;
+        end        
     end
     
 end

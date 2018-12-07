@@ -1,13 +1,4 @@
-% classdef TreeNodeClass < handle
-
-% This class is derived from matlab.mixin.Copyable 
-% which means an object of this class is passed and assigned by 
-% reference; same as if it was derived from handle (see the 
-% commented definition at the top). However in addition to the 
-% being of being a handle object the base class matlab.mixin.Copyable
-% provides a copy function which allows assignments and argument 
-% passing by value which is very useful
-classdef TreeNodeClass < matlab.mixin.Copyable
+classdef TreeNodeClass < handle
     
     properties % (Access = private)        
         name;
@@ -24,17 +15,30 @@ classdef TreeNodeClass < matlab.mixin.Copyable
         
         
         % ---------------------------------------------------------------------------------
-        function obj = TreeNodeClass()
+        function obj = TreeNodeClass(arg)
             obj.name = '';
             obj.type = '';
-            obj.CondColTbl('init');
-            obj.CondNamesAll('init');
             obj.procInput = ProcInputClass();
             obj.procResult = ProcResultClass();
             obj.err = 0;
             obj.CondNames = {};
             obj.ch = struct('MeasList',[],'MeasListVis',[],'MeasListAct',[], 'Lambda',[]);
             
+            % If this constructor is called from this class' copy method,
+            % then we want to exit before we obliterate the persistent
+            % variables (only one copy of which is shared across all objects 
+            % of this class, like a static var in C++). 
+            % 
+            % Essentially if a copy arg is passed this constructor
+            % is used as a copy constructor (to borrow C++ terminology)
+            %
+            if nargin==1
+                if strcmp(arg,'copy')
+                    return;
+                end
+            end
+            obj.CondColTbl('init');
+            obj.CondNamesAll('init');
         end
         
         
@@ -89,7 +93,7 @@ classdef TreeNodeClass < matlab.mixin.Copyable
                     ch = menu('Syntax error in config file.','Okay');
                 end
                 
-                [err2, iReg] = procStreamErrCheck(procInput);
+                [err2, iReg] = procStreamErrCheck(obj);
                 if ~all(~err2)
                     i=find(err2==1);
                     str1 = 'Error in functions\n\n';
@@ -133,6 +137,23 @@ classdef TreeNodeClass < matlab.mixin.Copyable
         % ----------------------------------------------------------------------------------
         function B = ne(obj1, obj2)
             B = ~equivalent(obj1, obj2);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        % Copy function to do deep copy
+        % ----------------------------------------------------------------------------------
+        function objnew = copy(obj)
+            switch(class(obj))
+                case 'RunClass'
+                    objnew = RunClass('copy');
+                case 'SubjClass'
+                    objnew = SubjClass('copy');
+                case 'GroupClass'
+                    objnew = GroupClass('copy');
+                case ''
+            end
+            objnew.procInput = obj.procInput.copy();
         end
         
         

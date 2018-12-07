@@ -47,7 +47,7 @@ while ~all(~err1) || ~all(~err2)
         ch = menu('Syntax error in config file.','Okay');
     end
 
-    [err2, iReg] = procStreamErrCheck(procInput);
+    [err2, iReg] = procStreamErrCheck(run);
     if ~all(~err2)
         i=find(err2==1);
         str1 = 'Error in functions\n\n';

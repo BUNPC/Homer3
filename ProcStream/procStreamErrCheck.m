@@ -1,22 +1,19 @@
 function [errflags, iReg] = procStreamErrCheck(varargin)
 
-procInput = ProcInputClass();
-if nargin==1
-    if isproperty(varargin{1}, 'procElem')
-        type = varargin{1}.procElem.type;
-        procInput = varargin{1}.procElem.procInput;
-    elseif isproperty(varargin{1}, 'procInput')
-        type = varargin{1}.type;
-        procInput = varargin{1}.procInput;
-    end
-elseif nargin==2
-    type = varargin{1};
-    procInput = varargin{2};
-end
-
-
 errflags = [];
 iReg     = [];
+
+procInput = ProcInputClass();
+switch(class(varargin{1}))
+    case 'ProcInputClass'
+        procInput = varargin{1};
+        type      = varargin{2};
+    case {'GroupClass', 'SubjClass', 'RunClass'}
+        procInput = varargin{1}.procInput;
+        type      = class(varargin{1});
+    otherwise
+        return;
+    end
 
 procFunc = procInput.procFunc;
 if isempty(procFunc)

@@ -16,12 +16,18 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function obj = RunClass(varargin)
+            obj@TreeNodeClass(varargin);
+
             obj.type  = 'run';
             if nargin==4
                 obj.name  = varargin{1};
                 obj.iSubj = varargin{2};
                 obj.iRun  = varargin{3};
                 obj.rnum  = varargin{4};
+            elseif nargin==1
+                if ischar(varargin{1}) && strcmp(varargin{1},'copy')
+                    return;
+                end
             else
                 obj.name  = '';
                 obj.iSubj = 0;

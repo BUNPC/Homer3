@@ -13,6 +13,7 @@ classdef SubjClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function obj = SubjClass(varargin)
+            obj@TreeNodeClass(varargin);
             
             if nargin==4
                 fname = varargin{1};

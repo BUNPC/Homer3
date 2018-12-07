@@ -39,13 +39,13 @@ set(handles.listboxFunctions(iRunPanel),'string',fcall)
 set(handles.listboxFuncArgIn(iRunPanel),'string',fcallIn)
 set(handles.listboxFuncArgOut(iRunPanel),'string',fcallOut)
 
-procFunc = procStreamReg2ProcFunc('Subj');
+procFunc = procStreamReg2ProcFunc('subj');
 [fcallIn, fcall, fcallOut] = fillListboxWithRegistry(procFunc);
 set(handles.listboxFunctions(iSubjPanel),'string',fcall)
 set(handles.listboxFuncArgIn(iSubjPanel),'string',fcallIn)
 set(handles.listboxFuncArgOut(iSubjPanel),'string',fcallOut)
 
-procFunc = procStreamReg2ProcFunc('Group');
+procFunc = procStreamReg2ProcFunc('group');
 [fcallIn, fcall, fcallOut] = fillListboxWithRegistry(procFunc);
 set(handles.listboxFunctions(iGroupPanel),'string',fcall)
 set(handles.listboxFuncArgIn(iGroupPanel),'string',fcallIn)
@@ -62,14 +62,14 @@ set(handles.uipanelSubj, 'parent',htabSubj, 'position',[0, 0, 1, 1]);
 set(handles.uipanelGroup, 'parent',htabGroup, 'position',[0, 0, 1, 1]);
 
 htab = -1;
-switch(hmr.dataTree.currElem.procElem.type)
-    case 'run'
+switch(class(hmr.dataTree.currElem.procElem))
+    case 'RunClass'
         htab = htabRun;
         iPanel = iRunPanel;
-    case 'subj'
+    case 'SubjClass'
         htab = htabSubj;
         iPanel = iSubjPanel;
-    case 'group'
+    case 'GroupClass'
         htab = htabGroup;
         iPanel = iGroupPanel;
 end
@@ -422,7 +422,7 @@ for iPanel=1:3
     end
     
     % Search for procFun functions in procStreamReg
-    [err2, iReg] = procStreamErrCheck(procElem.type, procElem.procInput);
+    [err2, iReg] = procStreamErrCheck(procElem);
     if ~all(~err2)
         i=find(err2==1);
         str1 = 'Error in functions\n\n';
@@ -471,7 +471,7 @@ procElem = this.procElem;
 for iPanel=1:length(procElem)
     
     % Build func database of registered functions
-    procFuncReg = procStreamReg2ProcFunc(procElem{iPanel}.type);
+    procFuncReg = procStreamReg2ProcFunc(procElem{iPanel});
     
     % iReg indexes the proc functions in the procStream listboxes on the
     % right in the GUI
@@ -499,9 +499,9 @@ if ch==1
 
     group = hmr.dataTree.group;
     
-    group.OverwriteProcInput(procElem{iRunPanel}.type, procElem{iRunPanel}.procInput);
-    group.OverwriteProcInput(procElem{iSubjPanel}.type, procElem{iSubjPanel}.procInput);
-    group.OverwriteProcInput(procElem{iGroupPanel}.type, procElem{iGroupPanel}.procInput);
+    group.OverwriteProcInput(procElem{iRunPanel});
+    group.OverwriteProcInput(procElem{iSubjPanel});
+    group.OverwriteProcInput(procElem{iGroupPanel});
     
 else
     [filenm,pathnm] = uiputfile( '*.cfg','Save Config File');
@@ -532,7 +532,7 @@ this = getappdata(handles.figure1, 'this');
 iPanel = this.iPanel;
 procElem = this.procElem{iPanel};
 
-procFunc = procStreamReg2ProcFunc(procElem.type);
+procFunc = procStreamReg2ProcFunc(procElem);
 helpstr = procStreamGenerateHelpStr(procFunc(iFunc).funcHelp);
 
 
@@ -545,7 +545,7 @@ procElem = this.procElem{iPanel};
 
 helpstr = '';
 
-procFunc = procStreamReg2ProcFunc(procElem.type);
+procFunc = procStreamReg2ProcFunc(procElem);
 match=0;
 for ii=1:length(procFunc)
     if strcmp(funcName, procFunc(ii).funcName)

@@ -1,10 +1,10 @@
 function [procFunc, reg] = procStreamReg2ProcFunc(varargin)
 
 if nargin>0
-    if isstruct(varargin{1})
-        type = varargin{1}.type;
-    elseif ischar(varargin{1})
+    if ischar(varargin{1})
         type = varargin{1};
+    else
+        type = class(varargin{1});
     end    
 else
     type = '';
@@ -19,28 +19,21 @@ end
 
 
 % -------------------------------------------------------------------
-function reg = procStreamReg(varargin)
+function reg = procStreamReg(type)
 
 reg = {};
-if nargin>0
-    if isstruct(varargin{1})
-        type = varargin{1}.type;
-    elseif ischar(varargin{1})
-        type = varargin{1};
-    end    
-else
-    type = '';
-end
 
 % Initialize output struct
-if strcmpi(type,'group')
+switch(type)
+    case {'group','GroupClass'}
     reg = procStreamRegGroup();
-elseif strcmpi(type,'subj')
+    case {'subj','SubjClass'}
     reg = procStreamRegSubj();
-elseif strcmpi(type,'run')
+    case {'run','RunClass'}
     reg = procStreamRegRun();
-else
+    otherwise
     reg = [reg; procStreamRegGroup()];
     reg = [reg; procStreamRegSubj()];
     reg = [reg; procStreamRegRun()];
 end
+

@@ -26,9 +26,9 @@ classdef MeasListClass  < matlab.mixin.Copyable
                 obj.detectorIndex    = ml(2);
                 obj.wavelengthIndex  = ml(4);
             else
-                obj.sourceIndex      = 1;
-                obj.detectorIndex    = 1;
-                obj.wavelengthIndex  = 1;
+                obj.sourceIndex      = 0;
+                obj.detectorIndex    = 0;
+                obj.wavelengthIndex  = 0;
             end
         end
         

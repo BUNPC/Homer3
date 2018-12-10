@@ -9,14 +9,29 @@ classdef StimClass  < matlab.mixin.Copyable
     methods
         
         % -------------------------------------------------------
-        function obj = StimClass(s, t, CondName)
+        function obj = StimClass(varargin)
                         
             if nargin==3
                 
-                k = s>0;
-                obj.data = [t(k), 5*ones(length(t(k)),1), ones(length(t(k)),1)];
+                s        = varargin{1};
+                t        = varargin{2};
+                CondName = varargin{3};
+                
                 obj.name = CondName;
 
+                k = s>0;
+                obj.data = [t(k), 5*ones(length(t(k)),1), ones(length(t(k)),1)];
+
+            elseif nargin==2
+                
+                t        = varargin{1};
+                CondName = varargin{2};
+                
+                obj.name = CondName;
+                for ii=1:length(t)
+                    obj.data(end+1,:) = [t(ii), 5, 1];
+                end
+                
             elseif nargin==0
 
                 obj.name = '';
@@ -99,19 +114,49 @@ classdef StimClass  < matlab.mixin.Copyable
             
         end
         
-        
+    end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Public Set/Get methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+               
         % -------------------------------------------------------
-        function CondName = GetCondName(obj)
-            CondName = obj.name;
+        function SetName(obj, val)
+            obj.name = val;
         end
         
-        
         % -------------------------------------------------------
-        function SetStim(obj, data, name)
-            obj.data = data;
-            obj.name = name;
+        function val = GetName(obj)
+            val = obj.name;
+        end
+               
+        % -------------------------------------------------------
+        function SetData(obj, val)
+            obj.data = val;
         end
         
+        % -------------------------------------------------------
+        function val = GetData(obj)
+            val = obj.data;
+        end
+
+    end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % All other public methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+        
+        % ----------------------------------------------------------------------------------
+        function AddStims(obj, tPts)
+            for ii=1:length(tPts)
+                obj.data(end+1,:) = [tPts(ii), 5, 1];
+            end
+        end
+
         
         % -------------------------------------------------------
         function ts = GetStim(obj)

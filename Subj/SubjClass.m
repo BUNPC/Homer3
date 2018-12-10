@@ -163,12 +163,13 @@ classdef SubjClass < TreeNodeClass
             
             % Save acquired data
             if options_s.acquired
-                h = waitbar(0, sprintf('Saving subject %s', obj.name));
+                strPrintable = sprintf_s(obj.name);
+                h = waitbar(0, sprintf('Saving subject %s', strPrintable));
                 pause(1);
                 n = length(obj.runs);
                 for ii=1:n
                     obj.runs(ii).Save('acquired');
-                    waitbar(ii/n, h, sprintf('Saving run %d of %d of subject %s', ii, n, obj.name))
+                    waitbar(ii/n, h, sprintf('Saving run %d of %d of subject %s', ii, n, strPrintable))
                 end
                 close(h);
             end
@@ -322,7 +323,7 @@ classdef SubjClass < TreeNodeClass
                     CondNames = [CondNames, obj.runs(ii).GetConditions()];
                 end
                 obj.CondNames = unique(CondNames);
-            else nargin==2
+            elseif nargin==2
                 obj.CondNames = varargin{1};
                 for ii=1:length(obj.runs)
                     obj.runs(ii).SetConditions(varargin{1});
@@ -386,7 +387,27 @@ classdef SubjClass < TreeNodeClass
                 end
             end
         end
+
         
-    end       % Public Set/Get methods
+        % ----------------------------------------------------------------------------------
+        function AddStims(obj, tPts, condition)            
+            if isempty(tPts)
+                return;
+            end
+            if isempty(condition)
+                return;
+            end
+            
+            % Add stim to all runs in this subject
+            if ~ismember(condition, obj.CondNames)
+                obj.CondNames{end+1} = condition;
+            end
+            for ii=1:length(obj.runs)
+                obj.runs.AddStims(tPts, condition);
+            end
+            
+        end
+        
+    end
         
 end

@@ -12,8 +12,7 @@ classdef RunClass < TreeNodeClass
     end
     
     methods
-        
-        
+                
         % ----------------------------------------------------------------------------------
         function obj = RunClass(varargin)
             obj@TreeNodeClass(varargin);
@@ -291,6 +290,7 @@ classdef RunClass < TreeNodeClass
                 return;
             end
             axes(hAxes);
+            hold on;
             
             buttonVals = guiMain.buttonVals;
             
@@ -524,5 +524,27 @@ classdef RunClass < TreeNodeClass
         end
         
     end        % Public Set/Get methods
+    
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % All other public methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+        
+        
+        % ----------------------------------------------------------------------------------
+        function AddStims(obj, tPts, condition)
+            if isempty(tPts)
+                return;
+            end
+            if isempty(condition)
+                return;
+            end
+            obj.acquired.AddStims(tPts, condition);
+        end
+        
+        
+    end
     
 end

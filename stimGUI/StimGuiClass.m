@@ -4,9 +4,9 @@ classdef StimGuiClass < handle
     properties
         handles
         Lines;
-        LegendHdl;
         iAux;
         dataTree;
+        guiMain;
     end
     
     
@@ -18,17 +18,16 @@ classdef StimGuiClass < handle
         % -----------------------------------------------------------
         function obj = StimGuiClass(filename)
             obj.InitStimLines();
-            obj.LegendHdl = -1;
             obj.iAux = 0;
             obj.handles = [];
 
-            if exist('filename','var') && ischar(filename)
-                handles = stimGUI(obj);
-                obj.InitHandles(handles);
-            elseif ~exist('filename','var')
+            if ~exist('filename','var')
                 filename = '';
             end
-            
+            if ischar(filename)
+                handles = stimGUI(obj);
+                obj.InitHandles(handles);
+            end
             obj.Load(filename);            
             obj.EnableGuiObjects('on');
             obj.Display();
@@ -71,7 +70,7 @@ classdef StimGuiClass < handle
             if ishandles(obj.handles.stimGUI)
                 delete(obj.handles.stimGUI);
             end
-            obj.Reset();
+            obj.InitHandles();
         end
 
         
@@ -86,7 +85,10 @@ classdef StimGuiClass < handle
                 else
                     obj.dataTree = hmr.dataTree;
                 end
-            elseif exist('arg','var')
+                if ~isempty(hmr.guiMain)
+                    obj.guiMain = hmr.guiMain;
+                end
+            elseif exist('arg','var') && ~isempty(arg)
                 % If NOT in hmr Gui context then we're running StimGuiClass standalone.
                 % In that case there are two possible types of arguments we can
                 % pass: either the name of a data file or a dataTree class object
@@ -100,8 +102,9 @@ classdef StimGuiClass < handle
                 obj.dataTree = DataTreeClass().empty();
                 return;
             end
+            
             filename = obj.dataTree.currElem.procElem.name;
-            [pname, fname, ext] = fileparts(filename);
+            [~, fname, ext] = fileparts(filename);
             
             if isempty(obj.handles)
                 return;
@@ -109,13 +112,12 @@ classdef StimGuiClass < handle
             if ~ishandles(obj.handles.textFilename)
                 return;
             end
-            set(obj.handles.textFilename, 'string',[fname,ext]);
+            set(obj.handles.textFilename, 'string',[fname, ext, ' :']);
         end
         
         
         % -----------------------------------------------------------
         function Reset(obj)
-            obj.LegendHdl = -1;
             obj.iAux = 0;
             delete(obj.dataTree);
             set(obj.handles.textFilename, 'string','');
@@ -150,6 +152,10 @@ classdef StimGuiClass < handle
                     eval( sprintf('obj.handles.%s = handles.%s;', fields{ii}, fields{ii}) );
                 end
             end
+            
+            obj.handles.legend = -1;
+            set(obj.handles.axes1,'ButtonDownFcn', @obj.ButtondownFcn);
+            set(get(obj.handles.axes1,'children'), 'ButtonDownFcn', @obj.ButtondownFcn);
         end
         
         
@@ -195,6 +201,7 @@ classdef StimGuiClass < handle
             
             axes(obj.handles.axes1)
             cla(obj.handles.axes1);
+            set(obj.handles.axes1, 'ytick','');
             hold(obj.handles.axes1, 'on');
 
             currElem       = obj.dataTree.currElem;
@@ -242,8 +249,9 @@ classdef StimGuiClass < handle
 
                 % Check which conditions are represented in S for the conditions
                 % legend display.
-                if isempty(find(idxLg == iCond))
+                if ~ismember(iCond, idxLg)
                     hLg(kk) = plot([1 1]*t(1), yy,'-','color',obj.Lines(ii).color,'visible','off', 'parent',obj.handles.axes1);
+                    % idxLg(kk) = lstC(ii);
                     idxLg(kk) = iCond;
                     kk=kk+1;
                 end
@@ -254,26 +262,24 @@ classdef StimGuiClass < handle
                 set(h,'ButtonDownFilter',@obj.myZoom_callback);
                 set(h,'enable','on')
             elseif get(obj.handles.radiobuttonStim,'value')==1 % Stim
-                zoom off
-                set(obj.handles.axes1,'ButtonDownFcn', 'stimGUI_DisplayData_StimCallback()');
-                set(get(obj.handles.axes1,'children'), 'ButtonDownFcn', 'stimGUI_DisplayData_StimCallback()');
+                zoom(obj.handles.stimGUI,'off');
             end
             
             % Update legend
-            if(ishandle(obj.LegendHdl))
-                delete(obj.LegendHdl);
-                obj.LegendHdl = -1;
+            if(ishandle(obj.handles.legend))
+                delete(obj.handles.legend);
+                obj.handles.legend = -1;
             end
             [idxLg,k] = sort(idxLg);
             hLg = hLg(k);
             if ~isempty(hLg)
-                iCond = currElem.procElem.CondName2Group(idxLg);
-                obj.LegendHdl = legend(hLg, CondNamesGroup(iCond));
+                % iCond = currElem.procElem.CondName2Group(idxLg);
+                obj.handles.legend = legend(hLg, CondNamesGroup(idxLg));
             end
             set(obj.handles.axes1,'xlim', [t(1), t(end)]);
             
         end
-
+        
         
         % ------------------------------------------------
         function flag = myZoom_callback(obj, h, event_obj)
@@ -283,7 +289,193 @@ classdef StimGuiClass < handle
                 flag = 1;
             end
         end
+        
+  
+    
+        % ------------------------------------------------
+        function ButtondownFcn(obj, hObject, eventdata)
+            
+            point1 = get(gca,'CurrentPoint');    % button down detected
+            finalRect = rbbox;                   % return figure units
+            point2 = get(gca,'CurrentPoint');    % button up detected
+            point1 = point1(1,1:2);              % extract x and y
+            point2 = point2(1,1:2);
+            p1 = min(point1,point2);
+            p2 = max(point1,point2);
+            
+            % Error checking
+            if isempty(obj.dataTree)
+                return;
+            end
+            if isempty(obj.dataTree.currElem)
+                return;
+            end
+            if obj.dataTree.currElem.procType~=3
+                return;
+            end
+            
+            % Now that we made sure legit dataTree exists, we can match up
+            % the selected stims to the stims in currElem
+            currElem = obj.dataTree.currElem;
+            t = currElem.procElem.GetTime();
+            s = currElem.procElem.GetStims();
+            
+            if ~all(p1==p2)
+                tPts_selected = find(t>=p1(1) & t<=p2(1));
+            else
+                tVals = (t(end)-t(1))/length(t);
+                tPts_selected = min(find(abs(t-p1(1))<tVals));
+            end
+            s = sum(abs(s(tPts_selected,:)),2);
+            stims_selected = find(s>=1);
+            
+            if isempty(stims_selected) & ~(p1(1)==p2(1))
+                menu( 'Drag a box around the stim to edit.','Okay');
+                return;
+            end
+            
+            obj.AddEditDelete(tPts_selected, stims_selected);
+            obj.Display();
+            obj.DisplayGuiMain();
+        end
+           
+        
+        
+        % ------------------------------------------------
+        function DisplayGuiMain(obj)
+            global hmr
+            if ~isempty(obj.guiMain)
+                obj.dataTree.currElem.procElem.DisplayStim(obj.guiMain)
+            end
+            if ~isempty(hmr)
+                hmr.guiMain = UpdateAxesDataCondition(obj.guiMain, obj.dataTree);
+            end
+        end
+        
+        
+        % ------------------------------------------------
+        function AddEditDelete(obj, tPts_selected, iS_lst)
+            % Usage:
+            %
+            %     AddEditDelete(tPts_selected, iS_lst)
+            %
+            % Inputs:
+            %
+            %     tPts  - time range selected in stim.currElem.procElem.t
+            %     iS_lst - indices in tPts of existing stims
+                       
+            if isempty(tPts_selected)
+                return;
+            end
+                       
+            dataTree       = obj.dataTree;
+            currElem       = dataTree.currElem;
+            group          = dataTree.group;
+            CondNamesGroup = group.GetConditions();
+            tc             = currElem.procElem.GetTime();
+            nCond          = length(CondNamesGroup);
+            
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+            % Create menu actions list
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+            actionLst = CondNamesGroup;
+            actionLst{end+1} = 'New condition';
+            if ~isempty(iS_lst)
+                actionLst{end+1} = 'Toggle active on/off';
+                actionLst{end+1} = 'Delete';
+                menuTitleStr = sprintf('Edit/Delete stim mark(s) at t=%0.1f-%0.1f to...', ...
+                                       tc(tPts_selected(iS_lst(1))), ...
+                                       tc(tPts_selected(iS_lst(end))));
+            else
+                menuTitleStr = sprintf('Add stim mark at t=%0.1f...', tc(tPts_selected(1)));
+            end
+            actionLst{end+1} = 'Cancel';
+            nActions = length(actionLst);
+
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+            % Get user's responce to menu question
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+            ch = menu(menuTitleStr, actionLst);
+
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+            % Cancel
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+            if ch==nActions || ch==0
+                return;
+            end
+            
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+            % New stim
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            if isempty(iS_lst)
                 
+
+                % If stim added to new condition update group conditions
+                if ch==nCond+1
+                    CondNameNew = inputdlg('','New Condition name');
+                    if isempty(CondNameNew)
+                        return;
+                    end
+                    while ismember(CondNameNew{1}, CondNamesGroup)
+                        CondNameNew = inputdlg('Condition already exists. Choose another name.','New Condition name');
+                        if isempty(CondNameNew)
+                            return;
+                        end
+                    end
+                    CondName = CondNameNew{1};
+                else
+                    CondName = CondNamesGroup{ch};
+                end
+                
+                %%%% Add new stim to currElem's condition
+                currElem.procElem.AddStims(tc(tPts_selected), CondName);
+                group.SetConditions();
+                
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+            % Existing stim
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            else
+                
+                %%%% Delete stim
+                if ch==nActions-1 & nActions==nCond+4
+                    
+                    % Delete stim entry from userdata first
+                    % because it depends on stim.currElem.procElem.s
+                    ;
+                    
+                %%%% Toggle active/inactive stim
+                elseif ch==nActions-2 & nActions==nCond+4
+                    
+                    ;
+                    
+                %%%% Edit stim
+                elseif ch<=nCond+1
+                    
+                    % Before moving stim, find it's condition to be able to
+                    % to use it to check whether that condition is empty of stims.
+                    % Then if the stim's previous condition is empty query user about
+                    % whether it should be deleted
+                    
+                    % Save original stim values before reassigning them and then zero them out
+                    % from their original columns.
+                    
+                    % Assign new condition to edited stim
+                    if ch==nCond+1
+                        
+                        CondNameNew = inputdlg('','New Condition name');
+                        
+                    else
+                        
+                        % Find the column in s that has the chosen condition
+                        
+                    end
+                    
+                end
+            end            
+        end
+           
     end
     
     
@@ -299,7 +491,6 @@ classdef StimGuiClass < handle
         end
         
     end
-    
     
 end
 

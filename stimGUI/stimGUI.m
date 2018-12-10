@@ -51,3 +51,11 @@ if filename==0
 end
 stimGui.Load([pathname, filename]);
 stimGui.Display();
+
+
+
+% --------------------------------------------------------------------
+function pushbuttonExit_Callback(hObject, eventdata, handles)
+global stimGui
+
+stimGui.Close();

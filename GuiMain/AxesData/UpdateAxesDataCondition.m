@@ -1,5 +1,12 @@
 function guiMain = UpdateAxesDataCondition(guiMain, dataTree)
 
+if isempty(guiMain)
+    return;
+end
+if isempty(dataTree)
+    return;
+end
+
 CondNames = dataTree.group.GetConditions();
 CondNamesCurrElem = dataTree.currElem.procElem.GetConditionsActive();
 for jj=1:length(CondNames)
@@ -9,7 +16,7 @@ for jj=1:length(CondNames)
     end
 end
 set(guiMain.handles.popupmenuConditions, 'string', CondNames);
-guiMain.condition = getCondition(guiMain);
+guiMain.condition = get(guiMain.handles.popupmenuConditions, 'value');
 set(guiMain.handles.popupmenuConditions, 'value', guiMain.condition);
 
 

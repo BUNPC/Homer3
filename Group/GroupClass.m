@@ -471,12 +471,31 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function CondNameIdx = GetCondNameIdx(obj, CondNameIdx)
+        function AddStims(obj, tPts, condition)
+            if isempty(tPts)
+                return;
+            end
+            if isempty(condition)
+                return;
+            end
             
-            ;
+            % Add stim to all runs in this group            
+            if ~ismember(condition, obj.CondNames)
+                obj.CondNames{end+1} = condition;
+            end
+            for ii=1:length(obj.subjs)
+                obj.subjs(ii).AddStims(tPts, condition);
+            end
             
         end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function CondNameIdx = GetCondNameIdx(obj, CondNameIdx)
+            ;
+        end
              
+        
         % ----------------------------------------------------------------------------------
         function CondNames = GetConditionsActive(obj)
             CondNames = obj.CondNames;

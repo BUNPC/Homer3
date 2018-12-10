@@ -28,6 +28,9 @@ classdef DataTreeClass < handle
         
         % --------------------------------------------------------------
         function delete(obj)
+            if isempty(obj.currElem)
+                return;
+            end
             if ishandle(obj.currElem.handles.ProcStreamOptionsGUI)
                 delete(obj.currElem.handles.ProcStreamOptionsGUI);
             end

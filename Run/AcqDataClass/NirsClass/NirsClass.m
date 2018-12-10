@@ -336,5 +336,28 @@ classdef NirsClass < AcqDataClass
                 
     end
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % All other public methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+        
+        % ----------------------------------------------------------------------------------
+        function AddStims(obj, tPts, condition)
+            
+            k = find(strcmp(obj.CondNames, condition));
+            if isempty(k)
+                obj.s(:,end+1) = zeros(length(obj.t),1);
+                icol = size(obj.s,2);
+                obj.CondNames{icol} = condition;
+            else
+                icol = k;
+            end      
+            [~, tidx] = nearest_point(obj.t, tPts);
+            obj.s(tidx, icol) = 1;
+            
+        end
+        
+    end
+    
 end
 

@@ -16,6 +16,7 @@ classdef SnirfClass < AcqDataClass
         aux
         timeOffset
         metaDataTags
+        err=0;
     end
     
     methods
@@ -108,7 +109,7 @@ classdef SnirfClass < AcqDataClass
         
         % -------------------------------------------------------
         function obj = Load(obj, fname, parent)
-            
+
             % Overwrite 1st argument if the property filename is NOT empty
             if ~isempty(obj.filename)
                 fname = obj.filename;
@@ -121,6 +122,10 @@ classdef SnirfClass < AcqDataClass
             if ~exist(fname,'file')
                 return;
             end
+            if ~hdf5isvalid(fname)
+                obj.filename = '';
+                return;
+            end
             
             % Arg 2
             if ~exist('parent', 'var')
@@ -129,6 +134,11 @@ classdef SnirfClass < AcqDataClass
                 parent = ['/',parent];
             end
                        
+            % Overwrite 1st argument if the property filename is NOT empty
+            if ~isempty(obj.filename)
+                fname = obj.filename;
+            end
+            
             obj.formatVersion = deblank(h5read(fname, [parent, '/formatVersion']));
             obj.timeOffset = hdf5read(fname, [parent, '/timeOffset']);
             
@@ -402,7 +412,7 @@ classdef SnirfClass < AcqDataClass
         function CondNames = GetConditions(obj)
             CondNames = cell(1,length(obj.stim));
             for ii=1:length(obj.stim)
-                CondNames{ii} = obj.stim(ii).GetCondName();
+                CondNames{ii} = obj.stim(ii).GetName();
             end
         end
         
@@ -499,6 +509,29 @@ classdef SnirfClass < AcqDataClass
         
     end
         
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % All other public methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+        
+        % ----------------------------------------------------------------------------------
+        function AddStims(obj, tPts, condition)
+            
+            % Try to find existing condition to which to add stims. 
+            for ii=1:length(obj.stim)
+                if strcmp(condition, obj.stim(ii).GetName())
+                    obj.stim(ii).AddStims(tPts);
+                    return;
+                end
+            end
+            
+            % Otherwise we have a new condition to which to add the stims. 
+            obj.stim(end+1) = StimClass(tPts, condition);
+            
+        end
+        
+    end
+    
 end
 
 

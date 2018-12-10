@@ -122,10 +122,10 @@ classdef SnirfClass < AcqDataClass
             if ~exist(fname,'file')
                 return;
             end
-            if ~hdf5isvalid(fname)
-                obj.filename = '';
-                return;
-            end
+%             if ~hdf5isvalid(fname)
+%                 obj.filename = '';
+%                 return;
+%             end
             
             % Arg 2
             if ~exist('parent', 'var')
@@ -381,8 +381,21 @@ classdef SnirfClass < AcqDataClass
             if ~exist('CondNames', 'var')
                 CondNames = str2cell(num2str(1:size(s,2)));
             end
+            CondNamesCurr = obj.GetConditions();
             for ii=1:size(s,2)
-                obj.stim(ii) = StimClass(s(:,ii), t, CondNames{ii});
+                k = ismember(CondNames{ii}, CondNamesCurr);
+                if isempty(k)
+                    obj.stim(end+1) = StimClass(s(:,ii), t, CondNames{ii});
+                    continue;
+                end
+                tidxs = find(s(:,ii)~=0);
+                for jj=1:length(tidxs)
+                    if ~obj.stim(k).Exists(t(tidxs(jj)))
+                        obj.stim(k).AddStims(t(tidxs(jj)));
+                    else
+                        obj.stim(k).EditValue(t(tidxs(jj)), s(tidxs(jj),ii));
+                    end
+                end
             end
         end
         

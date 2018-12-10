@@ -553,6 +553,9 @@ classdef RunClass < TreeNodeClass
     
         % ----------------------------------------------------------------------------------
         function duration = GetStimDuration(obj, icond)
+            if ~exist('icond','var')
+                icond=1;
+            end
             duration = obj.acquired.GetStimDuration(icond);
         end
         

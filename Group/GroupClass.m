@@ -512,6 +512,23 @@ classdef GroupClass < TreeNodeClass
         
     end      % Public Set/Get methods
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % All other public methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetStimDuration(obj, icond, duration)
+            return;
+        end
+    
+        % ----------------------------------------------------------------------------------
+        function duration = GetStimDuration(obj, icond)
+            duration = [];            
+        end
+    
+    end    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Private methods

@@ -343,7 +343,6 @@ classdef NirsClass < AcqDataClass
         
         % ----------------------------------------------------------------------------------
         function AddStims(obj, tPts, condition)
-            
             k = find(strcmp(obj.CondNames, condition));
             if isempty(k)
                 obj.s(:,end+1) = zeros(length(obj.t),1);
@@ -354,7 +353,17 @@ classdef NirsClass < AcqDataClass
             end      
             [~, tidx] = nearest_point(obj.t, tPts);
             obj.s(tidx, icol) = 1;
-            
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetStimDuration(obj, icond, duration)
+            return;
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function duration = GetStimDuration(obj, icond)
+            duration = [];
         end
         
     end

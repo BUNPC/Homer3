@@ -113,6 +113,10 @@ classdef StimGuiClass < handle
                 return;
             end
             set(obj.handles.textFilename, 'string',[fname, ext, ' :']);
+            set(obj.handles.popupmenuConditions, 'string', obj.dataTree.currElem.procElem.CondNames);
+            icond = get(obj.handles.popupmenuConditions, 'value');
+            duration = obj.dataTree.currElem.procElem.GetStimDuration(icond);
+            set(obj.handles.editStimDuration, 'string', num2str(duration));
         end
         
         
@@ -139,7 +143,10 @@ classdef StimGuiClass < handle
                 'pushbuttonRenameCondition',[], ...
                 'textTimePts',[], ...
                 'stimMarksEdit',[], ...
-                'textFilename',[] ...
+                'textFilename',[], ...
+                'popupmenuConditions',[], ...
+                'editStimDuration',[], ...
+                'textStimDuration',[] ...
                 );
             
             if ~exist('handles','var')
@@ -151,7 +158,7 @@ classdef StimGuiClass < handle
                 if eval( sprintf('isproperty(handles, ''%s'')', fields{ii}) )
                     eval( sprintf('obj.handles.%s = handles.%s;', fields{ii}, fields{ii}) );
                 end
-            end
+            end           
             
             obj.handles.legend = -1;
             set(obj.handles.axes1,'ButtonDownFcn', @obj.ButtondownFcn);
@@ -204,7 +211,7 @@ classdef StimGuiClass < handle
             set(obj.handles.axes1, 'ytick','');
             hold(obj.handles.axes1, 'on');
 
-            currElem       = obj.dataTree.currElem;
+            currElem = obj.dataTree.currElem;
             
             % As of now this operation is undefined for non-Run nodes (i.e., Subj and Group)
             % So we clear the axes and exit
@@ -277,6 +284,9 @@ classdef StimGuiClass < handle
                 obj.handles.legend = legend(hLg, CondNamesGroup(idxLg));
             end
             set(obj.handles.axes1,'xlim', [t(1), t(end)]);
+            
+            % Update conditions popupmenu 
+            set(obj.handles.popupmenuConditions, 'string', currElem.procElem.CondNames);
             
         end
         
@@ -474,6 +484,36 @@ classdef StimGuiClass < handle
                     
                 end
             end            
+        end
+
+        
+        % ------------------------------------------------
+        function SetStimDuration(obj, icond, duration)
+            if isempty(obj)
+                return;
+            end
+            if isempty(obj.dataTree)
+                return;
+            end
+            if isempty(obj.dataTree.currElem)
+                return;
+            end            
+            obj.dataTree.currElem.procElem.SetStimDuration(icond, duration);
+        end
+           
+        
+        % ------------------------------------------------
+        function duration = GetStimDuration(obj, icond)
+            if isempty(obj)
+                return;
+            end
+            if isempty(obj.dataTree)
+                return;
+            end
+            if isempty(obj.dataTree.currElem)
+                return;
+            end   
+            duration = obj.dataTree.currElem.procElem.GetStimDuration(icond);
         end
            
     end

@@ -168,6 +168,22 @@ classdef StimClass  < matlab.mixin.Copyable
         end
         
         
+        % -------------------------------------------------------
+        function SetDuration(obj, duration)
+            obj.data(:,2) = duration;
+        end
+        
+        % -------------------------------------------------------
+        function duration = GetDuration(obj, duration)
+            if isempty(obj.data)
+                duration = [];
+            else
+                duration = obj.data(1,2);
+            end
+        end
+        
+        
+        
     end
     
 end

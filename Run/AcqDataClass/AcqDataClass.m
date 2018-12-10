@@ -43,6 +43,12 @@ classdef AcqDataClass < matlab.mixin.Copyable
         % ---------------------------------------------------------
         aux       = GetAuxiliary(obj)
         
+        % ---------------------------------------------------------
+        SetStimDuration(obj, icond, duration);
+        
+        % ---------------------------------------------------------
+        duration = GetStimDuration(obj, icond)
+        
     end
     
     

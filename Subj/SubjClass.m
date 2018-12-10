@@ -239,6 +239,16 @@ classdef SubjClass < TreeNodeClass
             
         end
         
+        % ----------------------------------------------------------------------------------
+        function SetStimDuration(obj, icond, duration)
+            return;
+        end
+    
+        % ----------------------------------------------------------------------------------
+        function duration = GetStimDuration(obj, icond)
+            duration = [];            
+        end
+        
     end
     
     

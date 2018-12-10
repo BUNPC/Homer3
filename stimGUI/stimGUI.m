@@ -59,3 +59,25 @@ function pushbuttonExit_Callback(hObject, eventdata, handles)
 global stimGui
 
 stimGui.Close();
+
+
+% --------------------------------------------------------------------
+function popupmenuConditions_Callback(hObject, eventdata, handles)
+global stimGui
+
+condition = get(hObject, 'value');
+duration = stimGui.GetStimDuration(condition);
+if isempty(duration)
+    return;
+end
+set(handles.editStimDuration, 'string', num2str(duration));
+
+
+
+% --------------------------------------------------------------------
+function editStimDuration_Callback(hObject, eventdata, handles)
+global stimGui
+
+duration = str2num(get(hObject, 'string'));
+icond = get(handles.popupmenuConditions, 'value');
+stimGui.SetStimDuration(icond, duration);

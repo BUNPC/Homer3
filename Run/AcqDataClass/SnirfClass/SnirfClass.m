@@ -530,6 +530,22 @@ classdef SnirfClass < AcqDataClass
             
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function SetStimDuration(obj, icond, duration)
+            obj.stim(icond).SetDuration(duration);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function duration = GetStimDuration(obj, icond)
+            if icond>length(obj.stim)
+                duration = [];
+                return;
+            end
+            duration = obj.stim(icond).GetDuration();
+        end
+        
     end
     
 end

@@ -543,7 +543,18 @@ classdef RunClass < TreeNodeClass
             end
             obj.acquired.AddStims(tPts, condition);
         end
+
         
+        % ----------------------------------------------------------------------------------
+        function SetStimDuration(obj, icond, duration)
+            obj.acquired.SetStimDuration(icond, duration);
+        end
+        
+    
+        % ----------------------------------------------------------------------------------
+        function duration = GetStimDuration(obj, icond)
+            duration = obj.acquired.GetStimDuration(icond);
+        end
         
     end
     

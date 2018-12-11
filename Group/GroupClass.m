@@ -471,26 +471,6 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function AddStims(obj, tPts, condition)
-            if isempty(tPts)
-                return;
-            end
-            if isempty(condition)
-                return;
-            end
-            
-            % Add stim to all runs in this group            
-            if ~ismember(condition, obj.CondNames)
-                obj.CondNames{end+1} = condition;
-            end
-            for ii=1:length(obj.subjs)
-                obj.subjs(ii).AddStims(tPts, condition);
-            end
-            
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
         function CondNameIdx = GetCondNameIdx(obj, CondNameIdx)
             ;
         end
@@ -512,22 +492,13 @@ classdef GroupClass < TreeNodeClass
         
     end      % Public Set/Get methods
     
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % All other public methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
         
-        % ----------------------------------------------------------------------------------
-        function SetStimDuration(obj, icond, duration)
-            return;
-        end
-    
-        % ----------------------------------------------------------------------------------
-        function duration = GetStimDuration(obj, icond)
-            duration = [];            
-        end
-    
     end    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

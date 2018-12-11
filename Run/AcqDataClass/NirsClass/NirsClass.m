@@ -7,7 +7,7 @@ classdef NirsClass < AcqDataClass
         d;
         aux;
         CondNames;
-    end
+    end    
     
     methods
         
@@ -30,7 +30,6 @@ classdef NirsClass < AcqDataClass
             obj.filename  = filename;
             
             obj.Load();
-            
         end
         
         
@@ -353,6 +352,19 @@ classdef NirsClass < AcqDataClass
             end      
             [~, tidx] = nearest_point(obj.t, tPts);
             obj.s(tidx, icol) = 1;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function DeleteStims(obj, tPts)
+            errmargin = min(diff(obj.t))/10;
+            
+            % Find all stims for any conditions which match the time points.
+            k = [];
+            for ii=1:length(tPts)
+                k = [k, find( abs(obj.t-tPts(ii)) < errmargin )];
+            end
+            obj.s(k,:) = 0;
         end
         
         

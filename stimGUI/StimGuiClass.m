@@ -112,24 +112,14 @@ classdef StimGuiClass < handle
             if ~ishandles(obj.handles.textFilename)
                 return;
             end
-            set(obj.handles.textFilename, 'string',[fname, ext, ' :']);
+            
+            SetTextFilename(obj, [fname, ext, ' :']); 
             set(obj.handles.popupmenuConditions, 'string', obj.dataTree.currElem.procElem.CondNames);
             icond = get(obj.handles.popupmenuConditions, 'value');
             duration = obj.dataTree.currElem.procElem.GetStimDuration(icond);
             set(obj.handles.editStimDuration, 'string', num2str(duration));
         end
-        
-        
-        % -----------------------------------------------------------
-        function Reset(obj)
-            obj.iAux = 0;
-            delete(obj.dataTree);
-            set(obj.handles.textFilename, 'string','');
-            cla(obj.handles.axes1);
-            InitHandles();
-        end
-        
-        
+
         
         % -----------------------------------------------------------
         function InitHandles(obj, handles)
@@ -191,6 +181,26 @@ classdef StimGuiClass < handle
             obj.Lines = repmat( struct('handle',[], 'color',[], 'widthReg',2, 'widthHighl',4), n,1);
         end
         
+        
+        % -----------------------------------------------------------
+        function SetTextFilename(obj, name)
+            n = length(name);
+            set(obj.handles.textFilename, 'units','characters');
+            p = get(obj.handles.textFilename, 'position');
+            set(obj.handles.textFilename, 'position',[p(1), p(2), n+.50*n, p(4)]);
+            set(obj.handles.textFilename, 'units','normalized');            
+            set(obj.handles.textFilename, 'string',name);
+        end
+        
+        
+        % -----------------------------------------------------------
+        function Reset(obj)
+            obj.iAux = 0;
+            delete(obj.dataTree);
+            set(obj.handles.textFilename, 'string','');
+            cla(obj.handles.axes1);
+            InitHandles();
+        end
         
         
         % -----------------------------------------------------------
@@ -453,7 +463,7 @@ classdef StimGuiClass < handle
                     
                     % Delete stim entry from userdata first
                     % because it depends on stim.currElem.procElem.s
-                    ;
+                    currElem.procElem.DeleteStims(tc(tPts_selected));
                     
                 %%%% Toggle active/inactive stim
                 elseif ch==nActions-2 & nActions==nCond+4

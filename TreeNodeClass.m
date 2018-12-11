@@ -377,6 +377,29 @@ classdef TreeNodeClass < handle
             str = sprintf(obj.procInput.procFunc(iFunc).funcParamFormat{iParam}, val);
         end
         
+        
+        
+        % ----------------------------------------------------------------------------------
+        function AddStims(obj, tPts, condition)
+            return;
+        end        
+        
+        % ----------------------------------------------------------------------------------
+        function DeleteStims(obj, tPts)
+            return;
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function SetStimDuration(obj, icond, duration)
+            return;
+        end
+    
+        % ----------------------------------------------------------------------------------
+        function duration = GetStimDuration(obj, icond)
+            duration = [];            
+        end
+        
+        
     end
     
     

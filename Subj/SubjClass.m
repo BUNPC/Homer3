@@ -239,16 +239,6 @@ classdef SubjClass < TreeNodeClass
             
         end
         
-        % ----------------------------------------------------------------------------------
-        function SetStimDuration(obj, icond, duration)
-            return;
-        end
-    
-        % ----------------------------------------------------------------------------------
-        function duration = GetStimDuration(obj, icond)
-            duration = [];            
-        end
-        
     end
     
     
@@ -396,26 +386,6 @@ classdef SubjClass < TreeNodeClass
                     end
                 end
             end
-        end
-
-        
-        % ----------------------------------------------------------------------------------
-        function AddStims(obj, tPts, condition)            
-            if isempty(tPts)
-                return;
-            end
-            if isempty(condition)
-                return;
-            end
-            
-            % Add stim to all runs in this subject
-            if ~ismember(condition, obj.CondNames)
-                obj.CondNames{end+1} = condition;
-            end
-            for ii=1:length(obj.runs)
-                obj.runs.AddStims(tPts, condition);
-            end
-            
         end
         
     end

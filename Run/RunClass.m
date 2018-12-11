@@ -546,6 +546,15 @@ classdef RunClass < TreeNodeClass
 
         
         % ----------------------------------------------------------------------------------
+        function DeleteStims(obj, tPts)
+            if isempty(tPts)
+                return;
+            end
+            obj.acquired.DeleteStims(tPts);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function SetStimDuration(obj, icond, duration)
             obj.acquired.SetStimDuration(icond, duration);
         end

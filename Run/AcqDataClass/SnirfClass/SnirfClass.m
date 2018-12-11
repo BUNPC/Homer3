@@ -529,7 +529,6 @@ classdef SnirfClass < AcqDataClass
         
         % ----------------------------------------------------------------------------------
         function AddStims(obj, tPts, condition)
-            
             % Try to find existing condition to which to add stims. 
             for ii=1:length(obj.stim)
                 if strcmp(condition, obj.stim(ii).GetName())
@@ -540,7 +539,15 @@ classdef SnirfClass < AcqDataClass
             
             % Otherwise we have a new condition to which to add the stims. 
             obj.stim(end+1) = StimClass(tPts, condition);
-            
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function DeleteStims(obj, tPts)
+            % Find all stims for any conditions which match the time points. 
+            for ii=1:length(obj.stim)
+                obj.stim(ii).DeleteStims(tPts);
+            end
         end
         
         

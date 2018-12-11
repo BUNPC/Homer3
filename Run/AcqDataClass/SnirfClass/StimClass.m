@@ -44,7 +44,7 @@ classdef StimClass  < matlab.mixin.Copyable
                 obj.data = [];
 
             end
-            obj.errmargin = 1e-4;
+            obj.errmargin = 1e-3;
             obj.status = 0;
             
         end
@@ -241,6 +241,21 @@ classdef StimClass  < matlab.mixin.Copyable
                 duration = obj.data(tPt,2);
             end
         end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function DeleteStims(obj, tPts)
+            % Find all stims for any conditions which match the time points and 
+            % delete them from data. 
+            k = [];
+            for ii=1:length(tPts)
+                k = [k, find( abs(obj.data(:,1)-tPts(ii)) < obj.errmargin )];
+            end
+            obj.data(k,:) = [];
+        end
+        
+        
+        
         
     end
     

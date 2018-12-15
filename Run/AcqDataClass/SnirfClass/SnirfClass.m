@@ -383,7 +383,7 @@ classdef SnirfClass < AcqDataClass
             end
             CondNamesCurr = obj.GetConditions();
             for ii=1:size(s,2)
-                k = ismember(CondNames{ii}, CondNamesCurr);
+                k = find(strcmp(CondNames{ii}, CondNamesCurr));
                 if isempty(k)
                     obj.stim(end+1) = StimClass(s(:,ii), t, CondNames{ii});
                     continue;
@@ -547,6 +547,61 @@ classdef SnirfClass < AcqDataClass
             % Find all stims for any conditions which match the time points. 
             for ii=1:length(obj.stim)
                 obj.stim(ii).DeleteStims(tPts);
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function MoveStims(obj, tPts, condition)
+            if ~exist('tPts','var') || isempty(tPts)
+                return;
+            end
+            if ~exist('condition','var') || isempty(condition)
+                return;
+            end
+            
+            % Find the destination condition to move stims (among the time pts in tPts)
+            % to
+            j = [];
+            for ii=1:length(obj.stim)
+                if strcmp(condition, obj.stim(ii).GetName())
+                    j=ii;
+                    break;
+                end
+            end
+            
+            % If no destination condition found among existing conditions,
+            % then create a new condition to move stims to 
+            if isempty(j)
+                j = length(obj.stim)+1;
+                
+                % Otherwise we have a new condition to which to add the stims.
+                obj.stim(j) = StimClass([], condition);
+            end
+                        
+            % Find all stims for any conditions which match the time points.
+            for ii=1:length(tPts)
+                for kk=1:length(obj.stim)
+                    d = obj.stim(kk).GetData();
+                    if isempty(d)
+                        continue;
+                    end
+                    k = find(d(:,1)==tPts(ii));
+                    if ~isempty(k)
+                        % If stim at time point tPts(ii) exists in stim
+                        % condition kk, then move stim from obj.stim(kk) to
+                        % obj.stim(j)
+                        obj.stim(j).AddStims(tPts(ii), d(k(1),2), d(k(1),3));
+
+                        % After moving stim from obj.stim(kk) to
+                        % obj.stim(j), delete it from obj.stim(kk)                 
+                        d(k(1),:)=[];
+                        obj.stim(kk).SetData(d);
+                        
+                        % Move on to next time point
+                        break;
+                    end
+                end
             end
         end
         

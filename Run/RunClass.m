@@ -546,11 +546,26 @@ classdef RunClass < TreeNodeClass
 
         
         % ----------------------------------------------------------------------------------
-        function DeleteStims(obj, tPts)
-            if isempty(tPts)
+        function DeleteStims(obj, tPts, condition)
+            if ~exist('tPts','var') || isempty(tPts)
                 return;
             end
-            obj.acquired.DeleteStims(tPts);
+            if ~exist('condition','var')
+                condition = '';
+            end
+            obj.acquired.DeleteStims(tPts, condition);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function MoveStims(obj, tPts, condition)
+            if ~exist('tPts','var') || isempty(tPts)
+                return;
+            end
+            if ~exist('condition','var')
+                condition = '';
+            end
+            obj.acquired.MoveStims(tPts, condition);
         end
         
         

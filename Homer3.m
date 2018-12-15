@@ -117,6 +117,10 @@ Homer3_Init(handles, {'zbuffer'});
 
 % Get file names 
 files = FindFiles(handles);
+if isempty(files)
+    return;
+end
+
 
 % Load date files into group tree object
 dataTree  = DataTreeClass(files, handles, @listboxFiles_Callback);
@@ -157,6 +161,9 @@ if ~exist('eventdata','var') || isempty(eventdata)
     eventdata = [];
 end
 if isempty(hmr.handles)
+    return;
+end
+if isempty(hmr.stimGui)
     return;
 end
 

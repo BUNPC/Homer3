@@ -164,6 +164,9 @@ classdef StimClass  < matlab.mixin.Copyable
             if ~exist('tPt','var')
                 return;
             end
+            if isempty(obj.data)
+                return;
+            end
             if isempty(find( abs(obj.data(:,1)-tPt) <  obj.errmargin ))
                 return;
             end

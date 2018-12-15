@@ -1,4 +1,4 @@
-classdef DataTreeClass < handle
+classdef DataTreeClass <  handle
     
     properties
         group

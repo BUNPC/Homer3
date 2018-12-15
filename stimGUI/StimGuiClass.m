@@ -7,6 +7,7 @@ classdef StimGuiClass < handle
         iAux;
         dataTree;
         guiMain;
+        status;
     end
     
     
@@ -20,6 +21,7 @@ classdef StimGuiClass < handle
             obj.InitStimLines();
             obj.iAux = 0;
             obj.handles = [];
+            obj.status = 0;
 
             if ~exist('filename','var')
                 filename = '';
@@ -355,8 +357,15 @@ classdef StimGuiClass < handle
             end
             
             obj.AddEditDelete(tPts_selected, stims_selected);
+            if obj.status==0
+                return;
+            end
             obj.Display();
             obj.DisplayGuiMain();
+            figure(obj.handles.stimGUI);  % return focus to stimGUI
+            
+            % Reset status
+            obj.status=0;
         end
            
         
@@ -365,7 +374,7 @@ classdef StimGuiClass < handle
         function DisplayGuiMain(obj)
             global hmr
             if ~isempty(obj.guiMain)
-                obj.dataTree.currElem.procElem.DisplayStim(obj.guiMain)
+                obj.dataTree.currElem.procElem.DisplayGuiMain(obj.guiMain)
             end
             if ~isempty(hmr)
                 hmr.guiMain = UpdateAxesDataCondition(obj.guiMain, obj.dataTree);
@@ -383,7 +392,7 @@ classdef StimGuiClass < handle
             %
             %     tPts  - time range selected in stim.currElem.procElem.t
             %     iS_lst - indices in tPts of existing stims
-                       
+                                   
             if isempty(tPts_selected)
                 return;
             end
@@ -451,7 +460,7 @@ classdef StimGuiClass < handle
                 
                 %%%% Add new stim to currElem's condition
                 currElem.procElem.AddStims(tc(tPts_selected), CondName);
-                group.SetConditions();
+                obj.status = 1;
                 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
             % Existing stim
@@ -473,27 +482,22 @@ classdef StimGuiClass < handle
                 %%%% Edit stim
                 elseif ch<=nCond+1
                     
-                    % Before moving stim, find it's condition to be able to
-                    % to use it to check whether that condition is empty of stims.
-                    % Then if the stim's previous condition is empty query user about
-                    % whether it should be deleted
-                    
-                    % Save original stim values before reassigning them and then zero them out
-                    % from their original columns.
-                    
                     % Assign new condition to edited stim
                     if ch==nCond+1
-                        
                         CondNameNew = inputdlg('','New Condition name');
-                        
+                        CondName = CondNameNew{1};
                     else
-                        
-                        % Find the column in s that has the chosen condition
-                        
+                        CondName = CondNamesGroup{ch};
                     end
+                    currElem.procElem.MoveStims(tc(tPts_selected), CondName);
                     
                 end
-            end            
+                obj.status = 1;
+
+            end
+            
+            group.SetConditions();
+
         end
 
         

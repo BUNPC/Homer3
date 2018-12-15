@@ -7,6 +7,7 @@ classdef NirsClass < AcqDataClass
         d;
         aux;
         CondNames;
+        errmargin;
     end    
     
     methods
@@ -20,6 +21,7 @@ classdef NirsClass < AcqDataClass
             obj.d         = [];
             obj.aux       = [];
             obj.CondNames = {};
+            obj.errmargin = 1e-3;
             
             if ~exist('filename','var')
                 return;
@@ -29,7 +31,7 @@ classdef NirsClass < AcqDataClass
             end
             obj.filename  = filename;
             
-            obj.Load();
+            obj.Load();            
         end
         
         
@@ -69,6 +71,10 @@ classdef NirsClass < AcqDataClass
                 obj.CondNames = fdata.CondNames;
             else
                 obj.InitCondNames();
+            end
+            
+            if ~isempty(obj.t)
+                obj.errmargin = min(diff(obj.t))/10;
             end
             
         end
@@ -356,15 +362,62 @@ classdef NirsClass < AcqDataClass
         
         
         % ----------------------------------------------------------------------------------
-        function DeleteStims(obj, tPts)
-            errmargin = min(diff(obj.t))/10;
-            
+        function DeleteStims(obj, tPts, condition)
+            if ~exist('tPts','var') || isempty(tPts)
+                return;
+            end
+            if ~exist('condition','var') || isempty(condition)
+                j = 1:size(obj.s,2);
+            else
+                j = find(strcmp(obj.CondNames, condition));
+            end
+            if isempty(j)
+                return;
+            end
+                        
             % Find all stims for any conditions which match the time points.
             k = [];
             for ii=1:length(tPts)
-                k = [k, find( abs(obj.t-tPts(ii)) < errmargin )];
+                k = [k, find( abs(obj.t-tPts(ii)) < obj.errmargin )];
             end
-            obj.s(k,:) = 0;
+            obj.s(k,j) = 0;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function MoveStims(obj, tPts, condition)
+            if ~exist('tPts','var') || isempty(tPts)
+                return;
+            end
+            if ~exist('condition','var') || isempty(condition)
+                return;
+            end
+            
+            j = find(strcmp(obj.CondNames, condition));
+            if isempty(j)
+                j = size(obj.s,2)+1;
+                obj.CondNames{j} = condition;
+            end
+                        
+            % Find all stims for any conditions which match the time points.
+            for ii=1:length(tPts)
+                % Find index k in the time vector obj.t of time point tPts(ii)
+                k = find( abs(obj.t-tPts(ii)) < obj.errmargin );
+                
+                % Find all columns is obj.s that are non-zero
+                i = find(obj.s(k,:)~=0);
+                if isempty(i)
+                    continue;
+                end
+                if i(1)==j
+                    continue;
+                end
+                
+                % Move the first non-zero column stim to the destination
+                % condition
+                obj.s(k,j) = obj.s(k,i(1));
+                obj.s(k,i(1)) = 0;
+            end
         end
         
         

@@ -87,9 +87,7 @@ end
 
 
 hmr.handles.this = hObject;
-hmr.handles.stimGUI = [];
 hmr.handles.proccessOpt = [];
-hmr.handles.plotProbe = [];
 hmr.files    = [];
 hmr.dataTree = [];
 hmr.guiMain  = [];

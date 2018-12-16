@@ -41,15 +41,15 @@ classdef StimGuiClass < handle
             if isempty(obj.handles)
                 return;
             end
-            if ishandles(obj.handles.stimGUI)
-                delete(obj.handles.stimGUI);
+            if ishandles(obj.handles.this)
+                delete(obj.handles.this);
             end            
         end
         
 
         % -----------------------------------------------------------
         function Launch(obj)
-            if isempty(obj.handles) || ~ishandles(obj.handles.stimGUI)
+            if isempty(obj.handles) || ~ishandles(obj.handles.this)
                 h = stimGUI(obj);
                 obj.InitHandles(h);
             end 
@@ -69,8 +69,8 @@ classdef StimGuiClass < handle
         
         % -----------------------------------------------------------
         function Close(obj)
-            if ishandles(obj.handles.stimGUI)
-                delete(obj.handles.stimGUI);
+            if ishandles(obj.handles.this)
+                delete(obj.handles.this);
             end
             obj.InitHandles();
         end
@@ -116,8 +116,10 @@ classdef StimGuiClass < handle
             end
             
             SetTextFilename(obj, [fname, ext, ' :']); 
+
+            icond = 1;
+            set(obj.handles.popupmenuConditions, 'value',icond);
             set(obj.handles.popupmenuConditions, 'string', obj.dataTree.currElem.procElem.CondNames);
-            icond = get(obj.handles.popupmenuConditions, 'value');
             duration = obj.dataTree.currElem.procElem.GetStimDuration(icond);
             set(obj.handles.editStimDuration, 'string', num2str(duration));
         end
@@ -126,6 +128,7 @@ classdef StimGuiClass < handle
         % -----------------------------------------------------------
         function InitHandles(obj, handles)
             obj.handles = struct( ...
+                'this',[], ...                
                 'stimGUI',[], ...
                 'axes1',[], ...
                 'radiobuttonZoom',[], ...
@@ -155,6 +158,7 @@ classdef StimGuiClass < handle
             obj.handles.legend = -1;
             set(obj.handles.axes1,'ButtonDownFcn', @obj.ButtondownFcn);
             set(get(obj.handles.axes1,'children'), 'ButtonDownFcn', @obj.ButtondownFcn);
+            obj.handles.this = obj.handles.stimGUI;
         end
         
         
@@ -281,7 +285,7 @@ classdef StimGuiClass < handle
                 set(h,'ButtonDownFilter',@obj.myZoom_callback);
                 set(h,'enable','on')
             elseif get(obj.handles.radiobuttonStim,'value')==1 % Stim
-                zoom(obj.handles.stimGUI,'off');
+                zoom(obj.handles.this,'off');
             end
             
             % Update legend
@@ -311,19 +315,10 @@ classdef StimGuiClass < handle
                 flag = 1;
             end
         end
+       
         
-  
-    
         % ------------------------------------------------
-        function ButtondownFcn(obj, hObject, eventdata)
-            
-            point1 = get(gca,'CurrentPoint');    % button down detected
-            finalRect = rbbox;                   % return figure units
-            point2 = get(gca,'CurrentPoint');    % button up detected
-            point1 = point1(1,1:2);              % extract x and y
-            point2 = point2(1,1:2);
-            p1 = min(point1,point2);
-            p2 = max(point1,point2);
+        function stims_select = GetStimsFromTpts(obj, tPts_idxs_select)
             
             % Error checking
             if isempty(obj.dataTree)
@@ -339,35 +334,74 @@ classdef StimGuiClass < handle
             % Now that we made sure legit dataTree exists, we can match up
             % the selected stims to the stims in currElem
             currElem = obj.dataTree.currElem;
-            t = currElem.procElem.GetTime();
-            s = currElem.procElem.GetStims();
+            s = currElem.procElem.GetStims();            
+            s2 = sum(abs(s(tPts_idxs_select,:)),2);
+            stims_select = find(s2>=1);
+                        
+        end
+           
+        
+        % ------------------------------------------------
+        function ButtondownFcn(obj, hObject, eventdata)
             
-            if ~all(p1==p2)
-                tPts_selected = find(t>=p1(1) & t<=p2(1));
+            point1 = get(gca,'CurrentPoint');    % button down detected
+            finalRect = rbbox;                   % return figure units
+            point2 = get(gca,'CurrentPoint');    % button up detected
+            point1 = point1(1,1:2);              % extract x and y
+            point2 = point2(1,1:2);
+            p1 = min(point1,point2);
+            p2 = max(point1,point2);
+            t1 = p1(1);
+            t2 = p2(1);
+            
+            t = obj.dataTree.currElem.procElem.GetTime();
+            if ~all(t1==t2)
+                tPts_idxs_select = find(t>=t1 & t<=t2);
             else
                 tVals = (t(end)-t(1))/length(t);
-                tPts_selected = min(find(abs(t-p1(1))<tVals));
+                tPts_idxs_select = min(find(abs(t-t1)<tVals));
             end
-            s = sum(abs(s(tPts_selected,:)),2);
-            stims_selected = find(s>=1);
-            
-            if isempty(stims_selected) & ~(p1(1)==p2(1))
+            stims_select = obj.GetStimsFromTpts(tPts_idxs_select);
+            if isempty(stims_select) & ~(t1==t2)
                 menu( 'Drag a box around the stim to edit.','Okay');
                 return;
             end
             
-            obj.AddEditDelete(tPts_selected, stims_selected);
+            obj.AddEditDelete(tPts_idxs_select, stims_select);
             if obj.status==0
                 return;
             end
             obj.Display();
             obj.DisplayGuiMain();
-            figure(obj.handles.stimGUI);  % return focus to stimGUI
+            figure(obj.handles.this);  % return focus to stimGUI
             
             % Reset status
             obj.status=0;
+            
         end
-           
+        
+        
+        % ------------------------------------------------
+        function EditSelectTpts(obj, tPts_select)
+
+            t = obj.dataTree.currElem.procElem.GetTime();
+            tPts_idxs_select = [];
+            for ii=1:length(tPts_select)
+                tPts_idxs_select(ii) = binaraysearchnearest(t, tPts_select(ii));
+            end
+            stims_select = obj.GetStimsFromTpts(tPts_idxs_select);
+            obj.AddEditDelete(tPts_idxs_select, stims_select);
+            if obj.status==0
+                return;
+            end
+            obj.Display();
+            obj.DisplayGuiMain();
+            figure(obj.handles.this);  % return focus to stimGUI
+            
+            % Reset status
+            obj.status=0;
+            
+        end
         
         
         % ------------------------------------------------
@@ -383,17 +417,17 @@ classdef StimGuiClass < handle
         
         
         % ------------------------------------------------
-        function AddEditDelete(obj, tPts_selected, iS_lst)
+        function AddEditDelete(obj, tPts_idxs_select, iS_lst)
             % Usage:
             %
-            %     AddEditDelete(tPts_selected, iS_lst)
+            %     AddEditDelete(tPts_select, iS_lst)
             %
             % Inputs:
             %
             %     tPts  - time range selected in stim.currElem.procElem.t
             %     iS_lst - indices in tPts of existing stims
                                    
-            if isempty(tPts_selected)
+            if isempty(tPts_idxs_select)
                 return;
             end
                        
@@ -414,10 +448,10 @@ classdef StimGuiClass < handle
                 actionLst{end+1} = 'Toggle active on/off';
                 actionLst{end+1} = 'Delete';
                 menuTitleStr = sprintf('Edit/Delete stim mark(s) at t=%0.1f-%0.1f to...', ...
-                                       tc(tPts_selected(iS_lst(1))), ...
-                                       tc(tPts_selected(iS_lst(end))));
+                                       tc(tPts_idxs_select(iS_lst(1))), ...
+                                       tc(tPts_idxs_select(iS_lst(end))));
             else
-                menuTitleStr = sprintf('Add stim mark at t=%0.1f...', tc(tPts_selected(1)));
+                menuTitleStr = sprintf('Add stim mark at t=%0.1f...', tc(tPts_idxs_select(1)));
             end
             actionLst{end+1} = 'Cancel';
             nActions = length(actionLst);
@@ -459,7 +493,7 @@ classdef StimGuiClass < handle
                 end
                 
                 %%%% Add new stim to currElem's condition
-                currElem.procElem.AddStims(tc(tPts_selected), CondName);
+                currElem.procElem.AddStims(tc(tPts_idxs_select), CondName);
                 obj.status = 1;
                 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
@@ -472,7 +506,7 @@ classdef StimGuiClass < handle
                     
                     % Delete stim entry from userdata first
                     % because it depends on stim.currElem.procElem.s
-                    currElem.procElem.DeleteStims(tc(tPts_selected));
+                    currElem.procElem.DeleteStims(tc(tPts_idxs_select));
                     
                 %%%% Toggle active/inactive stim
                 elseif ch==nActions-2 & nActions==nCond+4
@@ -489,7 +523,7 @@ classdef StimGuiClass < handle
                     else
                         CondName = CondNamesGroup{ch};
                     end
-                    currElem.procElem.MoveStims(tc(tPts_selected), CondName);
+                    currElem.procElem.MoveStims(tc(tPts_idxs_select), CondName);
                     
                 end
                 obj.status = 1;

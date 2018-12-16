@@ -588,6 +588,10 @@ classdef SnirfClass < AcqDataClass
                     end
                     k = find(d(:,1)==tPts(ii));
                     if ~isempty(k)
+                        if kk==j
+                            continue;
+                        end
+                        
                         % If stim at time point tPts(ii) exists in stim
                         % condition kk, then move stim from obj.stim(kk) to
                         % obj.stim(j)

@@ -81,3 +81,14 @@ global stimGui
 duration = str2num(get(hObject, 'string'));
 icond = get(handles.popupmenuConditions, 'value');
 stimGui.SetStimDuration(icond, duration);
+
+
+%---------------------------------------------------------------------------
+function editSelectTpts_Callback(hObject, eventdata, handles)
+global stimGui
+
+tPts_select = str2num(get(hObject,'string'));
+if isempty(tPts_select)
+    return;
+end
+stimGui.EditSelectTpts(tPts_select);

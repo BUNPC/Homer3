@@ -43,53 +43,53 @@
 function [h, hFig, tAmp] = plotProbe( y, t, SD, ch, hFig, ystd, axFactor, tStep, tAmp )
 
 h=[];
-isinitfig=0;
-if ~exist('y')
-    help plotProbe
-    return
-end
 
-if size(y,1)~=length(t)
-    disp( 'WARNING: length(t) must equal size(y,1)' )
-    return
+% Get initial arg values
+if ~exist('y','var')
+    y = [];
 end
-
-if ~exist('ystd')
+if ~exist('hFig','var')
+    hFig = [];
+end
+if ~exist('ystd','var')
     ystd = [];
-elseif ~isempty(ystd)
-    if ndims(y)~=ndims(ystd)
-        disp( 'WARNING: size(y) must be the same as size(ystd)' )
-        return
-    end
-    if sum(size(y)==size(ystd))/ndims(y)~=1
-        disp( 'WARNING: size(y) must be the same as size(ystd)' )
-        return
-    end
 end
-
-if ~exist('axFactor')
-    axFactor = [1 1];
+if ~exist('axFactor','var')
+    axFactor = [1,1];
 elseif isempty(axFactor)
-    axFactor = [1 1];
+    axFactor = [1,1];
 elseif ndims(axFactor)~=2
     axFactor(2) = axFactor(1);
 end
-
 if ~isempty(t)
-    if ~exist('tStep') | isempty(tStep) | tStep>t(end)
+    if ~exist('tStep','var') || isempty(tStep) || tStep>t(end)
         tStep = t(end);
     elseif tStep<5 && tStep~=0
         tStep = 5;
     end
 end
-
-if ~exist('tAmp') | isempty(tAmp) | tAmp<0
+if ~exist('tAmp','var') || isempty(tAmp) || tAmp<0
     tAmp = 0;
 end
 
-if ~exist('hFig')
-    hFig = [];
+% Create this plot in a figure and clear axes
+if ishandles(hFig)
+    hFig = figure(hFig);
+else
+    hFig = figure;
+
+    % Set figure toolbar to always appear - by default
+    % it's set to 'auto' which makes it disappear
+    % when the zoom is displayed
+    set(hFig,'toolbar','figure', 'NumberTitle', 'off', 'name','Plot Probe', ...
+       'color',[1 1 1], 'paperpositionmode','auto', 'deletefcn',@DeletePlotProbe);
+    p = get(hFig,'Position');
+    set(hFig, 'Position', [p(1)/2, p(2)/2.2,  p(3)*1.3, p(4)*1.3])
+    xlim([0,1]);
+    ylim([0,1]);
 end
+cla(gca);  % Clear axes
+axis off;
 
 % This section will give the option to display subsections of the probe
 % based on nearest-neighbor etc distances.  If the probe only has one
@@ -99,8 +99,6 @@ Distances=((SD.SrcPos(ch.MeasList(:,1),1) - SD.DetPos(ch.MeasList(:,2),1)).^2 +.
            (SD.SrcPos(ch.MeasList(:,1),3) - SD.DetPos(ch.MeasList(:,2),3)).^2).^0.5;
 nearneighborLst=ones(length(Distances),1);
 lstNN=find(nearneighborLst==1);
-
-
 
 %Use the probe SD positions to define the look of this plot
 sPos = SD.SrcPos;
@@ -126,23 +124,6 @@ axHgt = axFactor(2) * 1/nUp;
 
 axXoff=mean([sPos(:,1);dPos(:,1)])-.5;
 axYoff=mean([sPos(:,2);dPos(:,2)])-.5;
-
-
-%Create this plot in a new figure
-if ishandles(hFig)
-    hFig = figure(hFig);
-else
-    isinitfig = 1;
-    hFig = figure;
-
-    % Set figure toolbar to always appear - by default
-    % it's set to 'auto' which makes it disappear
-    % when the zoom is displayed
-    set(hFig,'toolbar','figure', 'NumberTitle', 'off', 'name','Plot Probe', ...
-       'color',[1 1 1], 'paperpositionmode','auto', 'deletefcn',@DeletePlotProbe);
-    p = get(hFig,'Position');
-    set(hFig, 'Position', [p(1)/2, p(2)/2.2,  p(3)*1.3, p(4)*1.3])
-end
 
 
 %This is the plotting routine
@@ -189,12 +170,10 @@ try
                   ];
         end
     end
-    
-    clf_axes_only(hFig);
+        
     % ha = subplot(1,1,1);
     minT = min(t);
     maxT = max(t);
-    axis off
     
     if ~isempty(y)
         lstW1 = find(ml(:,4)==1);
@@ -204,7 +183,7 @@ try
 
         % To eliminate displayed data drifting when scaling y up 
         % or down offset data to align min/max midpoint with zero.
-        [Avg offset] = offsetData(y,nCh,nDataTypes);
+        [Avg, offset] = offsetData(y,nCh,nDataTypes);
         
         if ndims(Avg)==3
             minAmp=min(min(min(Avg)));
@@ -276,7 +255,7 @@ try
             elseif length(tAmp)==2
                 % tAmp is a fixed range instead of relative amplitude
                 AvgTmax = ya-axHgt/4 + axHgt*(((cmax-offset(idx))-cmin)/(cmax-cmin))/2;
-                AvgTmin = ya-axHgt/4 + axHgt*(((cmin-offset(idx))-cmin)/(cmax-cmin))/2;;
+                AvgTmin = ya-axHgt/4 + axHgt*(((cmin-offset(idx))-cmin)/(cmax-cmin))/2;
             end
             ii = nDataTypes+1;
             yStim = [AvgTmin,AvgTmax];
@@ -340,7 +319,6 @@ try
     %This code adds the probe src-det lines to the figure
     if 1 %isproperty(AdvOptions,'ImgOptions') && AdvOptions.ImgOptions.ShowProbe==1
         %Draw the probe on the image
-        optWid=axWid/5; optHgt=axHgt/5;
         for idx2=1:size(sPos,1)
             xa = sPos(idx2,1) - axXoff;
             ya = sPos(idx2,2) - axYoff;
@@ -361,12 +339,7 @@ try
         end        
     end
     
-    if(isinitfig)
-        xlim([0 1]);
-        ylim([0 1]);
-    end  
-
-catch ME
+catch
     
     menu(sprintf('plotProbe exited with ERROR while plotting data for channel # %d',idx),'OK');
     close(hFig);
@@ -376,27 +349,6 @@ end
 
 
 hold off
-
-
-
-
-% ------------------------
-function clf_axes_only(hf)
-
-hc=get(hf,'children');
-for i=1:length(hc)
-    if(strcmp('axes',get(hc(i),'type')))
-        h_axes=hc(i);
-        break;
-    end
-end
-if(exist('h_axes') & ~isempty(h_axes))
-    cla(h_axes);
-else
-    clf;
-end
-
-
 
 
 
@@ -442,7 +394,6 @@ end
 
 
 
-
 % ------------------------------------------------------
 function [y,ampMp] = offsetData(y,nCh,nDataTypes)
 
@@ -467,3 +418,5 @@ for idx=1:nCh
         y(:,[idx idx+nCh]) = y(:,[idx idx+nCh]) - ampMp(idx);
     end
 end
+
+

@@ -11,6 +11,5 @@ elseif foo(1)<=0 | foo(2)<=0
 end    
 plotprobe.axScl = foo;
 set(hObject,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
-plotprobe = plotProbeAndSetProperties(plotprobe);
+plotProbeAndSetProperties(plotprobe);
 
-hmr.plotprobe = plotprobe;

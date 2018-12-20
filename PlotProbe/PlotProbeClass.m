@@ -71,6 +71,7 @@ classdef PlotProbeClass < handle
                 delete(obj.objs.Figure.h);
             end
         end
+
         
         % --------------------------------------------------------------
         function Reset(obj)
@@ -105,6 +106,47 @@ classdef PlotProbeClass < handle
             rdfy = rdfx-.5;
             obj.objs.Figure.h = [];
             obj.objs.Figure.pos = [1, scrsz(4)/2-scrsz(4)*.2, scrsz(3)/rdfx, scrsz(4)/rdfy];
+        end
+        
+        
+        % --------------------------------------------------------------
+        function Display(obj, y, tHRF, SD, ch, tMarkUnits)
+            if ~obj.active
+                if ishandles(obj.objs.Figure.h)
+                    delete(obj.objs.Figure.h);
+                end
+                obj.objs.Figure.h = [];
+                return;
+            end
+            
+            [hData, obj.objs.Figure.h, obj.tMarkAmp] = plotProbe( y, tHRF, SD, ch, obj.objs.Figure.h, [], obj.axScl, obj.tMarkInt, obj.tMarkAmp );
+            
+            % Modify and add graphics objects in plot probe figure
+            obj.objs.CtrlPanel    = drawPlotProbeControlsPanel( obj.objs.CtrlPanel, obj.objs.Figure.h );
+            obj.objs.SclPanel     = drawPlotProbeScale( obj.objs.SclPanel, obj.objs.CtrlPanel.h, obj.axScl, obj.objs.Figure.h);
+            obj.objs.BttnDup      = drawPlotProbeDuplicate( obj.objs.BttnDup, obj.objs.CtrlPanel.h, obj.objs.Figure.h );
+            obj.objs.BttnHidMeas  = drawPlotProbeHiddenMeas( obj.objs.BttnHidMeas, obj.objs.CtrlPanel.h, obj.hidMeasShow, obj.objs.Figure.h );
+            obj.objs.TmarkPanel   = drawPlotProbeTimeMarkers( obj.objs.TmarkPanel, obj.objs.CtrlPanel.h, obj.tMarkInt, obj.tMarkAmp, ...
+                                                              obj.tMarkShow, tMarkUnits, obj.objs.Figure.h );
+            showHiddenObjs( 2*obj.hidMeasShow+obj.tMarkShow, ch, y, hData );
+                        
+            % Save the plot probe control panel handles
+            obj.y                = y;
+            obj.tHRF             = tHRF;
+            obj.SD               = SD;
+            obj.ch               = ch;
+        end
+        
+        
+        % --------------------------------------------------------------
+        function SetTmarkAmp(obj, tMarkAmp)
+            obj.tMarkAmp = tMarkAmp;
+        end
+        
+        
+        % --------------------------------------------------------------
+        function tMarkAmp = GetTmarkAmp(obj)
+            tMarkAmp = obj.tMarkAmp;
         end
 
     end

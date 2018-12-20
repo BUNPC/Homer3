@@ -213,7 +213,7 @@ classdef RunClass < TreeNodeClass
             elseif datatype == buttonVals.CONC
                 d = obj.procResult.dc;
                 t = obj.GetTime();
-            elseif datatype == buttonVals.OD_HRF || datatype == buttonVals.OD_HRF_PLOT_PROBE
+            elseif datatype == buttonVals.OD_HRF
                 d = obj.procResult.dodAvg;
                 t = obj.procResult.tHRF;
                 if showStdErr
@@ -223,7 +223,7 @@ classdef RunClass < TreeNodeClass
                 if isempty(condition)
                     return;
                 end
-            elseif datatype == buttonVals.CONC_HRF || datatype == buttonVals.CONC_HRF_PLOT_PROBE
+            elseif datatype == buttonVals.CONC_HRF
                 d = obj.procResult.dcAvg;
                 t = obj.procResult.tHRF;
                 if showStdErr
@@ -261,14 +261,14 @@ classdef RunClass < TreeNodeClass
                 chLst = find(ch.MeasListVis(iCh)==1);
                 
                 % Plot data
-                if datatype == buttonVals.RAW || datatype == buttonVals.OD || datatype == buttonVals.OD_HRF || datatype == buttonVals.OD_HRF_PLOT_PROBE
-                    if  datatype == buttonVals.OD_HRF || datatype == buttonVals.OD_HRF_PLOT_PROBE
+                if datatype == buttonVals.RAW || datatype == buttonVals.OD
+                    if  datatype == buttonVals.OD_HRF
                         d = d(:,:,condition);
                     end
                     d = reshape_y(d, ch.MeasList, Lambda);
                     DisplayDataRawOrOD(t, d, dStd, iWl, iCh, chLst, nTrials, condition, linecolor, linestyle);
-                elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF || datatype == buttonVals.CONC_HRF_PLOT_PROBE                    
-                    if  datatype == buttonVals.CONC_HRF || datatype == buttonVals.CONC_HRF_PLOT_PROBE
+                elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF                    
+                    if  datatype == buttonVals.CONC_HRF
                         d = d(:,:,:,condition);
                     end
                     d = d * sclConc;                    
@@ -294,13 +294,13 @@ classdef RunClass < TreeNodeClass
             
             buttonVals = guiMain.buttonVals;
             
-            if guiMain.datatype == buttonVals.RAW_HRF || guiMain.datatype == buttonVals.RAW_HRF_PLOT_PROBE
+            if guiMain.datatype == buttonVals.RAW_HRF
                 return;
             end
-            if guiMain.datatype == buttonVals.OD_HRF || guiMain.datatype == buttonVals.OD_HRF_PLOT_PROBE
+            if guiMain.datatype == buttonVals.OD_HRF
                 return;
             end
-            if guiMain.datatype == buttonVals.CONC_HRF || guiMain.datatype == buttonVals.CONC_HRF_PLOT_PROBE
+            if guiMain.datatype == buttonVals.CONC_HRF
                 return;
             end
             

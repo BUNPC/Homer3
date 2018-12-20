@@ -119,9 +119,8 @@ classdef StimGuiClass < handle
 
             icond = 1;
             set(obj.handles.popupmenuConditions, 'value',icond);
-            set(obj.handles.popupmenuConditions, 'string', obj.dataTree.currElem.procElem.CondNames);
-            duration = obj.dataTree.currElem.procElem.GetStimDuration(icond);
-            set(obj.handles.editStimDuration, 'string', num2str(duration));
+            set(obj.handles.popupmenuConditions, 'string', sort(obj.dataTree.currElem.procElem.CondNames));
+            obj.SetEditStimDuration();
         end
 
         
@@ -302,8 +301,8 @@ classdef StimGuiClass < handle
             set(obj.handles.axes1,'xlim', [t(1), t(end)]);
             
             % Update conditions popupmenu 
-            set(obj.handles.popupmenuConditions, 'string', currElem.procElem.CondNames);
-            
+            set(obj.handles.popupmenuConditions, 'string', sort(currElem.procElem.CondNames));
+            obj.SetEditStimDuration();
         end
         
         
@@ -561,6 +560,20 @@ classdef StimGuiClass < handle
             end   
             duration = obj.dataTree.currElem.procElem.GetStimDuration(icond);
         end
+        
+        
+        % ------------------------------------------------
+        function SetEditStimDuration(obj)
+            icond = get(obj.handles.popupmenuConditions, 'value');
+            duration = obj.dataTree.currElem.procElem.GetStimDuration(icond);
+            if isempty(duration)
+                str = '****';
+            else
+                str = num2str(duration);
+            end
+            set(obj.handles.editStimDuration, 'string', str);            
+        end
+        
            
     end
     

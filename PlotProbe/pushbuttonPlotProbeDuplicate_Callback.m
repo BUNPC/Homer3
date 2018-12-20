@@ -21,7 +21,7 @@ pos = getNewFigPos(hFig);
 set(hFig2,'position',pos);
 plotprobe.objs.Figure.h = hFig2;
 
-plotprobe = plotProbeAndSetProperties(plotprobe);
+plotProbeAndSetProperties(plotprobe);
 
 %{
 if tMarkAmp

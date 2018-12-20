@@ -65,13 +65,7 @@ stimGui.Close();
 function popupmenuConditions_Callback(hObject, eventdata, handles)
 global stimGui
 
-condition = get(hObject, 'value');
-duration = stimGui.GetStimDuration(condition);
-if isempty(duration)
-    return;
-end
-set(handles.editStimDuration, 'string', num2str(duration));
-
+stimGui.SetEditStimDuration();
 
 
 % --------------------------------------------------------------------

@@ -92,8 +92,6 @@ hmr.files    = [];
 hmr.dataTree = [];
 hmr.guiMain  = [];
 
-set(hObject, 'units', 'normalized', 'position',[.25, .20, .65, .75])
-
 % Choose default command line output for Homer3
 handles.output = hObject;
 guidata(hObject, handles);
@@ -287,17 +285,17 @@ dataTree.DisplayCurrElem(plotprobe, guiMain);
 
 datatype   = guiMain.datatype;
 buttonVals = guiMain.buttonVals;
-if datatype == buttonVals.RAW || datatype == buttonVals.RAW_HRF || datatype == buttonVals.RAW_HRF_PLOT_PROBE
+if datatype == buttonVals.RAW || datatype == buttonVals.RAW_HRF
     
     set(guiMain.handles.listboxPlotWavelength, 'visible','on');
     set(guiMain.handles.listboxPlotConc, 'visible','off');
     
-elseif datatype == buttonVals.OD || datatype == buttonVals.OD_HRF || datatype == buttonVals.OD_HRF_PLOT_PROBE
+elseif datatype == buttonVals.OD || datatype == buttonVals.OD_HRF
     
     set(guiMain.handles.listboxPlotWavelength, 'visible','on');
     set(guiMain.handles.listboxPlotConc, 'visible','off');
     
-elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF || datatype == buttonVals.CONC_HRF_PLOT_PROBE
+elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF
     
     set(guiMain.handles.listboxPlotWavelength, 'visible','off');
     set(guiMain.handles.listboxPlotConc, 'visible','on');
@@ -468,16 +466,11 @@ dataTree.currElem.procElem.DisplayGuiMain(guiMain);
 function menuCopyCurrentPlot_Callback(hObject, eventdata, handles)
 global hmr
 
-currElem = hmr.currElem;
+currElem = hmr.dataTree.currElem;
 guiMain = hmr.guiMain;
 
 [hf, plotname] = CopyDisplayCurrElem(currElem, guiMain);
-%{
-if strcmp(get(handles.menuAutosavePlotFigsToFile,'checked'),'on')
-    filename = [plotname '.jpg'];
-    print(hf,'-djpeg99',filename);
-end
-%}
+
 
 
 

@@ -1,7 +1,7 @@
 function radiobuttonShowTimeMarkers_Callback(hObject, evendata, handles)
 global hmr
 
-currElem = hmr.currElem;
+currElem = hmr.dataTree.currElem;
 guiMain = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
@@ -25,9 +25,9 @@ elseif currElem.procType==3
     condition  = find(currElem.procElem.CondName2Group == guiMain.condition);
 end
 
-if datatype == buttonVals.OD_HRF_PLOT_PROBE
+if datatype == buttonVals.OD_HRF
     y = procResult.dodAvg(:, :, condition);
-elseif datatype == buttonVals.CONC_HRF_PLOT_PROBE
+elseif datatype == buttonVals.CONC_HRF
     y = procResult.dcAvg(:, :, :, condition);
 else
     return;
@@ -36,5 +36,4 @@ end
 guiSettings = 2*bit1 + bit0;
 showHiddenObjs(guiSettings,ch,y,h);
 
-hmr.plotprobe = plotprobe;
 

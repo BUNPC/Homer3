@@ -3,6 +3,9 @@ function obj = drawPlotProbeControlsPanel(obj,hFig)
 if ishandles(obj.h)
     return;
 end
+if ~ishandles(hFig)
+    return;
+end
 
 figure(hFig);
 color_fig = get(hFig,'color');

@@ -543,7 +543,7 @@ classdef SnirfClass < AcqDataClass
         
         
         % ----------------------------------------------------------------------------------
-        function DeleteStims(obj, tPts)
+        function DeleteStims(obj, tPts, condition)
             % Find all stims for any conditions which match the time points. 
             for ii=1:length(obj.stim)
                 obj.stim(ii).DeleteStims(tPts);

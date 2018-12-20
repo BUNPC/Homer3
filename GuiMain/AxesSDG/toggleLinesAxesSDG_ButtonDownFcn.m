@@ -6,7 +6,6 @@ function toggleLinesAxesSDG_ButtonDownFcn(hObject, eventdata, handles)
 global hmr;
 
 currElem = hmr.dataTree.currElem;
-group    = hmr.dataTree.group;
 guiMain  = hmr.guiMain;
 
 axesSDG  = guiMain.axesSDG;
@@ -75,7 +74,5 @@ end
 DisplayAxesSDG(axesSDG, currElem.procElem);
 currElem.procElem.DisplayGuiMain(guiMain);
 
-hmr.currElem = currElem;
-hmr.group    = group;
 
 

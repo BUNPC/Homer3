@@ -188,24 +188,11 @@ classdef DataTreeClass <  handle
                 buttonVals = canvas.buttonVals;
                 condition = canvas.condition;
             end
-
-            % Display current elem unless the data is undefined for current
-            % elem, for instance raw data is undefined for group and
-            % subject. In that case, display current run.
-            procElem = obj.currElem.procElem;
-            if obj.currElem.procType ~= 3
-                if ~ismember(datatype, [buttonVals.OD_HRF, buttonVals.OD_HRF_PLOT_PROBE, buttonVals.CONC_HRF, buttonVals.CONC_HRF_PLOT_PROBE])
-                    iSubj = obj.currElem.iSubj;
-                    iRun = obj.currElem.iRun;
-                    if iRun==0, iRun=1; end
-                    procElem = obj.group.subjs(iSubj).runs(iRun);                    
-                end
-            end
             
             if strcmp(canvas.name, 'guiMain')
-                procElem.DisplayGuiMain(canvas);
+                obj.currElem.procElem.DisplayGuiMain(canvas);
             elseif strcmp(canvas.name, 'plotprobe')
-                procElem.DisplayPlotProbe(canvas, datatype, buttonVals, condition);
+                obj.currElem.procElem.DisplayPlotProbe(canvas, datatype, buttonVals, condition);
             end
         end
 

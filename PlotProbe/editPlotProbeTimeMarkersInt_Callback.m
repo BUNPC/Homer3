@@ -16,7 +16,6 @@ end
 
 plotprobe.tMarkInt = foo;
 set(hObject,'string', sprintf('%0.1f ',plotprobe.tMarkInt) );
-plotprobe = plotProbeAndSetProperties(plotprobe);
+plotProbeAndSetProperties(plotprobe);
 
-hmr.plotprobe = plotprobe;
 

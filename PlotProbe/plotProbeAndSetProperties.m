@@ -1,4 +1,4 @@
-function plotprobe = plotProbeAndSetProperties(plotprobe)
+function plotProbeAndSetProperties(plotprobe)
 
 y        = plotprobe.y;
 tHRF     = plotprobe.tHRF;

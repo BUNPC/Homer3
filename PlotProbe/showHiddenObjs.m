@@ -3,8 +3,11 @@ function showHiddenObjs(bitmask, ch, y, h)
 if isempty(y)
     return;
 end
+if ~ishandles(h)
+    return;
+end
 
-ampYmean = 0;
+
 nDataTypes = ndims(y);
 lst = find(ch.MeasList(:,4)==1);
 MLact = ch.MeasListAct(lst); % option for future

@@ -16,6 +16,7 @@ if ~exist('ysize','var')
 end
 
 units = get(hFig, 'units');
+set(0, 'units','pixels');
 p = get(0, 'ScreenSize');
 set(hFig, 'units','pixels', 'position',[xpos*p(3), ypos*p(4), xsize*p(3), ysize*p(4)]);
 set(hFig, 'units',units);

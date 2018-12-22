@@ -59,7 +59,7 @@ classdef NirsFilesClass < DataFilesClass
             end
             
             %%% Display loaded and error files in GUI
-            obj.dispFiles();
+%             obj.Display();
             
         end
         

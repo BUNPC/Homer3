@@ -73,6 +73,7 @@ set(handles.checkboxPlotHRF, 'enable', val);
 set(handles.textStatus, 'enable', val);
 
 
+
 % --------------------------------------------------------------------
 function Homer3_OpeningFcn(hObject, eventdata, handles, varargin)
 global hmr
@@ -85,12 +86,12 @@ else
     hmr.format = varargin{1};
 end
 
-
-hmr.handles.this = hObject;
-hmr.handles.proccessOpt = [];
-hmr.files    = [];
-hmr.dataTree = [];
-hmr.guiMain  = [];
+hmr.files     = [];
+hmr.dataTree  = [];
+hmr.guiMain   = [];
+hmr.plotprobe = [];
+hmr.stimGui   = [];
+hmr.handles   = [];
 
 % Choose default command line output for Homer3
 handles.output = hObject;
@@ -112,11 +113,12 @@ Homer3_EnableDisableGUI(handles,'off');
 Homer3_Init(handles, {'zbuffer'});
 
 % Get file names 
-files = FindFiles(handles);
-if isempty(files)
+dataInit = FindFiles(handles);
+if dataInit.isempty()
     return;
 end
-
+dataInit.Display();
+files = dataInit.files;
 
 % Load date files into group tree object
 dataTree  = DataTreeClass(files, handles, @listboxFiles_Callback);
@@ -136,13 +138,20 @@ hmr.stimGui   = stimGui;
 % Display data from currently selected processing element
 hmr.dataTree.DisplayCurrElem(guiMain);
 
+hmr.handles.this = hObject;
+hmr.handles.proccessOpt = [];
+
 
 
 
 % --------------------------------------------------------------------
 function varargout = Homer3_OutputFcn(hObject, eventdata, handles)
 global hmr
-varargout{1} = hmr.handles.this;
+
+varargout{1} = [];
+if ~isempty(hmr.handles)
+    varargout{1} = hmr.handles.this;
+end
 
 
 
@@ -423,6 +432,8 @@ function menuChangeDirectory_Callback(hObject, eventdata, handles)
 global hmr
 guiMain = hmr.guiMain;
 
+fmt = hmr.format;
+
 % Change directory
 pathnm = uigetdir( cd, 'Pick the new directory' );
 if pathnm==0
@@ -435,8 +446,7 @@ Homer3_DeleteFcn(hGui,[],handles);
 % checkboxPlotProbe_Callback(handles.checkboxPlotProbe, 0, handles);
 
 % restart
-clear hmr
-Homer3();
+Homer3(fmt);
 
 
 

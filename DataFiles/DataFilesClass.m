@@ -17,8 +17,12 @@ classdef DataFilesClass < handle
         
         % ----------------------------------------------------
         function obj = DataFilesClass(varargin)
+            if ~isempty(varargin)
+                args = varargin{1};
+            else
+                args = [];
+            end
             
-            args = varargin{1};
             nargs = length(args);
             if nargs==0
                 obj.handles = [];
@@ -186,7 +190,7 @@ classdef DataFilesClass < handle
         
         
         % --------------------------------------------------------------------------------------------
-        function dispFiles(obj)
+        function Display(obj)
             
             if isempty(obj.handles)
                 return;
@@ -355,6 +359,16 @@ classdef DataFilesClass < handle
                     break;
                 end
             end 
+        end
+
+        
+        % ----------------------------------------------------------
+        function b = isempty(obj)
+            if isempty(obj.files)
+                b = true;
+            else
+                b = false;
+            end
         end
 
         

@@ -314,12 +314,12 @@ classdef RunClass < TreeNodeClass
                 obj.acquired.SetStims_MatInput(s, t, obj.CondNames);
                 s = obj.acquired.GetStims();
                 
-                % Plot included and excluded stims
-                yrange=ylim();
+                % Plot included and excluded stims                
+                yrange = GetAxesYRangeForStimPlot(hAxes);                
                 hLg=[];
                 idxLg=[];
                 kk=1;
-                CondColTbl = obj.CondColTbl;
+                CondColTbl = obj.CondColTbl;              
                 for iS = 1:size(s,2)
                     iCond = obj.CondName2Group(iS);
                     

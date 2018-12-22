@@ -28,6 +28,12 @@ function [files, dirnameGroup] = FindFiles(varargin)
 
 
 global hmr
+global supportedFormats
+
+supportedFormats = {
+    '.snirf',0;
+    '.nirs',0;
+    };
 
 %%%% Parse arguments
 
@@ -67,55 +73,70 @@ if ~exist('fmt','var')
     if ~isempty(hmr) && isstruct(hmr) && isfield(hmr,'format')
         fmt = hmr.format;
     else
-        fmt = 'nirs';
+        fmt = supportedFormats{1};
     end
 end
+
 if ~exist('dirnameGroup','var') || isempty(dirnameGroup)
     dirnameGroup = pwd;
 end
 
-
 % Check files data set for errors. If there are no valid
 % nirs files don't attempt to load them.
-files = [];
-while ~isobject(files) || isempty(files)
+files = DataFilesClass();
+while files.isempty()
     cd(dirnameGroup)
     switch fmt
         case {'snirf','.snirf'}
-            files = SnirfFilesClass(handles).files;
-        case {'nirs','.nirs'}
-            files = NirsFilesClass(handles).files;
-        otherwise
-            q = menu('Homer3 only supports .snirf and .nirs file formats. Please choose one.', '.snirf', '.nirs', 'CANCEL');
-            if q==3
-                return;
-            elseif q==2
-                fmt = 'nirs';
-            else
-                fmt = 'snirf';
+            files = SnirfFilesClass(handles);
+            if files.isempty()
+                files = NirsFilesClass(handles);
+                if ~files.isempty()
+                    msg{1} = sprintf('Homer3 did not find any .snirf files in the current folder but did find .nirs files.\n');
+                    msg{2} = sprintf('Do you want to convert .nirs files to .snirf format and load them?');
+                    q = menu([msg{:}],'YES','NO');
+                    if q==2
+                        files = DataFilesClass();
+                        return;
+                    end
+                end
+                Nirs2Snirf();
+                files = SnirfFilesClass(handles);
             end
-            continue;
+        case {'nirs','.nirs'}
+            files = NirsFilesClass(handles);
+        otherwise
+            q = menu(sprintf('Homer3 only supports file formats: {%s}. Please choose one.', cell2str(supportedFormats(:,1))), ...
+                    'OK','CANCEL');
+            if q==2
+                files = DataFilesClass();
+                return;
+            else
+                selection = checkboxinputdlg(supportedFormats(:,1), 'Select Supported File Format');
+                if isempty(selection)
+                    files = DataFilesClass();
+                    return;
+                end
+                fmt = supportedFormats{selection,1};
+                continue;
+            end
     end
-    if isempty(files)
-        msg{1} = sprintf('Homer3 did not find any %s data files to load in the current group folder. ', fmt);
+    if files.isempty()
+        msg{1} = sprintf('Homer3 did not find any %s data files to load in the current group folder. ', fmt);        
         msg{2} = sprintf('Do you want to select another group folder?');
         q = menu([msg{:}],'YES','NO');
         if q==2
+            files = DataFilesClass();
             return;
         end
         dirnameGroup = uigetdir(pwd, 'Please select another group folder ...');
         if dirnameGroup==0
+            files = DataFilesClass();
             return;
         end
     end
 end
 
-if isempty(files)
-    files = NirsFilesClass(handles).files;
-    if isempty(files)
-        return;
-    end
-    Nirs2Snirf();
-    files = SnirfFilesClass(handles).files;
-end
+
+
 

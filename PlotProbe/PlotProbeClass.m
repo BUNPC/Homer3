@@ -119,7 +119,24 @@ classdef PlotProbeClass < handle
                 return;
             end
             
-            [hData, obj.objs.Figure.h, obj.tMarkAmp] = plotProbe( y, tHRF, SD, ch, obj.objs.Figure.h, [], obj.axScl, obj.tMarkInt, obj.tMarkAmp );
+            if ishandles(obj.objs.Figure.h)
+                figure(obj.objs.Figure.h);
+            else
+                obj.objs.Figure.h = figure;
+                
+                % Set figure toolbar to always appear - by default
+                % it's set to 'auto' which makes it disappear
+                % when the zoom is displayed
+                set(obj.objs.Figure.h,'toolbar','figure', 'NumberTitle', 'off', 'name','Plot Probe', ...
+                    'color',[1 1 1], 'paperpositionmode','auto', 'deletefcn',@DeletePlotProbe);
+                p = get(obj.objs.Figure.h,'Position');
+                set(obj.objs.Figure.h, 'Position', [p(1)/2, p(2)/2.2,  p(3)*1.3, p(4)*1.3])
+                xlim([0,1]);
+                ylim([0,1]);
+            end
+            
+            
+            hData = plotProbe( y, tHRF, SD, ch, [], obj.axScl, obj.tMarkInt, obj.tMarkAmp );
             
             % Modify and add graphics objects in plot probe figure
             obj.objs.CtrlPanel    = drawPlotProbeControlsPanel( obj.objs.CtrlPanel, obj.objs.Figure.h );

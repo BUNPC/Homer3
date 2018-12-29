@@ -1,4 +1,4 @@
-% [h, hFig, tAmp] = plotProbe( y, t, SD, ml, hFig, ystd, axFactor, tStep, tAmp )
+% h = plotProbe( y, t, SD, ml, ystd, axFactor, tStep, tAmp )
 %
 % Plot the data in the probe format. If no data is provided,
 % this plots the probe geometry given in SD.
@@ -22,8 +22,6 @@
 %
 % SD - SD structure
 %
-% hFig - figure number to plot, If empty it creates a new figure. OPTIONAL
-%
 % ystd - Standard deviation to be plotted as y +/- ystd. OPTIONAL
 %
 % axFactor - [x y] scale the width and height of the subplots. OPTIONAL
@@ -40,16 +38,13 @@
 % toggle nearest neighbors
 % assuming y is concentration data... need to check dimensions
 
-function [h, hFig, tAmp] = plotProbe( y, t, SD, ch, hFig, ystd, axFactor, tStep, tAmp )
+function h = plotProbe( y, t, SD, ch, ystd, axFactor, tStep, tAmp )
 
 h=[];
 
 % Get initial arg values
 if ~exist('y','var')
     y = [];
-end
-if ~exist('hFig','var')
-    hFig = [];
 end
 if ~exist('ystd','var')
     ystd = [];
@@ -72,23 +67,8 @@ if ~exist('tAmp','var') || isempty(tAmp) || tAmp<0
     tAmp = 0;
 end
 
-% Create this plot in a figure and clear axes
-if ishandles(hFig)
-    hFig = figure(hFig);
-else
-    hFig = figure;
-
-    % Set figure toolbar to always appear - by default
-    % it's set to 'auto' which makes it disappear
-    % when the zoom is displayed
-    set(hFig,'toolbar','figure', 'NumberTitle', 'off', 'name','Plot Probe', ...
-       'color',[1 1 1], 'paperpositionmode','auto', 'deletefcn',@DeletePlotProbe);
-    p = get(hFig,'Position');
-    set(hFig, 'Position', [p(1)/2, p(2)/2.2,  p(3)*1.3, p(4)*1.3])
-    xlim([0,1]);
-    ylim([0,1]);
-end
-cla(gca);  % Clear axes
+% Clear axes
+cla(gca); 
 axis off;
 
 % This section will give the option to display subsections of the probe
@@ -342,7 +322,6 @@ try
 catch
     
     menu(sprintf('plotProbe exited with ERROR while plotting data for channel # %d',idx),'OK');
-    close(hFig);
     h=[];
     
 end

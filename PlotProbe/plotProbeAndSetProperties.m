@@ -9,11 +9,8 @@ axScl    = plotprobe.axScl;
 bit0     = plotprobe.tMarkShow;
 bit1     = plotprobe.hidMeasShow;
 tMarkAmp = plotprobe.tMarkAmp;
-hFig     = plotprobe.objs.Figure.h;
 
-[hData, hFig, tMarkAmp] = plotProbe( y, tHRF, SD, ch, hFig, [], axScl, tMarkInt, tMarkAmp );
+hData = plotProbe( y, tHRF, SD, ch, [], axScl, tMarkInt, tMarkAmp );
 showHiddenObjs( 2*bit1+bit0, ch, y, hData );
 
-plotprobe.tMarkAmp = tMarkAmp;
 plotprobe.objs.Data.h = hData;
-plotprobe.objs.Figure.h = hFig;

@@ -7,7 +7,6 @@ if ~ishandles(h)
     return;
 end
 
-
 nDataTypes = ndims(y);
 lst = find(ch.MeasList(:,4)==1);
 MLact = ch.MeasListAct(lst); % option for future

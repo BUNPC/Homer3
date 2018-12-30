@@ -88,8 +88,7 @@ classdef PlotProbeClass < handle
         % --------------------------------------------------------------
         function Display(obj, y, tHRF, SD, ch, tMarkUnits)
             if ~obj.active
-                obj.handles.Figure = [];
-                obj.handles.FigureDup = [];
+                obj.CloseGUI();
                 return;
             end
             
@@ -111,6 +110,11 @@ classdef PlotProbeClass < handle
             obj.handles.BttnHidMeas  = findobj(obj.handles.Figure, 'tag','radiobuttonPlotProbeShowHiddenMeas');
             showHiddenObjs( 2*obj.hidMeasShow+obj.tMarkShow, ch, y, hData );
                         
+            % Save the plot probe control panel handles
+            obj.y                = y;
+            obj.tHRF             = tHRF;
+            obj.SD               = SD;
+            obj.ch               = ch;
         end
         
         

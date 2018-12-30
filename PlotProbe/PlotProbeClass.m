@@ -107,7 +107,7 @@ classdef PlotProbeClass < handle
             obj.handles.SclPanel     = findobj(obj.handles.Figure, 'tag','uipanelScaling');
             obj.handles.TmarkPanel   = findobj(obj.handles.Figure, 'tag','uipanelTimeMarks');
             obj.handles.BttnDup      = findobj(obj.handles.Figure, 'tag','pushbuttonPlotProbeDuplicate');
-            obj.handles.BttnHidMeas  = findobj(obj.handles.Figure, 'tag','radiobuttonPlotProbeShowHiddenMeas');
+            obj.handles.BttnHidMeas  = findobj(obj.handles.Figure, 'tag','radiobuttonShowHiddenMeas');
             showHiddenObjs( 2*obj.hidMeasShow+obj.tMarkShow, ch, y, hData );
                         
             % Save the plot probe control panel handles

@@ -188,6 +188,10 @@ function pushbuttonPlotProbeDuplicate_Callback(hObject, eventdata, handles)
 global hmr
 plotprobe = hmr.plotprobe;
 
+if ishandles(plotprobe.handles.FigureDup)
+    delete(plotprobe.handles.FigureDup);
+end
+
 %%%% Get the zoom level of the original plotProbe axes
 figure(plotprobe.handles.Figure);
 a = get(gca,'xlim');
@@ -257,7 +261,7 @@ pos = [p(1)+offsetX p(2)+offsetY p(3) p(4)];
 
 
 % ----------------------------------------------------------------------
-function radiobuttonShowHiddenMeas_Callback(hObject, handles)
+function radiobuttonShowHiddenMeas_Callback(hObject, eventdata, handles)
 global hmr
 plotprobe = hmr.plotprobe;currElem = hmr.dataTree.currElem;
 guiMain = hmr.guiMain;
@@ -298,3 +302,4 @@ global hmr
 plotprobe = hmr.plotprobe;
 
 plotprobe.CloseGUI();
+

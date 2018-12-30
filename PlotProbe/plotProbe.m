@@ -49,6 +49,9 @@ end
 if ~exist('ystd','var')
     ystd = [];
 end
+if ~exist('ystd','var')
+    ystd = [];
+end
 if ~exist('axFactor','var')
     axFactor = [1,1];
 elseif isempty(axFactor)
@@ -66,6 +69,16 @@ end
 if ~exist('tAmp','var') || isempty(tAmp) || tAmp<0
     tAmp = 0;
 end
+
+% Conditions causing early exit
+if ~exist('SD','var') || isempty(SD)
+    return;
+end
+if ~exist('ch','var') || isempty(ch)
+    return;
+end
+
+
 
 % Clear axes
 cla(gca); 

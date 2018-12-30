@@ -13,4 +13,3 @@ tMarkAmp = plotprobe.tMarkAmp;
 hData = plotProbe( y, tHRF, SD, ch, [], axScl, tMarkInt, tMarkAmp );
 showHiddenObjs( 2*bit1+bit0, ch, y, hData );
 
-plotprobe.objs.Data.h = hData;

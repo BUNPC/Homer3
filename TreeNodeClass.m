@@ -291,7 +291,7 @@ classdef TreeNodeClass < handle
                 tMarkUnits='(AU)';
             elseif datatype == buttonVals.CONC_HRF
                 y = obj.procResult.dcAvg(:, :, :, condition);
-                plotprobe.SetTmarkAmp(tMarkAmp*1e6);
+                plotprobe.SetTmarkAmp(tMarkAmp/1e6);
                 tMarkUnits='(micro-molars)';
             else
                 y = [];

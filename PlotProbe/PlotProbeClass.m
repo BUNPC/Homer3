@@ -15,6 +15,7 @@ classdef PlotProbeClass < handle
         condition;
         active;
         handles;
+        figPosLast;
     end
     
     methods
@@ -32,6 +33,7 @@ classdef PlotProbeClass < handle
             obj.tMarkAmp = 0;
             obj.tMarkShow = 0;
             obj.hidMeasShow = 0;
+            obj.figPosLast = [];
             
             if exist('handles','var')
                 obj.active = get(handles.checkboxPlotProbe, 'value');
@@ -107,9 +109,12 @@ classdef PlotProbeClass < handle
             obj.handles.SclPanel     = findobj(obj.handles.Figure, 'tag','uipanelScaling');
             obj.handles.TmarkPanel   = findobj(obj.handles.Figure, 'tag','uipanelTimeMarks');
             obj.handles.BttnDup      = findobj(obj.handles.Figure, 'tag','pushbuttonPlotProbeDuplicate');
-            obj.handles.BttnHidMeas  = findobj(obj.handles.Figure, 'tag','radiobuttonShowHiddenMeas');
+            obj.handles.BttnHidMeas  = findobj(obj.handles.Figure, 'tag','radiobuttonShowHiddenMeas');            
             showHiddenObjs( 2*obj.hidMeasShow+obj.tMarkShow, ch, y, hData );
-                        
+            
+            h = findobj(obj.handles.TmarkPanel, 'tag','textTimeMarkersAmpUnits');
+            set(h, 'string',tMarkUnits);
+
             % Save the plot probe control panel handles
             obj.y                = y;
             obj.tHRF             = tHRF;
@@ -134,13 +139,14 @@ classdef PlotProbeClass < handle
         % --------------------------------------------------------------
         function CloseGUI(obj)
             if ishandle(obj.handles.Figure)
+                obj.figPosLast = get(obj.handles.Figure, 'position');
                 delete(obj.handles.Figure);
             end
             if ishandle(obj.handles.FigureDup)
                 delete(obj.handles.FigureDup);
             end
             obj.handles.Figure = [];
-            obj.handles.FigureDup = [];            
+            obj.handles.FigureDup = [];
         end
         
     end

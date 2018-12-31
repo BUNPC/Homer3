@@ -20,6 +20,13 @@ end
 
 % ----------------------------------------------------------------------
 function PlotProbeGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+global hmr
+plotprobe = hmr.plotprobe;
+
+if ~isempty(plotprobe.figPosLast)
+    set(hObject, 'position',plotprobe.figPosLast);
+end
+
 % Choose default command line output for PlotProbeGUI
 handles.output = hObject;
 
@@ -39,7 +46,6 @@ varargout{1} = handles.output;
 % ----------------------------------------------------------------------
 function editPlotProbeAxScl_Callback(hObject, eventdata, handles)
 global hmr
-
 plotprobe = hmr.plotprobe;
 
 foo = str2num( get(hObject,'string') );
@@ -108,9 +114,9 @@ plotProbeAndSetProperties(plotprobe);
 function radiobuttonShowTimeMarkers_Callback(hObject, evendata, handles)
 global hmr
 
-currElem = hmr.dataTree.currElem;
-guiMain = hmr.guiMain;
 plotprobe = hmr.plotprobe;
+currElem  = hmr.dataTree.currElem;
+guiMain   = hmr.guiMain;
 
 bit0 = get(hObject,'value');
 plotprobe.tMarkShow = bit0;
@@ -122,7 +128,6 @@ ch          = currElem.procElem.GetMeasList();
 
 datatype    = guiMain.datatype;
 buttonVals  = guiMain.buttonVals;
-
 
 if currElem.procType==1
     condition  = guiMain.condition;
@@ -141,7 +146,9 @@ else
 end
 
 guiSettings = 2*bit1 + bit0;
+plotProbeAndSetProperties(plotprobe);
 showHiddenObjs(guiSettings,ch,y,h);
+
 
 
 % ----------------------------------------------------------------------
@@ -302,4 +309,3 @@ global hmr
 plotprobe = hmr.plotprobe;
 
 plotprobe.CloseGUI();
-

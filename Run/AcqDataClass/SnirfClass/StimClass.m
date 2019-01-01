@@ -206,12 +206,14 @@ classdef StimClass  < matlab.mixin.Copyable
 
         
         % -------------------------------------------------------
-        function ts = GetStim(obj)
+        function [ts, v] = GetStim(obj)
             ts = [];
+            v = [];
             if isempty(obj.data)
                 return;
             end
             ts = obj.data(:,1);
+            v = obj.data(:,3);
         end
         
         

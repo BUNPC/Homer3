@@ -405,12 +405,12 @@ classdef SnirfClass < AcqDataClass
             t = obj.data(1).GetTime();
             s = zeros(length(t), length(obj.stim));
             for ii=1:length(obj.stim)
-                ts = obj.stim(ii).GetStim();
+                [ts, v] = obj.stim(ii).GetStim();
                 [~, k] = nearest_point(t, ts);
                 if isempty(k)
                     continue;
                 end
-                s(k,ii) = 1;
+                s(k,ii) = v;
             end
         end
         

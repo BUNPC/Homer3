@@ -117,12 +117,31 @@ classdef StimGuiClass < handle
             
             SetTextFilename(obj, [fname, ext, ' :']); 
 
-            icond = 1;
+            % Try to keep the same condition as old run
+            [icond, conditions] = GetConditionIdxFromPopupmenu(obj);
             set(obj.handles.popupmenuConditions, 'value',icond);
-            set(obj.handles.popupmenuConditions, 'string', sort(obj.dataTree.currElem.procElem.CondNames));
-            obj.SetEditStimDuration();
+            set(obj.handles.popupmenuConditions, 'string',conditions);
+            obj.SetUitableStimInfo(conditions{icond});
         end
 
+
+        % -----------------------------------------------------------
+        function [icond, conditions] = GetConditionIdxFromPopupmenu(obj)           
+            conditions =  obj.dataTree.currElem.procElem.GetConditions();
+            conditions_menu = get(obj.handles.popupmenuConditions, 'string');
+            idx = get(obj.handles.popupmenuConditions, 'value');
+            if isempty(conditions_menu)
+                icond = 1;
+                return;
+            end
+            condition = conditions_menu{idx};
+            icond = find(strcmp(conditions, condition));
+            if isempty(icond)
+                icond = 1;
+            end
+        end        
+        
+        
         
         % -----------------------------------------------------------
         function InitHandles(obj, handles)
@@ -139,8 +158,7 @@ classdef StimGuiClass < handle
                 'stimMarksEdit',[], ...
                 'textFilename',[], ...
                 'popupmenuConditions',[], ...
-                'editStimDuration',[], ...
-                'textStimDuration',[] ...
+                'uitableStimInfo',[] ...
                 );
             
             if ~exist('handles','var')
@@ -302,7 +320,10 @@ classdef StimGuiClass < handle
             
             % Update conditions popupmenu 
             set(obj.handles.popupmenuConditions, 'string', sort(currElem.procElem.CondNames));
-            obj.SetEditStimDuration();
+            conditions = get(obj.handles.popupmenuConditions, 'string');
+            idx = get(obj.handles.popupmenuConditions, 'value');
+            condition = conditions{idx};
+            obj.SetUitableStimInfo(condition);
         end
         
         
@@ -563,15 +584,30 @@ classdef StimGuiClass < handle
         
         
         % ------------------------------------------------
-        function SetEditStimDuration(obj)
-            icond = get(obj.handles.popupmenuConditions, 'value');
-            duration = obj.dataTree.currElem.procElem.GetStimDuration(icond);
-            if isempty(duration)
-                str = '****';
-            else
-                str = num2str(duration);
+        function SetUitableStimInfo(obj, condition)
+            if ~exist('condition','var')
+                return;
             end
-            set(obj.handles.editStimDuration, 'string', str);            
+            CondNames =  obj.dataTree.currElem.procElem.GetConditions();
+            if isempty(CondNames)
+                return;
+            end
+            icond = find(strcmp(CondNames, condition));
+            if isempty(icond)
+                return;
+            end
+            tpts     = obj.dataTree.currElem.procElem.GetStimTpts(icond);
+            duration = obj.dataTree.currElem.procElem.GetStimDuration(icond);
+            vals     = obj.dataTree.currElem.procElem.GetStimValues(icond);
+            if isempty(tpts)
+                set(obj.handles.uitableStimInfo, 'data',[]);
+                return;
+            end
+            data = zeros(length(tpts),3);
+            data(:,1) = tpts;
+            data(:,2) = duration;
+            data(:,3) = vals;            
+            set(obj.handles.uitableStimInfo, 'data',data);
         end
         
            

@@ -15,6 +15,7 @@ classdef SubjClass < TreeNodeClass
         function obj = SubjClass(varargin)
             obj@TreeNodeClass(varargin);
             
+            obj.type  = 'subj';
             if nargin==4
                 fname = varargin{1};
                 iSubj = varargin{2};

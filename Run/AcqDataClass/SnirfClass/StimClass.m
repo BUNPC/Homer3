@@ -216,6 +216,30 @@ classdef StimClass  < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
+        function SetTpts(obj, tPts, k)
+            if ~exist('k','var')
+                k = 1:size(obj.data,1);
+            end
+            if ~exist('tPts','var')
+                return;
+            end
+            if length(tPts)~=1 && length(tPts)~=length(k)
+                return;
+            end
+            obj.data(k,1) = tPts;
+        end
+
+        
+        % -------------------------------------------------------
+        function tPts = GetTpts(obj, k)
+            if ~exist('k','var')
+                k = 1:size(obj.data,1);
+            end
+            tPts = obj.data(k,1);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function SetDuration(obj, duration, tPts)
             if ~exist('duration','var')
                 duration = 5;
@@ -223,25 +247,66 @@ classdef StimClass  < matlab.mixin.Copyable
             if ~exist('tPts','var')
                 tPts = obj.data(:,1);
             end
+            k=[];
             for ii=1:length(tPts)
-                k = find( abs(obj.data(:,1)-tPts(ii)) < obj.errmargin );
+                k(ii) = find( abs(obj.data(:,1)-tPts(ii)) < obj.errmargin );
                 if isempty(k)
                     continue;
                 end
-                obj.data(k,2) = duration;
             end
+            obj.data(k,2) = duration;
         end
 
         
         % -------------------------------------------------------
-        function duration = GetDuration(obj, tPt)
+        function duration = GetDuration(obj, tPts)
             if ~exist('tPts','var')
-                tPt = 1;
+                tPts = obj.data(:,1);
             end
+            k = [];
+            for ii=1:length(tPts)
+                k(ii) = find( abs(obj.data(:,1)-tPts(ii)) < obj.errmargin );
+            end            
             if isempty(obj.data)
                 duration = [];
             else
-                duration = obj.data(tPt,2);
+                duration = obj.data(k,2);
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetValues(obj, vals, tPts)
+            if ~exist('vals','var')
+                vals = 1;
+            end
+            if ~exist('tPts','var')
+                tPts = obj.data(:,1);
+            end
+            k=[];
+            for ii=1:length(tPts)
+                k(ii) = find( abs(obj.data(:,1)-tPts(ii)) < obj.errmargin );
+                if isempty(k)
+                    continue;
+                end
+            end
+            obj.data(k,3) = vals;
+        end
+
+        
+        % -------------------------------------------------------
+        function vals = GetValues(obj, tPts)
+            if ~exist('tPts','var')
+                tPts = obj.data(:,1);
+            end
+            k = [];
+            for ii=1:length(tPts)
+                k(ii) = find( abs(obj.data(:,1)-tPts(ii)) < obj.errmargin );
+            end
+            if isempty(obj.data)
+                vals = [];
+            else
+                vals = obj.data(k,3);
             end
         end
         
@@ -256,9 +321,6 @@ classdef StimClass  < matlab.mixin.Copyable
             end
             obj.data(k,:) = [];
         end
-        
-        
-        
         
     end
     

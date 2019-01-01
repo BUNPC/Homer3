@@ -611,6 +611,22 @@ classdef SnirfClass < AcqDataClass
         
         
         % ----------------------------------------------------------------------------------
+        function SetStimTpts(obj, icond, tpts)
+            obj.stim(icond).SetTpts(tpts);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function tpts = GetStimTpts(obj, icond)
+            if icond>length(obj.stim)
+                tpts = [];
+                return;
+            end
+            tpts = obj.stim(icond).GetTpts();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function SetStimDuration(obj, icond, duration)
             obj.stim(icond).SetDuration(duration);
         end
@@ -624,6 +640,23 @@ classdef SnirfClass < AcqDataClass
             end
             duration = obj.stim(icond).GetDuration();
         end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetStimValues(obj, icond, vals)
+            obj.stim(icond).SetValues(vals);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function vals = GetStimValues(obj, icond)
+            if icond>length(obj.stim)
+                vals = [];
+                return;
+            end
+            vals = obj.stim(icond).GetValues();
+        end
+        
         
     end
     

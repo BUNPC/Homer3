@@ -65,16 +65,11 @@ stimGui.Close();
 function popupmenuConditions_Callback(hObject, eventdata, handles)
 global stimGui
 
-stimGui.SetEditStimDuration();
+conditions = get(hObject, 'string');
+idx = get(hObject, 'value');
+condition = conditions{idx};
+stimGui.SetUitableStimInfo(condition);
 
-
-% --------------------------------------------------------------------
-function editStimDuration_Callback(hObject, eventdata, handles)
-global stimGui
-
-duration = str2num(get(hObject, 'string'));
-icond = get(handles.popupmenuConditions, 'value');
-stimGui.SetStimDuration(icond, duration);
 
 
 %---------------------------------------------------------------------------
@@ -86,3 +81,28 @@ if isempty(tPts_select)
     return;
 end
 stimGui.EditSelectTpts(tPts_select);
+
+
+
+%---------------------------------------------------------------------------
+function uitableStimInfo_CellEditCallback(hObject, eventdata, handles)
+global stimGui
+
+data = get(hObject,'data') ;
+
+[icond, conditions] = stimGui.GetConditionIdxFromPopupmenu();
+
+stimGui.dataTree.currElem.procElem.SetStimTpts(icond, data(:,1));
+stimGui.dataTree.currElem.procElem.SetStimDuration(icond, data(:,2));
+stimGui.dataTree.currElem.procElem.SetStimValues(icond, data(:,3));
+r=eventdata.Indices(1);
+c=eventdata.Indices(2);
+if c==2
+    return;
+end
+stimGui.Display();
+stimGui.DisplayGuiMain();
+figure(stimGui.handles.this);  % return focus to stimGUI
+
+
+

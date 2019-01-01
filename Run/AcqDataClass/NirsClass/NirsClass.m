@@ -422,6 +422,18 @@ classdef NirsClass < AcqDataClass
         
         
         % ----------------------------------------------------------------------------------
+        function SetStimTpts(obj, icond, tpts)
+            return;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function tpts = GetStimTpts(obj, icond)
+            tpts = [];
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function SetStimDuration(obj, icond, duration)
             return;
         end
@@ -429,6 +441,18 @@ classdef NirsClass < AcqDataClass
         % ----------------------------------------------------------------------------------
         function duration = GetStimDuration(obj, icond)
             duration = [];
+        end
+                
+                
+        % ----------------------------------------------------------------------------------
+        function SetStimValues(obj, icond, vals)
+            return;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function vals = GetStimValues(obj, icond)
+            vals = [];
         end
         
     end

@@ -570,6 +570,21 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function SetStimTpts(obj, icond, tpts)
+            obj.acquired.SetStimTpts(icond, tpts);
+        end
+        
+    
+        % ----------------------------------------------------------------------------------
+        function tpts = GetStimTpts(obj, icond)
+            if ~exist('icond','var')
+                icond=1;
+            end
+            tpts = obj.acquired.GetStimTpts(icond);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function SetStimDuration(obj, icond, duration)
             obj.acquired.SetStimDuration(icond, duration);
         end
@@ -581,6 +596,21 @@ classdef RunClass < TreeNodeClass
                 icond=1;
             end
             duration = obj.acquired.GetStimDuration(icond);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetStimValues(obj, icond, vals)
+            obj.acquired.SetStimValues(icond, vals);
+        end
+        
+    
+        % ----------------------------------------------------------------------------------
+        function vals = GetStimValues(obj, icond)
+            if ~exist('icond','var')
+                icond=1;
+            end
+            vals = obj.acquired.GetStimValues(icond);
         end
         
     end

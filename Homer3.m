@@ -141,6 +141,7 @@ hmr.dataTree.DisplayCurrElem(guiMain);
 hmr.handles.this = hObject;
 hmr.handles.proccessOpt = [];
 
+setGuiFonts(hObject);
 
 
 
@@ -392,7 +393,7 @@ dataTree  = hmr.dataTree;
 guiMain   = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
-guiMain = GetAxesDataWl(guiMain, currElem.procElem.SD.Lambda);
+guiMain = GetAxesDataWl(guiMain, dataTree.currElem.procElem.GetWls());
 
 % Update the displays of the guiMain and axesSDG axes
 dataTree.DisplayCurrElem(guiMain);

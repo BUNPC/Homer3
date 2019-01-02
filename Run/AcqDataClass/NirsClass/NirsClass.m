@@ -455,6 +455,19 @@ classdef NirsClass < AcqDataClass
             vals = [];
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function RenameCondition(obj, oldname, newname)
+            if ~exist('oldname','var') || ~ischar(oldname)
+                return;
+            end
+            if ~exist('newname','var')  || ~ischar(newname)
+                return;
+            end
+            k = find(strcmp(obj.CondNames, oldname));
+            obj.CondNames{k} = newname;
+        end
+
     end
     
 end

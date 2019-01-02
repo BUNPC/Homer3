@@ -658,6 +658,26 @@ classdef SnirfClass < AcqDataClass
         end
         
         
+        % ----------------------------------------------------------------------------------
+        function RenameCondition(obj, oldname, newname)
+            if ~exist('oldname','var') || ~ischar(oldname)
+                return;
+            end
+            if ~exist('newname','var')  || ~ischar(newname)
+                return;
+            end
+            k=[];
+            for ii=1:length(obj.stim)
+                if strcmp(obj.stim(ii).GetName(), oldname)
+                    k = ii;
+                    break;
+                end
+            end
+            obj.stim(k).SetName(newname);
+        end
+        
+        
+        
     end
     
 end

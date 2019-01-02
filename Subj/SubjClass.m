@@ -389,6 +389,24 @@ classdef SubjClass < TreeNodeClass
             end
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function RenameCondition(obj, oldname, newname)
+            if ~exist('oldname','var') || ~ischar(oldname)
+                return;
+            end
+            if ~exist('newname','var')  || ~ischar(newname)
+                return;
+            end
+            
+            k = find(strcmp(obj.CondNames, oldname));
+            obj.CondNames{k} = newname;
+            for ii=1:length(obj.runs)
+                obj.runs(ii).RenameCondition(oldname, newname);
+            end
+        end
+        
+        
     end
         
 end

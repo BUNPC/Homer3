@@ -90,6 +90,7 @@ setappdata(hObject,'this',struct('iReg',{{[],[],[]}}, ...    % registry indices 
                                  'iPanel',iPanel));
 
 getHelp(handles);
+setGuiFonts(hObject);
 
 
 

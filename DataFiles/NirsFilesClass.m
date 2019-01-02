@@ -587,7 +587,7 @@ classdef NirsFilesClass < DataFilesClass
                                 q = menu('Wavelengths missing from file. Do you want to enter it here?','YES','Cancel');
                                 if q==1
                                     name = 'Enter missing wavelengths:';
-                                    vals = inputdlg({'wavelength 1','wavelength 1'}, name, [1, length(name)+22]);
+                                    vals = inputdlg({'wavelength 1','wavelength 2'}, name, [1, length(name)+22]);
                                     if length(vals)==2
                                         SD.Lambda = [str2num(vals{1}), str2num(vals{2})];
                                         obj.flags(iF).SD_Lambda = bitxor(obj.flags(iF).SD_Lambda,1);

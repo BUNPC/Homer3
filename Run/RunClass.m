@@ -613,6 +613,20 @@ classdef RunClass < TreeNodeClass
             vals = obj.acquired.GetStimValues(icond);
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function RenameCondition(obj, oldname, newname)
+            if ~exist('oldname','var') || ~ischar(oldname)
+                return;
+            end
+            if ~exist('newname','var')  || ~ischar(newname)
+                return;
+            end
+            k = find(strcmp(obj.CondNames, oldname));
+            obj.CondNames{k} = newname;
+            obj.acquired.RenameCondition(oldname, newname);
+        end
+                
     end
     
 end

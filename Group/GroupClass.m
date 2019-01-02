@@ -419,6 +419,26 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function RenameCondition(obj, oldname, newname)
+            if ~exist('oldname','var') || ~ischar(oldname)
+                return;
+            end
+            if ~exist('newname','var')  || ~ischar(newname)
+                return;
+            end
+            
+            k = find(strcmp(obj.CondNames, oldname));
+            obj.CondNames{k} = newname;
+            obj.CondNames    = unique(obj.CondNames);
+            obj.CondNamesAll(obj.CondNames);
+            for ii=1:length(obj.subjs)
+                obj.subjs(ii).RenameCondition(oldname, newname);
+            end
+        end
+
+        
+        
+        % ----------------------------------------------------------------------------------
         function SetConditions(obj, varargin)
                        
             if nargin==1

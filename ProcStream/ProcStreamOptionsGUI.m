@@ -165,6 +165,9 @@ end
 % which is called function after matlab's meddling. 
 
 setappdata(hObject,'position',get(hObject, 'position'));
+setGuiFonts(hObject);
+
+
 
 
 

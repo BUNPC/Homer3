@@ -33,6 +33,9 @@ if isempty(varargin)
     return;
 end
 stimGui = varargin{1};
+setGuiFonts(hObject);
+
+
 
 
 
@@ -90,7 +93,7 @@ global stimGui
 
 data = get(hObject,'data') ;
 
-[icond, conditions] = stimGui.GetConditionIdxFromPopupmenu();
+icond = stimGui.GetConditionIdxFromPopupmenu();
 
 stimGui.dataTree.currElem.procElem.SetStimTpts(icond, data(:,1));
 stimGui.dataTree.currElem.procElem.SetStimDuration(icond, data(:,2));
@@ -104,5 +107,27 @@ stimGui.Display();
 stimGui.DisplayGuiMain();
 figure(stimGui.handles.this);  % return focus to stimGUI
 
+
+
+%---------------------------------------------------------------------------
+function pushbuttonRenameCondition_Callback(hObject, eventdata, handles)
+global stimGui
+
+newname = inputdlg({'New Condition Name'}, 'New Condition Name');
+if isempty(newname)
+    return;
+end
+if isempty(newname{1})
+    return;
+end
+conditions = get(handles.popupmenuConditions, 'string');
+idx = get(handles.popupmenuConditions, 'value');
+oldname = conditions{idx};
+
+stimGui.dataTree.group.RenameCondition(oldname, newname{1});
+
+stimGui.Display();
+stimGui.DisplayGuiMain();
+figure(stimGui.handles.this);  % return focus to stimGUI
 
 

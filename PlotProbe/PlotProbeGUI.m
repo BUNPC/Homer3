@@ -33,6 +33,7 @@ handles.output = hObject;
 % Update handles structure
 guidata(hObject, handles);
 
+setGuiFonts(hObject);
 
 
 % ----------------------------------------------------------------------

@@ -33,7 +33,11 @@ if isempty(varargin)
     return;
 end
 stimGui = varargin{1};
-setGuiFonts(hObject);
+setGuiFonts(hObject, 7);
+if ~isempty(stimGui.figPosLast)
+    set(hObject, 'position',stimGui.figPosLast);
+end
+
 
 
 
@@ -130,4 +134,11 @@ stimGui.Display();
 stimGui.DisplayGuiMain();
 figure(stimGui.handles.this);  % return focus to stimGUI
 
+
+
+%---------------------------------------------------------------------------
+function stimGUI_DeleteFcn(hObject, eventdata, handles)
+global stimGui
+
+stimGui.figPosLast = get(hObject, 'position');
 

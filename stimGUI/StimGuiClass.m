@@ -8,6 +8,7 @@ classdef StimGuiClass < handle
         dataTree;
         guiMain;
         status;
+        figPosLast;
     end
     
     
@@ -22,7 +23,8 @@ classdef StimGuiClass < handle
             obj.iAux = 0;
             obj.handles = [];
             obj.status = 0;
-
+            obj.figPosLast = [];
+            
             if ~exist('filename','var')
                 filename = '';
             end
@@ -584,7 +586,7 @@ classdef StimGuiClass < handle
         
         
         % ------------------------------------------------
-        function SetUitableStimInfo(obj, condition)
+        function SetUitableStimInfo(obj, condition)            
             if ~exist('condition','var')
                 return;
             end
@@ -596,9 +598,7 @@ classdef StimGuiClass < handle
             if isempty(icond)
                 return;
             end
-            tpts     = obj.dataTree.currElem.procElem.GetStimTpts(icond);
-            duration = obj.dataTree.currElem.procElem.GetStimDuration(icond);
-            vals     = obj.dataTree.currElem.procElem.GetStimValues(icond);
+            [tpts, duration, vals] = obj.dataTree.currElem.procElem.GetStimData(icond);
             if isempty(tpts)
                 set(obj.handles.uitableStimInfo, 'data',[]);
                 return;

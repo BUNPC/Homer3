@@ -32,7 +32,6 @@ function Homer3_Init(handles, args)
 % when displaying patches. Allow user to set the renderer that is best
 % for the host system.
 %
-
 hFig = handles.Homer3;
 if ~isempty(args)
     if strcmpi(args{1},'zbuffer') || ...
@@ -56,6 +55,7 @@ if ~isempty(args)
     end
 end
 
+positionGUI(hFig, 0.20, 0.10, 0.70, 0.85)
 
 
 

@@ -3,7 +3,7 @@ function setGuiFonts(h, varargin)
 if ismac()
     fs_def = 11.0;
 elseif ispc()
-    fs_def = 10.0;
+    fs_def = 9.0;
 else
     fs_def = 10.0;    
 end

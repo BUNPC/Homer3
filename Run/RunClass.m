@@ -570,6 +570,14 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function [tpts, duration, vals] = GetStimData(obj, icond)
+            tpts     = obj.GetStimTpts(icond);
+            duration = obj.GetStimDuration(icond);
+            vals     = obj.GetStimValues(icond);
+        end
+        
+    
+        % ----------------------------------------------------------------------------------
         function SetStimTpts(obj, icond, tpts)
             obj.acquired.SetStimTpts(icond, tpts);
         end

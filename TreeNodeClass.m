@@ -352,6 +352,13 @@ classdef TreeNodeClass < handle
         end
         
         
+        % ----------------------------------------------------------------------------------
+        function [tpts, duration, vals] = GetStimData(obj, icond)
+            tpts     = [];
+            duration = [];
+            vals     = [];
+        end
+        
     end
     
     

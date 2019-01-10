@@ -26,7 +26,7 @@ elseif nargin==3
     font_uicontrol.weight = varargin{2};
 end
 font_uipanel   = initFont(font_uicontrol.size+1,'bold');
-font_axes   = initFont(font_uicontrol.size+3,'bold');
+font_axes   = initFont(font_uicontrol.size+3,'normal');
 
 hc = get(h, 'children');
 for ii=1:length(hc)

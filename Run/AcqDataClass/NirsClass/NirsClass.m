@@ -35,6 +35,13 @@ classdef NirsClass < AcqDataClass
         end
         
         
+        % ---------------------------------------------------------
+        function SortStims(obj)
+            [~,idx] = sort(obj.CondNames);
+            obj.CondNames = obj.CondNames(idx);
+            obj.s = obj.s(:,idx);            
+        end
+        
         
         % ---------------------------------------------------------
         function Load(obj)
@@ -45,7 +52,7 @@ classdef NirsClass < AcqDataClass
             
             warning('off', 'MATLAB:load:variableNotFound');
             
-            fdata = load(obj.filename,'-mat', 'SD','t','d','s','aux');
+            fdata = load(obj.filename,'-mat', 'SD','t','d','s','aux','CondNames');
             
             if isproperty(fdata,'d')
                 obj.d = fdata.d;
@@ -76,6 +83,8 @@ classdef NirsClass < AcqDataClass
             if ~isempty(obj.t)
                 obj.errmargin = min(diff(obj.t))/10;
             end
+            
+            obj.SortStims();
             
         end
         
@@ -465,7 +474,11 @@ classdef NirsClass < AcqDataClass
                 return;
             end
             k = find(strcmp(obj.CondNames, oldname));
+            if isempty(k)
+                return;
+            end
             obj.CondNames{k} = newname;
+            obj.SortStims();
         end
 
     end

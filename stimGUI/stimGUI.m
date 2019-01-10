@@ -117,6 +117,17 @@ figure(stimGui.handles.this);  % return focus to stimGUI
 function pushbuttonRenameCondition_Callback(hObject, eventdata, handles)
 global stimGui
 
+% Function to rename a condition. Important to remeber that changing the
+% condition involves 2 distinct well defined steps:
+%   a) For the current element change the name of the specified (old) 
+%      condition for ONLY for ALL the acquired data elements under the 
+%      currElem, be it run, subj, or group. In this step we DO NOT TOUCH 
+%      the condition names of the run, subject or group. 
+%   b) Rebuild condition names and tables of all the tree nodes group, subjects 
+%      and runs same as if you were loading during Homer3 startup from the 
+%      acquired data.
+%
+
 newname = inputdlg({'New Condition Name'}, 'New Condition Name');
 if isempty(newname)
     return;
@@ -124,11 +135,21 @@ end
 if isempty(newname{1})
     return;
 end
+
+% Get the name of the condition you want to rename
 conditions = get(handles.popupmenuConditions, 'string');
 idx = get(handles.popupmenuConditions, 'value');
 oldname = conditions{idx};
 
+% NOTE: for now any renaming of a condition is global to avoid complexity. 
+% in keeping the condition colors straight. Therefore we comment out the 
+% following line in favor of the one after it. 
+
+% stimGui.dataTree.currElem.procElem.RenameCondition(oldname, newname{1});
 stimGui.dataTree.group.RenameCondition(oldname, newname{1});
+stimGui.dataTree.group.SetConditions();
+
+set(handles.popupmenuConditions, 'string', stimGui.dataTree.currElem.procElem.GetConditions());
 
 stimGui.Display();
 stimGui.DisplayGuiMain();

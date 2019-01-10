@@ -38,15 +38,14 @@ classdef SubjClass < TreeNodeClass
             obj.CondName2Run = [];
             obj.CondName2Group = [];
             obj.runs = run;
-            
         end
+        
         
         % ----------------------------------------------------------------------------------
         % Copy processing params (procInut and procResult) from
         % S to obj if obj and S are equivalent nodes
         % ----------------------------------------------------------------------------------
         function copyProcParams(obj, S)
-            
             if strcmp(obj.name, S.name)
                 for i=1:length(obj.runs)
                     j = obj.existRun(i,S);
@@ -60,7 +59,6 @@ classdef SubjClass < TreeNodeClass
                     obj.procInput.changeFlag = 1;
                 end
             end
-            
         end
         
         
@@ -69,7 +67,6 @@ classdef SubjClass < TreeNodeClass
         % S to obj
         % ----------------------------------------------------------------------------------
         function copyProcParamsFieldByField(obj, S)
-            
             % procInput
             if isproperty(S,'procInput')
                 if isproperty(S.procInput,'procFunc') && ~isempty(S.procInput.procFunc)
@@ -93,7 +90,6 @@ classdef SubjClass < TreeNodeClass
             if isproperty(S,'CondName2Run') && ~isempty(S.CondName2Run)
                 obj.CondName2Run = copyStructFieldByField(obj.CondName2Run, S.CondName2Run);
             end
-                        
         end
         
         
@@ -102,7 +98,6 @@ classdef SubjClass < TreeNodeClass
         % its index if it does exist. Else return 0.
         % ----------------------------------------------------------------------------------
         function j = existRun(obj, k, S)
-            
             j=0;
             for i=1:length(S.runs)
                 [~,rname1] = fileparts(obj.runs(k).name);
@@ -112,7 +107,6 @@ classdef SubjClass < TreeNodeClass
                     break;
                 end
             end
-            
         end
         
         
@@ -121,7 +115,6 @@ classdef SubjClass < TreeNodeClass
         % are equivalent and their sets of runs are equivalent.
         % ----------------------------------------------------------------------------------
         function B = equivalent(obj1, obj2)
-            
             B=1;
             if ~strcmp(obj1.name, obj2.name)
                 B=0;
@@ -141,13 +134,11 @@ classdef SubjClass < TreeNodeClass
                     return;
                 end
             end
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function Save(obj, options)
-            
             if ~exist('options','var')
                 options = 'acquired:derived';
             end
@@ -181,12 +172,10 @@ classdef SubjClass < TreeNodeClass
         % Deletes derived data in procResult
         % ----------------------------------------------------------------------------------
         function Reset(obj)
-            
             obj.procResult = ProcResultClass();
             for jj=1:length(obj.runs)
                 obj.runs(jj).Reset();
             end
-            
         end
         
         
@@ -251,72 +240,56 @@ classdef SubjClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function SetSDG(obj)
-            
             obj.SD = obj.runs(1).GetSDG();
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function SD = GetSDG(obj)
-            
             SD = obj.runs(1).GetSDG();
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function srcpos = GetSrcPos(obj)
-            
             srcpos = obj.runs(1).GetSrcPos();
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function detpos = GetDetPos(obj)
-            
             detpos = obj.runs(1).GetDetPos();
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function bbox = GetSdgBbox(obj)
-            
             bbox = obj.runs(1).GetSdgBbox();
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function SetMeasList(obj)
-            
             for ii=1:length(obj.runs)
                 obj.runs(ii).SetMeasList();
             end
-            
         end
 
         
         % ----------------------------------------------------------------------------------
         function ch = GetMeasList(obj)
-            
             ch = obj.runs(1).GetMeasList();
-            
         end
                 
         
         % ----------------------------------------------------------------------------------
         function wls = GetWls(obj)
-            
             wls = obj.runs(1).GetWls();
-            
         end
+        
         
         % ----------------------------------------------------------------------------------
         function SetConditions(obj, varargin)
-            
             if nargin==1
                 CondNames = {};
                 for ii=1:length(obj.runs)
@@ -330,13 +303,11 @@ classdef SubjClass < TreeNodeClass
                     obj.runs(ii).SetConditions(varargin{1});
                 end
             end
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function SetCondName2Group(obj, CondNamesGroup)
-            
             obj.CondName2Group = zeros(1, length(obj.CondNames));
             for ii=1:length(obj.CondNames)
                 obj.CondName2Group(ii) = find(strcmp(CondNamesGroup, obj.CondNames{ii}));
@@ -344,13 +315,11 @@ classdef SubjClass < TreeNodeClass
             for iRun=1:length(obj.runs)
                 obj.runs(iRun).SetCondName2Group(CondNamesGroup);
             end
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function SetCondName2Run(obj)
-            
             % Generate the second output parameter - CondSubj2Run using the 1st
             obj.CondName2Run = zeros(length(obj.runs), length(obj.CondNames));
             for iC=1:length(obj.CondNames)
@@ -363,15 +332,12 @@ classdef SubjClass < TreeNodeClass
                     end
                 end
             end
-                        
         end
         
         
         % ----------------------------------------------------------------------------------
         function CondNameIdx = GetCondNameIdx(obj, CondNameIdx)
-            
             CondNameIdx = find(obj.CondName2Group == CondNameIdx);
-            
         end
         
         
@@ -392,20 +358,26 @@ classdef SubjClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function RenameCondition(obj, oldname, newname)
+            % Function to rename a condition. Important to remeber that changing the
+            % condition involves 2 distinct well defined steps:
+            %   a) For the current element change the name of the specified (old)
+            %      condition for ONLY for ALL the acquired data elements under the
+            %      currElem, be it run, subj, or group. In this step we DO NOT TOUCH
+            %      the condition names of the run, subject or group.
+            %   b) Rebuild condition names and tables of all the tree nodes group, subjects
+            %      and runs same as if you were loading during Homer3 startup from the
+            %      acquired data.
+            %
             if ~exist('oldname','var') || ~ischar(oldname)
                 return;
             end
             if ~exist('newname','var')  || ~ischar(newname)
                 return;
-            end
-            
-            k = find(strcmp(obj.CondNames, oldname));
-            obj.CondNames{k} = newname;
+            end            
             for ii=1:length(obj.runs)
                 obj.runs(ii).RenameCondition(oldname, newname);
             end
         end
-        
         
     end
         

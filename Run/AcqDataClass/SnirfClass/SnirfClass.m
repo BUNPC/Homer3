@@ -108,6 +108,19 @@ classdef SnirfClass < AcqDataClass
         
         
         % -------------------------------------------------------
+        function SortStim(obj)
+            temp = obj.stim.copy;
+            delete(obj.stim);
+            names = {};
+            for ii=1:length(temp)
+                names{ii} = temp(ii).name;
+            end
+            [~,idx] = sort(names);
+            obj.stim = temp(idx).copy;
+        end
+        
+        
+        % -------------------------------------------------------
         function obj = Load(obj, fname, parent)
 
             % Overwrite 1st argument if the property filename is NOT empty
@@ -122,10 +135,6 @@ classdef SnirfClass < AcqDataClass
             if ~exist(fname,'file')
                 return;
             end
-%             if ~hdf5isvalid(fname)
-%                 obj.filename = '';
-%                 return;
-%             end
             
             % Arg 2
             if ~exist('parent', 'var')
@@ -167,8 +176,12 @@ classdef SnirfClass < AcqDataClass
                 end
                 ii=ii+1;
             end
+            obj.SortStim();
             
             % Load stim
+            
+            % Since we want to load stims in sorted order (i.e., according to alphabetical order 
+            % of condition names), first load to temporary variable.
             ii=1;
             while 1
                 if ii > length(obj.stim)
@@ -178,9 +191,10 @@ classdef SnirfClass < AcqDataClass
                     obj.stim(ii).delete();
                     obj.stim(ii) = [];
                     break;
-                end
+                end                
                 ii=ii+1;
             end
+            obj.SortStim();
             
             % Load sd
             obj.sd.Load(fname, [parent, '/sd']);
@@ -257,6 +271,7 @@ classdef SnirfClass < AcqDataClass
             end
                         
         end
+        
                 
     end
     
@@ -475,6 +490,7 @@ classdef SnirfClass < AcqDataClass
             d = obj.data(idx).GetDataMatrix();
         end
         
+        
         % ----------------------------------------------------------------------------------
         function t = Get_t(obj, idx)
             if ~exist('idx','var')
@@ -482,6 +498,7 @@ classdef SnirfClass < AcqDataClass
             end
             t = obj.data(idx).GetTime();
         end
+        
         
         % ----------------------------------------------------------------------------------
         function SD = Get_SD(obj, idx)
@@ -495,6 +512,7 @@ classdef SnirfClass < AcqDataClass
             SD.MeasListAct = ones(size(SD.MeasList,1),1);
         end
         
+        
         % ----------------------------------------------------------------------------------
         function aux = Get_aux(obj)
             aux = [];
@@ -502,6 +520,7 @@ classdef SnirfClass < AcqDataClass
                 aux(:,ii) = obj.aux(ii).GetData();
             end
         end
+        
         
         % ----------------------------------------------------------------------------------
         function s = Get_s(obj, idx)
@@ -673,10 +692,12 @@ classdef SnirfClass < AcqDataClass
                     break;
                 end
             end
+            if isempty(k)
+                return;
+            end
             obj.stim(k).SetName(newname);
+            obj.SortStim();
         end
-        
-        
         
     end
     

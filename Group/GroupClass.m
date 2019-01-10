@@ -420,17 +420,22 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function RenameCondition(obj, oldname, newname)
+            % Function to rename a condition. Important to remeber that changing the
+            % condition involves 2 distinct well defined steps:
+            %   a) For the current element change the name of the specified (old)
+            %      condition for ONLY for ALL the acquired data elements under the
+            %      currElem, be it run, subj, or group. In this step we DO NOT TOUCH
+            %      the condition names of the run, subject or group.
+            %   b) Rebuild condition names and tables of all the tree nodes group, subjects
+            %      and runs same as if you were loading during Homer3 startup from the
+            %      acquired data.
+            %
             if ~exist('oldname','var') || ~ischar(oldname)
                 return;
             end
             if ~exist('newname','var')  || ~ischar(newname)
                 return;
-            end
-            
-            k = find(strcmp(obj.CondNames, oldname));
-            obj.CondNames{k} = newname;
-            obj.CondNames    = unique(obj.CondNames);
-            obj.CondNamesAll(obj.CondNames);
+            end            
             for ii=1:length(obj.subjs)
                 obj.subjs(ii).RenameCondition(oldname, newname);
             end

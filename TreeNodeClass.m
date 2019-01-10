@@ -42,7 +42,6 @@ classdef TreeNodeClass < handle
         end
         
         
-        
         % ---------------------------------------------------------------------------------
         function [procInput, filename] = GetProcInputDefault(obj, filename)
             
@@ -65,25 +64,19 @@ classdef TreeNodeClass < handle
                 
                 % Load Processing stream file
                 if isempty(filename)
-                    
                     [filename, pathname] = createDefaultConfigFile();
                     
                     % Load procInput from config file
                     fid = fopen(filename,'r');
                     [procInput, err1] = procStreamParse(fid, obj);
                     fclose(fid);
-                    
                 elseif ~isempty(filename)
-                    
                     % Load procInput from config file
                     fid = fopen(filename,'r');
                     [procInput, err1] = procStreamParse(fid, obj);
                     fclose(fid);
-                    
                 else
-                    
                     err1=0;
-                    
                 end
                                 
                 % Check loaded procInput for syntax and semantic errors
@@ -161,7 +154,6 @@ classdef TreeNodeClass < handle
         % 
         % ----------------------------------------------------------------------------------
         function options_s = parseSaveOptions(obj, options)
-            
             options_s = struct('derived',false, 'acquired',false);
             C = str2cell(options, {':',',','+',' '});
             
@@ -170,7 +162,6 @@ classdef TreeNodeClass < handle
                     eval( sprintf('options_s.%s = true;', C{ii}) );
                 end
             end
-            
         end
         
         
@@ -304,13 +295,11 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function varval = FindVar(obj, varname)
-
             if isproperty(obj, varname)
                 varval = eval( sprintf('obj.%s', varname) );
             else
                 varval = [];
             end
-            
         end
 
                 
@@ -336,16 +325,19 @@ classdef TreeNodeClass < handle
             return;
         end        
         
+        
         % ----------------------------------------------------------------------------------
         function DeleteStims(obj, tPts)
             return;
         end
+        
         
         % ----------------------------------------------------------------------------------
         function SetStimDuration(obj, icond, duration)
             return;
         end
     
+        
         % ----------------------------------------------------------------------------------
         function duration = GetStimDuration(obj, icond)
             duration = [];            

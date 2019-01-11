@@ -292,8 +292,7 @@ classdef StimGuiClass < handle
                 % Check which conditions are represented in S for the conditions
                 % legend display.
                 if ~ismember(iCond, idxLg)
-                    hLg(kk) = plot([1 1]*t(1), yy,'-','color',obj.Lines(ii).color,'visible','off', 'parent',obj.handles.axes1);
-                    % idxLg(kk) = lstC(ii);
+                    hLg(kk) = plot([1 1]*t(1), yy,'-', 'color',obj.Lines(ii).color, 'linewidth',4, 'visible','off', 'parent',obj.handles.axes1);
                     idxLg(kk) = iCond;
                     kk=kk+1;
                 end
@@ -327,6 +326,7 @@ classdef StimGuiClass < handle
             condition = conditions{idx};
             obj.SetUitableStimInfo(condition);
         end
+        
         
         
         % ------------------------------------------------

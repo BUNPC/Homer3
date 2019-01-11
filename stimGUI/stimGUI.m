@@ -33,7 +33,11 @@ if isempty(varargin)
     return;
 end
 stimGui = varargin{1};
-setGuiFonts(hObject, 7);
+if ispc()
+    setGuiFonts(hObject, 7);
+else
+    setGuiFonts(hObject);
+end
 if ~isempty(stimGui.figPosLast)
     set(hObject, 'position',stimGui.figPosLast);
 end

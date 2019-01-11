@@ -352,7 +352,7 @@ classdef RunClass < TreeNodeClass
                         % We don't want dashed lines appearing in legend, so
                         % we draw invisible solid stims over all stims to
                         % trick the legend into only showing solid lines.
-                        hLg(kk) = plot(t(lstS(iS2))*[1 1],yrange,'-','visible','off');
+                        hLg(kk) = plot(t(lstS(iS2))*[1 1],yrange,'-', 'linewidth',4, 'visible','off');
                         set(hLg(kk),'color',CondColTbl(iCond,:));
                         idxLg(kk) = iCond;
                         kk=kk+1;

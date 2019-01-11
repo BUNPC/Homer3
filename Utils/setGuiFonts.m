@@ -38,6 +38,8 @@ for ii=1:length(hc)
         set(hc(ii), 'fontsize',font_uipanel.size, 'fontweight',font_uipanel.weight);
     elseif strcmp(get(hc(ii), 'type'), 'uibuttongroup')
         set(hc(ii), 'fontsize',font_uicontrol.size, 'fontweight',font_uicontrol.weight);
+    elseif strcmp(get(hc(ii), 'type'), 'uitable')
+        set(hc(ii), 'fontsize',font_uicontrol.size, 'fontweight',font_uicontrol.weight);
     end
     setGuiFonts(hc(ii), font_uicontrol.size, font_uicontrol.weight);
 end

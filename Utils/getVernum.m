@@ -1,4 +1,4 @@
 function vrnnum = getVernum()
 
 vrnnum{1} = '1.4';
-vrnnum{2} = '21';
+vrnnum{2} = '22';

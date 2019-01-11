@@ -539,6 +539,9 @@ classdef StimGuiClass < handle
                     % Assign new condition to edited stim
                     if ch==nCond+1
                         CondNameNew = inputdlg('','New Condition name');
+                        if isempty(CondNameNew)
+                            return;
+                        end
                         CondName = CondNameNew{1};
                     else
                         CondName = CondNamesGroup{ch};

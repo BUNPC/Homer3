@@ -558,6 +558,7 @@ classdef SnirfClass < AcqDataClass
             
             % Otherwise we have a new condition to which to add the stims. 
             obj.stim(end+1) = StimClass(tPts, condition);
+            obj.SortStim();
         end
         
         

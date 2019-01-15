@@ -312,8 +312,6 @@ classdef RunClass < TreeNodeClass
             %%% patches because stim legend doesn't work otherwise.
             if ~isempty(obj.GetStims())
                 t = obj.acquired.GetTime();
-                s = hmrStimRejection(t, obj.acquired.GetStims(), [], obj.tIncMan, [0 0]);
-                obj.acquired.SetStims_MatInput(s, t, obj.CondNames);
                 s = obj.acquired.GetStims();
                 
                 % Plot included and excluded stims                
@@ -465,7 +463,7 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function s = GetStims(obj)
+        function s = GetStims(obj)            
             s = obj.acquired.GetStims();
         end
         

@@ -161,22 +161,17 @@ classdef StimGuiClass < handle
                 'textFilename',[], ...
                 'popupmenuConditions',[], ...
                 'uitableStimInfo',[] ...
-                );
-            
+            );            
             if ~exist('handles','var')
                 return;
-            end
-            
+            end            
             fields = propnames(obj.handles);
             for ii=1:length(fields)
                 if eval( sprintf('isproperty(handles, ''%s'')', fields{ii}) )
                     eval( sprintf('obj.handles.%s = handles.%s;', fields{ii}, fields{ii}) );
                 end
-            end           
-            
+            end            
             obj.handles.legend = -1;
-            set(obj.handles.axes1,'ButtonDownFcn', @obj.ButtondownFcn);
-            set(get(obj.handles.axes1,'children'), 'ButtonDownFcn', @obj.ButtondownFcn);
             obj.handles.this = obj.handles.stimGUI;
         end
         
@@ -299,9 +294,7 @@ classdef StimGuiClass < handle
             end
             
             if get(obj.handles.radiobuttonZoom,'value')==1    % Zoom
-                h=zoom;
-                set(h,'ButtonDownFilter',@obj.myZoom_callback);
-                set(h,'enable','on')
+                zoom(obj.handles.this,'on');
             elseif get(obj.handles.radiobuttonStim,'value')==1 % Stim
                 zoom(obj.handles.this,'off');
             end
@@ -330,16 +323,6 @@ classdef StimGuiClass < handle
         
         
         % ------------------------------------------------
-        function flag = myZoom_callback(obj, h, event_obj)
-            if strcmpi( get(h,'Tag'), 'axes1' )
-                flag = 0;
-            else
-                flag = 1;
-            end
-        end
-       
-        
-        % ------------------------------------------------
         function stims_select = GetStimsFromTpts(obj, tPts_idxs_select)
             
             % Error checking
@@ -364,16 +347,7 @@ classdef StimGuiClass < handle
            
         
         % ------------------------------------------------
-        function ButtondownFcn(obj, hObject, eventdata)
-            
-            [point1,point2] = extractButtondownPoints();            
-            point1 = point1(1,1:2);              % extract x and y
-            point2 = point2(1,1:2);
-            p1 = min(point1,point2);
-            p2 = max(point1,point2);
-            t1 = p1(1);
-            t2 = p2(1);
-            
+        function Buttondown(obj, t1, t2)
             t = obj.dataTree.currElem.procElem.GetTime();
             if ~all(t1==t2)
                 tPts_idxs_select = find(t>=t1 & t<=t2);
@@ -397,7 +371,6 @@ classdef StimGuiClass < handle
             
             % Reset status
             obj.status=0;
-            
         end
         
         

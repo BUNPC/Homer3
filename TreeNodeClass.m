@@ -351,6 +351,48 @@ classdef TreeNodeClass < handle
             vals     = [];
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function newname = ErrCheckNewCondName(obj, newname)
+            msg1 = sprintf('Condition name ''%s'' already exists. New name must be unique. Do you want to choose another name?', newname);
+            while ismember(newname, obj.CondNames)                
+                q = menu(msg1,'YES','NO');
+                if q==2
+                    obj.err = -1;
+                    return;
+                end
+                newname = inputdlg({'New Condition Name'}, 'New Condition Name');
+                if isempty(newname) || isempty(newname{1})
+                    obj.err = 1;
+                    return;
+                end
+                newname = newname{1};
+            end
+            msg2 = sprintf('Condition name is not valid. New name must be character string. Do you want to choose another name?', newname);
+            while ~ischar(newname)                
+                q = menu(msg2,'YES','NO');
+                if q==2
+                    obj.err = -1;
+                    return;
+                end
+                newname = inputdlg({'New Condition Name'}, 'New Condition Name');
+                if isempty(newname) || isempty(newname{1})
+                    obj.err = 1;
+                    return;
+                end
+                newname = newname{1};
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function err = GetErrStatus(obj)
+            err = obj.err;
+            
+            % Reset error status
+            obj.err = 0;
+        end
+        
     end
     
     

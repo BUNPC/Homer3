@@ -1,0 +1,130 @@
+
+
+              User Accessible Parameters
+
+Idea is that we assume any writer of a proc stream function for Homer3 
+(or Homer2 for that matter) knows (and is meant to know) a finite set 
+of parameters classified in the following way. 
+
+
+Acquired (Snirf, Nirs)      Derived       ProcStreamOptionsGUI params
+--------------------------------------------------------------------------------
+data                        nTrials      (Any input argument in the USAGE OPTIONS 
+data_t                      tHRF          listing that is not Acquired and not
+data_d                      dc            Derived, will be an options parameter)
+data_ml                     dod
+stim                        dcAvg
+stim_name                   dodAvg
+stim_data                   dcAvgStd
+sd                          dodAvgStd
+sd_lambda                   dcSum2
+sd_srcPos                   dodSum2
+sd_detPos
+
+SD
+d
+t
+s
+aux
+----------------------------------------------------------------------------------
+
+
+In the USAGE OPTIONS listing in the help, the writer of a homer3 function lists the 
+legal ways to call a function based on his/her knowledge of the above parameter set. 
+
+The registry generator would parse the USAGE OPTIONS section of the help to create a 
+registry entry.
+
+---------
+Example1: 
+---------
+
+Here’s an example of how this would work for an old homer2 style function
+written for the Nirs format.
+
+% [yavg, ystd, tHRF, nTrials, ysum2, yTrials] = hmrBlockAvg( y, s, t, trange )
+%
+% UI NAME:
+% Block_Average
+%
+%
+% Calculate the block average given the stimulation conditions in s over
+% the time range trange. The baseline of the average is set to zero by
+% subtracting the mean of the average for t<0. If a stimulus occurs too
+% close to the start or end of the data such that trange extends outside of
+% the data range, then the trial is excluded from the average.
+%
+% INPUTS:
+% y: this is the data wavelength #time points x #channels
+%    concentration data is #time points x [HbO/HbR/HbT] x #channels
+% s: stimulation vector (# time points x #conditions)=1 at stim onset otherwise =0
+% t: time vector corresponding with y and s
+% trange: defines the range for the block average [tPre tPost]
+% 
+% OUTPUTS:
+% yavg: the averaged results
+% ystd: the standard deviation across trials
+% tHRF: the time vector
+% nTrials: the number of trials averaged for each condition
+% yTrials: a structure containing the individual trial responses
+%
+% USAGE OPTIONS:
+% [dcAvg, dcAvgStd, tHRF, nTrials, dcSum2]    = hmrBlockAvg( dc, s, t, trange )
+% [dodAvg, dodAvgStd, tHRF, nTrials, dodSum2] = hmrBlockAvg( dod, s, t, trange )
+%
+                                     ||
+                                     ||
+                                     \/
+									 
+'@ hmrBlockAvg [dcAvg,dcAvgStd,tHRF,nTrials,dcSum2] (dc,s,t trange %0.1f_%0.1f -2_20'
+'@ hmrBlockAvg [dodAvg,dodAvgStd,tHRF,nTrials,dodSum2] (dod,s,t trange %0.1f_%0.1f -2_20'
+
+
+---------
+Example2: 
+---------
+
+Here’s an example of how this would work for an a new version of this function
+written for Snirf in homer3.
+
+% [yavg, ystd, tHRF, nTrials, ysum2, yTrials] = hmrR_BlockAvg( y, stims, t, trange )
+%
+% UI NAME:
+% Block_Average
+%
+%
+% Calculate the block average given the stimulation conditions in s over
+% the time range trange. The baseline of the average is set to zero by
+% subtracting the mean of the average for t<0. If a stimulus occurs too
+% close to the start or end of the data such that trange extends outside of
+% the data range, then the trial is excluded from the average.
+%
+% INPUTS:
+% y: this is the data wavelength #time points x #channels
+%    concentration data is #time points x [HbO/HbR/HbT] x #channels
+% stims: Array of stimulus conditions ...
+% t: time vector corresponding with y and s
+% trange: defines the range for the block average [tPre tPost]
+% 
+% OUTPUTS:
+% yavg: the averaged results
+% ystd: the standard deviation across trials
+% tHRF: the time vector
+% nTrials: the number of trials averaged for each condition
+% yTrials: a structure containing the individual trial responses
+%
+%
+% USAGE OPTIONS:
+% [dcAvg, dcAvgStd, tHRF, nTrials, dcSum2]    = hmrR_BlockAvg( dc, stim, data_t, trange )
+% [dodAvg, dodAvgStd, tHRF, nTrials, dodSum2] = hmrR_BlockAvg( dod, stim, data_t, trange )
+%
+                                        ||
+                                        ||
+                                        \/
+										
+'@ hmrR_BlockAvg [dcAvg,dcAvgStd,tHRF,nTrials,dcSum2] (dc, stim_data, data_t trange %0.1f_%0.1f -2_20'
+'@ hmrR_BlockAvg [dodAvg,dodAvgStd,tHRF,nTrials,dodSum2] (dod, stim_data, data_t trange %0.1f_%0.1f -2_20'
+
+
+
+

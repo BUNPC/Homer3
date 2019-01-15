@@ -151,6 +151,9 @@ oldname = conditions{idx};
 
 % stimGui.dataTree.currElem.procElem.RenameCondition(oldname, newname{1});
 stimGui.dataTree.group.RenameCondition(oldname, newname{1});
+if stimGui.dataTree.group.GetErrStatus() ~= 0
+    return;
+end
 stimGui.dataTree.group.SetConditions();
 
 set(handles.popupmenuConditions, 'string', stimGui.dataTree.currElem.procElem.GetConditions());

@@ -41,9 +41,8 @@ end
 if ~isempty(stimGui.figPosLast)
     set(hObject, 'position',stimGui.figPosLast);
 end
-
-
-
+set(get(handles.axes1,'children'), 'ButtonDownFcn', @axes1_ButtonDownFcn);
+zoom(hObject,'off');
 
 
 
@@ -131,7 +130,6 @@ global stimGui
 %      and runs same as if you were loading during Homer3 startup from the 
 %      acquired data.
 %
-
 newname = inputdlg({'New Condition Name'}, 'New Condition Name');
 if isempty(newname)
     return;
@@ -145,7 +143,7 @@ conditions = get(handles.popupmenuConditions, 'string');
 idx = get(handles.popupmenuConditions, 'value');
 oldname = conditions{idx};
 
-% NOTE: for now any renaming of a condition is global to avoid complexity. 
+% NOTE: for now any renaming of a condition is global to avoid complexity
 % in keeping the condition colors straight. Therefore we comment out the 
 % following line in favor of the one after it. 
 
@@ -169,4 +167,19 @@ function stimGUI_DeleteFcn(hObject, eventdata, handles)
 global stimGui
 
 stimGui.figPosLast = get(hObject, 'position');
+
+
+
+%---------------------------------------------------------------------------
+function axes1_ButtonDownFcn(hObject, eventdata, handles)
+global stimGui
+
+[point1,point2] = extractButtondownPoints();
+point1 = point1(1,1:2);              % extract x and y
+point2 = point2(1,1:2);
+p1 = min(point1,point2);
+p2 = max(point1,point2);
+t1 = p1(1);
+t2 = p2(1);
+stimGui.Buttondown(t1, t2);
 

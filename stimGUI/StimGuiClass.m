@@ -606,10 +606,11 @@ classdef StimGuiClass < handle
                 set(obj.handles.uitableStimInfo, 'data',[]);
                 return;
             end
+            [~,idx] = sort(tpts);
             data = zeros(length(tpts),3);
-            data(:,1) = tpts;
-            data(:,2) = duration;
-            data(:,3) = vals;            
+            data(:,1) = tpts(idx);
+            data(:,2) = duration(idx);
+            data(:,3) = vals(idx);
             set(obj.handles.uitableStimInfo, 'data',data);
         end
         

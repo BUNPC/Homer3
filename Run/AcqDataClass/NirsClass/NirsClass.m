@@ -367,6 +367,7 @@ classdef NirsClass < AcqDataClass
             end      
             [~, tidx] = nearest_point(obj.t, tPts);
             obj.s(tidx, icol) = 1;
+            SortStims(obj);
         end
         
         

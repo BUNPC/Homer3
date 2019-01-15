@@ -65,7 +65,9 @@ classdef RunClass < TreeNodeClass
             if options_s.derived
                 if exist('./groupResults.mat','file')
                     load( './groupResults.mat' );
-                    group.subjs(obj.iSubj).runs(obj.iRun) = obj;
+                    if strcmp(class(group.subjs(obj.iSubj).runs(obj.iRun)), class(obj))
+                        group.subjs(obj.iSubj).runs(obj.iRun) = obj;
+                    end
                     save( './groupResults.mat','group' );
                 end
             end
@@ -637,6 +639,10 @@ classdef RunClass < TreeNodeClass
                 return;
             end
             if ~exist('newname','var')  || ~ischar(newname)
+                return;
+            end
+            newname = obj.ErrCheckNewCondName(newname);
+            if obj.err ~= 0
                 return;
             end
             obj.acquired.RenameCondition(oldname, newname);

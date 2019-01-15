@@ -8,7 +8,12 @@ for jj=length(i):-1:1
     % If function exists in registry, replace the bad or outdated version with
     % the current version of this function from the registry
     if iReg(i(jj))~=0
-        procInput.procFunc(i(jj)) = procFuncReg(iReg(i(jj)));               
+        % Copy field-by-field procFuncReg(iReg(i(jj))) to procInput.procFunc(i(jj))
+        fields = fieldnames(procFuncReg(iReg(i(jj))));
+        for ii=1:length(fields)
+            eval( sprintf('procInput.procFunc(i(jj)).%s = procFuncReg(iReg(i(jj))).%s;', fields{ii}, fields{ii}) );
+        end
+        
         for p=1:length(procInput.procFunc(i(jj)).funcParam)
             assignmentStr = sprintf('procInput.procParam.%s_%s = [%s];', ...
                                     procInput.procFunc(i(jj)).funcName,...
@@ -20,13 +25,7 @@ for jj=length(i):-1:1
         % Else the function doesn't exist in the registry and we simply delete it
         % from the processing stream.
     else
-        fields = fieldnames(procInput.procParam);
-        for ii=1:length(fields)
-            if ~isempty(findstr(fields{ii}, [procInput.procFunc(i(jj)).funcName, '_']))
-                procInput.procParam = rmfield(procInput.procParam,fields{ii});
-            end
-        end
-        procInput.procFunc(i(jj)) = InitProcFunc();        
+        procInput.procFunc(i(jj)) = [];        
     end
 end
 

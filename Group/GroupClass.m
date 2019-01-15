@@ -436,6 +436,10 @@ classdef GroupClass < TreeNodeClass
             if ~exist('newname','var')  || ~ischar(newname)
                 return;
             end            
+            newname = obj.ErrCheckNewCondName(newname);
+            if obj.err ~= 0
+                return;
+            end
             for ii=1:length(obj.subjs)
                 obj.subjs(ii).RenameCondition(oldname, newname);
             end
@@ -518,14 +522,6 @@ classdef GroupClass < TreeNodeClass
         
     end      % Public Set/Get methods
     
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % All other public methods
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    methods
-        
-        
-    end    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Private methods

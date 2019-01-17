@@ -108,7 +108,7 @@ classdef SnirfClass < AcqDataClass
         
         
         % -------------------------------------------------------
-        function SortStim(obj)
+        function SortStims(obj)
             temp = obj.stim.copy;
             delete(obj.stim);
             names = {};
@@ -176,7 +176,6 @@ classdef SnirfClass < AcqDataClass
                 end
                 ii=ii+1;
             end
-            obj.SortStim();
             
             % Load stim
             
@@ -194,7 +193,7 @@ classdef SnirfClass < AcqDataClass
                 end                
                 ii=ii+1;
             end
-            obj.SortStim();
+            obj.SortStims();
             
             % Load sd
             obj.sd.Load(fname, [parent, '/sd']);
@@ -431,12 +430,6 @@ classdef SnirfClass < AcqDataClass
         
         
         % ---------------------------------------------------------
-        function SetConditions(obj)
-            ;
-        end
-        
-        
-        % ---------------------------------------------------------
         function CondNames = GetConditions(obj)
             CondNames = cell(1,length(obj.stim));
             for ii=1:length(obj.stim)
@@ -558,7 +551,7 @@ classdef SnirfClass < AcqDataClass
             
             % Otherwise we have a new condition to which to add the stims. 
             obj.stim(end+1) = StimClass(tPts, condition);
-            obj.SortStim();
+            obj.SortStims();
         end
         
         
@@ -597,8 +590,17 @@ classdef SnirfClass < AcqDataClass
                 
                 % Otherwise we have a new condition to which to add the stims.
                 obj.stim(j) = StimClass([], condition);
+                obj.SortStims();
+                
+                % Recalculate j after sort
+                for ii=1:length(obj.stim)
+                    if strcmp(condition, obj.stim(ii).GetName())
+                        j=ii;
+                        break;
+                    end
+                end
             end
-                        
+
             % Find all stims for any conditions which match the time points.
             for ii=1:length(tPts)
                 for kk=1:length(obj.stim)
@@ -697,7 +699,7 @@ classdef SnirfClass < AcqDataClass
                 return;
             end
             obj.stim(k).SetName(newname);
-            obj.SortStim();
+            obj.SortStims();
         end
         
     end

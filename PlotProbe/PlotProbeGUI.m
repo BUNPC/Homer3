@@ -138,9 +138,9 @@ elseif currElem.procType==3
     condition  = find(currElem.procElem.CondName2Group == guiMain.condition);
 end
 
-if datatype == buttonVals.OD_HRF
+if datatype == buttonVals.OD_HRF && ~isempty(procResult.dodAvg)
     y = procResult.dodAvg(:, :, condition);
-elseif datatype == buttonVals.CONC_HRF
+elseif datatype == buttonVals.CONC_HRF && ~isempty(procResult.dcAvg)
     y = procResult.dcAvg(:, :, :, condition);
 else
     return;
@@ -294,10 +294,12 @@ elseif currElem.procType==3
     condition  = find(currElem.procElem.CondName2Group == guiMain.condition);
 end
 
-if datatype == buttonVals.OD_HRF
+if datatype == buttonVals.OD_HRF && ~isempty(procResult.dodAvg)
     y = procResult.dodAvg(:, :, condition);
-elseif datatype == buttonVals.CONC_HRF
+elseif datatype == buttonVals.CONC_HRF && ~isempty(procResult.dcAvg)
     y = procResult.dcAvg(:, :, :, condition);
+else
+    return;
 end
 
 guiSettings = 2*bit1 + bit0;

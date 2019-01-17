@@ -46,7 +46,5 @@ for ii=1:procFunc.nFunc
     procFunc2(ii).funcHelp        = InitHelp(procFunc.nFuncParam(ii));
 end
 procFunc2 = procStreamSetHelp(procFunc2);
-
-procInput.conversionFlag  = true;
 procInput.procFunc = procFunc2;
 

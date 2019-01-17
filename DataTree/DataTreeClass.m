@@ -94,8 +94,7 @@ classdef DataTreeClass <  handle
                 return;
             end
             
-            % Create new group based only on the .nirs files
-            
+            % Create new group based only on acquisition data
             rnum = 1;
             obj.group = GroupClass(files(1).name);
             files(1).MapFile2Group(1, 1);
@@ -106,15 +105,13 @@ classdef DataTreeClass <  handle
                 
                 waitbar(ii/length(files), hwait, sprintf('Loading %s: %d of %d', ...
                     sprintf_s(files(ii).name), ii, length(files)) );
+                
                 fname = files(ii).name;
                 if files(ii).isdir
-                    
                     jj = length(obj.group.subjs)+1;
                     obj.group.subjs(jj) = SubjClass(fname, jj, 0, rnum);
                     files(ii).MapFile2Group(jj,rnum);
-                    
                 else
-                    
                     [sname, rnum_tmp, iExt] = getSubjNameAndRun(fname, rnum);
                     if rnum_tmp ~= rnum
                         rnum = rnum_tmp;
@@ -135,7 +132,6 @@ classdef DataTreeClass <  handle
                                 if rnum == obj.group.subjs(jj).runs(kk).rnum
                                     sname = fname(1:iExt-1);
                                     jj=jj+1;
-                                    
                                     flag = 1;
                                     break;
                                 end
@@ -149,7 +145,6 @@ classdef DataTreeClass <  handle
                             obj.group.subjs(jj).runs(nRuns+1) = RunClass(fname, jj, nRuns+1, rnum);
                             obj.group.nFiles = obj.group.nFiles+1;
                             files(ii).MapFile2Group(jj, nRuns+1);
-                            
                             rnum=rnum+1;
                             break;
                         end
@@ -158,13 +153,10 @@ classdef DataTreeClass <  handle
                     
                     % Create new subject with one run
                     if(jj>length(obj.group.subjs))
-                        
                         obj.group.subjs(jj) = SubjClass(fname, jj, 1, rnum);
                         obj.group.nFiles = obj.group.nFiles+1;
                         files(ii).MapFile2Group(jj, 1);
-                        
                         rnum=rnum+1;
-                        
                     end
                 end
             end
@@ -188,7 +180,6 @@ classdef DataTreeClass <  handle
                 buttonVals = canvas.buttonVals;
                 condition = canvas.condition;
             end
-            
             if strcmp(canvas.name, 'guiMain')
                 obj.currElem.procElem.DisplayGuiMain(canvas);
             elseif strcmp(canvas.name, 'plotprobe')
@@ -199,7 +190,6 @@ classdef DataTreeClass <  handle
         
         % ----------------------------------------------------------
         function LoadCurrElem(obj, files, iSubj, iRun)
-            
             if exist('iSubj','var') & exist('iRun','var')
                 for ii=1:length(files)
                     if files(ii).map2group.iSubj==iSubj && files(ii).map2group.iRun==iRun
@@ -221,31 +211,24 @@ classdef DataTreeClass <  handle
                 % subject or run processing allowed for the corresponding
                 % group tree element
                 if iSubj==0
-                    
                     set(obj.currElem.handles.radiobuttonProcTypeSubj,'enable','off');
                     set(obj.currElem.handles.radiobuttonProcTypeRun,'enable','off');
                     set(obj.currElem.handles.radiobuttonProcTypeGroup,'value',1);
-                    
-                    % iRun==0 means the file chosen is a subject directory - no single
-                    % run processing allowed for the corresponding group tree element
+                % iRun==0 means the file chosen is a subject directory - no single
+                % run processing allowed for the corresponding group tree element
                 elseif iSubj>0 && iRun==0
-                    
                     set(obj.currElem.handles.radiobuttonProcTypeSubj,'enable','on');
                     set(obj.currElem.handles.radiobuttonProcTypeRun,'enable','on');
-                    
                     % Don't change the value of the button group unless it is
                     % currently set to an illegal value
                     if obj.currElem.procType==3
                         set(obj.currElem.handles.radiobuttonProcTypeSubj,'value',1);
                     end
-                    
-                    % iRun==0 means the file chosen is a subject directory - no single
-                    % run processing allowed for the corresponding group tree element
+                % iRun==0 means the file chosen is a subject directory - no single
+                % run processing allowed for the corresponding group tree element
                 elseif iSubj>0 && iRun>0
-                    
                     set(obj.currElem.handles.radiobuttonProcTypeSubj,'enable','on');
                     set(obj.currElem.handles.radiobuttonProcTypeRun,'enable','on');
-                    
                 end
             else
                 iFile = 1;
@@ -261,17 +244,14 @@ classdef DataTreeClass <  handle
             elseif obj.currElem.procType==3
                 obj.currElem.procElem = obj.group(1).subjs(iSubj).runs(iRun);
             end
-            
             obj.currElem.iFile = iFile;
             obj.currElem.iSubj = iSubj;
             obj.currElem.iRun = iRun;
-            
         end
 
 
         % ----------------------------------------------------------
         function UpdateCurrElemProcStreamOptionsGUI(obj)
-            
             % Update only if the gui is already active. Otherwise do nothing
             if ishandles(obj.currElem.handles.ProcStreamOptionsGUI)
                 % Get position in character units
@@ -304,13 +284,5 @@ classdef DataTreeClass <  handle
         end
 
     end
-    
-    
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    methods (Access = private)
-                
-    end
-    
     
 end

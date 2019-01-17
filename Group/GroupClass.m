@@ -129,9 +129,7 @@ classdef GroupClass < TreeNodeClass
             
             % Copy procInput only to those group tree members at a single level
             % (ie., group, subject, run) with empty procInput
-            
             procInput = ProcInputClass();
-            
             if nargin==2
                 if isproperty(varargin{1}, 'procElem')
                     type = varargin{1}.procElem.type;
@@ -193,25 +191,19 @@ classdef GroupClass < TreeNodeClass
                 
                 % Load Processing stream file
                 if isempty(filename)
-                    
                     [filename, pathname] = createDefaultConfigFile();
                     
                     % Load procInput from config file
                     fid = fopen(filename,'r');
                     [procInput, err1] = procStreamParse(fid, obj);
                     fclose(fid);
-                    
                 elseif ~isempty(filename)
-                    
                     % Load procInput from config file
                     fid = fopen(filename,'r');
                     [procInput err1] = procStreamParse(fid, obj);
                     fclose(fid);
-                    
                 else
-                    
                     err1=0;
-                    
                 end
                 
                 % Check loaded procInput for syntax and semantic errors
@@ -253,7 +245,6 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function Calc(obj, hListbox, listboxFuncPtr)
-            
             % Calculate all subjs in this session
             subjs = obj.subjs;
             nSubj = length(subjs);
@@ -293,9 +284,7 @@ classdef GroupClass < TreeNodeClass
                     SDSubjs{iSubj}    = subjs(iSubj).ch;
                 end
             end
-                        
             procStreamCalc();
-            
         end
         
         
@@ -304,12 +293,10 @@ classdef GroupClass < TreeNodeClass
         % Deletes derived data in procResult
         % ----------------------------------------------------------------------------------
         function Reset(obj)
-            
             obj.procResult = ProcResultClass();
             for jj=1:length(obj.subjs)
                 obj.subjs(jj).Reset();
             end
-            
         end
         
         
@@ -323,9 +310,7 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function Load(obj)
-            
             if exist('./groupResults.mat','file')
-                
                 load( './groupResults.mat' );
                 
                 % copy procResult from previous group to current group for
@@ -333,20 +318,15 @@ classdef GroupClass < TreeNodeClass
                 hwait = waitbar(0,'Loading group');
                 obj.copyProcParams(group);
                 close(hwait);
-                
             else
-                
                 group = obj;
                 save( './groupResults.mat','group' );
-                
             end
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function Save(obj, options)
-            
             if ~exist('optionsstr','var')
                 options = 'acquired:derived';
             end
@@ -378,43 +358,33 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function SD = GetSDG(obj)
-            
             SD = obj.subjs(1).GetSDG();
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function bbox = GetSdgBbox(obj)
-            
             bbox = obj.subjs(1).GetSdgBbox();
-            
         end
         
         
         % ----------------------------------------------------------------------------------
         function SetMeasList(obj)
-            
             for ii=1:length(obj.subjs)
                 obj.subjs(ii).SetMeasList();
             end
-            
         end
 
         
         % ----------------------------------------------------------------------------------
         function ch = GetMeasList(obj)
-            
             ch = obj.subjs(1).GetMeasList();
-            
         end
 
         
         % ----------------------------------------------------------------------------------
         function wls = GetWls(obj)
-
             wls = obj.subjs(1).GetWls();
-        
         end
         
         
@@ -449,7 +419,6 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function SetConditions(obj, varargin)
-                       
             if nargin==1
 	            CondNames = {};
 	            for ii=1:length(obj.subjs)
@@ -475,7 +444,6 @@ classdef GroupClass < TreeNodeClass
             
             % For group this is an identity table
             obj.CondName2Group = 1:length(obj.CondNames);
-            
         end
         
         
@@ -484,7 +452,6 @@ classdef GroupClass < TreeNodeClass
         % used when averaging subject HRF to get group HRF
         % ----------------------------------------------------------------------------------
         function SetCondName2Subj(obj)
-          
             obj.CondName2Subj = zeros(length(obj.subjs),length(obj.CondNames));
             for iC=1:length(obj.CondNames)
                 for iSubj=1:length(obj.subjs)
@@ -496,7 +463,6 @@ classdef GroupClass < TreeNodeClass
                     end
                 end
             end
-            
         end
         
         
@@ -534,7 +500,6 @@ classdef GroupClass < TreeNodeClass
         % N2 to obj if obj and N2 are equivalent nodes
         % ----------------------------------------------------------------------------------
         function copyProcParams(obj, G)
-            
             if strcmp(obj.name,G.name)
                 for i=1:length(obj.subjs)
                     j = obj.existSubj(i,G);
@@ -547,9 +512,7 @@ classdef GroupClass < TreeNodeClass
                 else
                     obj.procInput.changeFlag=1;
                 end
-            end
-            
-            
+            end           
         end
         
         
@@ -558,7 +521,6 @@ classdef GroupClass < TreeNodeClass
         % G to obj
         % ----------------------------------------------------------------------------------
         function copyProcParamsFieldByField(obj, G)
-            
             % procInput
             if isproperty(G,'procInput') && ~isempty(G.procInput)
                 if isproperty(G.procInput,'procFunc') && ~isempty(G.procInput.procFunc)
@@ -582,7 +544,6 @@ classdef GroupClass < TreeNodeClass
             if isproperty(G,'CondName2Subj') && ~isempty(G.CondName2Subj)
                 obj.CondName2Subj = copyStructFieldByField(obj.CondName2Subj, G.CondName2Subj);
             end
-                       
         end
         
         
@@ -591,7 +552,6 @@ classdef GroupClass < TreeNodeClass
         % its index in G if it does exist. Else return 0.
         % ----------------------------------------------------------------------------------        
         function j = existSubj(obj, k, G)
-            
             j=0;
             for i=1:length(G.subjs)
                 if strcmp(obj.subjs(k).name, G.subjs(i).name)
@@ -599,7 +559,6 @@ classdef GroupClass < TreeNodeClass
                     break;
                 end
             end
-            
         end
                 
     end  % Private methods

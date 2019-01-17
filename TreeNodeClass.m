@@ -226,7 +226,6 @@ classdef TreeNodeClass < handle
             
             %%% Plot data
             if ~isempty(d)
-                
                 xx = xlim();
                 yy = ylim();
                 if strcmpi(get(hAxes,'ylimmode'),'manual')
@@ -249,24 +248,16 @@ classdef TreeNodeClass < handle
                 
                 % Plot data
                 if datatype == buttonVals.OD_HRF
-                    
                     d = d(:,:,condition);
                     d = reshape_y(d, ch.MeasList, Lambda);
-                    
                     DisplayDataRawOrOD(t, d, dStd, iWl, iCh, chLst, nTrials, condition, linecolor, linestyle);
-                    
                 elseif datatype == buttonVals.CONC_HRF
-                    
                     d = d(:,:,:,condition) * sclConc;
-                    
                     DisplayDataConc(t, d, dStd, hbType, iCh, chLst, nTrials, condition, linecolor, linestyle);
-                    
                 end
                 
             end
-            
             guiMain.axesSDG = DisplayAxesSDG(guiMain.axesSDG, obj);
-            
         end
         
         
@@ -276,17 +267,16 @@ classdef TreeNodeClass < handle
             ch          = obj.GetMeasList();
             condition   = find(obj.CondName2Group == condition);
             tMarkAmp    = plotprobe.GetTmarkAmp();
+            
             y = [];
-            if datatype == buttonVals.OD_HRF
+            tMarkUnits = '';
+            if datatype == buttonVals.OD_HRF && ~isempty(obj.procResult.dodAvg)
                 y = obj.procResult.dodAvg(:, :, condition);
                 tMarkUnits='(AU)';
-            elseif datatype == buttonVals.CONC_HRF
+            elseif datatype == buttonVals.CONC_HRF && ~isempty(obj.procResult.dcAvg)
                 y = obj.procResult.dcAvg(:, :, :, condition);
                 plotprobe.SetTmarkAmp(tMarkAmp/1e6);
                 tMarkUnits='(micro-molars)';
-            else
-                y = [];
-                tMarkUnits = '';
             end
             tHRF = obj.procResult.tHRF;
             plotprobe.Display(y, tHRF, SD, ch, tMarkUnits);
@@ -313,8 +303,8 @@ classdef TreeNodeClass < handle
             end
             obj.procInput.procFunc(iFunc).funcParamVal{iParam} = val;
             eval( sprintf('obj.procInput.procParam.%s_%s = val;', ...
-                obj.procInput.procFunc(iFunc).funcName, ...
-                obj.procInput.procFunc(iFunc).funcParam{iParam}) );
+                          obj.procInput.procFunc(iFunc).funcName, ...
+                          obj.procInput.procFunc(iFunc).funcParam{iParam}) );
             str = sprintf(obj.procInput.procFunc(iFunc).funcParamFormat{iParam}, val);
         end
         
@@ -403,9 +393,7 @@ classdef TreeNodeClass < handle
                 
         % ----------------------------------------------------------------------------------
         function out = CondColTbl(arg)
-            
             persistent tbl;
-            
             if nargin==0
                 out = tbl;
                 return;
@@ -413,9 +401,7 @@ classdef TreeNodeClass < handle
             if ~strcmp(arg,'init')
                 return
             end
-            
             tbl = distinguishable_colors(20);
-            
         end
         
         
@@ -423,7 +409,6 @@ classdef TreeNodeClass < handle
         % ----------------------------------------------------------------------------------
         function out = CondNamesAll(arg)
             persistent cond;
-            
             if nargin==0
                 out = cond;
                 return;

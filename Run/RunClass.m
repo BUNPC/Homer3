@@ -1,14 +1,10 @@
 classdef RunClass < TreeNodeClass
     
     properties % (Access = private)
-        
         iSubj;
         iRun;
         rnum;
-        acquired;
-        tIncMan;
-        userdata;
-        
+        acquired;        
     end
     
     methods
@@ -38,10 +34,7 @@ classdef RunClass < TreeNodeClass
                 obj.acquired = NirsClass(obj.name);
             else
                 obj.acquired = SnirfClass(obj.name);
-            end
-            
-            obj.tIncMan = [];
-            obj.userdata = [];
+            end            
             obj.CondName2Group = [];
             obj.Load();
         end
@@ -128,16 +121,7 @@ classdef RunClass < TreeNodeClass
             if isproperty(R,'CondName2Group') && ~isempty(R.CondName2Group)
                 obj.CondName2Group = copyStructFieldByField(obj.CondName2Group, R.CondName2Group);
             end
-            
-            % tIncMan
-            if isproperty(R,'tIncMan') && ~isempty(R.tIncMan)
-                obj.tIncMan = copyStructFieldByField(obj.tIncMan, R.tIncMan);
-            end
-            
-            % userdata
-            if isproperty(R,'userdata') && ~isempty(R.userdata)
-                obj.userdata = copyStructFieldByField(obj.userdata, R.userdata);
-            end
+                        
         end
         
         
@@ -175,7 +159,6 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function DisplayGuiMain(obj, guiMain)
-            
             hAxes = guiMain.axesData.handles.axes;
             if ~ishandles(hAxes)
                 return;
@@ -199,7 +182,6 @@ classdef RunClass < TreeNodeClass
             showStdErr = guiMain.showStdErr;
             
             condition = find(obj.CondName2Group == condition);
-            
             
             d       = [];
             dStd    = [];
@@ -241,7 +223,6 @@ classdef RunClass < TreeNodeClass
             
             %%% Plot data
             if ~isempty(d)
-                
                 xx = xlim();
                 yy = ylim();
                 if strcmpi(get(hAxes,'ylimmode'),'manual')
@@ -279,14 +260,12 @@ classdef RunClass < TreeNodeClass
             end
             guiMain.axesSDG = DisplayAxesSDG(guiMain.axesSDG, obj);
             obj.DisplayStim(guiMain);
-            
         end
         
         
         
         % ----------------------------------------------------------------------------------
         function DisplayStim(obj, guiMain)
-            
             hAxes = guiMain.axesData.handles.axes;
             if ~ishandles(hAxes)
                 return;
@@ -362,7 +341,6 @@ classdef RunClass < TreeNodeClass
             end
             hold off
             set(hAxes,'ygrid','on');
-            
         end
         
         
@@ -380,26 +358,22 @@ classdef RunClass < TreeNodeClass
 
         % ----------------------------------------------------------------------------------
         function varval = FindVar(obj, varname)
-
             if isproperty(obj, varname)
                 varval = eval( sprintf('obj.%s', varname) );
             else
                 varval = obj.acquired.FindVar(varname);
             end
-            
         end
         
         
         
         % ----------------------------------------------------------------------------------
         function Calc(obj, hListbox, listboxFuncPtr)
-
             % Change and display position of current processing
             listboxFuncPtr(hListbox, [obj.iSubj, obj.iRun]);   
             
             % Calculate processing stream
             procStreamCalc();
-            
         end
         
     end    % Public methods
@@ -416,7 +390,6 @@ classdef RunClass < TreeNodeClass
             if nargin==1
                 idx=1;
             end
-            
             t = obj.acquired.GetTime(idx);
         end
         

@@ -1,10 +1,14 @@
 classdef ProcInputClass < matlab.mixin.Copyable
-    
+    %
+    % ProcInputClass stores processing stream input parameters that are independent 
+    % of acquisition data or is derived from acquisition data but not stored there. 
+    %
     properties
-        procParam;
-        procFunc;
-        changeFlag;
-        conversionFlag;
+        procFunc;       % Processing stream functions
+        procParam;      % Processing stream user-settable input arguments and their current values
+        tIncMan;        % Manually include/excluded time points
+        changeFlag;     % Flag specifying if procInput+acquisition data is out 
+                        %    of sync with procResult (currently not implemented)
     end
     
     
@@ -15,7 +19,6 @@ classdef ProcInputClass < matlab.mixin.Copyable
             obj.procParam = struct([]);
             obj.procFunc = struct([]);
             obj.changeFlag = 0;
-            obj.conversionFlag = 0;
         end
         
         

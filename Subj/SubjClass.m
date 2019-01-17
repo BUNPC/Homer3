@@ -1,11 +1,9 @@
 classdef SubjClass < TreeNodeClass
     
     properties % (Access = private)
-        
         iSubj;
         CondName2Run
         runs;
-        
     end
     
     methods
@@ -183,7 +181,6 @@ classdef SubjClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function Calc(obj, hListbox, listboxFuncPtr)
-            
             % Calculate all runs in this session
             runs = obj.runs;
             nRun = length(runs);
@@ -228,7 +225,6 @@ classdef SubjClass < TreeNodeClass
 
             % Calculate processing stream
             procStreamCalc();
-            
         end
         
     end

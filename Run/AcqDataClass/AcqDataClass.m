@@ -35,9 +35,6 @@ classdef AcqDataClass < matlab.mixin.Copyable
         s         = GetStims(obj)
         
         % ---------------------------------------------------------
-        SetConditions(obj, CondNames)
-        
-        % ---------------------------------------------------------
         CondNames = GetConditions(obj)
         
         % ---------------------------------------------------------

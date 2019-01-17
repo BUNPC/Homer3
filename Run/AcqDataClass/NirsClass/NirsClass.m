@@ -275,12 +275,6 @@ classdef NirsClass < AcqDataClass
         
         
         % ---------------------------------------------------------
-        function SetConditions(obj, CondNames)
-            obj.CondNames = CondNames;
-        end
-
-            
-        % ---------------------------------------------------------
         function CondNames = GetConditions(obj)
             CondNames = obj.CondNames;
         end
@@ -367,7 +361,7 @@ classdef NirsClass < AcqDataClass
             end      
             [~, tidx] = nearest_point(obj.t, tPts);
             obj.s(tidx, icol) = 1;
-            SortStims(obj);
+            obj.SortStims();
         end
         
         
@@ -405,10 +399,16 @@ classdef NirsClass < AcqDataClass
             
             j = find(strcmp(obj.CondNames, condition));
             if isempty(j)
+                % Destination condition wasn't found in data, so add new condition 
                 j = size(obj.s,2)+1;
+                obj.s(:,j) = zeros(1,length(obj.t));
                 obj.CondNames{j} = condition;
+                obj.SortStims();
+                
+                % Recalculate j after sort
+                j = find(strcmp(obj.CondNames, condition));
             end
-                        
+            
             % Find all stims for any conditions which match the time points.
             for ii=1:length(tPts)
                 % Find index k in the time vector obj.t of time point tPts(ii)

@@ -8,7 +8,8 @@ classdef TreeNodeClass < handle
         err;
         ch;
         CondNames;        
-        CondName2Group;
+        CondName2Group;   % Global table used at subject and run levels to convert 
+                          % condition index to global (or group-level) condition index.
     end
         
     methods
@@ -149,7 +150,28 @@ classdef TreeNodeClass < handle
             objnew.procInput = obj.procInput.copy();
         end
         
+               
+        % ----------------------------------------------------------------------------------
+        % Copy processing params (procInut and procResult) from
+        % obj2 to obj
+        % ----------------------------------------------------------------------------------
+        function copyProcParamsFieldByField(obj, obj2)
+            % procInput
+            if isproperty(obj2,'procInput') && ~isempty(obj2.procInput)
+                if isproperty(obj2.procInput,'procFunc') && ~isempty(obj2.procInput.procFunc)
+                    obj.procInput.Copy(obj2.procInput);
+                else
+                    [obj.procInput.procFunc, obj.procInput.procParam] = procStreamDefault(obj.type);
+                end
+            end
+            
+            % procResult
+            if isproperty(obj2,'procResult') && ~isempty(obj2.procResult)
+                obj.procResult = copyStructFieldByField(obj.procResult, obj2.procResult);
+            end            
+        end
         
+                
         % ----------------------------------------------------------------------------------
         % 
         % ----------------------------------------------------------------------------------
@@ -285,8 +307,8 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function varval = FindVar(obj, varname)
-            if isproperty(obj, varname)
-                varval = eval( sprintf('obj.%s', varname) );
+            if isproperty(obj.procInput, varname)
+                varval = eval( sprintf('obj.procInput.%s', varname) );
             else
                 varval = [];
             end

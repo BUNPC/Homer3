@@ -1,13 +1,11 @@
 classdef GroupClass < TreeNodeClass
     
     properties % (Access = private)
-        
         fileidx;
         nFiles;
-        CondName2Subj;
         subjs;
-        
     end
+    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Public methods
@@ -43,9 +41,7 @@ classdef GroupClass < TreeNodeClass
             obj.type = 'group';
             obj.fileidx = 0;
             obj.nFiles = 0;
-            obj.CondName2Subj = [];
             obj.subjs = subj;
-
         end
         
         
@@ -54,7 +50,6 @@ classdef GroupClass < TreeNodeClass
         % are equivalent and their subject sets are equivalent.
         % ----------------------------------------------------------------------------------
         function B = equivalent(obj1, obj2)
-            
             B=1;
             if ~strcmp(obj1.name, obj2.name)
                 B=0;
@@ -74,7 +69,6 @@ classdef GroupClass < TreeNodeClass
                     return;
                 end
             end
-            
         end
         
         
@@ -418,21 +412,14 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetConditions(obj, varargin)
-            if nargin==1
-	            CondNames = {};
-	            for ii=1:length(obj.subjs)
-	                obj.subjs(ii).SetConditions();
-	                CondNames = [CondNames, obj.subjs(ii).GetConditions()];
-	            end
-	            obj.CondNames    = unique(CondNames);
-	            obj.CondNamesAll(obj.CondNames);
-			elseif nargin==2
-	            obj.CondNames    = varargin{1};
-	            for ii=1:length(obj.subjs)
-	                obj.subjs(ii).SetConditions(varargin{1});
-	            end
-			end
+        function SetConditions(obj)
+            CondNames = {};
+            for ii=1:length(obj.subjs)
+                obj.subjs(ii).SetConditions();
+                CondNames = [CondNames, obj.subjs(ii).GetConditions()];
+            end
+            obj.CondNames    = unique(CondNames);
+            obj.CondNamesAll(obj.CondNames);
 	
             % Generate mapping of group conditions to subject conditions
             % used when averaging subject HRF to get group HRF
@@ -452,14 +439,14 @@ classdef GroupClass < TreeNodeClass
         % used when averaging subject HRF to get group HRF
         % ----------------------------------------------------------------------------------
         function SetCondName2Subj(obj)
-            obj.CondName2Subj = zeros(length(obj.subjs),length(obj.CondNames));
+            obj.procInput.CondName2Subj = zeros(length(obj.subjs),length(obj.CondNames));
             for iC=1:length(obj.CondNames)
                 for iSubj=1:length(obj.subjs)
                     k = find(strcmp(obj.CondNames{iC}, obj.subjs(iSubj).GetConditions()));
                     if isempty(k)
-                        obj.CondName2Subj(iSubj,iC) = 0;
+                        obj.procInput.CondName2Subj(iSubj,iC) = 0;
                     else
-                        obj.CondName2Subj(iSubj,iC) = k(1);
+                        obj.procInput.CondName2Subj(iSubj,iC) = k(1);
                     end
                 end
             end
@@ -513,37 +500,6 @@ classdef GroupClass < TreeNodeClass
                     obj.procInput.changeFlag=1;
                 end
             end           
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        % Copy processing params (procInut and procResult) from
-        % G to obj
-        % ----------------------------------------------------------------------------------
-        function copyProcParamsFieldByField(obj, G)
-            % procInput
-            if isproperty(G,'procInput') && ~isempty(G.procInput)
-                if isproperty(G.procInput,'procFunc') && ~isempty(G.procInput.procFunc)
-                    obj.procInput = copyStructFieldByField(obj.procInput, G.procInput);
-                else
-                    [obj.procInput.procFunc, obj.procInput.procParam] = procStreamDefault('group');
-                end
-            end
-            
-            % procResult
-            if isproperty(G,'procResult') && ~isempty(G.procResult)
-                obj.procResult = copyStructFieldByField(obj.procResult, G.procResult);
-            end
-            
-            % CondNames
-            if isproperty(G,'CondNames') && ~isempty(G.CondNames)
-                obj.CondNames = copyStructFieldByField(obj.CondNames, G.CondNames);
-            end
-            
-            % CondName2Subj
-            if isproperty(G,'CondName2Subj') && ~isempty(G.CondName2Subj)
-                obj.CondName2Subj = copyStructFieldByField(obj.CondName2Subj, G.CondName2Subj);
-            end
         end
         
         

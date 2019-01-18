@@ -91,40 +91,7 @@ classdef RunClass < TreeNodeClass
             end
         end
         
-    
-        
-        % ----------------------------------------------------------------------------------
-        % Copy processing params (procInut and procResult) from
-        % N2 to N1
-        % ----------------------------------------------------------------------------------
-        function copyProcParamsFieldByField(obj, R)
-            % procInput
-            if isproperty(R,'procInput')
-                if isproperty(R.procInput,'procFunc') && ~isempty(R.procInput.procFunc)
-                    obj.procInput.Copy(R.procInput);
-                else
-                    [obj.procInput.procFunc, obj.procInput.procParam] = procStreamDefault('run');
-                end
-            end
             
-            % procResult
-            if isproperty(R,'procResult') && ~isempty(R.procResult)
-                obj.procResult = copyStructFieldByField(obj.procResult, R.procResult);
-            end
-            
-            % CondNames
-            if isproperty(R,'CondNames') && ~isempty(R.CondNames)
-                obj.CondNames = copyStructFieldByField(obj.CondNames, R.CondNames);
-            end
-            
-            % CondName2Run
-            if isproperty(R,'CondName2Group') && ~isempty(R.CondName2Group)
-                obj.CondName2Group = copyStructFieldByField(obj.CondName2Group, R.CondName2Group);
-            end
-                        
-        end
-        
-        
         % ----------------------------------------------------------------------------------
         % Subjects obj1 and obj2 are considered equivalent if their names
         % are equivalent and their sets of runs are equivalent.
@@ -358,8 +325,8 @@ classdef RunClass < TreeNodeClass
 
         % ----------------------------------------------------------------------------------
         function varval = FindVar(obj, varname)
-            if isproperty(obj, varname)
-                varval = eval( sprintf('obj.%s', varname) );
+            if isproperty(obj.procInput, varname)
+                varval = eval( sprintf('obj.procInput.%s', varname) );
             else
                 varval = obj.acquired.FindVar(varname);
             end
@@ -442,12 +409,8 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetConditions(obj, varargin)
-            if nargin==1
-                obj.CondNames = unique(obj.acquired.GetConditions());
-            elseif nargin==2
-                obj.CondNames = obj.acquired.SetConditions(varargin{1});                
-            end
+        function SetConditions(obj)
+            obj.CondNames = unique(obj.acquired.GetConditions());
         end
         
         

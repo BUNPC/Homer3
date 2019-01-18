@@ -2,7 +2,6 @@ classdef SubjClass < TreeNodeClass
     
     properties % (Access = private)
         iSubj;
-        CondName2Run
         runs;
     end
     
@@ -33,7 +32,7 @@ classdef SubjClass < TreeNodeClass
             obj.name = sname;
             obj.type = 'subj';
             obj.iSubj = iSubj;
-            obj.CondName2Run = [];
+            obj.procInput.CondName2Run = [];
             obj.CondName2Group = [];
             obj.runs = run;
         end
@@ -56,37 +55,6 @@ classdef SubjClass < TreeNodeClass
                 else
                     obj.procInput.changeFlag = 1;
                 end
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        % Copy processing params (procInut and procResult) from
-        % S to obj
-        % ----------------------------------------------------------------------------------
-        function copyProcParamsFieldByField(obj, S)
-            % procInput
-            if isproperty(S,'procInput')
-                if isproperty(S.procInput,'procFunc') && ~isempty(S.procInput.procFunc)
-                    obj.procInput = copyStructFieldByField(obj.procInput, S.procInput);
-                else
-                    [obj.procInput.procFunc, obj.procInput.procParam] = procStreamDefault('subj');
-                end
-            end
-            
-            % procResult
-            if isproperty(S,'procResult') && ~isempty(S.procResult)
-                obj.procResult = copyStructFieldByField(obj.procResult, S.procResult);
-            end
-            
-            % CondNames
-            if isproperty(S,'CondNames') && ~isempty(S.CondNames)
-                obj.CondNames = copyStructFieldByField(obj.CondNames, S.CondNames);
-            end
-            
-            % CondName2Run
-            if isproperty(S,'CondName2Run') && ~isempty(S.CondName2Run)
-                obj.CondName2Run = copyStructFieldByField(obj.CondName2Run, S.CondName2Run);
             end
         end
         
@@ -287,20 +255,13 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetConditions(obj, varargin)
-            if nargin==1
-                CondNames = {};
-                for ii=1:length(obj.runs)
-                    obj.runs(ii).SetConditions();
-                    CondNames = [CondNames, obj.runs(ii).GetConditions()];
-                end
-                obj.CondNames = unique(CondNames);
-            elseif nargin==2
-                obj.CondNames = varargin{1};
-                for ii=1:length(obj.runs)
-                    obj.runs(ii).SetConditions(varargin{1});
-                end
+        function SetConditions(obj)
+            CondNames = {};
+            for ii=1:length(obj.runs)
+                obj.runs(ii).SetConditions();
+                CondNames = [CondNames, obj.runs(ii).GetConditions()];
             end
+            obj.CondNames = unique(CondNames);
         end
         
         
@@ -319,14 +280,14 @@ classdef SubjClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function SetCondName2Run(obj)
             % Generate the second output parameter - CondSubj2Run using the 1st
-            obj.CondName2Run = zeros(length(obj.runs), length(obj.CondNames));
+            obj.procInput.CondName2Run = zeros(length(obj.runs), length(obj.CondNames));
             for iC=1:length(obj.CondNames)
                 for iRun=1:length(obj.runs)
                     k = find(strcmp(obj.CondNames{iC}, obj.runs(iRun).GetConditions()));
                     if isempty(k)
-                        obj.CondName2Run(iRun,iC) = 0;
+                        obj.procInput.CondName2Run(iRun,iC) = 0;
                     else
-                        obj.CondName2Run(iRun,iC) = k(1);
+                        obj.procInput.CondName2Run(iRun,iC) = k(1);
                     end
                 end
             end

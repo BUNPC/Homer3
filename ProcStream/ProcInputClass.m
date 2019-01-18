@@ -6,6 +6,8 @@ classdef ProcInputClass < matlab.mixin.Copyable
     properties
         procFunc;       % Processing stream functions
         procParam;      % Processing stream user-settable input arguments and their current values
+        CondName2Subj;  % Used by group processing stream
+        CondName2Run;   % Used by subject processing stream      
         tIncMan;        % Manually include/excluded time points
         changeFlag;     % Flag specifying if procInput+acquisition data is out 
                         %    of sync with procResult (currently not implemented)
@@ -18,9 +20,12 @@ classdef ProcInputClass < matlab.mixin.Copyable
         function obj = ProcInputClass()
             obj.procParam = struct([]);
             obj.procFunc = struct([]);
+            obj.CondName2Subj = [];
+            obj.CondName2Run = [];            
+            obj.tIncMan = [];
             obj.changeFlag = 0;
         end
-        
+                
         
         % --------------------------------------------------
         function Copy(obj, obj2)
@@ -32,9 +37,6 @@ classdef ProcInputClass < matlab.mixin.Copyable
             end
             if isproperty(obj2, 'changeFlag')
                 obj.changeFlag = obj2.changeFlag;
-            end
-            if isproperty(obj2, 'conversionFlag')
-                obj.conversionFlag = obj2.conversionFlag;
             end
         end
         

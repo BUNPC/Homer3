@@ -239,6 +239,13 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function Calc(obj, hListbox, listboxFuncPtr)
+            if ~exist('hListbox','var')
+                hListbox = [];
+            end
+            if ~exist('listboxFuncPtr','var')
+                listboxFuncPtr = [];
+            end
+            
             % Calculate all subjs in this session
             subjs = obj.subjs;
             nSubj = length(subjs);
@@ -254,7 +261,9 @@ classdef GroupClass < TreeNodeClass
             end
                         
             % Change and display position of current processing
-            listboxFuncPtr(hListbox, [0,0]);
+            if ~isempty(listboxFuncPtr)
+                listboxFuncPtr(hListbox, [0,0]);
+            end
             
             % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
             % all subjs. Use smallest tHRF as the common one.

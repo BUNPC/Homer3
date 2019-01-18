@@ -336,8 +336,17 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function Calc(obj, hListbox, listboxFuncPtr)
+            if ~exist('hListbox','var')
+                hListbox = [];
+            end
+            if ~exist('listboxFuncPtr','var')
+                listboxFuncPtr = [];
+            end
+            
             % Change and display position of current processing
-            listboxFuncPtr(hListbox, [obj.iSubj, obj.iRun]);   
+            if ~isempty(listboxFuncPtr)
+                listboxFuncPtr(hListbox, [obj.iSubj, obj.iRun]);
+            end
             
             % Calculate processing stream
             procStreamCalc();

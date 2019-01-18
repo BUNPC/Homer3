@@ -149,6 +149,13 @@ classdef SubjClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function Calc(obj, hListbox, listboxFuncPtr)
+            if ~exist('hListbox','var')
+                hListbox = [];
+            end
+            if ~exist('listboxFuncPtr','var')
+                listboxFuncPtr = [];
+            end
+            
             % Calculate all runs in this session
             runs = obj.runs;
             nRun = length(runs);
@@ -164,7 +171,9 @@ classdef SubjClass < TreeNodeClass
             end
             
             % Change and display position of current processing
-            listboxFuncPtr(hListbox, [obj.iSubj, 0]);
+            if ~isempty(listboxFuncPtr)
+                listboxFuncPtr(hListbox, [obj.iSubj, 0]);
+            end
             
             % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
             % all runs. Use smallest tHRF as the common one.

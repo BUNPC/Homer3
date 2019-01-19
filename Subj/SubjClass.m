@@ -185,23 +185,23 @@ classdef SubjClass < TreeNodeClass
             % procStreamCalc to calculate proc stream for this subject
             nTrials = zeros(1,length(obj.CondNames));
             for iRun = 1:nRun
-                dodAvgRuns{iRun}    = runs(iRun).procResult.dodAvg;
-                dodAvgStdRuns{iRun} = runs(iRun).procResult.dodAvgStd;
-                dodSum2Runs{iRun}   = runs(iRun).procResult.dodSum2;
-                dcAvgRuns{iRun}     = runs(iRun).procResult.dcAvg;
-                dcAvgStdRuns{iRun}  = runs(iRun).procResult.dcAvgStd;
-                dcSum2Runs{iRun}    = runs(iRun).procResult.dcSum2;
-                tHRFRuns{iRun}      = runs(iRun).procResult.tHRF;
-                nTrialsRuns{iRun}   = runs(iRun).procResult.nTrials;
+                obj.procInput.misc.dodAvgRuns{iRun}    = runs(iRun).procResult.dodAvg;
+                obj.procInput.misc.dodAvgStdRuns{iRun} = runs(iRun).procResult.dodAvgStd;
+                obj.procInput.misc.dodSum2Runs{iRun}   = runs(iRun).procResult.dodSum2;
+                obj.procInput.misc.dcAvgRuns{iRun}     = runs(iRun).procResult.dcAvg;
+                obj.procInput.misc.dcAvgStdRuns{iRun}  = runs(iRun).procResult.dcAvgStd;
+                obj.procInput.misc.dcSum2Runs{iRun}    = runs(iRun).procResult.dcSum2;
+                obj.procInput.misc.tHRFRuns{iRun}      = runs(iRun).procResult.tHRF;
+                obj.procInput.misc.nTrialsRuns{iRun}   = runs(iRun).procResult.nTrials;
                 if ~isempty(runs(iRun).procResult.ch)
-                    SDRuns{iRun}    = runs(iRun).procResult.ch;
+                    obj.procInput.misc.SDRuns{iRun}    = runs(iRun).procResult.ch;
                 else
-                    SDRuns{iRun}    = runs(iRun).GetMeasList();
+                    obj.procInput.misc.SDRuns{iRun}    = runs(iRun).GetMeasList();
                 end
             end
 
             % Calculate processing stream
-            procStreamCalc();
+            procStreamCalc(obj);
         end
         
     end

@@ -275,19 +275,19 @@ classdef GroupClass < TreeNodeClass
             % Instantiate all the variables that might be needed by
             % procStreamCalc to calculate proc stream for this group
             for iSubj = 1:nSubj
-                dodAvgSubjs{iSubj}    = subjs(iSubj).procResult.dodAvg;
-                dodAvgStdSubjs{iSubj} = subjs(iSubj).procResult.dodAvgStd;
-                dcAvgSubjs{iSubj}     = subjs(iSubj).procResult.dcAvg;
-                dcAvgStdSubjs{iSubj}  = subjs(iSubj).procResult.dcAvgStd;
-                tHRFSubjs{iSubj}      = subjs(iSubj).procResult.tHRF;
-                nTrialsSubjs{iSubj}   = subjs(iSubj).procResult.nTrials;
+                obj.procInput.misc.dodAvgSubjs{iSubj}    = subjs(iSubj).procResult.dodAvg;
+                obj.procInput.misc.dodAvgStdSubjs{iSubj} = subjs(iSubj).procResult.dodAvgStd;
+                obj.procInput.misc.dcAvgSubjs{iSubj}     = subjs(iSubj).procResult.dcAvg;
+                obj.procInput.misc.dcAvgStdSubjs{iSubj}  = subjs(iSubj).procResult.dcAvgStd;
+                obj.procInput.misc.tHRFSubjs{iSubj}      = subjs(iSubj).procResult.tHRF;
+                obj.procInput.misc.nTrialsSubjs{iSubj}   = subjs(iSubj).procResult.nTrials;
                 if ~isempty(subjs(iSubj).procResult.ch)
-                    SDSubjs{iSubj}    = subjs(iSubj).procResult.ch;
+                    obj.procInput.misc.SDSubjs{iSubj}    = subjs(iSubj).procResult.ch;
                 else
-                    SDSubjs{iSubj}    = subjs(iSubj).ch;
+                    obj.procInput.misc.SDSubjs{iSubj}    = subjs(iSubj).ch;
                 end
             end
-            procStreamCalc();
+            procStreamCalc(obj);
         end
         
         

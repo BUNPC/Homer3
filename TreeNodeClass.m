@@ -307,11 +307,7 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function varval = FindVar(obj, varname)
-            if isproperty(obj.procInput, varname)
-                varval = eval( sprintf('obj.procInput.%s', varname) );
-            else
-                varval = [];
-            end
+            varval = [];
         end
 
                 

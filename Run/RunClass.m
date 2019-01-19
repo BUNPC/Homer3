@@ -325,8 +325,8 @@ classdef RunClass < TreeNodeClass
 
         % ----------------------------------------------------------------------------------
         function varval = FindVar(obj, varname)
-            if isproperty(obj.procInput, varname)
-                varval = eval( sprintf('obj.procInput.%s', varname) );
+            if isproperty(obj, varname)
+                varval = eval( sprintf('obj.%s', varname) );
             else
                 varval = obj.acquired.FindVar(varname);
             end
@@ -349,7 +349,7 @@ classdef RunClass < TreeNodeClass
             end
             
             % Calculate processing stream
-            procStreamCalc();
+            procStreamCalc(obj);
         end
         
     end    % Public methods

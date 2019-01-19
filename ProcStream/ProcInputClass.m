@@ -9,6 +9,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
         CondName2Subj;  % Used by group processing stream
         CondName2Run;   % Used by subject processing stream      
         tIncMan;        % Manually include/excluded time points
+        misc;
         changeFlag;     % Flag specifying if procInput+acquisition data is out 
                         %    of sync with procResult (currently not implemented)
     end
@@ -23,6 +24,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
             obj.CondName2Subj = [];
             obj.CondName2Run = [];            
             obj.tIncMan = [];
+            obj.misc = [];
             obj.changeFlag = 0;
         end
                 

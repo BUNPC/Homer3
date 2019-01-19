@@ -1,3 +1,4 @@
+function procStreamCalc(obj)
 
 % Initialize output struct
 obj.procResult = ProcResultClass();
@@ -6,8 +7,8 @@ procInput = obj.procInput;
 % loop over functions
 nFunc = length(procInput.procFunc);
 paramOut = {};
-fcallList = cell(1,nFunc);
 hwait = waitbar(0, 'Processing...' );
+
 for iFunc = 1:nFunc
     
     waitbar( iFunc/length(procInput.procFunc), hwait, sprintf('Processing... %s', procInput.procFunc(iFunc).funcName) );
@@ -16,7 +17,13 @@ for iFunc = 1:nFunc
     argIn = procStreamParseArgsIn(procInput.procFunc(iFunc).funcArgIn);
     for ii = 1:length(argIn)
         if ~exist(argIn{ii},'var')
-            eval(sprintf('%s = obj.FindVar(''%s'');', argIn{ii}, argIn{ii}));
+            if isproperty(obj.procInput, argIn{ii})
+                eval(sprintf('%s = obj.procInput.%s;', argIn{ii}, argIn{ii}));
+            elseif isproperty(obj.procInput.misc, argIn{ii})
+                eval(sprintf('%s = obj.procInput.misc.%s;', argIn{ii}, argIn{ii}));
+            else
+                eval(sprintf('%s = obj.FindVar(''%s'');', argIn{ii}, argIn{ii}));
+            end
         end
     end
 
@@ -80,11 +87,6 @@ for iFunc = 1:nFunc
         assert(false, msg);
     end
     
-    fcallList{iFunc} = sprintf( '%s = %s%s%s);', sargout, ...
-                                                 procInput.procFunc(iFunc).funcName, ...
-                                                 procInput.procFunc(iFunc).funcArgIn, ...
-                                                 sarginVal );
-    
     % parse output parameters
     foos = procInput.procFunc(iFunc).funcArgOut;
 
@@ -119,5 +121,6 @@ for ii=1:length(paramOut)
     end
 end
 
+obj.procInput.misc = [];
 close(hwait)
 

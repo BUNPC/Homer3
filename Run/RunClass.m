@@ -136,7 +136,6 @@ classdef RunClass < TreeNodeClass
             legend off
             set(hAxes,'ygrid','on');
             
-            
             linecolor  = guiMain.axesData.linecolor;
             linestyle  = guiMain.axesData.linestyle;
             datatype   = guiMain.datatype;
@@ -186,7 +185,6 @@ classdef RunClass < TreeNodeClass
                 end
             end
             ch      = obj.GetMeasList();
-            Lambda  = obj.GetWls();
             
             %%% Plot data
             if ~isempty(d)
@@ -207,7 +205,6 @@ classdef RunClass < TreeNodeClass
                     xlim(xx);
                     ylim(yy);
                 end
-                
                 chLst = find(ch.MeasListVis(iCh)==1);
                 
                 % Plot data
@@ -215,7 +212,7 @@ classdef RunClass < TreeNodeClass
                     if  datatype == buttonVals.OD_HRF
                         d = d(:,:,condition);
                     end
-                    d = reshape_y(d, ch.MeasList, Lambda);
+                    d = obj.reshape_y(d, ch.MeasList);
                     DisplayDataRawOrOD(t, d, dStd, iWl, iCh, chLst, nTrials, condition, linecolor, linestyle);
                 elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF                    
                     if  datatype == buttonVals.CONC_HRF

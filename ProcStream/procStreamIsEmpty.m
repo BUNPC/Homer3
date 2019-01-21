@@ -21,7 +21,7 @@ end
 % one VALID function is present 
 b=1;
 for ii=1:length(procInput.func)
-    if ~isempty(procInput.func(ii).funcName) && ~isempty(procInput.func(ii).funcArgOut)
+    if ~isempty(procInput.func(ii).name) && ~isempty(procInput.func(ii).argOut)
         b=0;
         return;
     end

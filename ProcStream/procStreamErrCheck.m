@@ -31,7 +31,7 @@ for ii=1:length(func)
     score=[0];
     kk=1;
     for jj=1:length(funcReg)
-        if strcmp(func(ii).funcName, funcReg(jj).funcName)
+        if strcmp(func(ii).name, funcReg(jj).name)
 
             f1 = func(ii);
             f2 = funcReg(jj);

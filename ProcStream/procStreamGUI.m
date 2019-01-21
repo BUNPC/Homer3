@@ -101,14 +101,14 @@ for iFunc = 1:length(func)
     % parse input parameters
     p = [];
     sargin = '';
-    for iP = 1:func(iFunc).nFuncParam
-        if ~func(iFunc).nFuncParamVar
-            p{iP} = func(iFunc).funcParamVal{iP};
+    for iP = 1:func(iFunc).nParam
+        if ~func(iFunc).nParamVar
+            p{iP} = func(iFunc).paramVal{iP};
         else
-            p{iP}.name = func(iFunc).funcParam{iP};
-            p{iP}.val = func(iFunc).funcParamVal{iP};
+            p{iP}.name = func(iFunc).param{iP};
+            p{iP}.val = func(iFunc).paramVal{iP};
         end
-        if length(func(iFunc).funcArgIn)==1 & iP==1
+        if length(func(iFunc).argIn)==1 & iP==1
             sargin = sprintf('%sp{%d}',sargin,iP);
         else
             sargin = sprintf('%s,p{%d}',sargin,iP);
@@ -116,8 +116,8 @@ for iFunc = 1:length(func)
     end
     
     % set up output format
-    sargout = func(iFunc).funcArgOut;
-    for ii=1:length(func(iFunc).funcArgOut)
+    sargout = func(iFunc).argOut;
+    for ii=1:length(func(iFunc).argOut)
         if sargout(ii)=='#'
             sargout(ii) = ' ';
         end
@@ -125,13 +125,13 @@ for iFunc = 1:length(func)
 
     % call function
     fcall{iFunc} = sprintf( '%s      = %s%s%s);', sargout, ...
-        func(iFunc).funcName, ...
-        func(iFunc).funcArgIn, sargin );
+        func(iFunc).name, ...
+        func(iFunc).argIn, sargin );
     fcallOut{iFunc} = sprintf( '%s', sargout);
     fcall{iFunc} = sprintf( '%s',  ...
-        func(iFunc).funcName);
+        func(iFunc).name);
     fcallIn{iFunc} = sprintf( '%s%s)',  ...
-        func(iFunc).funcArgIn, sargin );
+        func(iFunc).argIn, sargin );
 end
 
     
@@ -428,7 +428,7 @@ for iPanel=1:3
         i=find(err2==1);
         str1 = 'Error in functions\n\n';
         for j=1:length(i)
-            str2 = sprintf('%s%s', procElem.procInput.func(i(j)).funcName,'\n');
+            str2 = sprintf('%s%s', procElem.procInput.func(i(j)).name,'\n');
             str1 = strcat(str1,str2);
         end
         str1 = strcat(str1,'\n');
@@ -480,9 +480,9 @@ for iPanel=1:length(procElem)
     
     param=[];
     for iFunc = 1:length(func)
-        for iParam=1:length(func(iFunc).funcParam)
-            eval( sprintf('param.%s_%s = func(iFunc).funcParamVal{iParam};',...
-                func(iFunc).funcName, func(iFunc).funcParam{iParam}) );
+        for iParam=1:length(func(iFunc).param)
+            eval( sprintf('param.%s_%s = func(iFunc).paramVal{iParam};',...
+                func(iFunc).name, func(iFunc).param{iParam}) );
         end
     end
     procElem{iPanel}.procInput.func = func;
@@ -539,7 +539,7 @@ helpstr = procStreamGenerateHelpStr(func(iFunc).funcHelp);
 
 
 % -------------------------------------------------
-function helpstr = procStreamHelpLookupByName(funcName, handles)
+function helpstr = procStreamHelpLookupByName(name, handles)
 this = getappdata(handles.figure1, 'this');
 iPanel = this.iPanel;
 procElem = this.procElem{iPanel};
@@ -549,7 +549,7 @@ helpstr = '';
 func = procStreamReg2ProcFunc(procElem);
 match=0;
 for ii=1:length(func)
-    if strcmp(funcName, func(ii).funcName)
+    if strcmp(name, func(ii).name)
         match=1;
         break;
     end
@@ -569,7 +569,7 @@ function helpstr = procStreamGenerateHelpStr(funcHelp)
 helpstr = '';
 
 helpstr = sprintf('%s%s\n', helpstr, funcHelp.usage);
-helpstr = sprintf('%s%s\n', helpstr, funcHelp.funcNameUI);
+helpstr = sprintf('%s%s\n', helpstr, funcHelp.nameUI);
 helpstr = sprintf('%s%s\n', helpstr, 'DESCRIPTION:');
 helpstr = sprintf('%s%s\n', helpstr, funcHelp.genDescr);
 helpstr = sprintf('%s%s\n', helpstr, 'INPUT:');

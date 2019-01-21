@@ -1,15 +1,15 @@
 function func = InitProcFunc()
 
-func.funcName        = '';
-func.funcNameUI      = '';
-func.funcArgOut      = '';
-func.funcArgIn       = '';
-func.nFuncParam      = 0;
-func.nFuncParamVar   = 0;
-func.funcParam       = {};
-func.funcParamFormat = {};
-func.funcParamVal    = {};
-func.funcHelp        = InitHelp(0);
+func.name        = '';
+func.nameUI      = '';
+func.argOut      = '';
+func.argIn       = '';
+func.nParam      = 0;
+func.nParamVar   = 0;
+func.param       = {};
+func.paramFormat = {};
+func.paramVal    = {};
+func.funcHelp    = InitHelp(0);
 
 
 

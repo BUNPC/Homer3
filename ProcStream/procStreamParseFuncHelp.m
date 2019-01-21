@@ -5,7 +5,7 @@ function funcHelp = procStreamParseFuncHelp(func)
 % it expects:
 %  
 % --------------------------------------
-% [p1,p2,...pn] = funcName(a1,a2,...am)
+% [p1,p2,...pn] = name(a1,a2,...am)
 %
 %
 % UI NAME: 
@@ -47,22 +47,22 @@ function funcHelp = procStreamParseFuncHelp(func)
 % used for the generic function description.
 %
 
-funcName       = func.funcName;
-funcParam      = func.funcParam;
-funcArgIn      = func.funcArgIn;
-funcArgOut     = func.funcArgOut;
+name       = func.name;
+param      = func.param;
+argIn      = func.argIn;
+argOut     = func.argOut;
 
-funcArgIn      = procStreamParseArgsIn(funcArgIn);
-funcArgOut     = procStreamParseArgsOut(funcArgOut);
+argIn      = procStreamParseArgsIn(argIn);
+argOut     = procStreamParseArgsOut(argOut);
 
 % funcHelpStr is a cell array of strings. The first element of the cell
 % array is the call string (the kind you'd find in proceccOpt.cfg file. 
 % The rest of the strings make up the help text. 
-funcHelpStr    = str2cell(help(funcName));
+funcHelpStr    = str2cell(help(name));
 
-nParam = length(funcParam);
-nArgIn = length(funcArgIn);
-nArgOut = length(funcArgOut);
+nParam = length(param);
+nArgIn = length(argIn);
+nArgOut = length(argOut);
 
 funcHelp = InitHelp(nParam);
 
@@ -82,7 +82,7 @@ for iLine=1:length(funcHelpStr)
         continue;
     end
 
-    if isFuncUsage(funcHelpStr{iLine},funcName,funcArgIn,funcParam,funcArgOut)
+    if isFuncUsage(funcHelpStr{iLine},name,argIn,param,argOut)
         usageLines(1) = iLine;
         usageLines(2) = iLine;
         genDescrLines(1) = iLine+1;
@@ -114,7 +114,7 @@ for iLine=1:length(funcHelpStr)
     end
 
     if argInDescrLines(1)>0 && argOutDescrLines(1)==0 
-        iParam = isParam(funcHelpStr{iLine},funcParam);
+        iParam = isParam(funcHelpStr{iLine},param);
         if iParam>0
             if iParam==1 && nArgIn>0
                 argInDescrLines(2) = iLine-1;
@@ -166,7 +166,7 @@ for iLine = nameLines(1):nameLines(2)
     if iLine < 1 || isempty(funcHelpStr{iLine})
         continue;
     end
-    funcHelp.funcNameUI = sprintf('%s%s\n', funcHelp.funcNameUI, funcHelpStr{iLine});
+    funcHelp.nameUI = sprintf('%s%s\n', funcHelp.nameUI, funcHelpStr{iLine});
 end
 
 for iLine = usageLines(1):usageLines(2)
@@ -211,27 +211,27 @@ end
 
 
 % -----------------------------------------------------------------
-function B = isFuncUsage(funcHelpStr,funcName,funcArgIn,funcParam,funcArgOut)
+function B = isFuncUsage(funcHelpStr,name,argIn,param,argOut)
 
 B=0;
 
-if isempty(strfind(funcHelpStr,[funcName '(']))
+if isempty(strfind(funcHelpStr,[name '(']))
     return;
 end
 
 %{
-for ii=1:length(funcArgIn)
-    if isempty(strfind(funcHelpStr,funcArgIn{ii}))
+for ii=1:length(argIn)
+    if isempty(strfind(funcHelpStr,argIn{ii}))
         return;
     end
 end
-for ii=1:length(funcParam)
-    if isempty(strfind(funcHelpStr,funcParam{ii}))
+for ii=1:length(param)
+    if isempty(strfind(funcHelpStr,param{ii}))
         return;
     end
 end
-for ii=1:length(funcArgOut)
-    if isempty(strfind(funcHelpStr,funcArgOut{ii}))
+for ii=1:length(argOut)
+    if isempty(strfind(funcHelpStr,argOut{ii}))
         return;
     end
 end
@@ -243,7 +243,7 @@ B=1;
 
 
 % -----------------------------------------------------------------
-function iParam = isParam(funcHelpStr,funcParam)
+function iParam = isParam(funcHelpStr,param)
 
 iParam=0;
 if isempty(funcHelpStr)
@@ -258,9 +258,9 @@ while ~isstrprop(funcHelpStr(1),'alphanum')
     end
 end
 
-for ii=1:length(funcParam)
-    k1=strfind(funcHelpStr,[funcParam{ii} ':']);
-    k2=strfind(funcHelpStr,[funcParam{ii} ' - ']);
+for ii=1:length(param)
+    k1=strfind(funcHelpStr,[param{ii} ':']);
+    k2=strfind(funcHelpStr,[param{ii} ' - ']);
     if (~isempty(k1) && k1(1)==1) || (~isempty(k2) && k2(1)==1)
         iParam=ii;
         return;
@@ -270,7 +270,7 @@ end
 
 
 % -----------------------------------------------------------------
-function iArgIn = isArgIn(funcHelpStr,funcArgIn)
+function iArgIn = isArgIn(funcHelpStr,argIn)
 
 iArgIn=0;
 if isempty(funcHelpStr)
@@ -285,9 +285,9 @@ while ~isstrprop(funcHelpStr(1),'alphanum')
     end
 end
 
-for ii=1:length(funcArgIn)
-    k1=strfind(funcHelpStr,[funcArgIn{ii} ':']);
-    k2=strfind(funcHelpStr,[funcArgIn{ii} ' - ']);
+for ii=1:length(argIn)
+    k1=strfind(funcHelpStr,[argIn{ii} ':']);
+    k2=strfind(funcHelpStr,[argIn{ii} ' - ']);
     if (~isempty(k1) && k1(1)==1) || (~isempty(k2) && k2(1)==1)
         iArgIn=ii;
         return;
@@ -297,7 +297,7 @@ end
 
 
 % -----------------------------------------------------------------
-function iArgOut = isArgOut(funcHelpStr,funcArgOut)
+function iArgOut = isArgOut(funcHelpStr,argOut)
 
 iArgOut=0;
 if isempty(funcHelpStr)
@@ -312,9 +312,9 @@ while ~isstrprop(funcHelpStr(1),'alphanum')
     end
 end
 
-for ii=1:length(funcArgOut)
-    k1=strfind(funcHelpStr,[funcArgOut{ii} ':']);
-    k2=strfind(funcHelpStr,[funcArgOut{ii} ' - ']);
+for ii=1:length(argOut)
+    k1=strfind(funcHelpStr,[argOut{ii} ':']);
+    k2=strfind(funcHelpStr,[argOut{ii} ' - ']);
     if (~isempty(k1) && k1(1)==1) || (~isempty(k2) && k2(1)==1)
         iArgOut=ii;
         return;

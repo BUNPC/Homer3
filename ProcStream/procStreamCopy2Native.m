@@ -42,8 +42,8 @@ for ii=1:func.nFunc
     func(ii).param       = func.funcParam      {ii};
     func(ii).paramFormat = func.funcParamFormat{ii};
     func(ii).paramVal    = func.funcParamVal   {ii};
-    func(ii).funcHelpStr     = '';
-    func(ii).funcHelp        = InitHelp(func.nFuncParam(ii));
+    func(ii).helpStr     = '';
+    func(ii).help        = InitHelp(func.nFuncParam(ii));
 end
 func = procStreamSetHelp(func);
 procInput.func = func;

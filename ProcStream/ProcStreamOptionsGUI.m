@@ -86,7 +86,7 @@ for iFunc = 1:nfunc
                         'string',func(iFunc).name);
     set(h_fname,'backgroundcolor',[1 1 1], 'units','normalized');
     set(h_fname, 'horizontalalignment','left');
-    set(h_fname, 'tooltipstring',func(iFunc).funcHelp.genDescr);
+    set(h_fname, 'tooltipstring',func(iFunc).help.genDescr);
     
     % Draw pushbutton to see output results if requested in config file
     if func(iFunc).argOut(1)=='#'
@@ -105,7 +105,7 @@ for iFunc = 1:nfunc
                           'string',func(iFunc).param{iParam});
         set(h_pname,'backgroundcolor',[1 1 1], 'units','normalized');
         set(h_pname, 'horizontalalignment', 'left');
-        set(h_pname, 'tooltipstring', func(iFunc).funcHelp.paramDescr{iParam});
+        set(h_pname, 'tooltipstring', func(iFunc).help.paramDescr{iParam});
 
         % Draw parameter edit boxes
         h_pedit=uicontrol(hObject,'style','edit','units','characters','position',[xpos_pedit ypos 10 1.5]);

@@ -534,7 +534,7 @@ iPanel = this.iPanel;
 procElem = this.procElem{iPanel};
 
 func = procStreamReg2ProcFunc(procElem);
-helpstr = procStreamGenerateHelpStr(func(iFunc).funcHelp);
+helpstr = procStreamGenerateHelpStr(func(iFunc).help);
 
 
 
@@ -559,27 +559,27 @@ if ~match
     return;
 end
 
-helpstr = procStreamGenerateHelpStr(func(ii).funcHelp);
+helpstr = procStreamGenerateHelpStr(func(ii).help);
 
 
 
 % ----------------------------------------------
-function helpstr = procStreamGenerateHelpStr(funcHelp)
+function helpstr = procStreamGenerateHelpStr(help)
 
 helpstr = '';
 
-helpstr = sprintf('%s%s\n', helpstr, funcHelp.usage);
-helpstr = sprintf('%s%s\n', helpstr, funcHelp.nameUI);
+helpstr = sprintf('%s%s\n', helpstr, help.usage);
+helpstr = sprintf('%s%s\n', helpstr, help.nameUI);
 helpstr = sprintf('%s%s\n', helpstr, 'DESCRIPTION:');
-helpstr = sprintf('%s%s\n', helpstr, funcHelp.genDescr);
+helpstr = sprintf('%s%s\n', helpstr, help.genDescr);
 helpstr = sprintf('%s%s\n', helpstr, 'INPUT:');
-helpstr = sprintf('%s%s', helpstr, funcHelp.argInDescr);
-for iParam=1:length(funcHelp.paramDescr)
-    helpstr = sprintf('%s%s', helpstr, funcHelp.paramDescr{iParam});
+helpstr = sprintf('%s%s', helpstr, help.argInDescr);
+for iParam=1:length(help.paramDescr)
+    helpstr = sprintf('%s%s', helpstr, help.paramDescr{iParam});
 end
 helpstr = sprintf('%s\n', helpstr);
 helpstr = sprintf('%s%s\n', helpstr, 'OUPUT:');
-helpstr = sprintf('%s%s\n', helpstr, funcHelp.argOutDescr);
+helpstr = sprintf('%s%s\n', helpstr, help.argOutDescr);
 
 
 

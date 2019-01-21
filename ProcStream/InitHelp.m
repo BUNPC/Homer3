@@ -1,11 +1,11 @@
-function funcHelp = InitHelp(nParam)
+function help = InitHelp(nParam)
 
-funcHelp.strs = {};
-funcHelp.callstr = '';
-funcHelp.usage = '';
-funcHelp.nameUI = '';
-funcHelp.genDescr = '';
-funcHelp.argInDescr = '';
-funcHelp.paramDescr = repmat({''},nParam,1);
-funcHelp.argOutDescr = '';
+help.strs = {};
+help.callstr = '';
+help.usage = '';
+help.nameUI = '';
+help.genDescr = '';
+help.argInDescr = '';
+help.paramDescr = repmat({''},nParam,1);
+help.argOutDescr = '';
 

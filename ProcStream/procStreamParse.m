@@ -45,6 +45,6 @@ case 'run'
     
 end
 
-% Lastly set the funcHelp field values for all func functions. 
+% Lastly set the help field values for all func functions. 
 procInput.func = procStreamSetHelp(procInput.func);
 

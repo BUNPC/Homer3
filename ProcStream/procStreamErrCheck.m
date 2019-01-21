@@ -15,26 +15,26 @@ switch(class(varargin{1}))
         return;
     end
 
-procFunc = procInput.procFunc;
-if isempty(procFunc)
+func = procInput.func;
+if isempty(func)
     return
 end
 
 % Build func database of registered functions
-procFuncReg = procStreamReg2ProcFunc(type);
+funcReg = procStreamReg2ProcFunc(type);
 
-% Search for procFun functions in procFuncStrReg
-errflags = ones(length(procFunc),1);
-iReg = zeros(length(procFunc),1);
+% Search for procFun functions in funcStrReg
+errflags = ones(length(func),1);
+iReg = zeros(length(func),1);
 MATCH=1;
-for ii=1:length(procFunc)
+for ii=1:length(func)
     score=[0];
     kk=1;
-    for jj=1:length(procFuncReg)
-        if strcmp(procFunc(ii).funcName, procFuncReg(jj).funcName)
+    for jj=1:length(funcReg)
+        if strcmp(func(ii).funcName, funcReg(jj).funcName)
 
-            f1 = procFunc(ii);
-            f2 = procFuncReg(jj);
+            f1 = func(ii);
+            f2 = funcReg(jj);
 
             score(kk) = procStreamFuncMatch(f1,f2);
             [p,maxscore_idx] = max(score);

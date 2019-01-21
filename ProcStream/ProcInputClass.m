@@ -4,8 +4,8 @@ classdef ProcInputClass < matlab.mixin.Copyable
     % of acquisition data or is derived from acquisition data but not stored there. 
     %
     properties
-        procFunc;       % Processing stream functions
-        procParam;      % Processing stream user-settable input arguments and their current values
+        func;       % Processing stream functions
+        param;      % Processing stream user-settable input arguments and their current values
         CondName2Subj;  % Used by group processing stream
         CondName2Run;   % Used by subject processing stream      
         tIncMan;        % Manually include/excluded time points
@@ -19,8 +19,8 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         % --------------------------------------------------
         function obj = ProcInputClass()
-            obj.procParam = struct([]);
-            obj.procFunc = struct([]);
+            obj.param = struct([]);
+            obj.func = struct([]);
             obj.CondName2Subj = [];
             obj.CondName2Run = [];            
             obj.tIncMan = [];
@@ -31,11 +31,11 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         % --------------------------------------------------
         function Copy(obj, obj2)
-            if isproperty(obj2, 'procParam')
-                obj.procParam = copyStructFieldByField(obj.procParam, obj2.procParam);
+            if isproperty(obj2, 'param')
+                obj.param = copyStructFieldByField(obj.param, obj2.param);
             end
-            if isproperty(obj2, 'procFunc')
-                obj.procFunc = obj2.procFunc;
+            if isproperty(obj2, 'func')
+                obj.func = obj2.func;
             end
             if isproperty(obj2, 'changeFlag')
                 obj.changeFlag = obj2.changeFlag;
@@ -46,10 +46,10 @@ classdef ProcInputClass < matlab.mixin.Copyable
         % --------------------------------------------------
         function b = isempty(obj)
             b = true;
-            if isempty(obj.procFunc)
+            if isempty(obj.func)
                 return
             end
-            if isempty(obj.procFunc(1).funcName)
+            if isempty(obj.func(1).funcName)
                 return;
             end
             b = false;

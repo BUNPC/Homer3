@@ -1,7 +1,7 @@
-function [procFunc, procParam] = procStreamDefault(type)
+function [func, param] = procStreamDefault(type)
 
-procParam = struct([]);
-procFunc = repmat(InitProcFunc(),0,1);
+param = struct([]);
+func = repmat(InitProcFunc(),0,1);
 switch(type)
     case 'group'
         [~, filecontents_str] = procStreamDefaultFileGroup();
@@ -12,6 +12,6 @@ switch(type)
 end
 
 S = textscan(filecontents_str,'%s');
-[procFunc, procParam] = parseSection(S{1});
-procFunc = procStreamSetHelp(procFunc);
+[func, param] = parseSection(S{1});
+func = procStreamSetHelp(func);
 

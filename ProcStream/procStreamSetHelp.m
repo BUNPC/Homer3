@@ -1,11 +1,11 @@
-function procFunc = procStreamSetHelp(procFunc)
+function func = procStreamSetHelp(func)
 
-for ii=1:length(procFunc)
-    if ~isproperty(procFunc(ii), 'funcHelp')
-        procFunc(ii).funcHelp = InitHelp(0);        
+for ii=1:length(func)
+    if ~isproperty(func(ii), 'funcHelp')
+        func(ii).funcHelp = InitHelp(0);        
     end
-    if isempty(procFunc(ii).funcHelp.callstr)
-        procFunc(ii).funcHelp = procStreamParseFuncHelp(procFunc(ii));
+    if isempty(func(ii).funcHelp.callstr)
+        func(ii).funcHelp = procStreamParseFuncHelp(func(ii));
     end
 end
 

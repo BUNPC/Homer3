@@ -5,16 +5,16 @@ obj.procResult = ProcResultClass();
 procInput = obj.procInput;
 
 % loop over functions
-nFunc = length(procInput.procFunc);
+nFunc = length(procInput.func);
 paramOut = {};
 hwait = waitbar(0, 'Processing...' );
 
 for iFunc = 1:nFunc
     
-    waitbar( iFunc/length(procInput.procFunc), hwait, sprintf('Processing... %s', procInput.procFunc(iFunc).funcName) );
+    waitbar( iFunc/length(procInput.func), hwait, sprintf('Processing... %s', procInput.func(iFunc).funcName) );
     
     % Extract input arguments from procElem
-    argIn = procStreamParseArgsIn(procInput.procFunc(iFunc).funcArgIn);
+    argIn = procStreamParseArgsIn(procInput.func(iFunc).funcArgIn);
     for ii = 1:length(argIn)
         if ~exist(argIn{ii},'var')
             if isproperty(obj.procInput, argIn{ii})
@@ -31,14 +31,14 @@ for iFunc = 1:nFunc
     p = [];
     sargin = '';
     sarginVal = '';
-    for iP = 1:procInput.procFunc(iFunc).nFuncParam
-        if ~procInput.procFunc(iFunc).nFuncParamVar
-            p{iP} = procInput.procFunc(iFunc).funcParamVal{iP};
+    for iP = 1:procInput.func(iFunc).nFuncParam
+        if ~procInput.func(iFunc).nFuncParamVar
+            p{iP} = procInput.func(iFunc).funcParamVal{iP};
         else
-            p{iP}.name = procInput.procFunc(iFunc).funcParam{iP};
-            p{iP}.val = procInput.procFunc(iFunc).funcParamVal{iP};
+            p{iP}.name = procInput.func(iFunc).funcParam{iP};
+            p{iP}.val = procInput.func(iFunc).funcParamVal{iP};
         end
-        if length(procInput.procFunc(iFunc).funcArgIn)==1 & iP==1
+        if length(procInput.func(iFunc).funcArgIn)==1 & iP==1
             sargin = sprintf('%sp{%d}', sargin, iP);
             if isnumeric(p{iP})
                 if length(p{iP})==1
@@ -68,27 +68,27 @@ for iFunc = 1:nFunc
     end
     
     % set up output format
-    sargout = procInput.procFunc(iFunc).funcArgOut;
-    for ii=1:length(procInput.procFunc(iFunc).funcArgOut)
+    sargout = procInput.func(iFunc).funcArgOut;
+    for ii=1:length(procInput.func(iFunc).funcArgOut)
         if sargout(ii)=='#'
             sargout(ii) = ' ';
         end
     end
     
     % call function
-    fcall = sprintf('%s = %s%s%s);', sargout, procInput.procFunc(iFunc).funcName, procInput.procFunc(iFunc).funcArgIn, sargin);
+    fcall = sprintf('%s = %s%s%s);', sargout, procInput.func(iFunc).funcName, procInput.func(iFunc).funcArgIn, sargin);
 
     try
         eval( fcall );
     catch ME
-        msg = sprintf('Function %s generated error at line %d: %s', procInput.procFunc(iFunc).funcName, ME.stack(1).line, ME.message);
+        msg = sprintf('Function %s generated error at line %d: %s', procInput.func(iFunc).funcName, ME.stack(1).line, ME.message);
         menu(msg,'OK');
         close(hwait);
         assert(false, msg);
     end
     
     % parse output parameters
-    foos = procInput.procFunc(iFunc).funcArgOut;
+    foos = procInput.func(iFunc).funcArgOut;
 
     % remove '[', ']', and ','
     for ii=1:length(foos)

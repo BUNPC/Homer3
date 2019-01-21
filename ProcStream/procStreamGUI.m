@@ -33,20 +33,20 @@ handles.output = hObject;
 % Update handles structure
 guidata(hObject, handles);
 
-procFunc = procStreamReg2ProcFunc('run');
-[fcallIn, fcall, fcallOut] = fillListboxWithRegistry(procFunc);
+func = procStreamReg2ProcFunc('run');
+[fcallIn, fcall, fcallOut] = fillListboxWithRegistry(func);
 set(handles.listboxFunctions(iRunPanel),'string',fcall)
 set(handles.listboxFuncArgIn(iRunPanel),'string',fcallIn)
 set(handles.listboxFuncArgOut(iRunPanel),'string',fcallOut)
 
-procFunc = procStreamReg2ProcFunc('subj');
-[fcallIn, fcall, fcallOut] = fillListboxWithRegistry(procFunc);
+func = procStreamReg2ProcFunc('subj');
+[fcallIn, fcall, fcallOut] = fillListboxWithRegistry(func);
 set(handles.listboxFunctions(iSubjPanel),'string',fcall)
 set(handles.listboxFuncArgIn(iSubjPanel),'string',fcallIn)
 set(handles.listboxFuncArgOut(iSubjPanel),'string',fcallOut)
 
-procFunc = procStreamReg2ProcFunc('group');
-[fcallIn, fcall, fcallOut] = fillListboxWithRegistry(procFunc);
+func = procStreamReg2ProcFunc('group');
+[fcallIn, fcall, fcallOut] = fillListboxWithRegistry(func);
 set(handles.listboxFunctions(iGroupPanel),'string',fcall)
 set(handles.listboxFuncArgIn(iGroupPanel),'string',fcallIn)
 set(handles.listboxFuncArgOut(iGroupPanel),'string',fcallOut)
@@ -95,20 +95,20 @@ setGuiFonts(hObject);
 
 
 % -------------------------------------------------------------
-function [fcallIn, fcall, fcallOut] = fillListboxWithRegistry(procFunc)
+function [fcallIn, fcall, fcallOut] = fillListboxWithRegistry(func)
 
-for iFunc = 1:length(procFunc)
+for iFunc = 1:length(func)
     % parse input parameters
     p = [];
     sargin = '';
-    for iP = 1:procFunc(iFunc).nFuncParam
-        if ~procFunc(iFunc).nFuncParamVar
-            p{iP} = procFunc(iFunc).funcParamVal{iP};
+    for iP = 1:func(iFunc).nFuncParam
+        if ~func(iFunc).nFuncParamVar
+            p{iP} = func(iFunc).funcParamVal{iP};
         else
-            p{iP}.name = procFunc(iFunc).funcParam{iP};
-            p{iP}.val = procFunc(iFunc).funcParamVal{iP};
+            p{iP}.name = func(iFunc).funcParam{iP};
+            p{iP}.val = func(iFunc).funcParamVal{iP};
         end
-        if length(procFunc(iFunc).funcArgIn)==1 & iP==1
+        if length(func(iFunc).funcArgIn)==1 & iP==1
             sargin = sprintf('%sp{%d}',sargin,iP);
         else
             sargin = sprintf('%s,p{%d}',sargin,iP);
@@ -116,8 +116,8 @@ for iFunc = 1:length(procFunc)
     end
     
     % set up output format
-    sargout = procFunc(iFunc).funcArgOut;
-    for ii=1:length(procFunc(iFunc).funcArgOut)
+    sargout = func(iFunc).funcArgOut;
+    for ii=1:length(func(iFunc).funcArgOut)
         if sargout(ii)=='#'
             sargout(ii) = ' ';
         end
@@ -125,13 +125,13 @@ for iFunc = 1:length(procFunc)
 
     % call function
     fcall{iFunc} = sprintf( '%s      = %s%s%s);', sargout, ...
-        procFunc(iFunc).funcName, ...
-        procFunc(iFunc).funcArgIn, sargin );
+        func(iFunc).funcName, ...
+        func(iFunc).funcArgIn, sargin );
     fcallOut{iFunc} = sprintf( '%s', sargout);
     fcall{iFunc} = sprintf( '%s',  ...
-        procFunc(iFunc).funcName);
+        func(iFunc).funcName);
     fcallIn{iFunc} = sprintf( '%s%s)',  ...
-        procFunc(iFunc).funcArgIn, sargin );
+        func(iFunc).funcArgIn, sargin );
 end
 
     
@@ -428,7 +428,7 @@ for iPanel=1:3
         i=find(err2==1);
         str1 = 'Error in functions\n\n';
         for j=1:length(i)
-            str2 = sprintf('%s%s', procElem.procInput.procFunc(i(j)).funcName,'\n');
+            str2 = sprintf('%s%s', procElem.procInput.func(i(j)).funcName,'\n');
             str1 = strcat(str1,str2);
         end
         str1 = strcat(str1,'\n');
@@ -468,25 +468,25 @@ iGroupPanel = this.iGroupPanel;
 procElem = this.procElem;
 
 
-% Get the procFunc at group, subject and run levels
+% Get the func at group, subject and run levels
 for iPanel=1:length(procElem)
     
     % Build func database of registered functions
-    procFuncReg = procStreamReg2ProcFunc(procElem{iPanel});
+    funcReg = procStreamReg2ProcFunc(procElem{iPanel});
     
     % iReg indexes the proc functions in the procStream listboxes on the
     % right in the GUI
-    procFunc = procFuncReg(iReg{iPanel});
+    func = funcReg(iReg{iPanel});
     
-    procParam=[];
-    for iFunc = 1:length(procFunc)
-        for iParam=1:length(procFunc(iFunc).funcParam)
-            eval( sprintf('procParam.%s_%s = procFunc(iFunc).funcParamVal{iParam};',...
-                procFunc(iFunc).funcName, procFunc(iFunc).funcParam{iParam}) );
+    param=[];
+    for iFunc = 1:length(func)
+        for iParam=1:length(func(iFunc).funcParam)
+            eval( sprintf('param.%s_%s = func(iFunc).funcParamVal{iParam};',...
+                func(iFunc).funcName, func(iFunc).funcParam{iParam}) );
         end
     end
-    procElem{iPanel}.procInput.procFunc = procFunc;
-    procElem{iPanel}.procInput.procParam = procParam;
+    procElem{iPanel}.procInput.func = func;
+    procElem{iPanel}.procInput.param = param;
     
 end
 
@@ -533,8 +533,8 @@ this = getappdata(handles.figure1, 'this');
 iPanel = this.iPanel;
 procElem = this.procElem{iPanel};
 
-procFunc = procStreamReg2ProcFunc(procElem);
-helpstr = procStreamGenerateHelpStr(procFunc(iFunc).funcHelp);
+func = procStreamReg2ProcFunc(procElem);
+helpstr = procStreamGenerateHelpStr(func(iFunc).funcHelp);
 
 
 
@@ -546,10 +546,10 @@ procElem = this.procElem{iPanel};
 
 helpstr = '';
 
-procFunc = procStreamReg2ProcFunc(procElem);
+func = procStreamReg2ProcFunc(procElem);
 match=0;
-for ii=1:length(procFunc)
-    if strcmp(funcName, procFunc(ii).funcName)
+for ii=1:length(func)
+    if strcmp(funcName, func(ii).funcName)
         match=1;
         break;
     end
@@ -559,7 +559,7 @@ if ~match
     return;
 end
 
-helpstr = procStreamGenerateHelpStr(procFunc(ii).funcHelp);
+helpstr = procStreamGenerateHelpStr(func(ii).funcHelp);
 
 
 

@@ -9,7 +9,7 @@ func.nParamVar   = 0;
 func.param       = {};
 func.paramFormat = {};
 func.paramVal    = {};
-func.funcHelp    = InitHelp(0);
+func.help        = InitHelp(0);
 
 
 

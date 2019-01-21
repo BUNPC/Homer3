@@ -1,4 +1,4 @@
-function funcHelp = procStreamParseFuncHelp(func)
+function hlp = procStreamParseFuncHelp(func)
 
 % This function parses the help of a proc stream function 
 % into a help structure. The following is the help format 
@@ -55,20 +55,20 @@ argOut     = func.argOut;
 argIn      = procStreamParseArgsIn(argIn);
 argOut     = procStreamParseArgsOut(argOut);
 
-% funcHelpStr is a cell array of strings. The first element of the cell
+% helpStr is a cell array of strings. The first element of the cell
 % array is the call string (the kind you'd find in proceccOpt.cfg file. 
 % The rest of the strings make up the help text. 
-funcHelpStr    = str2cell(help(name));
+helpStr    = str2cell(help(name));
 
 nParam = length(param);
 nArgIn = length(argIn);
 nArgOut = length(argOut);
 
-funcHelp = InitHelp(nParam);
+hlp = InitHelp(nParam);
 
 usageLines = [0 0];
 nameLines = [0 0];
-genDescrLines = [1,length(funcHelpStr)];
+genDescrLines = [1,length(helpStr)];
 argInDescrLines = [0,0];
 paramDescrLines = [0,0];
 argOutDescrLines = [0,0];
@@ -76,19 +76,19 @@ logDescrLines = [0,0];
 toDoDescrLines = [0,0];
 
 
-% Find the lines in the help string that belong to each funcHelp field
-for iLine=1:length(funcHelpStr)
-    if isempty(funcHelpStr{iLine})
+% Find the lines in the help string that belong to each help field
+for iLine=1:length(helpStr)
+    if isempty(helpStr{iLine})
         continue;
     end
 
-    if isFuncUsage(funcHelpStr{iLine},name,argIn,param,argOut)
+    if isFuncUsage(helpStr{iLine},name,argIn,param,argOut)
         usageLines(1) = iLine;
         usageLines(2) = iLine;
         genDescrLines(1) = iLine+1;
     end
 
-    if ~isempty(strfind(funcHelpStr{iLine},'UI NAME'))
+    if ~isempty(strfind(helpStr{iLine},'UI NAME'))
         if usageLines(1)>0
             usageLines(2) = iLine-1;
         end
@@ -97,7 +97,7 @@ for iLine=1:length(funcHelpStr)
         genDescrLines(1) = iLine+2;
     end
 
-    if ~isempty(strfind(funcHelpStr{iLine},'DESCRIPTION'))
+    if ~isempty(strfind(helpStr{iLine},'DESCRIPTION'))
         if nameLines(1)==0 && (usageLines(1)>0 && usageLines(2)==0)
             usageLines(2) = iLine-1;
         elseif nameLines(1)>0
@@ -106,7 +106,7 @@ for iLine=1:length(funcHelpStr)
         genDescrLines(1) = iLine;
     end
 
-    if ~isempty(strfind(funcHelpStr{iLine},'INPUT'))
+    if ~isempty(strfind(helpStr{iLine},'INPUT'))
         genDescrLines(2) = iLine-1;
         if nArgIn>0
             argInDescrLines(1) = iLine+1;
@@ -114,7 +114,7 @@ for iLine=1:length(funcHelpStr)
     end
 
     if argInDescrLines(1)>0 && argOutDescrLines(1)==0 
-        iParam = isParam(funcHelpStr{iLine},param);
+        iParam = isParam(helpStr{iLine},param);
         if iParam>0
             if iParam==1 && nArgIn>0
                 argInDescrLines(2) = iLine-1;
@@ -126,7 +126,7 @@ for iLine=1:length(funcHelpStr)
         end
     end
 
-    if ~isempty(strfind(funcHelpStr{iLine},'OUTPUT'))
+    if ~isempty(strfind(helpStr{iLine},'OUTPUT'))
         if nParam>0
             paramDescrLines(end,2) = iLine-1;
         elseif nArgIn>0
@@ -134,104 +134,104 @@ for iLine=1:length(funcHelpStr)
         end
         if nArgOut>0
             argOutDescrLines(1) = iLine+1;
-            argOutDescrLines(2) = length(funcHelpStr);
+            argOutDescrLines(2) = length(helpStr);
         end
     end
 
-    if ~isempty(strfind(funcHelpStr{iLine},'LOG'))
+    if ~isempty(strfind(helpStr{iLine},'LOG'))
         if nArgOut>0
             argOutDescrLines(2) = iLine-1;
         elseif nParam>0
             paramDescrLines(end,2) = iLine-1;
         end
         logDescrLines(1) = iLine+1;
-        logDescrLines(2) = length(funcHelpStr);
+        logDescrLines(2) = length(helpStr);
     end
 
-    if ~isempty(strfind(funcHelpStr{iLine},'TO DO'))
+    if ~isempty(strfind(helpStr{iLine},'TO DO'))
         if logDescrLines(1)>0
             logDescrLines(2) = iLine-1;
         elseif nArgOut>0
             argOutDescrLines(2) = iLine-1;
         end
         toDoDescrLines(1) = iLine+1;
-        toDoDescrLines(2) = length(funcHelpStr);
+        toDoDescrLines(2) = length(helpStr);
     end
 end
 
 
 % Now that we have the lines associated with each help section, assign the
-% lines to corresponding funcHelp fields. 
+% lines to corresponding help fields. 
 for iLine = nameLines(1):nameLines(2)
-    if iLine < 1 || isempty(funcHelpStr{iLine})
+    if iLine < 1 || isempty(helpStr{iLine})
         continue;
     end
-    funcHelp.nameUI = sprintf('%s%s\n', funcHelp.nameUI, funcHelpStr{iLine});
+    hlp.nameUI = sprintf('%s%s\n', hlp.nameUI, helpStr{iLine});
 end
 
 for iLine = usageLines(1):usageLines(2)
-    if iLine < 1 || isempty(funcHelpStr{iLine})
+    if iLine < 1 || isempty(helpStr{iLine})
         continue;
     end
-    funcHelp.usage = sprintf('%s%s\n', funcHelp.usage, funcHelpStr{iLine});
+    hlp.usage = sprintf('%s%s\n', hlp.usage, helpStr{iLine});
 end
 
 for iLine = genDescrLines(1):genDescrLines(2)
-    if iLine < 1 || isempty(funcHelpStr{iLine})
+    if iLine < 1 || isempty(helpStr{iLine})
         continue;
     end
-    funcHelp.genDescr = sprintf('%s%s\n', funcHelp.genDescr, funcHelpStr{iLine});
+    hlp.genDescr = sprintf('%s%s\n', hlp.genDescr, helpStr{iLine});
 end
 
 for iLine = argInDescrLines(1):argInDescrLines(2)
-    if iLine < 1 || isempty(funcHelpStr{iLine})
+    if iLine < 1 || isempty(helpStr{iLine})
         continue;
     end
-    funcHelp.argInDescr = sprintf('%s%s\n', funcHelp.argInDescr, funcHelpStr{iLine});
+    hlp.argInDescr = sprintf('%s%s\n', hlp.argInDescr, helpStr{iLine});
 end
 
 for iParam=1:size(paramDescrLines,1)
     for iLine = paramDescrLines(iParam,1):paramDescrLines(iParam,2)
-        if iLine < 1 || isempty(funcHelpStr{iLine})
+        if iLine < 1 || isempty(helpStr{iLine})
             continue;
         end
-        funcHelp.paramDescr{iParam} = sprintf('%s%s\n', funcHelp.paramDescr{iParam}, ...
-                                              funcHelpStr{iLine});
+        hlp.paramDescr{iParam} = sprintf('%s%s\n', hlp.paramDescr{iParam}, ...
+                                              helpStr{iLine});
     end
 end
 
 for iLine = argOutDescrLines(1):argOutDescrLines(2)
-    if iLine < 1 || isempty(funcHelpStr{iLine})
+    if iLine < 1 || isempty(helpStr{iLine})
         continue;
     end
-    funcHelp.argOutDescr = sprintf('%s%s\n', funcHelp.argOutDescr,funcHelpStr{iLine});
+    hlp.argOutDescr = sprintf('%s%s\n', hlp.argOutDescr,helpStr{iLine});
 end
 
 
 
 
 % -----------------------------------------------------------------
-function B = isFuncUsage(funcHelpStr,name,argIn,param,argOut)
+function B = isFuncUsage(helpStr,name,argIn,param,argOut)
 
 B=0;
 
-if isempty(strfind(funcHelpStr,[name '(']))
+if isempty(strfind(helpStr,[name '(']))
     return;
 end
 
 %{
 for ii=1:length(argIn)
-    if isempty(strfind(funcHelpStr,argIn{ii}))
+    if isempty(strfind(helpStr,argIn{ii}))
         return;
     end
 end
 for ii=1:length(param)
-    if isempty(strfind(funcHelpStr,param{ii}))
+    if isempty(strfind(helpStr,param{ii}))
         return;
     end
 end
 for ii=1:length(argOut)
-    if isempty(strfind(funcHelpStr,argOut{ii}))
+    if isempty(strfind(helpStr,argOut{ii}))
         return;
     end
 end
@@ -243,24 +243,24 @@ B=1;
 
 
 % -----------------------------------------------------------------
-function iParam = isParam(funcHelpStr,param)
+function iParam = isParam(helpStr,param)
 
 iParam=0;
-if isempty(funcHelpStr)
+if isempty(helpStr)
     return;
 end
 
 % Remove leading white spaces
-while ~isstrprop(funcHelpStr(1),'alphanum')
-    funcHelpStr(1)=[];
-    if isempty(funcHelpStr)
+while ~isstrprop(helpStr(1),'alphanum')
+    helpStr(1)=[];
+    if isempty(helpStr)
         return;
     end
 end
 
 for ii=1:length(param)
-    k1=strfind(funcHelpStr,[param{ii} ':']);
-    k2=strfind(funcHelpStr,[param{ii} ' - ']);
+    k1=strfind(helpStr,[param{ii} ':']);
+    k2=strfind(helpStr,[param{ii} ' - ']);
     if (~isempty(k1) && k1(1)==1) || (~isempty(k2) && k2(1)==1)
         iParam=ii;
         return;
@@ -270,24 +270,24 @@ end
 
 
 % -----------------------------------------------------------------
-function iArgIn = isArgIn(funcHelpStr,argIn)
+function iArgIn = isArgIn(helpStr,argIn)
 
 iArgIn=0;
-if isempty(funcHelpStr)
+if isempty(helpStr)
     return;
 end
 
 % Remove leading white spaces
-while ~isstrprop(funcHelpStr(1),'alphanum')
-    funcHelpStr(1)=[];
-    if isempty(funcHelpStr)
+while ~isstrprop(helpStr(1),'alphanum')
+    helpStr(1)=[];
+    if isempty(helpStr)
         return;
     end
 end
 
 for ii=1:length(argIn)
-    k1=strfind(funcHelpStr,[argIn{ii} ':']);
-    k2=strfind(funcHelpStr,[argIn{ii} ' - ']);
+    k1=strfind(helpStr,[argIn{ii} ':']);
+    k2=strfind(helpStr,[argIn{ii} ' - ']);
     if (~isempty(k1) && k1(1)==1) || (~isempty(k2) && k2(1)==1)
         iArgIn=ii;
         return;
@@ -297,24 +297,24 @@ end
 
 
 % -----------------------------------------------------------------
-function iArgOut = isArgOut(funcHelpStr,argOut)
+function iArgOut = isArgOut(helpStr,argOut)
 
 iArgOut=0;
-if isempty(funcHelpStr)
+if isempty(helpStr)
     return;
 end
 
 % Remove leading white spaces
-while ~isstrprop(funcHelpStr(1),'alphanum')
-    funcHelpStr(1)=[];
-    if isempty(funcHelpStr)
+while ~isstrprop(helpStr(1),'alphanum')
+    helpStr(1)=[];
+    if isempty(helpStr)
         return;
     end
 end
 
 for ii=1:length(argOut)
-    k1=strfind(funcHelpStr,[argOut{ii} ':']);
-    k2=strfind(funcHelpStr,[argOut{ii} ' - ']);
+    k1=strfind(helpStr,[argOut{ii} ':']);
+    k2=strfind(helpStr,[argOut{ii} ' - ']);
     if (~isempty(k1) && k1(1)==1) || (~isempty(k2) && k2(1)==1)
         iArgOut=ii;
         return;

@@ -33,14 +33,14 @@ set(hObject,'visible','off');  % to be turnedmade visible in ProcStreamOptionsGU
 currElem = varargin{1};
 currElem.handles.ProcStreamOptionsGUI = hObject;
 procInput = currElem.procElem.procInput;
-procFunc = procInput.procFunc;
+func = procInput.func;
 
-if isempty(procFunc)
+if isempty(func)
     return;
 end
 
 clf(hObject);
-nfunc = length(procFunc);
+nfunc = length(func);
 
 % If no functions, throw up empty gui
 if nfunc==0
@@ -54,13 +54,13 @@ end
 
 % Pre-calculate figure height
 for iFunc = 1:nfunc
-    funcHeight(iFunc) = 1+procFunc(iFunc).nFuncParam-1;
+    funcHeight(iFunc) = 1+func(iFunc).nFuncParam-1;
 end
 ystep = 1.8;
 ysize = 1.5;
 ysize_tot = sum(funcHeight)*ystep + nfunc*2 + 5;
-xsize_fname = getFuncNameMaxStrLength(procFunc);
-xsize_pname = getParamNameMaxStrLength(procFunc)+2;
+xsize_fname = getFuncNameMaxStrLength(func);
+xsize_pname = getParamNameMaxStrLength(func)+2;
 xpos_pname = xsize_fname+10;
 xpos_pedit = xpos_pname+xsize_pname+10;
 xpos_pbttn = xpos_pedit+15;
@@ -80,16 +80,16 @@ ypos = ysize_tot-5;
 for iFunc = 1:nfunc
     
     % Draw function name
-    xsize = length(procFunc(iFunc).funcName);
+    xsize = length(func(iFunc).funcName);
     xsize = xsize+(5-mod(xsize,5));
     h_fname = uicontrol(hObject, 'style','text', 'units','characters', 'position',[2 ypos xsize ysize],...
-                        'string',procFunc(iFunc).funcName);
+                        'string',func(iFunc).funcName);
     set(h_fname,'backgroundcolor',[1 1 1], 'units','normalized');
     set(h_fname, 'horizontalalignment','left');
-    set(h_fname, 'tooltipstring',procFunc(iFunc).funcHelp.genDescr);
+    set(h_fname, 'tooltipstring',func(iFunc).funcHelp.genDescr);
     
     % Draw pushbutton to see output results if requested in config file
-    if procFunc(iFunc).funcArgOut(1)=='#'
+    if func(iFunc).funcArgOut(1)=='#'
         h_bttn = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',[xpos_pbttn ypos 10 ysize],...
                           'string','Results');
         eval( sprintf(' fcn = @(hObject,eventdata)ProcStreamOptionsGUI(''pushbuttonProc_Callback'',hObject,%d,guidata(hObject));',iFunc) );
@@ -97,21 +97,21 @@ for iFunc = 1:nfunc
     end
     
     % Draw list of parameters
-    for iParam = 1:procFunc(iFunc).nFuncParam
+    for iParam = 1:func(iFunc).nFuncParam
         % Draw parameter names
-        xsize = length(procFunc(iFunc).funcParam);
+        xsize = length(func(iFunc).funcParam);
         xsize = xsize+(5-mod(xsize,5))+5;
         h_pname=uicontrol(hObject, 'style','text', 'units','characters', 'position',[xpos_pname, ypos, xsize_pname, ysize],...
-                          'string',procFunc(iFunc).funcParam{iParam});
+                          'string',func(iFunc).funcParam{iParam});
         set(h_pname,'backgroundcolor',[1 1 1], 'units','normalized');
         set(h_pname, 'horizontalalignment', 'left');
-        set(h_pname, 'tooltipstring', procFunc(iFunc).funcHelp.paramDescr{iParam});
+        set(h_pname, 'tooltipstring', func(iFunc).funcHelp.paramDescr{iParam});
 
         % Draw parameter edit boxes
         h_pedit=uicontrol(hObject,'style','edit','units','characters','position',[xpos_pedit ypos 10 1.5]);
-        procFunc(iFunc).funcParamHandle{iParam} = h_pedit;
-        set(h_pedit,'string',sprintf(procFunc(iFunc).funcParamFormat{iParam}, ...
-            procFunc(iFunc).funcParamVal{iParam} ) );
+        func(iFunc).funcParamHandle{iParam} = h_pedit;
+        set(h_pedit,'string',sprintf(func(iFunc).funcParamFormat{iParam}, ...
+            func(iFunc).funcParamVal{iParam} ) );
         set(h_pedit,'backgroundcolor',[1 1 1]);
         eval( sprintf(' fcn = @(hObject,eventdata)ProcStreamOptionsGUI(''edit_Callback'',hObject,[%d %d],guidata(hObject));',iFunc,iParam) );
         set( h_pedit, 'Callback',fcn, 'units','normalized');
@@ -120,7 +120,7 @@ for iFunc = 1:nfunc
     end
     
     % If function has no parameters, skip a step in the y direction
-    if procFunc(iFunc).nFuncParam==0
+    if func(iFunc).nFuncParam==0
         ypos = ypos - ystep;
     end
     
@@ -135,15 +135,15 @@ for iFunc = 1:nfunc
     
 end
 
-procParam0 = [];
-for iFunc=1:length(procFunc)
-    for iParam=1:procFunc(iFunc).nFuncParam
-        eval( sprintf('procParam0.%s_%s = procInput.procFunc(iFunc).funcParamVal{iParam};',...
-                      procFunc(iFunc).funcName, procFunc(iFunc).funcParam{iParam}) );
+param0 = [];
+for iFunc=1:length(func)
+    for iParam=1:func(iFunc).nFuncParam
+        eval( sprintf('param0.%s_%s = procInput.func(iFunc).funcParamVal{iParam};',...
+                      func(iFunc).funcName, func(iFunc).funcParam{iParam}) );
     end
 end
-procInput.procFunc = procFunc;
-procInput.procParam = procParam0;
+procInput.func = func;
+procInput.param = param0;
 currElem.procInput = procInput;
 hmr.currElem = currElem;
 
@@ -223,7 +223,7 @@ procInput = dataTree.currElem.procElem.procInput;
 procResult = dataTree.currElem.procElem.procResult;
 
 % parse output parameters
-sargout = procInput.procFunc(eventdata).funcArgOut;
+sargout = procInput.func(eventdata).funcArgOut;
 
 % remove '[', ']', and ','
 for ii=1:length(sargout)
@@ -251,7 +251,7 @@ for ii=1:length(sargout_arr)
     end
 end
 
-eval( sprintf( '%s_result( %s );', procInput.procFunc(eventdata).funcName, sargin ) );
+eval( sprintf( '%s_result( %s );', procInput.func(eventdata).funcName, sargin ) );
 
 hmr.dataTree.currElem.procInput = procInput;
 
@@ -259,12 +259,12 @@ hmr.dataTree.currElem.procInput = procInput;
 
 
 % -----------------------------------------------------------------
-function maxnamelen = getFuncNameMaxStrLength(procFunc)
+function maxnamelen = getFuncNameMaxStrLength(func)
 
 maxnamelen=0;
-for iFunc =1:length(procFunc)
-    if length(procFunc(iFunc).funcName) > maxnamelen
-        maxnamelen = length(procFunc(iFunc).funcName)+1;
+for iFunc =1:length(func)
+    if length(func(iFunc).funcName) > maxnamelen
+        maxnamelen = length(func(iFunc).funcName)+1;
     end
 end
 
@@ -272,13 +272,13 @@ end
 
 
 % -----------------------------------------------------------------
-function maxnamelen = getParamNameMaxStrLength(procFunc)
+function maxnamelen = getParamNameMaxStrLength(func)
 
 maxnamelen=0;
-for iFunc=1:length(procFunc)
-    for iParam=1:length(procFunc(iFunc).funcParam)
-        if length(procFunc(iFunc).funcParam{iParam})>maxnamelen
-            maxnamelen = length(procFunc(iFunc).funcParam{iParam})+1;
+for iFunc=1:length(func)
+    for iParam=1:length(func(iFunc).funcParam)
+        if length(func(iFunc).funcParam{iParam})>maxnamelen
+            maxnamelen = length(func(iFunc).funcParam{iParam})+1;
         end
     end
 end

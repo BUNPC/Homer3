@@ -1,15 +1,15 @@
-function [contents, str] = procStreamDefaultFileGroup(procFuncRun)
+function [contents, str] = procStreamDefaultFileGroup(funcRun)
 
 % Choose default procStream group section based on the run procStream
 % output; if it's output ia dodAvg, choose the dodAvg default, otherwise
 % choose dcAvg. 
-if ~exist('procFuncRun','var') | isempty(procFuncRun)
-    procFuncRun(1).funcArgOut = '';
+if ~exist('funcRun','var') | isempty(funcRun)
+    funcRun(1).funcArgOut = '';
 end
 
 datatype = 'dcAvg';
-for ii=1:length(procFuncRun)
-    if ~isempty(strfind(procFuncRun(ii).funcArgOut, 'dodAvg'))
+for ii=1:length(funcRun)
+    if ~isempty(strfind(funcRun(ii).funcArgOut, 'dodAvg'))
         datatype = 'dodAvg';
         break;
     end        

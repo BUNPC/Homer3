@@ -1,4 +1,4 @@
-function funcHelp = procStreamParseFuncHelp(procFunc)
+function funcHelp = procStreamParseFuncHelp(func)
 
 % This function parses the help of a proc stream function 
 % into a help structure. The following is the help format 
@@ -47,10 +47,10 @@ function funcHelp = procStreamParseFuncHelp(procFunc)
 % used for the generic function description.
 %
 
-funcName       = procFunc.funcName;
-funcParam      = procFunc.funcParam;
-funcArgIn      = procFunc.funcArgIn;
-funcArgOut     = procFunc.funcArgOut;
+funcName       = func.funcName;
+funcParam      = func.funcParam;
+funcArgIn      = func.funcArgIn;
+funcArgOut     = func.funcArgOut;
 
 funcArgIn      = procStreamParseArgsIn(funcArgIn);
 funcArgOut     = procStreamParseArgsOut(funcArgOut);

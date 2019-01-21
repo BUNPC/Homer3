@@ -15,22 +15,22 @@ fprintf([msg{:}]);
 %     return;
 % end
 
-procFunc = procInput.procFunc;
-procFunc2 = struc([]);
+func = procInput.func;
+procFunc = struc([]);
 
 nFunc = 0;
-for ii=1:length(procFunc)
+for ii=1:length(func)
     nFunc=nFunc+1;
-    procFunc2.funcName{ii}        = procFunc(ii).funcName;
-    procFunc2.funcNameUI{ii}      = procFunc(ii).funcNameUI;
-    procFunc2.funcArgOut{ii}      = procFunc(ii).funcArgOut;
-    procFunc2.funcArgIn{ii}       = procFunc(ii).funcArgIn;
-    procFunc2.nFuncParam(ii)      = procFunc(ii).nFuncParam;
-    procFunc2.nFuncParamVar(ii)   = procFunc(ii).nFuncParamVar;
-    procFunc2.funcParam{ii}       = procFunc(ii).funcParam;
-    procFunc2.funcParamFormat{ii} = procFunc(ii).funcParamFormat;
-    procFunc2.funcParamVal{ii}    = procFunc(ii).funcParamVal;
+    procFunc.funcName{ii}        = func(ii).funcName;
+    procFunc.funcNameUI{ii}      = func(ii).funcNameUI;
+    procFunc.funcArgOut{ii}      = func(ii).funcArgOut;
+    procFunc.funcArgIn{ii}       = func(ii).funcArgIn;
+    procFunc.nFuncParam(ii)      = func(ii).nFuncParam;
+    procFunc.nFuncParamVar(ii)   = func(ii).nFuncParamVar;
+    procFunc.funcParam{ii}       = func(ii).funcParam;
+    procFunc.funcParamFormat{ii} = func(ii).funcParamFormat;
+    procFunc.funcParamVal{ii}    = func(ii).funcParamVal;
 end
 
-procInput.procFunc = procFunc2;
+procInput.procFunc = procFunc;
 

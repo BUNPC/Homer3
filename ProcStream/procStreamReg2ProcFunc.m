@@ -1,4 +1,4 @@
-function [procFunc, reg] = procStreamReg2ProcFunc(varargin)
+function [func, reg] = procStreamReg2ProcFunc(varargin)
 
 if nargin>0
     if ischar(varargin{1})
@@ -13,8 +13,8 @@ end
 reg      = procStreamReg(type);
 for ii=1:length(reg)
     S = textscan(reg{ii}, '%s');
-    procFunc(ii) = parseSection(S{1}, type);    
-    procFunc(ii).funcHelp = procStreamParseFuncHelp(procFunc(ii));
+    func(ii) = parseSection(S{1}, type);    
+    func(ii).funcHelp = procStreamParseFuncHelp(func(ii));
 end
 
 

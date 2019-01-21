@@ -5,17 +5,17 @@ fid = fopen(filenm,'w');
 for iPanel=1:length(procElem)
 
     fprintf( fid, '%% %s\n', procElem{iPanel}.type );    
-    procFunc = procElem{iPanel}.procInput.procFunc;
-    for iFunc=1:length(procFunc)
+    func = procElem{iPanel}.procInput.func;
+    for iFunc=1:length(func)
 
         fprintf( fid, '@ %s %s %s',...
-            procFunc(iFunc).funcName, procFunc(iFunc).funcArgOut, ...
-            procFunc(iFunc).funcArgIn );
-        for iParam=1:procFunc(iFunc).nFuncParam
-            fprintf( fid,' %s', procFunc(iFunc).funcParam{iParam} );
+            func(iFunc).funcName, func(iFunc).funcArgOut, ...
+            func(iFunc).funcArgIn );
+        for iParam=1:func(iFunc).nFuncParam
+            fprintf( fid,' %s', func(iFunc).funcParam{iParam} );
             
-            foos = procFunc(iFunc).funcParamFormat{iParam};
-            boos = sprintf( foos, procFunc(iFunc).funcParamVal{iParam} );
+            foos = func(iFunc).funcParamFormat{iParam};
+            boos = sprintf( foos, func(iFunc).funcParamVal{iParam} );
             for ii=1:length(foos)
                 if foos(ii)==' '
                     foos(ii) = '_';
@@ -26,11 +26,11 @@ for iPanel=1:length(procElem)
                     boos(ii) = '_';
                 end
             end
-            if ~strcmp(procFunc(iFunc).funcParam{iParam},'*')
+            if ~strcmp(func(iFunc).funcParam{iParam},'*')
                 fprintf( fid,' %s %s', foos, boos );
             end
         end
-        if procFunc(iFunc).nFuncParamVar>0
+        if func(iFunc).nFuncParamVar>0
             fprintf( fid,' *');
         end
         

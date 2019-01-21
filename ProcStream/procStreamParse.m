@@ -25,7 +25,7 @@ case 'group'
         foo = textscan(str, '%s');
         G = foo{1};
 	end
-    [procInput.procFunc, procInput.procParam] = parseSection(G, procElem);
+    [procInput.func, procInput.param] = parseSection(G, procElem);
     
 case 'subj'
     
@@ -37,14 +37,14 @@ case 'subj'
         foo = textscan(str, '%s');
         S = foo{1};
     end
-    [procInput.procFunc, procInput.procParam] = parseSection(S, procElem);
+    [procInput.func, procInput.param] = parseSection(S, procElem);
     
 case 'run'
     
-    [procInput.procFunc, procInput.procParam] = parseSection(R, procElem);
+    [procInput.func, procInput.param] = parseSection(R, procElem);
     
 end
 
-% Lastly set the funcHelp field values for all procFunc functions. 
-procInput.procFunc = procStreamSetHelp(procInput.procFunc);
+% Lastly set the funcHelp field values for all func functions. 
+procInput.func = procStreamSetHelp(procInput.func);
 

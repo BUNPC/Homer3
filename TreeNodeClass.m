@@ -92,7 +92,7 @@ classdef TreeNodeClass < handle
                     i=find(err2==1);
                     str1 = 'Error in functions\n\n';
                     for j=1:length(i)
-                        str2 = sprintf('%s%s',procInput.procFunc(i(j)).funcName,'\n');
+                        str2 = sprintf('%s%s',procInput.func(i(j)).name,'\n');
                         str1 = strcat(str1,str2);
                     end
                     str1 = strcat(str1,'\n');
@@ -158,10 +158,10 @@ classdef TreeNodeClass < handle
         function copyProcParamsFieldByField(obj, obj2)
             % procInput
             if isproperty(obj2,'procInput') && ~isempty(obj2.procInput)
-                if isproperty(obj2.procInput,'procFunc') && ~isempty(obj2.procInput.procFunc)
+                if isproperty(obj2.procInput,'func') && ~isempty(obj2.procInput.func)
                     obj.procInput.Copy(obj2.procInput);
                 else
-                    [obj.procInput.procFunc, obj.procInput.procParam] = procStreamDefault(obj.type);
+                    [obj.procInput.func, obj.procInput.param] = procStreamDefault(obj.type);
                 end
             end
             
@@ -318,11 +318,11 @@ classdef TreeNodeClass < handle
             if isempty(iParam)
                 return;
             end
-            obj.procInput.procFunc(iFunc).funcParamVal{iParam} = val;
-            eval( sprintf('obj.procInput.procParam.%s_%s = val;', ...
-                          obj.procInput.procFunc(iFunc).funcName, ...
-                          obj.procInput.procFunc(iFunc).funcParam{iParam}) );
-            str = sprintf(obj.procInput.procFunc(iFunc).funcParamFormat{iParam}, val);
+            obj.procInput.func(iFunc).paramVal{iParam} = val;
+            eval( sprintf('obj.procInput.param.%s_%s = val;', ...
+                          obj.procInput.func(iFunc).name, ...
+                          obj.procInput.func(iFunc).param{iParam}) );
+            str = sprintf(obj.procInput.func(iFunc).paramFormat{iParam}, val);
         end
         
         

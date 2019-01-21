@@ -21,15 +21,15 @@ procFunc = struc([]);
 nFunc = 0;
 for ii=1:length(func)
     nFunc=nFunc+1;
-    procFunc.funcName{ii}        = func(ii).funcName;
-    procFunc.funcNameUI{ii}      = func(ii).funcNameUI;
-    procFunc.funcArgOut{ii}      = func(ii).funcArgOut;
-    procFunc.funcArgIn{ii}       = func(ii).funcArgIn;
-    procFunc.nFuncParam(ii)      = func(ii).nFuncParam;
-    procFunc.nFuncParamVar(ii)   = func(ii).nFuncParamVar;
-    procFunc.funcParam{ii}       = func(ii).funcParam;
-    procFunc.funcParamFormat{ii} = func(ii).funcParamFormat;
-    procFunc.funcParamVal{ii}    = func(ii).funcParamVal;
+    procFunc.funcName{ii}        = func(ii).name;
+    procFunc.funcNameUI{ii}      = func(ii).nameUI;
+    procFunc.funcArgOut{ii}      = func(ii).argOut;
+    procFunc.funcArgIn{ii}       = func(ii).argIn;
+    procFunc.nFuncParam(ii)      = func(ii).nParam;
+    procFunc.nFuncParamVar(ii)   = func(ii).nParamVar;
+    procFunc.funcParam{ii}       = func(ii).param;
+    procFunc.funcParamFormat{ii} = func(ii).paramFormat;
+    procFunc.funcParamVal{ii}    = func(ii).paramVal;
 end
 
 procInput.procFunc = procFunc;

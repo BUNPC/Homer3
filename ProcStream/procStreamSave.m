@@ -1,21 +1,18 @@
 function procStreamSave(filenm, procElem)
-
-
 fid = fopen(filenm,'w');
 for iPanel=1:length(procElem)
-
     fprintf( fid, '%% %s\n', procElem{iPanel}.type );    
     func = procElem{iPanel}.procInput.func;
     for iFunc=1:length(func)
 
         fprintf( fid, '@ %s %s %s',...
-            func(iFunc).funcName, func(iFunc).funcArgOut, ...
-            func(iFunc).funcArgIn );
-        for iParam=1:func(iFunc).nFuncParam
-            fprintf( fid,' %s', func(iFunc).funcParam{iParam} );
+            func(iFunc).funcName, func(iFunc).argOut, ...
+            func(iFunc).argIn );
+        for iParam=1:func(iFunc).nParam
+            fprintf( fid,' %s', func(iFunc).param{iParam} );
             
-            foos = func(iFunc).funcParamFormat{iParam};
-            boos = sprintf( foos, func(iFunc).funcParamVal{iParam} );
+            foos = func(iFunc).paramFormat{iParam};
+            boos = sprintf( foos, func(iFunc).paramVal{iParam} );
             for ii=1:length(foos)
                 if foos(ii)==' '
                     foos(ii) = '_';
@@ -26,19 +23,15 @@ for iPanel=1:length(procElem)
                     boos(ii) = '_';
                 end
             end
-            if ~strcmp(func(iFunc).funcParam{iParam},'*')
+            if ~strcmp(func(iFunc).param{iParam},'*')
                 fprintf( fid,' %s %s', foos, boos );
             end
         end
-        if func(iFunc).nFuncParamVar>0
+        if func(iFunc).nParamVar>0
             fprintf( fid,' *');
         end
-        
-        fprintf( fid, '\n' );
-        
+        fprintf( fid, '\n' );        
     end
     fprintf( fid, '\n' );
-    
 end
-
 fclose(fid);

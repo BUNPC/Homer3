@@ -33,15 +33,15 @@ end
 % We determined that procInput is an older format that has to be converted to the native format
 func = struct([]);
 for ii=1:func.nFunc
-    func(ii).funcName        = func.funcName       {ii};
-    func(ii).funcNameUI      = func.funcNameUI     {ii};
-    func(ii).funcArgIn       = func.funcArgIn      {ii};
-    func(ii).funcArgOut      = func.funcArgOut     {ii};
-    func(ii).nFuncParam      = func.nFuncParam     (ii);
-    func(ii).nFuncParamVar   = func.nFuncParamVar  (ii);
-    func(ii).funcParam       = func.funcParam      {ii};
-    func(ii).funcParamFormat = func.funcParamFormat{ii};
-    func(ii).funcParamVal    = func.funcParamVal   {ii};
+    func(ii).name        = func.funcName       {ii};
+    func(ii).nameUI      = func.funcNameUI     {ii};
+    func(ii).argIn       = func.funcArgIn      {ii};
+    func(ii).argOut      = func.funcArgOut     {ii};
+    func(ii).nParam      = func.nFuncParam     (ii);
+    func(ii).nParamVar   = func.nFuncParamVar  (ii);
+    func(ii).param       = func.funcParam      {ii};
+    func(ii).paramFormat = func.funcParamFormat{ii};
+    func(ii).paramVal    = func.funcParamVal   {ii};
     func(ii).funcHelpStr     = '';
     func(ii).funcHelp        = InitHelp(func.nFuncParam(ii));
 end

@@ -4,12 +4,12 @@ function [contents, str] = procStreamDefaultFileGroup(funcRun)
 % output; if it's output ia dodAvg, choose the dodAvg default, otherwise
 % choose dcAvg. 
 if ~exist('funcRun','var') | isempty(funcRun)
-    funcRun(1).funcArgOut = '';
+    funcRun(1).argOut = '';
 end
 
 datatype = 'dcAvg';
 for ii=1:length(funcRun)
-    if ~isempty(strfind(funcRun(ii).funcArgOut, 'dodAvg'))
+    if ~isempty(strfind(funcRun(ii).argOut, 'dodAvg'))
         datatype = 'dodAvg';
         break;
     end        

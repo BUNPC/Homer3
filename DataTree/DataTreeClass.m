@@ -48,7 +48,7 @@ classdef DataTreeClass <  handle
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Find out if we need to ask user for prcessing options config file
-            % to initialize procInput.procFunc at the run, subject or group level.
+            % to initialize procInput.func at the run, subject or group level.
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             subj = obj.group.subjs(1);
             run = obj.group.subjs(1).runs(1);

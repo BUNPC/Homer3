@@ -84,11 +84,6 @@ classdef NirsFilesClass < DataFilesClass
                 's',0, ...
                 'aux',0, ...
                 'ml',0, ...
-                'procInput',0, ...
-                'procInput_procFunc',0, ...
-                'procInput_procParam',0, ...
-                'procInput_changeFlag',0, ...
-                'procInput_SD',0, ...
                 'CondNames',0, ...
                 'status',0, ...
                 'subj',0 ...
@@ -191,28 +186,7 @@ classdef NirsFilesClass < DataFilesClass
                         errmsg_tmp = [errmsg_tmp sprintf('%d) Error: invalid auxiliary matrix (aux);  ',obj.flags(iF).errCount)];
                     end
                 end
-                
-                % procInput
-                if obj.flags(iF).procInput_procFunc~=0
-                    obj.flags(iF).errCount = obj.flags(iF).errCount+1;
-                    errmsg_tmp = [errmsg_tmp sprintf('%d) Error: missing procFunc in procInput;  ',obj.flags(iF).errCount)];
-                end
-                if obj.flags(iF).procInput_procParam~=0
-                    obj.flags(iF).errCount = obj.flags(iF).errCount+1;
-                    errmsg_tmp = [errmsg_tmp sprintf('%d) Error: missing procParam in procInput;  ',obj.flags(iF).errCount)];
-                end
-                if obj.flags(iF).procInput_changeFlag~=0
-                    obj.flags(iF).warningCount = obj.flags(iF).warningCount+1;
-                    errmsg_tmp = [errmsg_tmp sprintf('%d) Warning: Older format - missing changeFlag in procInput;  ', ...
-                        obj.flags(iF).errCount+obj.flags(iF).warningCount)];
-                end
-                if obj.flags(iF).procInput_SD~=0
-                    obj.flags(iF).warningCount=obj.flags(iF).warningCount+1;
-                    errmsg_tmp = [errmsg_tmp sprintf('%d) Warning: Older format - missing SD in procInput;  ', ...
-                        obj.flags(iF).errCount+obj.flags(iF).warningCount)];
-                end
-                
-                
+                                
                 % CondNames
                 if obj.flags(iF).CondNames~=0
                     obj.flags(iF).errCount = obj.flags(iF).errCount+1;
@@ -399,25 +373,6 @@ classdef NirsFilesClass < DataFilesClass
                     end
                 end
                 
-                
-                %%%%% procInput
-                if exist('procInput','var')
-                    if ~isstruct(procInput)
-                        obj.flags(iF).procInput = bitor(obj.flags(iF).procInput,1);
-                    else
-                        if ~isproperty(procInput,'procFunc')
-                            obj.flags(iF).procInput_procFunc = bitor(obj.flags(iF).procInput_procFun,1);
-                        end
-                        if ~isproperty(procInput,'procParam')
-                            obj.flags(iF).procInput_procParam = bitor(obj.flags(iF).procInput_procParam,1);
-                        end
-                        if ~isproperty(procInput,'changeFlag')
-                            obj.flags(iF).procInput_changeFlag = bitor(obj.flags(iF).procInput_changeFlag,1);
-                        end
-                    end
-                end
-                
-                
                 %%%%% CondNames
                 if exist('CondNames','var')
                     if ~isempty(find(strcmp('',CondNames)))
@@ -436,7 +391,7 @@ classdef NirsFilesClass < DataFilesClass
                     end
                 end
                 
-                clear('d','t','SD','s','aux','procInput','CondNames');
+                clear('d','t','SD','s','aux','CondNames');
                 
             end
             close(hwait);

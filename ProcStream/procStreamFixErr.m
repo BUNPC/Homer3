@@ -14,12 +14,12 @@ for jj=length(i):-1:1
             eval( sprintf('procInput.func(i(jj)).%s = funcReg(iReg(i(jj))).%s;', fields{ii}, fields{ii}) );
         end
         
-        for p=1:length(procInput.func(i(jj)).funcParam)
+        for p=1:length(procInput.func(i(jj)).param)
             assignmentStr = sprintf('procInput.param.%s_%s = [%s];', ...
-                                    procInput.func(i(jj)).funcName,...
-                                    procInput.func(i(jj)).funcParam{p},...
-                                    procInput.func(i(jj)).funcParamFormat{p});
-            eval(sprintf(assignmentStr, procInput.func(i(jj)).funcParamVal{p}));
+                                    procInput.func(i(jj)).name,...
+                                    procInput.func(i(jj)).param{p},...
+                                    procInput.func(i(jj)).paramFormat{p});
+            eval(sprintf(assignmentStr, procInput.func(i(jj)).paramVal{p}));
         end
         
         % Else the function doesn't exist in the registry and we simply delete it

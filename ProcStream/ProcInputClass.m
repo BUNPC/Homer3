@@ -49,7 +49,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
             if isempty(obj.func)
                 return
             end
-            if isempty(obj.func(1).funcName)
+            if isempty(obj.func(1).name)
                 return;
             end
             b = false;

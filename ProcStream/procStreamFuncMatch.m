@@ -1,48 +1,48 @@
 function score = procStreamFuncMatch(f1,f2)
 
-f1.funcArgIn = procStreamParseArgsIn(f1.funcArgIn);
-f2.funcArgIn = procStreamParseArgsIn(f2.funcArgIn);
-f1.funcArgOut = procStreamParseArgsOut(f1.funcArgOut);
-f2.funcArgOut = procStreamParseArgsOut(f2.funcArgOut);
+f1.argIn = procStreamParseArgsIn(f1.argIn);
+f2.argIn = procStreamParseArgsIn(f2.argIn);
+f1.argOut = procStreamParseArgsOut(f1.argOut);
+f2.argOut = procStreamParseArgsOut(f2.argOut);
 
-f1.nFuncArgIn = length(f1.funcArgIn);
-f2.nFuncArgIn = length(f2.funcArgIn);
-f1.nFuncArgOut = length(f1.funcArgOut);
-f2.nFuncArgOut = length(f2.funcArgOut);
+f1.nArgIn = length(f1.argIn);
+f2.nArgIn = length(f2.argIn);
+f1.nArgOut = length(f1.argOut);
+f2.nArgOut = length(f2.argOut);
 
 score = 0;
-if ~f1.nFuncParamVar && ~f2.nFuncParamVar
-    score_max = f1.nFuncArgIn + f1.nFuncArgOut + f1.nFuncParam + ...
-                f2.nFuncArgIn + f2.nFuncArgOut + f2.nFuncParam;
-elseif f1.nFuncParamVar && f2.nFuncParamVar
-    score_max = f1.nFuncArgIn + f1.nFuncArgOut + ...
-                f2.nFuncArgIn + f2.nFuncArgOut;
+if ~f1.nParamVar && ~f2.nParamVar
+    score_max = f1.nArgIn + f1.nArgOut + f1.nParam + ...
+                f2.nArgIn + f2.nArgOut + f2.nParam;
+elseif f1.nParamVar && f2.nParamVar
+    score_max = f1.nArgIn + f1.nArgOut + ...
+                f2.nArgIn + f2.nArgOut;
 else
     score = 0;
 end
 
 
-% funcArgIn
-for i=1:min(f1.nFuncArgIn,f2.nFuncArgIn)
-    if strcmp(f1.funcArgIn{i},f2.funcArgIn{i})
+% argIn
+for i=1:min(f1.nArgIn,f2.nArgIn)
+    if strcmp(f1.argIn{i},f2.argIn{i})
         score=score+2;
     end
 end
 
 
-% funcParam
-if ~f1.nFuncParamVar && ~f2.nFuncParamVar
-    for i=1:min(f1.nFuncParam,f2.nFuncParam)
-        if strcmp(f1.funcParam{i},f2.funcParam{i})
+% param
+if ~f1.nParamVar && ~f2.nParamVar
+    for i=1:min(f1.nParam,f2.nParam)
+        if strcmp(f1.param{i},f2.param{i})
             score=score+2;
         end
     end
 end
 
 
-% funcArgOut
-for i=1:min(f1.nFuncArgOut,f2.nFuncArgOut)
-    if strcmp(f1.funcArgOut{i},f2.funcArgOut{i})
+% argOut
+for i=1:min(f1.nArgOut,f2.nArgOut)
+    if strcmp(f1.argOut{i},f2.argOut{i})
         score=score+2;
     end
 end

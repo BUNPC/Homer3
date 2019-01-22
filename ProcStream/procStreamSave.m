@@ -2,7 +2,7 @@ function procStreamSave(filenm, procElem)
 fid = fopen(filenm,'w');
 for iPanel=1:length(procElem)
     fprintf( fid, '%% %s\n', procElem{iPanel}.type );    
-    func = procElem{iPanel}.procInput.func;
+    func = procElem{iPanel}.procStream.input.func;
     for iFunc=1:length(func)
 
         fprintf( fid, '@ %s %s %s',...

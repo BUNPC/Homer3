@@ -73,170 +73,58 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function OverwriteProcInput(obj, varargin)
-            
-            % Overwrite procInput of group tree members of a single level
-            % (ie., group, subject, run)
-            
-            procInput = ProcInputClass();
-            
-            if nargin==2
-                if isproperty(varargin{1}, 'procElem')
-                    type = varargin{1}.procElem.type;
-                    procInput = varargin{1}.procElem.procInput;
-                elseif isproperty(varargin{1}, 'procInput')
-                    type = varargin{1}.type;
-                    procInput = varargin{1}.procInput;
-                end
-            elseif nargin==3
-                type = varargin{1};
-                procInput = varargin{2};
-            end
-            
-            % We don't want to be overwriting current procInput, with an
-            % empty procInput.
-            if procStreamIsEmpty(procInput)
-                return;
-            end
-            
-            switch(type)
-                case 'group'
-                    obj.procInput = procInput;
-                case 'subj'
-                    for ii=1:length(obj.subjs)
-                        obj.subjs(ii).procInput = procInput;
-                    end
-                case 'run'
-                    for ii=1:length(obj.subjs)
-                        for jj=1:length(obj.subjs(ii).runs)
-                            obj.subjs(ii).runs(jj).procInput = procInput;
-                        end
-                    end
-            end
-            
-        end
-        
-        
-        
-        % ----------------------------------------------------------------------------------
-        function CopyProcInput(obj, varargin)
-            
-            % Copy procInput only to those group tree members at a single level
-            % (ie., group, subject, run) with empty procInput
-            procInput = ProcInputClass();
-            if nargin==2
-                if isproperty(varargin{1}, 'procElem')
-                    type = varargin{1}.procElem.type;
-                    procInput = varargin{1}.procElem.procInput;
-                elseif isproperty(varargin{1}, 'procInput')
-                    type = varargin{1}.type;
-                    procInput = varargin{1}.procInput;
-                end
-            elseif nargin==3
-                type = varargin{1};
-                procInput = varargin{2};
+        function CopyProcInput(obj, type, procInput, mode)
+            if ~exist('mode','var')
+                mode = 'nooverwrite';
             end
             
             % Copy default procInput to all uninitialized nodes in the group
             switch(type)
                 case 'group'
-                    if procStreamIsEmpty(obj.procInput)
-                        obj.procInput = procStreamCopy2Native(procInput);
+                    if procStreamIsEmpty(obj.procStream.input) || strcmp(mode, 'overwrite')
+                        obj.procStream.input = procInput.copy();
                     end
                 case 'subj'
                     for jj=1:length(obj.subjs)
-                        if procStreamIsEmpty(obj.subjs(jj).procInput)
-                            obj.subjs(jj).procInput = procStreamCopy2Native(procInput);
+                        if procStreamIsEmpty(obj.subjs(jj).procStream.input) || strcmp(mode, 'overwrite')
+                            obj.subjs(jj).procStream.input = procInput.copy();
                         end
                     end
                 case 'run'
                     for jj=1:length(obj.subjs)
                         for kk=1:length(obj.subjs(jj).runs)
-                            if procStreamIsEmpty(obj.subjs(jj).runs(kk).procInput)
-                                obj.subjs(jj).runs(kk).procInput = procStreamCopy2Native(procInput);
+                            if procStreamIsEmpty(obj.subjs(jj).runs(kk).procStream.input) || strcmp(mode, 'overwrite')
+                                obj.subjs(jj).runs(kk).procStream.input = procInput.copy();
                             end
                         end
                     end
-            end
-            
+            end            
         end
         
-        
-        
+
         % ----------------------------------------------------------------------------------
-        function [procInput, filename] = GetProcInputDefaultGroup(obj, filename)
-            
-            procInput = struct([]);
-            if ~exist('filename','var') || isempty(filename)
-                filename = '';
-            end
-            
-            err1=0; err2=0;
-            if procStreamIsEmpty(obj.procInput)
-                err1=1; err2=1;
-            else
-                procInput = obj.procInput;
-            end
-            
-            
-            % Otherwise try loading procInput from a config file, but first
-            % figure out the name of the config file
-            while ~all(err1==0) || ~all(err2==0)
-                
-                % Load Processing stream file
-                if isempty(filename)
-                    [filename, pathname] = createDefaultConfigFile();
-                    
-                    % Load procInput from config file
-                    fid = fopen(filename,'r');
-                    [procInput, err1] = procStreamParse(fid, obj);
-                    fclose(fid);
-                elseif ~isempty(filename)
-                    % Load procInput from config file
-                    fid = fopen(filename,'r');
-                    [procInput err1] = procStreamParse(fid, obj);
-                    fclose(fid);
-                else
-                    err1=0;
-                end
-                
-                % Check loaded procInput for syntax and semantic errors
-                if procStreamIsEmpty(procInput) && err1==0
-                    ch = menu('Warning: config file is empty.','Okay');
-                elseif err1==1
-                    ch = menu('Syntax error in config file.','Okay');
-                end
-                
-                [err2, iReg] = procStreamErrCheck(procInput);
-                if ~all(~err2)
-                    i=find(err2==1);
-                    str1 = 'Error in functions\n\n';
-                    for j=1:length(i)
-                        str2 = sprintf('%s%s',procInput.func(i(j)).name,'\n');
-                        str1 = strcat(str1,str2);
+        function CopyProcInputFunc(obj, type, procInput)
+            % Copy default procInput to all uninitialized nodes in the group
+            switch(type)
+                case 'group'
+                    obj.procStream.input.func = procInput.func;
+                    obj.procStream.input.param = procInput.param;
+                case 'subj'
+                    for jj=1:length(obj.subjs)
+                        obj.subjs(jj).procStream.input.func = procInput.func;
+                        obj.subjs(jj).procStream.input.param = procInput.param;
                     end
-                    str1 = strcat(str1,'\n');
-                    str1 = strcat(str1,'Do you want to keep current proc stream or load another file?...');
-                    ch = menu(sprintf(str1), 'Fix and load this config file','Create and use default config','Cancel');
-                    if ch==1
-                        [procInput, err2] = procStreamFixErr(err2, procInput, iReg);
-                    elseif ch==2
-                        filename = './processOpt_default.cfg';
-                        procStreamFileGen(filename);
-                        fid = fopen(filename,'r');
-                        procInput = procStreamParse(fid, run);
-                        fclose(fid);
-                        break;
-                    elseif ch==3
-                        filename = '';
-                        return;
+                case 'run'
+                    for jj=1:length(obj.subjs)
+                        for kk=1:length(obj.subjs(jj).runs)
+                            obj.subjs(jj).runs(kk).procStream.input.func = procInput.func;
+                            obj.subjs(jj).runs(kk).procStream.input.param = procInput.param;
+                        end
                     end
-                end
-            end  % function [procInput, filename] = GetProcInputDefaultGroup(obj, filename)
+            end            
         end
         
-        
-        
+               
         % ----------------------------------------------------------------------------------
         function Calc(obj, hListbox, listboxFuncPtr)
             if ~exist('hListbox','var')
@@ -254,9 +142,9 @@ classdef GroupClass < TreeNodeClass
                 
                 % Find smallest tHRF among the subjs. We should make this the common one.
                 if iSubj==1
-                    tHRF_common = subjs(iSubj).procResult.tHRF;
-                elseif length(subjs(iSubj).procResult.tHRF) < length(tHRF_common)
-                    tHRF_common = subjs(iSubj).procResult.tHRF;
+                    tHRF_common = subjs(iSubj).procStream.output.tHRF;
+                elseif length(subjs(iSubj).procStream.output.tHRF) < length(tHRF_common)
+                    tHRF_common = subjs(iSubj).procStream.output.tHRF;
                 end
             end
                         
@@ -268,23 +156,23 @@ classdef GroupClass < TreeNodeClass
             % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
             % all subjs. Use smallest tHRF as the common one.
             for iSubj = 1:nSubj
-                subjs(iSubj).procResult.SettHRFCommon(tHRF_common, subjs(iSubj).name, subjs(iSubj).type);
+                subjs(iSubj).procStream.output.SettHRFCommon(tHRF_common, subjs(iSubj).name, subjs(iSubj).type);
             end
             
             
             % Instantiate all the variables that might be needed by
             % procStreamCalc to calculate proc stream for this group
             for iSubj = 1:nSubj
-                obj.procInput.misc.dodAvgSubjs{iSubj}    = subjs(iSubj).procResult.dodAvg;
-                obj.procInput.misc.dodAvgStdSubjs{iSubj} = subjs(iSubj).procResult.dodAvgStd;
-                obj.procInput.misc.dcAvgSubjs{iSubj}     = subjs(iSubj).procResult.dcAvg;
-                obj.procInput.misc.dcAvgStdSubjs{iSubj}  = subjs(iSubj).procResult.dcAvgStd;
-                obj.procInput.misc.tHRFSubjs{iSubj}      = subjs(iSubj).procResult.tHRF;
-                obj.procInput.misc.nTrialsSubjs{iSubj}   = subjs(iSubj).procResult.nTrials;
-                if ~isempty(subjs(iSubj).procResult.ch)
-                    obj.procInput.misc.SDSubjs{iSubj}    = subjs(iSubj).procResult.ch;
+                obj.procStream.input.misc.dodAvgSubjs{iSubj}    = subjs(iSubj).procStream.output.dodAvg;
+                obj.procStream.input.misc.dodAvgStdSubjs{iSubj} = subjs(iSubj).procStream.output.dodAvgStd;
+                obj.procStream.input.misc.dcAvgSubjs{iSubj}     = subjs(iSubj).procStream.output.dcAvg;
+                obj.procStream.input.misc.dcAvgStdSubjs{iSubj}  = subjs(iSubj).procStream.output.dcAvgStd;
+                obj.procStream.input.misc.tHRFSubjs{iSubj}      = subjs(iSubj).procStream.output.tHRF;
+                obj.procStream.input.misc.nTrialsSubjs{iSubj}   = subjs(iSubj).procStream.output.nTrials;
+                if ~isempty(subjs(iSubj).procStream.output.ch)
+                    obj.procStream.input.misc.SDSubjs{iSubj}    = subjs(iSubj).procStream.output.ch;
                 else
-                    obj.procInput.misc.SDSubjs{iSubj}    = subjs(iSubj).ch;
+                    obj.procStream.input.misc.SDSubjs{iSubj}    = subjs(iSubj).ch;
                 end
             end
             procStreamCalc(obj);
@@ -293,10 +181,10 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        % Deletes derived data in procResult
+        % Deletes derived data in procStream.output
         % ----------------------------------------------------------------------------------
         function Reset(obj)
-            obj.procResult = ProcResultClass();
+            obj.procStream.output = ProcResultClass();
             for jj=1:length(obj.subjs)
                 obj.subjs(jj).Reset();
             end
@@ -316,7 +204,7 @@ classdef GroupClass < TreeNodeClass
             if exist('./groupResults.mat','file')
                 load( './groupResults.mat' );
                 
-                % copy procResult from previous group to current group for
+                % copy procStream.output from previous group to current group for
                 % all nodes that still exist in the current group.
                 hwait = waitbar(0,'Loading group');
                 obj.copyProcParams(group);
@@ -448,14 +336,14 @@ classdef GroupClass < TreeNodeClass
         % used when averaging subject HRF to get group HRF
         % ----------------------------------------------------------------------------------
         function SetCondName2Subj(obj)
-            obj.procInput.CondName2Subj = zeros(length(obj.subjs),length(obj.CondNames));
+            obj.procStream.input.CondName2Subj = zeros(length(obj.subjs),length(obj.CondNames));
             for iC=1:length(obj.CondNames)
                 for iSubj=1:length(obj.subjs)
                     k = find(strcmp(obj.CondNames{iC}, obj.subjs(iSubj).GetConditions()));
                     if isempty(k)
-                        obj.procInput.CondName2Subj(iSubj,iC) = 0;
+                        obj.procStream.input.CondName2Subj(iSubj,iC) = 0;
                     else
-                        obj.procInput.CondName2Subj(iSubj,iC) = k(1);
+                        obj.procStream.input.CondName2Subj(iSubj,iC) = k(1);
                     end
                 end
             end
@@ -492,7 +380,7 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        % Copy processing params (procInut and procResult) from
+        % Copy processing params (procInut and procStream.output) from
         % N2 to obj if obj and N2 are equivalent nodes
         % ----------------------------------------------------------------------------------
         function copyProcParams(obj, G)
@@ -506,7 +394,7 @@ classdef GroupClass < TreeNodeClass
                 if obj == G
                     obj.copyProcParamsFieldByField(G);
                 else
-                    obj.procInput.changeFlag=1;
+                    obj.procStream.input.changeFlag=1;
                 end
             end           
         end

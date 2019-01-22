@@ -76,7 +76,7 @@ classdef RunClass < TreeNodeClass
         % Deletes derived data in procResult
         % ----------------------------------------------------------------------------------
         function Reset(obj)
-            obj.procResult = ProcResultClass();
+            obj.procStream.output = ProcResultClass();
         end
         
         
@@ -158,28 +158,28 @@ classdef RunClass < TreeNodeClass
                 d = obj.GetDataMatrix();
                 t = obj.GetTime();
             elseif datatype == buttonVals.OD
-                d = obj.procResult.dod;
+                d = obj.procStream.output.dod;
                 t = obj.GetTime();
             elseif datatype == buttonVals.CONC
-                d = obj.procResult.dc;
+                d = obj.procStream.output.dc;
                 t = obj.GetTime();
             elseif datatype == buttonVals.OD_HRF
-                d = obj.procResult.dodAvg;
-                t = obj.procResult.tHRF;
+                d = obj.procStream.output.dodAvg;
+                t = obj.procStream.output.tHRF;
                 if showStdErr
-                    dStd = obj.procResult.dodAvgStd;
+                    dStd = obj.procStream.output.dodAvgStd;
                 end
-                nTrials = obj.procResult.nTrials;
+                nTrials = obj.procStream.output.nTrials;
                 if isempty(condition)
                     return;
                 end
             elseif datatype == buttonVals.CONC_HRF
-                d = obj.procResult.dcAvg;
-                t = obj.procResult.tHRF;
+                d = obj.procStream.output.dcAvg;
+                t = obj.procStream.output.tHRF;
                 if showStdErr
-                    dStd = obj.procResult.dcAvgStd * sclConc;
+                    dStd = obj.procStream.output.dcAvgStd * sclConc;
                 end
-                nTrials = obj.procResult.nTrials;
+                nTrials = obj.procStream.output.nTrials;
                 if isempty(condition)
                     return;
                 end
@@ -249,7 +249,7 @@ classdef RunClass < TreeNodeClass
                 return;
             end
             
-            procResult = obj.procResult;
+            procResult = obj.procStream.output;
             
             %%% Plot stim marks. This has to be done before plotting exclude time
             %%% patches because stim legend doesn't work otherwise.

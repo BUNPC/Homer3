@@ -124,7 +124,7 @@ plotprobe.tMarkShow = bit0;
 bit1 = plotprobe.hidMeasShow;
 h = plotprobe.handles.Data;
 
-procResult  = currElem.procElem.procResult;
+procResult  = currElem.procElem.procStream.output;
 ch          = currElem.procElem.GetMeasList();
 
 datatype    = guiMain.datatype;
@@ -280,7 +280,7 @@ bit0 = plotprobe.tMarkShow;
 
 h = plotprobe.handles.Data;
 
-procResult  = currElem.procElem.procResult;
+procResult  = currElem.procElem.procStream.output;
 ch          = currElem.procElem.GetMeasList();
 
 datatype    = guiMain.datatype;

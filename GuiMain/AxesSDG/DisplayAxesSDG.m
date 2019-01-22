@@ -50,7 +50,7 @@ color       = axesSDG.linecolor;
 SD          = procElem.GetSDG();
 ch          = procElem.GetMeasList();
 bbox        = procElem.GetSdgBbox();
-procResult  = procElem.procResult;
+procResult  = procElem.procStream.output;
 
 nSrcs       = size(SD.SrcPos,1);
 nDets       = size(SD.DetPos,1);

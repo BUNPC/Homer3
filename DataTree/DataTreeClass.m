@@ -54,11 +54,11 @@ classdef DataTreeClass <  handle
             run = obj.group.subjs(1).runs(1);
             
             for jj=1:length(obj.group.subjs)
-                if ~procStreamIsEmpty(obj.group.subjs(jj).procInput)
+                if ~procStreamIsEmpty(obj.group.subjs(jj).procStream.input)
                     subj = obj.group.subjs(jj);
                 end
                 for kk=1:length(obj.group.subjs(jj).runs)
-                    if ~procStreamIsEmpty(obj.group.subjs(jj).runs(kk).procInput)
+                    if ~procStreamIsEmpty(obj.group.subjs(jj).runs(kk).procStream.input)
                         run = obj.group.subjs(jj).runs(kk);
                     end
                 end
@@ -74,7 +74,6 @@ classdef DataTreeClass <  handle
             obj.group.CopyProcInput('group', procInputGroupDefault);
             obj.group.CopyProcInput('subj', procInputSubjDefault);
             obj.group.CopyProcInput('run', procInputRunDefault);
-            
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Copy input variables for group, subjects and runs

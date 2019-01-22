@@ -9,7 +9,7 @@ switch(class(varargin{1}))
         procInput = varargin{1};
         type      = varargin{2};
     case {'GroupClass', 'SubjClass', 'RunClass'}
-        procInput = varargin{1}.procInput;
+        procInput = varargin{1}.procStream.input;
         type      = class(varargin{1});
     otherwise
         return;

@@ -32,7 +32,7 @@ set(hObject,'visible','off');  % to be turnedmade visible in ProcStreamOptionsGU
 
 currElem = varargin{1};
 currElem.handles.ProcStreamOptionsGUI = hObject;
-procInput = currElem.procElem.procInput;
+procInput = currElem.procElem.procStream.input;
 func = procInput.func;
 
 if isempty(func)
@@ -144,7 +144,7 @@ for iFunc=1:length(func)
 end
 procInput.func = func;
 procInput.param = param0;
-currElem.procInput = procInput;
+currElem.procStream.input = procInput;
 hmr.currElem = currElem;
 
 % Make sure the options GUI fits on screen
@@ -219,8 +219,8 @@ function pushbuttonProc_Callback(hObject, eventdata, handles)
 global hmr
 
 dataTree = hmr.dataTree;
-procInput = dataTree.currElem.procElem.procInput;
-procResult = dataTree.currElem.procElem.procResult;
+procInput = dataTree.currElem.procElem.procStream.input;
+procResult = dataTree.currElem.procElem.procStream.output;
 
 % parse output parameters
 sargout = procInput.func(eventdata).argOut;
@@ -253,7 +253,7 @@ end
 
 eval( sprintf( '%s_result( %s );', procInput.func(eventdata).name, sargin ) );
 
-hmr.dataTree.currElem.procInput = procInput;
+hmr.dataTree.currElem.procStream.input = procInput.copy;
 
 
 

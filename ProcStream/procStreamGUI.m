@@ -124,14 +124,10 @@ for iFunc = 1:length(func)
     end
 
     % call function
-    fcall{iFunc} = sprintf( '%s      = %s%s%s);', sargout, ...
-        func(iFunc).name, ...
-        func(iFunc).argIn, sargin );
+    fcall{iFunc} = sprintf( '%s      = %s%s%s);', sargout, func(iFunc).name, func(iFunc).argIn, sargin );
     fcallOut{iFunc} = sprintf( '%s', sargout);
-    fcall{iFunc} = sprintf( '%s',  ...
-        func(iFunc).name);
-    fcallIn{iFunc} = sprintf( '%s%s)',  ...
-        func(iFunc).argIn, sargin );
+    fcall{iFunc} = sprintf( '%s',  func(iFunc).name);
+    fcallIn{iFunc} = sprintf( '%s%s)', func(iFunc).argIn, sargin );
 end
 
     
@@ -419,7 +415,7 @@ for iPanel=1:3
     
     if ch==2
         fid = fopen([pathname,filename]);
-        [procElem.procInput, ~] = procStreamParse(fid, procElem);
+        [procElem.procStream.input, ~] = procStreamParse(fid, procElem);
     end
     
     % Search for procFun functions in procStreamReg
@@ -428,14 +424,14 @@ for iPanel=1:3
         i=find(err2==1);
         str1 = 'Error in functions\n\n';
         for j=1:length(i)
-            str2 = sprintf('%s%s', procElem.procInput.func(i(j)).name,'\n');
+            str2 = sprintf('%s%s', procElem.procStream.input.func(i(j)).name,'\n');
             str1 = strcat(str1,str2);
         end
         str1 = strcat(str1,'\n');
         str1 = strcat(str1,'Do you want to keep current proc stream or load another file?...');
         ch = menu(sprintf(str1), 'Fix and load this config file','Create and use default config','Cancel');
         if ch==1
-            [procElem.procInput, err2] = procStreamFixErr(err2, procElem.procInput, iReg);
+            [procElem.procStream.input, err2] = procStreamFixErr(err2, procElem.procStream.input, iReg);
         end
     end
     
@@ -485,8 +481,8 @@ for iPanel=1:length(procElem)
                 func(iFunc).name, func(iFunc).param{iParam}) );
         end
     end
-    procElem{iPanel}.procInput.func = func;
-    procElem{iPanel}.procInput.param = param;
+    procElem{iPanel}.procStream.input.func = func;
+    procElem{iPanel}.procStream.input.param = param;
     
 end
 
@@ -497,13 +493,10 @@ end
 
 if ch==1
     global hmr
-
     group = hmr.dataTree.group;
-    
-    group.OverwriteProcInput(procElem{iRunPanel});
-    group.OverwriteProcInput(procElem{iSubjPanel});
-    group.OverwriteProcInput(procElem{iGroupPanel});
-    
+    group.CopyProcInputFunc('group', procElem{iGroupPanel}.procStream.input);
+    group.CopyProcInputFunc('subj', procElem{iSubjPanel}.procStream.input);
+    group.CopyProcInputFunc('run', procElem{iRunPanel}.procStream.input);
 else
     [filenm,pathnm] = uiputfile( '*.cfg','Save Config File');
     if filenm==0

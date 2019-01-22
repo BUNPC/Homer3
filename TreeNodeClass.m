@@ -3,8 +3,7 @@ classdef TreeNodeClass < handle
     properties % (Access = private)        
         name;
         type;
-        procInput;
-        procResult;
+        procStream;
         err;
         ch;
         CondNames;        
@@ -19,8 +18,7 @@ classdef TreeNodeClass < handle
         function obj = TreeNodeClass(arg)
             obj.name = '';
             obj.type = '';
-            obj.procInput = ProcInputClass();
-            obj.procResult = ProcResultClass();
+            obj.procStream = ProcStreamClass();
             obj.err = 0;
             obj.CondNames = {};
             obj.ch = struct('MeasList',[],'MeasListVis',[],'MeasListAct',[], 'Lambda',[]);
@@ -52,10 +50,10 @@ classdef TreeNodeClass < handle
             end
             
             err1=0; err2=0;
-            if procStreamIsEmpty(obj.procInput)
+            if procStreamIsEmpty(obj.procStream.input)
                 err1=1; err2=1;
             else
-                procInput = obj.procInput;
+                procInput = obj.procStream.input;
             end
             
             
@@ -147,7 +145,7 @@ classdef TreeNodeClass < handle
                     objnew = GroupClass('copy');
                 case ''
             end
-            objnew.procInput = obj.procInput.copy();
+            objnew.procStream.input = obj.procStream.input.copy();
         end
         
                
@@ -157,17 +155,17 @@ classdef TreeNodeClass < handle
         % ----------------------------------------------------------------------------------
         function copyProcParamsFieldByField(obj, obj2)
             % procInput
-            if isproperty(obj2,'procInput') && ~isempty(obj2.procInput)
-                if isproperty(obj2.procInput,'func') && ~isempty(obj2.procInput.func)
-                    obj.procInput.Copy(obj2.procInput);
+            if isproperty(obj2.procStream,'input') && ~isempty(obj2.procStream.input)
+                if isproperty(obj2.procStream.input,'func') && ~isempty(obj2.procStream.input.func)
+                    obj.procStream.input.Copy(obj2.procStream.input);
                 else
-                    [obj.procInput.func, obj.procInput.param] = procStreamDefault(obj.type);
+                    [obj.procStream.input.func, obj.procStream.input.param] = procStreamDefault(obj.type);
                 end
             end
             
             % procResult
-            if isproperty(obj2,'procResult') && ~isempty(obj2.procResult)
-                obj.procResult = copyStructFieldByField(obj.procResult, obj2.procResult);
+            if isproperty(obj2.procStream,'output') && ~isempty(obj2.procStream.output)
+                obj.procStream.output = copyStructFieldByField(obj.procStream.output, obj2.procStream.output);
             end            
         end
         
@@ -225,19 +223,19 @@ classdef TreeNodeClass < handle
             nTrials = [];
             
             if datatype == buttonVals.OD_HRF
-                t = obj.procResult.tHRF;
-                d = obj.procResult.dodAvg;
+                t = obj.procStream.output.tHRF;
+                d = obj.procStream.output.dodAvg;
                 if showStdErr
-                    dStd = obj.procResult.dodAvgStd;
+                    dStd = obj.procStream.output.dodAvgStd;
                 end
-                nTrials = obj.procResult.nTrials;
+                nTrials = obj.procStream.output.nTrials;
             elseif datatype == buttonVals.CONC_HRF
-                t = obj.procResult.tHRF;
-                d = obj.procResult.dcAvg;
+                t = obj.procStream.output.tHRF;
+                d = obj.procStream.output.dcAvg;
                 if showStdErr
-                    dStd = obj.procResult.dcAvgStd * sclConc;
+                    dStd = obj.procStream.output.dcAvgStd * sclConc;
                 end
-                nTrials = obj.procResult.nTrials;
+                nTrials = obj.procStream.output.nTrials;
             end
             ch     = obj.GetMeasList();
             
@@ -291,15 +289,15 @@ classdef TreeNodeClass < handle
             
             y = [];
             tMarkUnits = '';
-            if datatype == buttonVals.OD_HRF && ~isempty(obj.procResult.dodAvg)
-                y = obj.procResult.dodAvg(:, :, condition);
+            if datatype == buttonVals.OD_HRF && ~isempty(obj.procStream.output.dodAvg)
+                y = obj.procStream.output.dodAvg(:, :, condition);
                 tMarkUnits='(AU)';
-            elseif datatype == buttonVals.CONC_HRF && ~isempty(obj.procResult.dcAvg)
-                y = obj.procResult.dcAvg(:, :, :, condition);
+            elseif datatype == buttonVals.CONC_HRF && ~isempty(obj.procStream.output.dcAvg)
+                y = obj.procStream.output.dcAvg(:, :, :, condition);
                 plotprobe.SetTmarkAmp(tMarkAmp/1e6);
                 tMarkUnits='(micro-molars)';
             end
-            tHRF = obj.procResult.tHRF;
+            tHRF = obj.procStream.output.tHRF;
             plotprobe.Display(y, tHRF, SD, ch, tMarkUnits);
         end
         
@@ -318,11 +316,11 @@ classdef TreeNodeClass < handle
             if isempty(iParam)
                 return;
             end
-            obj.procInput.func(iFunc).paramVal{iParam} = val;
-            eval( sprintf('obj.procInput.param.%s_%s = val;', ...
-                          obj.procInput.func(iFunc).name, ...
-                          obj.procInput.func(iFunc).param{iParam}) );
-            str = sprintf(obj.procInput.func(iFunc).paramFormat{iParam}, val);
+            obj.procStream.input.func(iFunc).paramVal{iParam} = val;
+            eval( sprintf('obj.procStream.input.param.%s_%s = val;', ...
+                          obj.procStream.input.func(iFunc).name, ...
+                          obj.procStream.input.func(iFunc).param{iParam}) );
+            str = sprintf(obj.procStream.input.func(iFunc).paramFormat{iParam}, val);
         end
         
         

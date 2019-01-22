@@ -657,24 +657,6 @@ classdef NirsFilesClass < DataFilesClass
                             end
                         end
                         
-                        
-                        % Error handling for procInput
-                        if obj.flags(iF).procInput_SD~=0
-                            load(obj.files(iF).name,'-mat','procInput','SD');
-                            
-                            if exist('SD','var')
-                                procInput.SD = SD;
-                                obj.flags(iF).procInput_SD = bitxor(obj.flags(iF).procInput_SD,1);
-                                obj.flags(iF).errCount = obj.flags(iF).errCount-1;
-                            end
-                            
-                            if obj.flags(iF).procInput_SD==0
-                                obj.flags(iF).errCount = obj.flags(iF).errCount-1;
-                                savestr = [savestr, '''procInput'','];
-                            end
-                        end
-                        
-                        
                         % Error handling for CondNames
                         if obj.flags(iF).CondNames~=0
                             load(obj.files(iF).name,'-mat','CondNames','s');

@@ -1,26 +1,26 @@
 function procStreamCalc(obj)
 
 % Initialize output struct
-obj.procResult = ProcResultClass();
-procInput = obj.procInput;
+obj.procStream.output = ProcResultClass();
+input = obj.procStream.input;
 
 % loop over functions
-nFunc = length(procInput.func);
+nFunc = length(input.func);
 paramOut = {};
 hwait = waitbar(0, 'Processing...' );
 
 for iFunc = 1:nFunc
     
-    waitbar( iFunc/length(procInput.func), hwait, sprintf('Processing... %s', procInput.func(iFunc).name) );
+    waitbar( iFunc/length(input.func), hwait, sprintf('Processing... %s', input.func(iFunc).name) );
     
     % Extract input arguments from procElem
-    argIn = procStreamParseArgsIn(procInput.func(iFunc).argIn);
+    argIn = procStreamParseArgsIn(input.func(iFunc).argIn);
     for ii = 1:length(argIn)
         if ~exist(argIn{ii},'var')
-            if isproperty(obj.procInput, argIn{ii})
-                eval(sprintf('%s = obj.procInput.%s;', argIn{ii}, argIn{ii}));
-            elseif isproperty(obj.procInput.misc, argIn{ii})
-                eval(sprintf('%s = obj.procInput.misc.%s;', argIn{ii}, argIn{ii}));
+            if isproperty(obj.procStream.input, argIn{ii})
+                eval(sprintf('%s = obj.procStream.input.%s;', argIn{ii}, argIn{ii}));
+            elseif isproperty(obj.procStream.input.misc, argIn{ii})
+                eval(sprintf('%s = obj.procStream.input.misc.%s;', argIn{ii}, argIn{ii}));
             else
                 eval(sprintf('%s = obj.FindVar(''%s'');', argIn{ii}, argIn{ii}));
             end
@@ -31,14 +31,14 @@ for iFunc = 1:nFunc
     p = [];
     sargin = '';
     sarginVal = '';
-    for iP = 1:procInput.func(iFunc).nParam
-        if ~procInput.func(iFunc).nParamVar
-            p{iP} = procInput.func(iFunc).paramVal{iP};
+    for iP = 1:input.func(iFunc).nParam
+        if ~input.func(iFunc).nParamVar
+            p{iP} = input.func(iFunc).paramVal{iP};
         else
-            p{iP}.name = procInput.func(iFunc).param{iP};
-            p{iP}.val = procInput.func(iFunc).paramVal{iP};
+            p{iP}.name = input.func(iFunc).param{iP};
+            p{iP}.val = input.func(iFunc).paramVal{iP};
         end
-        if length(procInput.func(iFunc).argIn)==1 & iP==1
+        if length(input.func(iFunc).argIn)==1 & iP==1
             sargin = sprintf('%sp{%d}', sargin, iP);
             if isnumeric(p{iP})
                 if length(p{iP})==1
@@ -68,27 +68,26 @@ for iFunc = 1:nFunc
     end
     
     % set up output format
-    sargout = procInput.func(iFunc).argOut;
-    for ii=1:length(procInput.func(iFunc).argOut)
+    sargout = input.func(iFunc).argOut;
+    for ii=1:length(input.func(iFunc).argOut)
         if sargout(ii)=='#'
             sargout(ii) = ' ';
         end
     end
     
     % call function
-    fcall = sprintf('%s = %s%s%s);', sargout, procInput.func(iFunc).name, procInput.func(iFunc).argIn, sargin);
-
+    fcall = sprintf('%s = %s%s%s);', sargout, input.func(iFunc).name, input.func(iFunc).argIn, sargin);
     try
         eval( fcall );
     catch ME
-        msg = sprintf('Function %s generated error at line %d: %s', procInput.func(iFunc).name, ME.stack(1).line, ME.message);
+        msg = sprintf('Function %s generated error at line %d: %s', input.func(iFunc).name, ME.stack(1).line, ME.message);
         menu(msg,'OK');
         close(hwait);
         assert(false, msg);
     end
     
     % parse output parameters
-    foos = procInput.func(iFunc).argOut;
+    foos = input.func(iFunc).argOut;
 
     % remove '[', ']', and ','
     for ii=1:length(foos)
@@ -97,7 +96,7 @@ for iFunc = 1:nFunc
         end
     end
     
-    % get parameters for Output to obj.procResult
+    % get parameters for Output to obj.output
     lst = strfind(foos,' ');
     lst = [0 lst length(foos)+1];
     param = [];
@@ -112,15 +111,15 @@ for iFunc = 1:nFunc
     
 end
 
-% Copy paramOut to procResult
+% Copy paramOut to output
 for ii=1:length(paramOut)
-    if eval( sprintf('isproperty(obj.procResult, ''%s'');', paramOut{ii}) );
-	    eval( sprintf('obj.procResult.%s = %s;',paramOut{ii}, paramOut{ii}) );
+    if eval( sprintf('isproperty(obj.procStream.output, ''%s'');', paramOut{ii}) );
+	    eval( sprintf('obj.procStream.output.%s = %s;',paramOut{ii}, paramOut{ii}) );
     else
-	    eval( sprintf('obj.procResult.misc.%s = %s;',paramOut{ii}, paramOut{ii}) );        
+	    eval( sprintf('obj.procStream.output.misc.%s = %s;',paramOut{ii}, paramOut{ii}) );        
     end
 end
 
-obj.procInput.misc = [];
+obj.procStream.input.misc = [];
 close(hwait)
 

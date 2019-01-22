@@ -32,7 +32,6 @@ classdef SubjClass < TreeNodeClass
             obj.name = sname;
             obj.type = 'subj';
             obj.iSubj = iSubj;
-            obj.procInput.CondName2Run = [];
             obj.CondName2Group = [];
             obj.runs = run;
         end
@@ -53,7 +52,7 @@ classdef SubjClass < TreeNodeClass
                 if obj == S
                     obj.copyProcParamsFieldByField(S);
                 else
-                    obj.procInput.changeFlag = 1;
+                    obj.procStream.input.changeFlag = 1;
                 end
             end
         end
@@ -140,7 +139,7 @@ classdef SubjClass < TreeNodeClass
         % Deletes derived data in procResult
         % ----------------------------------------------------------------------------------
         function Reset(obj)
-            obj.procResult = ProcResultClass();
+            obj.procStream.output = ProcResultClass();
             for jj=1:length(obj.runs)
                 obj.runs(jj).Reset();
             end
@@ -164,9 +163,9 @@ classdef SubjClass < TreeNodeClass
                 
                 % Find smallest tHRF among the runs. We should make this the common one.
                 if iRun==1
-                    tHRF_common = runs(iRun).procResult.tHRF;
-                elseif length(runs(iRun).procResult.tHRF) < length(tHRF_common)
-                    tHRF_common = runs(iRun).procResult.tHRF;
+                    tHRF_common = runs(iRun).procStream.output.tHRF;
+                elseif length(runs(iRun).procStream.output.tHRF) < length(tHRF_common)
+                    tHRF_common = runs(iRun).procStream.output.tHRF;
                 end
             end
             
@@ -178,25 +177,25 @@ classdef SubjClass < TreeNodeClass
             % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
             % all runs. Use smallest tHRF as the common one.
             for iRun = 1:nRun
-                runs(iRun).procResult.SettHRFCommon(tHRF_common, runs(iRun).name, runs(iRun).type);
+                runs(iRun).procStream.output.SettHRFCommon(tHRF_common, runs(iRun).name, runs(iRun).type);
             end            
             
             % Instantiate all the variables that might be needed by
             % procStreamCalc to calculate proc stream for this subject
             nTrials = zeros(1,length(obj.CondNames));
             for iRun = 1:nRun
-                obj.procInput.misc.dodAvgRuns{iRun}    = runs(iRun).procResult.dodAvg;
-                obj.procInput.misc.dodAvgStdRuns{iRun} = runs(iRun).procResult.dodAvgStd;
-                obj.procInput.misc.dodSum2Runs{iRun}   = runs(iRun).procResult.dodSum2;
-                obj.procInput.misc.dcAvgRuns{iRun}     = runs(iRun).procResult.dcAvg;
-                obj.procInput.misc.dcAvgStdRuns{iRun}  = runs(iRun).procResult.dcAvgStd;
-                obj.procInput.misc.dcSum2Runs{iRun}    = runs(iRun).procResult.dcSum2;
-                obj.procInput.misc.tHRFRuns{iRun}      = runs(iRun).procResult.tHRF;
-                obj.procInput.misc.nTrialsRuns{iRun}   = runs(iRun).procResult.nTrials;
-                if ~isempty(runs(iRun).procResult.ch)
-                    obj.procInput.misc.SDRuns{iRun}    = runs(iRun).procResult.ch;
+                obj.procStream.input.misc.dodAvgRuns{iRun}    = runs(iRun).procStream.output.dodAvg;
+                obj.procStream.input.misc.dodAvgStdRuns{iRun} = runs(iRun).procStream.output.dodAvgStd;
+                obj.procStream.input.misc.dodSum2Runs{iRun}   = runs(iRun).procStream.output.dodSum2;
+                obj.procStream.input.misc.dcAvgRuns{iRun}     = runs(iRun).procStream.output.dcAvg;
+                obj.procStream.input.misc.dcAvgStdRuns{iRun}  = runs(iRun).procStream.output.dcAvgStd;
+                obj.procStream.input.misc.dcSum2Runs{iRun}    = runs(iRun).procStream.output.dcSum2;
+                obj.procStream.input.misc.tHRFRuns{iRun}      = runs(iRun).procStream.output.tHRF;
+                obj.procStream.input.misc.nTrialsRuns{iRun}   = runs(iRun).procStream.output.nTrials;
+                if ~isempty(runs(iRun).procStream.output.ch)
+                    obj.procStream.input.misc.SDRuns{iRun}    = runs(iRun).procStream.output.ch;
                 else
-                    obj.procInput.misc.SDRuns{iRun}    = runs(iRun).GetMeasList();
+                    obj.procStream.input.misc.SDRuns{iRun}    = runs(iRun).GetMeasList();
                 end
             end
 
@@ -289,14 +288,14 @@ classdef SubjClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function SetCondName2Run(obj)
             % Generate the second output parameter - CondSubj2Run using the 1st
-            obj.procInput.CondName2Run = zeros(length(obj.runs), length(obj.CondNames));
+            obj.procStream.input.CondName2Run = zeros(length(obj.runs), length(obj.CondNames));
             for iC=1:length(obj.CondNames)
                 for iRun=1:length(obj.runs)
                     k = find(strcmp(obj.CondNames{iC}, obj.runs(iRun).GetConditions()));
                     if isempty(k)
-                        obj.procInput.CondName2Run(iRun,iC) = 0;
+                        obj.procStream.input.CondName2Run(iRun,iC) = 0;
                     else
-                        obj.procInput.CondName2Run(iRun,iC) = k(1);
+                        obj.procStream.input.CondName2Run(iRun,iC) = k(1);
                     end
                 end
             end

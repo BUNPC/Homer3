@@ -45,7 +45,7 @@ function DisplayAxesSDG(axesSDG, currElem)
 
 axesSDG    = axesSDG.handles.axes;
 SD         = currElem.procElem.SD;
-procResult = currElem.procElem.procResult;
+procResult = currElem.procElem.procStream.output;
 
 if ~ishandles(axesSDG)
     return;

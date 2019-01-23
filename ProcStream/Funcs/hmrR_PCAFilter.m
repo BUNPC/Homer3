@@ -1,9 +1,9 @@
-% [yc, svs, nSV] = hmrPCAFilter( y, SD, tInc, nSV )
+% [yc, svs, nSV] = hmrR_PCAFilter( y, SD, tInc, nSV )
 %
 % UI NAME:
 % PCA_Filter
 %
-% [yc, svs, nSV] = hmrPCAFilter( y, SD, tInc, nSV )
+% [yc, svs, nSV] = hmrR_PCAFilter( y, SD, tInc, nSV )
 % Perform a PCA filter on the data matrix y. 
 %
 % INPUT:
@@ -32,17 +32,17 @@
 % nSV: This is the number of components filtered from the data.
 %
 
-function [yc, svs, nSV] = hmrPCAFilter( y, SD, tInc, nSV )
+function [yc, svs, nSV] = hmrR_PCAFilter( y, SD, tInc, nSV )
 
 if ~exist('nSV')
-    disp('USAGE: [yc,svs,nSV] = hmrPCAFilter( y, SD, tInc, nSV )');
+    disp('USAGE: [yc,svs,nSV] = hmrR_PCAFilter( y, SD, tInc, nSV )');
     yc = [];
     svs = [];
     nSV = [];
     return
 end
 if any(isinf(y(:)))
-    disp('WARNING: [yc,svs,nSV] = hmrPCAFilter( y, SD, tInc, nSV )');
+    disp('WARNING: [yc,svs,nSV] = hmrR_PCAFilter( y, SD, tInc, nSV )');
     disp('      The data matrix y can not have any Inf numbers.');
     yc = [];
     svs = [];
@@ -157,7 +157,7 @@ else
         end
 
     else
-        warndlg( 'hmrPCAFilter was not passed proper arguments', 'hmrPCAFilter' )
+        warndlg( 'hmrR_PCAFilter was not passed proper arguments', 'hmrR_PCAFilter' )
     end
 end
 

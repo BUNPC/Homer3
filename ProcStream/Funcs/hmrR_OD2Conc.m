@@ -1,9 +1,9 @@
-% dc = hmrOD2Conc( dod, SD, ppf )
+% dc = hmrR_OD2Conc( dod, SD, ppf )
 %
 % UI NAME:
 % OD_to_Conc
 %
-% dc = hmrOD2Conc( dod, SD, ppf )
+% dc = hmrR_OD2Conc( dod, SD, ppf )
 % Convert OD to concentrations
 %
 % INPUTS:
@@ -21,7 +21,7 @@
 %     3 concentrations are returned (HbO, HbR, HbT)
 %
 
-function dc = hmrOD2Conc( dod, SD, ppf )
+function dc = hmrR_OD2Conc( dod, SD, ppf )
 
 nWav = length(SD.Lambda);
 ml = SD.MeasList;

@@ -1,4 +1,4 @@
-function hmrPCAFilter_result( d, svs, nSV )
+function hmrR_PCAFilter_result( d, svs, nSV )
 
 svsc = svs; 
 for idx = 2:size(svs,1)

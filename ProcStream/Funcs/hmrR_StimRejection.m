@@ -1,4 +1,4 @@
-% [s,tRange] = enStimRejection(t,s,tIncAuto,tIncMan,tRange)
+% [s,tRange] = hmrR_StimRejection(t,s,tIncAuto,tIncMan,tRange)
 %
 % UI NAME:
 % Stim_Exclude
@@ -32,7 +32,7 @@
 %           zeros otherwise.
 % tRange:   same tRange array as in the input
 
-function [s,tRange] = enStimRejection(t,s,tIncAuto,tIncMan,tRange)
+function [s,tRange] = hmrR_StimRejection(t,s,tIncAuto,tIncMan,tRange)
 
 dt = (t(end)-t(1))/length(t);
 tRangeIdx = [floor(tRange(1)/dt):ceil(tRange(2)/dt)];

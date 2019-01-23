@@ -90,7 +90,7 @@ hmr.files     = [];
 hmr.dataTree  = [];
 hmr.guiMain   = [];
 hmr.plotprobe = [];
-hmr.stimGui   = [];
+hmr.stimEdit  = [];
 hmr.handles   = [];
 
 % Choose default command line output for Homer3
@@ -124,7 +124,7 @@ files = dataInit.files;
 dataTree  = DataTreeClass(files, handles, @listboxFiles_Callback);
 guiMain   = InitGuiMain(handles, dataTree);
 plotprobe = PlotProbeClass(handles);
-stimGui   = StimGuiClass(dataTree);
+stimEdit  = StimEditClass(dataTree);
 
 % If data set has no errors enable window gui objects
 Homer3_EnableDisableGUI(handles,'on');
@@ -133,7 +133,7 @@ hmr.files     = files;
 hmr.dataTree  = dataTree;
 hmr.guiMain   = guiMain;
 hmr.plotprobe = plotprobe;
-hmr.stimGui   = stimGui;
+hmr.stimEdit  = stimEdit;
 
 % Display data from currently selected processing element
 hmr.dataTree.DisplayCurrElem(guiMain);
@@ -169,11 +169,11 @@ end
 if isempty(hmr.handles)
     return;
 end
-if isempty(hmr.stimGui)
+if isempty(hmr.stimEdit)
     return;
 end
 
-delete(hmr.stimGui);
+delete(hmr.stimEdit);
 delete(hmr.plotprobe);
 delete(hmr.dataTree);
 if ishandle(hmr.handles.this)
@@ -211,7 +211,7 @@ dataTree.DisplayCurrElem(guiMain);
 dataTree.DisplayCurrElem(plotprobe, guiMain); 
 dataTree.UpdateCurrElemProcStreamOptionsGUI();
 
-hmr.stimGui.Update();
+hmr.stimEdit.Update();
 
 
 
@@ -246,11 +246,12 @@ plotprobe = hmr.plotprobe;
 
 dataTree.LoadCurrElem(files);
 guiMain = UpdateAxesDataCondition(guiMain, dataTree);
-hmr.stimGui.Update();
 
 dataTree.DisplayCurrElem(guiMain);
 dataTree.DisplayCurrElem(plotprobe, guiMain); 
 dataTree.UpdateCurrElemProcStreamOptionsGUI();
+
+hmr.stimEdit.Update();
 
 
 
@@ -508,7 +509,7 @@ hmr.handles.proccessOpt = dataTree.currElem.handles.ProcStreamOptionsGUI;
 function menuItemLaunchStimGUI_Callback(hObject, eventdata, handles)
 global hmr
 
-hmr.stimGui.Launch();
+hmr.stimEdit.Launch();
 
 
 % --------------------------------------------------------------------

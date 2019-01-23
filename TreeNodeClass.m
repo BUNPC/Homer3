@@ -426,6 +426,13 @@ classdef TreeNodeClass < handle
             end            
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function name = GetName(obj)
+            name = obj.name;
+        end        
+        
+        
     end
     
     

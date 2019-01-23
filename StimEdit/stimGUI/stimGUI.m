@@ -22,7 +22,7 @@ end
 
 % -------------------------------------------------------------------
 function stimGUI_OpeningFcn(hObject, eventdata, handles, varargin)
-global stimGui
+global stimEdit
 
 handles.output = hObject;
 
@@ -32,18 +32,18 @@ guidata(hObject, handles);
 if isempty(varargin)
     return;
 end
-stimGui = varargin{1};
+stimEdit = varargin{1};
 if ispc()
     setGuiFonts(hObject, 7);
 else
     setGuiFonts(hObject);
 end
-if ~isempty(stimGui.figPosLast)
-    set(hObject, 'position',stimGui.figPosLast);
+if ~isempty(stimEdit.figPosLast)
+    set(hObject, 'position',stimEdit.figPosLast);
 end
 set(get(handles.axes1,'children'), 'ButtonDownFcn', @axes1_ButtonDownFcn);
 zoom(hObject,'off');
-
+stimGUI_Update(handles);
 
 
 % -------------------------------------------------------------------
@@ -53,72 +53,74 @@ varargout{1} = handles;
 
 % --------------------------------------------------------------------
 function menuItemOpen_Callback(hObject, eventdata, handles)
-global stimGui
+global stimEdit
 
 [filename, pathname] = uigetfile({'*.nirs','*.snirf'}, 'Select a NIRS data file');
 if filename==0
     return;
 end
-stimGui.Load([pathname, filename]);
-stimGui.Display();
+stimEdit.Load([pathname, filename]);
+stimGUI_Display(handles);
 
 
 
 % --------------------------------------------------------------------
 function pushbuttonExit_Callback(hObject, eventdata, handles)
-global stimGui
-
-stimGui.Close();
+if ishandles(handles.figure)
+    delete(handles.figure);
+end
 
 
 % --------------------------------------------------------------------
 function popupmenuConditions_Callback(hObject, eventdata, handles)
-global stimGui
+global stimEdit
 
 conditions = get(hObject, 'string');
 idx = get(hObject, 'value');
 condition = conditions{idx};
-stimGui.SetUitableStimInfo(condition);
+stimGUI_SetUitableStimInfo(condition, handles);
 
 
 
 %---------------------------------------------------------------------------
 function editSelectTpts_Callback(hObject, eventdata, handles)
-global stimGui
+global stimEdit
 
 tPts_select = str2num(get(hObject,'string'));
 if isempty(tPts_select)
     return;
 end
-stimGui.EditSelectTpts(tPts_select);
+stimEdit.EditSelectTpts(tPts_select);
+stimGUI_Display(handles);
+stimEdit.DisplayGuiMain();
+figure(handles.figure);
+
 
 
 
 %---------------------------------------------------------------------------
 function uitableStimInfo_CellEditCallback(hObject, eventdata, handles)
-global stimGui
+global stimEdit
 
 data = get(hObject,'data') ;
+icond = stimEdit.GetConditionIdxFromPopupmenu();
 
-icond = stimGui.GetConditionIdxFromPopupmenu();
-
-stimGui.dataTree.currElem.procElem.SetStimTpts(icond, data(:,1));
-stimGui.dataTree.currElem.procElem.SetStimDuration(icond, data(:,2));
-stimGui.dataTree.currElem.procElem.SetStimValues(icond, data(:,3));
+stimEdit.SetStimData(obj, icond, data);
 r=eventdata.Indices(1);
 c=eventdata.Indices(2);
 if c==2
     return;
 end
-stimGui.Display();
-stimGui.DisplayGuiMain();
-figure(stimGui.handles.this);  % return focus to stimGUI
+stimGUI_Display(handles);
+stimEdit.DisplayGuiMain();
+figure(handles.figure);
+
 
 
 
 %---------------------------------------------------------------------------
 function pushbuttonRenameCondition_Callback(hObject, eventdata, handles)
-global stimGui
+global stimEdit
 
 % Function to rename a condition. Important to remeber that changing the
 % condition involves 2 distinct well defined steps:
@@ -147,32 +149,29 @@ oldname = conditions{idx};
 % in keeping the condition colors straight. Therefore we comment out the 
 % following line in favor of the one after it. 
 
-% stimGui.dataTree.currElem.procElem.RenameCondition(oldname, newname{1});
-stimGui.dataTree.group.RenameCondition(oldname, newname{1});
-if stimGui.dataTree.group.GetErrStatus() ~= 0
+stimEdit.RenameCondition(oldname, newname{1});
+if stimEdit.GetErrStatus() ~= 0
     return;
 end
-stimGui.dataTree.group.SetConditions();
-
-set(handles.popupmenuConditions, 'string', stimGui.dataTree.currElem.procElem.GetConditions());
-
-stimGui.Display();
-stimGui.DisplayGuiMain();
-figure(stimGui.handles.this);  % return focus to stimGUI
+stimEdit.SetConditions();
+set(handles.popupmenuConditions, 'string', stimEdit.GetConditions());
+stimGUI_Display(handles);
+stimEdit.DisplayGuiMain();
+figure(handles.figure);
 
 
 
 %---------------------------------------------------------------------------
 function stimGUI_DeleteFcn(hObject, eventdata, handles)
-global stimGui
+global stimEdit
 
-stimGui.figPosLast = get(hObject, 'position');
+stimEdit.figPosLast = get(hObject, 'position');
 
 
 
 %---------------------------------------------------------------------------
 function axes1_ButtonDownFcn(hObject, eventdata, handles)
-global stimGui
+global stimEdit
 
 [point1,point2] = extractButtondownPoints();
 point1 = point1(1,1:2);              % extract x and y
@@ -181,5 +180,9 @@ p1 = min(point1,point2);
 p2 = max(point1,point2);
 t1 = p1(1);
 t2 = p2(1);
-stimGui.Buttondown(t1, t2);
+stimEdit.EditSelectRange(t1, t2);
+stimGUI_Display(handles);
+stimEdit.DisplayGuiMain();
+figure(handles.figure);
+
 

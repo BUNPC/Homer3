@@ -1,10 +1,8 @@
-classdef StimGuiClass < handle
+classdef StimEditClass < handle
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     properties
         handles
-        Lines;
-        iAux;
         dataTree;
         guiMain;
         status;
@@ -18,21 +16,19 @@ classdef StimGuiClass < handle
     methods
         
         % -----------------------------------------------------------
-        function obj = StimGuiClass(filename)
-            obj.InitStimLines();
-            obj.iAux = 0;
-            obj.handles = [];
+        function obj = StimEditClass(filename)
+            obj.handles = struct('stimGUI',[]);
             obj.status = 0;
             obj.figPosLast = [];
             
             if ~exist('filename','var')
                 filename = '';
             end
+            obj.Load(filename);
+
             if ischar(filename)
-                handles = stimGUI(obj);
-                obj.InitHandles(handles);
+                obj.handles.stimGUI = stimGUI(obj);
             end
-            obj.Load(filename);            
             obj.EnableGuiObjects('on');
             obj.Display();
         end
@@ -43,18 +39,17 @@ classdef StimGuiClass < handle
             if isempty(obj.handles)
                 return;
             end
-            if ishandles(obj.handles.this)
-                delete(obj.handles.this);
-            end            
+            if ~isempty(obj.handles.stimGUI)
+                if ishandles(obj.handles.stimGUI.figure)
+                    delete(obj.handles.stimGUI.figure);
+                end
+            end
         end
         
 
         % -----------------------------------------------------------
         function Launch(obj)
-            if isempty(obj.handles) || ~ishandles(obj.handles.this)
-                h = stimGUI(obj);
-                obj.InitHandles(h);
-            end 
+            obj.handles.stimGUI = stimGUI(obj);
             obj.Load();            
             obj.EnableGuiObjects('on');
             obj.Display();
@@ -70,17 +65,8 @@ classdef StimGuiClass < handle
 
         
         % -----------------------------------------------------------
-        function Close(obj)
-            if ishandles(obj.handles.this)
-                delete(obj.handles.this);
-            end
-            obj.InitHandles();
-        end
-
-        
-        % -----------------------------------------------------------
         function Load(obj, arg)
-            global hmr            
+            global hmr
             if ~isempty(hmr)
                 % If hmr Gui context but hmr.dataTree is not yet initialized
                 % then dataTree will be passed in as an arg
@@ -93,7 +79,7 @@ classdef StimGuiClass < handle
                     obj.guiMain = hmr.guiMain;
                 end
             elseif exist('arg','var') && ~isempty(arg)
-                % If NOT in hmr Gui context then we're running StimGuiClass standalone.
+                % If NOT in hmr Gui context then we're running StimEditClass standalone.
                 % In that case there are two possible types of arguments we can
                 % pass: either the name of a data file or a dataTree class object
                 if ischar(arg) && exist(arg,'file')==2
@@ -106,76 +92,10 @@ classdef StimGuiClass < handle
                 obj.dataTree = DataTreeClass().empty();
                 return;
             end
-            
-            filename = obj.dataTree.currElem.procElem.name;
-            [~, fname, ext] = fileparts(filename);
-            
-            if isempty(obj.handles)
-                return;
-            end
-            if ~ishandles(obj.handles.textFilename)
-                return;
-            end
-            
-            SetTextFilename(obj, [fname, ext, ' :']); 
-
-            % Try to keep the same condition as old run
-            [icond, conditions] = GetConditionIdxFromPopupmenu(obj);
-            set(obj.handles.popupmenuConditions, 'value',icond);
-            set(obj.handles.popupmenuConditions, 'string',conditions);
-            obj.SetUitableStimInfo(conditions{icond});
+            stimGUI_Update(obj.handles.stimGUI);
         end
 
 
-        % -----------------------------------------------------------
-        function [icond, conditions] = GetConditionIdxFromPopupmenu(obj)           
-            conditions =  obj.dataTree.currElem.procElem.GetConditions();
-            conditions_menu = get(obj.handles.popupmenuConditions, 'string');
-            idx = get(obj.handles.popupmenuConditions, 'value');
-            if isempty(conditions_menu)
-                icond = 1;
-                return;
-            end
-            condition = conditions_menu{idx};
-            icond = find(strcmp(conditions, condition));
-            if isempty(icond)
-                icond = 1;
-            end
-        end        
-        
-        
-        
-        % -----------------------------------------------------------
-        function InitHandles(obj, handles)
-            obj.handles = struct( ...
-                'this',[], ...                
-                'stimGUI',[], ...
-                'axes1',[], ...
-                'radiobuttonZoom',[], ...
-                'radiobuttonStim',[], ...
-                'tableUserData',[], ...
-                'pushbuttonUpdate',[], ...
-                'pushbuttonRenameCondition',[], ...
-                'textTimePts',[], ...
-                'stimMarksEdit',[], ...
-                'textFilename',[], ...
-                'popupmenuConditions',[], ...
-                'uitableStimInfo',[] ...
-            );            
-            if ~exist('handles','var')
-                return;
-            end            
-            fields = propnames(obj.handles);
-            for ii=1:length(fields)
-                if eval( sprintf('isproperty(handles, ''%s'')', fields{ii}) )
-                    eval( sprintf('obj.handles.%s = handles.%s;', fields{ii}, fields{ii}) );
-                end
-            end            
-            obj.handles.legend = -1;
-            obj.handles.this = obj.handles.stimGUI;
-        end
-        
-        
         % -----------------------------------------------------------
         function EnableGuiObjects(obj, onoff)
             if isempty(obj.handles)
@@ -184,147 +104,31 @@ classdef StimGuiClass < handle
             if isempty(obj.dataTree)
                 onoff = 'off';
             end
-            obj.enableHandle('radiobuttonZoom', onoff);
-            obj.enableHandle('radiobuttonStim', onoff);
-            obj.enableHandle('tableUserData', onoff);
-            obj.enableHandle('pushbuttonRenameCondition', onoff);
-            obj.enableHandle('textTimePts', onoff);
-            obj.enableHandle('stimMarksEdit' ,onoff);
-        end
-        
-        
-        % -----------------------------------------------------------
-        function InitStimLines(obj, n)
-            if ~exist('n','var')
-                n = 0;
+            if ~isempty(obj.handles.stimGUI)
+                stimGUI_EnableGuiObjects(onoff, obj.handles.stimGUI);
             end
-            obj.Lines = repmat( struct('handle',[], 'color',[], 'widthReg',2, 'widthHighl',4), n,1);
-        end
-        
-        
-        % -----------------------------------------------------------
-        function SetTextFilename(obj, name)
-            n = length(name);
-            set(obj.handles.textFilename, 'units','characters');
-            p = get(obj.handles.textFilename, 'position');
-            set(obj.handles.textFilename, 'position',[p(1), p(2), n+.50*n, p(4)]);
-            set(obj.handles.textFilename, 'units','normalized');            
-            set(obj.handles.textFilename, 'string',name);
-        end
-        
-        
-        % -----------------------------------------------------------
-        function Reset(obj)
-            obj.iAux = 0;
-            delete(obj.dataTree);
-            set(obj.handles.textFilename, 'string','');
-            cla(obj.handles.axes1);
-            InitHandles();
         end
         
         
         % -----------------------------------------------------------
         function Display(obj)
-            
-            if isempty(obj.handles)
-                return;
-            end
-            if ~ishandles(obj.handles.axes1)
-                return;
-            end
-            if isempty(obj.dataTree)
-                return;
-            end
-            
-            axes(obj.handles.axes1)
-            cla(obj.handles.axes1);
-            set(obj.handles.axes1, 'ytick','');
-            hold(obj.handles.axes1, 'on');
-
             currElem = obj.dataTree.currElem;
             
             % As of now this operation is undefined for non-Run nodes (i.e., Subj and Group)
             % So we clear the axes and exit
             if currElem.procType ~= 3
                 return;
-            end
-            
-            CondNamesGroup = obj.dataTree.group.GetConditions();
-            CondColTbl     = obj.dataTree.group.CondColTbl();
-
-            aux        = currElem.procElem.GetAuxiliary();
-            t          = currElem.procElem.GetTime();
-            s          = currElem.procElem.GetStims();
-            
-            if(~isempty(aux))
-                h = plot(t, aux.data(:,obj.iAux),'color','k', 'parent',obj.handles.axes1);
-            end
-            [lstR,lstC] = find(abs(s)==1);
-            [lstR,k] = sort(lstR);
-            lstC = lstC(k);
-            nStim = length(lstR);
-            yy = get(obj.handles.axes1, 'ylim');
-            obj.InitStimLines(length(lstR));
-            idxLg=[];
-            hLg=[];
-            kk=1;
-            for ii=1:nStim
-                if(s(lstR(ii),lstC(ii))==1)
-                    obj.Lines(ii).handle = plot([1 1]*t(lstR(ii)), yy,'-', 'parent',obj.handles.axes1);
-                elseif(s(lstR(ii),lstC(ii))==-1)
-                    obj.Lines(ii).handle = plot([1 1]*t(lstR(ii)), yy,'--', 'parent',obj.handles.axes1);
-                end
-                
-                iCond = currElem.procElem.CondName2Group(lstC(ii));
-                obj.Lines(ii).color = CondColTbl(iCond,1:3);
-                try
-                    set(obj.Lines(ii).handle,'color',obj.Lines(ii).color);
-                catch
-                    fprintf('ERROR!!!!\n');
-                end
-                set(obj.Lines(ii).handle, 'linewidth',obj.Lines(ii).widthReg);
-
-                % Check which conditions are represented in S for the conditions
-                % legend display.
-                if ~ismember(iCond, idxLg)
-                    hLg(kk) = plot([1 1]*t(1), yy,'-', 'color',obj.Lines(ii).color, 'linewidth',4, 'visible','off', 'parent',obj.handles.axes1);
-                    idxLg(kk) = iCond;
-                    kk=kk+1;
-                end
-            end
-            
-            if get(obj.handles.radiobuttonZoom,'value')==1    % Zoom
-                zoom(obj.handles.this,'on');
-            elseif get(obj.handles.radiobuttonStim,'value')==1 % Stim
-                zoom(obj.handles.this,'off');
-            end
-            
-            % Update legend
-            if(ishandle(obj.handles.legend))
-                delete(obj.handles.legend);
-                obj.handles.legend = -1;
-            end
-            [idxLg,k] = sort(idxLg);
-            hLg = hLg(k);
-            if ~isempty(hLg)
-                % iCond = currElem.procElem.CondName2Group(idxLg);
-                obj.handles.legend = legend(hLg, CondNamesGroup(idxLg));
-            end
-            set(obj.handles.axes1,'xlim', [t(1), t(end)]);
-            
-            % Update conditions popupmenu 
-            set(obj.handles.popupmenuConditions, 'string', sort(currElem.procElem.CondNames));
-            conditions = get(obj.handles.popupmenuConditions, 'string');
-            idx = get(obj.handles.popupmenuConditions, 'value');
-            condition = conditions{idx};
-            obj.SetUitableStimInfo(condition);
+            end                        
+            if isempty(obj.dataTree)
+                return;
+            end            
+            stimGUI_Display(obj.handles.stimGUI);
         end
         
         
         
         % ------------------------------------------------
         function stims_select = GetStimsFromTpts(obj, tPts_idxs_select)
-            
             % Error checking
             if isempty(obj.dataTree)
                 return;
@@ -342,12 +146,11 @@ classdef StimGuiClass < handle
             s = currElem.procElem.GetStims();            
             s2 = sum(abs(s(tPts_idxs_select,:)),2);
             stims_select = find(s2>=1);
-                        
         end
            
         
         % ------------------------------------------------
-        function Buttondown(obj, t1, t2)
+        function EditSelectRange(obj, t1, t2)
             t = obj.dataTree.currElem.procElem.GetTime();
             if ~all(t1==t2)
                 tPts_idxs_select = find(t>=t1 & t<=t2);
@@ -365,9 +168,6 @@ classdef StimGuiClass < handle
             if obj.status==0
                 return;
             end
-            obj.Display();
-            obj.DisplayGuiMain();
-            figure(obj.handles.this);  % return focus to stimGUI
             
             % Reset status
             obj.status=0;
@@ -376,7 +176,6 @@ classdef StimGuiClass < handle
         
         % ------------------------------------------------
         function EditSelectTpts(obj, tPts_select)
-
             t = obj.dataTree.currElem.procElem.GetTime();
             tPts_idxs_select = [];
             for ii=1:length(tPts_select)
@@ -387,13 +186,9 @@ classdef StimGuiClass < handle
             if obj.status==0
                 return;
             end
-            obj.Display();
-            obj.DisplayGuiMain();
-            figure(obj.handles.this);  % return focus to stimGUI
             
             % Reset status
             obj.status=0;
-            
         end
         
         
@@ -525,9 +320,7 @@ classdef StimGuiClass < handle
                 obj.status = 1;
 
             end
-            
             group.SetConditions();
-
         end
 
         
@@ -561,45 +354,71 @@ classdef StimGuiClass < handle
         end
         
         
-        % ------------------------------------------------
-        function SetUitableStimInfo(obj, condition)            
-            if ~exist('condition','var')
-                return;
-            end
-            CondNames =  obj.dataTree.currElem.procElem.GetConditions();
-            if isempty(CondNames)
-                return;
-            end
-            icond = find(strcmp(CondNames, condition));
-            if isempty(icond)
-                return;
-            end
-            [tpts, duration, vals] = obj.dataTree.currElem.procElem.GetStimData(icond);
-            if isempty(tpts)
-                set(obj.handles.uitableStimInfo, 'data',[]);
-                return;
-            end
-            [~,idx] = sort(tpts);
-            data = zeros(length(tpts),3);
-            data(:,1) = tpts(idx);
-            data(:,2) = duration(idx);
-            data(:,3) = vals(idx);
-            set(obj.handles.uitableStimInfo, 'data',data);
+        % -------------------------------------------------------------------
+        function name = GetName(obj)
+            name = obj.dataTree.currElem.procElem.GetName();
+        end
+                
+        % -------------------------------------------------------------------
+        function conditions = GetConditions(obj)
+            conditions = obj.dataTree.currElem.procElem.GetConditions();
         end
         
-           
-    end
-    
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Private methods
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    methods (Access = private)
+        % -------------------------------------------------------------------
+        function SetConditions(obj)
+            obj.dataTree.group.SetConditions();
+        end
         
-        function enableHandle(obj, handle, onoff)
-            if eval( sprintf('ishandles(obj.handles.%s)', handle) )
-                eval( sprintf('set(obj.handles.%s, ''enable'',onoff);', handle) );
-            end
+        % -------------------------------------------------------------------
+        function SetStimData(obj, icond, data)
+            obj.dataTree.currElem.procElem.SetStimTpts(icond, data(:,1));
+            obj.dataTree.currElem.procElem.SetStimDuration(icond, data(:,2));
+            obj.dataTree.currElem.procElem.SetStimValues(icond, data(:,3));
+        end
+        
+        % -------------------------------------------------------------------
+        function [tpts, duration, vals] = GetStimData(obj, icond)
+            [tpts, duration, vals] = obj.dataTree.currElem.procElem.GetStimData(icond);
+        end
+        
+        % -------------------------------------------------------------------
+        function icond = GetCondName2Group(obj, icond)
+            icond = obj.dataTree.currElem.procElem.CondName2Group(icond);
+        end
+        
+        % -------------------------------------------------------------------
+        function conditions = GetConditionsGroup(obj)
+            conditions = obj.dataTree.group.GetConditions();
+        end
+        
+        % -------------------------------------------------------------------
+        function CondColTbl = GetCondColTbl(obj)
+            CondColTbl = obj.dataTree.group.CondColTbl();
+        end
+        
+        % -------------------------------------------------------------------
+        function aux = GetAuxiliary(obj)
+            aux = obj.dataTree.currElem.procElem.GetAuxiliary();
+        end
+        
+        % -------------------------------------------------------------------
+        function t = GetTime(obj)
+            t = obj.dataTree.currElem.procElem.GetTime();
+        end
+        
+        % -------------------------------------------------------------------
+        function s = GetStims(obj)
+            s = obj.dataTree.currElem.procElem.GetStims();
+        end
+        
+        % -------------------------------------------------------------------
+        function RenameCondition(obj, oldname, newname)
+            obj.dataTree.group.RenameCondition(oldname, newname);
+        end
+        
+        % -------------------------------------------------------------------
+        function err = GetErrStatus(obj)
+            err = obj.dataTree.group.GetErrStatus();
         end
         
     end

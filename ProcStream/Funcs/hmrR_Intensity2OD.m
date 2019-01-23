@@ -1,4 +1,4 @@
-% dod = hmrIntensity2OD( d )
+% dod = hmrR_Intensity2OD( d )
 %
 % UI NAME:
 % Intensity_to_OD 
@@ -11,7 +11,7 @@
 % OUTPUT
 % dod - the change in optical density
 
-function dod = hmrIntensity2OD( d )
+function dod = hmrR_Intensity2OD( d )
 
 % convert to dod
 dm = mean(abs(d),1);

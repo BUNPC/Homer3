@@ -59,7 +59,7 @@ end
 ystep = 1.8;
 ysize = 1.5;
 ysize_tot = sum(funcHeight)*ystep + nfunc*2 + 5;
-xsize_fname = getFuncNameMaxStrLength(func);
+xsize_fname = getFuncNameMaxStrLength(func)+2;
 xsize_pname = getParamNameMaxStrLength(func)+2;
 xpos_pname = xsize_fname+10;
 xpos_pedit = xpos_pname+xsize_pname+10;
@@ -80,7 +80,7 @@ ypos = ysize_tot-5;
 for iFunc = 1:nfunc
     
     % Draw function name
-    xsize = length(func(iFunc).name);
+    xsize = length(func(iFunc).name)+5;
     xsize = xsize+(5-mod(xsize,5));
     h_fname = uicontrol(hObject, 'style','text', 'units','characters', 'position',[2 ypos xsize ysize],...
                         'string',func(iFunc).name);

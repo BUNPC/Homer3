@@ -1,5 +1,5 @@
 % [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] =
-% hmrDeconvHRF_DriftSS(y, s, t, SD, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+% hmrR_DeconvHRF_DriftSS(y, s, t, SD, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 %
 % UI NAME: 
 % GLM_HRF_Drift_SS
@@ -83,7 +83,7 @@
 % LOG:
 
 function [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, yR] = ...
-    hmrDeconvHRF_DriftSS(y, s, t, SD, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+    hmrR_DeconvHRF_DriftSS(y, s, t, SD, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 
 
 dt = t(2)-t(1);
@@ -110,8 +110,7 @@ end
 lstSS = lst(find(rhoSD<=rhoSD_ssThresh & mlAct(lst)==1));
 
 if isempty(lstSS)
-    display(sprintf('There are no short separation channels in this probe...performing regular deconvolution.'));
-    
+    fprintf('There are no short separation channels in this probe...performing regular deconvolution.\n');    
     mlSSlst = 0;
 else
     if flagSSmethod==0  % use nearest SS
@@ -419,9 +418,9 @@ for conc=1:2 %only HbO and HbR
             ATA=At(lstInc,:)'*At(lstInc,:);
             rco=rcond(full(ATA));
             if rco<10^-14 && rco>10^-25
-                display(sprintf('Design matrix is poorly scaled...(RCond=%e)', rco))
+                fprintf('Design matrix is poorly scaled...(RCond=%e)\n', rco);
             elseif rco<10^-25
-                display(sprintf('Design matrix is VERY poorly scaled...(RCond=%e), cannot perform computation', rco))
+                fprintf('Design matrix is VERY poorly scaled...(RCond=%e), cannot perform computation\n', rco);
                 yavg = permute(yavg,[1 3 2 4]);
                 yavgstd = permute(yavgstd,[1 3 2 4]);
                 ysum2 = permute(ysum2,[1 3 2 4]);

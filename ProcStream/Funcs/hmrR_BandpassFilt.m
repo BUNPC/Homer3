@@ -1,9 +1,9 @@
-% y2 = hmrBandpassFilt( y, fs, hpf, lpf )
+% y2 = hmrR_BandpassFilt( y, fs, hpf, lpf )
 %
 % UI NAME:
 % Bandpass_Filter
 %
-% y2 = hmrBandpassFilt( y, fs, hpf, lpf )
+% y2 = hmrR_BandpassFilt( y, fs, hpf, lpf )
 % Perform a bandpass filter
 %
 % INPUT:
@@ -18,7 +18,7 @@
 % OUTPUT:
 % y2 - filtered data
 
-function [y2,ylpf] = hmrBandpassFilt( y, fs, hpf, lpf )
+function [y2,ylpf] = hmrR_BandpassFilt( y, fs, hpf, lpf )
 
 
 

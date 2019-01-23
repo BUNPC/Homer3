@@ -5,7 +5,7 @@ function reg = procStreamRegSubj()
 
 reg = {
 
-'@ hmrBlockAvgSubj [dcAvg,dcAvgStd,tHRF,nTrials] (dcAvgRuns,dcAvgStdRuns,dcSum2Runs,tHRFRuns,SDRuns,nTrialsRuns,CondName2Run'; ...
+'@ hmrS_BlockAvg [dcAvg,dcAvgStd,tHRF,nTrials] (dcAvgRuns,dcAvgStdRuns,dcSum2Runs,tHRFRuns,SDRuns,nTrialsRuns,CondName2Run'; ...
 
 };
 

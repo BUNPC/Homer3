@@ -71,7 +71,7 @@ classdef AcqDataClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function varval = FindVar(obj, varname)
+        function varval = GetVar(obj, varname)
             if isproperty(obj, varname)
                 varval = eval( sprintf('obj.%s', varname) );
             elseif ismethod(obj,['Get', varname])
@@ -80,6 +80,20 @@ classdef AcqDataClass < matlab.mixin.Copyable
                 varval = eval( sprintf('obj.Get_%s()', varname) );                
             else
                 varval = [];
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function found = FindVar(obj, varname)
+            found = false;
+            if isproperty(obj, varname)
+                found = true;
+            elseif ismethod(obj,['Get', varname])
+                found = true;
+            elseif ismethod(obj,['Get_', varname])
+                found = true;
             end
         end
         

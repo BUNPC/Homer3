@@ -81,19 +81,19 @@ classdef GroupClass < TreeNodeClass
             % Copy default procInput to all uninitialized nodes in the group
             switch(type)
                 case 'group'
-                    if procStreamIsEmpty(obj.procStream.input) || strcmp(mode, 'overwrite')
+                    if obj.procStream.IsEmpty() || strcmp(mode, 'overwrite')
                         obj.procStream.input = procInput.copy();
                     end
                 case 'subj'
                     for jj=1:length(obj.subjs)
-                        if procStreamIsEmpty(obj.subjs(jj).procStream.input) || strcmp(mode, 'overwrite')
+                        if obj.subjs(jj).procStream.IsEmpty() || strcmp(mode, 'overwrite')
                             obj.subjs(jj).procStream.input = procInput.copy();
                         end
                     end
                 case 'run'
                     for jj=1:length(obj.subjs)
                         for kk=1:length(obj.subjs(jj).runs)
-                            if procStreamIsEmpty(obj.subjs(jj).runs(kk).procStream.input) || strcmp(mode, 'overwrite')
+                            if obj.subjs(jj).runs(kk).procStream.IsEmpty() || strcmp(mode, 'overwrite')
                                 obj.subjs(jj).runs(kk).procStream.input = procInput.copy();
                             end
                         end
@@ -142,9 +142,9 @@ classdef GroupClass < TreeNodeClass
                 
                 % Find smallest tHRF among the subjs. We should make this the common one.
                 if iSubj==1
-                    tHRF_common = subjs(iSubj).procStream.output.tHRF;
+                    tHRF_common = subjs(iSubj).procStream.output.GetVar('tHRF');
                 elseif length(subjs(iSubj).procStream.output.tHRF) < length(tHRF_common)
-                    tHRF_common = subjs(iSubj).procStream.output.tHRF;
+                    tHRF_common = subjs(iSubj).procStream.output.GetVar('tHRF');
                 end
             end
                         
@@ -159,23 +159,28 @@ classdef GroupClass < TreeNodeClass
                 subjs(iSubj).procStream.output.SettHRFCommon(tHRF_common, subjs(iSubj).name, subjs(iSubj).type);
             end
             
-            
             % Instantiate all the variables that might be needed by
-            % procStreamCalc to calculate proc stream for this group
+            % procStream.Calc() to calculate proc stream for this group
+            vars = [];
             for iSubj = 1:nSubj
-                obj.procStream.input.misc.dodAvgSubjs{iSubj}    = subjs(iSubj).procStream.output.dodAvg;
-                obj.procStream.input.misc.dodAvgStdSubjs{iSubj} = subjs(iSubj).procStream.output.dodAvgStd;
-                obj.procStream.input.misc.dcAvgSubjs{iSubj}     = subjs(iSubj).procStream.output.dcAvg;
-                obj.procStream.input.misc.dcAvgStdSubjs{iSubj}  = subjs(iSubj).procStream.output.dcAvgStd;
-                obj.procStream.input.misc.tHRFSubjs{iSubj}      = subjs(iSubj).procStream.output.tHRF;
-                obj.procStream.input.misc.nTrialsSubjs{iSubj}   = subjs(iSubj).procStream.output.nTrials;
-                if ~isempty(subjs(iSubj).procStream.output.ch)
-                    obj.procStream.input.misc.SDSubjs{iSubj}    = subjs(iSubj).procStream.output.ch;
+                vars.dodAvgSubjs{iSubj}    = subjs(iSubj).procStream.output.GetVar('dodAvg');
+                vars.dodAvgStdSubjs{iSubj} = subjs(iSubj).procStream.output.GetVar('dodAvgStd');
+                vars.dcAvgSubjs{iSubj}     = subjs(iSubj).procStream.output.GetVar('dcAvg');
+                vars.dcAvgStdSubjs{iSubj}  = subjs(iSubj).procStream.output.GetVar('dcAvgStd');
+                vars.tHRFSubjs{iSubj}      = subjs(iSubj).procStream.output.GetVar('tHRF');
+                vars.nTrialsSubjs{iSubj}   = subjs(iSubj).procStream.output.GetVar('nTrials');
+                if ~isempty(subjs(iSubj).procStream.output.GetVar('ch'))
+                    vars.SDSubjs{iSubj}    = subjs(iSubj).procStream.output.GetVar('ch');
                 else
-                    obj.procStream.input.misc.SDSubjs{iSubj}    = subjs(iSubj).ch;
+                    vars.SDSubjs{iSubj}    = subjs(iSubj).GetVar('ch');
                 end
             end
-            procStreamCalc(obj);
+            
+            % Make variables in this group available to processing stream input
+            obj.procStream.input.LoadVars(vars);
+
+            % Calculate processing stream
+            obj.procStream.Calc();
         end
         
         

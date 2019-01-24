@@ -163,9 +163,9 @@ classdef SubjClass < TreeNodeClass
                 
                 % Find smallest tHRF among the runs. We should make this the common one.
                 if iRun==1
-                    tHRF_common = runs(iRun).procStream.output.tHRF;
+                    tHRF_common = runs(iRun).procStream.output.GetVar('tHRF');
                 elseif length(runs(iRun).procStream.output.tHRF) < length(tHRF_common)
-                    tHRF_common = runs(iRun).procStream.output.tHRF;
+                    tHRF_common = runs(iRun).procStream.output.GetVar('tHRF');
                 end
             end
             
@@ -181,26 +181,29 @@ classdef SubjClass < TreeNodeClass
             end            
             
             % Instantiate all the variables that might be needed by
-            % procStreamCalc to calculate proc stream for this subject
+            % procStream.Calc() to calculate proc stream for this subject
             nTrials = zeros(1,length(obj.CondNames));
             for iRun = 1:nRun
-                obj.procStream.input.misc.dodAvgRuns{iRun}    = runs(iRun).procStream.output.dodAvg;
-                obj.procStream.input.misc.dodAvgStdRuns{iRun} = runs(iRun).procStream.output.dodAvgStd;
-                obj.procStream.input.misc.dodSum2Runs{iRun}   = runs(iRun).procStream.output.dodSum2;
-                obj.procStream.input.misc.dcAvgRuns{iRun}     = runs(iRun).procStream.output.dcAvg;
-                obj.procStream.input.misc.dcAvgStdRuns{iRun}  = runs(iRun).procStream.output.dcAvgStd;
-                obj.procStream.input.misc.dcSum2Runs{iRun}    = runs(iRun).procStream.output.dcSum2;
-                obj.procStream.input.misc.tHRFRuns{iRun}      = runs(iRun).procStream.output.tHRF;
-                obj.procStream.input.misc.nTrialsRuns{iRun}   = runs(iRun).procStream.output.nTrials;
-                if ~isempty(runs(iRun).procStream.output.ch)
-                    obj.procStream.input.misc.SDRuns{iRun}    = runs(iRun).procStream.output.ch;
+                vars.dodAvgRuns{iRun}    = runs(iRun).procStream.output.GetVar('dodAvg');
+                vars.dodAvgStdRuns{iRun} = runs(iRun).procStream.output.GetVar('dodAvgStd');
+                vars.dodSum2Runs{iRun}   = runs(iRun).procStream.output.GetVar('dodSum2');
+                vars.dcAvgRuns{iRun}     = runs(iRun).procStream.output.GetVar('dcAvg');
+                vars.dcAvgStdRuns{iRun}  = runs(iRun).procStream.output.GetVar('dcAvgStd');
+                vars.dcSum2Runs{iRun}    = runs(iRun).procStream.output.GetVar('dcSum2');
+                vars.tHRFRuns{iRun}      = runs(iRun).procStream.output.GetVar('tHRF');
+                vars.nTrialsRuns{iRun}   = runs(iRun).procStream.output.GetVar('nTrials');
+                if ~isempty(runs(iRun).procStream.output.GetVar('ch'))
+                    vars.SDRuns{iRun}    = runs(iRun).procStream.output.GetVar('ch');
                 else
-                    obj.procStream.input.misc.SDRuns{iRun}    = runs(iRun).GetMeasList();
+                    vars.SDRuns{iRun}    = runs(iRun).GetMeasList();
                 end
             end
+            
+            % Make variables in this subject available to processing stream input
+            obj.procStream.input.LoadVars(vars);
 
             % Calculate processing stream
-            procStreamCalc(obj);
+            obj.procStream.Calc();
         end
         
     end

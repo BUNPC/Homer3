@@ -54,11 +54,11 @@ classdef DataTreeClass <  handle
             run = obj.group.subjs(1).runs(1);
             
             for jj=1:length(obj.group.subjs)
-                if ~procStreamIsEmpty(obj.group.subjs(jj).procStream.input)
+                if ~obj.group.subjs(jj).procStream.IsEmpty()
                     subj = obj.group.subjs(jj);
                 end
                 for kk=1:length(obj.group.subjs(jj).runs)
-                    if ~procStreamIsEmpty(obj.group.subjs(jj).runs(kk).procStream.input)
+                    if ~obj.group.subjs(jj).runs(kk).procStream.IsEmpty()
                         run = obj.group.subjs(jj).runs(kk);
                     end
                 end

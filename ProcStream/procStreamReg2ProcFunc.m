@@ -5,7 +5,7 @@ if nargin>0
         type = varargin{1};
     else
         type = class(varargin{1});
-    end    
+    end
 else
     type = '';
 end
@@ -13,7 +13,7 @@ end
 reg      = procStreamReg(type);
 for ii=1:length(reg)
     S = textscan(reg{ii}, '%s');
-    func(ii) = parseSection(S{1}, type);    
+    func(ii) = parseSection(S{1}, type);
     func(ii).help = procStreamParseFuncHelp(func(ii));
 end
 
@@ -26,14 +26,14 @@ reg = {};
 % Initialize output struct
 switch(type)
     case {'group','GroupClass'}
-    reg = procStreamRegGroup();
+        reg = procStreamRegGroup();
     case {'subj','SubjClass'}
-    reg = procStreamRegSubj();
+        reg = procStreamRegSubj();
     case {'run','RunClass'}
-    reg = procStreamRegRun();
+        reg = procStreamRegRun();
     otherwise
-    reg = [reg; procStreamRegGroup()];
-    reg = [reg; procStreamRegSubj()];
-    reg = [reg; procStreamRegRun()];
+        reg = [reg; procStreamRegGroup()];
+        reg = [reg; procStreamRegSubj()];
+        reg = [reg; procStreamRegRun()];
 end
 

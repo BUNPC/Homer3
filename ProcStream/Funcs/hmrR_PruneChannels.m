@@ -1,4 +1,4 @@
-% SD = enPruneChannels(d,SD,tInc,dRange,SNRthresh,SDrange,reset)
+% SD = hmrR_PruneChannels(d,SD,tInc,dRange,SNRthresh,SDrange,reset)
 %
 % UI NAME:
 % Prune_Channels
@@ -27,12 +27,12 @@
 % consider Conc as well as wavelength data
 %
 
-function SD = enPruneChannels(d,SD,tInc,dRange,SNRthresh,SDrange,resetFlag)
+function SD = hmrR_PruneChannels(d,SD,tInc,dRange,SNRthresh,SDrange,resetFlag)
 
 
 % Preset values
 if nargin~=7
-    disp( 'USAGE: enPruneChannels(d,SD,tInc,dRange,SNRthresh,resetFlag)' )
+    disp( 'USAGE: hmrR_PruneChannels(d,SD,tInc,dRange,SNRthresh,resetFlag)' )
     return
 end
 

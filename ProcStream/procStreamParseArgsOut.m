@@ -1,5 +1,4 @@
 function args = procStreamParseArgsOut(argsStr)
-
 args={};
 kk=1;
 ii=1;
@@ -15,7 +14,6 @@ while ii<=length(argsStr)
         jj=1;
         continue;
     end
-
     args{kk}(jj)=argsStr(ii);
     jj=jj+1;
     ii=ii+1;

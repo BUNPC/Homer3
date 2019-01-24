@@ -61,10 +61,11 @@ ysize = 1.5;
 ysize_tot = sum(funcHeight)*ystep + nfunc*2 + 5;
 xsize_fname = getFuncNameMaxStrLength(func)+2;
 xsize_pname = getParamNameMaxStrLength(func)+2;
-xpos_pname = xsize_fname+10;
-xpos_pedit = xpos_pname+xsize_pname+10;
-xpos_pbttn = xpos_pedit+15;
-xsize_tot  = xpos_pbttn+15;
+xsize_pval  = 15;
+xpos_pname  = xsize_fname+10;
+xpos_pedit  = xpos_pname+xsize_pname+10;
+xpos_pbttn  = xpos_pedit++xsize_pval+15;
+xsize_tot   = xpos_pbttn+15;
 
 % Set figure size 
 if length(varargin)>2 && ~isempty( varargin{2})
@@ -82,7 +83,7 @@ for iFunc = 1:nfunc
     % Draw function name
     xsize = length(func(iFunc).name)+5;
     xsize = xsize+(5-mod(xsize,5));
-    h_fname = uicontrol(hObject, 'style','text', 'units','characters', 'position',[2 ypos xsize ysize],...
+    h_fname = uicontrol(hObject, 'style','text', 'units','characters', 'position',[2, ypos, xsize, ysize],...
                         'string',func(iFunc).name);
     set(h_fname,'backgroundcolor',[1 1 1], 'units','normalized');
     set(h_fname, 'horizontalalignment','left');
@@ -90,7 +91,7 @@ for iFunc = 1:nfunc
     
     % Draw pushbutton to see output results if requested in config file
     if func(iFunc).argOut(1)=='#'
-        h_bttn = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',[xpos_pbttn ypos 10 ysize],...
+        h_bttn = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',[xpos_pbttn, ypos, 10, ysize],...
                           'string','Results');
         eval( sprintf(' fcn = @(hObject,eventdata)ProcStreamOptionsGUI(''pushbuttonProc_Callback'',hObject,%d,guidata(hObject));',iFunc) );
         set( h_bttn, 'Callback',fcn, 'units','normalized')
@@ -99,8 +100,6 @@ for iFunc = 1:nfunc
     % Draw list of parameters
     for iParam = 1:func(iFunc).nParam
         % Draw parameter names
-        xsize = length(func(iFunc).param);
-        xsize = xsize+(5-mod(xsize,5))+5;
         h_pname=uicontrol(hObject, 'style','text', 'units','characters', 'position',[xpos_pname, ypos, xsize_pname, ysize],...
                           'string',func(iFunc).param{iParam});
         set(h_pname,'backgroundcolor',[1 1 1], 'units','normalized');
@@ -108,10 +107,9 @@ for iFunc = 1:nfunc
         set(h_pname, 'tooltipstring', func(iFunc).help.paramDescr{iParam});
 
         % Draw parameter edit boxes
-        h_pedit=uicontrol(hObject,'style','edit','units','characters','position',[xpos_pedit ypos 10 1.5]);
+        h_pedit=uicontrol(hObject,'style','edit','units','characters','position',[xpos_pedit, ypos, xsize_pval, 1.5]);
         func(iFunc).paramHandle{iParam} = h_pedit;
-        set(h_pedit,'string',sprintf(func(iFunc).paramFormat{iParam}, ...
-            func(iFunc).paramVal{iParam} ) );
+        set(h_pedit,'string',sprintf(func(iFunc).paramFormat{iParam}, func(iFunc).paramVal{iParam} ) );
         set(h_pedit,'backgroundcolor',[1 1 1]);
         eval( sprintf(' fcn = @(hObject,eventdata)ProcStreamOptionsGUI(''edit_Callback'',hObject,[%d %d],guidata(hObject));',iFunc,iParam) );
         set( h_pedit, 'Callback',fcn, 'units','normalized');
@@ -127,7 +125,7 @@ for iFunc = 1:nfunc
     
     % Draw divider between functions and function parameter lists
     if iFunc<nfunc
-        h_linebttn = uicontrol(hObject,'style','pushbutton','units','characters','position',[0 ypos xsize_tot .3],...
+        h_linebttn = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',[0, ypos, xsize_tot, .3],...
                                'enable','off');
         set(h_linebttn, 'units','normalized');
         ypos = ypos - ystep;

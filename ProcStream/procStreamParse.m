@@ -25,7 +25,7 @@ case 'group'
         foo = textscan(str, '%s');
         G = foo{1};
 	end
-    [procInput.func, procInput.param] = parseSection(G, procElem);
+    [procInput.func, procInput.param] = parseSection(G);
     
 case 'subj'
     
@@ -37,11 +37,11 @@ case 'subj'
         foo = textscan(str, '%s');
         S = foo{1};
     end
-    [procInput.func, procInput.param] = parseSection(S, procElem);
+    [procInput.func, procInput.param] = parseSection(S);
     
 case 'run'
     
-    [procInput.func, procInput.param] = parseSection(R, procElem);
+    [procInput.func, procInput.param] = parseSection(R);
     
 end
 

@@ -30,7 +30,7 @@ classdef ProcStreamClass
                 waitbar( iFunc/nFunc, hwait, sprintf('Processing... %s', obj.input.GetFuncNamePrettyPrint(iFunc)) );
                 
                 % Parse obj.input arguments
-                argIn = obj.input.InputArgs2Cell(iFunc);
+                argIn = obj.input.GetInputArgs(iFunc);
                 for ii = 1:length(argIn)
                     if ~exist(argIn{ii},'var')
                         if ~obj.input.FindVar(argIn{ii})
@@ -87,9 +87,9 @@ classdef ProcStreamClass
             % Copy paramOut to output
             for ii=1:length(paramOut)
                 if eval( sprintf('isproperty(obj.output, ''%s'');', paramOut{ii}) )
-                    eval( sprintf('obj.output.%s = %s;',paramOut{ii}, paramOut{ii}) );
+                    eval( sprintf('obj.output.%s = %s;', paramOut{ii}, paramOut{ii}) );
                 else
-                    eval( sprintf('obj.output.misc.%s = %s;',paramOut{ii}, paramOut{ii}) );
+                    eval( sprintf('obj.output.misc.%s = %s;', paramOut{ii}, paramOut{ii}) );
                 end
             end
             obj.input.misc = [];
@@ -103,8 +103,8 @@ classdef ProcStreamClass
         
         
         % ----------------------------------------------------------------------------------
-        function b = IsEmpty(obj)            
-            b=0;           
+        function b = IsEmpty(obj)
+            b=0;
             if isempty(obj.input)
                 b=1;
                 return;
@@ -124,7 +124,6 @@ classdef ProcStreamClass
             end
             str = obj.input.EditParam(iFunc, iParam, val);
         end
-
-    end
-    
+        
+    end        
 end

@@ -359,7 +359,7 @@ classdef RunClass < TreeNodeClass
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
             % a) Find all variables needed by proc stream
-            args = obj.procStream.input.InputArgs2Cell();
+            args = obj.procStream.input.GetInputArgs();
 
             % b) Find these variables in this run
             vars = [];

@@ -13,7 +13,7 @@ end
 reg      = procStreamReg(type);
 for ii=1:length(reg)
     S = textscan(reg{ii}, '%s');
-    func(ii) = parseSection(S{1}, type);
+    func(ii) = parseSection(S{1});
     func(ii).help = procStreamParseFuncHelp(func(ii));
 end
 

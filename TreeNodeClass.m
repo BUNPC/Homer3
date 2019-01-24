@@ -60,7 +60,7 @@ classdef TreeNodeClass < handle
             while ~all(err1==0) || ~all(err2==0)                
                 % Load Processing stream file
                 if isempty(filename)
-                    filename = createDefaultConfigFile();
+                    filename = obj.procStream.input.CreateDefaultConfigFile();
                     
                     % Load procInput from config file
                     fid = fopen(filename, 'r');
@@ -150,23 +150,16 @@ classdef TreeNodeClass < handle
         % ----------------------------------------------------------------------------------
         function copyProcParamsFieldByField(obj, obj2)
             % procInput
-            if isproperty(obj2.procStream,'input') && ~isempty(obj2.procStream.input)
-                if isproperty(obj2.procStream.input,'func') && ~isempty(obj2.procStream.input.func)
-                    obj.procStream.input.Copy(obj2.procStream.input);
-                else
-                    [obj.procStream.input.func, obj.procStream.input.param] = procStreamDefault(obj.type);
-                end
+            if ~isempty(obj2.procStream.input.func)
+                obj.procStream.input.Copy(obj2.procStream.input);
+            else
+                obj.procStream.input.Default(obj.type);
             end
             
             % procResult
-            if isproperty(obj2.procStream,'output') && ~isempty(obj2.procStream.output)
+            if ~isempty(obj2.procStream.output)
                 obj.procStream.output = copyStructFieldByField(obj.procStream.output, obj2.procStream.output);
-            end
-            
-            % procResult
-            if isproperty(obj2.procStream,'output') && ~isempty(obj2.procStream.output)
-                obj.procStream.output = copyStructFieldByField(obj.procStream.output, obj2.procStream.output);
-            end
+            end            
         end
         
                 

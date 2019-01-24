@@ -47,9 +47,10 @@ classdef DataTreeClass <  handle
             obj.group.Load();
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Find out if we need to ask user for prcessing options config file
-            % to initialize procInput.func at the run, subject or group level.
+            % Find out if we need to ask user for processing options config file
+            % to initialize procStream.input.func at the run, subject or group level.
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            group = obj.group;
             subj = obj.group.subjs(1);
             run = obj.group.subjs(1).runs(1);
             
@@ -66,7 +67,7 @@ classdef DataTreeClass <  handle
             
             % Find the procInput defaults at each level with which to initialize
             % uninitialized procInput
-            [procInputGroupDefault, procfilenm] = obj.group.GetProcInputDefault();
+            [procInputGroupDefault, procfilenm] = group.GetProcInputDefault();
             [procInputSubjDefault, procfilenm]  = subj.GetProcInputDefault(procfilenm);
             [procInputRunDefault, ~]            = run.GetProcInputDefault(procfilenm);
             

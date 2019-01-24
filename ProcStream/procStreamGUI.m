@@ -178,6 +178,7 @@ set(handles.textHelp(iPanel),'string',foos);
 
 % -------------------------------------------------------------
 function updateProcStreamList(handles,idx)
+
 this = getappdata(handles.figure1, 'this');
 iPanel = this.iPanel;
 iReg = this.iReg{iPanel};
@@ -212,6 +213,7 @@ set(handles.listboxPSFunc(iPanel),'value',idx)
 
 % -------------------------------------------------------------
 function listboxPSFunc_Callback(hObject, eventdata, handles)
+
 this = getappdata(handles.figure1, 'this');
 iPanel = this.iPanel;
 
@@ -231,6 +233,7 @@ set(handles.textHelp(iPanel),'string',foos);
 
 % -------------------------------------------------------------
 function listboxPSArgOut_Callback(hObject, eventdata, handles)
+
 this = getappdata(handles.figure1, 'this');
 iPanel = this.iPanel;
 
@@ -250,6 +253,7 @@ set(handles.textHelp(iPanel),'string',foos);
 
 % -------------------------------------------------------------
 function listboxPSArgIn_Callback(hObject, eventdata, handles)
+
 this = getappdata(handles.figure1, 'this');
 iPanel = this.iPanel;
 
@@ -269,6 +273,7 @@ set(handles.textHelp(iPanel),'string',foos);
 
 % -------------------------------------------------------------
 function pushbuttonAddFunc_Callback(hObject, eventdata, handles)
+
 this = getappdata(handles.figure1, 'this');
 iPanel = this.iPanel;
 iReg = this.iReg{iPanel};
@@ -294,6 +299,7 @@ updateProcStreamList(handles,iPS2);
 
 % -------------------------------------------------------------
 function pushbuttonDeleteFunc_Callback(hObject, eventdata, handles)
+
 this = getappdata(handles.figure1, 'this');
 iPanel = this.iPanel;
 iReg = this.iReg{iPanel};
@@ -322,6 +328,7 @@ updateProcStreamList(handles,iPS2);
 
 % -------------------------------------------------------------
 function pushbuttonMoveUp_Callback(hObject, eventdata, handles)
+
 this = getappdata(handles.figure1, 'this');
 iPanel = this.iPanel;
 iReg = this.iReg{iPanel};
@@ -348,6 +355,7 @@ updateProcStreamList(handles,iPS2);
 
 % -------------------------------------------------------------
 function pushbuttonMoveDown_Callback(hObject, eventdata, handles)
+
 this = getappdata(handles.figure1, 'this');
 iPanel = this.iPanel;
 iReg = this.iReg{iPanel};
@@ -371,6 +379,7 @@ updateProcStreamList(handles,iPS2);
 
 % -------------------------------------------------------------
 function pushbuttonLoad_Callback(hObject, eventdata, handles)
+
 this = getappdata(handles.figure1, 'this');
 iPanel_0 = this.iPanel;
 
@@ -521,6 +530,7 @@ helpstr = procStreamGenerateHelpStr(func(ii).help);
 
 % ----------------------------------------------
 function helpstr = procStreamGenerateHelpStr(help)
+
 helpstr = '';
 helpstr = sprintf('%s%s\n', helpstr, help.usage);
 helpstr = sprintf('%s%s\n', helpstr, help.nameUI);
@@ -539,6 +549,7 @@ helpstr = sprintf('%s%s\n', helpstr, help.argOutDescr);
 
 % --------------------------------------------------------------------
 function uitabRun_ButtonDownFcn(hObject, eventdata, handles)
+
 this = getappdata(handles.figure1, 'this');
 this.iPanel = this.iRunPanel;
 setappdata(handles.figure1, 'this',this);
@@ -548,6 +559,7 @@ getHelp(handles);
 
 % --------------------------------------------------------------------
 function uitabSubj_ButtonDownFcn(hObject, eventdata, handles)
+
 this = getappdata(handles.figure1, 'this');
 this.iPanel = this.iSubjPanel;
 setappdata(handles.figure1, 'this',this);
@@ -557,6 +569,7 @@ getHelp(handles);
 
 % --------------------------------------------------------------------
 function uitabGroup_ButtonDownFcn(hObject, eventdata, handles)
+
 this = getappdata(handles.figure1, 'this');
 this.iPanel = this.iGroupPanel;
 setappdata(handles.figure1, 'this',this);
@@ -566,6 +579,7 @@ getHelp(handles);
 
 % --------------------------------------------------------------------
 function SaveToFile(filenm, procElem)
+
 fid = fopen(filenm,'w');
 for iPanel=1:length(procElem)
     fprintf( fid, '%% %s\n', procElem{iPanel}.type );    

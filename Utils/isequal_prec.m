@@ -44,12 +44,15 @@ end
 b = isequaln(y1,y2);
 
 if DEBUG
-    fprintf('\n');
+    flag = 0;
     for ii=1:length(y1(:))
         if ~isequaln(y1(ii),y2(ii))
+            flag = 1;
             eval( sprintf( 'fprintf(''%%d: %%0.%df == %%0.%df is FALSE\\n'', ii, y1(ii), y2(ii));', abs(n), abs(n) ) );
         end
     end
-    fprintf('\n');
+    if flag
+        fprintf('\n');
+    end
 end
 

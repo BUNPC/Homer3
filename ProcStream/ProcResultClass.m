@@ -77,7 +77,31 @@ classdef ProcResultClass < handle
             end
             obj.tHRF = tHRF_common;                                    
         end
+
         
+        % ----------------------------------------------------------------------------------
+        function found = FindVar(obj, varname)
+            found = false;
+            if isproperty(obj, varname)
+                found = true;
+            elseif isproperty(obj.misc, varname)
+                found = true;
+            end
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function var = GetVar(obj, varname)
+            var = [];
+            if isproperty(obj, varname)
+                eval(sprintf('var = obj.%s;', varname));
+            elseif isproperty(obj.misc, varname)
+                eval(sprintf('var = obj.misc.%s;', varname));
+            end
+        end
+
+        
+          
     end
      
 end

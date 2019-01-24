@@ -194,7 +194,7 @@ iFunc  = eventdata(1);
 iParam = eventdata(2);
 val = str2num( get(hObject,'string') ); % need to check if it is a valid string
 
-str = dataTree.currElem.procElem.EditProcParam(iFunc, iParam, val);
+str = dataTree.currElem.procElem.procStream.EditParam(iFunc, iParam, val);
 set( hObject, 'string', str);
 
 % Check if we should apply the param edit to all nodes of the current nodes
@@ -202,12 +202,12 @@ set( hObject, 'string', str);
 if ~hmr.guiMain.applyEditCurrNodeOnly
     if dataTree.currElem.procType==2
         for ii=1:length(dataTree.group.subjs)
-            dataTree.group.subjs(ii).EditProcParam(iFunc, iParam, val);
+            dataTree.group.subjs(ii).procStream.EditParam(iFunc, iParam, val);
         end
     elseif dataTree.currElem.procType==3
         for ii=1:length(dataTree.group.subjs)
             for jj=1:length(dataTree.group.subjs(ii).runs)
-                dataTree.group.subjs(ii).runs(jj).EditProcParam(iFunc, iParam, val);
+                dataTree.group.subjs(ii).runs(jj).procStream.EditParam(iFunc, iParam, val);
             end
         end
     end

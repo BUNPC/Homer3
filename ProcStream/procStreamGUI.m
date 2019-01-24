@@ -18,7 +18,6 @@ else
 end
 
 
-
 % -------------------------------------------------------------
 function procStreamGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global hmr
@@ -29,10 +28,9 @@ iGroupPanel = 1;
 
 % Choose default command line output for procStreamGUI
 handles.output = hObject;
-
-% Update handles structure
 guidata(hObject, handles);
 
+% Update handles structure
 func = procStreamReg2ProcFunc('run');
 [fcallIn, fcall, fcallOut] = fillListboxWithRegistry(func);
 set(handles.listboxFunctions(iRunPanel),'string',fcall)
@@ -88,7 +86,6 @@ setappdata(hObject,'this',struct('iReg',{{[],[],[]}}, ...    % registry indices 
                                  'iGroupPanel',iGroupPanel, ...
                                  'procElem',{procElem}, ...
                                  'iPanel',iPanel));
-
 getHelp(handles);
 setGuiFonts(hObject);
 
@@ -96,7 +93,6 @@ setGuiFonts(hObject);
 
 % -------------------------------------------------------------
 function [fcallIn, fcall, fcallOut] = fillListboxWithRegistry(func)
-
 for iFunc = 1:length(func)
     % parse input parameters
     p = [];
@@ -129,13 +125,11 @@ for iFunc = 1:length(func)
     fcall{iFunc} = sprintf( '%s',  func(iFunc).name);
     fcallIn{iFunc} = sprintf( '%s%s)', func(iFunc).argIn, sargin );
 end
-
     
     
 
 % -------------------------------------------------------------
 function varargout = procStreamGUI_OutputFcn(hObject, eventdata, handles) 
-
 varargout{1} = handles.output;
 
 
@@ -154,7 +148,6 @@ set(handles.textHelp(iPanel),'string',foos);
 
 
 
-
 % -------------------------------------------------------------
 function listboxFuncArgOut_Callback(hObject, eventdata, handles)
 this = getappdata(handles.figure1, 'this');
@@ -169,10 +162,8 @@ set(handles.textHelp(iPanel),'string',foos);
 
 
 
-
 % -------------------------------------------------------------
 function listboxFuncArgIn_Callback(hObject, eventdata, handles)
-
 this = getappdata(handles.figure1, 'this');
 iPanel = this.iPanel;
 
@@ -195,7 +186,6 @@ n = length(iReg);
 FArgOut = get(handles.listboxFuncArgOut(iPanel),'string');
 FArgIn = get(handles.listboxFuncArgIn(iPanel),'string');
 FFunc = get(handles.listboxFunctions(iPanel),'string');
-
 
 foos = [];
 for ii = 1:n
@@ -220,7 +210,6 @@ set(handles.listboxPSFunc(iPanel),'value',idx)
 
 
 
-
 % -------------------------------------------------------------
 function listboxPSFunc_Callback(hObject, eventdata, handles)
 this = getappdata(handles.figure1, 'this');
@@ -237,7 +226,6 @@ set(handles.listboxPSArgOut(iPanel),'value',ii);
 FFunc = get(handles.listboxPSFunc(iPanel),'string');
 foos = procStreamHelpLookupByName(FFunc{ii}, handles);
 set(handles.textHelp(iPanel),'string',foos);
-
 
 
 
@@ -299,10 +287,8 @@ else
     iPS2 = 1;
 end
 iReg = iRegTmp;
-
 this.iReg{iPanel} = iReg;
 setappdata(handles.figure1, 'this', this);
-
 updateProcStreamList(handles,iPS2);
 
 
@@ -318,7 +304,6 @@ if n<1
 end
 
 iPS = get(handles.listboxPSFunc(iPanel),'value');
-
 if n>1
     iRegTmp = iReg;
     iRegTmp(iPS) = [];
@@ -331,7 +316,6 @@ iReg = iRegTmp;
 
 this.iReg{iPanel} = iReg;
 setappdata(handles.figure1, 'this', this);
-
 updateProcStreamList(handles,iPS2);
 
 
@@ -343,7 +327,6 @@ iPanel = this.iPanel;
 iReg = this.iReg{iPanel};
 
 iPS = get(handles.listboxPSFunc(iPanel),'value');
-
 if iPS == 1
     return
 end
@@ -359,7 +342,6 @@ iReg = iRegTmp;
 
 this.iReg{iPanel} = iReg;
 setappdata(handles.figure1, 'this', this);
-
 updateProcStreamList(handles,iPS2);
 
 
@@ -372,7 +354,6 @@ iReg = this.iReg{iPanel};
 
 iPS = get(handles.listboxPSFunc(iPanel),'value');
 n = length(iReg);
-
 if iPS == n
     return
 end
@@ -384,7 +365,6 @@ iReg = iRegTmp;
 
 this.iReg{iPanel} = iReg;
 setappdata(handles.figure1, 'this', this);
-
 updateProcStreamList(handles,iPS2);
 
 
@@ -398,7 +378,6 @@ ch = menu('Load current processing stream or config file?','Current processing s
 if ch==3
     return;
 end
-
 if ch==2
     % load cfg file
     [filename,pathname] = uigetfile( '*.cfg', 'Process Options Config File');
@@ -406,18 +385,14 @@ if ch==2
         return;
     end    
 end
-
-
 for iPanel=1:3
-
     iReg = this.iReg{iPanel};
     procElem = this.procElem{iPanel};
-    
     if ch==2
         fid = fopen([pathname,filename]);
         [procElem.procStream.input, ~] = procStreamParse(fid, procElem);
     end
-    
+        
     % Search for procFun functions in procStreamReg
     [err2, iReg] = procStreamErrCheck(procElem);
     if ~all(~err2)
@@ -434,20 +409,15 @@ for iPanel=1:3
             [procElem.procStream.input, err2] = procStreamFixErr(err2, procElem.procStream.input, iReg);
         end
     end
-    
     this.iPanel = iPanel;
     this.iReg{iPanel} = iReg;
     setappdata(handles.figure1, 'this', this);
-    
     updateProcStreamList(handles,1);
-    
 end
 
 % Return iPanel to value at the beginning of this function 
 this.iPanel = iPanel_0;
 setappdata(handles.figure1, 'this', this);
-
-
 if ch==2
     fclose(fid);
 end
@@ -462,7 +432,6 @@ iRunPanel = this.iRunPanel;
 iSubjPanel = this.iSubjPanel;
 iGroupPanel = this.iGroupPanel;
 procElem = this.procElem;
-
 
 % Get the func at group, subject and run levels
 for iPanel=1:length(procElem)
@@ -483,14 +452,12 @@ for iPanel=1:length(procElem)
     end
     procElem{iPanel}.procStream.input.func = func;
     procElem{iPanel}.procStream.input.param = param;
-    
 end
 
 ch = menu('Save to current processing stream or config file?','Current processing stream','Config file','Cancel');
 if ch==3
     return;
 end
-
 if ch==1
     global hmr
     group = hmr.dataTree.group;
@@ -502,7 +469,7 @@ else
     if filenm==0
         return
     end
-    procStreamSave([pathnm,filenm], procElem);
+    SaveToFile([pathnm,filenm], procElem);
 end
 
 
@@ -536,9 +503,7 @@ function helpstr = procStreamHelpLookupByName(name, handles)
 this = getappdata(handles.figure1, 'this');
 iPanel = this.iPanel;
 procElem = this.procElem{iPanel};
-
 helpstr = '';
-
 func = procStreamReg2ProcFunc(procElem);
 match=0;
 for ii=1:length(func)
@@ -547,20 +512,16 @@ for ii=1:length(func)
         break;
     end
 end
-
 if ~match
     return;
 end
-
 helpstr = procStreamGenerateHelpStr(func(ii).help);
 
 
 
 % ----------------------------------------------
 function helpstr = procStreamGenerateHelpStr(help)
-
 helpstr = '';
-
 helpstr = sprintf('%s%s\n', helpstr, help.usage);
 helpstr = sprintf('%s%s\n', helpstr, help.nameUI);
 helpstr = sprintf('%s%s\n', helpstr, 'DESCRIPTION:');
@@ -578,7 +539,6 @@ helpstr = sprintf('%s%s\n', helpstr, help.argOutDescr);
 
 % --------------------------------------------------------------------
 function uitabRun_ButtonDownFcn(hObject, eventdata, handles)
-
 this = getappdata(handles.figure1, 'this');
 this.iPanel = this.iRunPanel;
 setappdata(handles.figure1, 'this',this);
@@ -588,7 +548,6 @@ getHelp(handles);
 
 % --------------------------------------------------------------------
 function uitabSubj_ButtonDownFcn(hObject, eventdata, handles)
-
 this = getappdata(handles.figure1, 'this');
 this.iPanel = this.iSubjPanel;
 setappdata(handles.figure1, 'this',this);
@@ -598,8 +557,49 @@ getHelp(handles);
 
 % --------------------------------------------------------------------
 function uitabGroup_ButtonDownFcn(hObject, eventdata, handles)
-
 this = getappdata(handles.figure1, 'this');
 this.iPanel = this.iGroupPanel;
 setappdata(handles.figure1, 'this',this);
 getHelp(handles);
+
+
+
+% --------------------------------------------------------------------
+function SaveToFile(filenm, procElem)
+fid = fopen(filenm,'w');
+for iPanel=1:length(procElem)
+    fprintf( fid, '%% %s\n', procElem{iPanel}.type );    
+    func = procElem{iPanel}.procStream.input.func;
+    for iFunc=1:length(func)
+
+        fprintf( fid, '@ %s %s %s',...
+            func(iFunc).name, func(iFunc).argOut, ...
+            func(iFunc).argIn );
+        for iParam=1:func(iFunc).nParam
+            fprintf( fid,' %s', func(iFunc).param{iParam} );
+            
+            foos = func(iFunc).paramFormat{iParam};
+            boos = sprintf( foos, func(iFunc).paramVal{iParam} );
+            for ii=1:length(foos)
+                if foos(ii)==' '
+                    foos(ii) = '_';
+                end
+            end
+            for ii=1:length(boos)
+                if boos(ii)==' '
+                    boos(ii) = '_';
+                end
+            end
+            if ~strcmp(func(iFunc).param{iParam},'*')
+                fprintf( fid,' %s %s', foos, boos );
+            end
+        end
+        if func(iFunc).nParamVar>0
+            fprintf( fid,' *');
+        end
+        fprintf( fid, '\n' );        
+    end
+    fprintf( fid, '\n' );
+end
+fclose(fid);
+

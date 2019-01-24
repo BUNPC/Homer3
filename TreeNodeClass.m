@@ -42,31 +42,28 @@ classdef TreeNodeClass < handle
         
         
         % ---------------------------------------------------------------------------------
-        function [procInput, filename] = GetProcInputDefault(obj, filename)
-            
+        function [procInput, filename] = GetProcInputDefault(obj, filename)            
             procInput = struct([]);
             if ~exist('filename','var') || isempty(filename)
                 filename = '';
             end
             
             err1=0; err2=0;
-            if procStreamIsEmpty(obj.procStream.input)
+            if obj.procStream.IsEmpty()
                 err1=1; err2=1;
             else
                 procInput = obj.procStream.input;
-            end
-            
+            end            
             
             %%%%% Otherwise try loading procInput from a config file, but first
             %%%%% figure out the name of the config file
-            while ~all(err1==0) || ~all(err2==0)
-                
+            while ~all(err1==0) || ~all(err2==0)                
                 % Load Processing stream file
                 if isempty(filename)
-                    [filename, pathname] = createDefaultConfigFile();
+                    filename = createDefaultConfigFile();
                     
                     % Load procInput from config file
-                    fid = fopen(filename,'r');
+                    fid = fopen(filename, 'r');
                     [procInput, err1] = procStreamParse(fid, obj);
                     fclose(fid);
                 elseif ~isempty(filename)
@@ -79,12 +76,12 @@ classdef TreeNodeClass < handle
                 end
                                 
                 % Check loaded procInput for syntax and semantic errors
-                if procStreamIsEmpty(procInput) && err1==0
+                if procInput.IsEmpty() && err1==0
                     ch = menu('Warning: config file is empty.','Okay');
                 elseif err1==1
                     ch = menu('Syntax error in config file.','Okay');
                 end
-                
+                                
                 [err2, iReg] = procStreamErrCheck(obj);
                 if ~all(~err2)
                     i=find(err2==1);
@@ -110,9 +107,7 @@ classdef TreeNodeClass < handle
                         return;
                     end
                 end
-                
-            end  % while ~all(err1==0) || ~all(err2==0)
-            
+            end  % while ~all(err1==0) || ~all(err2==0)            
         end  % function [procInput, filename] = GetProcInputDefault(obj, filename)
        
 
@@ -166,7 +161,12 @@ classdef TreeNodeClass < handle
             % procResult
             if isproperty(obj2.procStream,'output') && ~isempty(obj2.procStream.output)
                 obj.procStream.output = copyStructFieldByField(obj.procStream.output, obj2.procStream.output);
-            end            
+            end
+            
+            % procResult
+            if isproperty(obj2.procStream,'output') && ~isempty(obj2.procStream.output)
+                obj.procStream.output = copyStructFieldByField(obj.procStream.output, obj2.procStream.output);
+            end
         end
         
                 
@@ -303,28 +303,23 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function varval = FindVar(obj, varname)
-            varval = [];
+        function found = FindVar(obj, varname)
+            found = false;
+            if isproperty(obj, varname)
+                found = true;
+            end
         end
-
-                
+        
+               
         % ----------------------------------------------------------------------------------
-        function str = EditProcParam(obj, iFunc, iParam, val)
-            if isempty(iFunc)
-                return;
+        function varval = GetVar(obj, varname)
+            varval = [];
+            if isproperty(obj, varname)
+                varval = eval( sprintf('obj.%s', varname) );
             end
-            if isempty(iParam)
-                return;
-            end
-            obj.procStream.input.func(iFunc).paramVal{iParam} = val;
-            eval( sprintf('obj.procStream.input.param.%s_%s = val;', ...
-                          obj.procStream.input.func(iFunc).name, ...
-                          obj.procStream.input.func(iFunc).param{iParam}) );
-            str = sprintf(obj.procStream.input.func(iFunc).paramFormat{iParam}, val);
         end
         
-        
-        
+               
         % ----------------------------------------------------------------------------------
         function AddStims(obj, tPts, condition)
             return;
@@ -431,6 +426,47 @@ classdef TreeNodeClass < handle
         function name = GetName(obj)
             name = obj.name;
         end        
+        
+
+        % ----------------------------------------------------------------------------------
+        function SaveProcStream(obj, filenm)
+            fid = fopen(filenm,'w');
+            for iPanel=1:length(procElem)
+                fprintf( fid, '%% %s\n', procElem{iPanel}.type );
+                func = procElem{iPanel}.procStream.input.func;
+                for iFunc=1:length(func)
+                    
+                    fprintf( fid, '@ %s %s %s',...
+                        func(iFunc).funcName, func(iFunc).argOut, ...
+                        func(iFunc).argIn );
+                    for iParam=1:func(iFunc).nParam
+                        fprintf( fid,' %s', func(iFunc).param{iParam} );
+                        
+                        foos = func(iFunc).paramFormat{iParam};
+                        boos = sprintf( foos, func(iFunc).paramVal{iParam} );
+                        for ii=1:length(foos)
+                            if foos(ii)==' '
+                                foos(ii) = '_';
+                            end
+                        end
+                        for ii=1:length(boos)
+                            if boos(ii)==' '
+                                boos(ii) = '_';
+                            end
+                        end
+                        if ~strcmp(func(iFunc).param{iParam},'*')
+                            fprintf( fid,' %s %s', foos, boos );
+                        end
+                    end
+                    if func(iFunc).nParamVar>0
+                        fprintf( fid,' *');
+                    end
+                    fprintf( fid, '\n' );
+                end
+                fprintf( fid, '\n' );
+            end
+            fclose(fid);
+        end
         
         
     end

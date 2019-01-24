@@ -4,7 +4,7 @@ classdef RunClass < TreeNodeClass
         iSubj;
         iRun;
         rnum;
-        acquired;        
+        acquired;
     end
     
     methods
@@ -12,7 +12,6 @@ classdef RunClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function obj = RunClass(varargin)
             obj@TreeNodeClass(varargin);
-
             obj.type  = 'run';
             if nargin==4
                 obj.name  = varargin{1};
@@ -321,14 +320,23 @@ classdef RunClass < TreeNodeClass
         
 
         % ----------------------------------------------------------------------------------
-        function varval = FindVar(obj, varname)
+        function found = FindVar(obj, varname)
             if isproperty(obj, varname)
-                varval = eval( sprintf('obj.%s', varname) );
+                found = true;
             else
-                varval = obj.acquired.FindVar(varname);
+                found = obj.acquired.FindVar(varname);
             end
         end
         
+                
+        % ----------------------------------------------------------------------------------
+        function varval = GetVar(obj, varname)
+            if isproperty(obj, varname)
+                varval = eval( sprintf('obj.%s', varname) );
+            else
+                varval = obj.acquired.GetVar(varname);
+            end
+        end
         
         
         % ----------------------------------------------------------------------------------
@@ -345,8 +353,28 @@ classdef RunClass < TreeNodeClass
                 listboxFuncPtr(hListbox, [obj.iSubj, obj.iRun]);
             end
             
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Find all variables needed by proc stream, find them in this 
+            % runs, and load them to proc stream input
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            
+            % a) Find all variables needed by proc stream
+            args = obj.procStream.input.InputArgs2Cell();
+
+            % b) Find these variables in this run
+            vars = [];
+            for ii=1:length(args)
+                if ~obj.FindVar(args{ii})
+                    continue;
+                end
+                eval( sprintf('vars.%s = obj.GetVar(args{ii});', args{ii}) );
+            end
+            
+            % c) Load the needed variables to proc stream input
+            obj.procStream.input.LoadVars(vars);
+
             % Calculate processing stream
-            procStreamCalc(obj);
+            obj.procStream.Calc();
         end
         
     end    % Public methods
@@ -354,7 +382,7 @@ classdef RunClass < TreeNodeClass
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Pubic Set/Get methods
+    % Pubic Set/Get methods for acquired data 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
             
@@ -469,7 +497,7 @@ classdef RunClass < TreeNodeClass
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % All other public methods
+    % All other public methods for acquired data
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
@@ -587,7 +615,7 @@ classdef RunClass < TreeNodeClass
             end
             obj.acquired.RenameCondition(oldname, newname);
         end
-                
+        
     end
-    
+
 end

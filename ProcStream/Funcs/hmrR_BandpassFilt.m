@@ -20,15 +20,11 @@
 
 function [y2,ylpf] = hmrR_BandpassFilt( y, fs, hpf, lpf )
 
-
-
 % convert t to fs
 % assume fs is a time vector if length>1
 if length(fs)>1
     fs = 1/(fs(2)-fs(1));
 end
-
-
 
 % low pass filter
 FilterType = 1;
@@ -42,7 +38,6 @@ else
 %    [fb,fa] = MakeFilter(FilterType,FilterOrder,fs,lpf,'low',Filter_Rp);
 end
 ylpf=filtfilt(fb,fa,y);
-
 
 % high pass filter
 FilterType = 1;

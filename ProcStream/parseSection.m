@@ -7,7 +7,6 @@ function [func, param] = parseSection(C, externVars)
 
 param = struct([]);
 func = repmat(InitProcFunc(),0,1);
-
 nstr = length(C);
 ifunc = 0;
 flag = 0;

@@ -5,30 +5,28 @@ f2.argIn = procStreamParseArgsIn(f2.argIn);
 f1.argOut = procStreamParseArgsOut(f1.argOut);
 f2.argOut = procStreamParseArgsOut(f2.argOut);
 
-f1.nArgIn = length(f1.argIn);
-f2.nArgIn = length(f2.argIn);
-f1.nArgOut = length(f1.argOut);
-f2.nArgOut = length(f2.argOut);
+nArgIn1 = length(f1.argIn);
+nArgIn2 = length(f2.argIn);
+nArgOut1 = length(f1.argOut);
+nArgOut2 = length(f2.argOut);
 
 score = 0;
 if ~f1.nParamVar && ~f2.nParamVar
-    score_max = f1.nArgIn + f1.nArgOut + f1.nParam + ...
-                f2.nArgIn + f2.nArgOut + f2.nParam;
+    score_max = nArgIn1 + nArgOut1 + f1.nParam + ...
+                nArgIn2 + nArgOut2 + f2.nParam;
 elseif f1.nParamVar && f2.nParamVar
-    score_max = f1.nArgIn + f1.nArgOut + ...
-                f2.nArgIn + f2.nArgOut;
+    score_max = nArgIn1 + nArgOut1 + ...
+                nArgIn2 + nArgOut2;
 else
     score = 0;
 end
 
-
 % argIn
-for i=1:min(f1.nArgIn,f2.nArgIn)
+for i=1:min(nArgIn1,nArgIn2)
     if strcmp(f1.argIn{i},f2.argIn{i})
         score=score+2;
     end
 end
-
 
 % param
 if ~f1.nParamVar && ~f2.nParamVar
@@ -39,9 +37,8 @@ if ~f1.nParamVar && ~f2.nParamVar
     end
 end
 
-
 % argOut
-for i=1:min(f1.nArgOut,f2.nArgOut)
+for i=1:min(nArgOut1,nArgOut2)
     if strcmp(f1.argOut{i},f2.argOut{i})
         score=score+2;
     end

@@ -13,7 +13,7 @@ if ~exist('procElem','var')
     procElem = [];
 end
 
-[G, S, R] = procStreamPreParse(fid_or_str, procElem);
+[G, S, R] = procInput.PreParse(fid_or_str, class(procElem));
 
 switch(procElem.type)
 case 'group'
@@ -21,30 +21,29 @@ case 'group'
     % generate default contents for group section if there's no % group header. 
     % This can happen if homer2-style config file was read    
     if isempty(G) | ~strcmpi(deblank([G{1},G{2}]), '%group')
-        [~, str] = procStreamDefaultFileGroup(parseSection(R));
+        [~, str] = procInput.DefaultFileGroup(procInput.Parse(R));
         foo = textscan(str, '%s');
         G = foo{1};
 	end
-    [procInput.func, procInput.param] = parseSection(G);
-    
+    procInput.Parse(G);
 case 'subj'
     
     % generate default contents for subject section if scanned contents is
     % from a file and there's no % subj header. This can happen if
     % homer2-style config file was loaded
     if isempty(S) | ~strcmpi(deblank([S{1},S{2}]), '%subj')
-        [~, str] = procStreamDefaultFileSubj(parseSection(R));
+        [~, str] = procInput.DefaultFileSubj(procInput.Parse(R));
         foo = textscan(str, '%s');
         S = foo{1};
     end
-    [procInput.func, procInput.param] = parseSection(S);
+    procInput.Parse(S);
     
 case 'run'
     
-    [procInput.func, procInput.param] = parseSection(R);
+    procInput.Parse(R);
     
 end
 
 % Lastly set the help field values for all func functions. 
-procInput.func = procStreamSetHelp(procInput.func);
+procInput.SetHelp();
 

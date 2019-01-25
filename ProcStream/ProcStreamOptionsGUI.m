@@ -108,7 +108,6 @@ for iFunc = 1:nfunc
 
         % Draw parameter edit boxes
         h_pedit=uicontrol(hObject,'style','edit','units','characters','position',[xpos_pedit, ypos, xsize_pval, 1.5]);
-        func(iFunc).paramHandle{iParam} = h_pedit;
         set(h_pedit,'string',sprintf(func(iFunc).paramFormat{iParam}, func(iFunc).paramVal{iParam} ) );
         set(h_pedit,'backgroundcolor',[1 1 1]);
         eval( sprintf(' fcn = @(hObject,eventdata)ProcStreamOptionsGUI(''edit_Callback'',hObject,[%d %d],guidata(hObject));',iFunc,iParam) );
@@ -164,9 +163,6 @@ end
 
 setappdata(hObject,'position',get(hObject, 'position'));
 setGuiFonts(hObject);
-
-
-
 
 
 % ----------------------------------------------------------

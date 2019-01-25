@@ -1,6 +1,5 @@
 function calcProcStream()
 
-files = NirsFilesClass().files;
-dataTree = DataTreeClass(files);
+dataTree = LoadDataTree('.nirs');
 dataTree.group.Calc();
 dataTree.group.Save();

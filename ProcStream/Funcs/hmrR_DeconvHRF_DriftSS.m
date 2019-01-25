@@ -1,5 +1,5 @@
 % [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] =
-% hmrR_DeconvHRF_DriftSS(y, s, t, SD, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+% hmrR_DeconvHRF_DriftSS(y, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 %
 % UI NAME: 
 % GLM_HRF_Drift_SS
@@ -15,7 +15,7 @@
 % s - stimulation vector (# time points x #conditions)=1 at stim onset otherwise =0
 % t - time vector corresponding with y and s
 % SD - source detector stucture (units should be consistent with rhoSD_ssThresh)
-% Aaux - A matrix of auxilliary regressors (#time points x #Aux channels)
+% aux - A matrix of auxilliary regressors (#time points x #Aux channels)
 % tIncAuto - a vector (#time points x 1) indicating which data time points
 %            are motion (=0) or not (=1)
 % trange - defines the range for the block average [tPre tPost]
@@ -83,7 +83,7 @@
 % LOG:
 
 function [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, yR] = ...
-    hmrR_DeconvHRF_DriftSS(y, s, t, SD, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+    hmrR_DeconvHRF_DriftSS(y, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 
 
 dt = t(2)-t(1);
@@ -304,9 +304,9 @@ for ii=2:(driftOrder+1)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%expand design matrix with Aaux
+%expand design matrix with aux
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nAux = size(Aaux,2);
+nAux = size(aux,2);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %expand design matrix for Motion Correction
@@ -341,7 +341,7 @@ lstInc = find(tIncAuto==1);
 %final design matrix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for iConc=1:2
-    A(:,:,iConc)=[dA(:,:,iConc) xDrift Aaux Amotion]; 
+    A(:,:,iConc)=[dA(:,:,iConc) xDrift aux Amotion]; 
 end
 
 nCh = size(y,3);

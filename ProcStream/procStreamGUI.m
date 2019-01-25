@@ -7,7 +7,10 @@ gui_State = struct('gui_Name',       mfilename, ...
                    'gui_OutputFcn',  @procStreamGUI_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
-if nargin && ischar(varargin{1})
+if nargin && ischar(varargin{1}) && ~strcmp(varargin{end},'userargs')
+    if varargin{1}(1)=='.';
+        varargin{1}(1) = '';
+    end
     gui_State.gui_Callback = str2func(varargin{1});
 end
 
@@ -20,15 +23,32 @@ end
 
 % -------------------------------------------------------------
 function procStreamGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+global procStreamGui
 global hmr
 
-iRunPanel = 2;
-iSubjPanel = 3;
-iGroupPanel = 1;
+% If running this GUI standalone then get our format from the arguments
+procStreamGui.format = '';
+if isempty(hmr)
+    if isempty(varargin)
+        procStreamGui.format = 'snirf';
+    else
+        procStreamGui.format = varargin{1};
+    end
+end
 
 % Choose default command line output for procStreamGUI
 handles.output = hObject;
 guidata(hObject, handles);
+
+procStreamGui.iRunPanel = 2;
+procStreamGui.iSubjPanel = 3;
+procStreamGui.iGroupPanel = 1;
+procStreamGui.iReg = {[],[],[]};
+procStreamGui.iPanel = 1;
+
+iRunPanel   = procStreamGui.iRunPanel;
+iSubjPanel  = procStreamGui.iSubjPanel;
+iGroupPanel = procStreamGui.iGroupPanel;
 
 % Update handles structure
 func = procStreamReg2ProcFunc('run');
@@ -51,41 +71,37 @@ set(handles.listboxFuncArgOut(iGroupPanel),'string',fcallOut)
 
 % Create tabs for run, subject, and group and move the panels to corresponding tabs. 
 htabgroup = uitabgroup('parent',hObject, 'units','normalized', 'position',[.04, .04, .95, .95]);
-htabRun = uitab('parent',htabgroup, 'title','       Run         ', 'ButtonDownFcn',{@uitabRun_ButtonDownFcn, guidata(hObject)});
-htabSubj = uitab('parent',htabgroup, 'title','       Subject         ', 'ButtonDownFcn',{@uitabSubj_ButtonDownFcn, guidata(hObject)});
-htabGroup = uitab('parent',htabgroup, 'title','       Group         ', 'ButtonDownFcn',{@uitabGroup_ButtonDownFcn, guidata(hObject)});
+htabR = uitab('parent',htabgroup, 'title','       Run         ', 'ButtonDownFcn',{@uitabRun_ButtonDownFcn, guidata(hObject)});
+htabS = uitab('parent',htabgroup, 'title','       Subject         ', 'ButtonDownFcn',{@uitabSubj_ButtonDownFcn, guidata(hObject)});
+htabG = uitab('parent',htabgroup, 'title','       Group         ', 'ButtonDownFcn',{@uitabGroup_ButtonDownFcn, guidata(hObject)});
+htab = htabR;
 
-set(handles.uipanelRun, 'parent',htabRun, 'position',[0, 0, 1, 1]);
-set(handles.uipanelSubj, 'parent',htabSubj, 'position',[0, 0, 1, 1]);
-set(handles.uipanelGroup, 'parent',htabGroup, 'position',[0, 0, 1, 1]);
+set(handles.uipanelRun, 'parent',htabR, 'position',[0, 0, 1, 1]);
+set(handles.uipanelSubj, 'parent',htabS, 'position',[0, 0, 1, 1]);
+set(handles.uipanelGroup, 'parent',htabG, 'position',[0, 0, 1, 1]);
 
-htab = -1;
-switch(class(hmr.dataTree.currElem.procElem))
-    case 'RunClass'
-        htab = htabRun;
-        iPanel = iRunPanel;
-    case 'SubjClass'
-        htab = htabSubj;
-        iPanel = iSubjPanel;
-    case 'GroupClass'
-        htab = htabGroup;
-        iPanel = iGroupPanel;
+procStreamGui.dataTree = LoadDataTree(procStreamGui.format, hmr);
+if ~isempty(procStreamGui.dataTree)
+    procStreamGui.procElem{iRunPanel} = procStreamGui.dataTree.group(1).subjs(1).runs(1).copy;
+    procStreamGui.procElem{iSubjPanel} = procStreamGui.dataTree.group(1).subjs(1).copy;
+    procStreamGui.procElem{iGroupPanel} = procStreamGui.dataTree.group(1).copy;
+    switch(class(procStreamGui.dataTree.currElem.procElem))
+        case 'RunClass'
+            htab = htabR;
+            procStreamGui.iPanel = iRunPanel;
+        case 'SubjClass'
+            htab = htabS;
+            procStreamGui.iPanel = iSubjPanel;
+        case 'GroupClass'
+            htab = htabG;
+            procStreamGui.iPanel = iGroupPanel;
+    end
+else
+    procStreamGui.procElem{iRunPanel} = RunClass();
+    procStreamGui.procElem{iSubjPanel} = SubjClass();
+    procStreamGui.procElem{iGroupPanel} = GroupClass();
 end
 set(htabgroup,'SelectedTab',htab);
-
-% Assign to procElem by value instead of reference - we don't 
-% want to change anything in hmr.dataTree.currElem in this GUI
-% until we click Save button
-procElem{iRunPanel} = hmr.dataTree.group(1).subjs(1).runs(1).copy();
-procElem{iSubjPanel} = hmr.dataTree.group(1).subjs(1).copy();
-procElem{iGroupPanel} = hmr.dataTree.group(1).copy();
-
-setappdata(hObject,'this',struct('iReg',{{[],[],[]}}, ...    % registry indices of the selected procStream functions (as shown in listboxPsFunc lisbox)
-                                 'iRunPanel',iRunPanel, ...
-                                 'iSubjPanel',iSubjPanel, ...
-                                 'iGroupPanel',iGroupPanel, ...
-                                 'procElem',{procElem}, ...
-                                 'iPanel',iPanel));
 getHelp(handles);
 setGuiFonts(hObject);
 
@@ -129,15 +145,14 @@ end
     
 
 % -------------------------------------------------------------
-function varargout = procStreamGUI_OutputFcn(hObject, eventdata, handles) 
+function varargout = procStreamGUI_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
-
 
 
 % -------------------------------------------------------------
 function listboxFunctions_Callback(hObject, eventdata, handles)
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
+global procStreamGui
+iPanel = procStreamGui.iPanel;
 
 ii = get(hObject,'value');
 set(handles.listboxFuncArgIn(iPanel),'value',ii);
@@ -150,8 +165,8 @@ set(handles.textHelp(iPanel),'string',foos);
 
 % -------------------------------------------------------------
 function listboxFuncArgOut_Callback(hObject, eventdata, handles)
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
+global procStreamGui
+iPanel = procStreamGui.iPanel;
 
 ii = get(hObject,'value');
 set(handles.listboxFuncArgIn(iPanel),'value',ii);
@@ -164,8 +179,8 @@ set(handles.textHelp(iPanel),'string',foos);
 
 % -------------------------------------------------------------
 function listboxFuncArgIn_Callback(hObject, eventdata, handles)
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
+global procStreamGui
+iPanel = procStreamGui.iPanel;
 
 ii = get(hObject,'value');
 set(handles.listboxFunctions(iPanel),'value',ii);
@@ -178,10 +193,9 @@ set(handles.textHelp(iPanel),'string',foos);
 
 % -------------------------------------------------------------
 function updateProcStreamList(handles,idx)
-
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
-iReg = this.iReg{iPanel};
+global procStreamGui
+iPanel = procStreamGui.iPanel;
+iReg = procStreamGui.iReg{iPanel};
 
 n = length(iReg);
 FArgOut = get(handles.listboxFuncArgOut(iPanel),'string');
@@ -213,9 +227,8 @@ set(handles.listboxPSFunc(iPanel),'value',idx)
 
 % -------------------------------------------------------------
 function listboxPSFunc_Callback(hObject, eventdata, handles)
-
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
+global procStreamGui
+iPanel = procStreamGui.iPanel;
 
 ii = get(hObject,'value');
 if isempty(ii)
@@ -233,9 +246,8 @@ set(handles.textHelp(iPanel),'string',foos);
 
 % -------------------------------------------------------------
 function listboxPSArgOut_Callback(hObject, eventdata, handles)
-
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
+global procStreamGui
+iPanel = procStreamGui.iPanel;
 
 ii = get(hObject,'value');
 if isempty(ii)
@@ -253,9 +265,9 @@ set(handles.textHelp(iPanel),'string',foos);
 
 % -------------------------------------------------------------
 function listboxPSArgIn_Callback(hObject, eventdata, handles)
-
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
+global procStreamGui
+iPanel = procStreamGui.iPanel;
+iReg = procStreamGui.iReg{iPanel};
 
 ii = get(hObject,'value');
 if isempty(ii)
@@ -273,10 +285,9 @@ set(handles.textHelp(iPanel),'string',foos);
 
 % -------------------------------------------------------------
 function pushbuttonAddFunc_Callback(hObject, eventdata, handles)
-
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
-iReg = this.iReg{iPanel};
+global procStreamGui
+iPanel = procStreamGui.iPanel;
+iReg = procStreamGui.iReg{iPanel};
 
 iFunc = get(handles.listboxFunctions(iPanel),'value');
 iPS = get(handles.listboxPSFunc(iPanel),'value');
@@ -292,17 +303,15 @@ else
     iPS2 = 1;
 end
 iReg = iRegTmp;
-this.iReg{iPanel} = iReg;
-setappdata(handles.figure1, 'this', this);
+procStreamGui.iReg{iPanel} = iReg;
 updateProcStreamList(handles,iPS2);
 
 
 % -------------------------------------------------------------
 function pushbuttonDeleteFunc_Callback(hObject, eventdata, handles)
-
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
-iReg = this.iReg{iPanel};
+global procStreamGui
+iPanel = procStreamGui.iPanel;
+iReg = procStreamGui.iReg{iPanel};
 
 n = length(iReg);
 if n<1
@@ -320,18 +329,16 @@ else
 end
 iReg = iRegTmp;
 
-this.iReg{iPanel} = iReg;
-setappdata(handles.figure1, 'this', this);
+procStreamGui.iReg{iPanel} = iReg;
 updateProcStreamList(handles,iPS2);
 
 
 
 % -------------------------------------------------------------
 function pushbuttonMoveUp_Callback(hObject, eventdata, handles)
-
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
-iReg = this.iReg{iPanel};
+global procStreamGui
+iPanel = procStreamGui.iPanel;
+iReg = procStreamGui.iReg{iPanel};
 
 iPS = get(handles.listboxPSFunc(iPanel),'value');
 if iPS == 1
@@ -347,18 +354,16 @@ iRegTmp([iPS-1 iPS]) = iReg([iPS iPS-1]);
 iPS2 = max(iPS-1,1);
 iReg = iRegTmp;
 
-this.iReg{iPanel} = iReg;
-setappdata(handles.figure1, 'this', this);
+procStreamGui.iReg{iPanel} = iReg;
 updateProcStreamList(handles,iPS2);
 
 
 
 % -------------------------------------------------------------
 function pushbuttonMoveDown_Callback(hObject, eventdata, handles)
-
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
-iReg = this.iReg{iPanel};
+global procStreamGui
+iPanel = procStreamGui.iPanel;
+iReg = procStreamGui.iReg{iPanel};
 
 iPS = get(handles.listboxPSFunc(iPanel),'value');
 n = length(iReg);
@@ -371,17 +376,15 @@ iRegTmp([iPS iPS+1]) = iReg([iPS+1 iPS]);
 iPS2 = iPS+1;
 iReg = iRegTmp;
 
-this.iReg{iPanel} = iReg;
-setappdata(handles.figure1, 'this', this);
+procStreamGui.iReg{iPanel} = iReg;
 updateProcStreamList(handles,iPS2);
 
 
 
 % -------------------------------------------------------------
 function pushbuttonLoad_Callback(hObject, eventdata, handles)
-
-this = getappdata(handles.figure1, 'this');
-iPanel_0 = this.iPanel;
+global procStreamGui
+iPanel_0 = procStreamGui.iPanel;
 
 ch = menu('Load current processing stream or config file?','Current processing stream','Config file','Cancel');
 if ch==3
@@ -395,8 +398,8 @@ if ch==2
     end    
 end
 for iPanel=1:3
-    iReg = this.iReg{iPanel};
-    procElem = this.procElem{iPanel};
+    iReg = procStreamGui.iReg{iPanel};
+    procElem = procStreamGui.procElem{iPanel};
     if ch==2
         fid = fopen([pathname,filename]);
         [procElem.procStream.input, ~] = procStreamParse(fid, procElem);
@@ -418,15 +421,13 @@ for iPanel=1:3
             [procElem.procStream.input, err2] = procStreamFixErr(err2, procElem.procStream.input, iReg);
         end
     end
-    this.iPanel = iPanel;
-    this.iReg{iPanel} = iReg;
-    setappdata(handles.figure1, 'this', this);
+    procStreamGui.iPanel = iPanel;
+    procStreamGui.iReg{iPanel} = iReg;
     updateProcStreamList(handles,1);
 end
 
 % Return iPanel to value at the beginning of this function 
-this.iPanel = iPanel_0;
-setappdata(handles.figure1, 'this', this);
+procStreamGui.iPanel = iPanel_0;
 if ch==2
     fclose(fid);
 end
@@ -435,12 +436,12 @@ end
 
 % -------------------------------------------------------------
 function pushbuttonSave_Callback(hObject, eventdata, handles)
-this = getappdata(handles.figure1, 'this');
-iReg = this.iReg;
-iRunPanel = this.iRunPanel;
-iSubjPanel = this.iSubjPanel;
-iGroupPanel = this.iGroupPanel;
-procElem = this.procElem;
+global procStreamGui
+iReg        = procStreamGui.iReg;
+iRunPanel   = procStreamGui.iRunPanel;
+iSubjPanel  = procStreamGui.iSubjPanel;
+iGroupPanel = procStreamGui.iGroupPanel;
+procElem    = procStreamGui.procElem;
 
 % Get the func at group, subject and run levels
 for iPanel=1:length(procElem)
@@ -468,8 +469,7 @@ if ch==3
     return;
 end
 if ch==1
-    global hmr
-    group = hmr.dataTree.group;
+    group = procStreamGui.dataTree.group;
     group.CopyProcInputFunc('group', procElem{iGroupPanel}.procStream.input);
     group.CopyProcInputFunc('subj', procElem{iSubjPanel}.procStream.input);
     group.CopyProcInputFunc('run', procElem{iRunPanel}.procStream.input);
@@ -485,8 +485,8 @@ end
 
 % -------------------------------------------------------------
 function getHelp(handles)
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
+global procStreamGui
+iPanel = procStreamGui.iPanel;
 
 iFunc = get(handles.listboxFunctions(iPanel),'value');
 FFunc = get(handles.listboxFunctions(iPanel),'string');
@@ -498,9 +498,9 @@ set(handles.textHelp(iPanel),'string',foos);
 
 % -------------------------------------------------
 function helpstr = procStreamHelpLookupByIndex(iFunc, handles)
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
-procElem = this.procElem{iPanel};
+global procStreamGui
+iPanel = procStreamGui.iPanel;
+procElem = procStreamGui.procElem{iPanel};
 
 func = procStreamReg2ProcFunc(procElem);
 helpstr = procStreamGenerateHelpStr(func(iFunc).help);
@@ -509,9 +509,10 @@ helpstr = procStreamGenerateHelpStr(func(iFunc).help);
 
 % -------------------------------------------------
 function helpstr = procStreamHelpLookupByName(name, handles)
-this = getappdata(handles.figure1, 'this');
-iPanel = this.iPanel;
-procElem = this.procElem{iPanel};
+global procStreamGui
+iPanel = procStreamGui.iPanel;
+procElem = procStreamGui.procElem{iPanel};
+
 helpstr = '';
 func = procStreamReg2ProcFunc(procElem);
 match=0;
@@ -549,36 +550,35 @@ helpstr = sprintf('%s%s\n', helpstr, help.argOutDescr);
 
 % --------------------------------------------------------------------
 function uitabRun_ButtonDownFcn(hObject, eventdata, handles)
+global procStreamGui
 
-this = getappdata(handles.figure1, 'this');
-this.iPanel = this.iRunPanel;
-setappdata(handles.figure1, 'this',this);
+procStreamGui.iPanel = procStreamGui.iRunPanel;
 getHelp(handles);
 
 
 
 % --------------------------------------------------------------------
 function uitabSubj_ButtonDownFcn(hObject, eventdata, handles)
+global procStreamGui
 
-this = getappdata(handles.figure1, 'this');
-this.iPanel = this.iSubjPanel;
-setappdata(handles.figure1, 'this',this);
+procStreamGui.iPanel = procStreamGui.iSubjPanel;
 getHelp(handles);
 
 
 
 % --------------------------------------------------------------------
 function uitabGroup_ButtonDownFcn(hObject, eventdata, handles)
+global procStreamGui
 
-this = getappdata(handles.figure1, 'this');
-this.iPanel = this.iGroupPanel;
-setappdata(handles.figure1, 'this',this);
+procStreamGui.iPanel = procStreamGui.iGroupPanel;
 getHelp(handles);
 
 
 
 % --------------------------------------------------------------------
-function SaveToFile(filenm, procElem)
+function SaveToFile(filenm)
+global procStreamGui
+procElem = procStreamGui.procElem;
 
 fid = fopen(filenm,'w');
 for iPanel=1:length(procElem)

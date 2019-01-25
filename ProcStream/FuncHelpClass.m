@@ -245,7 +245,7 @@ classdef FuncHelpClass < handle
         % -----------------------------------------------------------------
         function B = isFuncUsage(obj, helpStr, name, argIn, param, argOut)            
             B=0;            
-            if ~contains(helpStr, [name '('])
+            if ~includes(helpStr, [name '('])
                 return;
             end
             %{

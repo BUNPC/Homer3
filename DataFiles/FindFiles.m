@@ -69,7 +69,7 @@ end
 if ~exist('handles','var') || isempty(handles)
     handles = [];
 end
-if ~exist('fmt','var')
+if ~exist('fmt','var') || isempty(fmt)
     if ~isempty(hmr) && isstruct(hmr) && isfield(hmr,'format')
         fmt = hmr.format;
     else

@@ -9,14 +9,14 @@ if nargin>0
 else
     type = '';
 end
-
+procInput = ProcInputClass();
 reg      = procStreamReg(type);
 for ii=1:length(reg)
     S = textscan(reg{ii}, '%s');
-    func(ii) = parseSection(S{1});
-    func(ii).help = procStreamParseFuncHelp(func(ii));
+    procInput.Parse(S{1}, ii);
+    procInput.func(ii).help = FuncHelpClass(procInput.func(ii));
 end
-
+func = procInput.func;
 
 % -------------------------------------------------------------------
 function reg = procStreamReg(type)

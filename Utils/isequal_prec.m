@@ -20,7 +20,7 @@ function b = isequal_prec(x1,x2,n)
 %     
 %    
 %
-DEBUG=1;
+DEBUG=0;
 
 b = false;
 

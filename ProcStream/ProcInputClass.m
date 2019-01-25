@@ -4,8 +4,8 @@ classdef ProcInputClass < matlab.mixin.Copyable
     % of acquisition data or is derived from acquisition data but not stored there. 
     %
     properties
-        func;       % Processing stream functions
-        param;      % Processing stream user-settable input arguments and their current values
+        func;           % Processing stream functions
+        param;          % Processing stream user-settable input arguments and their current values
         CondName2Subj;  % Used by group processing stream
         CondName2Run;   % Used by subject processing stream      
         tIncMan;        % Manually include/excluded time points
@@ -20,7 +20,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
         % ----------------------------------------------------------------------------------
         function obj = ProcInputClass()
             obj.param = struct([]);
-            obj.func = struct([]);
+            obj.func = FuncClass().empty();
             obj.CondName2Subj = [];
             obj.CondName2Run = [];            
             obj.tIncMan = [];
@@ -312,7 +312,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
         % ----------------------------------------------------------------------------------
         function FileGen(obj, filepath, type)            
             % Generates default processOpt.cfg file.
-            % Note that fprintf outputs formatted text where some characters
+            % Note that fprintf outputs formatted textstr where some characters
             % are special characters - such as '%'. In order to write a
             % literal '%' you need to type '%%' in fprintf argument string
             % (2nd argument).
@@ -434,6 +434,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
         % ----------------------------------------------------------------------------------
         function Default(obj, type)
             obj.param = struct([]);
+            filecontents_str = '';
             switch(type)
                 case 'group'
                     [~, filecontents_str] = obj.DefaultFileGroup();
@@ -443,26 +444,208 @@ classdef ProcInputClass < matlab.mixin.Copyable
                     [~, filecontents_str] = obj.DefaultFileRun();
             end
             S = textscan(filecontents_str,'%s');
-            [obj.func, obj.param] = parseSection(S{1});
+            obj.Parse(S{1});
             obj.SetHelp();
         end
         
-    end
         
+        % ----------------------------------------------------------------------------------
+        function [G, S, R] = PreParse(obj, fid_or_str, type)
+            T = textscan(fid_or_str,'%s');
+            if isempty(T{1})
+                return;
+            end
+            Sections = obj.findSections(T{1});
+            if ischar(fid_or_str)
+                for ii=1:length(Sections)
+                    if ~strcmp(Sections{ii}{2}, 'group') && ~strcmp(Sections{ii}{2}, 'subj') && ~strcmp(Sections{ii}{2}, 'run')
+                        switch(type)
+                            case 'group'
+                                Sections{ii} = [{'%'}, {'group'}, Sections{ii}];
+                            case 'subj'
+                                Sections{ii} = [{'%'}, {'subj'}, Sections{ii}];
+                            case 'run'
+                                Sections{ii} = [{'%'}, {'run'}, Sections{ii}];
+                        end
+                    end
+                end
+            end
+            [G, S, R] = obj.consolidateSections(Sections);
+        end
+                
+        
+        % ----------------------------------------------------------------------------------
+        function Parse(obj, textstr, ifunc)
+            % Parse functions and parameters
+            % function call, param, param_format, param_value
+            % name{}, argOut{}, argIn{}, nParam(), param{nFunc}{nParam},
+            % paramFormat{nFunc}{nParam}, paramVal{nFunc}{nParam}()
+            obj.param = struct([]);
+            nstr = length(textstr);
+            if ~exist('ifunc','var') || isempty(ifunc)
+                ifunc = 0;
+            else
+                ifunc = ifunc-1;
+            end
+            flag = 0;
+            for ii=1:nstr
+                if flag==0 || textstr{ii}(1)=='@'
+                    if textstr{ii}=='%'
+                        flag = 999;
+                    elseif textstr{ii}=='@'                        
+                        ifunc = ifunc+1;
+                        k = findstr(textstr{ii+1},',');
+                        obj.func(ifunc) = FuncClass();
+                        if ~isempty(k)
+                            obj.func(ifunc).name = textstr{ii+1}(1:k-1);
+                            obj.func(ifunc).nameUI = textstr{ii+1}(k+1:end);
+                            k = findstr(obj.func(ifunc).nameUI,'_');
+                            obj.func(ifunc).nameUI(k)=' ';
+                        else
+                            obj.func(ifunc).name = textstr{ii+1};
+                            obj.func(ifunc).nameUI = obj.func(ifunc).name;
+                        end
+                        obj.func(ifunc).argOut = textstr{ii+2};
+                        obj.func(ifunc).argIn = textstr{ii+3};
+                        flag = 3;
+                    else
+                        if(textstr{ii} == '*')
+                            obj.func(ifunc).nParamVar = 1;
+                        elseif(textstr{ii} ~= '*')
+                            obj.func(ifunc).nParam = obj.func(ifunc).nParam + 1;
+                            obj.func(ifunc).param{obj.func(ifunc).nParam} = textstr{ii};
+                            
+                            for jj = 1:length(textstr{ii+1})
+                                if textstr{ii+1}(jj)=='_'
+                                    textstr{ii+1}(jj) = ' ';
+                                end
+                            end
+                            obj.func(ifunc).paramFormat{obj.func(ifunc).nParam} = textstr{ii+1};
+                            
+                            for jj = 1:length(textstr{ii+2})
+                                if textstr{ii+2}(jj)=='_'
+                                    textstr{ii+2}(jj) = ' ';
+                                end
+                            end
+                            val = str2num(textstr{ii+2});
+                            obj.func(ifunc).paramVal{obj.func(ifunc).nParam} = val;
+                            if(textstr{ii} ~= '*')
+                                eval( sprintf('obj.param(1).%s_%s = val;',obj.func(ifunc).name, obj.func(ifunc).param{obj.func(ifunc).nParam}) );
+                            end
+                            obj.func(ifunc).nParamVar = 0;
+                        end
+                        flag = 2;
+                    end
+                else
+                    flag = flag-1;
+                end
+            end
+        end
+        
+    end
+    
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Help related methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
+        % ---------------------------------------------------------------------
+        function Sections = findSections(obj, T)
+            % Function to extract the 3 proc stream sections - group, subj, and run -
+            % from a processing stream config cell array.
+            n=length(T);
+            Sections={};
+            kk=1;
+            ii=1;
+            while ii<=n
+                if T{ii}=='%'
+                    if (ii+1<=n) & (strcmp(T{ii+1},'group') | strcmp(T{ii+1},'subj') | strcmp(T{ii+1},'run') | T{ii+1}=='@')
+                        Sections{kk}{1} = T{ii};
+                        jj=2;
+                        for mm=ii+1:n
+                            Sections{kk}{jj} = T{mm};
+                            jj=jj+1;
+                            if T{mm}=='%'
+                                if (mm+1<=n) & (strcmp(T{mm+1},'group') | strcmp(T{mm+1},'subj') | strcmp(T{mm+1},'run'))
+                                    break;
+                                end
+                            end
+                        end
+                        kk=kk+1;
+                        ii=mm;
+                        continue;
+                    end
+                elseif T{ii}=='@'
+                    Sections{kk}{1} = T{ii};
+                    jj=2;
+                    for mm=ii+1:n
+                        Sections{kk}{jj} = T{mm};
+                        jj=jj+1;
+                        if T{mm}=='%'
+                            if (mm+1<=n) & (strcmp(T{mm+1},'group') | strcmp(T{mm+1},'subj') | strcmp(T{mm+1},'run'))
+                                break;
+                            end
+                        end
+                    end
+                    kk=kk+1;
+                    ii=mm;
+                    continue;
+                end
+                ii=ii+1;
+            end
+        end
+        
+        
+        % ---------------------------------------------------------------------
+        function [G, S, R] = consolidateSections(obj, Sections)
+            
+            % This functions allows the functions for a run, subject or group
+            % to be scattered. That is, you can multiple group, subject or run
+            % sections; they'll be consolidated by this function into one group,
+            % subject and run sections
+            
+            G={};
+            S={};
+            R={};
+            jj=1; kk=1; ll=1;
+            for ii=1:length(Sections)
+                if Sections{ii}{1} ~= '%'
+                    Sections{ii} = [{'%','run'},Sections{ii}];
+                end
+                if Sections{ii}{1} == '%' && (~strcmp(Sections{ii}{2},'group') && ~strcmp(Sections{ii}{2},'subj') && ~strcmp(Sections{ii}{2},'run'))
+                    Sections{ii} = [{'%','run'},Sections{ii}];
+                end
+                
+                if Sections{ii}{1} == '%' && strcmp(Sections{ii}{2},'group')
+                    if isempty(G)
+                        G = Sections{ii};
+                    else
+                        G = [G(1:end) Sections{ii}{3:end}];
+                    end
+                end
+                if Sections{ii}{1} == '%' && strcmp(Sections{ii}{2},'subj')
+                    if isempty(S)
+                        S = Sections{ii};
+                    else
+                        S = [S(1:end) Sections{ii}(3:end)];
+                    end
+                end
+                if Sections{ii}{1} == '%' && strcmp(Sections{ii}{2},'run')
+                    if isempty(R)
+                        R = Sections{ii};
+                    else
+                        R = [R(1:end) Sections{ii}(3:end)];
+                    end
+                end
+            end
+        end
+        
+        
         % ----------------------------------------------------------------------------------
         function SetHelp(obj)
             for ii=1:length(obj.func)
-                if ~isproperty(obj.func(ii), 'help')
-                    obj.func(ii).help = InitHelp(0);
-                end
-                if isempty(obj.func(ii).help.callstr)
-                    obj.func(ii).help = procStreamParseFuncHelp(obj.func(ii));
-                end
+                obj.func(ii).help = FuncHelpClass(obj.func(ii));
             end
         end
         

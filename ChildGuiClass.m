@@ -38,17 +38,17 @@ classdef ChildGuiClass < handle
                     a = obj.args;
                     % Allow passing of up to 5 arguments.
                     switch(length(a))
-                        case 0;
+                        case 0
                             obj.Launch();
-                        case 1;
+                        case 1
                             obj.Launch(a{1});
-                        case 2;
+                        case 2
                             obj.Launch(a{1}, a{2});
-                        case 3;
+                        case 3
                             obj.Launch(a{1}, a{2}, a{3});
-                        case 4;
+                        case 4
                             obj.Launch(a{1}, a{2}, a{3}, a{4});
-                        case 5;
+                        case 5
                             obj.Launch(a{1}, a{2}, a{3}, a{4}, a{5});
                     end
                 end
@@ -78,17 +78,17 @@ classdef ChildGuiClass < handle
                 % the gui is not seen to change position. If the position is set from within the GUI it 
                 % appears only in the position we pass it since it is invisible until the gui's open function 
                 % exits
-                case 0;
+                case 0
                     eval( sprintf('obj.handle = %s(obj.lastpos);', obj.name) );
-                case 1;
+                case 1
                     eval( sprintf('obj.handle = %s(a{1}, obj.lastpos);', obj.name) );
-                case 2;
+                case 2
                     eval( sprintf('obj.handle = %s(a{1}, a{2}, obj.lastpos);', obj.name) );
-                case 3;
+                case 3
                     eval( sprintf('obj.handle = %s(a{1}, a{2}, a{3}, obj.lastpos);', obj.name) );
-                case 4;
+                case 4
                     eval( sprintf('obj.handle = %s(a{1}, a{2}, a{3}, a{4}, obj.lastpos);', obj.name) );
-                case 5;
+                case 5
                     eval( sprintf('obj.handle = %s(a{1}, a{2}, a{3}, a{4}, a{5}, obj.lastpos);', obj.name) );
             end
             if ishandle(obj.handle)

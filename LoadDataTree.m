@@ -11,6 +11,14 @@ function dataTree = LoadDataTree(varargin)
 %       dataTree = LoadDataTree(parent, handles)
 %       dataTree = LoadDataTree(parent, handles, fptr)
 %
+% Description:
+%       
+%       This function is (or will be) used by all the Homer3 GUIs 
+%       (e.g., ProcStreamGUI, PlotProbeGUI, StimEditGUI, and ofcourse 
+%       Homer3 GUI itself) to load the primary Homer3 data class object, 
+%       dataTree, containing group, subject and run data. 
+%       
+
 
 % First get all the argument there are to get using the 8 possible syntax
 % calls 

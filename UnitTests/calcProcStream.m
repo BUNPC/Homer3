@@ -1,5 +1,9 @@
-function calcProcStream()
+function calcProcStream(datafmt)
 
-dataTree = LoadDataTree('.nirs');
+if ~exist('datafmt','var')
+    datafmt = 'nirs';
+end
+
+dataTree = LoadDataTree(datafmt);
 dataTree.group.Calc();
 dataTree.group.Save();

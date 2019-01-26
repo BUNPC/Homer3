@@ -22,6 +22,7 @@ classdef NirsClass < AcqDataClass
             obj.aux       = [];
             obj.CondNames = {};
             obj.errmargin = 1e-3;
+            obj.fileformat = 'mat';
             
             if ~exist('filename','var')
                 return;
@@ -30,7 +31,6 @@ classdef NirsClass < AcqDataClass
                 return;
             end
             obj.filename  = filename;
-            
             obj.Load();            
         end
         
@@ -44,76 +44,56 @@ classdef NirsClass < AcqDataClass
         
         
         % ---------------------------------------------------------
-        function Load(obj)
-            
+        function LoadMatlabFormat(obj)
             if isempty(obj.filename) || ~exist(obj.filename, 'file')
                 return;
             end
-            
             warning('off', 'MATLAB:load:variableNotFound');
-            
             fdata = load(obj.filename,'-mat', 'SD','t','d','s','aux','CondNames');
-            
             if isproperty(fdata,'d')
                 obj.d = fdata.d;
             end
-            
             if isproperty(fdata,'t')
                 obj.t = fdata.t;
             end
-            
             if isproperty(fdata,'SD')
                 obj.SetSD(fdata.SD);
             end
-            
             if isproperty(fdata,'s')
                 obj.s = fdata.s;
             end
-            
             if isproperty(fdata,'aux')
                 obj.aux = fdata.aux;
             end
-            
             if isproperty(fdata,'CondNames')
                 obj.CondNames = fdata.CondNames;
             else
                 obj.InitCondNames();
             end
-            
             if ~isempty(obj.t)
                 obj.errmargin = min(diff(obj.t))/10;
             end
-            
             obj.SortStims();
-            
         end
         
         
         
         % ---------------------------------------------------------
-        function Save(obj)
-            
+        function SaveMatlabFormat(obj)
             SD        = obj.SD;
             s         = obj.s;
             CondNames = obj.CondNames;
-            
-            save(obj.filename, '-mat', '-append', 'SD','s','CondNames');
-            
+            save(obj.filename, '-mat', '-append', 'SD','s','CondNames');            
         end
-        
-        
+                
         
         % ---------------------------------------------------------
         function nTrials = InitCondNames(obj)
-            
             if isempty(obj.CondNames)
                 obj.CondNames = repmat({''},1,size(obj.s,2));
             end
-            
             for ii=1:size(obj.s,2)
-                
                 if isempty(obj.CondNames{ii})
-                    
                     % Make sure not to duplicate a condition name
                     jj=0;
                     kk=ii+jj;
@@ -124,9 +104,7 @@ classdef NirsClass < AcqDataClass
                         condName = num2str(kk);
                     end
                     obj.CondNames{ii} = condName;
-                    
                 else
-                    
                     % Check if CondNames{ii} has a name. If not name it but
                     % make sure not to duplicate a condition name
                     k = find(strcmp(obj.CondNames{ii}, obj.CondNames));
@@ -141,13 +119,9 @@ classdef NirsClass < AcqDataClass
                             jj=jj+1;
                         end
                     end
-                    
                 end
-                
             end
-            
             nTrials = sum(obj.s,1);
-            
         end
         
     end

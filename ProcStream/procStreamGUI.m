@@ -26,15 +26,43 @@ function procStreamGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global procStreamGui
 global hmr
 
-% If running this GUI standalone then get our format from the arguments
+procStreamGui = [];
+
+%%%% Begin parse arguments 
+
 procStreamGui.format = '';
-if isempty(hmr)
+procStreamGui.pos = [];
+if ~isempty(hmr)
+    procStreamGui.format = hmr.format;
+end
+
+% Format argument
+if isempty(procStreamGui.format)
     if isempty(varargin)
         procStreamGui.format = 'snirf';
-    else
+    elseif ischar(varargin{1})
         procStreamGui.format = varargin{1};
     end
 end
+
+% Position argument
+if isempty(procStreamGui.pos)
+    if length(varargin)==1 && ~ischar(varargin{1})
+        procStreamGui.pos = varargin{1};
+    elseif length(varargin)==2 && ~ischar(varargin{2})
+        procStreamGui.pos = varargin{2};
+    end
+end
+
+%%%% End parse arguments 
+
+
+% See if we can set the position
+p = procStreamGui.pos;
+if ~isempty(p)
+    set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
+end
+
 
 % Choose default command line output for procStreamGUI
 handles.output = hObject;
@@ -469,6 +497,9 @@ if ch==3
     return;
 end
 if ch==1
+    if isempty(procStreamGui.dataTree)
+        return;
+    end
     group = procStreamGui.dataTree.group;
     group.CopyProcInputFunc('group', procElem{iGroupPanel}.procStream.input);
     group.CopyProcInputFunc('subj', procElem{iSubjPanel}.procStream.input);
@@ -478,7 +509,7 @@ else
     if filenm==0
         return
     end
-    SaveToFile([pathnm,filenm], procElem);
+    SaveToFile([pathnm,filenm]);
 end
 
 

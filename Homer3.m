@@ -140,6 +140,7 @@ hmr.dataTree.DisplayCurrElem(guiMain);
 
 hmr.handles.this = hObject;
 hmr.handles.proccessOpt = [];
+hmr.childguis(1) = ChildGuiClass('procStreamGUI');
 
 setGuiFonts(hObject);
 
@@ -178,6 +179,9 @@ delete(hmr.plotprobe);
 delete(hmr.dataTree);
 if ishandle(hmr.handles.this)
     delete(hmr.handles.this);
+end
+for ii=1:length(hmr.childguis)
+    hmr.childguis.Close();
 end
 
 hmr = [];
@@ -561,8 +565,15 @@ hmr.guiMain   = guiMain;
 
 % --------------------------------------------------------------------
 function menuItemProcStreamEdit_Callback(hObject, eventdata, handles)
+global hmr
 
-procStreamGUI();
+for ii=1:length(hmr.childguis)
+    if strcmp(hmr.childguis.GetName, 'procStreamGUI')
+        break;
+    end
+end
+hmr.childguis(ii).Launch();
+
 
 
 % --------------------------------------------------------------------

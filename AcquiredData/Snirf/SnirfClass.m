@@ -26,6 +26,7 @@ classdef SnirfClass < AcqDataClass
             
             % This parameter does NOT get saved when saving to Snirf file
             obj.filename = '';
+            obj.fileformat = 'hdf5';
             
             % Initialize fields that can be initialized without any
             % arguments
@@ -54,16 +55,13 @@ classdef SnirfClass < AcqDataClass
                 CondNames = varargin{6};
             end
             
-            
-            % The basic 5 of a .nirs format in a struct 
+            % The basic 5 of a .nirs format in a struct
             if nargin==1
-                
                 if ischar(varargin{1})
                     obj.filename = varargin{1};
                     obj.Load();
                 elseif isstruct(varargin{1})
-                    nirs = varargin{1};
-                    
+                    nirs = varargin{1};                    
                     obj.data(1) = DataClass(nirs.d, nirs.t, nirs.SD.MeasList);
                     for ii=1:size(nirs.s,2)
                         if isfield(nirs, 'CondNames')
@@ -77,10 +75,8 @@ classdef SnirfClass < AcqDataClass
                         obj.aux(ii) = AuxClass(nirs.aux(:,ii), nirs.t, sprintf('aux%d',ii));
                     end
                 end
-                
             % The basic 5 of a .nirs format as separate args
             elseif nargin==5
-                
                 obj.data(1) = DataClass(d,t,SD.MeasList);
                 for ii=1:size(s,2)
                     obj.stim(ii) = StimClass(s(:,ii),t,num2str(ii));
@@ -89,10 +85,8 @@ classdef SnirfClass < AcqDataClass
                 for ii=1:size(aux,2)
                     obj.aux(ii) = AuxClass(aux, t, sprintf('aux%d',ii));
                 end
-                
             % The basic 5 of a .nirs format plus condition names
             elseif nargin==6
-                
                 obj.data(1) = DataClass(d,t,SD.MeasList);
                 for ii=1:size(s,2)
                     obj.stim(ii) = StimClass(s(:,ii),t,CondNames{ii});
@@ -101,9 +95,7 @@ classdef SnirfClass < AcqDataClass
                 for ii=1:size(aux,2)
                     obj.aux(ii) = AuxClass(aux, t, sprintf('aux%d',ii));
                 end
-                
             end
-            
         end
         
         
@@ -121,8 +113,7 @@ classdef SnirfClass < AcqDataClass
         
         
         % -------------------------------------------------------
-        function obj = Load(obj, fname, parent)
-
+        function obj = LoadHdf5(obj, fname, parent)
             % Overwrite 1st argument if the property filename is NOT empty
             if ~isempty(obj.filename)
                 fname = obj.filename;
@@ -211,13 +202,11 @@ classdef SnirfClass < AcqDataClass
                 end
                 ii=ii+1;
             end
-            
         end
         
         
         % -------------------------------------------------------
-        function Save(obj, fname, parent)
-            
+        function SaveHdf5(obj, fname, parent)
             if ~isempty(obj.filename)
                 fname = obj.filename;
             end
@@ -268,9 +257,7 @@ classdef SnirfClass < AcqDataClass
             for ii=1:length(obj.aux)
                 obj.aux(ii).Save(fname, [parent, '/aux_', num2str(ii)]);
             end
-                        
         end
-        
                 
     end
     

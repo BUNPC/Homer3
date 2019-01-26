@@ -1,8 +1,7 @@
 function status = compareOutputs1()
+global DEBUG1
 
 status = 0;
-
-DEBUG1 = 1;
 prec = -10;
 
 % Load results from homer2 and homer3 
@@ -89,12 +88,6 @@ if ~isempty(dcAvg_erridxs)
         end
         grid on;
     end
-end
-
-if status==0
-    fprintf('Output matches homer2 output for this data\n');
-else
-    fprintf('Output does NOT match homer2 output for this data\n');    
 end
 
 

@@ -42,7 +42,7 @@ classdef TreeNodeClass < handle
         
         
         % ---------------------------------------------------------------------------------
-        function [procInput, filename] = GetProcInputDefault(obj, filename)            
+        function [procInput, filename] = GetProcInputDefault(obj, filename)
             procInput = struct([]);
             if ~exist('filename','var') || isempty(filename)
                 filename = '';

@@ -1,10 +1,11 @@
 function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
+% SYNTAX:
 % [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
 %
 % UI NAME:
 % Block_Average_Group
 %
-%
+% DESCRIPTION:
 % Calculate the block average for all subjects, for all common stimuli accross subjects
 % over the time range trange. 
 %

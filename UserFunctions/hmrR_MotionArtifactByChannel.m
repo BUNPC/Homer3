@@ -1,16 +1,16 @@
+% SYNTAX:
 % [tInc,tIncCh] = hmrR_MotionArtifactByChannel(d, fs, SD, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % UI NAME:   
 % Motion_Artifacts_By_Channel
 %
-%
+% DESCRIPTION:
 % Identifies motion artifacts in an input data matrix d. If any active 
 % data channel exhibits a signal change greater than std_thresh or
 % amp_thresh, then a segment of data around that time point is marked as a
 % motion artifact. The channel-wise motion artifacts are recorded in the
 % output matrix tIncCh. If any channel has a motion artifact, it is
 % indicated by the vector tInc.
-%
 %
 % INPUTS:
 % d: data matrix, timepoints x sd pairs

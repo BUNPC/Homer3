@@ -1,32 +1,31 @@
-classdef FuncRegistryClass < matlab.mixin.Copyable
+classdef FuncRegClass < matlab.mixin.Copyable
 
     properties
-        p1
-        p2
-        p3
+        entries
     end
     
     
     methods
         
         % ----------------------------------------------------------------------------------
-        function obj = FuncRegistryClass()
-            obj.p1 = [];
-            obj.p2 = [];
-            obj.p3 = [];
-        end
-                
-        
-        % ----------------------------------------------------------------------------------
-        function f1(obj)
+        function obj = FuncRegClass()
+            obj.entries = FuncRegEntryClass().empty();
         end
         
         % ----------------------------------------------------------------------------------
-        function f2(obj)
+        function idx = FindEntry(obj, funcname)
         end
         
         % ----------------------------------------------------------------------------------
-        function f3(obj)
+        function AddEntry(obj)
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function EditEntry(obj, idx)
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function DeleteEntry(obj, idx)
         end
         
     end

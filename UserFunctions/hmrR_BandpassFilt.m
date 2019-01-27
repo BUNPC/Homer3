@@ -1,9 +1,10 @@
+% SYNTAX:
 % y2 = hmrR_BandpassFilt( y, fs, hpf, lpf )
 %
 % UI NAME:
 % Bandpass_Filter
 %
-% y2 = hmrR_BandpassFilt( y, fs, hpf, lpf )
+% DESCRIPTION:
 % Perform a bandpass filter
 %
 % INPUT:

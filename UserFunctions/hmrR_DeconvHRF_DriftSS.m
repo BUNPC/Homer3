@@ -1,8 +1,11 @@
+% SYNTAX:
 % [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] =
-% hmrR_DeconvHRF_DriftSS(y, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
-%
+%     hmrR_DeconvHRF_DriftSS(y, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 % UI NAME: 
 % GLM_HRF_Drift_SS
+%
+% DESCRIPTION:
+%
 %
 % This script estimates the HRF with options to specify the temporal basis
 % function type and corresponding parameters, whether or not to perform
@@ -10,7 +13,11 @@
 % whether or not to correct for motion artifacts. You can also choose the
 % method for solving the GLM matrix equation.
 %
+%
+%
 % INPUTS:
+%
+%
 % y - this is the concentration data with dimensions #time points x [HbO/HbR/HbT] x #channels
 % s - stimulation vector (# time points x #conditions)=1 at stim onset otherwise =0
 % t - time vector corresponding with y and s
@@ -63,8 +70,8 @@
 % driftOrder - Polynomial drift correction of this order
 % flagMotionCorrect - set to 1 to baseline correct between motion epochs indicated in tIncAuto, otherwise set to 0 
 %
-% gstd - std for gaussian shape temporal basis function (sec)
-% gms - mean for gaussian shape temporal basis function (sec)
+%
+%
 %
 % OUTPUTS:
 % yavg - the averaged results
@@ -80,7 +87,10 @@
 % R - the correlation coefficient of the GLM fit to the data 
 %     (#Channels x HbX)
 %
+%
+%
 % LOG:
+%
 
 function [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, yR] = ...
     hmrR_DeconvHRF_DriftSS(y, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )

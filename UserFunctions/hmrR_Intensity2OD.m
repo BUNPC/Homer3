@@ -1,8 +1,10 @@
+% SYNTAX:
 % dod = hmrR_Intensity2OD( d )
 %
 % UI NAME:
 % Intensity_to_OD 
 %
+% DESCRIPTION:
 % Converts internsity (raw data) to optical density
 %
 % INPUT

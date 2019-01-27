@@ -1,8 +1,10 @@
+% SYNTAX:
 % [s,tRange] = hmrR_StimRejection(t,s,tIncAuto,tIncMan,tRange)
 %
 % UI NAME:
 % Stim_Exclude
 %
+% DESCRIPTION:
 % Excludes stims that fall within the time points identified as 
 % motion artifacts from HRF calculation.
 %

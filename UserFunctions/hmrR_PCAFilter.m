@@ -1,9 +1,10 @@
+% SYNTAX:
 % [yc, svs, nSV] = hmrR_PCAFilter( y, SD, tInc, nSV )
 %
 % UI NAME:
 % PCA_Filter
 %
-% [yc, svs, nSV] = hmrR_PCAFilter( y, SD, tInc, nSV )
+% DESCRIPTION:
 % Perform a PCA filter on the data matrix y. 
 %
 % INPUT:

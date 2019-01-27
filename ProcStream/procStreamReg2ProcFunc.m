@@ -14,7 +14,7 @@ reg      = procStreamReg(type);
 for ii=1:length(reg)
     S = textscan(reg{ii}, '%s');
     procInput.Parse(S{1}, ii);
-    procInput.func(ii).help = FuncHelpClass(procInput.func(ii));
+    procInput.func(ii).help = FuncHelpClass(procInput.func(ii).name);
 end
 func = procInput.func;
 

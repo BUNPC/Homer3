@@ -645,7 +645,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
         % ----------------------------------------------------------------------------------
         function SetHelp(obj)
             for ii=1:length(obj.func)
-                obj.func(ii).help = FuncHelpClass(obj.func(ii));
+                obj.func(ii).help = FuncHelpClass(obj.func(ii).name);
             end
         end
         

@@ -1,55 +1,66 @@
 classdef FuncHelpClass < handle
     properties
-        strs;
-        callstr;
-        usage;
-        nameUI;
-        genDescr;
-        argInDescr;
-        paramDescr;
-        argOutDescr;
+        funcname;
+        helpstr;
+        sections;
     end
     
     methods
         
         % -------------------------------------------------------------
-        function obj = FuncHelpClass(varargin)            
+        function obj = FuncHelpClass(funcname)
+            % Syntax:
+            %       fhelp = FuncHelpClass(funcname);
+            %
+            % Examples:            
+            %       fhelp = FuncHelpClass('hmrR_DeconvHRF_DriftSS');
+            %
             if nargin==0
                 return;
             end
-            func = varargin{1};
-            
-            obj.strs = {};
-            obj.callstr = '';
-            obj.usage = '';
-            obj.nameUI = '';
-            obj.genDescr = '';
-            obj.argInDescr = '';
-            obj.paramDescr = repmat({''},func.nParam,1);
-            obj.argOutDescr = '';
-            
-            obj.Parse(func);
+            obj.funcname = funcname;
+            obj.helpstr = str2cell(help(funcname), [], 'keepblanks');
+            sectionNames = {
+                            'SYNTAX'
+                            'UI NAME'
+                            'DESCRIPTION'
+                            'INPUT'
+                            'OUTPUT'
+                            'USAGE OPTIONS'
+                            'TO DO'
+                            'LOG'
+                           };
+            for ii=1:length(sectionNames)
+                obj.AddSection(sectionNames{ii});
+            end
+            obj.ParseSections(funcname);
         end
         
         
+        % ---------------------------------------------------------------
+        function AddSection(obj, name)
+            fieldname = name;
+            fieldname(fieldname==' ')='';
+            fieldname = lower(fieldname);
+            eval( sprintf('obj.sections.%s = struct(''name'',name, ''lines'',[0,0], ''str'','''');', fieldname) );            
+        end
+        
         
         % -------------------------------------------------------------
-        function Parse(obj, func)
+        function ParseSections(obj, funcname)
             % This function parses the help of a proc stream function
             % into a help structure. The following is the help format
             % it expects:
             %
             % --------------------------------------
+            % SYNTAX:
             % [p1,p2,...pn] = name(a1,a2,...am)
-            %
             %
             % UI NAME:
             % <User Interface Function Name>
             %
-            %
             % DESCRIPTION:
             % <General function description>
-            %
             %
             % INPUT:
             % a1 - <Description of a1>
@@ -57,295 +68,146 @@ classdef FuncHelpClass < handle
             %    . . . . . . . . . .
             % am - <Description of am>
             %
-            %
             % OUPUT:
             % p1 - <Description of p1>
             % p2 - <Description of p2>
             %    . . . . . . . . . .
             % pn - <Description of pn>
             %
-            % LOG:
-            % <Person A, Date, and description of code modification made>
-            % <Person B, Date, and description of code modification made>
-            % . . . . . . . . .
+            % USAGE OPTIONS:
+            % [p1,p2,...pn] = name(a1,a2,...am)
+            % [p1,p2,...pn] = name(a1,a2,...am)
+            %    . . . . . . . . . .
+            % [p1,p2,...pn] = name(a1,a2,...am)
             %
-            % TO DO:
-            % <Desription of changes which are needed in the future>
             %
             % --------------------------------------
             %
-            % The LOG and TO DO are optional. These fields are less necessary
-            % for a complete parsing  then the other fields.
-            %
-            % If this format isn't followed then this function tries to assign as
-            % much of the help text as possible to the field genDescr, which is
-            % used for the generic function description.
-            %
-            name       = func.name;
-            param      = func.param;
-            argIn      = func.argIn;
-            argOut     = func.argOut;
             
-            argIn      = procStreamParseArgsIn(argIn);
-            argOut     = procStreamParseArgsOut(argOut);
+            % Find the lines in the help that belong to each help section
+            obj.FindSectionLines();
+                        
+            % Remove leading and trailing blank lines from each section
+            obj.RemoveBlankLines();
             
-            % helpStr is a cell array of strings. The first element of the cell
-            % array is the call string (the kind you'd find in proceccOpt.cfg file.
-            % The rest of the strings make up the help text.
-            helpStr    = str2cell(help(name));
-            
-            nParam = length(param);
-            nArgIn = length(argIn);
-            nArgOut = length(argOut);
-                       
-            usageLines = [0 0];
-            nameLines = [0 0];
-            genDescrLines = [1,length(helpStr)];
-            argInDescrLines = [0,0];
-            paramDescrLines = [0,0];
-            argOutDescrLines = [0,0];
-            logDescrLines = [0,0];
-            toDoDescrLines = [0,0];
-            
-            % Find the lines in the help string that belong to each help field
-            for iLine=1:length(helpStr)
-                if isempty(helpStr{iLine})
-                    continue;
-                end
-                
-                if obj.isFuncUsage(helpStr{iLine}, name, argIn, param, argOut)
-                    usageLines(1) = iLine;
-                    usageLines(2) = iLine;
-                    genDescrLines(1) = iLine+1;
-                end
-                
-                if ~isempty(strfind(helpStr{iLine}, 'UI NAME'))
-                    if usageLines(1)>0
-                        usageLines(2) = iLine-1;
+            % Now that we have the lines associated with each help section,
+            % assign the text from these lines to corresponding help sections.
+            obj.AssignSectionText();
+        end
+        
+        
+        % -------------------------------------------------------------
+        function FindSectionLines(obj)
+            fields = propnames(obj.sections);
+            for iLine=1:length(obj.helpstr)
+                for jj=1:length(fields)
+                    secname = eval( sprintf('obj.sections.%s.name', fields{jj}) ); 
+                    if includes(obj.helpstr{iLine}, secname)
+                        EndPrevSection(obj, iLine);
+                        eval( sprintf('obj.sections.%s.lines(1) = iLine+1;', fields{jj}) );
                     end
-                    nameLines(1) = iLine+1;
-                    nameLines(2) = iLine+1;
-                    genDescrLines(1) = iLine+2;
-                end
-                
-                if ~isempty(strfind(helpStr{iLine}, 'DESCRIPTION'))
-                    if nameLines(1)==0 && (usageLines(1)>0 && usageLines(2)==0)
-                        usageLines(2) = iLine-1;
-                    elseif nameLines(1)>0
-                        nameLines(2) = iLine-1;
-                    end
-                    genDescrLines(1) = iLine;
-                end
-                
-                if ~isempty(strfind(helpStr{iLine}, 'INPUT'))
-                    genDescrLines(2) = iLine-1;
-                    if nArgIn>0
-                        argInDescrLines(1) = iLine+1;
-                    end
-                end
-                
-                if argInDescrLines(1)>0 && argOutDescrLines(1)==0
-                    iParam = obj.isParam(helpStr{iLine}, param);
-                    if iParam>0
-                        if iParam==1 && nArgIn>0
-                            argInDescrLines(2) = iLine-1;
-                        end
-                        paramDescrLines(iParam,1) = iLine;
-                        if iParam>1
-                            paramDescrLines(iParam-1,2) = iLine-1;
-                        end
-                    end
-                end
-                
-                if ~isempty(strfind(helpStr{iLine}, 'OUTPUT'))
-                    if nParam>0
-                        paramDescrLines(end,2) = iLine-1;
-                    elseif nArgIn>0
-                        argInDescrLines(2) = iLine-1;
-                    end
-                    if nArgOut>0
-                        argOutDescrLines(1) = iLine+1;
-                        argOutDescrLines(2) = length(helpStr);
-                    end
-                end
-                
-                if ~isempty(strfind(helpStr{iLine}, 'LOG'))
-                    if nArgOut>0
-                        argOutDescrLines(2) = iLine-1;
-                    elseif nParam>0
-                        paramDescrLines(end,2) = iLine-1;
-                    end
-                    logDescrLines(1) = iLine+1;
-                    logDescrLines(2) = length(helpStr);
-                end
-                
-                if ~isempty(strfind(helpStr{iLine}, 'TO DO'))
-                    if logDescrLines(1)>0
-                        logDescrLines(2) = iLine-1;
-                    elseif nArgOut>0
-                        argOutDescrLines(2) = iLine-1;
-                    end
-                    toDoDescrLines(1) = iLine+1;
-                    toDoDescrLines(2) = length(helpStr);
                 end
             end
-            
-            % Now that we have the lines associated with each help section, assign the
-            % lines to corresponding help fields.
-            for iLine = nameLines(1):nameLines(2)
-                if iLine < 1 || isempty(helpStr{iLine})
-                    continue;
-                end
-                obj.nameUI = sprintf('%s%s\n', obj.nameUI, helpStr{iLine});
-            end
-            
-            for iLine = usageLines(1):usageLines(2)
-                if iLine < 1 || isempty(helpStr{iLine})
-                    continue;
-                end
-                obj.usage = sprintf('%s%s\n', obj.usage, helpStr{iLine});
-            end
-            
-            for iLine = genDescrLines(1):genDescrLines(2)
-                if iLine < 1 || isempty(helpStr{iLine})
-                    continue;
-                end
-                obj.genDescr = sprintf('%s%s\n', obj.genDescr, helpStr{iLine});
-            end
-            
-            for iLine = argInDescrLines(1):argInDescrLines(2)
-                if iLine < 1 || isempty(helpStr{iLine})
-                    continue;
-                end
-                obj.argInDescr = sprintf('%s%s\n', obj.argInDescr, helpStr{iLine});
-            end
-            
-            for iParam=1:size(paramDescrLines,1)
-                for iLine = paramDescrLines(iParam,1):paramDescrLines(iParam,2)
-                    if iLine < 1 || isempty(helpStr{iLine})
+            EndPrevSection(obj, iLine+1);
+        end
+        
+        
+        % -------------------------------------------------------------
+        function AssignSectionText(obj)
+            fields = propnames(obj.sections);
+            for jj=1:length(fields)
+                lines = eval( sprintf('obj.sections.%s.lines(1):obj.sections.%s.lines(2)', fields{jj}, fields{jj}) );
+                for iLine = lines
+                    if iLine < 1 || isempty(obj.helpstr{iLine})
                         continue;
                     end
-                    obj.paramDescr{iParam} = sprintf('%s%s\n', obj.paramDescr{iParam}, helpStr{iLine});
+                    eval( sprintf('obj.sections.%s.str = sprintf(''%%s%%s\\n'', obj.sections.%s.str, obj.helpstr{iLine});', ...
+                                  fields{jj}, fields{jj}) );
                 end
             end
-            
-            for iLine = argOutDescrLines(1):argOutDescrLines(2)
-                if iLine < 1 || isempty(helpStr{iLine})
-                    continue;
-                end
-                obj.argOutDescr = sprintf('%s%s\n', obj.argOutDescr, helpStr{iLine});
-            end            
         end
+        
+        
+        % -------------------------------------------------------------
+        function helpstr = GetStr(obj)
+            helpstr = '';
+            fields = propnames(obj.sections);
+            for ii=1:length(fields)
+                name = eval( sprintf('obj.sections.%s.name', fields{ii}) );
+                str = eval( sprintf('obj.sections.%s.str', fields{ii}) );
+                helpstr = sprintf('%s%s:\n', helpstr, name);
+                helpstr = sprintf('%s%s\n', helpstr, str);
+            end
+        end
+        
+        
+        % -------------------------------------------------------------
+        function str = GetDescription(obj)
+            str = '';
+            if isproperty(obj.sections,'description')
+                str = obj.sections.description.str;
+            end
+        end
+        
     end
        
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Access = 'private')
-            
+        
         % -----------------------------------------------------------------
-        function B = isFuncUsage(obj, helpStr, name, argIn, param, argOut)            
-            B=0;            
-            if ~includes(helpStr, [name '('])
-                return;
+        function InitLineIdxs(obj)
+            fields = propnames(obj.sections);
+            for ii=1:length(fields)
+                eval( sprintf('obj.sections.%s.lines = [0 0];', fields{ii}) );
             end
-            %{
-                for ii=1:length(argIn)
-                    if isempty(strfind(helpStr,argIn{ii}))
-                        return;
-                    end
-                end
-                for ii=1:length(param)
-                    if isempty(strfind(helpStr,param{ii}))
-                        return;
-                    end
-                end
-                for ii=1:length(argOut)
-                    if isempty(strfind(helpStr,argOut{ii}))
-                        return;
-                    end
-                end
-            %}
-            B=1;
         end
 
         
         % -----------------------------------------------------------------
-        function iParam = isParam(obj, helpStr, param)
-            iParam=0;
-            if isempty(helpStr)
-                return;
-            end
-            
-            % Remove leading white spaces
-            while ~isstrprop(helpStr(1),'alphanum')
-                helpStr(1)=[];
-                if isempty(helpStr)
-                    return;
+        function RemoveBlankLines(obj)            
+            % Identify lines in each section where actual text begins and
+            % ends and remove the leading and trailing blank lines            
+            fields = propnames(obj.sections);
+            for jj=1:length(fields)
+                lines = eval( sprintf('obj.sections.%s.lines(1):obj.sections.%s.lines(2)', fields{jj}, fields{jj}) );
+                
+                % If there a zeroes in lines then section is invalid or
+                % empty
+                if ismember(0, lines)
+                    continue;
                 end
-            end
-            
-            for ii=1:length(param)
-                k1=strfind(helpStr,[param{ii} ':']);
-                k2=strfind(helpStr,[param{ii} ' - ']);
-                if (~isempty(k1) && k1(1)==1) || (~isempty(k2) && k2(1)==1)
-                    iParam=ii;
-                    return;
+                
+                % Find first non-blank line of text
+                for iLine = lines
+                    if ~isblankline(obj.helpstr{iLine})
+                        eval( sprintf('obj.sections.%s.lines(1) = iLine;', fields{jj}) );
+                        break;
+                    end
                 end
-            end
-        end     
-
-
-        % -----------------------------------------------------------------
-        function iArgIn = isArgIn(obj, helpStr, argIn)
-            
-            iArgIn=0;
-            if isempty(helpStr)
-                return;
-            end
-            
-            % Remove leading white spaces
-            while ~isstrprop(helpStr(1),'alphanum')
-                helpStr(1)=[];
-                if isempty(helpStr)
-                    return;
-                end
-            end
-            
-            for ii=1:length(argIn)
-                k1=strfind(helpStr,[argIn{ii} ':']);
-                k2=strfind(helpStr,[argIn{ii} ' - ']);
-                if (~isempty(k1) && k1(1)==1) || (~isempty(k2) && k2(1)==1)
-                    iArgIn=ii;
-                    return;
-                end
-            end
-        end         
-
-   
-        % -----------------------------------------------------------------
-        function iArgOut = isArgOut(obj, helpStr, argOut)            
-            iArgOut=0;
-            if isempty(helpStr)
-                return;
-            end
-            
-            % Remove leading white spaces
-            while ~isstrprop(helpStr(1),'alphanum')
-                helpStr(1)=[];
-                if isempty(helpStr)
-                    return;
-                end
-            end
-            for ii=1:length(argOut)
-                k1=strfind(helpStr,[argOut{ii} ':']);
-                k2=strfind(helpStr,[argOut{ii} ' - ']);
-                if (~isempty(k1) && k1(1)==1) || (~isempty(k2) && k2(1)==1)
-                    iArgOut=ii;
-                    return;
+                
+                % Find last non-blank line of text
+                for iLine = reverse(lines)
+                    % Find first non-blank line of text
+                    if ~isblankline(obj.helpstr{iLine})
+                        eval( sprintf('obj.sections.%s.lines(2) = iLine;', fields{jj}) );
+                        break;
+                    end
                 end
             end
         end
+
         
+        % -----------------------------------------------------------------
+        function EndPrevSection(obj, iLine)
+            fields = propnames(obj.sections);
+            for ii=1:length(fields)
+                if eval( sprintf('obj.sections.%s.lines(1)>0 && obj.sections.%s.lines(2)==0', fields{ii}, fields{ii}) )
+                    eval( sprintf('obj.sections.%s.lines(2) = iLine-1;', fields{ii}) );
+                    break;
+                end
+            end
+        end
         
     end
 end

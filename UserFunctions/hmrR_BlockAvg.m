@@ -1,3 +1,4 @@
+% SYNTAX:
 % [yavg, ystd, tHRF, nTrials, ysum2, yTrials] = hmrR_BlockAvg( y, s, t, trange )
 %
 % UI NAME:

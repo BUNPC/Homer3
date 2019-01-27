@@ -133,6 +133,9 @@ set(htabgroup,'SelectedTab',htab);
 getHelp(handles);
 setGuiFonts(hObject);
 
+% Before we exit display current proc stream by default
+LoadFromCurrProcStream(handles);
+
 
 
 % -------------------------------------------------------------
@@ -534,7 +537,7 @@ iPanel = procStreamGui.iPanel;
 procElem = procStreamGui.procElem{iPanel};
 
 func = procStreamReg2ProcFunc(procElem);
-helpstr = procStreamGenerateHelpStr(func(iFunc).help);
+helpstr = func(iFunc).help.GetStr();
 
 
 
@@ -556,26 +559,7 @@ end
 if ~match
     return;
 end
-helpstr = procStreamGenerateHelpStr(func(ii).help);
-
-
-
-% ----------------------------------------------
-function helpstr = procStreamGenerateHelpStr(help)
-
-helpstr = '';
-helpstr = sprintf('%s%s\n', helpstr, help.usage);
-helpstr = sprintf('%s%s\n', helpstr, help.nameUI);
-helpstr = sprintf('%s%s\n', helpstr, 'DESCRIPTION:');
-helpstr = sprintf('%s%s\n', helpstr, help.genDescr);
-helpstr = sprintf('%s%s\n', helpstr, 'INPUT:');
-helpstr = sprintf('%s%s', helpstr, help.argInDescr);
-for iParam=1:length(help.paramDescr)
-    helpstr = sprintf('%s%s', helpstr, help.paramDescr{iParam});
-end
-helpstr = sprintf('%s\n', helpstr);
-helpstr = sprintf('%s%s\n', helpstr, 'OUPUT:');
-helpstr = sprintf('%s%s\n', helpstr, help.argOutDescr);
+helpstr = func(ii).help.GetStr();
 
 
 
@@ -648,3 +632,35 @@ for iPanel=1:length(procElem)
 end
 fclose(fid);
 
+
+
+% --------------------------------------------------------------------
+function LoadFromCurrProcStream(handles)
+global procStreamGui
+iPanel_0 = procStreamGui.iPanel;
+
+for iPanel=1:3
+    iReg = procStreamGui.iReg{iPanel};
+    procElem = procStreamGui.procElem{iPanel};
+       
+    % Search for procFun functions in procStreamReg
+    [err2, iReg] = procStreamErrCheck(procElem);
+    if ~all(~err2)
+        i=find(err2==1);
+        str1 = 'Error in functions\n\n';
+        for j=1:length(i)
+            str2 = sprintf('%s%s', procElem.procStream.input.func(i(j)).name,'\n');
+            str1 = strcat(str1,str2);
+        end
+        str1 = strcat(str1,'\n');
+        str1 = strcat(str1,'Do you want to keep current proc stream or load another file?...');
+        ch = menu(sprintf(str1), 'Fix and load this config file','Create and use default config','Cancel');
+        [procElem.procStream.input, err2] = procStreamFixErr(err2, procElem.procStream.input, iReg);
+    end
+    procStreamGui.iPanel = iPanel;
+    procStreamGui.iReg{iPanel} = iReg;
+    updateProcStreamList(handles,1);
+end
+
+% Return iPanel to value at the beginning of this function 
+procStreamGui.iPanel = iPanel_0;

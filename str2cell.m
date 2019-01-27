@@ -1,8 +1,14 @@
-function C = str2cell(str, delimiters)
+function C = str2cell(str, delimiters, options)
 
-str = deblank(str);
+if ~exist('options','var')
+    options = '';
+end
 
-if ~exist('delimiters','var')
+if ~strcmpi(options, 'keepblanks')
+    str = deblank(str);    
+end
+
+if ~exist('delimiters','var') || isempty(delimiters)
     delimiters{1} = sprintf('\n');
 elseif ~iscell(delimiters)
     foo{1} = delimiters;
@@ -14,7 +20,7 @@ k=[];
 for kk=1:length(delimiters)
     k = [k, find(str==delimiters{kk})];
 end
-j = find(~ismember([1:length(str)],k));
+j = find(~ismember(1:length(str),k));
 
 % 
 C = {};

@@ -18,6 +18,10 @@ classdef ChildGuiClass < handle
             %   gui = ChildGuiClass('guiname', true)
             %   gui = ChildGuiClass('guiname', true, arg1, arg2, ..., arg5);
             %
+            % Examples:
+            %   gui = ChildGuiClass('procStreamGUI', true, '.nirs');
+            %   gui = ChildGuiClass('procStreamGUI', true, '.snirf');
+            %
             obj.name = '';
             obj.handle = [];
             obj.args = {};
@@ -36,6 +40,7 @@ classdef ChildGuiClass < handle
                 if launch
                     obj.args = varargin;
                     a = obj.args;
+
                     % Allow passing of up to 5 arguments.
                     switch(length(a))
                         case 0

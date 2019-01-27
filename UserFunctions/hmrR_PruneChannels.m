@@ -1,9 +1,11 @@
+% SYNTAX:
 % SD = hmrR_PruneChannels(d,SD,tInc,dRange,SNRthresh,SDrange,reset)
 %
 % UI NAME:
 % Prune_Channels
 %
 %
+% DESCRIPTION:
 % Prune channels from the measurement list if their signal is too weak, too
 % strong, or their standard deviation is too great. This function
 % updates SD.MeasListAct based on whether data 'd' meets these conditions

@@ -1,9 +1,10 @@
+% SYNTAX:
 % dc = hmrR_OD2Conc( dod, SD, ppf )
 %
 % UI NAME:
 % OD_to_Conc
 %
-% dc = hmrR_OD2Conc( dod, SD, ppf )
+% DESCRIPTION:
 % Convert OD to concentrations
 %
 % INPUTS:

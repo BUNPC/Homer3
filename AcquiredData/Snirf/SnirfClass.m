@@ -139,15 +139,15 @@ classdef SnirfClass < AcqDataClass
                 fname = obj.filename;
             end
             
-            obj.formatVersion = deblank(h5read(fname, [parent, '/formatVersion']));
+            obj.formatVersion = strtrim(h5read(fname, [parent, '/formatVersion']));
             obj.timeOffset = hdf5read(fname, [parent, '/timeOffset']);
             
             % Load metaDataTags
             ii=1;
             while 1
                 try
-                    obj.metaDataTags{ii}{1} = deblank(h5read(fname, [parent, '/metaDataTags_', num2str(ii), '/k']));
-                    obj.metaDataTags{ii}{2} = deblank(h5read(fname, [parent, '/metaDataTags_', num2str(ii), '/v']));
+                    obj.metaDataTags{ii}{1} = strtrim(h5read(fname, [parent, '/metaDataTags_', num2str(ii), '/k']));
+                    obj.metaDataTags{ii}{2} = strtrim(h5read(fname, [parent, '/metaDataTags_', num2str(ii), '/v']));
                 catch
                     break;
                 end

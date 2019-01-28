@@ -57,7 +57,7 @@ classdef AuxClass  < matlab.mixin.Copyable
             end
 
             try
-                name = deblank(h5read(fname, [parent, '/name']));
+                name = strtrim(h5read(fname, [parent, '/name']));
                 obj.name = name{1};
                 obj.d    = h5read(fname, [parent, '/d']);
                 obj.t    = h5read(fname, [parent, '/t']);

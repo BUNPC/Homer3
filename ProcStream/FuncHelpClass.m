@@ -31,7 +31,7 @@ classdef FuncHelpClass < handle
                             'INPUT'
                             'OUTPUT'
                             'USAGE OPTIONS'
-                            'PARAMETER OPTIONS'
+                            'PARAMETERS'
                             'TO DO'
                             'LOG'
                            };
@@ -63,9 +63,10 @@ classdef FuncHelpClass < handle
         
         % -------------------------------------------------------------
         function ParseSections(obj)
-            % This function parses the help section of a matlab function. It'll 
-            % dynamically parse a help section consisting of ANY series 
-            % of sub-sections in the following format:
+            % This method dynamically parses the help section of a matlab function 
+            % that is in the generic format described below. The format
+            % consists of a series of sections and sub-sections like this:
+            %
             % ------------------------------------------------------------
             % <SECTION NAME i>:
             % <help text for <SECTION NAME i> spanning one or more lines>
@@ -79,16 +80,36 @@ classdef FuncHelpClass < handle
             % <sub-sectionN_i>: <help text for sub-sectionN_i spanning one or more lines>
             %
             % ------------------------------------------------------------
-            %           
-            % For <SECTION NAME i> to be considered a section, it must be in all 
-            % uppercase, must be followed by a ':', and must not have any other 
-            % text on that line.
-            %
             % 
-            % Example from Homer3 registry application:
-            % ------------------------------------------------------------
+            % For <SECTION NAME i> to be considered a section (as opposed to sub-section)
+            % it must be in all uppercase, must be followed by a ':', and must not have 
+            % any other text on that line. For a sub-section to be considered a sub-section, 
+            % the line which it's on must begin with a single word (no spaces) followed 
+            % by a ':', ' - ', or '--'.
+            %
+            % In addition to the generic parsing of sections, this class
+            % also provides methods for accessing specific 'default'
+            % sections if they happen to exist in the help comments. Those
+            % sections are 
+            %
+            %       Default Sections    Associated method 
+            %       --------------------------------------
+            %       'SYNTAX:'           % GetSyntax()
+            %       'UI NAME:'          % GetUiname()
+            %       'DESCRIPTION:'      % GetDescr()
+            %       'INPUT(S):'         % GetInput()
+            %       'OUTPUT(S):'        % GetOutput()
+            %       'USAGE OPTIONS:'    % GetUsageOptions()
+            %       'PARAMETERS:'       % GetParams()
+            %
+            % New methods can be added for any new default sections added to this 
+            % class in the future 
+            %
+            % Example from Homer3: formal descrition of user functions 
+            % help section syntax:
+            % --------------------------------------------------------------
             % SYNTAX:
-            % [p1,p2,...pn] = <funcname>(a1,a2,...am)
+            % [r1,...,rN] = <funcname>(a1,...,aM,p1,...,pL)
             %
             % UI NAME:
             % <User Interface Function Name>
@@ -98,21 +119,26 @@ classdef FuncHelpClass < handle
             %
             % INPUT:
             % a1: <Description of a1>
-            % a2: <Description of a2>
             %    . . . . . . . . . .
-            % am: <Description of am>
+            % aM: <Description of am>
+            % p1: <Description of am>
+            %    . . . . . . . . . .
+            % pL: <Description of am>
             %
             % OUPUT:
-            % p1: <Description of p1>
-            % p2: <Description of p2>
+            % r1: <Description of r1>
             %    . . . . . . . . . .
-            % pn - <Description of pn>
+            % rN: <Description of rN>
             %
             % USAGE OPTIONS:
-            % [p1,p2,...pn] = <funcname>(a1,a2,...am):  <>
-            % [p1,p2,...pn] = <funcname>(a1,a2,...am):  <>
+            % [r11,r12,...,r1N] = <funcname>(a11,...,a1M,p1,...,pL):  <Usage option 1 user-friendly name>
             %    . . . . . . . . . .
-            % [p1,p2,...pn] = <funcname>(a1,a2,...am):  <>
+            % [rK1,rK2,...,rKN] = <funcname>(aK1,...,aKM,p1,...,pL):  <Usage option K user-friendly name>
+            %
+            % PARAMETERS:
+            % p1: [v11,...,v1J]
+            %    . . . . . . . . . .
+            % pL: [vL1,...,vLJ]
             %
             %
             sect = obj.FindSections();            
@@ -280,8 +306,7 @@ classdef FuncHelpClass < handle
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Public methods for accessing various help info from client
-    % applications
+    % Public methods for accessing default help info 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
     methods
                
@@ -311,6 +336,40 @@ classdef FuncHelpClass < handle
         function str = GetParamDescr(obj, param)
             str = '';
             if isproperty(obj.sections,'input')
+                subsections = obj.sections.input.subsections;
+            end
+            if isproperty(obj.sections,'inputs')
+                subsections = obj.sections.inputs.subsections;
+            end
+            for ii=1:length(subsections)
+                if strcmp(param, subsections(ii).name)
+                    str = subsections(ii).str;
+                end
+            end
+        end
+
+        
+        % -------------------------------------------------------------
+        function str = GetParamNames(obj)
+            str = '';
+            if isproperty(obj.sections,'input')
+                subsections = obj.sections.input.subsections;
+            end
+            if isproperty(obj.sections,'inputs')
+                subsections = obj.sections.inputs.subsections;
+            end
+            for ii=1:length(subsections)
+                if strcmp(param, subsections(ii).name)
+                    str = subsections(ii).str;
+                end
+            end
+        end
+        
+        
+        % -------------------------------------------------------------
+        function str = GetUsageOptions(obj)
+            str = '';
+            if isproperty(obj.sections.usageO,'input')
                 subsections = obj.sections.input.subsections;
             end
             if isproperty(obj.sections,'inputs')

@@ -2,9 +2,13 @@ classdef FuncHelpClass < handle
     properties
         funcname;
         helpstr;
+        defaultsections;
         sections;
     end
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %  Initialization methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
     methods
         
         % -------------------------------------------------------------
@@ -20,20 +24,18 @@ classdef FuncHelpClass < handle
             end
             obj.funcname = funcname;
             obj.helpstr = str2cell(help(funcname), [], 'keepblanks');
-            sectionNames = {
+            obj.defaultsections = {
                             'SYNTAX'
                             'UI NAME'
                             'DESCRIPTION'
                             'INPUT'
                             'OUTPUT'
                             'USAGE OPTIONS'
+                            'PARAMETER OPTIONS'
                             'TO DO'
                             'LOG'
                            };
-            for ii=1:length(sectionNames)
-                obj.AddSection(sectionNames{ii});
-            end
-            obj.ParseSections(funcname);
+            obj.ParseSections();
         end
         
         
@@ -42,19 +44,51 @@ classdef FuncHelpClass < handle
             fieldname = name;
             fieldname(fieldname==' ')='';
             fieldname = lower(fieldname);
-            eval( sprintf('obj.sections.%s = struct(''name'',name, ''lines'',[0,0], ''str'','''');', fieldname) );            
+            newsection = struct(...
+                         'name',name, ...
+                         'lines',[0,0], ...
+                         'str','', ...
+                         'subsections', [] ...
+                         );
+            eval( sprintf('obj.sections.%s = newsection;', fieldname) );
         end
         
+    end
+    
+        
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %  Methods for parsing sections
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+    methods
         
         % -------------------------------------------------------------
-        function ParseSections(obj, funcname)
-            % This function parses the help of a proc stream function
-            % into a help structure. The following is the help format
-            % it expects:
+        function ParseSections(obj)
+            % This function parses the help section of a matlab function. It'll 
+            % dynamically parse a help section consisting of ANY series 
+            % of sub-sections in the following format:
+            % ------------------------------------------------------------
+            % <SECTION NAME i>:
+            % <help text for <SECTION NAME i> spanning one or more lines>
             %
-            % --------------------------------------
+            %       -- OR --
+            %           
+            % <SECTION NAME i>:
+            % <sub-section1_i>: <help text for sub-section1_i spanning one or more lines>
+            % <sub-section2_i>: <help text for sub-section2_i spanning one or more lines>
+            %  . . . . . . 
+            % <sub-sectionN_i>: <help text for sub-sectionN_i spanning one or more lines>
+            %
+            % ------------------------------------------------------------
+            %           
+            % For <SECTION NAME i> to be considered a section, it must be in all 
+            % uppercase, must be followed by a ':', and must not have any other 
+            % text on that line.
+            %
+            % 
+            % Example from Homer3 registry application:
+            % ------------------------------------------------------------
             % SYNTAX:
-            % [p1,p2,...pn] = name(a1,a2,...am)
+            % [p1,p2,...pn] = <funcname>(a1,a2,...am)
             %
             % UI NAME:
             % <User Interface Function Name>
@@ -63,26 +97,28 @@ classdef FuncHelpClass < handle
             % <General function description>
             %
             % INPUT:
-            % a1 - <Description of a1>
-            % a2 - <Description of a2>
+            % a1: <Description of a1>
+            % a2: <Description of a2>
             %    . . . . . . . . . .
-            % am - <Description of am>
+            % am: <Description of am>
             %
             % OUPUT:
-            % p1 - <Description of p1>
-            % p2 - <Description of p2>
+            % p1: <Description of p1>
+            % p2: <Description of p2>
             %    . . . . . . . . . .
             % pn - <Description of pn>
             %
             % USAGE OPTIONS:
-            % [p1,p2,...pn] = name(a1,a2,...am)
-            % [p1,p2,...pn] = name(a1,a2,...am)
+            % [p1,p2,...pn] = <funcname>(a1,a2,...am):  <>
+            % [p1,p2,...pn] = <funcname>(a1,a2,...am):  <>
             %    . . . . . . . . . .
-            % [p1,p2,...pn] = name(a1,a2,...am)
+            % [p1,p2,...pn] = <funcname>(a1,a2,...am):  <>
             %
             %
-            % --------------------------------------
-            %
+            sect = obj.FindSections();            
+            for ii=1:length(sect)
+                obj.AddSection(sect{ii});
+            end
             
             % Find the lines in the help that belong to each help section
             obj.FindSectionLines();
@@ -93,6 +129,27 @@ classdef FuncHelpClass < handle
             % Now that we have the lines associated with each help section,
             % assign the text from these lines to corresponding help sections.
             obj.AssignSectionText();
+        
+            % We have parsed all sections: now parse sub-sections for each
+            % section
+            sect = propnames(obj.sections);
+            for ii=1:length(sect)
+                obj.ParseSubSections(sect{ii});
+            end
+            
+        end
+        
+        
+        % -------------------------------------------------------------
+        function sect = FindSections(obj)
+            kk=1;
+            for ii=1:length(obj.helpstr)
+                if obj.IsSectionName(obj.helpstr{ii})
+                    k = find(obj.helpstr{ii}==':');
+                    sect{kk,:} = strtrim(obj.helpstr{ii}(1:k-1));
+                    kk=kk+1;
+                end
+            end
         end
         
         
@@ -127,7 +184,107 @@ classdef FuncHelpClass < handle
             end
         end
         
+    end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %  Methods for parsing sub-sections
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+    methods
         
+        % -------------------------------------------------------------
+        function ParseSubSections(obj, section)
+            obj.FindSubSectionLines(section);
+            obj.AssignSubSectionText(section);
+        end
+        
+        
+        % -------------------------------------------------------------
+        function FindSubSectionLines(obj, section)
+            strs = str2cell(eval(sprintf('obj.sections.%s.str', section)), [], 'keepblanks');
+            kk=0;
+            subsect = [];
+            for iLine=1:length(strs)
+                name = obj.GetSubSectionName(section, iLine);
+                if ~isempty(name)
+                    kk=kk+1;
+                    
+                    % Create new sub-section
+                    subsect(kk).name = strtrim(name);
+                    subsect(kk).lines = [0,0];
+                    subsect(kk).str = '';
+                    
+                    % Assign starting line to current subsection
+                    subsect(kk).lines(1) = iLine;
+                                        
+                    % See if there's sub-section preceding current one. If
+                    % so, end it
+                    if kk>1 && subsect(kk-1).lines(2)==0
+                        subsect(kk-1).lines(2) = iLine-1;
+                    end
+                end
+            end
+            if kk>0
+                if subsect(kk).lines(2)==0
+                    subsect(kk).lines(2) = iLine;
+                end
+            end
+            eval( sprintf('obj.sections.%s.subsections = subsect;', section) );
+        end
+        
+        
+        % -------------------------------------------------------------
+        function [name, k] = GetSubSectionName(obj, section, iLine)
+            name = '';
+            k = [];
+            strs = eval(sprintf('str2cell(obj.sections.%s.str, [], ''keepblanks'')', section));
+            k1 = find(strs{iLine}==':');
+            k2 = strfind(strs{iLine}, ' - ');
+            k3 = strfind(strs{iLine}, '--');
+            d=1;
+            if ~isempty(k1)
+                k = k1(1);
+            elseif ~isempty(k2)
+                k = k2(1)+2; d = 2;
+            elseif ~isempty(k3)
+                k = k3(1)+1;
+            end
+            if isempty(k)
+                return;
+            end
+            name = strtrim(strs{iLine}(1:(k-d)));
+            k = k(1);
+        end
+        
+        
+        % -------------------------------------------------------------
+        function AssignSubSectionText(obj, section)
+            strs = str2cell(eval(sprintf('obj.sections.%s.str', section)), [], 'keepblanks');
+            subsect = eval(sprintf('obj.sections.%s.subsections', section));
+            for ii=1:length(subsect)
+                lines = subsect(ii).lines(1):subsect(ii).lines(2);
+                for iLine = lines
+                    % The help part corresponding to the subsection name (eg, SD: or trange:)
+                    % starts after the colon (:) or double dash (--)
+                    [~, k] = obj.GetSubSectionName(section, iLine);
+                    if ~isempty(k)
+                          strs{iLine} = strtrim(strs{iLine}(k+1:end));
+                    end
+                    subsect(ii).str = sprintf('%s%s\n', subsect(ii).str , strs{iLine});
+                end
+            end
+            eval( sprintf('obj.sections.%s.subsections = subsect;', section) );
+        end        
+        
+    end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Public methods for accessing various help info from client
+    % applications
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
+    methods
+               
         % -------------------------------------------------------------
         function helpstr = GetStr(obj)
             helpstr = '';
@@ -142,10 +299,27 @@ classdef FuncHelpClass < handle
         
         
         % -------------------------------------------------------------
-        function str = GetDescription(obj)
+        function str = GetDescr(obj)
             str = '';
             if isproperty(obj.sections,'description')
                 str = obj.sections.description.str;
+            end
+        end
+
+        
+        % -------------------------------------------------------------
+        function str = GetParamDescr(obj, param)
+            str = '';
+            if isproperty(obj.sections,'input')
+                subsections = obj.sections.input.subsections;
+            end
+            if isproperty(obj.sections,'inputs')
+                subsections = obj.sections.inputs.subsections;
+            end
+            for ii=1:length(subsections)
+                if strcmp(param, subsections(ii).name)
+                    str = subsections(ii).str;
+                end
             end
         end
         
@@ -207,6 +381,23 @@ classdef FuncHelpClass < handle
                     break;
                 end
             end
+        end
+        
+        
+        % -----------------------------------------------------------------
+        function b = IsSectionName(obj, str)
+            b = false;
+            if isblankline(str)
+                return;
+            end
+            str = strtrim(str);
+            if ~isuppercase(str)
+                return;
+            end
+            if str(end)~=':'
+                return;
+            end
+            b = true;
         end
         
     end

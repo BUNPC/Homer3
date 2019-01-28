@@ -11,20 +11,28 @@
 % close to the start or end of the data such that trange extends outside of
 % the data range, then the trial is excluded from the average.
 %
-% INPUTS:
+% INPUT:
 % y: this is the data wavelength #time points x #channels
 %    concentration data is #time points x [HbO/HbR/HbT] x #channels
 % s: stimulation vector (# time points x #conditions)=1 at stim onset otherwise =0
 % t: time vector corresponding with y and s
 % trange: defines the range for the block average [tPre tPost]
 % 
-% OUTPUTS:
+% OUTPUT:
 % yavg: the averaged results
 % ystd: the standard deviation across trials
 % tHRF: the time vector
 % nTrials: the number of trials averaged for each condition
 % yTrials: a structure containing the individual trial responses
-
+%
+%
+% USAGE OPTIONS:
+% [dcAvg, dcAvgStd, tHRF, nTrials, dcSum2]    = hmrBlockAvg( dc, s, t, trange ) :   Block Average on Concentration Data
+% [dodAvg, dodAvgStd, tHRF, nTrials, dodSum2] = hmrBlockAvg( dod, s, t, trange ):   Block Average on Delta OD Data
+%
+% PARAMETERS:
+% trange: [-2.10, 20.30]
+%
 
 
 function [yavg, ystd, tHRF, nTrials, ysum2, yTrials] = hmrR_BlockAvg( y, s, t, trange )

@@ -78,7 +78,7 @@ classdef StimClass  < matlab.mixin.Copyable
             end
             
             try
-                name = deblank(h5read(fname, [parent, '/name']));
+                name = strtrim(h5read(fname, [parent, '/name']));
                 obj.name = name{1};
                 obj.data = h5read(fname, [parent, '/data']);
             catch

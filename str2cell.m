@@ -1,12 +1,15 @@
 function C = str2cell(str, delimiters, options)
 
+% Option tells weather to keep leading whitespaces. 
+% (Trailing whitespaces are always removed)
 if ~exist('options','var')
     options = '';
 end
 
 if ~strcmpi(options, 'keepblanks')
-    str = deblank(str);    
+    str = strtrim(str);
 end
+str = deblank(str);
 
 if ~exist('delimiters','var') || isempty(delimiters)
     delimiters{1} = sprintf('\n');

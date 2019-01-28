@@ -85,9 +85,9 @@ for iFunc = 1:nfunc
     xsize = xsize+(5-mod(xsize,5));
     h_fname = uicontrol(hObject, 'style','text', 'units','characters', 'position',[2, ypos, xsize, ysize],...
                         'string',func(iFunc).name);
-    set(h_fname,'backgroundcolor',[1 1 1], 'units','normalized');
+    set(h_fname, 'backgroundcolor',[1 1 1], 'units','normalized');
     set(h_fname, 'horizontalalignment','left');
-    set(h_fname, 'tooltipstring',func(iFunc).help.GetDescription());
+    set(h_fname, 'tooltipstring',func(iFunc).help.GetDescr());
     
     % Draw pushbutton to see output results if requested in config file
     if func(iFunc).argOut(1)=='#'
@@ -100,11 +100,12 @@ for iFunc = 1:nfunc
     % Draw list of parameters
     for iParam = 1:func(iFunc).nParam
         % Draw parameter names
+        pname = func(iFunc).param{iParam};
         h_pname=uicontrol(hObject, 'style','text', 'units','characters', 'position',[xpos_pname, ypos, xsize_pname, ysize],...
-                          'string',func(iFunc).param{iParam});
-        set(h_pname,'backgroundcolor',[1 1 1], 'units','normalized');
+                          'string',pname);
+        set(h_pname, 'backgroundcolor',[1 1 1], 'units','normalized');
         set(h_pname, 'horizontalalignment', 'left');
-        % set(h_pname, 'tooltipstring', func(iFunc).help.paramDescr{iParam});
+        set(h_pname, 'tooltipstring', func(iFunc).help.GetParamDescr(pname));
 
         % Draw parameter edit boxes
         h_pedit=uicontrol(hObject,'style','edit','units','characters','position',[xpos_pedit, ypos, xsize_pval, 1.5]);

@@ -20,7 +20,7 @@ case 'group'
     
     % generate default contents for group section if there's no % group header. 
     % This can happen if homer2-style config file was read    
-    if isempty(G) | ~strcmpi(deblank([G{1},G{2}]), '%group')
+    if isempty(G) | ~strcmpi(strtrim([G{1},G{2}]), '%group')
         [~, str] = procInput.DefaultFileGroup(procInput.Parse(R));
         foo = textscan(str, '%s');
         G = foo{1};
@@ -31,7 +31,7 @@ case 'subj'
     % generate default contents for subject section if scanned contents is
     % from a file and there's no % subj header. This can happen if
     % homer2-style config file was loaded
-    if isempty(S) | ~strcmpi(deblank([S{1},S{2}]), '%subj')
+    if isempty(S) | ~strcmpi(strtrim([S{1},S{2}]), '%subj')
         [~, str] = procInput.DefaultFileSubj(procInput.Parse(R));
         foo = textscan(str, '%s');
         S = foo{1};

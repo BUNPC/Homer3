@@ -83,9 +83,10 @@
 %
 %
 % USAGE OPTIONS:
-% [dcAvg, dcAvgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] = hmrR_DeconvHRF_DriftSS(dc, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+% GLM_HRF_Drift_SS: [dcAvg, dcAvgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] = hmrR_DeconvHRF_DriftSS(dc, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 %
 % PARAMETERS:
+% trange: [-2.0, 20.0]
 % glmSolveMethod: 1
 % idxBasis: 1
 % paramsBasis: [1,1], maxsize: 6

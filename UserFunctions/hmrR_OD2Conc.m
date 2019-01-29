@@ -21,7 +21,12 @@
 % dc: the concentration data (#time points x 3 x #SD pairs
 %     3 concentrations are returned (HbO, HbR, HbT)
 %
-
+% USAGE OPTIONS:
+% Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, SD, ppf )
+%
+% PARAMETERS:
+% ppf: [6.0, 6.0]
+%
 function dc = hmrR_OD2Conc( dod, SD, ppf )
 
 nWav = length(SD.Lambda);

@@ -2,7 +2,7 @@
 % dod = hmrR_Intensity2OD( d )
 %
 % UI NAME:
-% Intensity_to_OD 
+% Intensity_to_Delta_OD 
 %
 % DESCRIPTION:
 % Converts internsity (raw data) to optical density
@@ -12,7 +12,10 @@
 %
 % OUTPUT
 % dod - the change in optical density
-
+%
+% USAGE OPTIONS:
+% Intensity_to_Delta_OD: dod = hmrR_Intensity2OD(d)
+%
 function dod = hmrR_Intensity2OD( d )
 
 % convert to dod

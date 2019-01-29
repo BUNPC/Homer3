@@ -26,6 +26,9 @@ function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg(yAvgRuns, yAvgStdRuns, y
 % tHRF: the time vector
 % nTrials: the number of trials averaged for each condition across all runs
 %
+% USAGE OPTIONS:
+% Average_of_Concentration_Block_Averages_for_All_Runs: [dcAvg, dcAvgStd, tHRF, nTrials] = hmrS_BlockAvg(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondName2Run)
+% Average_of_Delta_OD_Block_Averages_for_All_Runs: [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondName2Run)
 %
 
 yAvg = [];

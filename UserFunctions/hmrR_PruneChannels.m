@@ -28,7 +28,17 @@
 % TO DO:
 % consider Conc as well as wavelength data
 %
-
+% USAGE OPTIONS:
+% Prune_Channels: SD = hmrR_PruneChannels(d,SD,tInc,dRange,SNRthresh,SDrange,reset)
+%
+% PARAMETERS:
+% dRange: [1e4, 1e7]
+% SNRthresh: 2
+% SDrange: [0, 45] 
+% reset: 0
+% 
+% 
+%
 function SD = hmrR_PruneChannels(d,SD,tInc,dRange,SNRthresh,SDrange,resetFlag)
 
 

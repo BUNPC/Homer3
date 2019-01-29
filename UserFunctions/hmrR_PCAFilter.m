@@ -32,6 +32,12 @@
 % svs: The singuler value spectrum from the PCA.
 % nSV: This is the number of components filtered from the data.
 %
+% USAGE OPTIONS:
+% PCA_Filter_on_Concentration1: [dc, svs_dod, nSV_dod]  = hmrR_PCAFilter( dc, SD, tInc, nSV ),  nSV: [0.00, 0.00]
+% PCA_Filter_on_Delta_OD1:      [dod, svs, nSV]         = hmrR_PCAFilter( dod, SD, tInc, nSV ), nSV: 0.00
+% PCA_Filter_on_Delta_OD2:      [dod, svs_dod, nSV_dod] = hmrR_PCAFilter( dod, SD, tInc, nSV ), nSV: [0.00, 0.00]
+%
+%
 
 function [yc, svs, nSV] = hmrR_PCAFilter( y, SD, tInc, nSV )
 

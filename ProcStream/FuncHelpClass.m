@@ -1,8 +1,8 @@
 classdef FuncHelpClass < handle
+    
     properties
         funcname;
         helpstr;
-        defaultsections;
         sections;
     end
     
@@ -24,17 +24,6 @@ classdef FuncHelpClass < handle
             end
             obj.funcname = funcname;
             obj.helpstr = str2cell(help(funcname), [], 'keepblanks');
-            obj.defaultsections = {
-                            'SYNTAX'
-                            'UI NAME'
-                            'DESCRIPTION'
-                            'INPUT'
-                            'OUTPUT'
-                            'USAGE OPTIONS'
-                            'PARAMETERS'
-                            'TO DO'
-                            'LOG'
-                           };
             obj.ParseSections();
         end
         
@@ -54,8 +43,7 @@ classdef FuncHelpClass < handle
         end
         
     end
-    
-        
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %  Methods for parsing sections
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
@@ -83,29 +71,25 @@ classdef FuncHelpClass < handle
             % 
             % For <SECTION NAME i> to be considered a section (as opposed to sub-section)
             % it must be in all uppercase, must be followed by a ':', and must not have 
-            % any other text on that line. For a sub-section to be considered a sub-section, 
-            % the line which it's on must begin with a single word (no spaces) followed 
-            % by a ':', ' - ', or '--'.
+            % any other text on that line. A sub-section is any string without white 
+            % spaces preceding the first occurrence of ':', ' - ' or '--' on a line line. 
             %
-            % In addition to the generic parsing of sections, this class
-            % also provides methods for accessing specific 'default'
-            % sections if they happen to exist in the help comments. Those
-            % sections are 
+            % In addition to the generic parsing of sections, this class also provides 
+            % methods for accessing specific 'designated' sections should they exist in 
+            % the help comments. A section is defined as designated in this class if it 
+            % provides public Get* methods to access it. Current designated sections are 
             %
-            %       Default Sections    Associated method 
+            %       Designated Sections    Associated methods 
             %       --------------------------------------
-            %       'SYNTAX:'           % GetSyntax()
-            %       'UI NAME:'          % GetUiname()
-            %       'DESCRIPTION:'      % GetDescr()
-            %       'INPUT(S):'         % GetInput()
-            %       'OUTPUT(S):'        % GetOutput()
-            %       'USAGE OPTIONS:'    % GetUsageOptions()
-            %       'PARAMETERS:'       % GetParams()
+            %       'DESCRIPTION:'          % GetDescr()
+            %       'INPUT(S):'             % GetParamDescr()
+            %       'USAGE OPTIONS:'        % GetUsageOptions()
+            %       'PARAMETERS:'           % GetParamUsage()
             %
-            % New methods can be added for any new default sections added to this 
+            % New methods can be added for any new designated sections added to this 
             % class in the future 
             %
-            % Example from Homer3: formal descrition of user functions 
+            % Example from Homer3: formal description of user functions 
             % help section syntax:
             % --------------------------------------------------------------
             % SYNTAX:
@@ -141,6 +125,10 @@ classdef FuncHelpClass < handle
             % pL: [vL1,...,vLJ]
             %
             %
+            if isempty(obj.helpstr)
+                return;
+            end
+            
             sect = obj.FindSections();            
             for ii=1:length(sect)
                 obj.AddSection(sect{ii});
@@ -169,6 +157,7 @@ classdef FuncHelpClass < handle
         % -------------------------------------------------------------
         function sect = FindSections(obj)
             kk=1;
+            sect = cell(length(obj.helpstr),1);
             for ii=1:length(obj.helpstr)
                 if obj.IsSectionName(obj.helpstr{ii})
                     k = find(obj.helpstr{ii}==':');
@@ -176,6 +165,7 @@ classdef FuncHelpClass < handle
                     kk=kk+1;
                 end
             end
+            sect(kk:end) = [];
         end
         
         
@@ -213,6 +203,92 @@ classdef FuncHelpClass < handle
     end
     
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Public methods for accessing designated sections
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
+    methods
+               
+        % -------------------------------------------------------------
+        function str = GetUiname(obj)
+            str = '';
+            if isproperty(obj.sections,'uiname')                
+                str = strtrim(obj.sections.uiname.str);
+            end
+        end
+              
+        
+        % -------------------------------------------------------------
+        function str = GetDescr(obj)
+            str = '';
+            if isproperty(obj.sections,'description')
+                str = obj.sections.description.str;
+            end
+        end
+              
+        
+        % -------------------------------------------------------------
+        function str = GetParamDescr(obj, param)
+            str = '';
+            subsections = [];
+            if isproperty(obj.sections,'input')
+                subsections = obj.sections.input.subsections;
+            end
+            if isproperty(obj.sections,'inputs')
+                subsections = obj.sections.inputs.subsections;
+            end
+            for ii=1:length(subsections)
+                if strcmp(param, subsections(ii).name)
+                    str = subsections(ii).str;
+                end
+            end
+        end
+
+        
+        % -------------------------------------------------------------
+        function [usage, friendlyname] = GetUsageOptions(obj)
+            subsections = [];
+            if isproperty(obj.sections,'usageoptions')
+                subsections = obj.sections.usageoptions.subsections;
+            end
+            usage        = cell(length(subsections),1);
+            friendlyname = cell(length(subsections),1);
+            for ii=1:length(subsections)
+                friendlyname{ii}  = strtrim(subsections(ii).name);
+                usage{ii}         = strtrim(subsections(ii).str);
+            end
+        end
+        
+        
+        % -------------------------------------------------------------
+        function [paramname, valformat] = GetParamUsage(obj)
+            subsections = [];
+            if isproperty(obj.sections,'parameters')
+                subsections = obj.sections.parameters.subsections;
+            end
+            paramname = cell(length(subsections),1);
+            valformat = cell(length(subsections),1);
+            for ii=1:length(subsections)
+                paramname{ii} = strtrim(subsections(ii).name);
+                valformat{ii} = strtrim(subsections(ii).str);
+            end
+        end
+        
+        
+        % -------------------------------------------------------------
+        function helpstr = GetStr(obj)
+            helpstr = '';
+            fields = propnames(obj.sections);
+            for ii=1:length(fields)
+                name = eval( sprintf('obj.sections.%s.name', fields{ii}) );
+                str = eval( sprintf('obj.sections.%s.str', fields{ii}) );
+                helpstr = sprintf('%s%s:\n', helpstr, name);
+                helpstr = sprintf('%s%s\n', helpstr, str);
+            end
+        end
+                
+    end
+       
+        
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %  Methods for parsing sub-sections
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
@@ -278,6 +354,10 @@ classdef FuncHelpClass < handle
             if isempty(k)
                 return;
             end
+            temp = strtrim(strs{iLine}(1:(k-d)));
+            if ~isempty(find(temp==' '))
+                return;
+            end
             name = strtrim(strs{iLine}(1:(k-d)));
             k = k(1);
         end
@@ -304,86 +384,6 @@ classdef FuncHelpClass < handle
         
     end
     
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Public methods for accessing default help info 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
-    methods
-               
-        % -------------------------------------------------------------
-        function helpstr = GetStr(obj)
-            helpstr = '';
-            fields = propnames(obj.sections);
-            for ii=1:length(fields)
-                name = eval( sprintf('obj.sections.%s.name', fields{ii}) );
-                str = eval( sprintf('obj.sections.%s.str', fields{ii}) );
-                helpstr = sprintf('%s%s:\n', helpstr, name);
-                helpstr = sprintf('%s%s\n', helpstr, str);
-            end
-        end
-        
-        
-        % -------------------------------------------------------------
-        function str = GetDescr(obj)
-            str = '';
-            if isproperty(obj.sections,'description')
-                str = obj.sections.description.str;
-            end
-        end
-
-        
-        % -------------------------------------------------------------
-        function str = GetParamDescr(obj, param)
-            str = '';
-            if isproperty(obj.sections,'input')
-                subsections = obj.sections.input.subsections;
-            end
-            if isproperty(obj.sections,'inputs')
-                subsections = obj.sections.inputs.subsections;
-            end
-            for ii=1:length(subsections)
-                if strcmp(param, subsections(ii).name)
-                    str = subsections(ii).str;
-                end
-            end
-        end
-
-        
-        % -------------------------------------------------------------
-        function str = GetParamNames(obj)
-            str = '';
-            if isproperty(obj.sections,'input')
-                subsections = obj.sections.input.subsections;
-            end
-            if isproperty(obj.sections,'inputs')
-                subsections = obj.sections.inputs.subsections;
-            end
-            for ii=1:length(subsections)
-                if strcmp(param, subsections(ii).name)
-                    str = subsections(ii).str;
-                end
-            end
-        end
-        
-        
-        % -------------------------------------------------------------
-        function str = GetUsageOptions(obj)
-            str = '';
-            if isproperty(obj.sections.usageO,'input')
-                subsections = obj.sections.input.subsections;
-            end
-            if isproperty(obj.sections,'inputs')
-                subsections = obj.sections.inputs.subsections;
-            end
-            for ii=1:length(subsections)
-                if strcmp(param, subsections(ii).name)
-                    str = subsections(ii).str;
-                end
-            end
-        end
-        
-    end
-       
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Access = 'private')
@@ -420,7 +420,7 @@ classdef FuncHelpClass < handle
                 end
                 
                 % Find last non-blank line of text
-                for iLine = reverse(lines)
+                for iLine = fliplr(lines)
                     % Find first non-blank line of text
                     if ~isblankline(obj.helpstr{iLine})
                         eval( sprintf('obj.sections.%s.lines(2) = iLine;', fields{jj}) );

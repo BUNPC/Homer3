@@ -42,6 +42,16 @@
 % tInc: a vector of length time points with 1's indicating data included
 %       and 0's indicate motion artifact
 %
+% USAGE OPTIONS:
+% Motion_Artifacts_By_Channel:  tIncAuto = hmrR_MotionArtifact(dod, t, SD, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+%
+% PARAMETERS:
+% tMotion: 0.5
+% tMask: 1.0
+% STDEVthresh: 50.0
+% AMPthresh: 5.00
+% 
+%
 % LOG:
 % K. Perdue
 % kperdue@nmr.mgh.harvard.edu

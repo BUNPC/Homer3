@@ -27,6 +27,15 @@ function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg(yAvgSubjs, y
 % nTrials: the number of trials averaged for each condition across all
 %          subjects
 % grpAvgPass:
+%
+% USAGE OPTIONS:
+% Average_of_Subject_Block_Average_Concentration_Data: [dcAvg, dcAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg(dcAvgSubjs, dcAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
+% Average_of_Subject_Block_Average_Delta_OD_Data:      [dodAvg, dodAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg(dodAvgSubjs, dodAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
+%
+% PARAMETERS:
+% trange: [5.0, 10.0]
+% thresh: [5.0]
+%
 
 subjCh = [];
 nStim = 0;

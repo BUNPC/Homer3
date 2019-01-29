@@ -40,6 +40,16 @@
 %       included and 0's indicating motion artifacts on a channel by
 %       channel basis
 %
+% USAGE OPTIONS:
+% Motion_Artifacts_By_Channel:  [tIncAuto,tIncChAuto] = hmrR_MotionArtifactByChannel(dod, t, SD, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+%
+% PARAMETERS:
+% tMotion: 0.5
+% tMask: 1.0
+% STDEVthresh: 50.0
+% AMPthresh: 5.00
+% 
+% 
 % LOG:
 % K. Perdue
 % kperdue@nmr.mgh.harvard.edu

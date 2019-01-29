@@ -115,9 +115,9 @@ classdef FuncHelpClass < handle
             % rN: <Description of rN>
             %
             % USAGE OPTIONS:
-            % [r11,r12,...,r1N] = <funcname>(a11,...,a1M,p1,...,pL):  <Usage option 1 user-friendly name>
+            % <User-friendly name for option 1>: [r11,...,r1N] = <funcname>(a11,...,a1M,p1,...,pL)
             %    . . . . . . . . . .
-            % [rK1,rK2,...,rKN] = <funcname>(aK1,...,aKM,p1,...,pL):  <Usage option K user-friendly name>
+            % <User-friendly name for option K>: [rK1,...,rKN] = <funcname>(aK1,...,aKM,p1,...,pL)
             %
             % PARAMETERS:
             % p1: [v11,...,v1J]

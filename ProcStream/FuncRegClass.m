@@ -41,8 +41,6 @@ classdef FuncRegClass < matlab.mixin.Copyable
             for kk=1:length(files)
                 obj.userfuncfiles{kk} = [obj.userfuncdir, files(kk).name];
             end
-            
-            
         end
         
         

@@ -33,7 +33,7 @@ function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg(yAvgSubjs, y
 % Average_of_Subject_Block_Average_Delta_OD_Data:      [dodAvg, dodAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg(dodAvgSubjs, dodAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
 %
 % PARAMETERS:
-% trange: [5.0, 10.0]
+% tRange: [5.0, 10.0]
 % thresh: [5.0]
 %
 

@@ -89,7 +89,7 @@
 % trange: [-2.0, 20.0]
 % glmSolveMethod: 1
 % idxBasis: 1
-% paramsBasis: [1,1], maxsize: 6
+% paramsBasis: [1,1], maxnum: 6
 % rhoSD_ssThresh: 0.0
 % flagSSmethod: 1
 % driftOrder: 0

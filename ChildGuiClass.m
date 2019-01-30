@@ -28,7 +28,9 @@ classdef ChildGuiClass < handle
             obj.visible = 'on';
             obj.lastpos = [];
 
-            if nargin==1
+            if nargin==0
+                return;
+            elseif nargin==1
                 obj.name = name;
             elseif nargin==2                
                 obj.name = name;

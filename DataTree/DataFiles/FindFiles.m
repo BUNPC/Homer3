@@ -46,12 +46,12 @@ if nargin==1
         fmt = varargin{1};
     end
 elseif nargin==2
-    if isstruct(varargin{1})
-        handles = varargin{1};
-        fmt = varargin{2};
-    else
+    if ischar(varargin{1})
         fmt = varargin{1};
         dirnameGroup = varargin{2};
+    else
+        handles = varargin{1};
+        fmt = varargin{2};
     end
 elseif nargin==3
     if isstruct(varargin{1})

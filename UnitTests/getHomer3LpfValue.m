@@ -1,3 +1,3 @@
-function lpf = getHomer3LpfValue(dataTree)
+function lpf = getHomer3LpfValue(dataTree, isubj, irun)
 
-lpf = dataTree.group.subjs(2).runs(2).procStream.input.func(3).paramVal{2};
+lpf = dataTree.group.subjs(isubj).runs(irun).procStream.input.func(3).paramVal{2};

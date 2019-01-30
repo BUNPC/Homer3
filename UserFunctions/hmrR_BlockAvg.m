@@ -23,6 +23,7 @@
 % ystd: the standard deviation across trials
 % tHRF: the time vector
 % nTrials: the number of trials averaged for each condition
+% ysum2: 
 % yTrials: a structure containing the individual trial responses
 %
 % USAGE OPTIONS:

@@ -7,9 +7,8 @@ function dataTree = LoadDataTree(varargin)
 %       dataTree = LoadDataTree(fmt, parent)
 %       dataTree = LoadDataTree(fmt, parent, handles)
 %       dataTree = LoadDataTree(fmt, parent, handles, fptr)
-%       dataTree = LoadDataTree(parent)
-%       dataTree = LoadDataTree(parent, handles)
-%       dataTree = LoadDataTree(parent, handles, fptr)
+%       dataTree = LoadDataTree(handles)
+%       dataTree = LoadDataTree(handles, fptr)
 %
 % Description:
 %       
@@ -20,32 +19,26 @@ function dataTree = LoadDataTree(varargin)
 %       
 
 
-% First get all the argument there are to get using the 8 possible syntax
+% First get all the argument there are to get using the 7 possible syntax
 % calls 
 if nargin==1
     if isstruct(varargin{1})
-        parent  = varargin{1};
+        handles  = varargin{1};
     elseif ischar(varargin{1})
         fmt     = varargin{1};
     end
 elseif nargin==2
     if isstruct(varargin{1})
-        parent  = varargin{1};
-        handles = varargin{2};
+        handles = varargin{1};
+        fptr    = varargin{2};
     else
         fmt     = varargin{1};
         parent  = varargin{2};
     end
 elseif nargin==3
-    if isstruct(varargin{1})
-        parent  = varargin{1};
-        handles = varargin{2};
-        fptr    = varargin{3};
-    else
-        fmt     = varargin{1};
-        parent  = varargin{2};
-        handles = varargin{3};
-    end
+    fmt     = varargin{1};
+    parent  = varargin{2};
+    handles = varargin{3};
 elseif nargin==4
     fmt     = varargin{1};
     parent  = varargin{2};
@@ -53,7 +46,7 @@ elseif nargin==4
     fptr    = varargin{4};
 end
 
-% Instantiate all non-existent arguments 
+% Instantiate any non-existent arguments 
 if ~exist('fmt','var')
     fmt = '';
 end
@@ -67,18 +60,9 @@ if ~exist('fptr','var')
     fptr = [];
 end
 
-dataTree = DataTreeClass().empty();
 if isempty(parent) || ~isproperty(parent, 'dataTree') || isempty(parent.dataTree)
-    dataInit = FindFiles(fmt);
-    if dataInit.isempty()
-        return;
-    end
-    dataInit.Display();
-    files = dataInit.files;   
-    dataTree = DataTreeClass(files, handles, fptr);
+    dataTree = DataTreeClass(handles, fptr, fmt);
 else
-    if ~isempty(parent.dataTree)
-        dataTree = parent.dataTree;
-    end
+    dataTree = parent.dataTree;
 end
 

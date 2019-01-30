@@ -112,16 +112,8 @@ Homer3_EnableDisableGUI(handles,'off');
 
 Homer3_Init(handles, {'zbuffer'});
 
-% Get file names 
-dataInit = FindFiles(handles);
-if dataInit.isempty()
-    return;
-end
-dataInit.Display();
-files = dataInit.files;
-
 % Load date files into group tree object
-dataTree  = DataTreeClass(files, handles, @listboxFiles_Callback);
+dataTree  = LoadDataTree(handles, @listboxFiles_Callback);
 guiMain   = InitGuiMain(handles, dataTree);
 plotprobe = PlotProbeClass(handles);
 stimEdit  = StimEditClass(dataTree);
@@ -129,7 +121,6 @@ stimEdit  = StimEditClass(dataTree);
 % If data set has no errors enable window gui objects
 Homer3_EnableDisableGUI(handles,'on');
 
-hmr.files     = files;
 hmr.dataTree  = dataTree;
 hmr.guiMain   = guiMain;
 hmr.plotprobe = plotprobe;
@@ -196,7 +187,6 @@ function uipanelProcessingType_SelectionChangeFcn(hObject, eventdata, handles)
 global hmr
 
 dataTree  = hmr.dataTree;
-files     = hmr.files;
 guiMain   = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
@@ -209,7 +199,7 @@ switch(procType)
     case 'radiobuttonProcTypeRun'
         dataTree.currElem.procType = 3;
 end
-dataTree.LoadCurrElem(files);
+dataTree.LoadCurrElem();
 guiMain = UpdateAxesDataCondition(guiMain, dataTree);
 dataTree.DisplayCurrElem(guiMain);
 dataTree.DisplayCurrElem(plotprobe, guiMain); 
@@ -224,7 +214,7 @@ hmr.stimEdit.Update();
 function listboxFiles_Callback(hObject, eventdata, handles)
 global hmr
 
-files = hmr.files;
+dataTree = hmr.dataTree;
 
 % If evendata isn't empty then caller is trying to set currElem
 if strcmp(class(eventdata), 'matlab.ui.eventdata.ActionData')
@@ -232,7 +222,7 @@ if strcmp(class(eventdata), 'matlab.ui.eventdata.ActionData')
 elseif ~isempty(eventdata)
     iSubj = eventdata(1);
     iRun = eventdata(2);
-    iFile = MapGroup2File(files, iSubj, iRun);
+    iFile = dataTree.MapGroup2File(iSubj, iRun);
     if iFile==0
         return;
     end
@@ -244,11 +234,10 @@ if isempty(idx==0)
     return;
 end
 
-dataTree = hmr.dataTree;
 guiMain = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
-dataTree.LoadCurrElem(files);
+dataTree.LoadCurrElem();
 guiMain = UpdateAxesDataCondition(guiMain, dataTree);
 
 dataTree.DisplayCurrElem(guiMain);

@@ -1,6 +1,7 @@
 classdef DataTreeClass <  handle
     
     properties
+        files
         group
         currElem
     end
@@ -8,21 +9,29 @@ classdef DataTreeClass <  handle
     methods
         
         % ---------------------------------------------------------------
-        function obj = DataTreeClass(files, handles, funcptr)
-            if ~exist('files','var')
-                return;
-            end
+        function obj = DataTreeClass(handles, funcptr, fmt)
             if ~exist('handles','var')
                 handles = [];
             end
             if ~exist('funcptr','var')
                 funcptr = [];
+            end            
+            if ~exist('fmt','var')
+                fmt = '';
             end
-            obj.LoadData(files);
+            
+            % Get file names
+            dataInit = FindFiles(handles, fmt);
+            if dataInit.isempty()
+                return;
+            end
+            dataInit.Display();
+            obj.files = dataInit.files;
+            obj.LoadData();
             
             % Initialize the current processing element within the group
             obj.currElem = InitCurrElem(handles, funcptr);
-            obj.LoadCurrElem(files, 1, 1);
+            obj.LoadCurrElem(1, 1);
         end
         
         
@@ -38,8 +47,9 @@ classdef DataTreeClass <  handle
 
 
         % ---------------------------------------------------------------
-        function LoadData(obj, files)
-            obj.AcqData2Group(files);
+        function LoadData(obj)
+            
+            obj.AcqData2Group();
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Load derived or post-acquisition data from a file if it exists
@@ -86,31 +96,31 @@ classdef DataTreeClass <  handle
         
         
         % ----------------------------------------------------------
-        function AcqData2Group(obj, files)
+        function AcqData2Group(obj)
            
             obj.group = GroupClass().empty();
             
-            if ~exist('files','var') || isempty(files)
+            if isempty(obj.files)
                 return;
             end
             
             % Create new group based only on acquisition data
             rnum = 1;
-            obj.group = GroupClass(files(1).name);
-            files(1).MapFile2Group(1, 1);
+            obj.group = GroupClass(obj.files(1).name);
+            obj.files(1).MapFile2Group(1, 1);
             hwait = waitbar(0, sprintf('Loading proc elements') );
             p = get(hwait,'position');
             set(hwait, 'Position',[p(1), p(2), p(3)*1.5, p(4)]);
-            for ii=2:length(files)
+            for ii=2:length(obj.files)
                 
-                waitbar(ii/length(files), hwait, sprintf('Loading %s: %d of %d', ...
-                    sprintf_s(files(ii).name), ii, length(files)) );
+                waitbar(ii/length(obj.files), hwait, sprintf('Loading %s: %d of %d', ...
+                    sprintf_s(obj.files(ii).name), ii, length(obj.files)) );
                 
-                fname = files(ii).name;
-                if files(ii).isdir
+                fname = obj.files(ii).name;
+                if obj.files(ii).isdir
                     jj = length(obj.group.subjs)+1;
                     obj.group.subjs(jj) = SubjClass(fname, jj, 0, rnum);
-                    files(ii).MapFile2Group(jj,rnum);
+                    obj.files(ii).MapFile2Group(jj,rnum);
                 else
                     [sname, rnum_tmp, iExt] = getSubjNameAndRun(fname, rnum);
                     if rnum_tmp ~= rnum
@@ -144,7 +154,7 @@ classdef DataTreeClass <  handle
                             % Create new run in existing subject
                             obj.group.subjs(jj).runs(nRuns+1) = RunClass(fname, jj, nRuns+1, rnum);
                             obj.group.nFiles = obj.group.nFiles+1;
-                            files(ii).MapFile2Group(jj, nRuns+1);
+                            obj.files(ii).MapFile2Group(jj, nRuns+1);
                             rnum=rnum+1;
                             break;
                         end
@@ -155,7 +165,7 @@ classdef DataTreeClass <  handle
                     if(jj>length(obj.group.subjs))
                         obj.group.subjs(jj) = SubjClass(fname, jj, 1, rnum);
                         obj.group.nFiles = obj.group.nFiles+1;
-                        files(ii).MapFile2Group(jj, 1);
+                        obj.files(ii).MapFile2Group(jj, 1);
                         rnum=rnum+1;
                     end
                 end
@@ -189,10 +199,10 @@ classdef DataTreeClass <  handle
 
         
         % ----------------------------------------------------------
-        function LoadCurrElem(obj, files, iSubj, iRun)
+        function LoadCurrElem(obj, iSubj, iRun)
             if exist('iSubj','var') & exist('iRun','var')
-                for ii=1:length(files)
-                    if files(ii).map2group.iSubj==iSubj && files(ii).map2group.iRun==iRun
+                for ii=1:length(obj.files)
+                    if obj.files(ii).map2group.iSubj==iSubj && obj.files(ii).map2group.iRun==iRun
                         iFile = ii;
                         break;
                     end
@@ -204,8 +214,8 @@ classdef DataTreeClass <  handle
 
             if ishandle(obj.currElem.handles.listboxFiles)
                 iFile = get(obj.currElem.handles.listboxFiles,'value');
-                iSubj = files(iFile).map2group.iSubj;
-                iRun = files(iFile).map2group.iRun;
+                iSubj = obj.files(iFile).map2group.iSubj;
+                iRun = obj.files(iFile).map2group.iRun;
                 
                 % iSubj==0 means the file chosen is a group directory - no
                 % subject or run processing allowed for the corresponding
@@ -281,6 +291,18 @@ classdef DataTreeClass <  handle
         % ----------------------------------------------------------
         function CalcCurrElem(obj)
             obj.currElem.procElem.Calc(obj.currElem.handles.listboxFiles, obj.currElem.funcPtrListboxFiles);
+        end
+
+        
+        % ----------------------------------------------------------
+        function iFile = MapGroup2File(obj, iSubj, iRun)
+            iFile = 0;
+            for ii=1:length(obj.files)
+                if obj.files(ii).map2group.iSubj==iSubj && obj.files(ii).map2group.iRun==iRun
+                    iFile = ii;
+                    break;
+                end
+            end 
         end
 
     end

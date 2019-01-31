@@ -78,8 +78,8 @@ iRunPanel   = procStreamGui.iRunPanel;
 iSubjPanel  = procStreamGui.iSubjPanel;
 iGroupPanel = procStreamGui.iGroupPanel;
 
-
-procStreamGui.funcReg = LoadFuncReg(hmr);
+procStreamGui.dataTree = LoadDataTree(procStreamGui.format, hmr);
+procStreamGui.funcReg = procStreamGui.dataTree.funcReg;
 
 % Update handles structure
 func = procStreamReg2ProcFunc('run');
@@ -111,7 +111,6 @@ set(handles.uipanelRun, 'parent',htabR, 'position',[0, 0, 1, 1]);
 set(handles.uipanelSubj, 'parent',htabS, 'position',[0, 0, 1, 1]);
 set(handles.uipanelGroup, 'parent',htabG, 'position',[0, 0, 1, 1]);
 
-procStreamGui.dataTree = LoadDataTree(procStreamGui.format, hmr);
 if ~isempty(procStreamGui.dataTree)
     procStreamGui.procElem{iRunPanel} = procStreamGui.dataTree.group(1).subjs(1).runs(1).copy;
     procStreamGui.procElem{iSubjPanel} = procStreamGui.dataTree.group(1).subjs(1).copy;

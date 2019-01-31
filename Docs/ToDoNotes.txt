@@ -21,6 +21,6 @@ front-end client applications of DataTreeClass and FuncRegClass obects.
 a) starting with the facts that it keeps all the data in memory and doesn't need to 
 b) variable preallocation in for loops 
 c) ProcStreamEditGUI takes a long time to start and it's responce time is slow.
-
+d) Snirf HDF5 saving/loading 
 
 -

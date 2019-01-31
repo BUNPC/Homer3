@@ -191,7 +191,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
             kk = 1;
             for ii=1:length(obj.entriesSubj)
                 for jj=1:obj.entriesSubj(ii).GetOptionsNum()
-                    usagestrs{kk} = sprintf('@ %s', obj.entriesSubj(ii).GetUsageStr(jj), nl);
+                    usagestrs{kk} = sprintf('@ %s%s', obj.entriesSubj(ii).GetUsageStr(jj), nl);
                     kk=kk+1;
                 end
             end

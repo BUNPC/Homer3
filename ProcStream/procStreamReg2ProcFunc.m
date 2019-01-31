@@ -18,22 +18,25 @@ for ii=1:length(reg)
 end
 func = procInput.func;
 
-% -------------------------------------------------------------------
-function reg = procStreamReg(type)
 
-reg = {};
+
+% -------------------------------------------------------------------
+function regstrs = procStreamReg(type)
+global procStreamGui
+
+regstrs = {};
+
+funcReg = procStreamGui.funcReg;
 
 % Initialize output struct
 switch(type)
     case {'group','GroupClass'}
-        reg = procStreamRegGroup();
+        regstrs = funcReg.GetUsageStrsGroup();
     case {'subj','SubjClass'}
-        reg = procStreamRegSubj();
+        regstrs = funcReg.GetUsageStrsSubj();
     case {'run','RunClass'}
-        reg = procStreamRegRun();
+        regstrs = funcReg.GetUsageStrsRun();
     otherwise
-        reg = [reg; procStreamRegGroup()];
-        reg = [reg; procStreamRegSubj()];
-        reg = [reg; procStreamRegRun()];
+        regstrs = funcReg.GetUsageStrsAll();
 end
 

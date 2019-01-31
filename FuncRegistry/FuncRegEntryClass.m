@@ -21,16 +21,16 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
             obj.usageoptions = {};
             obj.params       = {};
             obj.help = FuncHelpClass(funcname);
-            obj.GetUsage();
+            obj.SetUsageFromHelp();
             obj.EncodeUsage();
         end
 
         
         % ----------------------------------------------------------------------------------
-        function GetUsage(obj)
+        function SetUsageFromHelp(obj)
             %
-            % Data flow for GetUsage:
-            %   obj.help  --> GetUsage() --> {obj.usageoptions, obj.params}
+            % Data flow for SetUsageFromHelp:
+            %   obj.help  --> SetUsageFromHelp() --> {obj.usageoptions, obj.params}
             %
             [paramname, valformat] = obj.help.GetParamUsage();
             for ii=1:length(paramname)
@@ -43,6 +43,77 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                 obj.usageoptions{ii,2} = usage{ii};
             end            
             obj.uiname = obj.help.GetUiname();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function str = GetUsageStr(obj, idx)
+            %
+            % Syntax:
+            %    str = GetUsageStr(obj, idx)
+            % 
+            % Example: 
+            %    fregentry = FuncRegEntryClass('hmrR_BlockAvg');
+            %    fregentry.GetUsageStr('dcAvg')
+            %
+            %      ans = 
+            %
+            %      hmrR_BlockAvg [dcAvg,dcAvgStd,tHRF,nTrials,dcSum2] (dc,s,t trange %0.1f_%0.1f -2.0_20.0
+            %
+            str = '';
+            if ~exist('idx','var') || isempty(idx)
+                idx = 1;
+            elseif ischar(idx)
+                usagename = idx;
+                if isempty(usagename)
+                    idx = 1;
+                else
+                    for ii=1:size(obj.usageoptions,1)
+                        
+                        % First see if usage name matches 
+                        if strcmp(obj.usageoptions{ii,1}, usagename)
+                            idx = ii;
+                            break;
+                        % Second see if usage name matches any of the input
+                        % or output arguments
+                        elseif ~isempty(strfind(obj.usageoptions{ii,3}, usagename))
+                            idx = ii;
+                            break;
+                        end                        
+                    end                    
+                end
+            end
+            if isempty(idx)
+                return;
+            end
+            if idx>size(obj.usageoptions,1)
+                return;
+            end
+            if idx<1
+                return;
+            end
+            if ~iswholenum(idx)
+                return;
+            end
+            str = obj.usageoptions{idx,3};
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function str = GetName(obj)
+            str = obj.name;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function str = GetUiname(obj)
+            str = obj.uiname;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function n = GetOptionsNum(obj)
+            n = size(obj.usageoptions,1);
         end
         
         
@@ -151,8 +222,7 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                 obj.usageoptions{ii,3} = encoding;
             end            
         end
-        
-        
+                
         
         % ----------------------------------------------------------------------------------
         function fmt = EncodeParamFormat(obj, idx)

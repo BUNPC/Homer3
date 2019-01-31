@@ -31,7 +31,7 @@
 % Block_Average_on_Delta_OD_Data: [dodAvg, dodAvgStd, tHRF, nTrials, dodSum2] = hmrR_BlockAvg( dod, s, t, trange )
 %
 % PARAMETERS:
-% trange: [-2.10, 20.30]
+% trange: [-2.0, 20.0]
 %
 
 

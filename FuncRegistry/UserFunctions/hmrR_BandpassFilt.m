@@ -23,8 +23,8 @@
 % Bandpass_Filter: dod = hmrR_BandpassFilt( dod, t, hpf, lpf )
 %
 % PARAMETERS:
-% hpf: [0.000]
-% lpf: [0.050]
+% hpf: [0.010]
+% lpf: [0.500]
 %
 
 function [y2,ylpf] = hmrR_BandpassFilt( y, fs, hpf, lpf )

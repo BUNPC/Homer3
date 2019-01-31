@@ -35,11 +35,10 @@
 % tRange:   same tRange array as in the input
 %
 % USAGE OPTIONS:
-% Block_Average_on_Concentration_Data: [dcAvg, dcAvgStd, tHRF, nTrials, dcSum2]    = hmrR_BlockAvg( dc, s, t, trange )
-% Block_Average_on_Delta_OD_Data:      [dodAvg, dodAvgStd, tHRF, nTrials, dodSum2] = hmrR_BlockAvg( dod, s, t, trange )
+% Stim_Exclude: [s,tRange] = hmrR_StimRejection(t,s,tIncAuto,tIncMan,tRange)
 %
 % PARAMETERS:
-% trange: [-2.10, 20.30]
+% tRange: [-5.0, 10.0]
 %
 
 

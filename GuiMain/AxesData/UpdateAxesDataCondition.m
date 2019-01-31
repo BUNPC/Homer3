@@ -3,7 +3,7 @@ function guiMain = UpdateAxesDataCondition(guiMain, dataTree)
 if isempty(guiMain)
     return;
 end
-if isempty(dataTree)
+if dataTree.IsEmpty()
     return;
 end
 

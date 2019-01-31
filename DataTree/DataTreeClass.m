@@ -4,12 +4,13 @@ classdef DataTreeClass <  handle
         files
         group
         currElem
+        funcReg
     end
     
     methods
         
         % ---------------------------------------------------------------
-        function obj = DataTreeClass(handles, funcptr, fmt)
+        function obj = DataTreeClass(handles, funcptr, fmt, funcReg)
             if ~exist('handles','var')
                 handles = [];
             end
@@ -25,13 +26,15 @@ classdef DataTreeClass <  handle
             if dataInit.isempty()
                 return;
             end
-            dataInit.Display();
+            dataInit.Display();            
             obj.files = dataInit.files;
+            obj.funcReg = FuncRegClass();
             obj.LoadData();
             
             % Initialize the current processing element within the group
             obj.currElem = InitCurrElem(handles, funcptr);
             obj.LoadCurrElem(1, 1);
+                        
         end
         
         
@@ -77,9 +80,9 @@ classdef DataTreeClass <  handle
             
             % Find the procInput defaults at each level with which to initialize
             % uninitialized procInput
-            [procInputGroupDefault, procfilenm] = group.GetProcInputDefault();
-            [procInputSubjDefault, procfilenm]  = subj.GetProcInputDefault(procfilenm);
-            [procInputRunDefault, ~]            = run.GetProcInputDefault(procfilenm);
+            [procInputGroupDefault, procfilenm] = group.GetProcInputDefault('', obj.funcReg);
+            [procInputSubjDefault, procfilenm]  = subj.GetProcInputDefault(procfilenm, obj.funcReg);
+            [procInputRunDefault, ~]            = run.GetProcInputDefault(procfilenm, obj.funcReg);
             
             % Copy default procInput to all uninitialized nodes in the group
             obj.group.CopyProcInput('group', procInputGroupDefault);
@@ -303,6 +306,22 @@ classdef DataTreeClass <  handle
                     break;
                 end
             end 
+        end
+
+        
+        % ----------------------------------------------------------
+        function b = IsEmpty(obj)
+            b = true;
+            if isempty(obj.files)
+                return;
+            end
+            if isempty(obj.group)
+                return;
+            end
+            if isempty(obj.currElem)
+                return;
+            end
+            b = false;
         end
 
     end

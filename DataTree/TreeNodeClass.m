@@ -42,7 +42,7 @@ classdef TreeNodeClass < handle
         
         
         % ---------------------------------------------------------------------------------
-        function [procInput, filename] = GetProcInputDefault(obj, filename)
+        function [procInput, filename] = GetProcInputDefault(obj, filename, funcReg)
             procInput = struct([]);
             if ~exist('filename','var') || isempty(filename)
                 filename = '';
@@ -60,7 +60,7 @@ classdef TreeNodeClass < handle
             while ~all(err1==0) || ~all(err2==0)                
                 % Load Processing stream file
                 if isempty(filename)
-                    filename = obj.procStream.input.CreateDefaultConfigFile();
+                    filename = obj.procStream.input.CreateDefaultConfigFile(funcReg);
                     
                     % Load procInput from config file
                     fid = fopen(filename, 'r');
@@ -152,8 +152,6 @@ classdef TreeNodeClass < handle
             % procInput
             if ~isempty(obj2.procStream.input.func)
                 obj.procStream.input.Copy(obj2.procStream.input);
-            else
-                obj.procStream.input.Default(obj.type);
             end
             
             % procResult

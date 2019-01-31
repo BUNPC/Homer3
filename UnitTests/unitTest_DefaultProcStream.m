@@ -14,8 +14,10 @@ status = compareOutputs1();
 
 if status==0
     fprintf('unitTest_DefaultProcStream(''%s''): TEST SUCCEEDED - Homer3 output matches Homer2 for this data as expected.\n', datafmt);
-else
+elseif status>0
     fprintf('unitTest_DefaultProcStream(''%s''): TEST FAILED - Homer3 output does NOT match Homer2 for this data.\n', datafmt);
+elseif status<0
+    fprintf('unitTest_DefaultProcStream(''%s''): TEST FAILED - Homer3 did not generate any output\n', datafmt);
 end
 
 cd(currpath);

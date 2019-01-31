@@ -86,7 +86,6 @@ else
     hmr.format = varargin{1};
 end
 
-hmr.files     = [];
 hmr.dataTree  = [];
 hmr.guiMain   = [];
 hmr.plotprobe = [];
@@ -345,6 +344,10 @@ global hmr
 
 dataTree = hmr.dataTree;
 guiMain = hmr.guiMain;
+
+if dataTree.IsEmpty()
+    return;
+end
 
 % Transfer the channels selection to guiMain
 guiMain = SetAxesDataCh(guiMain, dataTree.currElem);

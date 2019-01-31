@@ -65,6 +65,9 @@ classdef ProcInputClass < matlab.mixin.Copyable
             if isempty(iParam)
                 return;
             end
+            if isempty(obj.func)
+                return;
+            end
             obj.func(iFunc).paramVal{iParam} = val;
             eval( sprintf('obj.param.%s_%s = val;', ...
                           obj.func(iFunc).name, ...
@@ -282,7 +285,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
     methods
         
         % ----------------------------------------------------------------------------------
-        function [filename, pathname] = CreateDefaultConfigFile(obj)
+        function [filename, pathname] = CreateDefaultConfigFile(obj, funcReg)
             % This pause is a workaround for a matlab bug in version
             % 7.11 for Linux, where uigetfile won't block unless there's
             % a breakpoint.
@@ -299,9 +302,9 @@ classdef ProcInputClass < matlab.mixin.Copyable
                     end
                 end
                 if success
-                    obj.FileGen(filename, 'group');
-                    obj.FileGen(filename, 'subj');
-                    obj.FileGen(filename, 'run');
+                    obj.FileGenDefConc(filename, 'group', funcReg);
+                    obj.FileGenDefConc(filename, 'subj', funcReg);
+                    obj.FileGenDefConc(filename, 'run', funcReg);
                 end
             else
                 filename = [pathname filename];
@@ -310,7 +313,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
                 
         % ----------------------------------------------------------------------------------
-        function FileGen(obj, filepath, type)            
+        function FileGenDefConc(obj, filepath, type, funcReg)            
             % Generates default processOpt.cfg file.
             % Note that fprintf outputs formatted textstr where some characters
             % are special characters - such as '%'. In order to write a
@@ -329,11 +332,11 @@ classdef ProcInputClass < matlab.mixin.Copyable
             
             switch(type)
                 case 'group'
-                    contents = obj.DefaultFileGroup();
+                    contents = obj.DefaultFileGroupConc(funcReg);
                 case 'subj'
-                    contents = obj.DefaultFileSubj();
+                    contents = obj.DefaultFileSubjConc(funcReg);
                 case 'run'
-                    contents = obj.DefaultFileRun();
+                    contents = obj.DefaultFileRunConc(funcReg);
             end
             for ii=1:length(contents)
                 fprintf(fid, contents{ii});
@@ -348,83 +351,37 @@ classdef ProcInputClass < matlab.mixin.Copyable
                    
         
         % ----------------------------------------------------------------------------------
-        function [contents, str] = DefaultFileGroup(obj, funcRun)
-            % Choose default procStream group section based on the run procStream
-            % output; if it's output ia dodAvg, choose the dodAvg default, otherwise
-            % choose dcAvg.
-            if ~exist('funcRun','var') | isempty(funcRun)
-                funcRun(1).argOut = '';
-            end
-            datatype = 'dcAvg';
-            for ii=1:length(funcRun)
-                if ~isempty(strfind(funcRun(ii).argOut, 'dodAvg'))
-                    datatype = 'dodAvg';
-                    break;
-                end
-            end
-            contents_dcAvg = {...
+        function [contents, str] = DefaultFileGroupConc(obj, funcReg)            
+            contents = {...
                 '%% group\n', ...
-                '@ hmrG_BlockAvg [dcAvg,dcAvgStd,tHRF,nTrials,grpAvgPass] (dcAvgSubjs,dcAvgStdSubjs,tHRFSubjs,SDSubjs,nTrialsSubjs,CondName2Subj trange %%0.1f_%%0.1f 5_10 thresh %%0.1f 5\n', ...
+                funcReg.FindUsageGroup('hmrG_BlockAvg','dcAvg'), ...
                 '\n\n', ...
             };
-            contents_dodAvg = {...
-                '%% group\n', ...
-                '@ hmrG_BlockAvg [dodAvg,dodAvgStd,tHRF,nTrials,grpAvgPass] (dodAvgSubjs,dodAvgStdSubjs,tHRFSubjs,SDSubjs,nTrialsSubjs,CondName2Subj trange %%0.1f_%%0.1f 5_10 thresh %%0.1f 5\n', ...
-                '\n\n', ...
-            };
-            if strcmp(datatype, 'dcAvg')
-                contents = contents_dcAvg;
-            else
-                contents = contents_dodAvg;
-            end
             str = cell2str(contents);
         end
         
                 
         % ----------------------------------------------------------------------------------
-        function [contents, str] = DefaultFileSubj(obj, funcRun)
-            % Choose default procStream group section based on the run procStream
-            % output; if it's output ia dodAvg, choose the dodAvg default, otherwise
-            % choose dcAvg.
-            if ~exist('funcRun','var') | isempty(funcRun)
-                funcRun(1).argOut = '';
-            end
-            datatype = 'dcAvg';
-            for ii=1:length(funcRun)
-                if ~isempty(strfind(funcRun(ii).argOut, 'dodAvg'))
-                    datatype = 'dodAvg';
-                    break;
-                end
-            end
-            contents_dcAvg = {...
+        function [contents, str] = DefaultFileSubjConc(obj, funcReg)
+            contents = {...
                 '%% subj\n', ...
-                '@ hmrS_BlockAvg [dcAvg,dcAvgStd,tHRF,nTrials] (dcAvgRuns,dcAvgStdRuns,dcSum2Runs,tHRFRuns,SDRuns,nTrialsRuns,CondName2Run\n', ...
+                funcReg.FindUsageSubj('hmrS_BlockAvg','dcAvg'), ...
                 '\n\n', ...
             };
-            contents_dodAvg = {...
-                '%% subj\n', ...
-                '@ hmrS_BlockAvg [dodAvg,dodAvgStd,tHRF,nTrials] (dodAvgRuns,dodAvgStdRuns,dodSum2Runs,tHRFRuns,SDRuns,nTrialsRuns,CondName2Run\n', ...
-                '\n\n', ...
-            };
-            if strcmp(datatype, 'dcAvg')
-                contents = contents_dcAvg;
-            else
-                contents = contents_dodAvg;
-            end
             str = cell2str(contents);            
         end
         
         
         % ----------------------------------------------------------------------------------
-        function [contents, str] = DefaultFileRun(obj)
+        function [contents, str] = DefaultFileRunConc(obj, funcReg)
             contents = {...
                 '%% run\n', ...
-                '@ hmrR_Intensity2OD dod (d\n', ...
-                '@ hmrR_MotionArtifact tIncAuto (dod,t,SD,tIncMan tMotion %%0.1f 0.5 tMask %%0.1f 1 STDEVthresh %%0.1f 50 AMPthresh %%0.1f 5\n', ...
-                '@ hmrR_BandpassFilt dod (dod,t hpf %%0.3f 0.01 lpf %%0.1f 0.5\n', ...
-                '@ hmrR_OD2Conc dc (dod,SD ppf %%0.1f_%%0.1f 6_6\n', ...
-                '@ hmrR_StimRejection [s,tRangeStimReject] (t,s,tIncAuto,tIncMan tRange %%0.1f_%%0.1f -5_10\n', ...
-                '@ hmrR_BlockAvg [dcAvg,dcAvgStd,tHRF,nTrials,dcSum2,dcTrials] (dc,s,t trange %%0.1f_%%0.1f -2_20\n' ...
+                funcReg.FindUsageRun('hmrR_Intensity2OD'), ...
+                funcReg.FindUsageRun('hmrR_MotionArtifact'), ...
+                funcReg.FindUsageRun('hmrR_BandpassFilt'), ...
+                funcReg.FindUsageRun('hmrR_OD2Conc'), ...
+                funcReg.FindUsageRun('hmrR_StimRejection'), ...
+                funcReg.FindUsageRun('hmrR_BlockAvg','dcAvg') ...
                 '\n\n', ...
                 };
             str = cell2str(contents);
@@ -432,16 +389,16 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function Default(obj, type)
+        function DefaultConc(obj, type, funcReg)
             obj.param = struct([]);
             filecontents_str = '';
             switch(type)
                 case 'group'
-                    [~, filecontents_str] = obj.DefaultFileGroup();
+                    [~, filecontents_str] = obj.DefaultFileGroupConc(funcReg);
                 case 'subj'
-                    [~, filecontents_str] = obj.DefaultFileSubj();
+                    [~, filecontents_str] = obj.DefaultFileSubjConc(funcReg);
                 case 'run'
-                    [~, filecontents_str] = obj.DefaultFileRun();
+                    [~, filecontents_str] = obj.DefaultFileRunConc(funcReg);
             end
             S = textscan(filecontents_str,'%s');
             obj.Parse(S{1});

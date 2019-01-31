@@ -1,4 +1,4 @@
-function C = str2cell(str, delimiters, options)
+function [C,k] = str2cell(str, delimiters, options)
 
 % Option tells weather to keep leading whitespaces. 
 % (Trailing whitespaces are always removed)
@@ -37,4 +37,3 @@ while ii<=length(j)
     end
     kk=kk+1;
 end
-

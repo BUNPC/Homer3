@@ -78,6 +78,9 @@ iRunPanel   = procStreamGui.iRunPanel;
 iSubjPanel  = procStreamGui.iSubjPanel;
 iGroupPanel = procStreamGui.iGroupPanel;
 
+
+procStreamGui.funcReg = LoadFuncReg(hmr);
+
 % Update handles structure
 func = procStreamReg2ProcFunc('run');
 [fcallIn, fcall, fcallOut] = fillListboxWithRegistry(func);
@@ -626,7 +629,7 @@ for iPanel=1:length(procElem)
         if func(iFunc).nParamVar>0
             fprintf( fid,' *');
         end
-        fprintf( fid, '\n' );        
+        fprintf( fid, '\n' );
     end
     fprintf( fid, '\n' );
 end

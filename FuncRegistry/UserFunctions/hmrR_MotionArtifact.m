@@ -49,7 +49,7 @@
 % tMotion: 0.5
 % tMask: 1.0
 % STDEVthresh: 50.0
-% AMPthresh: 5.00
+% AMPthresh: 5.0
 % 
 %
 % LOG:

@@ -85,7 +85,7 @@ iSubjPanel  = procStreamGui.iSubjPanel;
 iGroupPanel = procStreamGui.iGroupPanel;
 
 procStreamGui.dataTree = LoadDataTree(procStreamGui.format, hmr);
-procStreamGui.funcReg = procStreamGui.dataTree.funcReg;
+procStreamGui.R = procStreamGui.dataTree.R;
 
 % Update handles structure
 LoadRegistry(handles);
@@ -103,7 +103,7 @@ set(handles.uipanelGroup, 'parent',htabG, 'position',[0, 0, 1, 1]);
 
 setGuiFonts(hObject);
 
-if isempty(procStreamGui.dataTree)
+if isempty(procStreamGui.dataTree) || procStreamGui.dataTree.IsEmpty()
     return;
 end
 procStreamGui.procElem{iRunPanel} = procStreamGui.dataTree.group(1).subjs(1).runs(1).copy;
@@ -129,15 +129,18 @@ LoadProcStream(handles);
 % -------------------------------------------------------------
 function LoadRegistry(handles)
 global procStreamGui
-funcReg     = procStreamGui.funcReg;
+R = procStreamGui.R;
+if isempty(R) || R.IsEmpty()
+    return;
+end
 
 iGroupPanel = procStreamGui.iGroupPanel;
 iSubjPanel  = procStreamGui.iSubjPanel;
 iRunPanel   = procStreamGui.iRunPanel;
 
-procStreamGui.funcNamesGroup = funcReg.GetFuncNamesGroup();
-procStreamGui.funcNamesSubj = funcReg.GetFuncNamesSubj();
-procStreamGui.funcNamesRun = funcReg.GetFuncNamesRun();
+procStreamGui.funcNamesGroup = R.funcReg(R.IdxGroup).GetFuncNames();
+procStreamGui.funcNamesSubj = R.funcReg(R.IdxSubj).GetFuncNames();
+procStreamGui.funcNamesRun = R.funcReg(R.IdxRun).GetFuncNames();
 
 set(handles.listboxFuncReg(iGroupPanel),'string',procStreamGui.funcNamesGroup);
 set(handles.listboxFuncReg(iSubjPanel),'string',procStreamGui.funcNamesSubj);
@@ -146,8 +149,23 @@ set(handles.listboxFuncReg(iRunPanel),'string', procStreamGui.funcNamesRun);
 
 
 % --------------------------------------------------------------------
-function LoadProcStream(handles)
+function LoadProcStream(handles, reload)
 global procStreamGui
+
+iGroupPanel = procStreamGui.iGroupPanel;
+iSubjPanel  = procStreamGui.iSubjPanel;
+iRunPanel   = procStreamGui.iRunPanel;
+
+if ~exist('reload','var')
+    reload=false;
+end
+
+if reload
+    procStreamGui.procElem{iRunPanel} = procStreamGui.dataTree.group(1).subjs(1).runs(1).copy;
+    procStreamGui.procElem{iSubjPanel} = procStreamGui.dataTree.group(1).subjs(1).copy;
+    procStreamGui.procElem{iGroupPanel} = procStreamGui.dataTree.group(1).copy;
+end
+
 for iPanel=1:3
     procElem = procStreamGui.procElem{iPanel};
     procInput = procElem.procStream.input;
@@ -166,8 +184,11 @@ global procStreamGui
 iPanel = procStreamGui.iPanel;
 
 ii = get(hObject,'value');
-set(handles.listboxFuncReg(iPanel),'value',ii);
+if isempty(ii)
+    return;
+end
 
+set(handles.listboxFuncReg(iPanel),'value',ii);
 foos = procStreamHelpLookup(ii);
 set(handles.textHelp(iPanel),'string',foos);
 
@@ -286,11 +307,15 @@ updateProcStreamList(handles,iPS2);
 function pushbuttonLoad_Callback(hObject, eventdata, handles)
 global procStreamGui
 
+reload=false;
+
 ch = menu('Load current processing stream or config file?','Current processing stream','Config file','Cancel');
 if ch==3
     return;
 end
-if ch==2
+if ch==1
+    reload = true;
+elseif ch==2
     % load cfg file
     [filename,pathname] = uigetfile( '*.cfg', 'Process Options Config File');
     if filename == 0
@@ -306,7 +331,7 @@ for iPanel=1:3
         fclose(fid);
     end
 end
-LoadProcStream(handles);
+LoadProcStream(handles, reload);
 
 
 
@@ -358,21 +383,26 @@ end
 function helpstr = procStreamHelpLookup(name)
 global procStreamGui
 iPanel = procStreamGui.iPanel;
-funcReg = procStreamGui.funcReg;
+R = procStreamGui.R;
 
 iGroupPanel = procStreamGui.iGroupPanel;
 iSubjPanel  = procStreamGui.iSubjPanel;
 iRunPanel   = procStreamGui.iRunPanel;
 
 helpstr = '';
+idx=[];
 switch(iPanel)
     case iGroupPanel
-        helpstr = funcReg.GetFuncHelpGroup(name);
+        idx = R.IdxGroup;
     case iSubjPanel
-        helpstr = funcReg.GetFuncHelpSubj(name);
+        idx = R.IdxSubj;
     case iRunPanel
-        helpstr = funcReg.GetFuncHelpRun(name);
+        idx = R.IdxRun;
 end 
+if isempty(idx) || idx>length(R.funcReg)
+    return;
+end
+helpstr = R.funcReg(idx).GetFuncHelp(name);
 
 
 % --------------------------------------------------------------------
@@ -445,17 +475,21 @@ fclose(fid);
 function [func, reg] = procStreamReg2ProcFunc(type)
 global procStreamGui
 
-funcReg = procStreamGui.funcReg;
+R = procStreamGui.R;
+idx=[];
 switch(type)
     case {'group','GroupClass'}
-        reg = funcReg.GetUsageStrsGroup();
+        idx = R.IdxGroup;
     case {'subj','SubjClass'}
-        reg = funcReg.GetUsageStrsSubj();
+        idx = R.IdxSubj;
     case {'run','RunClass'}
-        reg = funcReg.GetUsageStrsRun();
-    otherwise
-        reg = funcReg.GetUsageStrsAll();
+        idx = R.IdxRun;
 end
+if isempty(idx) || idx>length(R.funcReg)
+    return;
+end
+reg = R.funcReg(idx).GetUsageStrs();
+
 procInput = ProcInputClass();
 for ii=1:length(reg)
     procInput.Parse(reg{ii}, ii);

@@ -277,7 +277,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
     methods
         
         % ----------------------------------------------------------------------------------
-        function [filename, pathname] = CreateDefaultConfigFile(obj, funcReg)
+        function [filename, pathname] = CreateDefaultConfigFile(obj, R)
             % This pause is a workaround for a matlab bug in version
             % 7.11 for Linux, where uigetfile won't block unless there's
             % a breakpoint.
@@ -294,9 +294,9 @@ classdef ProcInputClass < matlab.mixin.Copyable
                     end
                 end
                 if success
-                    obj.FileGenDefConc(filename, 'group', funcReg);
-                    obj.FileGenDefConc(filename, 'subj', funcReg);
-                    obj.FileGenDefConc(filename, 'run', funcReg);
+                    obj.FileGenDefConc(filename, 'group', R);
+                    obj.FileGenDefConc(filename, 'subj', R);
+                    obj.FileGenDefConc(filename, 'run', R);
                 end
             else
                 filename = [pathname filename];
@@ -305,7 +305,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
                 
         % ----------------------------------------------------------------------------------
-        function FileGenDefConc(obj, filepath, type, funcReg)            
+        function FileGenDefConc(obj, filepath, type, R)
             % Generates default processOpt.cfg file.
             % Note that fprintf outputs formatted textstr where some characters
             % are special characters - such as '%'. In order to write a
@@ -324,11 +324,11 @@ classdef ProcInputClass < matlab.mixin.Copyable
             
             switch(type)
                 case 'group'
-                    contents = obj.DefaultFileGroupConc(funcReg);
+                    contents = obj.DefaultFileGroupConc(R);
                 case 'subj'
-                    contents = obj.DefaultFileSubjConc(funcReg);
+                    contents = obj.DefaultFileSubjConc(R);
                 case 'run'
-                    contents = obj.DefaultFileRunConc(funcReg);
+                    contents = obj.DefaultFileRunConc(R);
             end
             for ii=1:length(contents)
                 fprintf(fid, contents{ii});
@@ -343,10 +343,11 @@ classdef ProcInputClass < matlab.mixin.Copyable
                    
         
         % ----------------------------------------------------------------------------------
-        function [contents, str] = DefaultFileGroupConc(obj, funcReg)            
+        function [contents, str] = DefaultFileGroupConc(obj, R)            
+            iG = R.IdxGroup();
             contents = {...
                 '%% group\n', ...
-                funcReg.FindUsageGroup('hmrG_BlockAvg','dcAvg'), ...
+                R.funcReg(iG).FindUsageGroup('hmrG_BlockAvg','dcAvg'), ...
                 '\n\n', ...
             };
             str = cell2str(contents);
@@ -354,10 +355,11 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
                 
         % ----------------------------------------------------------------------------------
-        function [contents, str] = DefaultFileSubjConc(obj, funcReg)
+        function [contents, str] = DefaultFileSubjConc(obj, R)
+            iS = R.IdxSubj();
             contents = {...
                 '%% subj\n', ...
-                funcReg.FindUsageSubj('hmrS_BlockAvg','dcAvg'), ...
+                R.funcReg(iS).FindUsageSubj('hmrS_BlockAvg','dcAvg'), ...
                 '\n\n', ...
             };
             str = cell2str(contents);            
@@ -365,15 +367,16 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function [contents, str] = DefaultFileRunConc(obj, funcReg)
+        function [contents, str] = DefaultFileRunConc(obj, R)
+            iR = R.IdxRun();
             contents = {...
                 '%% run\n', ...
-                funcReg.FindUsageRun('hmrR_Intensity2OD'), ...
-                funcReg.FindUsageRun('hmrR_MotionArtifact'), ...
-                funcReg.FindUsageRun('hmrR_BandpassFilt'), ...
-                funcReg.FindUsageRun('hmrR_OD2Conc'), ...
-                funcReg.FindUsageRun('hmrR_StimRejection'), ...
-                funcReg.FindUsageRun('hmrR_BlockAvg','dcAvg') ...
+                R.funcReg(iR).FindUsageRun('hmrR_Intensity2OD'), ...
+                R.funcReg(iR).FindUsageRun('hmrR_MotionArtifact'), ...
+                R.funcReg(iR).FindUsageRun('hmrR_BandpassFilt'), ...
+                R.funcReg(iR).FindUsageRun('hmrR_OD2Conc'), ...
+                R.funcReg(iR).FindUsageRun('hmrR_StimRejection'), ...
+                R.funcReg(iR).FindUsageRun('hmrR_BlockAvg','dcAvg') ...
                 '\n\n', ...
                 };
             str = cell2str(contents);
@@ -381,15 +384,15 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function DefaultConc(obj, type, funcReg)
+        function DefaultConc(obj, type, R)
             filecontents_str = '';
             switch(type)
                 case 'group'
-                    [~, filecontents_str] = obj.DefaultFileGroupConc(funcReg);
+                    [~, filecontents_str] = obj.DefaultFileGroupConc(R);
                 case 'subj'
-                    [~, filecontents_str] = obj.DefaultFileSubjConc(funcReg);
+                    [~, filecontents_str] = obj.DefaultFileSubjConc(R);
                 case 'run'
-                    [~, filecontents_str] = obj.DefaultFileRunConc(funcReg);
+                    [~, filecontents_str] = obj.DefaultFileRunConc(R);
             end
             S = textscan(filecontents_str,'%s');
             obj.Parse(S{1});

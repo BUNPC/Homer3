@@ -112,16 +112,10 @@ classdef StimEditClass < handle
         
         % -----------------------------------------------------------
         function Display(obj)
-            currElem = obj.dataTree.currElem;
-            
-            % As of now this operation is undefined for non-Run nodes (i.e., Subj and Group)
-            % So we clear the axes and exit
-            if currElem.procType ~= 3
-                return;
-            end                        
             if isempty(obj.dataTree)
                 return;
-            end            
+            end
+            currElem = obj.dataTree.currElem;            
             stimGUI_Display(obj.handles.stimGUI);
         end
         

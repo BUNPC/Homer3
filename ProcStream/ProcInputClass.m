@@ -78,7 +78,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function b = IsEmpty(obj)            
-            b=0;           
+            b=0;
             if isempty(obj.func)
                 b=1;
                 return;
@@ -116,7 +116,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
                     continue;
                 end
                 j=2;
-                k = [findstr(obj.func(iFunc(jj)).argIn,',') length(obj.func(iFunc(jj)).argIn)+1];
+                k = [strfind(obj.func(iFunc(jj)).argIn,',') length(obj.func(iFunc(jj)).argIn)+1];
                 for ii=1:length(k)
                     args{kk} = obj.func(iFunc(jj)).argIn(j:k(ii)-1);
                     j = k(ii)+1;
@@ -152,7 +152,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
         % ----------------------------------------------------------------------------------
         function [sargin, p] = ParseInputParams(obj, iFunc)
             sargin = '';
-            p = [];
+            p = cell(obj.func(iFunc).nParam, 1);
 
             if isempty(obj.func)
                 return;
@@ -292,7 +292,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
             pause(.5);
             [filename, pathname] = uigetfile('*.cfg', 'Load Process Options File' );
             if filename==0
-                ch = menu( sprintf('Loading default config file.'),'Okay');
+                menu( sprintf('Loading default config file.'),'Okay');
                 filename = './processOpt_default.cfg';
                 success = true;
                 if exist(filename,'file')
@@ -321,7 +321,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
             % (2nd argument).
             %
             if ischar(filepath)
-                slashes = [findstr(filepath,'/') findstr(filepath,'\')];
+                slashes = [strfind(filepath,'/') strfind(filepath,'\')];
                 if(~isempty(slashes))
                     filename = ['.' filepath(slashes(end):end)];
                 end
@@ -408,6 +408,9 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function [G, S, R] = PreParse(obj, fid_or_str, type)
+            G='';
+            S='';
+            R='';
             T = textscan(fid_or_str,'%s');
             if isempty(T{1})
                 return;
@@ -432,11 +435,56 @@ classdef ProcInputClass < matlab.mixin.Copyable
                 
         
         % ----------------------------------------------------------------------------------
-        function Parse(obj, textstr, ifunc)
+        function [err, errstr] = ParseFile(obj, fid_or_str, type)            
+            %
+            % Processing stream config file parser. This function handles
+            % group, subj and run processing stream parameters
+            %            
+            err=0;
+            errstr='';
+            
+            [G, S, R] = obj.PreParse(fid_or_str, type);
+            switch(type)
+                case {'group', 'GroupClass'}
+                    % generate default contents for group section if there's no % group header.
+                    % This can happen if homer2-style config file was read
+                    if isempty(G) | ~strcmpi(strtrim([G{1},G{2}]), '%group')
+                        [~, str] = obj.DefaultFileGroup(obj.Parse(R));
+                        foo = textscan(str, '%s');
+                        G = foo{1};
+                    end
+                    obj.Parse(G);
+                case {'subj', 'SubjClass'}
+                    % generate default contents for subject section if scanned contents is
+                    % from a file and there's no % subj header. This can happen if
+                    % homer2-style config file was loaded
+                    if isempty(S) | ~strcmpi(strtrim([S{1},S{2}]), '%subj')
+                        [~, str] = obj.DefaultFileSubj(obj.Parse(R));
+                        foo = textscan(str, '%s');
+                        S = foo{1};
+                    end
+                    obj.Parse(S);
+                case {'run', 'RunClass'}
+                    obj.Parse(R);
+            end
+            
+            % Lastly set the help field values for all func functions.
+            obj.SetHelp();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Parse(obj, strs, ifunc)
             % Parse functions and parameters
             % function call, param, param_format, param_value
             % name{}, argOut{}, argIn{}, nParam(), param{nFunc}{nParam},
             % paramFormat{nFunc}{nParam}, paramVal{nFunc}{nParam}()
+            if ischar(strs)
+                C = textscan(strs, '%s');
+                textstr = C{1};
+            else
+                textstr = strs;
+            end
             obj.param = struct([]);
             nstr = length(textstr);
             if ~exist('ifunc','var') || isempty(ifunc)
@@ -449,14 +497,14 @@ classdef ProcInputClass < matlab.mixin.Copyable
                 if flag==0 || textstr{ii}(1)=='@'
                     if textstr{ii}=='%'
                         flag = 999;
-                    elseif textstr{ii}=='@'                        
+                    elseif textstr{ii}=='@'
                         ifunc = ifunc+1;
-                        k = findstr(textstr{ii+1},',');
+                        k = strfind(textstr{ii+1},',');
                         obj.func(ifunc) = FuncClass();
                         if ~isempty(k)
                             obj.func(ifunc).name = textstr{ii+1}(1:k-1);
                             obj.func(ifunc).nameUI = textstr{ii+1}(k+1:end);
-                            k = findstr(obj.func(ifunc).nameUI,'_');
+                            k = strfind(obj.func(ifunc).nameUI,'_');
                             obj.func(ifunc).nameUI(k)=' ';
                         else
                             obj.func(ifunc).name = textstr{ii+1};
@@ -565,7 +613,6 @@ classdef ProcInputClass < matlab.mixin.Copyable
             G={};
             S={};
             R={};
-            jj=1; kk=1; ll=1;
             for ii=1:length(Sections)
                 if Sections{ii}{1} ~= '%'
                     Sections{ii} = [{'%','run'},Sections{ii}];

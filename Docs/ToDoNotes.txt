@@ -23,4 +23,8 @@ b) variable preallocation in for loops
 c) ProcStreamEditGUI takes a long time to start and it's responce time is slow.
 d) Snirf HDF5 saving/loading 
 
--
+-----------------
+Feb 1, 2019
+
+-- Make procStream.input.param part of the FuncClass. It is now part of the ProcInputClass which doesn't make sense and is annoying to work with.
+

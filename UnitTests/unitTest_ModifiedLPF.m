@@ -23,9 +23,9 @@ lpf_homer3 = getHomer3LpfValue(dataTree, isubj, irun);
 % therefore if Homer3 LPF ~= .5 we expect the data not to match and compareOutputs1
 % to return non-zero status. 
 if status==0 && (lpf_homer2 == lpf_homer3)
-    fprintf('unitTest_ModifiedLPF(''%s'', %0.1f): TEST SUCCEEDED - Homer3 output matches Homer2 for same LPF values {lpf_homer2=%0.3f, lpf_homer3=%0.3f} as expected.\n', datafmt, newval, lpf_homer2, lpf_homer3);
+    fprintf('unitTest_ModifiedLPF(''%s'', %0.1f): TEST PASSED - Homer3 output matches Homer2 for same LPF values {lpf_homer2=%0.3f, lpf_homer3=%0.3f} as expected.\n', datafmt, newval, lpf_homer2, lpf_homer3);
 elseif status>0 && (lpf_homer2 ~= lpf_homer3)
-    fprintf('unitTest_ModifiedLPF(''%s'', %0.1f): TEST SUCCEEDED - Homer3 output does NOT match Homer2 for different LPF values {lpf_homer2=%0.3f, lpf_homer3=%0.3f}, as expected.\n', datafmt, newval, lpf_homer2, lpf_homer3);
+    fprintf('unitTest_ModifiedLPF(''%s'', %0.1f): TEST PASSED - Homer3 output does NOT match Homer2 for different LPF values {lpf_homer2=%0.3f, lpf_homer3=%0.3f}, as expected.\n', datafmt, newval, lpf_homer2, lpf_homer3);
 elseif status==0 && (lpf_homer2 ~= lpf_homer3)
     fprintf('unitTest_ModifiedLPF(''%s'', %0.1f): TEST FAILED - Homer3 output matches Homer2 for different LPF values {lpf_homer2=%0.3f, lpf_homer3=%0.3f}.\n', datafmt, newval, lpf_homer2, lpf_homer3);
 elseif status>0 && (lpf_homer2 == lpf_homer3)

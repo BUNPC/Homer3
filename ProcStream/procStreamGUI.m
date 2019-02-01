@@ -21,6 +21,12 @@ else
 end
 
 
+
+% -------------------------------------------------------------
+function varargout = procStreamGUI_OutputFcn(hObject, eventdata, handles)
+varargout{1} = handles.output;
+
+
 % -------------------------------------------------------------
 function procStreamGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global procStreamGui
@@ -82,23 +88,7 @@ procStreamGui.dataTree = LoadDataTree(procStreamGui.format, hmr);
 procStreamGui.funcReg = procStreamGui.dataTree.funcReg;
 
 % Update handles structure
-func = procStreamReg2ProcFunc('run');
-[fcallIn, fcall, fcallOut] = fillListboxWithRegistry(func);
-set(handles.listboxFunctions(iRunPanel),'string',fcall)
-set(handles.listboxFuncArgIn(iRunPanel),'string',fcallIn)
-set(handles.listboxFuncArgOut(iRunPanel),'string',fcallOut)
-
-func = procStreamReg2ProcFunc('subj');
-[fcallIn, fcall, fcallOut] = fillListboxWithRegistry(func);
-set(handles.listboxFunctions(iSubjPanel),'string',fcall)
-set(handles.listboxFuncArgIn(iSubjPanel),'string',fcallIn)
-set(handles.listboxFuncArgOut(iSubjPanel),'string',fcallOut)
-
-func = procStreamReg2ProcFunc('group');
-[fcallIn, fcall, fcallOut] = fillListboxWithRegistry(func);
-set(handles.listboxFunctions(iGroupPanel),'string',fcall)
-set(handles.listboxFuncArgIn(iGroupPanel),'string',fcallIn)
-set(handles.listboxFuncArgOut(iGroupPanel),'string',fcallOut)
+LoadRegistry(handles);
 
 % Create tabs for run, subject, and group and move the panels to corresponding tabs. 
 htabgroup = uitabgroup('parent',hObject, 'units','normalized', 'position',[.04, .04, .95, .95]);
@@ -111,155 +101,79 @@ set(handles.uipanelRun, 'parent',htabR, 'position',[0, 0, 1, 1]);
 set(handles.uipanelSubj, 'parent',htabS, 'position',[0, 0, 1, 1]);
 set(handles.uipanelGroup, 'parent',htabG, 'position',[0, 0, 1, 1]);
 
-if ~isempty(procStreamGui.dataTree)
-    procStreamGui.procElem{iRunPanel} = procStreamGui.dataTree.group(1).subjs(1).runs(1).copy;
-    procStreamGui.procElem{iSubjPanel} = procStreamGui.dataTree.group(1).subjs(1).copy;
-    procStreamGui.procElem{iGroupPanel} = procStreamGui.dataTree.group(1).copy;
-    switch(class(procStreamGui.dataTree.currElem.procElem))
-        case 'RunClass'
-            htab = htabR;
-            procStreamGui.iPanel = iRunPanel;
-        case 'SubjClass'
-            htab = htabS;
-            procStreamGui.iPanel = iSubjPanel;
-        case 'GroupClass'
-            htab = htabG;
-            procStreamGui.iPanel = iGroupPanel;
-    end
-else
-    procStreamGui.procElem{iRunPanel} = RunClass();
-    procStreamGui.procElem{iSubjPanel} = SubjClass();
-    procStreamGui.procElem{iGroupPanel} = GroupClass();
-end
-set(htabgroup,'SelectedTab',htab);
-getHelp(handles);
 setGuiFonts(hObject);
 
+if isempty(procStreamGui.dataTree)
+    return;
+end
+procStreamGui.procElem{iRunPanel} = procStreamGui.dataTree.group(1).subjs(1).runs(1).copy;
+procStreamGui.procElem{iSubjPanel} = procStreamGui.dataTree.group(1).subjs(1).copy;
+procStreamGui.procElem{iGroupPanel} = procStreamGui.dataTree.group(1).copy;
+switch(class(procStreamGui.dataTree.currElem.procElem))
+    case 'RunClass'
+        htab = htabR;
+        procStreamGui.iPanel = iRunPanel;
+    case 'SubjClass'
+        htab = htabS;
+        procStreamGui.iPanel = iSubjPanel;
+    case 'GroupClass'
+        htab = htabG;
+        procStreamGui.iPanel = iGroupPanel;
+end
+set(htabgroup,'SelectedTab',htab);
+
 % Before we exit display current proc stream by default
-LoadFromCurrProcStream(handles);
-
+LoadProcStream(handles);
 
 
 % -------------------------------------------------------------
-function [fcallIn, fcall, fcallOut] = fillListboxWithRegistry(func)
-for iFunc = 1:length(func)
-    % parse input parameters
-    p = [];
-    sargin = '';
-    for iP = 1:func(iFunc).nParam
-        if ~func(iFunc).nParamVar
-            p{iP} = func(iFunc).paramVal{iP};
-        else
-            p{iP}.name = func(iFunc).param{iP};
-            p{iP}.val = func(iFunc).paramVal{iP};
-        end
-        if length(func(iFunc).argIn)==1 & iP==1
-            sargin = sprintf('%sp{%d}',sargin,iP);
-        else
-            sargin = sprintf('%s,p{%d}',sargin,iP);
-        end
+function LoadRegistry(handles)
+global procStreamGui
+funcReg     = procStreamGui.funcReg;
+
+iGroupPanel = procStreamGui.iGroupPanel;
+iSubjPanel  = procStreamGui.iSubjPanel;
+iRunPanel   = procStreamGui.iRunPanel;
+
+procStreamGui.funcNamesGroup = funcReg.GetFuncNamesGroup();
+procStreamGui.funcNamesSubj = funcReg.GetFuncNamesSubj();
+procStreamGui.funcNamesRun = funcReg.GetFuncNamesRun();
+
+set(handles.listboxFuncReg(iGroupPanel),'string',procStreamGui.funcNamesGroup);
+set(handles.listboxFuncReg(iSubjPanel),'string',procStreamGui.funcNamesSubj);
+set(handles.listboxFuncReg(iRunPanel),'string', procStreamGui.funcNamesRun);
+    
+
+
+% --------------------------------------------------------------------
+function LoadProcStream(handles)
+global procStreamGui
+for iPanel=1:3
+    procElem = procStreamGui.procElem{iPanel};
+    procInput = procElem.procStream.input;
+    nFunc = procInput.GetFuncNum();
+    funclist = cell(nFunc,1);
+    for iFunc=1:nFunc
+        funclist{iFunc} = procInput.GetFuncName(iFunc);
     end
-    
-    % set up output format
-    sargout = func(iFunc).argOut;
-    for ii=1:length(func(iFunc).argOut)
-        if sargout(ii)=='#'
-            sargout(ii) = ' ';
-        end
-    end
-
-    % call function
-    fcall{iFunc} = sprintf( '%s      = %s%s%s);', sargout, func(iFunc).name, func(iFunc).argIn, sargin );
-    fcallOut{iFunc} = sprintf( '%s', sargout);
-    fcall{iFunc} = sprintf( '%s',  func(iFunc).name);
-    fcallIn{iFunc} = sprintf( '%s%s)', func(iFunc).argIn, sargin );
+    set(handles.listboxFuncProcStream(iPanel),'string',funclist);
 end
-    
-    
-
-% -------------------------------------------------------------
-function varargout = procStreamGUI_OutputFcn(hObject, eventdata, handles)
-varargout{1} = handles.output;
 
 
 % -------------------------------------------------------------
-function listboxFunctions_Callback(hObject, eventdata, handles)
+function listboxFuncReg_Callback(hObject, eventdata, handles)
 global procStreamGui
 iPanel = procStreamGui.iPanel;
 
 ii = get(hObject,'value');
-set(handles.listboxFuncArgIn(iPanel),'value',ii);
-set(handles.listboxFuncArgOut(iPanel),'value',ii);
+set(handles.listboxFuncReg(iPanel),'value',ii);
 
-foos = procStreamHelpLookupByIndex(ii, handles);
+foos = procStreamHelpLookup(ii);
 set(handles.textHelp(iPanel),'string',foos);
 
 
-
 % -------------------------------------------------------------
-function listboxFuncArgOut_Callback(hObject, eventdata, handles)
-global procStreamGui
-iPanel = procStreamGui.iPanel;
-
-ii = get(hObject,'value');
-set(handles.listboxFuncArgIn(iPanel),'value',ii);
-set(handles.listboxFunctions(iPanel),'value',ii);
-
-foos = procStreamHelpLookupByIndex(ii, handles);
-set(handles.textHelp(iPanel),'string',foos);
-
-
-
-% -------------------------------------------------------------
-function listboxFuncArgIn_Callback(hObject, eventdata, handles)
-global procStreamGui
-iPanel = procStreamGui.iPanel;
-
-ii = get(hObject,'value');
-set(handles.listboxFunctions(iPanel),'value',ii);
-set(handles.listboxFuncArgIn(iPanel),'value',ii);
-
-foos = procStreamHelpLookupByIndex(ii, handles);
-set(handles.textHelp(iPanel),'string',foos);
-
-
-
-% -------------------------------------------------------------
-function updateProcStreamList(handles,idx)
-global procStreamGui
-iPanel = procStreamGui.iPanel;
-iReg = procStreamGui.iReg{iPanel};
-
-n = length(iReg);
-FArgOut = get(handles.listboxFuncArgOut(iPanel),'string');
-FArgIn = get(handles.listboxFuncArgIn(iPanel),'string');
-FFunc = get(handles.listboxFunctions(iPanel),'string');
-
-foos = [];
-for ii = 1:n
-    foos{ii} = FArgOut{iReg(ii)};
-end
-set(handles.listboxPSArgOut(iPanel),'string',foos)
-set(handles.listboxPSArgOut(iPanel),'value',idx)
-
-foos = [];
-for ii = 1:n
-    foos{ii} = FArgIn{iReg(ii)};
-end
-set(handles.listboxPSArgIn(iPanel),'string',foos)
-set(handles.listboxPSArgIn(iPanel),'value',idx)
-
-foos = [];
-for ii = 1:n
-    foos{ii} = FFunc{iReg(ii)};
-end
-set(handles.listboxPSFunc(iPanel),'string',foos)
-set(handles.listboxPSFunc(iPanel),'value',idx)
-
-
-
-% -------------------------------------------------------------
-function listboxPSFunc_Callback(hObject, eventdata, handles)
+function listboxFuncProcStream_Callback(hObject, eventdata, handles)
 global procStreamGui
 iPanel = procStreamGui.iPanel;
 
@@ -268,52 +182,9 @@ if isempty(ii)
     return;
 end
 
-set(handles.listboxPSArgIn(iPanel),'value',ii);
-set(handles.listboxPSArgOut(iPanel),'value',ii);
-
-FFunc = get(handles.listboxPSFunc(iPanel),'string');
-foos = procStreamHelpLookupByName(FFunc{ii}, handles);
+funcProcStream = get(handles.listboxFuncProcStream(iPanel),'string');
+foos = procStreamHelpLookup(funcProcStream{ii});
 set(handles.textHelp(iPanel),'string',foos);
-
-
-
-% -------------------------------------------------------------
-function listboxPSArgOut_Callback(hObject, eventdata, handles)
-global procStreamGui
-iPanel = procStreamGui.iPanel;
-
-ii = get(hObject,'value');
-if isempty(ii)
-    return;
-end
-
-set(handles.listboxPSArgIn(iPanel),'value',ii);
-set(handles.listboxPSFunc(iPanel),'value',ii);
-
-FFunc = get(handles.listboxPSFunc(iPanel),'string');
-foos = procStreamHelpLookupByName(FFunc{ii}, handles);
-set(handles.textHelp(iPanel),'string',foos);
-
-
-
-% -------------------------------------------------------------
-function listboxPSArgIn_Callback(hObject, eventdata, handles)
-global procStreamGui
-iPanel = procStreamGui.iPanel;
-iReg = procStreamGui.iReg{iPanel};
-
-ii = get(hObject,'value');
-if isempty(ii)
-    return;
-end
-
-set(handles.listboxPSArgOut(iPanel),'value',ii);
-set(handles.listboxPSFunc(iPanel),'value',ii);
-
-FFunc = get(handles.listboxPSFunc(iPanel),'string');
-foos = procStreamHelpLookupByName(FFunc{ii}, handles);
-set(handles.textHelp(iPanel),'string',foos);
-
 
 
 % -------------------------------------------------------------
@@ -322,8 +193,8 @@ global procStreamGui
 iPanel = procStreamGui.iPanel;
 iReg = procStreamGui.iReg{iPanel};
 
-iFunc = get(handles.listboxFunctions(iPanel),'value');
-iPS = get(handles.listboxPSFunc(iPanel),'value');
+iFunc = get(handles.listboxFuncReg(iPanel),'value');
+iPS = get(handles.listboxFuncProcStream(iPanel),'value');
 
 n = length(iReg);
 if n>0
@@ -340,6 +211,7 @@ procStreamGui.iReg{iPanel} = iReg;
 updateProcStreamList(handles,iPS2);
 
 
+
 % -------------------------------------------------------------
 function pushbuttonDeleteFunc_Callback(hObject, eventdata, handles)
 global procStreamGui
@@ -351,7 +223,7 @@ if n<1
     return
 end
 
-iPS = get(handles.listboxPSFunc(iPanel),'value');
+iPS = get(handles.listboxFuncProcStream(iPanel),'value');
 if n>1
     iRegTmp = iReg;
     iRegTmp(iPS) = [];
@@ -373,14 +245,10 @@ global procStreamGui
 iPanel = procStreamGui.iPanel;
 iReg = procStreamGui.iReg{iPanel};
 
-iPS = get(handles.listboxPSFunc(iPanel),'value');
+iPS = get(handles.listboxFuncProcStream(iPanel),'value');
 if iPS == 1
     return
 end
-
-FArgOut = get(handles.listboxFuncArgOut(iPanel),'string');
-FArgIn = get(handles.listboxFuncArgIn(iPanel),'string');
-FFunc = get(handles.listboxFunctions(iPanel),'string');
 
 iRegTmp = iReg;
 iRegTmp([iPS-1 iPS]) = iReg([iPS iPS-1]);
@@ -398,7 +266,7 @@ global procStreamGui
 iPanel = procStreamGui.iPanel;
 iReg = procStreamGui.iReg{iPanel};
 
-iPS = get(handles.listboxPSFunc(iPanel),'value');
+iPS = get(handles.listboxFuncProcStream(iPanel),'value');
 n = length(iReg);
 if iPS == n
     return
@@ -417,7 +285,6 @@ updateProcStreamList(handles,iPS2);
 % -------------------------------------------------------------
 function pushbuttonLoad_Callback(hObject, eventdata, handles)
 global procStreamGui
-iPanel_0 = procStreamGui.iPanel;
 
 ch = menu('Load current processing stream or config file?','Current processing stream','Config file','Cancel');
 if ch==3
@@ -431,39 +298,18 @@ if ch==2
     end    
 end
 for iPanel=1:3
-    iReg = procStreamGui.iReg{iPanel};
     procElem = procStreamGui.procElem{iPanel};
     if ch==2
         fid = fopen([pathname,filename]);
-        [procElem.procStream.input, ~] = procStreamParse(fid, procElem);
+        procElem.procStream.input.param = struct([]);
+        procElem.procStream.input.func = FuncClass().empty();
+        procElem.procStream.input.ParseFile(fid, class(procElem));
+        fclose(fid);
     end
-        
-    % Search for procFun functions in procStreamReg
-    [err2, iReg] = procStreamErrCheck(procElem);
-    if ~all(~err2)
-        i=find(err2==1);
-        str1 = 'Error in functions\n\n';
-        for j=1:length(i)
-            str2 = sprintf('%s%s', procElem.procStream.input.func(i(j)).name,'\n');
-            str1 = strcat(str1,str2);
-        end
-        str1 = strcat(str1,'\n');
-        str1 = strcat(str1,'Do you want to keep current proc stream or load another file?...');
-        ch = menu(sprintf(str1), 'Fix and load this config file','Create and use default config','Cancel');
-        if ch==1
-            [procElem.procStream.input, err2] = procStreamFixErr(err2, procElem.procStream.input, iReg);
-        end
-    end
-    procStreamGui.iPanel = iPanel;
-    procStreamGui.iReg{iPanel} = iReg;
-    updateProcStreamList(handles,1);
 end
+LoadProcStream(handles);
 
-% Return iPanel to value at the beginning of this function 
-procStreamGui.iPanel = iPanel_0;
-if ch==2
-    fclose(fid);
-end
+
 
 
 
@@ -480,7 +326,7 @@ procElem    = procStreamGui.procElem;
 for iPanel=1:length(procElem)
     
     % Build func database of registered functions
-    funcReg = procStreamReg2ProcFunc(procElem{iPanel});
+    funcReg = procStreamReg2ProcFunc(class(procElem{iPanel}));
     
     % iReg indexes the proc functions in the procStream listboxes on the
     % right in the GUI
@@ -518,51 +364,25 @@ else
 end
 
 
-
-% -------------------------------------------------------------
-function getHelp(handles)
-global procStreamGui
-iPanel = procStreamGui.iPanel;
-
-iFunc = get(handles.listboxFunctions(iPanel),'value');
-FFunc = get(handles.listboxFunctions(iPanel),'string');
-
-foos = procStreamHelpLookupByIndex(iFunc, handles);
-set(handles.textHelp(iPanel),'string',foos);
-
-
-
 % -------------------------------------------------
-function helpstr = procStreamHelpLookupByIndex(iFunc, handles)
+function helpstr = procStreamHelpLookup(name)
 global procStreamGui
 iPanel = procStreamGui.iPanel;
-procElem = procStreamGui.procElem{iPanel};
+funcReg = procStreamGui.funcReg;
 
-func = procStreamReg2ProcFunc(procElem);
-helpstr = func(iFunc).help.GetStr();
-
-
-
-% -------------------------------------------------
-function helpstr = procStreamHelpLookupByName(name, handles)
-global procStreamGui
-iPanel = procStreamGui.iPanel;
-procElem = procStreamGui.procElem{iPanel};
+iGroupPanel = procStreamGui.iGroupPanel;
+iSubjPanel  = procStreamGui.iSubjPanel;
+iRunPanel   = procStreamGui.iRunPanel;
 
 helpstr = '';
-func = procStreamReg2ProcFunc(procElem);
-match=0;
-for ii=1:length(func)
-    if strcmp(name, func(ii).name)
-        match=1;
-        break;
-    end
-end
-if ~match
-    return;
-end
-helpstr = func(ii).help.GetStr();
-
+switch(iPanel)
+    case iGroupPanel
+        helpstr = funcReg.GetFuncHelpGroup(name);
+    case iSubjPanel
+        helpstr = funcReg.GetFuncHelpSubj(name);
+    case iRunPanel
+        helpstr = funcReg.GetFuncHelpRun(name);
+end 
 
 
 % --------------------------------------------------------------------
@@ -570,8 +390,6 @@ function uitabRun_ButtonDownFcn(hObject, eventdata, handles)
 global procStreamGui
 
 procStreamGui.iPanel = procStreamGui.iRunPanel;
-getHelp(handles);
-
 
 
 % --------------------------------------------------------------------
@@ -579,8 +397,6 @@ function uitabSubj_ButtonDownFcn(hObject, eventdata, handles)
 global procStreamGui
 
 procStreamGui.iPanel = procStreamGui.iSubjPanel;
-getHelp(handles);
-
 
 
 % --------------------------------------------------------------------
@@ -588,7 +404,6 @@ function uitabGroup_ButtonDownFcn(hObject, eventdata, handles)
 global procStreamGui
 
 procStreamGui.iPanel = procStreamGui.iGroupPanel;
-getHelp(handles);
 
 
 
@@ -637,32 +452,44 @@ fclose(fid);
 
 
 % --------------------------------------------------------------------
-function LoadFromCurrProcStream(handles)
+function [func, reg] = procStreamReg2ProcFunc(type)
 global procStreamGui
-iPanel_0 = procStreamGui.iPanel;
 
-for iPanel=1:3
-    iReg = procStreamGui.iReg{iPanel};
-    procElem = procStreamGui.procElem{iPanel};
-       
-    % Search for procFun functions in procStreamReg
-    [err2, iReg] = procStreamErrCheck(procElem);
-    if ~all(~err2)
-        i=find(err2==1);
-        str1 = 'Error in functions\n\n';
-        for j=1:length(i)
-            str2 = sprintf('%s%s', procElem.procStream.input.func(i(j)).name,'\n');
-            str1 = strcat(str1,str2);
-        end
-        str1 = strcat(str1,'\n');
-        str1 = strcat(str1,'Do you want to keep current proc stream or load another file?...');
-        ch = menu(sprintf(str1), 'Fix and load this config file','Create and use default config','Cancel');
-        [procElem.procStream.input, err2] = procStreamFixErr(err2, procElem.procStream.input, iReg);
-    end
-    procStreamGui.iPanel = iPanel;
-    procStreamGui.iReg{iPanel} = iReg;
-    updateProcStreamList(handles,1);
+funcReg = procStreamGui.funcReg;
+switch(type)
+    case {'group','GroupClass'}
+        reg = funcReg.GetUsageStrsGroup();
+    case {'subj','SubjClass'}
+        reg = funcReg.GetUsageStrsSubj();
+    case {'run','RunClass'}
+        reg = funcReg.GetUsageStrsRun();
+    otherwise
+        reg = funcReg.GetUsageStrsAll();
 end
+procInput = ProcInputClass();
+for ii=1:length(reg)
+    procInput.Parse(reg{ii}, ii);
+    procInput.func(ii).help = FuncHelpClass(procInput.func(ii).name);
+end
+func = procInput.func;
 
-% Return iPanel to value at the beginning of this function 
-procStreamGui.iPanel = iPanel_0;
+
+
+% -------------------------------------------------------------
+function updateProcStreamList(handles,idx)
+global procStreamGui
+iPanel = procStreamGui.iPanel;
+iReg = procStreamGui.iReg{iPanel};
+
+n = length(iReg);
+FFunc = get(handles.listboxFuncReg(iPanel),'string');
+
+foos = cell(n,1);
+for ii = 1:n
+    foos{ii} = FFunc{iReg(ii)};
+end
+set(handles.listboxFuncProcStream(iPanel),'string',foos)
+set(handles.listboxFuncProcStream(iPanel),'value',idx)
+
+
+

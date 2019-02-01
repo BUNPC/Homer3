@@ -1,8 +1,9 @@
 
 Issues to think about and address in the future:
 
-
+--------------
 Jan 31, 2019:
+--------------
 
 -- Minor mistakes and tough to notice errors in the user function help can mean it's not loaded and parsed properly in the registry. Need to fix this. Maybe add a tool where you enter {function name, input names, output names, parameter names} and it generates help text in the hmr*.m file. 
 
@@ -23,11 +24,18 @@ b) variable preallocation in for loops
 c) ProcStreamEditGUI takes a long time to start and it's responce time is slow.
 d) Snirf HDF5 saving/loading 
 
+
 -----------------
 Feb 1, 2019
+-----------------
 
 -- Make procStream.input.param part of the FuncClass. It is now part of the ProcInputClass which doesn't make sense and is annoying to work with.
 
 -- Homer3 should do a sctrict check at startup time of any group folder it opens of the groupResults.mat and proccessOpt_default.cfg to make sure they are in the Homer3 format. If not either ignore them or have a well defined process for converting from a legacy version to homer3 version. If that's not possible treat these files as if they were not there, move them to different names or delete them altogether. Another option might be to use names for these that are unique to homer3. 
 
--- 
+-- Change unit tests to be entirely automated, to run without any user interaction, so it would ask to load config file. Maybe change the loading process to check for a master config file which Homer3 could read in default choices. 
+
+-- Add another unit tests which makes all sub unit tests fail by automatically modifying one of the source code files in a subtle ways, then unmodifying so that you don't accidentally commit the bad change. 
+
+-- The unit test that tests different outputs for different values was revealed to be not valid, since faulty homer3 code that produces bad output will also produce a passing results.  Instead you have to have the correct result to compare against with non-default lpf values. Need to fix this. 
+

@@ -1,9 +1,9 @@
-function funcReg = LoadFuncReg(parent)
+function R = LoadFuncReg(parent)
 
 % Syntax:
 %
-%       funcReg = LoadFuncReg()
-%       funcReg = LoadFuncReg(parent)
+%       R = LoadFuncReg()
+%       R = LoadFuncReg(parent)
 %
 % Description:
 %       
@@ -16,9 +16,9 @@ if nargin==0
     parent = [];
 end
 
-if ~isempty(parent) && isproperty(parent, 'funcReg') && ~isempty(parent.funcReg)
-    funcReg = parent.funcReg;
+if ~isempty(parent) && isproperty(parent, 'R') && ~isempty(parent.R)
+    R = parent.R;
 else
-    funcReg = FuncRegClass();
+    R = RegistriesClass();
 end
 

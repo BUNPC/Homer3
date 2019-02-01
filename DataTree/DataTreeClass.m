@@ -4,13 +4,13 @@ classdef DataTreeClass <  handle
         files
         group
         currElem
-        funcReg
+        R
     end
     
     methods
         
         % ---------------------------------------------------------------
-        function obj = DataTreeClass(handles, funcptr, fmt, funcReg)
+        function obj = DataTreeClass(handles, funcptr, fmt)
             if ~exist('handles','var')
                 handles = [];
             end
@@ -23,12 +23,12 @@ classdef DataTreeClass <  handle
             
             % Get file names
             dataInit = FindFiles(handles, fmt);
-            if dataInit.isempty()
+            if isempty(dataInit) || dataInit.isempty()
                 return;
             end
             dataInit.Display();            
             obj.files = dataInit.files;
-            obj.funcReg = FuncRegClass();
+            obj.R = RegistriesClass();
             obj.LoadData();
             
             % Initialize the current processing element within the group
@@ -80,9 +80,9 @@ classdef DataTreeClass <  handle
             
             % Find the procInput defaults at each level with which to initialize
             % uninitialized procInput
-            [procInputGroupDefault, procfilenm] = group.GetProcInputDefault('', obj.funcReg);
-            [procInputSubjDefault, procfilenm]  = subj.GetProcInputDefault(procfilenm, obj.funcReg);
-            [procInputRunDefault, ~]            = run.GetProcInputDefault(procfilenm, obj.funcReg);
+            [procInputGroupDefault, procfilenm] = group.GetProcInputDefault('', obj.R);
+            [procInputSubjDefault, procfilenm]  = subj.GetProcInputDefault(procfilenm, obj.R);
+            [procInputRunDefault, ~]            = run.GetProcInputDefault(procfilenm, obj.R);
             
             % Copy default procInput to all uninitialized nodes in the group
             obj.group.CopyProcInput('group', procInputGroupDefault);

@@ -28,3 +28,6 @@ Feb 1, 2019
 
 -- Make procStream.input.param part of the FuncClass. It is now part of the ProcInputClass which doesn't make sense and is annoying to work with.
 
+-- Homer3 should do a sctrict check at startup time of any group folder it opens of the groupResults.mat and proccessOpt_default.cfg to make sure they are in the Homer3 format. If not either ignore them or have a well defined process for converting from a legacy version to homer3 version. If that's not possible treat these files as if they were not there, move them to different names or delete them altogether. Another option might be to use names for these that are unique to homer3. 
+
+-- 

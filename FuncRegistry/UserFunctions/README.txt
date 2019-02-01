@@ -40,5 +40,10 @@ p1: [v11, ..., v1S1]
 pj: [vj1, ..., vjSj], maxnum: Sj+k
   . . . . . . . . 
 pL: [vL1, ..., vLSL]
+---------------------------------------------------------------------
+
+For examples of a Homer3-readable help section please see the help of any one of the 
+hmr*_*.m user functions already provided in the homer3/FuncRegistry/UserFunctions folder. 
+
 
 

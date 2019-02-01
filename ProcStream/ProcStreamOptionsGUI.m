@@ -133,15 +133,7 @@ for iFunc = 1:nfunc
     
 end
 
-param0 = [];
-for iFunc=1:length(func)
-    for iParam=1:func(iFunc).nParam
-        eval( sprintf('param0.%s_%s = procInput.func(iFunc).paramVal{iParam};',...
-                      func(iFunc).name, func(iFunc).param{iParam}) );
-    end
-end
 procInput.func = func;
-procInput.param = param0;
 currElem.procStream.input = procInput;
 hmr.currElem = currElem;
 

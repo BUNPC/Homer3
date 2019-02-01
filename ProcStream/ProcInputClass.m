@@ -5,7 +5,6 @@ classdef ProcInputClass < matlab.mixin.Copyable
     %
     properties
         func;           % Processing stream functions
-        param;          % Processing stream user-settable input arguments and their current values
         CondName2Subj;  % Used by group processing stream
         CondName2Run;   % Used by subject processing stream      
         tIncMan;        % Manually include/excluded time points
@@ -19,7 +18,6 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function obj = ProcInputClass()
-            obj.param = struct([]);
             obj.func = FuncClass().empty();
             obj.CondName2Subj = [];
             obj.CondName2Run = [];            
@@ -31,9 +29,6 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2)
-            if isproperty(obj2, 'param')
-                obj.param = copyStructFieldByField(obj.param, obj2.param);
-            end
             if isproperty(obj2, 'func')
                 obj.func = obj2.func;
             end
@@ -69,9 +64,6 @@ classdef ProcInputClass < matlab.mixin.Copyable
                 return;
             end
             obj.func(iFunc).paramVal{iParam} = val;
-            eval( sprintf('obj.param.%s_%s = val;', ...
-                          obj.func(iFunc).name, ...
-                          obj.func(iFunc).param{iParam}) );
             str = sprintf(obj.func(iFunc).paramFormat{iParam}, val);
         end
 
@@ -390,7 +382,6 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function DefaultConc(obj, type, funcReg)
-            obj.param = struct([]);
             filecontents_str = '';
             switch(type)
                 case 'group'
@@ -485,7 +476,6 @@ classdef ProcInputClass < matlab.mixin.Copyable
             else
                 textstr = strs;
             end
-            obj.param = struct([]);
             nstr = length(textstr);
             if ~exist('ifunc','var') || isempty(ifunc)
                 ifunc = 0;
@@ -534,9 +524,6 @@ classdef ProcInputClass < matlab.mixin.Copyable
                             end
                             val = str2num(textstr{ii+2});
                             obj.func(ifunc).paramVal{obj.func(ifunc).nParam} = val;
-                            if(textstr{ii} ~= '*')
-                                eval( sprintf('obj.param(1).%s_%s = val;',obj.func(ifunc).name, obj.func(ifunc).param{obj.func(ifunc).nParam}) );
-                            end
                             obj.func(ifunc).nParamVar = 0;
                         end
                         flag = 2;

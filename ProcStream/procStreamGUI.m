@@ -301,7 +301,6 @@ for iPanel=1:3
     procElem = procStreamGui.procElem{iPanel};
     if ch==2
         fid = fopen([pathname,filename]);
-        procElem.procStream.input.param = struct([]);
         procElem.procStream.input.func = FuncClass().empty();
         procElem.procStream.input.ParseFile(fid, class(procElem));
         fclose(fid);
@@ -330,17 +329,8 @@ for iPanel=1:length(procElem)
     
     % iReg indexes the proc functions in the procStream listboxes on the
     % right in the GUI
-    func = funcReg(iReg{iPanel});
-    
-    param=[];
-    for iFunc = 1:length(func)
-        for iParam=1:length(func(iFunc).param)
-            eval( sprintf('param.%s_%s = func(iFunc).paramVal{iParam};',...
-                func(iFunc).name, func(iFunc).param{iParam}) );
-        end
-    end
+    func = funcReg(iReg{iPanel});    
     procElem{iPanel}.procStream.input.func = func;
-    procElem{iPanel}.procStream.input.param = param;
 end
 
 ch = menu('Save to current processing stream or config file?','Current processing stream','Config file','Cancel');

@@ -56,11 +56,11 @@ classdef FuncRegClass < matlab.mixin.Copyable
             idx = 0;
             for ii=1:length(obj.entriesGroup)
                 if strcmp(obj.entriesGroup(ii).GetName(), funcname)
-                    tempstr = obj.entriesGroup(ii).GetUsageStr(usagehint);
+                    tempstr = obj.entriesGroup(ii).GetUsageStrDecorated(usagehint, true);
                     if isempty(tempstr)
                         return;
                     end
-                    usagestr = sprintf('@ %s\\n', strinsert(tempstr, '%','%'));
+                    usagestr = tempstr;
                     idx = ii;
                     break;
                 end
@@ -81,11 +81,11 @@ classdef FuncRegClass < matlab.mixin.Copyable
             idx = 0;
             for ii=1:length(obj.entriesSubj)
                 if strcmp(obj.entriesSubj(ii).GetName(), funcname)
-                    tempstr = obj.entriesSubj(ii).GetUsageStr(usagehint);
+                    tempstr = obj.entriesSubj(ii).GetUsageStrDecorated(usagehint, true);
                     if isempty(tempstr)
                         return;
                     end
-                    usagestr = sprintf('@ %s\\n', strinsert(tempstr, '%','%'));
+                    usagestr = tempstr;
                     idx = ii;
                     break;
                 end
@@ -106,11 +106,11 @@ classdef FuncRegClass < matlab.mixin.Copyable
             idx = 0;
             for ii=1:length(obj.entriesRun)
                 if strcmp(obj.entriesRun(ii).GetName(), funcname)
-                    tempstr = obj.entriesRun(ii).GetUsageStr(usagehint);
+                    tempstr = obj.entriesRun(ii).GetUsageStrDecorated(usagehint, true);
                     if isempty(tempstr)
                         return;
                     end
-                    usagestr = sprintf('@ %s\\n', strinsert(tempstr, '%','%'));
+                    usagestr = tempstr;
                     idx = ii;
                     break;
                 end
@@ -139,9 +139,9 @@ classdef FuncRegClass < matlab.mixin.Copyable
             userfuncdir = '';
             if isdeployed()
                 if ispc
-                    userfuncdir = 'c:/users/public/homer3/userfunctions/';
+                    userfuncdir = 'c:/Users/Public/homer3/FuncRegistry/UserFunctions/';
                 elseif ismac()
-                    userfuncdir = '~/homer3/userfunctions/';                    
+                    userfuncdir = '~/homer3/FuncRegistry/UserFunctions/';
                 end
             else
                 srcdir = fileparts(which('FuncRegClass.m'));
@@ -233,13 +233,85 @@ classdef FuncRegClass < matlab.mixin.Copyable
             usagestrs_r = GetUsageStrsRun(obj, addnewline);
             usagestrs = [usagestrs_g; usagestrs_s; usagestrs_r];            
         end
-        
-        
-        
 
+                
+        % ----------------------------------------------------------------------------------
+        function names = GetFuncNamesGroup(obj)
+            names = cell(length(obj.entriesGroup), 1);
+            for ii=1:length(obj.entriesGroup)
+                names{ii} = obj.entriesGroup(ii).GetName();
+            end
+        end
         
+        
+        % ----------------------------------------------------------------------------------
+        function names = GetFuncNamesSubj(obj)
+            names = cell(length(obj.entriesGroup), 1);
+            for ii=1:length(obj.entriesSubj)
+                names{ii} = obj.entriesSubj(ii).GetName();
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function names = GetFuncNamesRun(obj)
+            names = cell(length(obj.entriesRun), 1);
+            for ii=1:length(obj.entriesRun)
+                names{ii} = obj.entriesRun(ii).GetName();
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function helpstr = GetFuncHelpGroup(obj, funcname)
+            helpstr = '';
+            if ~ischar(funcname)
+                idx = funcname;
+                helpstr = obj.entriesGroup(idx).GetHelpStr();
+            else
+                for ii=1:length(obj.entriesGroup)
+                    if strcmp(obj.entriesGroup(ii).GetName(), funcname)
+                        helpstr = obj.entriesGroup(ii).GetHelpStr();
+                        break;
+                    end
+                end
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function helpstr = GetFuncHelpSubj(obj, funcname)
+            helpstr = '';
+            if ~ischar(funcname)
+                idx = funcname;
+                helpstr = obj.entriesSubj(idx).GetHelpStr();
+            else
+                for ii=1:length(obj.entriesSubj)
+                    if strcmp(obj.entriesSubj(ii).GetName(), funcname)
+                        helpstr = obj.entriesSubj(ii).GetHelpStr();
+                        break;
+                    end
+                end
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function helpstr = GetFuncHelpRun(obj, funcname)
+            helpstr = '';
+            if ~ischar(funcname)
+                idx = funcname;
+                helpstr = obj.entriesRun(idx).GetHelpStr();
+            else
+                for ii=1:length(obj.entriesRun)
+                    if strcmp(obj.entriesRun(ii).GetName(), funcname)
+                        helpstr = obj.entriesRun(ii).GetHelpStr();
+                        break;
+                    end
+                end
+            end
+        end
         
     end
-    
     
 end

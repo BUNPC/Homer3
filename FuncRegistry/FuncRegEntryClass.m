@@ -100,6 +100,25 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
+        function str = GetUsageStrDecorated(obj, idx, newline)
+            str='';
+            if ~exist('idx','var') || isempty(idx)
+                idx = 1;
+            end
+            if ~exist('newline','var') || isempty(newline)
+                nl = '';
+            elseif newline 
+                nl = sprintf('\\n');
+            end
+            tempstr = obj.GetUsageStr(idx);
+            if isempty(tempstr)
+                return;
+            end
+            str = sprintf('@ %s%s', strinsert(tempstr, '%','%'), nl);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function str = GetName(obj)
             str = obj.name;
         end
@@ -352,6 +371,12 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
             end
         end
         
+        
+        
+        % ----------------------------------------------------------------------------------
+        function helpstr = GetHelpStr(obj)
+            helpstr = obj.help.GetStr();
+        end
         
         
     end

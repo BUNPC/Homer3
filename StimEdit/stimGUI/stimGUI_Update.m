@@ -4,6 +4,9 @@ global stimEdit
 if ~exist('handles','var') || isempty(handles)
     return;
 end
+if ~ishandles(handles.figure)
+    return;
+end
 
 conditions =  stimEdit.GetConditions();
 filename = stimEdit.GetName();

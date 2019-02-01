@@ -13,6 +13,12 @@ cla(handles.axes1);
 set(handles.axes1, 'ytick','');
 hold(handles.axes1, 'on');
 
+% As of now this operation is undefined for non-Run nodes (i.e., Subj and Group)
+% So we clear the axes and exit
+if stimEdit.dataTree.currElem.procType ~= 3
+    return;
+end
+
 CondNamesGroup = stimEdit.GetConditionsGroup();
 CondColTbl     = stimEdit.GetCondColTbl();
 t              = stimEdit.GetTime();

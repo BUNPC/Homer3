@@ -1,7 +1,6 @@
 function [procInput, err] = procStreamFixErr(err, procInput, iReg)
 
 funcReg = procStreamReg2ProcFunc();
-
 i=find(err==1);
 for jj=length(i):-1:1
     
@@ -28,6 +27,4 @@ for jj=length(i):-1:1
         procInput.func(i(jj)) = [];        
     end
 end
-
-
 err = procStreamErrCheck(procInput);

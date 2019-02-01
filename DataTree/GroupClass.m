@@ -108,17 +108,14 @@ classdef GroupClass < TreeNodeClass
             switch(type)
                 case 'group'
                     obj.procStream.input.func = procInput.func;
-                    obj.procStream.input.param = procInput.param;
                 case 'subj'
                     for jj=1:length(obj.subjs)
                         obj.subjs(jj).procStream.input.func = procInput.func;
-                        obj.subjs(jj).procStream.input.param = procInput.param;
                     end
                 case 'run'
                     for jj=1:length(obj.subjs)
                         for kk=1:length(obj.subjs(jj).runs)
                             obj.subjs(jj).runs(kk).procStream.input.func = procInput.func;
-                            obj.subjs(jj).runs(kk).procStream.input.param = procInput.param;
                         end
                     end
             end            

@@ -382,14 +382,19 @@ end
 % -------------------------------------------------
 function helpstr = procStreamHelpLookup(name)
 global procStreamGui
+
+helpstr = '';
+
 iPanel = procStreamGui.iPanel;
 R = procStreamGui.R;
+if isempty(R) || R.IsEmpty()
+    return;
+end
 
 iGroupPanel = procStreamGui.iGroupPanel;
 iSubjPanel  = procStreamGui.iSubjPanel;
 iRunPanel   = procStreamGui.iRunPanel;
 
-helpstr = '';
 idx=[];
 switch(iPanel)
     case iGroupPanel

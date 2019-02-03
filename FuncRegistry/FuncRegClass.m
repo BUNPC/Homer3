@@ -34,8 +34,8 @@ classdef FuncRegClass < matlab.mixin.Copyable
                 if strfind(files(ii).name, '_result.m')
                     continue;
                 end
-                obj.entries(kk) = FuncRegEntryClass(files(kk).name);
-                obj.userfuncfiles{kk} = [obj.userfuncdir, files(kk).name];
+                obj.entries(kk) = FuncRegEntryClass(files(ii).name);
+                obj.userfuncfiles{kk} = [obj.userfuncdir, files(ii).name];
                 kk=kk+1;
             end
         end

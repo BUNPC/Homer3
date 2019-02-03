@@ -2,6 +2,10 @@ function b = isnumber(str)
 
 b = true;
 
+if ~ischar(str)
+    b = false;
+    return;
+end
 if isempty(str)
     b = false;
     return;

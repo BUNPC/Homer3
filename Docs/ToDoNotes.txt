@@ -39,3 +39,14 @@ Feb 1, 2019
 
 -- The unit test that tests different outputs for different values was revealed to be not valid, since faulty homer3 code that produces bad output will also produce a passing results.  Instead you have to have the correct result to compare against with non-default lpf values. Need to fix this. 
 
+-----------------
+Feb 2, 2019
+-----------------
+
+-- Create a Simple basic LoggerClass to generate logging information for every Homer3 session, with version number, time stamps, etc. 
+
+-- Insert Homer3 version numbers into groupResults (I think groupResults might already have it, check to make sure) and any proc stream config file, processOpt_*.cfg. 
+
+-- DataFilesClass should use the same (acquisition-level) classes as the DataTreeClass to load and vet the data files. Also Homer3 should load the files ONLY ONCE not twice like it's done now. This will not only speed up the launching process but also make it much more coherent where the data files use the same mechanism to check their validity as the DataTreeClass object. 
+
+

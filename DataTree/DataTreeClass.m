@@ -61,7 +61,7 @@ classdef DataTreeClass <  handle
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Find out if we need to ask user for processing options config file
-            % to initialize procStream.input.func at the run, subject or group level.
+            % to initialize procStream.input.fcalls at the run, subject or group level.
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             group = obj.group;
             subj = obj.group.subjs(1);

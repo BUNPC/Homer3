@@ -100,27 +100,7 @@ classdef GroupClass < TreeNodeClass
                     end
             end            
         end
-        
-
-        % ----------------------------------------------------------------------------------
-        function CopyProcInputFunc(obj, type, procInput)
-            % Copy default procInput to all uninitialized nodes in the group
-            switch(type)
-                case 'group'
-                    obj.procStream.input.func = procInput.func;
-                case 'subj'
-                    for jj=1:length(obj.subjs)
-                        obj.subjs(jj).procStream.input.func = procInput.func;
-                    end
-                case 'run'
-                    for jj=1:length(obj.subjs)
-                        for kk=1:length(obj.subjs(jj).runs)
-                            obj.subjs(jj).runs(kk).procStream.input.func = procInput.func;
-                        end
-                    end
-            end            
-        end
-        
+       
                
         % ----------------------------------------------------------------------------------
         function Calc(obj, hListbox, listboxFuncPtr)

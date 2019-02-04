@@ -23,14 +23,14 @@ classdef ProcStreamClass
             DEBUG = 0;
             
             % loop over functions
-            nFunc = obj.input.GetFuncNum();
+            nFcall = obj.input.GetFuncCallNum();
             paramOut = {};
             hwait = waitbar(0, 'Processing...' );
-            for iFunc = 1:nFunc
-                waitbar( iFunc/nFunc, hwait, sprintf('Processing... %s', obj.input.GetFuncNamePrettyPrint(iFunc)) );
+            for iFcall = 1:nFcall
+                waitbar( iFcall/nFcall, hwait, sprintf('Processing... %s', obj.input.GetFcallNamePrettyPrint(iFcall)) );
                 
                 % Parse obj.input arguments
-                argIn = obj.input.GetInputArgs(iFunc);
+                argIn = obj.input.GetInputArgs(iFcall);
                 for ii = 1:length(argIn)
                     if ~exist(argIn{ii},'var')
                         if ~obj.input.FindVar(argIn{ii})
@@ -41,20 +41,20 @@ classdef ProcStreamClass
                 end
                 
                 % Parse obj.input parameters
-                [sargin, p] = obj.input.ParseInputParams(iFunc);
+                [sargin, p] = obj.input.ParseInputParams(iFcall);
                 
                 % Parse obj.input output arguments
-                sargout = obj.input.ParseOutputArgs(iFunc);
+                sargout = obj.input.ParseOutputArgs(iFcall);
                 
                 % call function
-                fcall = sprintf('%s = %s%s%s);', sargout, obj.input.GetFuncName(iFunc), obj.input.func(iFunc).argIn, sargin);
+                fcall = sprintf('%s = %s%s%s);', sargout, obj.input.GetFuncCallName(iFcall), obj.input.fcalls(iFcall).argIn, sargin);
                 if DEBUG
                     fprintf('%s\n', fcall);
                 end
                 try
                     eval( fcall );
                 catch ME
-                    msg = sprintf('Function %s generated error at line %d: %s', obj.input.func(iFunc).name, ME.stack(1).line, ME.message);
+                    msg = sprintf('Function %s generated error at line %d: %s', obj.input.fcalls(iFcall).name, ME.stack(1).line, ME.message);
                     menu(msg,'OK');
                     close(hwait);
                     assert(false, msg);
@@ -63,7 +63,7 @@ classdef ProcStreamClass
                 %%%% Parse output parameters
                 
                 % remove '[', ']', and ','
-                foos = obj.input.func(iFunc).argOut;
+                foos = obj.input.fcalls(iFcall).argOut;
                 for ii=1:length(foos)
                     if foos(ii)=='[' | foos(ii)==']' | foos(ii)==',' | foos(ii)=='#'
                         foos(ii) = ' ';
@@ -114,15 +114,15 @@ classdef ProcStreamClass
         
         
         % ----------------------------------------------------------------------------------
-        function str = EditParam(obj, iFunc, iParam, val)
+        function str = EditParam(obj, iFcall, iParam, val)
             str = '';
-            if isempty(iFunc)
+            if isempty(iFcall)
                 return;
             end
             if isempty(iParam)
                 return;
             end
-            str = obj.input.EditParam(iFunc, iParam, val);
+            str = obj.input.EditParam(iFcall, iParam, val);
         end
         
     end        

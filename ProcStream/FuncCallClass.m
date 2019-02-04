@@ -1,4 +1,4 @@
-classdef FuncClass
+classdef FuncCallClass
     properties
         name
         nameUI
@@ -13,7 +13,7 @@ classdef FuncClass
     end
     
     methods
-        function obj = FuncClass()
+        function obj = FuncCallClass()
             obj.name        = '';
             obj.nameUI      = '';
             obj.argOut      = '';

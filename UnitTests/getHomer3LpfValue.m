@@ -12,7 +12,7 @@ end
 if isempty(dataTree.group.subjs(isubj).runs)
     return;
 end
-if isempty(dataTree.group.subjs(isubj).runs(irun).procStream.input.func)
+if isempty(dataTree.group.subjs(isubj).runs(irun).procStream.input.fcalls)
     return;
 end
-lpf = dataTree.group.subjs(isubj).runs(irun).procStream.input.func(3).paramVal{2};
+lpf = dataTree.group.subjs(isubj).runs(irun).procStream.input.fcalls(3).paramVal{2};

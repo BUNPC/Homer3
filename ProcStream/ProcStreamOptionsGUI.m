@@ -40,10 +40,10 @@ if isempty(fcalls)
 end
 
 clf(hObject);
-nfunc = length(fcalls);
+nFcall = length(fcalls);
 
 % If no functions, throw up empty gui
-if nfunc==0
+if nFcall==0
     uicontrol(hObject, 'style','text', 'string','');
 	% Need to make sure position data is saved in pixel units at end of function 
 	% to as these are the units used to reposition GUI later if needed
@@ -53,12 +53,13 @@ if nfunc==0
 end
 
 % Pre-calculate figure height
-for iFcall = 1:nfunc
-    funcHeight(iFcall) = 1+fcalls(iFcall).nParam-1;
+funcHeight = zeros(nFcall,1);
+for iFcall = 1:nFcall
+    funcHeight(iFcall) = 1+length(fcalls(iFcall).paramIn)-1;
 end
 ystep = 1.8;
 ysize = 1.5;
-ysize_tot = sum(funcHeight)*ystep + nfunc*2 + 5;
+ysize_tot = sum(funcHeight)*ystep + nFcall*2 + 5;
 xsize_fname = getFuncNameMaxStrLength(fcalls)+2;
 xsize_pname = getParamNameMaxStrLength(fcalls)+2;
 xsize_pval  = 15;
@@ -78,7 +79,7 @@ set(hObject, 'position',[pos(1),pos(2),xsize_tot,ysize_tot]);
 
 % Display functions and parameters in figure
 ypos = ysize_tot-5;
-for iFcall = 1:nfunc
+for iFcall = 1:nFcall
     
     % Draw function name
     xsize = length(fcalls(iFcall).name)+5;
@@ -87,7 +88,7 @@ for iFcall = 1:nfunc
                         'string',fcalls(iFcall).name);
     set(h_fname, 'backgroundcolor',[1 1 1], 'units','normalized');
     set(h_fname, 'horizontalalignment','left');
-    set(h_fname, 'tooltipstring',fcalls(iFcall).help.GetDescr());
+    set(h_fname, 'tooltipstring',fcalls(iFcall).help);
     
     % Draw pushbutton to see output results if requested in config file
     if fcalls(iFcall).argOut(1)=='#'
@@ -98,18 +99,18 @@ for iFcall = 1:nfunc
     end
     
     % Draw list of parameters
-    for iParam = 1:fcalls(iFcall).nParam
+    for iParam = 1:length(fcalls(iFcall).paramIn)
         % Draw parameter names
-        pname = fcalls(iFcall).param{iParam};
+        pname = fcalls(iFcall).paramIn(iParam).name;
         h_pname=uicontrol(hObject, 'style','text', 'units','characters', 'position',[xpos_pname, ypos, xsize_pname, ysize],...
                           'string',pname);
         set(h_pname, 'backgroundcolor',[1 1 1], 'units','normalized');
         set(h_pname, 'horizontalalignment', 'left');
-        set(h_pname, 'tooltipstring', fcalls(iFcall).help.GetParamDescr(pname));
+        set(h_pname, 'tooltipstring', fcalls(iFcall).paramIn(iParam).help);
 
         % Draw parameter edit boxes
         h_pedit=uicontrol(hObject,'style','edit','units','characters','position',[xpos_pedit, ypos, xsize_pval, 1.5]);
-        set(h_pedit,'string',sprintf(fcalls(iFcall).paramFormat{iParam}, fcalls(iFcall).paramVal{iParam} ) );
+        set(h_pedit,'string',sprintf(fcalls(iFcall).paramIn(iParam).format, fcalls(iFcall).paramIn(iParam).value ) );
         set(h_pedit,'backgroundcolor',[1 1 1]);
         eval( sprintf(' fcn = @(hObject,eventdata)ProcStreamOptionsGUI(''edit_Callback'',hObject,[%d %d],guidata(hObject));',iFcall,iParam) );
         set( h_pedit, 'Callback',fcn, 'units','normalized');
@@ -118,13 +119,13 @@ for iFcall = 1:nfunc
     end
     
     % If function has no parameters, skip a step in the y direction
-    if fcalls(iFcall).nParam==0
+    if isempty(fcalls(iFcall).paramIn)
         ypos = ypos - ystep;
     end
     
     
     % Draw divider between functions and function parameter lists
-    if iFcall<nfunc
+    if iFcall<nFcall
         h_linebttn = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',[0, ypos, xsize_tot, .3],...
                                'enable','off');
         set(h_linebttn, 'units','normalized');
@@ -244,7 +245,6 @@ hmr.dataTree.currElem.procStream.input = procInput.copy;
 
 
 
-
 % -----------------------------------------------------------------
 function maxnamelen = getFuncNameMaxStrLength(fcalls)
 
@@ -256,16 +256,14 @@ for iFcall =1:length(fcalls)
 end
 
 
-
-
 % -----------------------------------------------------------------
 function maxnamelen = getParamNameMaxStrLength(fcalls)
 
 maxnamelen=0;
 for iFcall=1:length(fcalls)
-    for iParam=1:length(fcalls(iFcall).param)
-        if length(fcalls(iFcall).param{iParam})>maxnamelen
-            maxnamelen = length(fcalls(iFcall).param{iParam})+1;
+    for iParam=1:length(fcalls(iFcall).paramIn)
+        if length(fcalls(iFcall).paramIn(iParam).name)>maxnamelen
+            maxnamelen = length(fcalls(iFcall).paramIn(iParam).name)+1;
         end
     end
 end

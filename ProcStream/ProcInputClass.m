@@ -29,8 +29,8 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2)
-            if isproperty(obj2, 'func')
-                obj.fcalls = obj2.func;
+            if isproperty(obj2, 'fcalls')
+                obj.fcalls = obj2.fcalls;
             end
             if isproperty(obj2, 'changeFlag')
                 obj.changeFlag = obj2.changeFlag;
@@ -63,8 +63,8 @@ classdef ProcInputClass < matlab.mixin.Copyable
             if isempty(obj.fcalls)
                 return;
             end
-            obj.fcalls(iFcall).paramVal{iParam} = val;
-            str = sprintf(obj.fcalls(iFcall).paramFormat{iParam}, val);
+            obj.fcalls(iFcall).paramIn(iParam).value = val;
+            str = sprintf(obj.fcalls(iFcall).paramIn(iParam).format, val);
         end
 
         
@@ -143,8 +143,10 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function [sargin, p] = ParseInputParams(obj, iFcall)
-            sargin = '';
-            p = cell(obj.fcalls(iFcall).nParam, 1);
+            sargin = '';            
+            nParam = length(obj.fcalls(iFcall).paramIn);
+            
+            p = cell(nParam, 1);
 
             if isempty(obj.fcalls)
                 return;
@@ -154,13 +156,8 @@ classdef ProcInputClass < matlab.mixin.Copyable
             end
             
             sarginVal = '';
-            for iP = 1:obj.fcalls(iFcall).nParam
-                if ~obj.fcalls(iFcall).nParamVar
-                    p{iP} = obj.fcalls(iFcall).paramVal{iP};
-                else
-                    p{iP}.name = obj.fcalls(iFcall).param{iP};
-                    p{iP}.val = obj.fcalls(iFcall).paramVal{iP};
-                end
+            for iP = 1:nParam
+                p{iP} = obj.fcalls(iFcall).paramIn(iP).value;
                 if length(obj.fcalls(iFcall).argIn)==1 & iP==1
                     sargin = sprintf('%sp{%d}', sargin, iP);
                     if isnumeric(p{iP})
@@ -396,7 +393,6 @@ classdef ProcInputClass < matlab.mixin.Copyable
             end
             S = textscan(filecontents_str,'%s');
             obj.Parse(S{1});
-            obj.SetHelp();
         end
         
         
@@ -460,10 +456,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
                     obj.Parse(S);
                 case {'run', 'RunClass'}
                     obj.Parse(R);
-            end
-            
-            % Lastly set the help field values for all func functions.
-            obj.SetHelp();
+            end            
         end
         
         
@@ -501,30 +494,27 @@ classdef ProcInputClass < matlab.mixin.Copyable
                         end
                         obj.fcalls(ifunc).argOut = textstr{ii+2};
                         obj.fcalls(ifunc).argIn = textstr{ii+3};
+                        obj.fcalls(ifunc).GetHelp();
                         flag = 3;
                     else
-                        if(textstr{ii} == '*')
-                            obj.fcalls(ifunc).nParamVar = 1;
-                        elseif(textstr{ii} ~= '*')
-                            obj.fcalls(ifunc).nParam = obj.fcalls(ifunc).nParam + 1;
-                            obj.fcalls(ifunc).param{obj.fcalls(ifunc).nParam} = textstr{ii};
-                            
-                            for jj = 1:length(textstr{ii+1})
-                                if textstr{ii+1}(jj)=='_'
-                                    textstr{ii+1}(jj) = ' ';
-                                end
+                        % If function call string continue, means we have
+                        % user-settable params, since params follow input
+                        % arguments
+                        name = textstr{ii};
+                        for jj = 1:length(textstr{ii+1})
+                            if textstr{ii+1}(jj)=='_'
+                                textstr{ii+1}(jj) = ' ';
                             end
-                            obj.fcalls(ifunc).paramFormat{obj.fcalls(ifunc).nParam} = textstr{ii+1};
-                            
-                            for jj = 1:length(textstr{ii+2})
-                                if textstr{ii+2}(jj)=='_'
-                                    textstr{ii+2}(jj) = ' ';
-                                end
-                            end
-                            val = str2num(textstr{ii+2});
-                            obj.fcalls(ifunc).paramVal{obj.fcalls(ifunc).nParam} = val;
-                            obj.fcalls(ifunc).nParamVar = 0;
                         end
+                        format = textstr{ii+1};
+                        for jj = 1:length(textstr{ii+2})
+                            if textstr{ii+2}(jj)=='_'
+                                textstr{ii+2}(jj) = ' ';
+                            end
+                        end
+                        value = str2num(textstr{ii+2});
+                        obj.fcalls(ifunc).paramIn(end+1) = ParamClass(name, format, value);
+                        obj.fcalls(ifunc).GetParamHelp(length(obj.fcalls(ifunc).paramIn));
                         flag = 2;
                     end
                 else

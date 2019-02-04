@@ -123,7 +123,7 @@ classdef TreeNodeClass < handle
         % ----------------------------------------------------------------------------------
         function copyProcParamsFieldByField(obj, obj2)
             % procInput
-            if ~isempty(obj2.procStream.input.func)
+            if ~isempty(obj2.procStream.input.fcalls)
                 obj.procStream.input.Copy(obj2.procStream.input);
             end
             

@@ -169,12 +169,12 @@ end
 for iPanel=1:3
     procElem = procStreamGui.procElem{iPanel};
     procInput = procElem.procStream.input;
-    nFunc = procInput.GetFuncNum();
-    funclist = cell(nFunc,1);
-    for iFunc=1:nFunc
-        funclist{iFunc} = procInput.GetFuncName(iFunc);
+    nFcall = procInput.GetFuncCallNum();
+    fcallnames = cell(nFcall,1);
+    for iFcall=1:nFcall
+        fcallnames{iFcall} = procInput.GetFuncCallName(iFcall);
     end
-    set(handles.listboxFuncProcStream(iPanel),'string',funclist);
+    set(handles.listboxFuncProcStream(iPanel),'string',fcallnames);
 end
 
 
@@ -215,21 +215,7 @@ iPanel = procStreamGui.iPanel;
 iReg = procStreamGui.iReg{iPanel};
 
 iFunc = get(handles.listboxFuncReg(iPanel),'value');
-iPS = get(handles.listboxFuncProcStream(iPanel),'value');
-
-n = length(iReg);
-if n>0
-    iRegTmp(1:iPS) = iReg(1:iPS);
-    iRegTmp(iPS+1) = iFunc;
-    iRegTmp((iPS+2):(n+1)) = iReg((iPS+1):n);
-    iPS2 = iPS+1;
-else
-    iRegTmp(1) = iFunc;
-    iPS2 = 1;
-end
-iReg = iRegTmp;
-procStreamGui.iReg{iPanel} = iReg;
-updateProcStreamList(handles,iPS2);
+iFcall = get(handles.listboxFuncProcStream(iPanel),'value');
 
 
 
@@ -326,7 +312,7 @@ for iPanel=1:3
     procElem = procStreamGui.procElem{iPanel};
     if ch==2
         fid = fopen([pathname,filename]);
-        procElem.procStream.input.func = FuncClass().empty();
+        procElem.procStream.input.fcalls = FuncCallClass().empty();
         procElem.procStream.input.ParseFile(fid, class(procElem));
         fclose(fid);
     end
@@ -345,38 +331,6 @@ iRunPanel   = procStreamGui.iRunPanel;
 iSubjPanel  = procStreamGui.iSubjPanel;
 iGroupPanel = procStreamGui.iGroupPanel;
 procElem    = procStreamGui.procElem;
-
-% Get the func at group, subject and run levels
-for iPanel=1:length(procElem)
-    
-    % Build func database of registered functions
-    funcReg = procStreamReg2ProcFunc(class(procElem{iPanel}));
-    
-    % iReg indexes the proc functions in the procStream listboxes on the
-    % right in the GUI
-    func = funcReg(iReg{iPanel});    
-    procElem{iPanel}.procStream.input.func = func;
-end
-
-ch = menu('Save to current processing stream or config file?','Current processing stream','Config file','Cancel');
-if ch==3
-    return;
-end
-if ch==1
-    if isempty(procStreamGui.dataTree)
-        return;
-    end
-    group = procStreamGui.dataTree.group;
-    group.CopyProcInputFunc('group', procElem{iGroupPanel}.procStream.input);
-    group.CopyProcInputFunc('subj', procElem{iSubjPanel}.procStream.input);
-    group.CopyProcInputFunc('run', procElem{iRunPanel}.procStream.input);
-else
-    [filenm,pathnm] = uiputfile( '*.cfg','Save Config File');
-    if filenm==0
-        return
-    end
-    SaveToFile([pathnm,filenm]);
-end
 
 
 % -------------------------------------------------
@@ -431,94 +385,13 @@ global procStreamGui
 procStreamGui.iPanel = procStreamGui.iGroupPanel;
 
 
-
-% --------------------------------------------------------------------
-function SaveToFile(filenm)
-global procStreamGui
-procElem = procStreamGui.procElem;
-
-fid = fopen(filenm,'w');
-for iPanel=1:length(procElem)
-    fprintf( fid, '%% %s\n', procElem{iPanel}.type );    
-    func = procElem{iPanel}.procStream.input.func;
-    for iFunc=1:length(func)
-
-        fprintf( fid, '@ %s %s %s',...
-            func(iFunc).name, func(iFunc).argOut, ...
-            func(iFunc).argIn );
-        for iParam=1:func(iFunc).nParam
-            fprintf( fid,' %s', func(iFunc).param{iParam} );
-            
-            foos = func(iFunc).paramFormat{iParam};
-            boos = sprintf( foos, func(iFunc).paramVal{iParam} );
-            for ii=1:length(foos)
-                if foos(ii)==' '
-                    foos(ii) = '_';
-                end
-            end
-            for ii=1:length(boos)
-                if boos(ii)==' '
-                    boos(ii) = '_';
-                end
-            end
-            if ~strcmp(func(iFunc).param{iParam},'*')
-                fprintf( fid,' %s %s', foos, boos );
-            end
-        end
-        if func(iFunc).nParamVar>0
-            fprintf( fid,' *');
-        end
-        fprintf( fid, '\n' );
-    end
-    fprintf( fid, '\n' );
-end
-fclose(fid);
-
-
-
-% --------------------------------------------------------------------
-function [func, reg] = procStreamReg2ProcFunc(type)
-global procStreamGui
-
-R = procStreamGui.R;
-idx=[];
-switch(type)
-    case {'group','GroupClass'}
-        idx = R.IdxGroup;
-    case {'subj','SubjClass'}
-        idx = R.IdxSubj;
-    case {'run','RunClass'}
-        idx = R.IdxRun;
-end
-if isempty(idx) || idx>length(R.funcReg)
-    return;
-end
-reg = R.funcReg(idx).GetUsageStrs();
-
-procInput = ProcInputClass();
-for ii=1:length(reg)
-    procInput.Parse(reg{ii}, ii);
-    procInput.func(ii).help = FuncHelpClass(procInput.func(ii).name);
-end
-func = procInput.func;
-
-
-
 % -------------------------------------------------------------
 function updateProcStreamList(handles,idx)
 global procStreamGui
 iPanel = procStreamGui.iPanel;
-iReg = procStreamGui.iReg{iPanel};
 
-n = length(iReg);
-FFunc = get(handles.listboxFuncReg(iPanel),'string');
-
-foos = cell(n,1);
-for ii = 1:n
-    foos{ii} = FFunc{iReg(ii)};
-end
-set(handles.listboxFuncProcStream(iPanel),'string',foos)
-set(handles.listboxFuncProcStream(iPanel),'value',idx)
+% set(handles.listboxFuncProcStream(iPanel),'string',foos)
+% set(handles.listboxFuncProcStream(iPanel),'value',idx)
 
 
 

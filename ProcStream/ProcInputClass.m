@@ -4,7 +4,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
     % of acquisition data or is derived from acquisition data but not stored there. 
     %
     properties
-        func;           % Processing stream functions
+        fcalls;         % Processing stream functions
         CondName2Subj;  % Used by group processing stream
         CondName2Run;   % Used by subject processing stream      
         tIncMan;        % Manually include/excluded time points
@@ -18,7 +18,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function obj = ProcInputClass()
-            obj.func = FuncClass().empty();
+            obj.fcalls = FuncCallClass().empty();
             obj.CondName2Subj = [];
             obj.CondName2Run = [];            
             obj.tIncMan = [];
@@ -30,7 +30,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2)
             if isproperty(obj2, 'func')
-                obj.func = obj2.func;
+                obj.fcalls = obj2.func;
             end
             if isproperty(obj2, 'changeFlag')
                 obj.changeFlag = obj2.changeFlag;
@@ -41,10 +41,10 @@ classdef ProcInputClass < matlab.mixin.Copyable
         % ----------------------------------------------------------------------------------
         function b = isempty(obj)
             b = true;
-            if isempty(obj.func)
+            if isempty(obj.fcalls)
                 return
             end
-            if isempty(obj.func(1).name)
+            if isempty(obj.fcalls(1).name)
                 return;
             end
             b = false;
@@ -52,35 +52,35 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function str = EditParam(obj, iFunc, iParam, val)
+        function str = EditParam(obj, iFcall, iParam, val)
             str = '';
-            if isempty(iFunc)
+            if isempty(iFcall)
                 return;
             end
             if isempty(iParam)
                 return;
             end
-            if isempty(obj.func)
+            if isempty(obj.fcalls)
                 return;
             end
-            obj.func(iFunc).paramVal{iParam} = val;
-            str = sprintf(obj.func(iFunc).paramFormat{iParam}, val);
+            obj.fcalls(iFcall).paramVal{iParam} = val;
+            str = sprintf(obj.fcalls(iFcall).paramFormat{iParam}, val);
         end
 
         
         % ----------------------------------------------------------------------------------
         function b = IsEmpty(obj)            
             b=0;
-            if isempty(obj.func)
+            if isempty(obj.fcalls)
                 b=1;
                 return;
             end
             
-            % Now that we know we have a non-empty func, check to see if at least
+            % Now that we know we have a non-empty fcalls, check to see if at least
             % one VALID function is present
             b=1;
-            for ii=1:length(obj.func)
-                if ~isempty(obj.func(ii).name) && ~isempty(obj.func(ii).argOut)
+            for ii=1:length(obj.fcalls)
+                if ~isempty(obj.fcalls(ii).name) && ~isempty(obj.fcalls(ii).argOut)
                     b=0;
                     return;
                 end
@@ -89,28 +89,28 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function args = GetInputArgs(obj, iFunc)
+        function args = GetInputArgs(obj, iFcall)
             args={};
-            if isempty(obj.func)
+            if isempty(obj.fcalls)
                 return;
             end
-            if ~exist('iFunc', 'var') || isempty(iFunc)
-                iFunc = 1:length(obj.func);
+            if ~exist('iFcall', 'var') || isempty(iFcall)
+                iFcall = 1:length(obj.fcalls);
             end
-            nFunc = length(obj.func);
+            nFcall = length(obj.fcalls);
 
             kk=1;
-            for jj=1:length(iFunc)
-                if iFunc(jj)>nFunc
+            for jj=1:length(iFcall)
+                if iFcall(jj)>nFcall
                     continue;
                 end
-                if obj.func(iFunc(jj)).argIn(1) ~= '('
+                if obj.fcalls(iFcall(jj)).argIn(1) ~= '('
                     continue;
                 end
                 j=2;
-                k = [strfind(obj.func(iFunc(jj)).argIn,',') length(obj.func(iFunc(jj)).argIn)+1];
+                k = [strfind(obj.fcalls(iFcall(jj)).argIn,',') length(obj.fcalls(iFcall(jj)).argIn)+1];
                 for ii=1:length(k)
-                    args{kk} = obj.func(iFunc(jj)).argIn(j:k(ii)-1);
+                    args{kk} = obj.fcalls(iFcall(jj)).argIn(j:k(ii)-1);
                     j = k(ii)+1;
                     kk=kk+1;
                 end
@@ -142,26 +142,26 @@ classdef ProcInputClass < matlab.mixin.Copyable
 
         
         % ----------------------------------------------------------------------------------
-        function [sargin, p] = ParseInputParams(obj, iFunc)
+        function [sargin, p] = ParseInputParams(obj, iFcall)
             sargin = '';
-            p = cell(obj.func(iFunc).nParam, 1);
+            p = cell(obj.fcalls(iFcall).nParam, 1);
 
-            if isempty(obj.func)
+            if isempty(obj.fcalls)
                 return;
             end
-            if iFunc>length(obj.func)
+            if iFcall>length(obj.fcalls)
                 return;
             end
             
             sarginVal = '';
-            for iP = 1:obj.func(iFunc).nParam
-                if ~obj.func(iFunc).nParamVar
-                    p{iP} = obj.func(iFunc).paramVal{iP};
+            for iP = 1:obj.fcalls(iFcall).nParam
+                if ~obj.fcalls(iFcall).nParamVar
+                    p{iP} = obj.fcalls(iFcall).paramVal{iP};
                 else
-                    p{iP}.name = obj.func(iFunc).param{iP};
-                    p{iP}.val = obj.func(iFunc).paramVal{iP};
+                    p{iP}.name = obj.fcalls(iFcall).param{iP};
+                    p{iP}.val = obj.fcalls(iFcall).paramVal{iP};
                 end
-                if length(obj.func(iFunc).argIn)==1 & iP==1
+                if length(obj.fcalls(iFcall).argIn)==1 & iP==1
                     sargin = sprintf('%sp{%d}', sargin, iP);
                     if isnumeric(p{iP})
                         if length(p{iP})==1
@@ -193,16 +193,16 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function sargout = ParseOutputArgs(obj, iFunc)
+        function sargout = ParseOutputArgs(obj, iFcall)
             sargout = '';
-            if isempty(obj.func)
+            if isempty(obj.fcalls)
                 return;
             end
-            if iFunc>length(obj.func)
+            if iFcall>length(obj.fcalls)
                 return;
             end            
-            sargout = obj.func(iFunc).argOut;
-            for ii=1:length(obj.func(iFunc).argOut)
+            sargout = obj.fcalls(iFcall).argOut;
+            for ii=1:length(obj.fcalls(iFcall).argOut)
                 if sargout(ii)=='#'
                     sargout(ii) = ' ';
                 end
@@ -211,39 +211,39 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function name = GetFuncName(obj, iFunc)
+        function name = GetFuncCallName(obj, iFcall)
             name = '';
-            if isempty(obj.func)
+            if isempty(obj.fcalls)
                 return;                
             end
-            if iFunc>length(obj.func)
+            if iFcall>length(obj.fcalls)
                 return;
             end
-            name = obj.func(iFunc).name;
+            name = obj.fcalls(iFcall).name;
         end
         
         
         % ----------------------------------------------------------------------------------
-        function name = GetFuncNamePrettyPrint(obj, iFunc)
+        function name = GetFcallNamePrettyPrint(obj, iFcall)
             name = '';
-            if isempty(obj.func)
+            if isempty(obj.fcalls)
                 return;                
             end
-            if iFunc>length(obj.func)
+            if iFcall>length(obj.fcalls)
                 return;
             end
-            k = find(obj.func(iFunc).name=='_');
+            k = find(obj.fcalls(iFcall).name=='_');
             if isempty(k)
-                name = obj.func(iFunc).name;
+                name = obj.fcalls(iFcall).name;
             else
-                name = sprintf('%s\\%s...', obj.func(iFunc).name(1:k-1), obj.func(iFunc).name(k:end));
+                name = sprintf('%s\\%s...', obj.fcalls(iFcall).name(1:k-1), obj.fcalls(iFcall).name(k:end));
             end            
         end
         
         
         % ----------------------------------------------------------------------------------
-        function n = GetFuncNum(obj)
-            n = length(obj.func);
+        function n = GetFuncCallNum(obj)
+            n = length(obj.fcalls);
         end
 
                 
@@ -469,10 +469,6 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function Parse(obj, strs, ifunc)
-            % Parse functions and parameters
-            % function call, param, param_format, param_value
-            % name{}, argOut{}, argIn{}, nParam(), param{nFunc}{nParam},
-            % paramFormat{nFunc}{nParam}, paramVal{nFunc}{nParam}()
             if ischar(strs)
                 C = textscan(strs, '%s');
                 textstr = C{1};
@@ -493,32 +489,32 @@ classdef ProcInputClass < matlab.mixin.Copyable
                     elseif textstr{ii}=='@'
                         ifunc = ifunc+1;
                         k = strfind(textstr{ii+1},',');
-                        obj.func(ifunc) = FuncClass();
+                        obj.fcalls(ifunc) = FuncCallClass();
                         if ~isempty(k)
-                            obj.func(ifunc).name = textstr{ii+1}(1:k-1);
-                            obj.func(ifunc).nameUI = textstr{ii+1}(k+1:end);
-                            k = strfind(obj.func(ifunc).nameUI,'_');
-                            obj.func(ifunc).nameUI(k)=' ';
+                            obj.fcalls(ifunc).name = textstr{ii+1}(1:k-1);
+                            obj.fcalls(ifunc).nameUI = textstr{ii+1}(k+1:end);
+                            k = strfind(obj.fcalls(ifunc).nameUI,'_');
+                            obj.fcalls(ifunc).nameUI(k)=' ';
                         else
-                            obj.func(ifunc).name = textstr{ii+1};
-                            obj.func(ifunc).nameUI = obj.func(ifunc).name;
+                            obj.fcalls(ifunc).name = textstr{ii+1};
+                            obj.fcalls(ifunc).nameUI = obj.fcalls(ifunc).name;
                         end
-                        obj.func(ifunc).argOut = textstr{ii+2};
-                        obj.func(ifunc).argIn = textstr{ii+3};
+                        obj.fcalls(ifunc).argOut = textstr{ii+2};
+                        obj.fcalls(ifunc).argIn = textstr{ii+3};
                         flag = 3;
                     else
                         if(textstr{ii} == '*')
-                            obj.func(ifunc).nParamVar = 1;
+                            obj.fcalls(ifunc).nParamVar = 1;
                         elseif(textstr{ii} ~= '*')
-                            obj.func(ifunc).nParam = obj.func(ifunc).nParam + 1;
-                            obj.func(ifunc).param{obj.func(ifunc).nParam} = textstr{ii};
+                            obj.fcalls(ifunc).nParam = obj.fcalls(ifunc).nParam + 1;
+                            obj.fcalls(ifunc).param{obj.fcalls(ifunc).nParam} = textstr{ii};
                             
                             for jj = 1:length(textstr{ii+1})
                                 if textstr{ii+1}(jj)=='_'
                                     textstr{ii+1}(jj) = ' ';
                                 end
                             end
-                            obj.func(ifunc).paramFormat{obj.func(ifunc).nParam} = textstr{ii+1};
+                            obj.fcalls(ifunc).paramFormat{obj.fcalls(ifunc).nParam} = textstr{ii+1};
                             
                             for jj = 1:length(textstr{ii+2})
                                 if textstr{ii+2}(jj)=='_'
@@ -526,8 +522,8 @@ classdef ProcInputClass < matlab.mixin.Copyable
                                 end
                             end
                             val = str2num(textstr{ii+2});
-                            obj.func(ifunc).paramVal{obj.func(ifunc).nParam} = val;
-                            obj.func(ifunc).nParamVar = 0;
+                            obj.fcalls(ifunc).paramVal{obj.fcalls(ifunc).nParam} = val;
+                            obj.fcalls(ifunc).nParamVar = 0;
                         end
                         flag = 2;
                     end
@@ -638,8 +634,8 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function SetHelp(obj)
-            for ii=1:length(obj.func)
-                obj.func(ii).help = FuncHelpClass(obj.func(ii).name);
+            for ii=1:length(obj.fcalls)
+                obj.fcalls(ii).help = FuncHelpClass(obj.fcalls(ii).name);
             end
         end
         

@@ -85,7 +85,7 @@ iSubjPanel  = procStreamGui.iSubjPanel;
 iGroupPanel = procStreamGui.iGroupPanel;
 
 procStreamGui.dataTree = LoadDataTree(procStreamGui.format, hmr);
-procStreamGui.R = procStreamGui.dataTree.R;
+procStreamGui.reg = procStreamGui.dataTree.reg;
 
 % Update handles structure
 LoadRegistry(handles);
@@ -129,7 +129,7 @@ LoadProcStream(handles);
 % -------------------------------------------------------------
 function LoadRegistry(handles)
 global procStreamGui
-R = procStreamGui.R;
+R = procStreamGui.reg;
 if isempty(R) || R.IsEmpty()
     return;
 end
@@ -340,7 +340,7 @@ global procStreamGui
 helpstr = '';
 
 iPanel = procStreamGui.iPanel;
-R = procStreamGui.R;
+R = procStreamGui.reg;
 if isempty(R) || R.IsEmpty()
     return;
 end

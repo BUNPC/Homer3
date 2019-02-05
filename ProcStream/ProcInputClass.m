@@ -274,7 +274,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
     methods
         
         % ----------------------------------------------------------------------------------
-        function [filename, pathname] = CreateDefaultConfigFile(obj, R)
+        function [filename, pathname] = CreateDefaultConfigFile(obj, reg)
             % This pause is a workaround for a matlab bug in version
             % 7.11 for Linux, where uigetfile won't block unless there's
             % a breakpoint.
@@ -291,18 +291,18 @@ classdef ProcInputClass < matlab.mixin.Copyable
                     end
                 end
                 if success
-                    obj.FileGenDefConc(filename, 'group', R);
-                    obj.FileGenDefConc(filename, 'subj', R);
-                    obj.FileGenDefConc(filename, 'run', R);
+                    obj.FileGenDefConc(filename, 'group', reg);
+                    obj.FileGenDefConc(filename, 'subj', reg);
+                    obj.FileGenDefConc(filename, 'run', reg);
                 end
             else
-                filename = [pathname filename];
+                filename = [pathname, filename];
             end
         end
         
                 
         % ----------------------------------------------------------------------------------
-        function FileGenDefConc(obj, filepath, type, R)
+        function FileGenDefConc(obj, filepath, type, reg)
             % Generates default processOpt.cfg file.
             % Note that fprintf outputs formatted textstr where some characters
             % are special characters - such as '%'. In order to write a
@@ -321,11 +321,11 @@ classdef ProcInputClass < matlab.mixin.Copyable
             
             switch(type)
                 case 'group'
-                    contents = obj.DefaultFileGroupConc(R);
+                    contents = obj.DefaultFileGroupConc(reg);
                 case 'subj'
-                    contents = obj.DefaultFileSubjConc(R);
+                    contents = obj.DefaultFileSubjConc(reg);
                 case 'run'
-                    contents = obj.DefaultFileRunConc(R);
+                    contents = obj.DefaultFileRunConc(reg);
             end
             for ii=1:length(contents)
                 fprintf(fid, contents{ii});
@@ -340,11 +340,14 @@ classdef ProcInputClass < matlab.mixin.Copyable
                    
         
         % ----------------------------------------------------------------------------------
-        function [contents, str] = DefaultFileGroupConc(obj, R)            
-            iG = R.IdxGroup();
+        function [contents, str] = DefaultFileGroupConc(obj, reg)
+            if isempty(reg)
+                return;
+            end
+            iG = reg.IdxGroup();
             contents = {...
                 '%% group\n', ...
-                R.funcReg(iG).FindUsage('hmrG_BlockAvg','dcAvg'), ...
+                reg.funcReg(iG).FindUsage('hmrG_BlockAvg','dcAvg'), ...
                 '\n\n', ...
             };
             str = cell2str(contents);
@@ -352,11 +355,14 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
                 
         % ----------------------------------------------------------------------------------
-        function [contents, str] = DefaultFileSubjConc(obj, R)
-            iS = R.IdxSubj();
+        function [contents, str] = DefaultFileSubjConc(obj, reg)
+            if isempty(reg)
+                return;
+            end
+            iS = reg.IdxSubj();
             contents = {...
                 '%% subj\n', ...
-                R.funcReg(iS).FindUsage('hmrS_BlockAvg','dcAvg'), ...
+                reg.funcReg(iS).FindUsage('hmrS_BlockAvg','dcAvg'), ...
                 '\n\n', ...
             };
             str = cell2str(contents);            
@@ -364,16 +370,19 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function [contents, str] = DefaultFileRunConc(obj, R)
-            iR = R.IdxRun();
+        function [contents, str] = DefaultFileRunConc(obj, reg)
+            if isempty(reg)
+                return;
+            end
+            iR = reg.IdxRun();
             contents = {...
                 '%% run\n', ...
-                R.funcReg(iR).FindUsage('hmrR_Intensity2OD'), ...
-                R.funcReg(iR).FindUsage('hmrR_MotionArtifact'), ...
-                R.funcReg(iR).FindUsage('hmrR_BandpassFilt'), ...
-                R.funcReg(iR).FindUsage('hmrR_OD2Conc'), ...
-                R.funcReg(iR).FindUsage('hmrR_StimRejection'), ...
-                R.funcReg(iR).FindUsage('hmrR_BlockAvg','dcAvg') ...
+                reg.funcReg(iR).FindUsage('hmrR_Intensity2OD'), ...
+                reg.funcReg(iR).FindUsage('hmrR_MotionArtifact'), ...
+                reg.funcReg(iR).FindUsage('hmrR_BandpassFilt'), ...
+                reg.funcReg(iR).FindUsage('hmrR_OD2Conc'), ...
+                reg.funcReg(iR).FindUsage('hmrR_StimRejection'), ...
+                reg.funcReg(iR).FindUsage('hmrR_BlockAvg','dcAvg') ...
                 '\n\n', ...
                 };
             str = cell2str(contents);
@@ -381,251 +390,223 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function DefaultConc(obj, type, R)
+        function DefaultFileConc(obj, type, reg)
             filecontents_str = '';
             switch(type)
                 case 'group'
-                    [~, filecontents_str] = obj.DefaultFileGroupConc(R);
+                    [~, filecontents_str] = obj.DefaultFileGroupConc(reg);
                 case 'subj'
-                    [~, filecontents_str] = obj.DefaultFileSubjConc(R);
+                    [~, filecontents_str] = obj.DefaultFileSubjConc(reg);
                 case 'run'
-                    [~, filecontents_str] = obj.DefaultFileRunConc(R);
+                    [~, filecontents_str] = obj.DefaultFileRunConc(reg);
             end
             S = textscan(filecontents_str,'%s');
             obj.Parse(S{1});
         end
         
         
-        % ----------------------------------------------------------------------------------
-        function [G, S, R] = PreParse(obj, fid_or_str, type)
-            G='';
-            S='';
-            R='';
-            T = textscan(fid_or_str,'%s');
-            if isempty(T{1})
+        % ---------------------------------------------------------------------
+        % Function to extract the 3 proc stream sections - group, subj, and run -
+        % from a processing stream config cell array.
+        % ---------------------------------------------------------------------
+        function [G, S, R] = FindSections(obj, fid)
+            G = {};
+            S = {};
+            R = {};
+            if ~iswholenum(fid) || fid<0
                 return;
             end
-            Sections = obj.findSections(T{1});
-            if ischar(fid_or_str)
-                for ii=1:length(Sections)
-                    if ~strcmp(Sections{ii}{2}, 'group') && ~strcmp(Sections{ii}{2}, 'subj') && ~strcmp(Sections{ii}{2}, 'run')
-                        switch(type)
-                            case 'group'
-                                Sections{ii} = [{'%'}, {'group'}, Sections{ii}];
-                            case 'subj'
-                                Sections{ii} = [{'%'}, {'subj'}, Sections{ii}];
-                            case 'run'
-                                Sections{ii} = [{'%'}, {'run'}, Sections{ii}];
-                        end
+            iG=1;
+            iS=1;
+            iR=1;
+            section = 'run';   % Run is the default is sections aren't labeled
+            while ~feof(fid)
+                ln = strtrim(fgetl(fid));
+                if isempty(ln)
+                    continue;
+                end
+                if ln(1)=='%'
+                    str = strtrim(ln(2:end));
+                    switch(lower(str))
+                        case {'group','grp'}
+                            section = str;
+                        case {'subj','subject','session','sess'}
+                            section = str;
+                        case {'run'}
+                            section = str;
                     end
+                elseif ln(1)=='@'
+                    switch(lower(section))
+                        case {'group','grp'}
+                            G{iG} = strtrim(ln); iG=iG+1;
+                        case {'subj','subject','session','sess'}
+                            S{iS} = strtrim(ln); iS=iS+1;
+                        case {'run'}
+                            R{iR} = strtrim(ln); iR=iR+1;
+                    end                    
                 end
             end
-            [G, S, R] = obj.consolidateSections(Sections);
         end
-                
+        
+        
         
         % ----------------------------------------------------------------------------------
-        function [err, errstr] = ParseFile(obj, fid_or_str, type)            
+        function err = ParseFile(obj, fid, type, reg)
             %
             % Processing stream config file parser. This function handles
             % group, subj and run processing stream parameters
-            %            
-            err=0;
-            errstr='';
+            %
+            % Example:
+            %  
+            %    Create a ProcInputClass object and load the function calls
+            %    from the proc stream config file './processOpt_default.cfg'
+            % 
+            %    fid = fopen('./processOpt_default.cfg');
+            %    p = ProcInputClass();
+            %    p.ParseFile(fid, 'run');
+            %    fclose(fid);
+            %
+            %    Here's some of the output 
+            %
+            %    p
+            %
+            %        ===> ProcInputClass with properties:
+            %
+            %            fcalls: [1x6 FuncCallClass]
+            %     CondName2Subj: []
+            %      CondName2Run: []
+            %           tIncMan: []
+            %              misc: []
+            %        changeFlag: 0
+            % 
+            %    p.fcalls(2)
+            %     
+            %        ===> FuncCallClass with properties:
+            %
+            %              name: 'hmrR_MotionArtifact'
+            %            nameUI: 'hmrR_MotionArtifact'
+            %            argOut: 'tIncAuto'
+            %             argIn: '(dod,t,SD,tIncMan'
+            %           paramIn: [1x4 ParamClass]
+            %              help: '  Excludes stims that fall within the time points identified as …'
+            %
+            %    p.fcalls(3)
+            %     
+            %        ===> FuncCallClass with properties:
+            %
+            %              name: 'hmrR_StimRejection'
+            %            nameUI: 'hmrR_StimRejection'
+            %            argOut: '[s,tRangeStimReject]'
+            %             argIn: '(t,s,tIncAuto,tIncMan'
+            %           paramIn: [1x1 ParamClass]
+            %              help: '  Excludes stims that fall within the time points identified as …'
+            %
             
-            [G, S, R] = obj.PreParse(fid_or_str, type);
+            err=-1;
+            if ~exist('fid','var') || ~iswholenum(fid) || fid<0
+                return;
+            end
+            if ~exist('type','var')
+                return;
+            end
+            if ~exist('reg','var')
+                reg = RegistriesClass().empty();
+            end
+            [G, S, R] = obj.FindSections(fid);
             switch(type)
                 case {'group', 'GroupClass'}
                     % generate default contents for group section if there's no % group header.
-                    % This can happen if homer2-style config file was read
-                    if isempty(G) | ~strcmpi(strtrim([G{1},G{2}]), '%group')
-                        [~, str] = obj.DefaultFileGroup(obj.Parse(R));
-                        foo = textscan(str, '%s');
-                        G = foo{1};
+                    if isempty(G)
+                        G = obj.DefaultFileGroupConc(reg);
                     end
                     obj.Parse(G);
                 case {'subj', 'SubjClass'}
-                    % generate default contents for subject section if scanned contents is
-                    % from a file and there's no % subj header. This can happen if
-                    % homer2-style config file was loaded
-                    if isempty(S) | ~strcmpi(strtrim([S{1},S{2}]), '%subj')
-                        [~, str] = obj.DefaultFileSubj(obj.Parse(R));
-                        foo = textscan(str, '%s');
-                        S = foo{1};
+                    % generate default contents for subject section there's no % subj header. 
+                    if isempty(S)
+                        S = obj.DefaultFileGroupSubj(reg);
                     end
                     obj.Parse(S);
                 case {'run', 'RunClass'}
+                    % generate default contents for subject section there's no % run header. 
+                    if isempty(R)
+                        R = obj.DefaultFileGroupSubj(reg);
+                    end
                     obj.Parse(R);
+                otherwise
+                    return;
             end            
+            err=0;
         end
         
         
         % ----------------------------------------------------------------------------------
-        function Parse(obj, strs, ifunc)
-            if ischar(strs)
-                C = textscan(strs, '%s');
-                textstr = C{1};
-            else
-                textstr = strs;
+        function Parse(obj, section)
+            % Syntax:
+            %    Parse(section)
+            %    
+            % Description:            
+            %    Parse a cell array of strings, each string an encoded hmr*.m function call
+            %    into a FuncCallClass object. 
+            %
+            % Input: 
+            %    A section contains encoded strings for one or more hmr* user function calls.
+            %   
+            % Example:
+            %
+            %    fcalls{1} = '@ hmrR_BandpassFilt dod (dod,t hpf %0.3f 0.010 lpf %0.3f 0.500';
+            %    fcalls{2} = '@ hmrR_OD2Conc dc (dod,SD ppf %0.1f_%0.1f 6_6';
+            %
+            %    p = ProcInputClass();
+            %    p.Parse(fcalls);
+            % 
+            %    Here's the output:
+            % 
+            %    p.fcalls(1)
+            %
+            %      ===> FuncCallClass with properties:
+            %
+            %          name: 'hmrR_BandpassFilt'
+            %        nameUI: 'hmrR_BandpassFilt'
+            %        argOut: 'dod'
+            %         argIn: '(dod,t'
+            %       paramIn: [1x2 ParamClass]
+            %          help: '  Perform a bandpass filter…'
+            %
+            %    p.fcalls(2)
+            %
+            %      ===> FuncCallClass with properties:
+            %
+            %          name: 'hmrR_OD2Conc'
+            %        nameUI: 'hmrR_OD2Conc'
+            %        argOut: 'dc'
+            %         argIn: '(dod,SD'
+            %       paramIn: [1x1 ParamClass]
+            %          help: '  Convert OD to concentrations…'
+            % 
+            if nargin<2
+                return
             end
-            nstr = length(textstr);
-            if ~exist('ifunc','var') || isempty(ifunc)
-                ifunc = 0;
-            else
-                ifunc = ifunc-1;
-            end
-            flag = 0;
-            for ii=1:nstr
-                if flag==0 || textstr{ii}(1)=='@'
-                    if textstr{ii}=='%'
-                        flag = 999;
-                    elseif textstr{ii}=='@'
-                        ifunc = ifunc+1;
-                        k = strfind(textstr{ii+1},',');
-                        obj.fcalls(ifunc) = FuncCallClass();
-                        if ~isempty(k)
-                            obj.fcalls(ifunc).name = textstr{ii+1}(1:k-1);
-                            obj.fcalls(ifunc).nameUI = textstr{ii+1}(k+1:end);
-                            k = strfind(obj.fcalls(ifunc).nameUI,'_');
-                            obj.fcalls(ifunc).nameUI(k)=' ';
-                        else
-                            obj.fcalls(ifunc).name = textstr{ii+1};
-                            obj.fcalls(ifunc).nameUI = obj.fcalls(ifunc).name;
-                        end
-                        obj.fcalls(ifunc).argOut = textstr{ii+2};
-                        obj.fcalls(ifunc).argIn = textstr{ii+3};
-                        obj.fcalls(ifunc).GetHelp();
-                        flag = 3;
-                    else
-                        % If function call string continue, means we have
-                        % user-settable params, since params follow input
-                        % arguments
-                        name = textstr{ii};
-                        for jj = 1:length(textstr{ii+1})
-                            if textstr{ii+1}(jj)=='_'
-                                textstr{ii+1}(jj) = ' ';
-                            end
-                        end
-                        format = textstr{ii+1};
-                        for jj = 1:length(textstr{ii+2})
-                            if textstr{ii+2}(jj)=='_'
-                                textstr{ii+2}(jj) = ' ';
-                            end
-                        end
-                        value = str2num(textstr{ii+2});
-                        obj.fcalls(ifunc).paramIn(end+1) = ParamClass(name, format, value);
-                        obj.fcalls(ifunc).GetParamHelp(length(obj.fcalls(ifunc).paramIn));
-                        flag = 2;
-                    end
+            if ~iscell(section)
+                if ~ischar(section)
+                    return;
                 else
-                    flag = flag-1;
+                    section = {section};
                 end
             end
-        end
-        
-    end
-    
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Help related methods
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    methods
-        
-        % ---------------------------------------------------------------------
-        function Sections = findSections(obj, T)
-            % Function to extract the 3 proc stream sections - group, subj, and run -
-            % from a processing stream config cell array.
-            n=length(T);
-            Sections={};
+
             kk=1;
-            ii=1;
-            while ii<=n
-                if T{ii}=='%'
-                    if (ii+1<=n) & (strcmp(T{ii+1},'group') | strcmp(T{ii+1},'subj') | strcmp(T{ii+1},'run') | T{ii+1}=='@')
-                        Sections{kk}{1} = T{ii};
-                        jj=2;
-                        for mm=ii+1:n
-                            Sections{kk}{jj} = T{mm};
-                            jj=jj+1;
-                            if T{mm}=='%'
-                                if (mm+1<=n) & (strcmp(T{mm+1},'group') | strcmp(T{mm+1},'subj') | strcmp(T{mm+1},'run'))
-                                    break;
-                                end
-                            end
-                        end
-                        kk=kk+1;
-                        ii=mm;
-                        continue;
-                    end
-                elseif T{ii}=='@'
-                    Sections{kk}{1} = T{ii};
-                    jj=2;
-                    for mm=ii+1:n
-                        Sections{kk}{jj} = T{mm};
-                        jj=jj+1;
-                        if T{mm}=='%'
-                            if (mm+1<=n) & (strcmp(T{mm+1},'group') | strcmp(T{mm+1},'subj') | strcmp(T{mm+1},'run'))
-                                break;
-                            end
-                        end
-                    end
-                    kk=kk+1;
-                    ii=mm;
+            for ii=1:length(section)
+                if section{ii}(1)=='%';
                     continue;
                 end
-                ii=ii+1;
-            end
-        end
-        
-        
-        % ---------------------------------------------------------------------
-        function [G, S, R] = consolidateSections(obj, Sections)
-            
-            % This functions allows the functions for a run, subject or group
-            % to be scattered. That is, you can multiple group, subject or run
-            % sections; they'll be consolidated by this function into one group,
-            % subject and run sections
-            
-            G={};
-            S={};
-            R={};
-            for ii=1:length(Sections)
-                if Sections{ii}{1} ~= '%'
-                    Sections{ii} = [{'%','run'},Sections{ii}];
-                end
-                if Sections{ii}{1} == '%' && (~strcmp(Sections{ii}{2},'group') && ~strcmp(Sections{ii}{2},'subj') && ~strcmp(Sections{ii}{2},'run'))
-                    Sections{ii} = [{'%','run'},Sections{ii}];
-                end
-                
-                if Sections{ii}{1} == '%' && strcmp(Sections{ii}{2},'group')
-                    if isempty(G)
-                        G = Sections{ii};
+                if section{ii}(1)=='@';
+                    if kk>length(obj.fcalls)
+                        obj.fcalls(kk) = FuncCallClass(section{ii});
                     else
-                        G = [G(1:end) Sections{ii}{3:end}];
+                        obj.fcalls(kk).Parse(section{ii});
                     end
-                end
-                if Sections{ii}{1} == '%' && strcmp(Sections{ii}{2},'subj')
-                    if isempty(S)
-                        S = Sections{ii};
-                    else
-                        S = [S(1:end) Sections{ii}(3:end)];
-                    end
-                end
-                if Sections{ii}{1} == '%' && strcmp(Sections{ii}{2},'run')
-                    if isempty(R)
-                        R = Sections{ii};
-                    else
-                        R = [R(1:end) Sections{ii}(3:end)];
-                    end
-                end
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function SetHelp(obj)
-            for ii=1:length(obj.fcalls)
-                obj.fcalls(ii).help = FuncHelpClass(obj.fcalls(ii).name);
+                    kk=kk+1;
+                end    
             end
         end
         

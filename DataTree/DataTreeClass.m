@@ -4,7 +4,7 @@ classdef DataTreeClass <  handle
         files
         group
         currElem
-        R
+        reg
     end
     
     methods
@@ -28,7 +28,7 @@ classdef DataTreeClass <  handle
             end
             dataInit.Display();            
             obj.files = dataInit.files;
-            obj.R = RegistriesClass();
+            obj.reg = RegistriesClass();
             obj.LoadData();
             
             % Initialize the current processing element within the group
@@ -80,9 +80,9 @@ classdef DataTreeClass <  handle
             
             % Find the procInput defaults at each level with which to initialize
             % uninitialized procInput
-            [procInputGroupDefault, procfilenm] = group.GetProcInputDefault('', obj.R);
-            [procInputSubjDefault, procfilenm]  = subj.GetProcInputDefault(procfilenm, obj.R);
-            [procInputRunDefault, ~]            = run.GetProcInputDefault(procfilenm, obj.R);
+            [procInputGroupDefault, procfilenm] = group.GetProcInputDefault('', obj.reg);
+            [procInputSubjDefault, procfilenm]  = subj.GetProcInputDefault(procfilenm, obj.reg);
+            [procInputRunDefault, ~]            = run.GetProcInputDefault(procfilenm, obj.reg);
             
             % Copy default procInput to all uninitialized nodes in the group
             obj.group.CopyProcInput('group', procInputGroupDefault);

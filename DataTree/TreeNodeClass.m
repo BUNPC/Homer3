@@ -42,42 +42,42 @@ classdef TreeNodeClass < handle
         
         
         % ---------------------------------------------------------------------------------
-        function [procInput, filename] = GetProcInputDefault(obj, filename, R)
+        function [procInput, filename] = GetProcInputDefault(obj, filename, reg)
             if ~exist('filename','var') || isempty(filename)
                 filename = '';
             end
             
-            err1=0;
+            obj.err=0;
             if obj.procStream.IsEmpty()
-                err1=1;
+                obj.err=1;
             end            
             
             %%%%% Otherwise try loading procInput from a config file, but first
             %%%%% figure out the name of the config file
             procInput = obj.procStream.input;
-            while ~all(err1==0)
+            while ~all(obj.err==0)
                 % Load Processing stream file
                 if isempty(filename)
-                    filename = procInput.CreateDefaultConfigFile(R);
+                    filename = procInput.CreateDefaultConfigFile(reg);
                     
                     % Load procInput from config file
                     fid = fopen(filename, 'r');
-                    err1 = procInput.ParseFile(fid, class(obj));
+                    obj.err = procInput.ParseFile(fid, class(obj), reg);
                     fclose(fid);
                 elseif ~isempty(filename)
                     % Load procInput from config file
                     fid = fopen(filename,'r');
-                    err1 = procInput.ParseFile(fid, class(obj));
+                    obj.err = procInput.ParseFile(fid, class(obj), reg);
                     fclose(fid);
                 else
-                    err1=0;
+                    obj.err=0;
                 end
                                 
                 % Check loaded procInput for syntax and semantic errors
-                if procInput.IsEmpty() && err1==0
-                    ch = menu('Warning: config file is empty.','Okay');
-                elseif err1==1
-                    ch = menu('Syntax error in config file.','Okay');
+                if procInput.IsEmpty() && obj.err==0
+                    menu('Warning: config file is empty.','Okay');
+                elseif obj.err==1
+                    menu('Syntax error in config file.','Okay');
                 end
                 
             end  % while ~all(err1==0)
@@ -201,7 +201,7 @@ classdef TreeNodeClass < handle
                 end
                 nTrials = obj.procStream.output.nTrials;
             end
-            ch     = obj.GetMeasList();
+            ch = obj.GetMeasList();
             
             if isempty(condition)
                 return;

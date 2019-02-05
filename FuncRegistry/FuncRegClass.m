@@ -12,10 +12,43 @@ classdef FuncRegClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function obj = FuncRegClass(type)
+            % 
+            % Syntax:
+            %    obj = FuncRegClass(type);
+            % 
+            % Description:
+            %    Generates a list of FuncRegEntryClass objects of type
+            %    'run', 'subj', or 'group' for any hmr* user files it finds
+            %    in the folder <Rootdir>/FuncRegistry/UserFunctions.
+            %    <Rootdir> is relative to the location of this file,
+            %    FuncRegClass.m
+            % 
+            % Example:  
+            %    Generate array of registry entries for all run-level users
+            %    functions
+            % 
+            %    freg = FuncRegClass('run')
+            %
+            %         ===> FuncRegClass with properties:
+            %
+            %         userfuncdir: 'c:/jdubb/workspaces/homer3/FuncRegistry/UserFunctions/'
+            %       userfuncfiles: {1x10 cell}
+            %             entries: [1x10 FuncRegEntryClass]
+            %                type: 'run'
+            % 
+            %    freg.entries(1)
+            %
+            %         ===> FuncRegEntryClass with properties:
+            %
+            %                name: 'hmrR_BandpassFilt'
+            %              uiname: 'Bandpass_Filter'
+            %        usageoptions: {'Bandpass_Filter'  'dod = hmrR_BandpassFilt( dod, t, hpf, lpf )'  'hmrR_BandpassFilt dod (dod,t hpf %0.3f 0.010 lpf %0.3f 0.500'}
+            %              params: {2x2 cell}
+            %                help: [1x1 FuncHelpClass]
+            %
             if nargin==0
                 return;
-            end
-            
+            end            
             obj.type = type;
             obj.entries = FuncRegEntryClass().empty();
             obj.userfuncdir = obj.FindUserFuncDir();

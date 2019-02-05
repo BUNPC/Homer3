@@ -16,9 +16,9 @@ if nargin==0
     parent = [];
 end
 
-if ~isempty(parent) && isproperty(parent, 'R') && ~isempty(parent.R)
-    R = parent.R;
+if ~isempty(parent) && isproperty(parent, 'R') && ~isempty(parent.reg)
+    reg = parent.reg;
 else
-    R = RegistriesClass();
+    reg = RegistriesClass();
 end
 

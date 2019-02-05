@@ -1,6 +1,5 @@
 % SYNTAX:
-% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] =
-%     hmrR_DeconvHRF_DriftSS(y, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] = hmrR_DeconvHRF_DriftSS(y, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 %
 % UI NAME: 
 % GLM_HRF_Drift_SS

@@ -43,7 +43,7 @@ Feb 1, 2019
 Feb 2, 2019
 -----------------
 
--- Create a Simple basic LoggerClass to generate logging information for every Homer3 session, with version number, time stamps, etc. 
+-- Create a Simple basic LoggerClass to generate logging information for every Homer3 session, with version number, time stamps, etc. You should also be able to email the log as an attachment using a menu option. 
 
 -- Insert Homer3 version numbers into groupResults (I think groupResults might already have it, check to make sure) and any proc stream config file, processOpt_*.cfg. 
 

@@ -237,8 +237,15 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                     p = sprintf('%s%s %s %s ',p, obj.params{jj,1}, obj.EncodeParamFormat(jj), obj.EncodeParamVals(jj));
                 end
                 encoding = strtrim(sprintf('%s%s ', encoding, p));
-                
+
+				% Add encoded function call string to usage options
                 obj.usageoptions{ii,3} = encoding;
+                
+                % Add a FuncCallClass object that is the parsed equivalent of the 
+                % encoded function string in obj.usageoptions{ii,3}. This will allow
+                % easy lookup and comparison matching in the registry of proc stream 
+				% FuncCallClass objects. 
+                obj.usageoptions{ii,4} = FuncCallClass(encoding);
             end            
         end
                 

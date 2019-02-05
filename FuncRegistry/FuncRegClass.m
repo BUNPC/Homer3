@@ -182,6 +182,27 @@ classdef FuncRegClass < matlab.mixin.Copyable
             b = false;            
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function usagename = LookupUsageName(obj, fcall)
+            usagename = '';
+            if ~isa(fcall,'FuncCallClass')
+                return
+            end
+            
+            for ii=1:length(obj.entries)
+                if strcmp(obj.entries(ii).GetName(), fcall.GetName())
+                    for jj=1:size(obj.entries(ii).usageoptions,1)
+                        if fcall == obj.entries(ii).usageoptions{jj,4};
+                            usagename = obj.entries(ii).usageoptions{jj,1};
+                            break;
+                        end
+                    end            
+                end
+            end
+            
+        end
+        
     end
     
 end

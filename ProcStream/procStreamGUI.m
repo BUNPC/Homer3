@@ -85,7 +85,10 @@ iSubjPanel  = procStreamGui.iSubjPanel;
 iGroupPanel = procStreamGui.iGroupPanel;
 
 procStreamGui.dataTree = LoadDataTree(procStreamGui.format, hmr);
-procStreamGui.reg = procStreamGui.dataTree.reg;
+procStreamGui.funcReg = [];
+
+% Current proc stream listbox strings for the 3 panels
+procStreamGui.listPsUsage = StringsClass().empty();
 
 % Update handles structure
 LoadRegistry(handles);
@@ -129,23 +132,26 @@ LoadProcStream(handles);
 % -------------------------------------------------------------
 function LoadRegistry(handles)
 global procStreamGui
-R = procStreamGui.reg;
-if isempty(R) || R.IsEmpty()
-    return;
-end
 
 iGroupPanel = procStreamGui.iGroupPanel;
 iSubjPanel  = procStreamGui.iSubjPanel;
 iRunPanel   = procStreamGui.iRunPanel;
+R           = procStreamGui.dataTree.reg;
+if isempty(R) || R.IsEmpty()
+    return;
+end
 
-procStreamGui.funcNamesGroup = R.funcReg(R.IdxGroup).GetFuncNames();
-procStreamGui.funcNamesSubj = R.funcReg(R.IdxSubj).GetFuncNames();
-procStreamGui.funcNamesRun = R.funcReg(R.IdxRun).GetFuncNames();
+funcReg(iGroupPanel) = R.funcReg(R.IdxGroup);
+funcReg(iSubjPanel) = R.funcReg(R.IdxSubj);
+funcReg(iRunPanel) = R.funcReg(R.IdxRun);
+for iPanel=1:3
+    set(handles.listboxFuncReg(iPanel),'string',funcReg(iPanel).GetFuncNames());
+end
 
-set(handles.listboxFuncReg(iGroupPanel),'string',procStreamGui.funcNamesGroup);
-set(handles.listboxFuncReg(iSubjPanel),'string',procStreamGui.funcNamesSubj);
-set(handles.listboxFuncReg(iRunPanel),'string', procStreamGui.funcNamesRun);
-    
+% From now on until end of GUI  session we deal only with 
+% procStreamGui.funcReg when needing registry access
+procStreamGui.funcReg = funcReg;
+
 
 
 % --------------------------------------------------------------------
@@ -155,42 +161,54 @@ global procStreamGui
 iGroupPanel = procStreamGui.iGroupPanel;
 iSubjPanel  = procStreamGui.iSubjPanel;
 iRunPanel   = procStreamGui.iRunPanel;
+listPsUsage = procStreamGui.listPsUsage;
+funcReg     = procStreamGui.funcReg;
+if isempty(funcReg)
+    return;
+end
 
 if ~exist('reload','var')
     reload=false;
 end
-
 if reload
     procStreamGui.procElem{iRunPanel} = procStreamGui.dataTree.group(1).subjs(1).runs(1).copy;
     procStreamGui.procElem{iSubjPanel} = procStreamGui.dataTree.group(1).subjs(1).copy;
     procStreamGui.procElem{iGroupPanel} = procStreamGui.dataTree.group(1).copy;
 end
 
-for iPanel=1:3
-    procElem = procStreamGui.procElem{iPanel};
-    procInput = procElem.procStream.input;
-    nFcall = procInput.GetFuncCallNum();
-    fcallnames = cell(nFcall,1);
-    for iFcall=1:nFcall
-        fcallnames{iFcall} = procInput.GetFuncCallName(iFcall);
-    end
-    set(handles.listboxFuncProcStream(iPanel),'string',fcallnames);
+% Create 3 strings objects for run , subject and group: this is
+% what will be the current proc stream listbox strings for the 3 panels
+if isempty(listPsUsage)
+    listPsUsage(3) = StringsClass();
 end
+for iPanel=1:3
+    procInput = procStreamGui.procElem{iPanel}.procStream.input;
+    maxlen = procInput.MaxLenFuncName();
+    nFcall = procInput.GetFuncCallNum();
+    for iFcall=1:nFcall
+        fname = procInput.fcalls(iFcall).GetName();
+        fcallname = funcReg(iPanel).LookupUsageName(procInput.fcalls(iFcall));
+        nspaces = maxlen - length(fname)+1;        
+        listPsUsage(iPanel).Insert(sprintf('%s%s: %s', fname, blanks(nspaces), fcallname));
+    end
+    set(handles.listboxFuncProcStream(iPanel),'string',listPsUsage(iPanel).Get());
+end
+procStreamGui.listPsUsage = listPsUsage;
+
 
 
 % -------------------------------------------------------------
 function listboxFuncReg_Callback(hObject, eventdata, handles)
 global procStreamGui
 iPanel = procStreamGui.iPanel;
-
 ii = get(hObject,'value');
 if isempty(ii)
     return;
 end
-
 set(handles.listboxFuncReg(iPanel),'value',ii);
-foos = procStreamHelpLookup(ii);
+foos = HelpLookup(ii);
 set(handles.textHelp(iPanel),'string',foos);
+
 
 
 % -------------------------------------------------------------
@@ -204,7 +222,7 @@ if isempty(ii)
 end
 
 funcProcStream = get(handles.listboxFuncProcStream(iPanel),'string');
-foos = procStreamHelpLookup(funcProcStream{ii});
+foos = HelpLookup(funcProcStream{ii});
 set(handles.textHelp(iPanel),'string',foos);
 
 
@@ -321,8 +339,6 @@ LoadProcStream(handles, reload);
 
 
 
-
-
 % -------------------------------------------------------------
 function pushbuttonSave_Callback(hObject, eventdata, handles)
 global procStreamGui
@@ -333,35 +349,16 @@ iGroupPanel = procStreamGui.iGroupPanel;
 procElem    = procStreamGui.procElem;
 
 
+
 % -------------------------------------------------
-function helpstr = procStreamHelpLookup(name)
+function helpstr = HelpLookup(name)
 global procStreamGui
-
-helpstr = '';
-
+funcReg = procStreamGui.funcReg;
 iPanel = procStreamGui.iPanel;
-R = procStreamGui.reg;
-if isempty(R) || R.IsEmpty()
+if isempty(funcReg)
     return;
 end
-
-iGroupPanel = procStreamGui.iGroupPanel;
-iSubjPanel  = procStreamGui.iSubjPanel;
-iRunPanel   = procStreamGui.iRunPanel;
-
-idx=[];
-switch(iPanel)
-    case iGroupPanel
-        idx = R.IdxGroup;
-    case iSubjPanel
-        idx = R.IdxSubj;
-    case iRunPanel
-        idx = R.IdxRun;
-end 
-if isempty(idx) || idx>length(R.funcReg)
-    return;
-end
-helpstr = R.funcReg(idx).GetFuncHelp(name);
+helpstr = funcReg(iPanel).GetFuncHelp(name);
 
 
 % --------------------------------------------------------------------
@@ -392,6 +389,4 @@ iPanel = procStreamGui.iPanel;
 
 % set(handles.listboxFuncProcStream(iPanel),'string',foos)
 % set(handles.listboxFuncProcStream(iPanel),'value',idx)
-
-
 

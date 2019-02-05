@@ -29,18 +29,32 @@ classdef StringsClass < handle
         
         
         % ------------------------------------------------------
-        function Insert(obj, s, key, before_after)            
-            if ~exist('s','var') || ~ischar(s)
+        function Insert(obj, s, key, before_after)
+            % 
+            % Insert either a char string or a cell array of char strings
+            % into StringClass object
+            %
+            if ~exist('s','var') || (~ischar(s) && ~iscell(s))
                 return;
             end
+            if iscell(s)
+                for ii=1:length(s)
+                    if ~ischar(s{ii})
+                        return;                        
+                    end
+                end
+            else
+                s = {s};
+            end
+            
             if ~exist('key','var') || isempty(key)
-                key = 1;
+                key = length(obj.c);
             end
             if ~exist('before_after','var') || isempty(before_after)
-                before_after = 'before';
+                before_after = 'after';
             end
             if isempty(obj.c)
-                obj.c{1} = s;
+                obj.c(1:length(s)) = s;
                 return;
             end
             
@@ -51,19 +65,17 @@ classdef StringsClass < handle
 
             % Now that we have the index insert s before or after the
             % element in obj.c with index idx.
-            if isempty(obj.c)
-                obj.c{1} = s;
-            elseif strcmp(before_after,'before')
+            if strcmp(before_after,'before')
                 if idx==1
-                    obj.c = [{s},obj.c];
+                    obj.c = [s; obj.c];
                 else
-                    obj.c = [obj.c(1:idx-1), {s}, obj.c(idx:end)];
+                    obj.c = [obj.c(1:idx-1); s; obj.c(idx:end)];
                 end
             elseif strcmp(before_after,'after')
                 if idx==length(obj.c)
-                    obj.c = [obj.c, {s}];
+                    obj.c = [obj.c; s];
                 else
-                    obj.c = [obj.c(1:idx), {s}, obj.c(idx+1:end)];
+                    obj.c = [obj.c(1:idx); s; obj.c(idx+1:end)];
                 end
             end
             
@@ -143,6 +155,17 @@ classdef StringsClass < handle
                 return;
             end
             val = obj.c{idx};
+        end
+        
+        
+        
+        % ------------------------------------------------------
+        function val = Get(obj)
+            val = {};
+            if isempty(obj.c)
+                return;
+            end
+            val = obj.c;
         end
         
         

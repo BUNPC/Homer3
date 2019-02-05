@@ -11,26 +11,50 @@ classdef FuncCallClass < handle
     methods
         
         % ------------------------------------------------------------
-        function obj = FuncCallClass(fcallEncodedStr)
-            obj.name        = '';
-            obj.nameUI      = '';
-            obj.argOut      = '';
-            obj.argIn       = '';
-            obj.paramIn     = ParamClass().empty;
-            obj.help        = '';
+        function obj = FuncCallClass(fcallStrEncoded)
+            %
+            % Syntax:
+            %   obj = FuncCallClass()
+            %   obj = FuncCallClass(fcallStrEncoded)
+            %
+            % Example:
+            %
+            %   fcall = FuncCallClass('@ hmrBandpassFilt dod (dod,t hpf %0.3f 0.01 lpf %0.2f 0.5')
+            %
+            %       ===> FuncCallClass with properties:
+            %
+            %          name: 'hmrBandpassFilt'
+            %        nameUI: 'hmrBandpassFilt'
+            %        argOut: 'dod'
+            %         argIn: '(dod,t'
+            %       paramIn: [1x2 ParamClass]
+            %          help: '  Perform a bandpass filter…'
+            %
+            obj.name     = '';
+            obj.nameUI   = '';
+            obj.argOut   = '';
+            obj.argIn    = '';
+            obj.paramIn  = ParamClass().empty;
+            obj.help     = '';
             
             if nargin==0
                 return;
             end            
-            obj.Parse(fcallEncodedStr);
+            obj.Parse(fcallStrEncoded);
             
         end
 
         
         % ------------------------------------------------------------
-        function obj = GetHelp(obj)
+        function GetHelp(obj)
             fhelp = FuncHelpClass(obj.name);
             obj.help = fhelp.GetDescr();
+        end
+        
+        
+        % ------------------------------------------------------------
+        function name = GetName(obj)
+            name = obj.name;
         end
         
         
@@ -51,15 +75,15 @@ classdef FuncCallClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function Parse(obj, fcallEncodedStr)
+        function Parse(obj, fcallStrEncoded)
             %
             % Syntax:
-            %   obj = Parse()
-            %   obj = Parse(fcallEncodedStr)
+            %   obj = Parse(fcallStrEncoded)
             %
             % Example:
             %
-            %   fcall = FuncCallClass('@ hmrBandpassFilt dod (dod,t hpf %0.3f 0.01 lpf %0.2f 0.5')
+            %   fcall = FuncCallClass()
+            %   fcall.Parse('@ hmrBandpassFilt dod (dod,t hpf %0.3f 0.01 lpf %0.2f 0.5')
             %
             %       ===> FuncCallClass with properties:
             %
@@ -73,18 +97,18 @@ classdef FuncCallClass < handle
             if nargin<2
                 return;
             end
-            if isempty(fcallEncodedStr)
+            if isempty(fcallStrEncoded)
                 return;
             end
-            if ~ischar(fcallEncodedStr)
+            if ~ischar(fcallStrEncoded)
                 return;
             end
             
-            C = textscan(fcallEncodedStr, '%s');
+            C = textscan(fcallStrEncoded, '%s');
             if C{1}{1}(1)~='@'
                 textstr = [{'@'}; C{1}];
             else
-                textstr = C{1};                
+                textstr = C{1};
             end
             nstr = length(textstr);
             flag = 0;
@@ -133,6 +157,58 @@ classdef FuncCallClass < handle
                 end
             end
         end
+        
+        % ----------------------------------------------------------------------------------
+        % Override == operator: 
+        % ----------------------------------------------------------------------------------
+        function B = eq(obj, obj2)
+            B = false;
+            if ~strcmp(obj.name, obj2.name)
+                return;
+            end
+            if ~strcmp(obj.nameUI, obj2.nameUI)
+                return;
+            end
+            if ~strcmp(obj.argOut, obj2.argOut)
+                return;
+            end
+            if ~strcmp(obj.argIn, obj2.argIn)
+                return;
+            end
+            if length(obj.paramIn) ~= length(obj2.paramIn)
+                return;
+            end
+            for ii=1:length(obj.paramIn)
+                if obj.paramIn(ii) ~= obj2.paramIn(ii)
+                    return;
+                end
+            end
+            B = true;
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        % Override ~= operator: 
+        % ----------------------------------------------------------------------------------
+        function B = ne(obj, obj2)
+            if obj == obj2
+                B = false;
+            else
+                B = true;
+            end
+        end
+
+        
+        % ------------------------------------------------------
+        function maxlen = MaxLenFuncName(obj)
+            maxlen = 0;
+            for ii=1:length(obj.fcalls)
+                if length(obj.fcalls(ii).name)>maxlen
+                    maxlen = length(obj.fcalls(ii).name);
+                end
+            end
+        end
+           
         
     end
 

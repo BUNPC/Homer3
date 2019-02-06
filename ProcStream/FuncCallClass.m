@@ -197,18 +197,6 @@ classdef FuncCallClass < handle
                 B = true;
             end
         end
-
-        
-        % ------------------------------------------------------
-        function maxlen = MaxLenFuncName(obj)
-            maxlen = 0;
-            for ii=1:length(obj.fcalls)
-                if length(obj.fcalls(ii).name)>maxlen
-                    maxlen = length(obj.fcalls(ii).name);
-                end
-            end
-        end
-           
         
     end
 

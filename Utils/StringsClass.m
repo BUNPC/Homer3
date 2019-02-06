@@ -18,11 +18,12 @@ classdef StringsClass < handle
         % ------------------------------------------------------
         function obj = Initialize(obj, arg)
             if nargin==1
+                obj.c = {};
                 return;
             end            
             if iscell(arg)
                 obj.c = arg;
-            elseif iswholenum(arg) && isscalar(arg)
+            elseif iswholenum(arg) & isscalar(arg)
                 obj.c = repmat({''}, arg, 1);
             end
         end
@@ -172,6 +173,10 @@ classdef StringsClass < handle
         
         % ------------------------------------------------------
         function idx = GetIdx(obj, key, occur)
+            %
+            % Input:
+            %    occur - If there are mutiple occurrences if key in obj.c
+            %            tells which one to set idx to.
             idx = [];
             if ~exist('key','var') || isempty(key)
                 key = 1;

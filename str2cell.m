@@ -12,7 +12,7 @@ end
 str = deblank(str);
 
 if ~exist('delimiters','var') || isempty(delimiters)
-    delimiters{1} = sprintf('\n');
+    delimiters{1} = newline();
 elseif ~iscell(delimiters)
     foo{1} = delimiters;
     delimiters = foo;
@@ -25,15 +25,20 @@ for kk=1:length(delimiters)
 end
 j = find(~ismember(1:length(str),k));
 
-% 
-C = {};
-ii=1; kk=1;
+% Preallocate and trim (afterwards) to speed things up
+C = repmat({blanks(max(diff([k,length(str)])))}, length(k)+1, 1);
+ii=1; kk=1; 
 while ii<=length(j)
     C{kk} = str(j(ii));
     ii=ii+1;
+    jj=2;
     while (ii<=length(j)) && ((j(ii)-j(ii-1))==1)
-        C{kk}(end+1) = str(j(ii));
-        ii=ii+1;
+        C{kk}(jj) = str(j(ii));
+        jj=jj+1;
+        ii=ii+1;        
     end
+    C{kk}(jj:end)='';
     kk=kk+1;
 end
+C(kk:end) = [];
+

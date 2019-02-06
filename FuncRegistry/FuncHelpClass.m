@@ -339,7 +339,7 @@ classdef FuncHelpClass < handle
         function [name, k] = GetSubSectionName(obj, section, iLine)
             name = '';
             k = [];
-            strs = eval(sprintf('str2cell(obj.sections.%s.str, [], ''keepblanks'')', section));
+            strs = str2cell(eval(sprintf('obj.sections.%s.str', section)), [], 'keepblanks');
             k1 = find(strs{iLine}==':');
             k2 = strfind(strs{iLine}, ' - ');
             k3 = strfind(strs{iLine}, '--');

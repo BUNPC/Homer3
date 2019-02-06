@@ -139,7 +139,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Methods to retrieve all or multople entries 
+    % Methods to retrieve all or multiple entries 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
@@ -263,6 +263,18 @@ classdef FuncRegClass < matlab.mixin.Copyable
             usagename = obj.entries(idx).GetUsageName(fcall);
         end
         
-                
+        
+        
+        % ----------------------------------------------------------------------------------
+        function usagenames = GetUsageNames(obj, funcname)
+            usagenames = '';
+            idx = obj.GetIdx(funcname);
+            if isempty(idx)
+                return;
+            end
+            usagenames = obj.entries(idx).GetUsageNames();
+        end
+        
+
     end
 end

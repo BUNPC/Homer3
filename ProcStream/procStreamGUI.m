@@ -200,11 +200,15 @@ procStreamGui.listPsUsage = listPsUsage;
 function listboxFuncReg_Callback(hObject, eventdata, handles)
 global procStreamGui
 iPanel = procStreamGui.iPanel;
+funcReg = procStreamGui.funcReg;
+
 ii = get(hObject,'value');
 if isempty(ii)
     return;
 end
-set(hObject,'value',ii);
+funcnames = get(hObject,'string');
+usagenames = funcReg(iPanel).GetUsageNames(funcnames{ii});
+set(handles.listboxUsageOptions(iPanel), 'string', usagenames);
 LookupHelp(ii, handles);
 
 

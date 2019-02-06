@@ -75,30 +75,6 @@ classdef FuncRegClass < matlab.mixin.Copyable
         
                
         % ----------------------------------------------------------------------------------
-        function [usagestr, idx] = FindUsage(obj, funcname, usagehint)
-            if ~exist('funcname','var')
-                return;
-            end
-            if ~exist('usagename','var')
-                usagehint='';
-            end
-            usagestr = '';
-            idx = 0;
-            for ii=1:length(obj.entries)
-                if strcmp(obj.entries(ii).GetName(), funcname)
-                    tempstr = obj.entries(ii).GetUsageStrDecorated(usagehint, true);
-                    if isempty(tempstr)
-                        return;
-                    end
-                    usagestr = tempstr;
-                    idx = ii;
-                    break;
-                end
-            end
-        end
-                
-               
-        % ----------------------------------------------------------------------------------
         function userfuncdir = FindUserFuncDir(obj)
             userfuncdir = '';
             if isdeployed()
@@ -118,6 +94,55 @@ classdef FuncRegClass < matlab.mixin.Copyable
         end
         
                 
+        % ----------------------------------------------------------------------------------
+        function b = IsEmpty(obj)
+            b = true;
+            if isempty(obj.userfuncdir)
+                return;
+            end
+            if isempty(obj.userfuncfiles)
+                return;
+            end
+            if isempty(obj.entries)
+                return;
+            end
+            b = false;            
+        end
+
+        
+        % ------------------------------------------------------
+        function idx = GetIdx(obj, key)
+            idx = [];
+            if ~exist('key','var') || isempty(key)
+                key = 1;
+            end
+            if ischar(key)
+                k = [];
+                for ii=1:length(obj.entries)
+                    if strcmp(obj.entries(ii).GetName(), key)
+                        k = ii;
+                        break;
+                    end
+                end
+                if isempty(k)
+                    return
+                end
+                key = k(1);
+            end
+            if ~iswholenum(key) || key<1 || key>length(obj.entries)
+                return;
+            end
+            idx = key;
+        end        
+        
+    end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Methods to retrieve all or multople entries 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+        
         % ----------------------------------------------------------------------------------
         function usagestrs = GetUsageStrs(obj, addnewline)
             if ~exist('addnewline','var')
@@ -149,60 +174,95 @@ classdef FuncRegClass < matlab.mixin.Copyable
             end
         end
         
-                
-        % ----------------------------------------------------------------------------------
-        function helpstr = GetFuncHelp(obj, funcname)
-            helpstr = '';
-            if ~ischar(funcname)
-                idx = funcname;
-                helpstr = obj.entries(idx).GetHelpStr();
-            else
-                for ii=1:length(obj.entries)
-                    if strcmp(obj.entries(ii).GetName(), funcname)
-                        helpstr = obj.entries(ii).GetHelpStr();
-                        break;
-                    end
-                end
-            end
-        end
-        
         
         % ----------------------------------------------------------------------------------
-        function b = IsEmpty(obj)
-            b = true;
-            if isempty(obj.userfuncdir)
-                return;
-            end
-            if isempty(obj.userfuncfiles)
-                return;
-            end
-            if isempty(obj.entries)
-                return;
-            end
-            b = false;            
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function usagename = LookupUsageName(obj, fcall)
-            usagename = '';
+        function fcallsstr = GetFuncCallsEncoded(obj, procInput)
+            fcallsstr = {};
             if ~isa(fcall,'FuncCallClass')
                 return
             end
-            
-            for ii=1:length(obj.entries)
-                if strcmp(obj.entries(ii).GetName(), fcall.GetName())
-                    for jj=1:size(obj.entries(ii).usageoptions,1)
-                        if fcall == obj.entries(ii).usageoptions{jj,4};
-                            usagename = obj.entries(ii).usageoptions{jj,1};
-                            break;
-                        end
-                    end            
+            if isempty(procInput)
+                return;
+            end
+            fcalls = procInput.fcalls;
+            kk=1;
+            for iFcall=1:length(fcalls)
+                idx = obj.GetIdx(fcall(iFcall).GetName());
+                if isempty(idx)
+                    continue;
+                end
+                str = obj.entries(idx).GetFuncCallsEncoded(fcall(iFcall));
+                if ~isempty(str)
+                    fcallsstr{kk} = str;
+                    kk=kk+1;
                 end
             end
-            
         end
         
     end
     
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Methods to retrieve individual entries 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+        
+        % ----------------------------------------------------------------------------------
+        function [name, idx] = GetFuncName(obj, key)
+            idx = obj.GetIdx(key);
+            if isempty(idx)
+                return;
+            end
+            name = obj.entries(idx).GetName();
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function helpstr = GetFuncHelp(obj, key)
+            helpstr = '';
+            idx = obj.GetIdx(key);
+            if isempty(idx)
+                return;
+            end
+            helpstr = obj.entries(idx).GetHelpStr();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function fcallstr = GetFuncCallDecoded(obj, key, usagename)
+            usagestr = '';
+            idx = obj.GetIdx(key);
+            if isempty(idx)
+                return;
+            end
+            fcallstr = obj.entries(idx).GetFuncCallDecoded(usagename);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function paramtxt = GetParamText(obj, key)
+            paramtxt = '';
+            idx = obj.GetIdx(key);
+            if isempty(idx)
+                return;
+            end
+            paramtxt = obj.entries(idx).GetParamText();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function usagename = GetUsageName(obj, fcall)
+            usagename = '';
+            if ~isa(fcall,'FuncCallClass')
+                return
+            end
+            idx = obj.GetIdx(fcall.GetName());
+            if isempty(idx)
+                return;
+            end
+            usagename = obj.entries(idx).GetUsageName(fcall);
+        end
+        
+                
+    end
 end

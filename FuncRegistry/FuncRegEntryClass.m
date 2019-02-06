@@ -45,96 +45,11 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
             obj.uiname = obj.help.GetUiname();
         end
         
-        
-        % ----------------------------------------------------------------------------------
-        function str = GetUsageStr(obj, idx)
-            %
-            % Syntax:
-            %    str = GetUsageStr(obj, idx)
-            % 
-            % Example: 
-            %    fregentry = FuncRegEntryClass('hmrR_BlockAvg');
-            %    fregentry.GetUsageStr('dcAvg')
-            %
-            %      ans = 
-            %
-            %      hmrR_BlockAvg [dcAvg,dcAvgStd,tHRF,nTrials,dcSum2] (dc,s,t trange %0.1f_%0.1f -2.0_20.0
-            %
-            str = '';
-            if ~exist('idx','var') || isempty(idx)
-                idx = 1;
-            elseif ischar(idx)
-                usagename = idx;
-                if isempty(usagename)
-                    idx = 1;
-                else
-                    for ii=1:size(obj.usageoptions,1)
-                        
-                        % First see if usage name matches 
-                        if strcmp(obj.usageoptions{ii,1}, usagename)
-                            idx = ii;
-                            break;
-                        % Second see if usage name matches any of the input
-                        % or output arguments
-                        elseif ~isempty(strfind(obj.usageoptions{ii,3}, usagename))
-                            idx = ii;
-                            break;
-                        end                        
-                    end                    
-                end
-            end
-            if isempty(idx)
-                return;
-            end
-            if idx>size(obj.usageoptions,1)
-                return;
-            end
-            if idx<1
-                return;
-            end
-            if ~iswholenum(idx)
-                return;
-            end
-            str = obj.usageoptions{idx,3};
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function str = GetUsageStrDecorated(obj, idx, newline)
-            str='';
-            if ~exist('idx','var') || isempty(idx)
-                idx = 1;
-            end
-            if ~exist('newline','var') || isempty(newline)
-                nl = '';
-            elseif newline 
-                nl = sprintf('\\n');
-            end
-            tempstr = obj.GetUsageStr(idx);
-            if isempty(tempstr)
-                return;
-            end
-            str = sprintf('@ %s%s', strinsert(tempstr, '%','%'), nl);
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function str = GetName(obj)
-            str = obj.name;
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function str = GetUiname(obj)
-            str = obj.uiname;
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function n = GetOptionsNum(obj)
-            n = size(obj.usageoptions,1);
-        end
-        
+    end
+    
+            
+    
+    methods
         
         % ----------------------------------------------------------------------------------
         function EncodeUsage(obj)
@@ -377,14 +292,161 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                 fmt = '%d';
             end
         end
+                              
         
-        
+    end
+    
+    
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Get methods to retrieve various usage info
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
         
         % ----------------------------------------------------------------------------------
         function helpstr = GetHelpStr(obj)
             helpstr = obj.help.GetStr();
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function str = GetUsageStr(obj, idx)
+            %
+            % Syntax:
+            %    str = GetUsageStr(obj, idx)
+            % 
+            % Example: 
+            %    fregentry = FuncRegEntryClass('hmrR_BlockAvg');
+            %    fregentry.GetUsageStr('dcAvg')
+            %
+            %      ans = 
+            %
+            %      hmrR_BlockAvg [dcAvg,dcAvgStd,tHRF,nTrials,dcSum2] (dc,s,t trange %0.1f_%0.1f -2.0_20.0
+            %
+            str = '';
+            if ~exist('idx','var') || isempty(idx)
+                idx = 1;
+            elseif ischar(idx)
+                usagename = idx;
+                if isempty(usagename)
+                    idx = 1;
+                else
+                    for ii=1:size(obj.usageoptions,1)
+                        
+                        % First see if usage name matches 
+                        if strcmp(obj.usageoptions{ii,1}, usagename)
+                            idx = ii;
+                            break;
+                        % Second see if usage name matches any of the input
+                        % or output arguments
+                        elseif ~isempty(strfind(obj.usageoptions{ii,3}, usagename))
+                            idx = ii;
+                            break;
+                        end                        
+                    end                    
+                end
+            end
+            if isempty(idx)
+                return;
+            end
+            if idx>size(obj.usageoptions,1)
+                return;
+            end
+            if idx<1
+                return;
+            end
+            if ~iswholenum(idx)
+                return;
+            end
+            str = obj.usageoptions{idx,3};
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function str = GetUsageStrDecorated(obj, idx, newline)
+            str='';
+            if ~exist('idx','var') || isempty(idx)
+                idx = 1;
+            end
+            if ~exist('newline','var') || isempty(newline)
+                nl = '';
+            elseif newline 
+                nl = sprintf('\\n');
+            end
+            tempstr = obj.GetUsageStr(idx);
+            if isempty(tempstr)
+                return;
+            end
+            str = sprintf('@ %s%s', strinsert(tempstr, '%','%'), nl);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function str = GetName(obj)
+            str = obj.name;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function str = GetUiname(obj)
+            str = obj.uiname;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function n = GetOptionsNum(obj)
+            n = size(obj.usageoptions,1);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function fcallstr = GetFuncCallDecoded(obj, usagename)
+            fcallstr = '';
+            for ii=1:length(obj.usageoptions)
+                if strcmp(obj.usageoptions{ii,1}, usagename)
+                    fcallstr = obj.usageoptions{ii,2};
+                    break;
+                end
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function paramtxt = GetParamText(obj)
+            paramtxt = '';
+            for ii=1:size(obj.params,1)
+                paramtxt = sprintf('%s%s: %s\n', paramtxt, obj.params{ii,1}, obj.params{ii,2});
+            end
+        end
+        
+        
+
+        % ----------------------------------------------------------------------------------
+        function usagename = GetUsageName(obj, fcall)
+            usagename = '';
+            if ~isa(fcall,'FuncCallClass')
+                return
+            end
+            for jj=1:size(obj.usageoptions,1)
+                if fcall == obj.usageoptions{jj,4}
+                    usagename = obj.usageoptions{jj,1};
+                    break;
+                end
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function fcallstr = GetFuncCallsEncoded(obj, fcall)
+            fcallstr = '';
+            for jj=1:size(obj.usageoptions,1)
+                if fcall == obj.usageoptions{jj,4}
+                    fcallstr = obj.usageoptions{jj,3};
+                    break;
+                end
+            end        
+        end
         
     end
     

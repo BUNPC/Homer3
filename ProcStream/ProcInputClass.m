@@ -341,6 +341,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function [contents, str] = DefaultFileGroupConc(obj, reg)
+            contents = {};
             if isempty(reg)
                 return;
             end
@@ -356,6 +357,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
                 
         % ----------------------------------------------------------------------------------
         function [contents, str] = DefaultFileSubjConc(obj, reg)
+            contents = {};
             if isempty(reg)
                 return;
             end
@@ -371,6 +373,7 @@ classdef ProcInputClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function [contents, str] = DefaultFileRunConc(obj, reg)
+            contents = {};
             if isempty(reg)
                 return;
             end
@@ -523,13 +526,13 @@ classdef ProcInputClass < matlab.mixin.Copyable
                 case {'subj', 'SubjClass'}
                     % generate default contents for subject section there's no % subj header. 
                     if isempty(S)
-                        S = obj.DefaultFileGroupSubj(reg);
+                        S = obj.DefaultFileSubjConc(reg);
                     end
                     obj.Parse(S);
                 case {'run', 'RunClass'}
                     % generate default contents for subject section there's no % run header. 
                     if isempty(R)
-                        R = obj.DefaultFileGroupSubj(reg);
+                        R = obj.DefaultFileRunConc(reg);
                     end
                     obj.Parse(R);
                 otherwise
@@ -596,10 +599,10 @@ classdef ProcInputClass < matlab.mixin.Copyable
 
             kk=1;
             for ii=1:length(section)
-                if section{ii}(1)=='%';
+                if section{ii}(1)=='%'
                     continue;
                 end
-                if section{ii}(1)=='@';
+                if section{ii}(1)=='@'
                     if kk>length(obj.fcalls)
                         obj.fcalls(kk) = FuncCallClass(section{ii});
                     else
@@ -621,9 +624,6 @@ classdef ProcInputClass < matlab.mixin.Copyable
             end
         end
         
-        
-        
-    end
-    
+    end   
 end
 

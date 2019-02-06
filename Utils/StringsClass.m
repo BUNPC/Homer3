@@ -68,15 +68,31 @@ classdef StringsClass < handle
             % element in obj.c with index idx.
             if strcmp(before_after,'before')
                 if idx==1
-                    obj.c = [s; obj.c];
+                    if iscolumn(obj.c)
+                        obj.c = [s; obj.c];
+                    else
+                        obj.c = [s, obj.c];
+                    end
                 else
-                    obj.c = [obj.c(1:idx-1); s; obj.c(idx:end)];
+                    if iscolumn(obj.c)
+                        obj.c = [obj.c(1:idx-1); s; obj.c(idx:end)];
+                    else
+                        obj.c = [obj.c(1:idx-1), s, obj.c(idx:end)];
+                    end
                 end
             elseif strcmp(before_after,'after')
                 if idx==length(obj.c)
-                    obj.c = [obj.c; s];
+                    if iscolumn(obj.c)
+                        obj.c = [obj.c; s];
+                    else
+                        obj.c = [obj.c, s];
+                    end
                 else
-                    obj.c = [obj.c(1:idx); s; obj.c(idx+1:end)];
+                    if iscolumn(obj.c)
+                        obj.c = [obj.c(1:idx); s; obj.c(idx+1:end)];
+                    else
+                        obj.c = [obj.c(1:idx), s, obj.c(idx+1:end)];
+                    end
                 end
             end
             
@@ -198,6 +214,116 @@ classdef StringsClass < handle
                 return;
             end
             idx = key;
+        end
+        
+               
+        % ------------------------------------------------------
+        function maxlen = MaxColumnSizes(obj)
+            maxlen = zeros(1,length(find(obj.c{1}==':'))+1 );
+            for ii=1:length(obj.c)
+                k = [1, find(obj.c{ii}==':'), length(obj.c{ii})];
+                len = diff(k);
+                for jj=1:length(len)
+                    if len(jj)>maxlen(jj)
+                        if jj>1 && jj<length(len)
+                            maxlen(jj) = len(jj)-1;
+                        else
+                            maxlen(jj) = len(jj);
+                        end
+                    end
+                end
+            end
+        end
+        
+        
+        % ------------------------------------------------------
+        function Tabularize(obj)
+            maxlen = obj.MaxColumnSizes();
+            for ii=1:length(obj.c)
+                colvals = str2cell(obj.c{ii}, ':');
+                obj.c{ii} = '';                
+                for jj=1:length(maxlen)
+                    colvals{jj} = strtrim(colvals{jj});
+                    nspaces = maxlen(jj) - length(colvals{jj});
+                    if jj<length(colvals)
+                        obj.c{ii} = sprintf('%s%s%s : ', obj.c{ii}, colvals{jj}, blanks(nspaces));
+                    else
+                        obj.c{ii} = sprintf('%s%s', obj.c{ii}, colvals{jj});
+                    end
+                end
+            end
+        end
+        
+        
+        
+        % ------------------------------------------------------
+        function b = IsMember(obj, s, delimiter)
+            %
+            % Syntax:
+            %     b = IsMember(obj, s)
+            %     b = IsMember(obj, s, delimiter)
+            %
+            % Description:
+            %
+            % Check if string s is a member of this StringsClass object
+            % If the delimiter is supplied the function subdivides the
+            % string and the strings of the cell array obj.c into sections 
+            % separated by the delimiter and checks each sections of s against the
+            % corresponding section of obj.c. 
+            %
+            % Example:
+            %
+            % s = StringsClass({'aaaa: bbbb: yyy';'wwwwww: nnnnn: eeeee';'GGGG: ooooooo: oswald'});
+            % s.Get()
+            %
+            %  ===>   'aaaa: bbbb: yyy'
+            %         'wwwwww: nnnnn: eeeee'
+            %         'GGGG: ooooooo: oswald'
+            %
+            % s.IsMember('wwwwww: nnnnn: eeeee') 
+            %
+            %  ===>   1
+            %
+            % s.IsMember('wwwwww: nnnnn:   eeeee  ')
+            %
+            %  ===>   0
+            %
+            % s.IsMember('wwwwww  nnnnn   eeeee')
+            %
+            %  ===>   0
+            %
+            % s.IsMember('wwwwww: nnnnn:   eeeee  ', ':')
+            %
+            %  ===>   1
+            %
+            if ~exist('delimiter','var')
+                delimiter='';
+            end
+            
+            b = true;
+            scolvals = str2cell(s, delimiter);
+            for ii=1:length(obj.c)
+                ccolvals = str2cell(obj.c{ii}, delimiter);
+                if length(scolvals)==length(ccolvals)
+                    flags = zeros(1,length(scolvals));
+                    for jj=1:length(ccolvals)
+                        if strcmp(strtrim(ccolvals{jj}), strtrim(scolvals{jj}))
+                            flags(jj)=true;
+                        end         
+                    end
+                    if all(flags)
+                        return;
+                    end
+                end
+            end
+            b = false;
+        end
+
+        
+        
+        % ------------------------------------------------------
+        function n = GetSize(obj)
+            n = length(obj.c);
         end
         
     end

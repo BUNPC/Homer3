@@ -12,7 +12,7 @@ end
 str = deblank(str);
 
 if ~exist('delimiters','var') || isempty(delimiters)
-    delimiters{1} = newline();
+    delimiters{1} = sprintf('\n');
 elseif ~iscell(delimiters)
     foo{1} = delimiters;
     delimiters = foo;

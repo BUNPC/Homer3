@@ -164,7 +164,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
             % Remove extra empty cells 
             usagestrs = usagestrs(~cellfun('isempty',usagestrs));
         end
-        
+                
         
         % ----------------------------------------------------------------------------------
         function names = GetFuncNames(obj)
@@ -275,6 +275,22 @@ classdef FuncRegClass < matlab.mixin.Copyable
             usagenames = obj.entries(idx).GetUsageNames();
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function usagestr = FindUsage(obj, funcname, usagehint)
+            usagestr = '';
+            if ~exist('funcname','var')
+                return;
+            end
+            if ~exist('usagename','var')
+                usagehint='';
+            end
+            idx = obj.GetIdx(funcname);
+            if isempty(idx)
+                return;
+            end            
+            usagestr = obj.entries(idx).GetUsageStrDecorated(usagehint, true);
+        end
 
     end
 end

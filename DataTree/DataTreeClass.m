@@ -34,7 +34,6 @@ classdef DataTreeClass <  handle
             % Initialize the current processing element within the group
             obj.currElem = InitCurrElem(handles, funcptr);
             obj.LoadCurrElem(1, 1);
-                        
         end
         
         
@@ -55,40 +54,16 @@ classdef DataTreeClass <  handle
             obj.AcqData2Group();
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Load derived or post-acquisition data from a file if it exists
+            % Load derived or post-acquisition data from a file if it 
+            % exists
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.group.Load();
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Find out if we need to ask user for processing options config file
-            % to initialize procStream.input.fcalls at the run, subject or group level.
+            % Initialize procStream.input for all tree nodes
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            group = obj.group;
-            subj = obj.group.subjs(1);
-            run = obj.group.subjs(1).runs(1);
-            
-            for jj=1:length(obj.group.subjs)
-                if ~obj.group.subjs(jj).procStream.IsEmpty()
-                    subj = obj.group.subjs(jj);
-                end
-                for kk=1:length(obj.group.subjs(jj).runs)
-                    if ~obj.group.subjs(jj).runs(kk).procStream.IsEmpty()
-                        run = obj.group.subjs(jj).runs(kk);
-                    end
-                end
-            end
-            
-            % Find the procInput defaults at each level with which to initialize
-            % uninitialized procInput
-            [procInputGroupDefault, procfilenm] = group.GetProcInputDefault('', obj.reg);
-            [procInputSubjDefault, procfilenm]  = subj.GetProcInputDefault(procfilenm, obj.reg);
-            [procInputRunDefault, ~]            = run.GetProcInputDefault(procfilenm, obj.reg);
-            
-            % Copy default procInput to all uninitialized nodes in the group
-            obj.group.CopyProcInput('group', procInputGroupDefault);
-            obj.group.CopyProcInput('subj', procInputSubjDefault);
-            obj.group.CopyProcInput('run', procInputRunDefault);
-            
+            obj.group.InitProcInput(obj.reg);
+                        
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Copy input variables for group, subjects and runs
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -312,6 +287,9 @@ classdef DataTreeClass <  handle
         % ----------------------------------------------------------
         function b = IsEmpty(obj)
             b = true;
+            if isempty(obj)
+                return
+            end
             if isempty(obj.files)
                 return;
             end

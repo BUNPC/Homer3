@@ -113,6 +113,10 @@ Homer3_Init(handles, {'zbuffer'});
 
 % Load date files into group tree object
 dataTree  = LoadDataTree(handles, @listboxFiles_Callback);
+if dataTree.IsEmpty()
+    return;
+end
+
 guiMain   = InitGuiMain(handles, dataTree);
 plotprobe = PlotProbeClass(handles);
 stimEdit  = StimEditClass(dataTree);

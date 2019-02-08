@@ -1,4 +1,5 @@
-classdef ParamClass
+classdef ParamClass < matlab.mixin.Copyable
+    
     properties
         name
         value

@@ -89,9 +89,6 @@ procStreamGui.funcReg = [];
 % Current proc stream listbox strings for the 3 panels
 procStreamGui.listPsUsage = StringsClass().empty();
 
-% Update handles structure
-LoadRegistry(handles);
-
 % Create tabs for run, subject, and group and move the panels to corresponding tabs. 
 htabgroup = uitabgroup('parent',hObject, 'units','normalized', 'position',[.04, .04, .95, .95]);
 htabR = uitab('parent',htabgroup, 'title','       Run         ', 'ButtonDownFcn',{@uitabRun_ButtonDownFcn, guidata(hObject)});
@@ -105,7 +102,7 @@ set(handles.uipanelGroup, 'parent',htabG, 'position',[0, 0, 1, 1]);
 
 setGuiFonts(hObject);
 
-if isempty(procStreamGui.dataTree) || procStreamGui.dataTree.IsEmpty()
+if procStreamGui.dataTree.IsEmpty()
     return;
 end
 procStreamGui.procElem{iRunPanel} = procStreamGui.dataTree.group(1).subjs(1).runs(1).copy;
@@ -124,6 +121,9 @@ switch(class(procStreamGui.dataTree.currElem.procElem))
 end
 set(htabgroup,'SelectedTab',htab);
 
+% Update handles structure
+LoadRegistry(handles);
+
 % Before we exit display current proc stream by default
 LoadProcStream(handles);
 
@@ -137,7 +137,7 @@ iGroupPanel = procStreamGui.iGroupPanel;
 iSubjPanel  = procStreamGui.iSubjPanel;
 iRunPanel   = procStreamGui.iRunPanel;
 reg         = procStreamGui.dataTree.reg;
-if isempty(reg) || reg.IsEmpty()
+if reg.IsEmpty()
     return;
 end
 
@@ -147,12 +147,13 @@ funcReg(iRunPanel) = reg.funcReg(reg.IdxRun);
 procStreamGui.funcReg = funcReg;
 
 funcReg = procStreamGui.funcReg;
-for iPanel=1:3
+for iPanel=1:length(procStreamGui.procElem)
     set(handles.listboxFuncReg(iPanel),'string',funcReg(iPanel).GetFuncNames());
-    for iFunc=1:length(funcReg(iPanel).GetFuncNames())
-        listboxFuncReg_Callback(handles.listboxFuncReg(iPanel), iFunc, handles);
-    end
-    set(handles.listboxFuncReg(iPanel), 'value',1);
+    iFunc = get(handles.listboxFuncReg(iPanel),'value');
+    funcname = funcReg(iPanel).GetFuncName(iFunc);
+    set(handles.listboxUsageOptions(iPanel),'string',funcReg(iPanel).GetUsageNames(funcname));
+    set(handles.listboxUsageOptions(iPanel), 'value',1);
+    LookupHelp(iFunc, handles);
 end
 
 
@@ -182,12 +183,12 @@ end
 % Create 3 strings objects for run , subject and group: this is
 % what will be the current proc stream listbox strings for the 3 panels
 if isempty(listPsUsage)
-    listPsUsage(3) = StringsClass();
+    listPsUsage(length(procStreamGui.procElem)) = StringsClass();
 end
-for iPanel=1:3
+for iPanel=1:length(procStreamGui.procElem)
+    listPsUsage(iPanel).Initialize();    
     procInput = procStreamGui.procElem{iPanel}.procStream.input;
-    nFcall = procInput.GetFuncCallNum();
-    for iFcall=1:nFcall
+    for iFcall=1:procInput.GetFuncCallNum()
         fname     = procInput.fcalls(iFcall).GetName();
         fcallname = funcReg(iPanel).GetUsageName(procInput.fcalls(iFcall));
         
@@ -217,6 +218,11 @@ if isempty(ii)
 end
 funcnames = get(hObject,'string');
 usagenames = funcReg(iPanel).GetUsageNames(funcnames{ii});
+iUsage = get(handles.listboxUsageOptions(iPanel), 'value');
+if iUsage>length(usagenames)
+    iUsage = length(usagenames);
+end
+set(handles.listboxUsageOptions(iPanel), 'value', iUsage);
 set(handles.listboxUsageOptions(iPanel), 'string', usagenames);
 LookupHelp(ii, handles);
 
@@ -319,43 +325,86 @@ updateProcStreamList(handles,iFcall2);
 function pushbuttonLoad_Callback(hObject, eventdata, handles)
 global procStreamGui
 reg = procStreamGui.dataTree.reg;
+procElem = procStreamGui.procElem;
 
-reload=false;
-
-ch = menu('Load current processing stream or config file?','Current processing stream','Config file','Cancel');
-if ch==3
+q = menu('Load current processing stream or config file?','Current processing stream','Config file','Cancel');
+if q==3
     return;
 end
-if ch==1
+
+reload=false;
+if q==1
     reload = true;
-elseif ch==2
+elseif q==2
     % load cfg file
-    [filename,pathname] = uigetfile( '*.cfg', 'Process Options Config File');
+    [filename,pathname] = uigetfile( '*.cfg', 'Process Options Config File to Load From?');
     if filename == 0
         return;
     end    
-end
-pushbuttonClearProcStream_Callback([],[],handles);
-for iPanel=1:3
-    procElem = procStreamGui.procElem{iPanel};
-    if ch==2
-        fid = fopen([pathname,filename]);
-        procElem.procStream.input.fcalls = FuncCallClass().empty();
-        procElem.procStream.input.ParseFile(fid, class(procElem), reg);
-        fclose(fid);
+    for iPanel=1:length(procElem)
+        procElem{iPanel}.LoadProcInputConfigFile([pathname,filename], reg);
     end
 end
 LoadProcStream(handles, reload);
 
 
-
 % -------------------------------------------------------------
 function pushbuttonSave_Callback(hObject, eventdata, handles)
 global procStreamGui
-iRunPanel   = procStreamGui.iRunPanel;
-iSubjPanel  = procStreamGui.iSubjPanel;
-iGroupPanel = procStreamGui.iGroupPanel;
 procElem    = procStreamGui.procElem;
+group       = procStreamGui.dataTree.group;
+listPsUsage = procStreamGui.listPsUsage;
+funcReg     = procStreamGui.funcReg;
+iGroupPanel = procStreamGui.iGroupPanel;
+iSubjPanel  = procStreamGui.iSubjPanel;
+iRunPanel   = procStreamGui.iRunPanel;
+
+q = menu('Save to current processing stream or config file?','Current processing stream','Config file','Cancel');
+if q==3
+    return;
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% First get the user selection of proc stream function calls from the proc stream listbox 
+% (listboxFuncProcStream) and load them into the procElem for all panels.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for iPanel=1:length(procElem)
+    % First clear the existing func call chain for this procElem
+    procElem{iPanel}.procStream.input.ClearFcalls();
+    
+    % Add each listbox selection to the procElem{iPanel}.procStream.input list 
+    % of function calls
+    for jj=1:listPsUsage(iPanel).GetSize()
+        selection = listPsUsage(iPanel).GetVal(jj);
+        parts = str2cell(selection,':');
+        if length(parts)<2
+            fprintf('#%d: %s does not seem to be a valid selection. Skipping ...\n', jj, selection);
+            continue;
+        end
+        funcname = strtrim(parts{1});
+        usagename = strtrim(parts{2});
+        fcall = funcReg(iPanel).GetFuncCallDecoded(funcname, usagename);
+        procElem{iPanel}.procStream.input.Add(fcall);
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Now save procElem to current procStream or to  a config file.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if q==1
+    group.CopyProcInput(procElem{iGroupPanel}.procStream.input, 'group');
+    group.CopyProcInput(procElem{iSubjPanel}.procStream.input, 'subj');
+    group.CopyProcInput(procElem{iRunPanel}.procStream.input, 'run');
+elseif q==2
+    % load cfg file
+    [filename,pathname] = uiputfile( '*.cfg', 'Process Options Config File to Save To?');
+    if filename == 0
+        return;
+    end
+    for iPanel=1:length(procElem)
+        procElem{iPanel}.SaveProcInputConfigFile([pathname,filename]);
+    end
+end
 
 
 
@@ -394,7 +443,7 @@ end
 funcname  = strtrim(foo{1});
 fcallname = strtrim(foo{2});
 
-fcallstr = funcReg(iPanel).GetFuncCallDecoded(funcname, fcallname);
+fcallstr = funcReg(iPanel).GetFuncCallStrDecoded(funcname, fcallname);
 paramtxt = funcReg(iPanel).GetParamText(funcname);
 helptxt = sprintf('%s\n\n%s\n', fcallstr, paramtxt);
 set(handles.textHelp(iPanel), 'string',helptxt);
@@ -431,7 +480,7 @@ global procStreamGui
 listPsUsage = procStreamGui.listPsUsage;
 
 if ~exist('iPanel','var')
-    iPanel=1:3;
+    iPanel=1:length(procStreamGui.procElem);
 end
 for ii=iPanel
     iFcall = get(handles.listboxFuncProcStream(iPanel),'value');
@@ -450,10 +499,8 @@ end
 function pushbuttonClearProcStream_Callback(hObject, eventdata, handles)
 global procStreamGui
 
-for iPanel=1:3
+for iPanel=1:length(procStreamGui.listPsUsage)
     procStreamGui.listPsUsage(iPanel).Initialize();
     updateProcStreamList(handles, iPanel);
 end
-
-
 

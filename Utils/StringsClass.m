@@ -1,12 +1,14 @@
 classdef StringsClass < handle
     properties
         c
+        status
     end
     
     methods
         
         % ------------------------------------------------------
         function obj = StringsClass(arg)
+            obj.status = 0;
             if nargin==0
                 obj.c = {};
                 return;
@@ -17,6 +19,7 @@ classdef StringsClass < handle
         
         % ------------------------------------------------------
         function obj = Initialize(obj, arg)
+            obj.status = 0;
             if nargin==1
                 obj.c = {};
                 return;
@@ -219,6 +222,10 @@ classdef StringsClass < handle
                
         % ------------------------------------------------------
         function maxlen = MaxColumnSizes(obj)
+            maxlen = [];
+            if isempty(obj.c)
+                return;
+            end
             maxlen = zeros(1,length(find(obj.c{1}==':'))+1 );
             for ii=1:length(obj.c)
                 k = [1, find(obj.c{ii}==':'), length(obj.c{ii})];
@@ -238,9 +245,19 @@ classdef StringsClass < handle
         
         % ------------------------------------------------------
         function Tabularize(obj)
+            if length(obj.c)<2
+                return;
+            end            
+            c0 = obj.c;
             maxlen = obj.MaxColumnSizes();
             for ii=1:length(obj.c)
                 colvals = str2cell(obj.c{ii}, ':');
+                if length(maxlen) ~= length(colvals)
+                    fprintf('Cannot tabularize data: strings do not have same number of columns...\n');
+                    obj.status = 1;
+                    obj.c = c0;
+                    return;
+                end
                 obj.c{ii} = '';                
                 for jj=1:length(maxlen)
                     colvals{jj} = strtrim(colvals{jj});
@@ -264,37 +281,29 @@ classdef StringsClass < handle
             %     b = IsMember(obj, s, delimiter)
             %
             % Description:
-            %
-            % Check if string s is a member of this StringsClass object
-            % If the delimiter is supplied the function subdivides the
-            % string and the strings of the cell array obj.c into sections 
-            % separated by the delimiter and checks each sections of s against the
-            % corresponding section of obj.c. 
+            %     Check if string s is a member of this StringsClass object. If the delimiter is 
+            %     supplied the function subdivides the the strings of the cell array obj.c into 
+            %     sections separated by the delimiter and checks each sections of s against the
+            %     corresponding section of obj.c. 
             %
             % Example:
+            %     s = StringsClass({'aaaa: bbbb: yyy';'wwwwww: nnnnn: eeeee';'GGGG: ooooooo: oswald'});
+            %     s.Get()
+            %     ===>   'aaaa: bbbb: yyy'
+            %            'wwwwww: nnnnn: eeeee'
+            %            'GGGG: ooooooo: oswald'
             %
-            % s = StringsClass({'aaaa: bbbb: yyy';'wwwwww: nnnnn: eeeee';'GGGG: ooooooo: oswald'});
-            % s.Get()
+            %     s.IsMember('wwwwww: nnnnn: eeeee') 
+            %     ===>   1
             %
-            %  ===>   'aaaa: bbbb: yyy'
-            %         'wwwwww: nnnnn: eeeee'
-            %         'GGGG: ooooooo: oswald'
+            %     s.IsMember('wwwwww: nnnnn:   eeeee  ')
+            %     ===>   0
             %
-            % s.IsMember('wwwwww: nnnnn: eeeee') 
+            %     s.IsMember('wwwwww  nnnnn   eeeee')
+            %     ===>   0
             %
-            %  ===>   1
-            %
-            % s.IsMember('wwwwww: nnnnn:   eeeee  ')
-            %
-            %  ===>   0
-            %
-            % s.IsMember('wwwwww  nnnnn   eeeee')
-            %
-            %  ===>   0
-            %
-            % s.IsMember('wwwwww: nnnnn:   eeeee  ', ':')
-            %
-            %  ===>   1
+            %     s.IsMember('wwwwww: nnnnn:   eeeee  ', ':')
+            %     ===>   1
             %
             if ~exist('delimiter','var')
                 delimiter='';

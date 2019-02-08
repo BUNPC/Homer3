@@ -151,7 +151,7 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                 for jj=1:size(obj.params,1)
                     p = sprintf('%s%s %s %s ',p, obj.params{jj,1}, obj.EncodeParamFormat(jj), obj.EncodeParamVals(jj));
                 end
-                encoding = strtrim(sprintf('%s%s ', encoding, p));
+                encoding = strtrim(sprintf('@ %s%s ', encoding, p));
 
 				% Add encoded function call string to usage options
                 obj.usageoptions{ii,3} = encoding;
@@ -364,21 +364,16 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function str = GetUsageStrDecorated(obj, idx, newline)
+        function str = GetUsageStrDecorated(obj, idx)
             str='';
             if ~exist('idx','var') || isempty(idx)
                 idx = 1;
-            end
-            if ~exist('newline','var') || isempty(newline)
-                nl = '';
-            elseif newline 
-                nl = sprintf('\\n');
             end
             tempstr = obj.GetUsageStr(idx);
             if isempty(tempstr)
                 return;
             end
-            str = sprintf('@ %s%s', strinsert(tempstr, '%','%'), nl);
+            str = sprintf('%s', tempstr);
         end
         
         
@@ -401,11 +396,23 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function fcallstr = GetFuncCallDecoded(obj, usagename)
+        function fcallstr = GetFuncCallStrDecoded(obj, usagename)
             fcallstr = '';
             for ii=1:length(obj.usageoptions)
                 if strcmp(obj.usageoptions{ii,1}, usagename)
                     fcallstr = obj.usageoptions{ii,2};
+                    break;
+                end
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function fcall = GetFuncCallDecoded(obj, usagename)
+            fcall = FuncCallClass().empty();
+            for ii=1:length(obj.usageoptions)
+                if strcmp(obj.usageoptions{ii,1}, usagename)
+                    fcall = obj.usageoptions{ii,4};
                     break;
                 end
             end

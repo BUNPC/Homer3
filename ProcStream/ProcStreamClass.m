@@ -105,6 +105,9 @@ classdef ProcStreamClass
         % ----------------------------------------------------------------------------------
         function b = IsEmpty(obj)
             b=0;
+            if isempty(obj)
+                return
+            end
             if isempty(obj.input)
                 b=1;
                 return;

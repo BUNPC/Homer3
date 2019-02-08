@@ -6,12 +6,13 @@ classdef FuncCallClass < handle
         argIn
         paramIn
         help
+        encodedStr
     end
     
     methods
         
         % ------------------------------------------------------------
-        function obj = FuncCallClass(fcallStrEncoded)
+        function obj = FuncCallClass(arg)
             %
             % Syntax:
             %   obj = FuncCallClass()
@@ -36,14 +37,35 @@ classdef FuncCallClass < handle
             obj.argIn    = '';
             obj.paramIn  = ParamClass().empty;
             obj.help     = '';
+            obj.encodedStr = '';
             
             if nargin==0
                 return;
-            end            
-            obj.Parse(fcallStrEncoded);
+            end
             
+            if ischar(arg) || iscell(arg)
+                obj.Decode(arg);
+            elseif isa(arg, 'FuncCallClass')
+                obj = arg.copy();
+            end
         end
 
+        
+        % ----------------------------------------------------------------------------------
+        function objnew = copy(obj)
+            objnew = FuncCallClass();
+            
+            objnew.name = obj.name;
+            objnew.nameUI = obj.name;
+            objnew.argOut = obj.argOut;
+            objnew.argIn = obj.argIn;
+            for ii=1:length(obj.paramIn)
+                objnew.paramIn(ii) = obj.paramIn(ii).copy();
+            end
+            objnew.help = obj.help;
+            objnew.encodedStr = obj.encodedStr;
+        end
+        
         
         % ------------------------------------------------------------
         function GetHelp(obj)
@@ -75,15 +97,15 @@ classdef FuncCallClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function Parse(obj, fcallStrEncoded)
+        function Decode(obj, fcallStrEncoded)
             %
             % Syntax:
-            %   obj = Parse(fcallStrEncoded)
+            %   obj = Decode(fcallStrEncoded)
             %
             % Example:
             %
             %   fcall = FuncCallClass()
-            %   fcall.Parse('@ hmrBandpassFilt dod (dod,t hpf %0.3f 0.01 lpf %0.2f 0.5')
+            %   fcall.Decode('@ hmrBandpassFilt dod (dod,t hpf %0.3f 0.01 lpf %0.2f 0.5')
             %
             %       ===> FuncCallClass with properties:
             %
@@ -103,6 +125,7 @@ classdef FuncCallClass < handle
             if ~ischar(fcallStrEncoded)
                 return;
             end
+            obj.encodedStr = fcallStrEncoded;
             
             C = textscan(fcallStrEncoded, '%s');
             if C{1}{1}(1)~='@'
@@ -119,7 +142,7 @@ classdef FuncCallClass < handle
                     elseif textstr{ii}=='@'
                         k = strfind(textstr{ii+1},',');
                         if ~isempty(k)
-                            obj.name = textstr{ii+1}(1:k-1);
+                            obj.name   = textstr{ii+1}(1:k-1);
                             obj.nameUI = textstr{ii+1}(k+1:end);
                             k = strfind(obj.nameUI,'_');
                             obj.nameUI(k)=' ';
@@ -158,6 +181,26 @@ classdef FuncCallClass < handle
             end
         end
         
+        
+
+        % ----------------------------------------------------------------------------------
+        function fcallStrEncoded = Encode(obj)
+            %
+            % Syntax:
+            %   fcallStrEncoded = obj.Encode()
+            %
+            % Example:
+            %
+            %   fcall = FuncCallClass()
+            %   fcall.Decode('@ hmrBandpassFilt dod (dod,t hpf %0.3f 0.01 lpf %0.2f 0.5')
+            %   s = fcall.Encode()
+            %   
+            %         '@ hmrBandpassFilt dod (dod,t hpf %0.3f 0.01 lpf %0.2f 0.5'
+            %
+            fcallStrEncoded = obj.encodedStr;
+        end
+        
+                
         % ----------------------------------------------------------------------------------
         % Override == operator: 
         % ----------------------------------------------------------------------------------

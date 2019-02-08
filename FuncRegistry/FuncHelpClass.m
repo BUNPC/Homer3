@@ -129,7 +129,7 @@ classdef FuncHelpClass < handle
                 return;
             end
             
-            sect = obj.FindSections();            
+            sect = obj.FindSections();
             for ii=1:length(sect)
                 obj.AddSection(sect{ii});
             end

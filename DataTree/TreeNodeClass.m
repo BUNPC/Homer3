@@ -32,7 +32,10 @@ classdef TreeNodeClass < handle
             % is used as a copy constructor (to borrow C++ terminology)
             %
             if nargin==1
-                if strcmp(arg,'copy')
+                if iscell(arg) && ~isempty(arg) 
+                    arg = arg{1};
+                end
+                if ischar(arg) && strcmp(arg,'copy')
                     return;
                 end
             end
@@ -42,48 +45,29 @@ classdef TreeNodeClass < handle
         
         
         % ---------------------------------------------------------------------------------
-        function [procInput, filename] = GetProcInputDefault(obj, filename, reg)
-            if ~exist('filename','var') || isempty(filename)
-                filename = '';
-            end
-            
-            obj.err=0;
-            if obj.procStream.IsEmpty()
-                obj.err=1;
-            end            
-            
-            %%%%% Otherwise try loading procInput from a config file, but first
-            %%%%% figure out the name of the config file
-            procInput = obj.procStream.input;
-            while ~all(obj.err==0)
-                % Load Processing stream file
-                if isempty(filename)
-                    filename = procInput.CreateDefaultConfigFile(reg);
-                    
-                    % Load procInput from config file
-                    fid = fopen(filename, 'r');
-                    obj.err = procInput.ParseFile(fid, class(obj), reg);
-                    fclose(fid);
-                elseif ~isempty(filename)
-                    % Load procInput from config file
-                    fid = fopen(filename,'r');
-                    obj.err = procInput.ParseFile(fid, class(obj), reg);
-                    fclose(fid);
-                else
-                    obj.err=0;
-                end
-                                
-                % Check loaded procInput for syntax and semantic errors
-                if procInput.IsEmpty() && obj.err==0
-                    menu('Warning: config file is empty.','Okay');
-                elseif obj.err==1
-                    menu('Syntax error in config file.','Okay');
-                end
+        function LoadProcInputConfigFile(obj, filename, reg)
+            obj.procStream.input.LoadConfigFile(filename, reg, class(obj));
+        end        
+        
                 
-            end  % while ~all(err1==0)
-        end  % function [procInput, filename] = GetProcInputDefault(obj, filename)
+        % ---------------------------------------------------------------------------------
+        function SaveProcInputConfigFile(obj, filename)
+            obj.procStream.input.SaveConfigFile(filename, class(obj));
+        end        
+                
+        
+        % ---------------------------------------------------------------------------------
+        function CreateProcInputDefault(obj, reg)
+            obj.procStream.input.CreateDefault(reg)
+        end
+        
+        
+        % ---------------------------------------------------------------------------------
+        function procInput = GetProcInputDefault(obj)
+            procInput = obj.procStream.input.GetDefault(class(obj));
+        end 
        
-
+        
         % ----------------------------------------------------------------------------------
         % Override == operator: 
         % ----------------------------------------------------------------------------------
@@ -113,6 +97,13 @@ classdef TreeNodeClass < handle
                     objnew = GroupClass('copy');
                 case ''
             end
+            objnew.name = obj.name;
+            objnew.type = obj.type;
+            objnew.procStream = obj.procStream;
+            objnew.err = obj.err;
+            objnew.ch = obj.ch;
+            objnew.CondNames = obj.CondNames;
+            objnew.CondName2Group = obj.CondName2Group;
             objnew.procStream.input = obj.procStream.input.copy();
         end
         
@@ -124,7 +115,7 @@ classdef TreeNodeClass < handle
         function copyProcParamsFieldByField(obj, obj2)
             % procInput
             if ~isempty(obj2.procStream.input.fcalls)
-                obj.procStream.input.Copy(obj2.procStream.input);
+                obj.procStream.input = obj2.procStream.input.copy();
             end
             
             % procResult

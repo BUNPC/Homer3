@@ -97,6 +97,9 @@ classdef FuncRegClass < matlab.mixin.Copyable
         % ----------------------------------------------------------------------------------
         function b = IsEmpty(obj)
             b = true;
+            if isempty(obj)
+                return
+            end
             if isempty(obj.userfuncdir)
                 return;
             end
@@ -229,13 +232,24 @@ classdef FuncRegClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function fcallstr = GetFuncCallDecoded(obj, key, usagename)
+        function fcallstr = GetFuncCallStrDecoded(obj, key, usagename)
             usagestr = '';
             idx = obj.GetIdx(key);
             if isempty(idx)
                 return;
             end
-            fcallstr = obj.entries(idx).GetFuncCallDecoded(usagename);
+            fcallstr = obj.entries(idx).GetFuncCallStrDecoded(usagename);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function fcall = GetFuncCallDecoded(obj, key, usagename)
+            fcall = FuncCallClass().empty();
+            idx = obj.GetIdx(key);
+            if isempty(idx)
+                return;
+            end
+            fcall = obj.entries(idx).GetFuncCallDecoded(usagename);
         end
         
         
@@ -277,7 +291,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function usagestr = FindUsage(obj, funcname, usagehint)
+        function usagestr = GetUsageStrDecorated(obj, funcname, usagehint)
             usagestr = '';
             if ~exist('funcname','var')
                 return;
@@ -289,7 +303,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
             if isempty(idx)
                 return;
             end            
-            usagestr = obj.entries(idx).GetUsageStrDecorated(usagehint, true);
+            usagestr = obj.entries(idx).GetUsageStrDecorated(usagehint);
         end
 
     end

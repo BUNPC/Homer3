@@ -73,35 +73,83 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function CopyProcInput(obj, type, procInput, mode)
-            if ~exist('mode','var')
-                mode = 'nooverwrite';
-            end
-            
+        function CopyProcInput(obj, procInput, type)
             % Copy default procInput to all uninitialized nodes in the group
             switch(type)
                 case 'group'
-                    if obj.procStream.IsEmpty() || strcmp(mode, 'overwrite')
-                        obj.procStream.input = procInput.copy();
-                    end
+                    obj.procStream.input = procInput.copy();
                 case 'subj'
                     for jj=1:length(obj.subjs)
-                        if obj.subjs(jj).procStream.IsEmpty() || strcmp(mode, 'overwrite')
-                            obj.subjs(jj).procStream.input = procInput.copy();
-                        end
+                        obj.subjs(jj).procStream.input = procInput.copy();
                     end
                 case 'run'
                     for jj=1:length(obj.subjs)
                         for kk=1:length(obj.subjs(jj).runs)
-                            if obj.subjs(jj).runs(kk).procStream.IsEmpty() || strcmp(mode, 'overwrite')
-                                obj.subjs(jj).runs(kk).procStream.input = procInput.copy();
-                            end
+                            obj.subjs(jj).runs(kk).procStream.input = procInput.copy();
                         end
                     end
-            end            
+            end
         end
-       
                
+        
+        % ----------------------------------------------------------------------------------
+        function InitProcInput(obj, reg)
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Find out if we need to ask user for processing options 
+            % config file to initialize procStream.input.fcalls at the 
+            % run, subject or group level. First try to find the proc 
+            % input at each level from the save results groupresults.mat 
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            g = obj;
+            s = obj.subjs(1);
+            r = obj.subjs(1).runs(1);
+            for jj=1:length(obj.subjs)
+                if ~obj.subjs(jj).procStream.IsEmpty()
+                    s = obj.subjs(jj);
+                end
+                for kk=1:length(obj.subjs(jj).runs)
+                    if ~obj.subjs(jj).runs(kk).procStream.IsEmpty()
+                        r = obj.subjs(jj).runs(kk);
+                    end
+                end
+            end
+            
+            % Generate procInput defaults at each level with which to initialize
+            % any uninitialized procStream.input
+            g.CreateProcInputDefault(reg);
+            
+            % If any of the tree nodes still have unintialized procStream input, ask 
+            % user for a config file to load it from 
+            if g.procStream.IsEmpty() || s.procStream.IsEmpty() || r.procStream.IsEmpty()
+                fname = g.procStream.input.GetConfigFileName();
+                
+                % If user did not provide procInput config filename and file does not exist
+                % then generate a config file with default contents
+                if ~exist(fname, 'file')
+                    procInputGroup = g.GetProcInputDefault();
+                    procInputGroup.SaveConfigFile(fname, 'group');
+                    
+                    procInputSubj = s.GetProcInputDefault();
+                    procInputSubj.SaveConfigFile(fname, 'subj');
+                    
+                    procInputRun = r.GetProcInputDefault();
+                    procInputRun.SaveConfigFile(fname, 'run');
+                end
+                
+                % Load file to the first empty procInput in the dataTree at each processing level
+                g.LoadProcInputConfigFile(fname, reg);
+                s.LoadProcInputConfigFile(fname, reg);
+                r.LoadProcInputConfigFile(fname, reg);
+
+                % Copy the loaded procInput at each processing level to all nodes of that level
+                g.CopyProcInput(g.procStream.input, 'group');
+                g.CopyProcInput(s.procStream.input, 'subj');
+                g.CopyProcInput(r.procStream.input, 'run');
+            end
+        end
+            
+        
+                
         % ----------------------------------------------------------------------------------
         function Calc(obj, hListbox, listboxFuncPtr)
             if ~exist('hListbox','var')

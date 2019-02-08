@@ -4,7 +4,7 @@
 % UI NAME:
 % Block_Average
 %
-%
+% DESCRIPTION:
 % Calculate the block average given the stimulation conditions in s over
 % the time range trange. The baseline of the average is set to zero by
 % subtracting the mean of the average for t<0. If a stimulus occurs too

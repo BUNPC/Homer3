@@ -49,6 +49,9 @@ classdef RegistriesClass < handle
         % ----------------------------------------------------------------------------------
         function b = IsEmpty(obj)
             b = true;
+            if isempty(obj)
+                return
+            end
             if isempty(obj.funcReg)
                 return;
             end

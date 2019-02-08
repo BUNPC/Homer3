@@ -1,53 +1,48 @@
-classdef ProcInputClass < matlab.mixin.Copyable
+classdef ProcInputClass < handle
     %
     % ProcInputClass stores processing stream input parameters that are independent 
     % of acquisition data or is derived from acquisition data but not stored there. 
     %
     properties
-        fcalls;         % Processing stream functions
-        CondName2Subj;  % Used by group processing stream
-        CondName2Run;   % Used by subject processing stream      
-        tIncMan;        % Manually include/excluded time points
+        fcalls;                  % Array of FuncCallClass objects representing function call chain i.e. processing stream
+        CondName2Subj;           % Used by group processing stream
+        CondName2Run;            % Used by subject processing stream      
+        tIncMan;                 % Manually include/excluded time points
         misc;
-        changeFlag;     % Flag specifying if procInput+acquisition data is out 
-                        %    of sync with procResult (currently not implemented)
+        changeFlag;              % Flag specifying if procInput+acquisition data is out 
+                                 %    of sync with procResult (currently not implemented)
     end
     
     
     methods
         
         % ----------------------------------------------------------------------------------
-        function obj = ProcInputClass()
+        function obj = ProcInputClass(reg)
             obj.fcalls = FuncCallClass().empty();
             obj.CondName2Subj = [];
-            obj.CondName2Run = [];            
+            obj.CondName2Run = [];
             obj.tIncMan = [];
             obj.misc = [];
             obj.changeFlag = 0;
+            
+            if nargin==0
+                return;
+            end            
+            obj.CreateDefault(reg)
         end
                 
         
         % ----------------------------------------------------------------------------------
-        function Copy(obj, obj2)
-            if isproperty(obj2, 'fcalls')
-                obj.fcalls = obj2.fcalls;
+        function objnew = copy(obj)
+            objnew = ProcInputClass();
+            for ii=1:length(obj.fcalls)
+                objnew.fcalls(ii) = obj.fcalls(ii).copy();
             end
-            if isproperty(obj2, 'changeFlag')
-                obj.changeFlag = obj2.changeFlag;
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function b = isempty(obj)
-            b = true;
-            if isempty(obj.fcalls)
-                return
-            end
-            if isempty(obj.fcalls(1).name)
-                return;
-            end
-            b = false;
+            objnew.CondName2Subj = obj.CondName2Subj;
+            objnew.CondName2Run = obj.CondName2Run;
+            objnew.tIncMan = obj.tIncMan;
+            objnew.misc = obj.misc;
+            objnew.changeFlag = obj.changeFlag;
         end
         
         
@@ -69,8 +64,11 @@ classdef ProcInputClass < matlab.mixin.Copyable
 
         
         % ----------------------------------------------------------------------------------
-        function b = IsEmpty(obj)            
+        function b = IsEmpty(obj)
             b=0;
+            if isempty(obj)
+                return
+            end
             if isempty(obj.fcalls)
                 b=1;
                 return;
@@ -85,6 +83,13 @@ classdef ProcInputClass < matlab.mixin.Copyable
                     return;
                 end
             end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ClearFcalls(obj)
+            delete(obj.fcalls);
+            obj.fcalls = FuncCallClass().empty();
         end
         
         
@@ -269,142 +274,184 @@ classdef ProcInputClass < matlab.mixin.Copyable
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Initialize/Generate default functions and prcessOpt_default.cfg file
+    % Methods for loading / saving proc stream config file.
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
-        
+
         % ----------------------------------------------------------------------------------
-        function [filename, pathname] = CreateDefaultConfigFile(obj, reg)
+        function fname = GetConfigFileName(obj)
             % This pause is a workaround for a matlab bug in version
             % 7.11 for Linux, where uigetfile won't block unless there's
             % a breakpoint.
             pause(.5);
-            [filename, pathname] = uigetfile('*.cfg', 'Load Process Options File' );
-            if filename==0
+            [fname, pname] = uigetfile('*.cfg', 'Load Process Options File' );
+            if fname==0
                 menu( sprintf('Loading default config file.'),'Okay');
-                filename = './processOpt_default.cfg';
-                success = true;
-                if exist(filename,'file')
-                    delete(filename);
-                    if exist(filename,'file')
-                        success = false;
-                    end
-                end
-                if success
-                    obj.FileGenDefConc(filename, 'group', reg);
-                    obj.FileGenDefConc(filename, 'subj', reg);
-                    obj.FileGenDefConc(filename, 'run', reg);
-                end
+                fname = [pwd, '/processOpt_default.cfg'];
             else
-                filename = [pathname, filename];
+                fname = [pname, '/', fname];
             end
+            fname(fname=='\')='/';
         end
         
-                
+        
         % ----------------------------------------------------------------------------------
-        function FileGenDefConc(obj, filepath, type, reg)
-            % Generates default processOpt.cfg file.
-            % Note that fprintf outputs formatted textstr where some characters
-            % are special characters - such as '%'. In order to write a
-            % literal '%' you need to type '%%' in fprintf argument string
-            % (2nd argument).
+        function err = LoadConfigFile(obj, fname, reg, type)
+            % Syntax:
+            %   err = obj.LoadConfigFile(fname)
+            %   err = obj.LoadConfigFile(fname, reg)
+            %   err = obj.LoadConfigFile(fname, reg, type)
             %
-            if ischar(filepath)
-                slashes = [strfind(filepath,'/') strfind(filepath,'\')];
-                if(~isempty(slashes))
-                    filename = ['.' filepath(slashes(end):end)];
-                end
-                fid = fopen(filename,'a');
-            else
-                fid = filepath;
+            % Description:
+            %   Load proc stream function call chain from config file with name fname
+            %   into ProcInputClass object. If reg argument is not provided the class will 
+            %   generate its own local registry. If type argument isn't provided the class 
+            %   defaults to run-level (type = 'run') and will load that section's call chain. 
+            %
+            % Example:
+            %
+            %   % Load function call chains at all levels from the config file 
+            %   % processOpt_default_homer3.cfg to three instances of ProcInputClass 
+            %   pGroup = ProcInputClass();
+            %   pGroup.LoadConfigFile('processOpt_default_homer3.cfg', [], 'group');
+            %   pSubj = ProcInputClass();
+            %   pSubj.LoadConfigFile('processOpt_default_homer3.cfg', [], 'subj');
+            %   pRun = ProcInputClass();
+            %   pRun.LoadConfigFile('processOpt_default_homer3.cfg', [], 'run');
+            %
+            %   Here's what pSubj looks like:
+            %
+            %   pSubj =
+            %
+            %      ProcInputClass with properties:
+            %
+            %            fcalls: [1x1 FuncCallClass]
+            %     CondName2Subj: []
+            %      CondName2Run: []
+            %           tIncMan: []
+            %              misc: []
+            %        changeFlag: 0
+            %
+            %   pSubj.fcalls = 
+            %
+            %       FuncCallClass with properties:
+            %
+            %              name: 'hmrS_BlockAvg'
+            %            nameUI: 'hmrS_BlockAvg'
+            %            argOut: '[dcAvg,dcAvgStd,tHRF,nTrials]'
+            %             argIn: '(dcAvgRuns,dcAvgStdRuns,dcSum2Runs,tHRFRuns,SDRuns,nTrialsRuns,CondName2Run'
+            %           paramIn: [0x0 ParamClass]
+            %              help: '  Calculate the block average for all subjects, for all common stimuli…'
+            %
+            err = -1;
+            if ~exist('fname', 'var')
+                fname = '';
+            end
+            if ~exist('reg', 'var') || isempty(reg)            
+                reg = RegistriesClass();
+            end
+            if ~exist('type', 'var') || isempty(type)
+                type = 'run';
+            end
+            fid = fopen(fname);
+            if fid<0
+                return;
             end
             
-            switch(type)
-                case 'group'
-                    contents = obj.DefaultFileGroupConc(reg);
-                case 'subj'
-                    contents = obj.DefaultFileSubjConc(reg);
-                case 'run'
-                    contents = obj.DefaultFileRunConc(reg);
+            % Reinitialize fcalls since we're going to overwrite them anyway
+            obj.fcalls = FuncCallClass().empty();
+            obj.ParseFile(fid, type, reg);
+            fclose(fid);
+            err=0;            
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function err = SaveConfigFile(obj, fname, type)
+            % Syntax:
+            %   err = obj.SaveConfigFile(fname)
+            %   err = obj.SaveConfigFile(fname, type)
+            %
+            % Description:
+            %   Save this ProcInputClass function call chain to config file fname. If type argument 
+            %   isn't provided the class defaults to run-level (type = 'run'). The ProcInputClass 
+            %   object is not associated with a processing level - all it knows is it's 
+            %   function call chain. It needs the type argument when saving to know how to label 
+            %   the section it's saving in the file. It writes that header as '% <section name>' before
+            %   the list of function call strings beginning with '@ '.
+            %
+            %   If the file already exists and has a config section for the same processing level, it 
+            %   completetly replaces that section of the config file, leaving the other sections 
+            %   untouched. 
+            %
+            % Example:
+            %
+            %   Create a processing config file for all processing levels. 
+            %
+            %   reg = RegistriesClass();
+            %
+            %   pInputR = ProcInputClass(reg);
+            %   pInputR.LoadConfigFile('processOpt.cfg', reg, 'run');
+            %
+            %   pInputS = ProcInputClass(reg);
+            %   pInputS.LoadConfigFile('processOpt.cfg', reg, 'subj');
+            %
+            %   pInputG = ProcInputClass(reg);
+            %   pInputG.LoadConfigFile('processOpt.cfg', reg, 'group');
+            %
+            %   pInputG.SaveConfigFile('./processOpt_new.cfg', 'group');
+            %   pInputS.SaveConfigFile('./processOpt_new.cfg', 'subj');
+            %   pInputR.SaveConfigFile('./processOpt_new.cfg', 'run');
+            %
+            err = -1;
+            if ~exist('fname', 'var')
+                fname = '';
             end
-            for ii=1:length(contents)
-                fprintf(fid, contents{ii});
+            if ~exist('type', 'var') || isempty(type)
+                type = 'run';
             end
-            
-            if ischar(filepath)
-                fclose(fid);
+
+            % First read in and parse existing file contents
+            if ~exist(fname, 'file')
+                readoption = 'w+';
             else
-                fseek(fid,0,'bof');
-            end
-        end
-                   
-        
-        % ----------------------------------------------------------------------------------
-        function [contents, str] = DefaultFileGroupConc(obj, reg)
-            contents = {};
-            if isempty(reg)
+                readoption = 'r';                
+            end            
+            fid = fopen(fname,readoption);
+            if fid<0
                 return;
             end
-            iG = reg.IdxGroup();
-            contents = {...
-                '%% group\n', ...
-                reg.funcReg(iG).FindUsage('hmrG_BlockAvg','dcAvg'), ...
-                '\n\n', ...
-            };
-            str = cell2str(contents);
-        end
-        
-                
-        % ----------------------------------------------------------------------------------
-        function [contents, str] = DefaultFileSubjConc(obj, reg)
-            contents = {};
-            if isempty(reg)
-                return;
+            [G, S, R] = obj.FindSections(fid, 'nodefault');
+            fclose(fid);
+            
+            % Construct new contents
+            switch(lower(type))
+                case {'group', 'groupclass', 'grp'}
+                    G = [ sprintf('%% group'); obj.GenerateSection(); sprintf('\n') ];
+                    S = [ sprintf('%% subj');  S; sprintf('\n') ];
+                    R = [ sprintf('%% run');   R; sprintf('\n') ];
+                case {'subj', 'session', 'subjclass'}
+                    G = [ sprintf('%% group'); G; sprintf('\n') ];
+                    S = [ sprintf('%% subj');  obj.GenerateSection(); sprintf('\n') ];
+                    R = [ sprintf('%% run');   R; sprintf('\n') ];
+                case {'run', 'runclass'}
+                    G = [ sprintf('%% group'); G; sprintf('\n') ];
+                    S = [ sprintf('%% subj');  S; sprintf('\n') ];
+                    R = [ sprintf('%% run');   obj.GenerateSection(); sprintf('\n') ];
+                otherwise
+                    return;
             end
-            iS = reg.IdxSubj();
-            contents = {...
-                '%% subj\n', ...
-                reg.funcReg(iS).FindUsage('hmrS_BlockAvg','dcAvg'), ...
-                '\n\n', ...
-            };
-            str = cell2str(contents);            
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function [contents, str] = DefaultFileRunConc(obj, reg)
-            contents = {};
-            if isempty(reg)
-                return;
+            newcontents = [G; S; R];
+            
+            % Write new contents to file 
+            fid = fopen(fname,'w');
+            for ii=1:length(newcontents)
+                fprintf(fid, '%s\n', newcontents{ii});
             end
-            iR = reg.IdxRun();
-            contents = {...
-                '%% run\n', ...
-                reg.funcReg(iR).FindUsage('hmrR_Intensity2OD'), ...
-                reg.funcReg(iR).FindUsage('hmrR_MotionArtifact'), ...
-                reg.funcReg(iR).FindUsage('hmrR_BandpassFilt'), ...
-                reg.funcReg(iR).FindUsage('hmrR_OD2Conc'), ...
-                reg.funcReg(iR).FindUsage('hmrR_StimRejection'), ...
-                reg.funcReg(iR).FindUsage('hmrR_BlockAvg','dcAvg') ...
-                '\n\n', ...
-                };
-            str = cell2str(contents);
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function DefaultFileConc(obj, type, reg)
-            filecontents_str = '';
-            switch(type)
-                case 'group'
-                    [~, filecontents_str] = obj.DefaultFileGroupConc(reg);
-                case 'subj'
-                    [~, filecontents_str] = obj.DefaultFileSubjConc(reg);
-                case 'run'
-                    [~, filecontents_str] = obj.DefaultFileRunConc(reg);
-            end
-            S = textscan(filecontents_str,'%s');
-            obj.Parse(S{1});
+            fclose(fid);
+            
+            err=0;            
         end
         
         
@@ -412,22 +459,57 @@ classdef ProcInputClass < matlab.mixin.Copyable
         % Function to extract the 3 proc stream sections - group, subj, and run -
         % from a processing stream config cell array.
         % ---------------------------------------------------------------------
-        function [G, S, R] = FindSections(obj, fid)
+        function [G, S, R] = FindSections(obj, fid, mode)
+            %
+            % Syntax:
+            %    [G, S, R] = obj.FindSections(fid)
+            %
+            % Description:
+            %    Read in proc stream config file with file descriptor fid and returns the 
+            %    group (G), subject (S) and run (R) sections. A section is a cell array of 
+            %    encoded function call strings. If mode is 'default' then for a missing 
+            %    section a default section is generated, otherwise it is left empty. 
+            %
+            % Example: 
+            %    fid = fopen('processOpt_ShortSep.cfg');
+            %    p = ProcInputClass();
+            %    [G, S, R] = p.FindSections(fid);
+            %    fclose(fid);
+            %
+            %    Here's the output:
+            %
+            %     G = {
+            %          '@ hmrG_BlockAvg [dcAvg,dcAvgStd,tHRF,nTrials,grpAvgPass] (dcAvgSubjs,dcAvgStdSubjs,tHRFSubjs,SDSubjs,nTrialsSubjs,CondName2Subj tRange %0.1f…'
+            %         }
+            %     S = {
+            %          '@ hmrS_BlockAvg [dcAvg,dcAvgStd,tHRF,nTrials] (dcAvgRuns,dcAvgStdRuns,dcSum2Runs,tHRFRuns,SDRuns,nTrialsRuns,CondName2Run'
+            %         }
+            %     R = {
+            %         '@ hmrR_Intensity2OD dod (d'
+            %         '@ hmrR_MotionArtifact tIncAuto (dod,t,SD,tIncMan tMotion %0.1f 0.5 tMask %0.1f 1.0 STDEVthresh %0.1f 50.0 AMPthresh %0.1f 5.0'
+            %         '@ hmrR_BandpassFilt dod (dod,t hpf %0.3f 0.010 lpf %0.3f 0.500'
+            %         '@ hmrR_OD2Conc dc (dod,SD ppf %0.1f_%0.1f 6.0_6.0'
+            %         '@ hmrR_DeconvHRF_DriftSS [dcAvg,dcAvgstd,tHRF,nTrials,ynew,yresid,ysum2,beta,R] (dc,s,t,SD,aux,tIncAuto trange %0.1f_%0.1f -2.0_20.0 glmSolv…'
+            %         }
+            % 
+            if ~exist('mode','var') || isempty(mode) || ~ischar(mode)
+                mode = 'default';
+            end
+            
             G = {};
             S = {};
             R = {};
             if ~iswholenum(fid) || fid<0
                 return;
             end
-            iG=1;
-            iS=1;
-            iR=1;
+            iG=1; iS=1; iR=1;
             section = 'run';   % Run is the default is sections aren't labeled
             while ~feof(fid)
-                ln = strtrim(fgetl(fid));
-                if isempty(ln)
+                ln = fgetl(fid);
+                if isempty(ln) || ~ischar(ln)
                     continue;
                 end
+                ln = strtrim(ln);
                 if ln(1)=='%'
                     str = strtrim(ln(2:end));
                     switch(lower(str))
@@ -441,13 +523,61 @@ classdef ProcInputClass < matlab.mixin.Copyable
                 elseif ln(1)=='@'
                     switch(lower(section))
                         case {'group','grp'}
-                            G{iG} = strtrim(ln); iG=iG+1;
+                            G{iG,1} = strtrim(ln); iG=iG+1;
                         case {'subj','subject','session','sess'}
-                            S{iS} = strtrim(ln); iS=iS+1;
+                            S{iS,1} = strtrim(ln); iS=iS+1;
                         case {'run'}
-                            R{iR} = strtrim(ln); iR=iR+1;
-                    end                    
+                            R{iR,1} = strtrim(ln); iR=iR+1;
+                    end
                 end
+            end
+            
+            % Generate default contents for all sections which are missing
+            if strcmp(mode, 'default')
+                if isempty(G)
+                    G = obj.fcallStrEncodedGroup;
+                end
+                if isempty(S)
+                    S = obj.fcallStrEncodedSubj;
+                end
+                if isempty(R)
+                    R = obj.fcallStrEncodedRun;
+                end
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function section = GenerateSection(obj)
+            %
+            % Syntax:
+            %    section = obj.GenerateSection()
+            %
+            % Description:
+
+            %
+            % Example: 
+            %
+            %    % Load run section into p from processOpt_default.cfg
+            %    reg = RegistriesClass();
+            %    p = ProcInputClass();
+            %    p.LoadConfigFile('processOpt_default.cfg', reg)
+            %    R = obj.GenerateSection();
+            %
+            %    Here's the output:
+            %
+            %     R = {
+            %         '@ hmrR_Intensity2OD dod (d'
+            %         '@ hmrR_MotionArtifact tIncAuto (dod,t,SD,tIncMan tMotion %0.1f 0.5 tMask %0.1f 1.0 STDEVthresh %0.1f 50.0 AMPthresh %0.1f 5.0'
+            %         '@ hmrR_BandpassFilt dod (dod,t hpf %0.3f 0.010 lpf %0.3f 0.500'
+            %         '@ hmrR_OD2Conc dc (dod,SD ppf %0.1f_%0.1f 6.0_6.0'
+            %         '@ hmrR_DeconvHRF_DriftSS [dcAvg,dcAvgstd,tHRF,nTrials,ynew,yresid,ysum2,beta,R] (dc,s,t,SD,aux,tIncAuto trange %0.1f_%0.1f -2.0_20.0 glmSolv…'
+            %         }
+            %
+            section = cell(length(obj.fcalls), 1);
+            for ii=1:length(obj.fcalls)
+                section{ii} = obj.fcalls(ii).Encode();
             end
         end
         
@@ -516,51 +646,39 @@ classdef ProcInputClass < matlab.mixin.Copyable
                 reg = RegistriesClass().empty();
             end
             [G, S, R] = obj.FindSections(fid);
-            switch(type)
-                case {'group', 'GroupClass'}
-                    % generate default contents for group section if there's no % group header.
-                    if isempty(G)
-                        G = obj.DefaultFileGroupConc(reg);
-                    end
-                    obj.Parse(G);
-                case {'subj', 'SubjClass'}
-                    % generate default contents for subject section there's no % subj header. 
-                    if isempty(S)
-                        S = obj.DefaultFileSubjConc(reg);
-                    end
-                    obj.Parse(S);
-                case {'run', 'RunClass'}
-                    % generate default contents for subject section there's no % run header. 
-                    if isempty(R)
-                        R = obj.DefaultFileRunConc(reg);
-                    end
-                    obj.Parse(R);
+            switch(lower(type))
+                case {'group', 'groupclass', 'grp'}
+                    obj.Decode(G);
+                case {'subj', 'session', 'subjclass'}
+                    obj.Decode(S);
+                case {'run', 'runclass'}
+                    obj.Decode(R);
                 otherwise
                     return;
-            end            
+            end
             err=0;
         end
         
         
         % ----------------------------------------------------------------------------------
-        function Parse(obj, section)
+        function Decode(obj, section)
             % Syntax:
-            %    Parse(section)
+            %    obj.Decode(section)
             %    
-            % Description:            
+            % Description:
             %    Parse a cell array of strings, each string an encoded hmr*.m function call
-            %    into a FuncCallClass object. 
+            %    and into the FuncCallClass array of this ProcInputClass object. 
             %
             % Input: 
             %    A section contains encoded strings for one or more hmr* user function calls.
             %   
             % Example:
             %
-            %    fcalls{1} = '@ hmrR_BandpassFilt dod (dod,t hpf %0.3f 0.010 lpf %0.3f 0.500';
-            %    fcalls{2} = '@ hmrR_OD2Conc dc (dod,SD ppf %0.1f_%0.1f 6_6';
+            %    fcallStrs{1} = '@ hmrR_BandpassFilt dod (dod,t hpf %0.3f 0.010 lpf %0.3f 0.500';
+            %    fcallStrs{2} = '@ hmrR_OD2Conc dc (dod,SD ppf %0.1f_%0.1f 6_6';
             %
             %    p = ProcInputClass();
-            %    p.Parse(fcalls);
+            %    p.Decode(fcallStrs);
             % 
             %    Here's the output:
             % 
@@ -606,14 +724,140 @@ classdef ProcInputClass < matlab.mixin.Copyable
                     if kk>length(obj.fcalls)
                         obj.fcalls(kk) = FuncCallClass(section{ii});
                     else
-                        obj.fcalls(kk).Parse(section{ii});
+                        obj.fcalls(kk).Decode(section{ii});
                     end
                     kk=kk+1;
                 end    
             end
         end
-     
         
-    end   
+
+        
+        % ----------------------------------------------------------------------------------
+        function Add(obj, new)
+            idx = length(obj.fcalls)+1;
+            obj.fcalls(idx) = FuncCallClass(new);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function section = Encode(obj)
+            % Syntax:
+            %    section = obj.Encode()
+            % 
+            % Description:
+            %    Generate a cell array of encoded string function calls from 
+            %    the FuncCallClass array of this ProcInputClass object. 
+            %
+            % Input:
+            %    A section contains encoded strings for one or more hmr* user function calls.
+            %   
+            % Example:
+            %
+            %    fcallStrs{1} = '@ hmrR_BandpassFilt dod (dod,t hpf %0.3f 0.010 lpf %0.3f 0.500';
+            %    fcallStrs{2} = '@ hmrR_OD2Conc dc (dod,SD ppf %0.1f_%0.1f 6_6';
+            %
+            %    p = ProcInputClass();
+            %    p.Decode(fcallStrs);
+            %    fcallStrs2 = p.Encode();
+            %
+            %
+            section = cell(length(obj.fcalls), 1);
+            for ii=1:length(obj.fcalls)
+                section{ii} = obj.fcalls(ii).Encode();
+            end
+        end
+        
+    end
+
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Methods for dealing with default proc input 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+
+        % ----------------------------------------------------------------------------------
+        function CreateDefault(obj, reg)
+            if ~isa(reg, 'RegistriesClass')
+                return;
+            end
+            obj.fcallStrEncodedGroup(reg);
+            obj.fcallStrEncodedSubj(reg);
+            obj.fcallStrEncodedRun(reg);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function obj2 = GetDefault(obj, type)
+            obj2 = ProcInputClass();            
+            switch(lower(type))
+                case {'group', 'groupclass'}
+                    obj2.Decode(obj.fcallStrEncodedGroup);
+                case {'subj', 'session', 'subjclass'}
+                    obj2.Decode(obj.fcallStrEncodedSubj);
+                case {'run', 'runclass'}
+                    obj2.Decode(obj.fcallStrEncodedRun);
+                otherwise
+                    return;
+            end
+        end
+        
+    end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Methods implementing static variables for this class. The static variable 
+    % for this class are the default function call chains for group, subject and run. 
+    % There is only one instance of each of these because these variables are the 
+    % same for all instances of the ProcInputClass class
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+        
+        % ----------------------------------------------------------------------------------
+        function val = fcallStrEncodedGroup(obj, reg)
+            persistent v;
+            if nargin>1
+                iG = reg.igroup;
+                v = {...
+                    reg.funcReg(iG).GetUsageStrDecorated('hmrG_BlockAvg','dcAvg'); ...
+                };
+            end
+            val = v;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function val = fcallStrEncodedSubj(obj, reg)
+            persistent v;
+            if nargin>1
+                iS = reg.isubj;
+                v = {...
+                    reg.funcReg(iS).GetUsageStrDecorated('hmrS_BlockAvg','dcAvg'); ...
+                };
+            end
+            val = v;
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function val = fcallStrEncodedRun(obj, reg)
+            persistent v;
+            if nargin>1
+                iR = reg.irun;
+                v = {...
+                    reg.funcReg(iR).GetUsageStrDecorated('hmrR_Intensity2OD'); ...
+                    reg.funcReg(iR).GetUsageStrDecorated('hmrR_MotionArtifact'); ...
+                    reg.funcReg(iR).GetUsageStrDecorated('hmrR_BandpassFilt'); ...
+                    reg.funcReg(iR).GetUsageStrDecorated('hmrR_OD2Conc'); ...
+                    reg.funcReg(iR).GetUsageStrDecorated('hmrR_StimRejection'); ...
+                    reg.funcReg(iR).GetUsageStrDecorated('hmrR_BlockAvg','dcAvg'); ...
+                };                
+            end
+            val = v;
+        end
+        
+        
+    end
+        
 end
 

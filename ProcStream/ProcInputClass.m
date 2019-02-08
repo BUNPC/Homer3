@@ -411,6 +411,7 @@ classdef ProcInputClass < handle
             if ~exist('type', 'var') || isempty(type)
                 type = 'run';
             end
+            versionstamp = sprintf('%% %s\n', Homer3_version('exclpath'));
 
             % First read in and parse existing file contents
             if ~exist(fname, 'file')
@@ -442,7 +443,7 @@ classdef ProcInputClass < handle
                 otherwise
                     return;
             end
-            newcontents = [G; S; R];
+            newcontents = [versionstamp; G; S; R];
             
             % Write new contents to file 
             fid = fopen(fname,'w');
@@ -451,7 +452,7 @@ classdef ProcInputClass < handle
             end
             fclose(fid);
             
-            err=0;            
+            err=0;
         end
         
         

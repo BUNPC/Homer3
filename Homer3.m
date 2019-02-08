@@ -96,15 +96,9 @@ hmr.handles   = [];
 handles.output = hObject;
 guidata(hObject, handles);
 
-% Display window name which includes version # and data set path. Do this
-% regardless of whether it's an empty gui because the user pressed cancel.
-% We want them to see the gui and version no matter what.
-V = Homer3_version();
-if str2num(V{2})==0
-    set(handles.Homer3,'name', sprintf('Homer3  (v%s) - %s',[V{1}],cd) )
-else
-    set(handles.Homer3,'name', sprintf('Homer3  (v%s) - %s',[V{1} '.' V{2}],cd) )
-end
+% Set the Homer3_version version number
+[~, V] = Homer3_version(hObject);
+hmr.version = V;
 
 % Disable and reset all window gui objects
 Homer3_EnableDisableGUI(handles,'off');

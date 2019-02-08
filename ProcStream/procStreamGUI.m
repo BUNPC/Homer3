@@ -454,23 +454,39 @@ setListboxValueToLast(handles.textHelp(iPanel));
 % --------------------------------------------------------------------
 function uitabRun_ButtonDownFcn(hObject, eventdata, handles)
 global procStreamGui
-
 procStreamGui.iPanel = procStreamGui.iRunPanel;
+iPanel = procStreamGui.iPanel;
 
+helptxt = get(handles.textHelp(iPanel),'string');
+if isempty(helptxt)
+    iFunc = get(handles.listboxFuncReg(iPanel),'value');
+    LookupHelp(iFunc, handles);
+end
 
 % --------------------------------------------------------------------
 function uitabSubj_ButtonDownFcn(hObject, eventdata, handles)
 global procStreamGui
-
 procStreamGui.iPanel = procStreamGui.iSubjPanel;
+iPanel = procStreamGui.iPanel;
 
+helptxt = get(handles.textHelp(iPanel),'string');
+if isempty(helptxt)
+    iFunc = get(handles.listboxFuncReg(iPanel),'value');
+    LookupHelp(iFunc, handles);
+end
 
 
 % --------------------------------------------------------------------
 function uitabGroup_ButtonDownFcn(hObject, eventdata, handles)
 global procStreamGui
-
 procStreamGui.iPanel = procStreamGui.iGroupPanel;
+iPanel = procStreamGui.iPanel;
+
+helptxt = get(handles.textHelp(iPanel),'string');
+if isempty(helptxt)
+    iFunc = get(handles.listboxFuncReg(iPanel),'value');
+    LookupHelp(iFunc, handles);
+end
 
 
 

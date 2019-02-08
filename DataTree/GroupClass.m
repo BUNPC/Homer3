@@ -4,6 +4,7 @@ classdef GroupClass < TreeNodeClass
         fileidx;
         nFiles;
         subjs;
+        version;
     end
     
     
@@ -16,6 +17,7 @@ classdef GroupClass < TreeNodeClass
         function obj = GroupClass(varargin)
             obj@TreeNodeClass(varargin);
 
+            obj.version = Homer3_version('exclpath');
             obj.type  = 'group';
             if nargin>0
                 if ischar(varargin{1}) && strcmp(varargin{1},'copy')

@@ -69,6 +69,9 @@ if ~isempty(p)
     set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
 end
 
+[~, V] = procStreamGUI_version(hObject);
+procStreamGui.version = V;
+
 
 % Choose default command line output for procStreamGUI
 handles.output = hObject;
@@ -284,7 +287,7 @@ if listPsUsage(iPanel).IsMember(fcallselect, ':')
 end
 listPsUsage(iPanel).Insert(fcallselect, iFcall);
 listPsUsage(iPanel).Tabularize();
-updateProcStreamList(handles,iPanel);
+updateProcStreamListbox(handles,iPanel);
 
 
 
@@ -296,7 +299,7 @@ listPsUsage = procStreamGui.listPsUsage;
 
 iFcall = get(handles.listboxFuncProcStream(iPanel), 'value');
 listPsUsage(iPanel).Delete(iFcall);
-updateProcStreamList(handles,iPanel);
+updateProcStreamListbox(handles,iPanel);
 
 
 
@@ -304,11 +307,18 @@ updateProcStreamList(handles,iPanel);
 function pushbuttonMoveUp_Callback(hObject, eventdata, handles)
 global procStreamGui
 iPanel = procStreamGui.iPanel;
+listPsUsage = procStreamGui.listPsUsage;
 
 iFcall = get(handles.listboxFuncProcStream(iPanel),'value');
-if iFcall == 1
+if iFcall == 0
     return
 end
+listPsUsage(iPanel).Move(iFcall, iFcall-1);
+if iFcall>1
+    iFcall=iFcall-1;
+end
+set(handles.listboxFuncProcStream(iPanel), 'value',iFcall)
+set(handles.listboxFuncProcStream(iPanel), 'string',listPsUsage(iPanel).Get())
 
 
 
@@ -316,8 +326,18 @@ end
 function pushbuttonMoveDown_Callback(hObject, eventdata, handles)
 global procStreamGui
 iPanel = procStreamGui.iPanel;
+listPsUsage = procStreamGui.listPsUsage;
 
-updateProcStreamList(handles,iFcall2);
+iFcall = get(handles.listboxFuncProcStream(iPanel),'value');
+if iFcall == 0
+    return
+end
+listPsUsage(iPanel).Move(iFcall, iFcall+1);
+if iFcall<listPsUsage(iPanel).GetSize()
+    iFcall = iFcall+1;
+end
+set(handles.listboxFuncProcStream(iPanel), 'value',iFcall)
+set(handles.listboxFuncProcStream(iPanel), 'string',listPsUsage(iPanel).Get())
 
 
 
@@ -346,6 +366,7 @@ elseif q==2
     end
 end
 LoadProcStream(handles, reload);
+
 
 
 % -------------------------------------------------------------
@@ -392,9 +413,9 @@ end
 % Now save procElem to current procStream or to  a config file.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if q==1
-    group.CopyProcInput(procElem{iGroupPanel}.procStream.input, 'group');
-    group.CopyProcInput(procElem{iSubjPanel}.procStream.input, 'subj');
-    group.CopyProcInput(procElem{iRunPanel}.procStream.input, 'run');
+    group.CopyFcalls(procElem{iGroupPanel});
+    group.CopyFcalls(procElem{iSubjPanel});
+    group.CopyFcalls(procElem{iRunPanel});
 elseif q==2
     % load cfg file
     [filename,pathname] = uiputfile( '*.cfg', 'Process Options Config File to Save To?');
@@ -463,6 +484,7 @@ if isempty(helptxt)
     LookupHelp(iFunc, handles);
 end
 
+
 % --------------------------------------------------------------------
 function uitabSubj_ButtonDownFcn(hObject, eventdata, handles)
 global procStreamGui
@@ -491,7 +513,7 @@ end
 
 
 % --------------------------------------------------------------------
-function updateProcStreamList(handles, iPanel)
+function updateProcStreamListbox(handles, iPanel)
 global procStreamGui
 listPsUsage = procStreamGui.listPsUsage;
 
@@ -499,15 +521,15 @@ if ~exist('iPanel','var')
     iPanel=1:length(procStreamGui.procElem);
 end
 for ii=iPanel
-    iFcall = get(handles.listboxFuncProcStream(iPanel),'value');
-    if iFcall>listPsUsage(iPanel).GetSize()
-        iFcall = listPsUsage(iPanel).GetSize();
+    iFcall = get(handles.listboxFuncProcStream(ii),'value');
+    if iFcall>listPsUsage(ii).GetSize()
+        iFcall = listPsUsage(ii).GetSize();
     end
     if iFcall<1
         iFcall=1;
     end
     set(handles.listboxFuncProcStream(ii), 'value',iFcall)
-    set(handles.listboxFuncProcStream(ii), 'string',listPsUsage(ii).Get())
+    set(handles.listboxFuncProcStream(ii), 'string',listPsUsage(ii).Get())    
 end
 
 
@@ -517,6 +539,6 @@ global procStreamGui
 
 for iPanel=1:length(procStreamGui.listPsUsage)
     procStreamGui.listPsUsage(iPanel).Initialize();
-    updateProcStreamList(handles, iPanel);
+    updateProcStreamListbox(handles, iPanel);
 end
 

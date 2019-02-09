@@ -76,7 +76,7 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function CopyProcInput(obj, procInput, type)
-            % Copy default procInput to all uninitialized nodes in the group
+            % Copy default procInput to all nodes at a single 
             switch(type)
                 case 'group'
                     obj.procStream.input = procInput.copy();
@@ -92,7 +92,30 @@ classdef GroupClass < TreeNodeClass
                     end
             end
         end
-               
+        
+        
+        % ----------------------------------------------------------------------------------
+        function CopyFcalls(obj, procElem)
+            % Copy default procInput function call chain to all uninitialized nodes 
+            % in the group
+            procInput = procElem.procStream.input;
+            switch(procElem.type)
+                case 'group'
+                    obj.procStream.input.CopyFcalls(procInput);
+                case 'subj'
+                    for jj=1:length(obj.subjs)
+                        obj.subjs(jj).procStream.input.CopyFcalls(procInput);
+                    end
+                case 'run'
+                    for jj=1:length(obj.subjs)
+                        for kk=1:length(obj.subjs(jj).runs)
+                            obj.subjs(jj).runs(kk).procStream.input.CopyFcalls(procInput);
+                        end
+                    end
+            end
+        end
+
+        
         
         % ----------------------------------------------------------------------------------
         function InitProcInput(obj, reg)
@@ -161,6 +184,9 @@ classdef GroupClass < TreeNodeClass
                 listboxFuncPtr = [];
             end
             
+            % Recalculating result means deleting old results
+            % obj.procStream.output.Flush();
+
             % Calculate all subjs in this session
             subjs = obj.subjs;
             nSubj = length(subjs);
@@ -210,6 +236,19 @@ classdef GroupClass < TreeNodeClass
             obj.procStream.Calc();
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function Print(obj, indent)
+            if ~exist('indent', 'var')
+                indent = 0;
+            end
+            fprintf('%sGroup 1:\n', blanks(indent));
+            obj.procStream.input.Print(indent+4);
+            obj.procStream.output.Print(indent+4);
+            for ii=1:length(obj.subjs)
+                obj.subjs(ii).Print(indent+4);
+            end
+        end
         
         
         % ----------------------------------------------------------------------------------
@@ -401,7 +440,7 @@ classdef GroupClass < TreeNodeClass
                 end
             end
         end
-        
+                
     end      % Public Set/Get methods
     
     

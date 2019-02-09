@@ -27,7 +27,7 @@ classdef ProcInputClass < handle
             
             if nargin==0
                 return;
-            end            
+            end
             obj.CreateDefault(reg)
         end
                 
@@ -46,6 +46,17 @@ classdef ProcInputClass < handle
         end
         
         
+        % ----------------------------------------------------------------------------------
+        function CopyFcalls(obj, procInput)
+            delete(obj.fcalls);
+            obj.fcalls = FuncCallClass().empty();
+            for ii=1:length(procInput.fcalls)
+                obj.fcalls(ii) = FuncCallClass(procInput.fcalls(ii));
+            end
+        end
+        
+        
+
         % ----------------------------------------------------------------------------------
         function str = EditParam(obj, iFcall, iParam, val)
             str = '';
@@ -84,6 +95,20 @@ classdef ProcInputClass < handle
                 end
             end
         end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Print(obj, indent)
+            if ~exist('indent', 'var')
+                indent = 6;
+            end
+            fprintf('%sInput:\n', blanks(indent));
+            fprintf('%sCondName2Subj:\n', blanks(indent+4));
+            pretty_print_matrix(obj.CondName2Subj, indent+4, sprintf('%%d'))
+            fprintf('%sCondName2Run:\n', blanks(indent+4));
+            pretty_print_matrix(obj.CondName2Run, indent+4, sprintf('%%d'))
+        end
+        
         
         
         % ----------------------------------------------------------------------------------

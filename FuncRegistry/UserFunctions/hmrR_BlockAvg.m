@@ -37,8 +37,6 @@
 
 function [yavg, ystd, tHRF, nTrials, ysum2, yTrials] = hmrR_BlockAvg( y, s, t, trange )
 
-
-
 ndim = ndims(y);
 dt = t(2)-t(1);
 nPre = round(trange(1)/dt);
@@ -61,7 +59,7 @@ for iS = 1:size(s,2)
                 yblk(:,:,nBlk) = y(lstS(iT)+[nPre:nPost],:); % changd from yblk(:,:,end+1)
             end
         else
-            disp( sprintf('WARNING: Trial %d for Condition %d EXCLUDED because of time range',iT,iS) );
+            fprintf('WARNING: Trial %d for Condition %d EXCLUDED because of time range\n',iT,iS);
         end
     end
 

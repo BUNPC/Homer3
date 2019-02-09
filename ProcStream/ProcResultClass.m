@@ -19,7 +19,13 @@ classdef ProcResultClass < handle
     methods
         
         % ---------------------------------------------------------------------------
-        function obj = ProcResultClass
+        function obj = ProcResultClass()
+            obj.Initialize();
+        end
+        
+        
+        % ---------------------------------------------------------------------------
+        function Initialize(obj)
             obj.dod = [];
             obj.dc = [];
             obj.dodAvg = [];
@@ -34,8 +40,7 @@ classdef ProcResultClass < handle
             obj.grpAvgPass = [];
             obj.misc = [];
         end
-        
-        
+             
         
         % ---------------------------------------------------------------------------
         function SettHRFCommon(obj, tHRF_common, name, type)
@@ -100,6 +105,22 @@ classdef ProcResultClass < handle
             end
         end
 
+        
+        % ----------------------------------------------------------------------------------
+        function Flush(obj)
+            obj.Initialize();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Print(obj, indent)
+            if ~exist('indent', 'var')
+                indent = 6;
+            end
+            fprintf('%sOutput:\n', blanks(indent));
+            fprintf('%snTrials:\n', blanks(indent+4));
+            pretty_print_matrix(obj.nTrials, indent+4, sprintf('%%d'))
+        end
         
           
     end

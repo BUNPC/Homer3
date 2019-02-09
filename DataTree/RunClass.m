@@ -348,6 +348,9 @@ classdef RunClass < TreeNodeClass
                 listboxFuncPtr = [];
             end
             
+            % Recalculating result means deleting old results
+            % obj.procStream.output.Flush();
+
             % Change and display position of current processing
             if ~isempty(listboxFuncPtr)
                 listboxFuncPtr(hListbox, [obj.iSubj, obj.iRun]);
@@ -375,6 +378,20 @@ classdef RunClass < TreeNodeClass
 
             % Calculate processing stream
             obj.procStream.Calc();
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function Print(obj, indent)
+            if ~exist('indent', 'var')
+                indent = 4;
+            end
+            fprintf('%sRun %d:\n', blanks(indent), obj.iRun);
+            fprintf('%sCondNames: %s\n', blanks(indent+4), cell2str(obj.CondNames));
+            fprintf('%sCondName2Group:\n', blanks(indent+4));
+            pretty_print_matrix(obj.CondName2Group, indent+4, sprintf('%%d'));            
+            obj.procStream.input.Print(indent+4);
+            obj.procStream.output.Print(indent+4);            
         end
         
     end    % Public methods

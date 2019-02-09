@@ -155,6 +155,9 @@ classdef SubjClass < TreeNodeClass
                 listboxFuncPtr = [];
             end
             
+            % Recalculating result means deleting old results
+            % obj.procStream.output.Flush();
+            
             % Calculate all runs in this session
             runs = obj.runs;
             nRun = length(runs);
@@ -204,6 +207,27 @@ classdef SubjClass < TreeNodeClass
 
             % Calculate processing stream
             obj.procStream.Calc();
+        end
+                
+        
+        % ----------------------------------------------------------------------------------
+        function Print(obj, indent)
+            if ~exist('indent', 'var')
+                indent = 2;
+            end
+            if ~exist('indent', 'var')
+                indent = 2;
+            end
+            fprintf('%sSubject %d:\n', blanks(indent), obj.iSubj);
+            fprintf('%sCondNames: %s\n', blanks(indent+4), cell2str(obj.CondNames));
+            fprintf('%sCondName2Group:\n', blanks(indent+4));
+            pretty_print_matrix(obj.CondName2Group, indent+4, sprintf('%%d'));
+            obj.procStream.input.Print(indent+4);
+            obj.procStream.output.Print(indent+4);
+            
+            for ii=1:length(obj.runs)
+                obj.runs(ii).Print(indent+4);
+            end
         end
         
     end

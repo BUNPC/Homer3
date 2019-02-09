@@ -119,7 +119,7 @@ classdef StringsClass < handle
         
         
         % ------------------------------------------------------
-        function Move(obj, key1, key2)            
+        function Move(obj, key1, key2)
             if length(obj.c)<2
                 return;
             end

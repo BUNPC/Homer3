@@ -340,6 +340,8 @@ classdef FuncHelpClass < handle
             name = '';
             k = [];
             strs = str2cell(eval(sprintf('obj.sections.%s.str', section)), [], 'keepblanks');
+            
+            % Rule 1: Valid section is must end with a ':',' - ', or '--' 
             k1 = find(strs{iLine}==':');
             k2 = strfind(strs{iLine}, ' - ');
             k3 = strfind(strs{iLine}, '--');
@@ -355,9 +357,22 @@ classdef FuncHelpClass < handle
                 return;
             end
             temp = strtrim(strs{iLine}(1:(k-d)));
+
+            %%%% Check to make sure string preceding ':' is a valid section name.
+            
+            % Rule 2: If string preceding ':' (ie, potential section name) has spaces then it's 
+            % not a section name. 
             if ~isempty(find(temp==' '))
                 return;
             end
+            
+            % Rule 3: If string preceding ':' is indented greater than 2 spaces then it's not 
+            % a section name. 
+            indent_size = strfind(strs{iLine}(1:(k-d)), temp)-1;
+            if isempty(indent_size) || indent_size > 2
+                return;
+            end
+            
             name = strtrim(strs{iLine}(1:(k-d)));
             k = k(1);
         end

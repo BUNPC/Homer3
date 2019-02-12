@@ -92,7 +92,7 @@ for iFcall = 1:nFcall
     set(h_fname, 'tooltipstring',fcalls(iFcall).help);
     
     % Draw pushbutton to see output results if requested in config file
-    if fcalls(iFcall).argOut(1)=='#'
+    if fcalls(iFcall).argOutStr(1)=='#'
         h_bttn = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',[xpos_pbttn, ypos, 10, ysize],...
                           'string','Results');
         eval( sprintf(' fcn = @(hObject,eventdata)ProcStreamOptionsGUI(''pushbuttonProc_Callback'',hObject,%d,guidata(hObject));',iFcall) );
@@ -216,7 +216,7 @@ procInput = dataTree.currElem.procElem.procStream.input;
 procResult = dataTree.currElem.procElem.procStream.output;
 
 % parse output parameters
-sargout = procInput.fcalls(eventdata).argOut;
+sargout = procInput.fcalls(eventdata).argOutStr;
 
 % remove '[', ']', and ','
 for ii=1:length(sargout)

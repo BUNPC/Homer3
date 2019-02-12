@@ -1,6 +1,9 @@
 function stimGUI_Display(handles)
 global stimEdit
 
+if isempty(stimEdit.dataTree)
+    return;
+end
 if isempty(handles)
     return;
 end
@@ -19,10 +22,10 @@ if stimEdit.dataTree.currElem.procType ~= 3
     return;
 end
 
-CondNamesGroup = stimEdit.GetConditionsGroup();
-CondColTbl     = stimEdit.GetCondColTbl();
-t              = stimEdit.GetTime();
-s              = stimEdit.GetStims();
+CondNamesGroup = stimEdit.dataTree.group.GetConditions();
+CondColTbl     = stimEdit.dataTree.group.CondColTbl();
+t              = stimEdit.dataTree.currElem.procElem.GetTime();
+s              = stimEdit.dataTree.currElem.procElem.GetStims();
 
 [lstR,lstC] = find(abs(s)==1);
 [lstR,k] = sort(lstR);
@@ -40,7 +43,7 @@ for ii=1:nStim
         Lines(ii).handle = plot([1 1]*t(lstR(ii)), yy,'--', 'parent',handles.axes1);
     end
     
-    iCond = stimEdit.GetCondName2Group(lstC(ii));
+    iCond = stimEdit.dataTree.currElem.procElem.CondName2Group(lstC(ii));
     Lines(ii).color = CondColTbl(iCond,1:3);
     try
         set(Lines(ii).handle,'color',Lines(ii).color);
@@ -66,7 +69,7 @@ end
 set(handles.axes1,'xlim', [t(1), t(end)]);
 
 % Update conditions popupmenu
-set(handles.popupmenuConditions, 'string', sort(stimEdit.GetConditions()));
+set(handles.popupmenuConditions, 'string', sort(stimEdit.dataTree.currElem.procElem.GetConditions()));
 conditions = get(handles.popupmenuConditions, 'string');
 idx = get(handles.popupmenuConditions, 'value');
 condition = conditions{idx};

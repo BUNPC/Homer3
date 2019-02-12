@@ -259,12 +259,7 @@ classdef ProcInputClass < handle
             if iFcall>length(obj.fcalls)
                 return;
             end
-            k = find(obj.fcalls(iFcall).name=='_');
-            if isempty(k)
-                name = obj.fcalls(iFcall).name;
-            else
-                name = sprintf('%s\\%s...', obj.fcalls(iFcall).name(1:k-1), obj.fcalls(iFcall).name(k:end));
-            end            
+            name = sprintf_waitbar(obj.fcalls(iFcall).name);
         end
         
         

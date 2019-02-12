@@ -2,7 +2,7 @@ classdef ChildGuiClass < handle
     
     properties
         name
-        handle
+        handles
         args
         visible
         lastpos
@@ -23,7 +23,7 @@ classdef ChildGuiClass < handle
             %   gui = ChildGuiClass('procStreamGUI', true, '.snirf');
             %
             obj.name = '';
-            obj.handle = [];
+            obj.handles = struct('figure',[], 'updateptr',[]);
             obj.args = {};
             obj.visible = 'on';
             obj.lastpos = [];
@@ -70,15 +70,15 @@ classdef ChildGuiClass < handle
             end
             
             % If GUI already up and running, then don't relaunch it, simply exit
-            if ishandle(obj.handle)
+            if ishandle(obj.handles.figure)
                 return;
-            end           
+            end
             if exist('varargin','var') && isempty(obj.args)
                 obj.args = varargin;
             end
             
             % Allow up to 5 arguments to be passed to GUI
-            a = obj.args;            
+            a = obj.args;
             switch(length(a))
                 % Note that in addition to the guis known args we add as the last arg the last gui position. 
                 % We do this because even we can set the position after launching gui, it is much nices when 
@@ -86,39 +86,93 @@ classdef ChildGuiClass < handle
                 % appears only in the position we pass it since it is invisible until the gui's open function 
                 % exits
                 case 0
-                    eval( sprintf('obj.handle = %s(obj.lastpos);', obj.name) );
+                    eval( sprintf('obj.handles = %s(obj.lastpos);', obj.name) );
                 case 1
-                    eval( sprintf('obj.handle = %s(a{1}, obj.lastpos);', obj.name) );
+                    eval( sprintf('obj.handles = %s(a{1}, obj.lastpos);', obj.name) );
                 case 2
-                    eval( sprintf('obj.handle = %s(a{1}, a{2}, obj.lastpos);', obj.name) );
+                    eval( sprintf('obj.handles = %s(a{1}, a{2}, obj.lastpos);', obj.name) );
                 case 3
-                    eval( sprintf('obj.handle = %s(a{1}, a{2}, a{3}, obj.lastpos);', obj.name) );
+                    eval( sprintf('obj.handles = %s(a{1}, a{2}, a{3}, obj.lastpos);', obj.name) );
                 case 4
-                    eval( sprintf('obj.handle = %s(a{1}, a{2}, a{3}, a{4}, obj.lastpos);', obj.name) );
+                    eval( sprintf('obj.handles = %s(a{1}, a{2}, a{3}, a{4}, obj.lastpos);', obj.name) );
                 case 5
-                    eval( sprintf('obj.handle = %s(a{1}, a{2}, a{3}, a{4}, a{5}, obj.lastpos);', obj.name) );
+                    eval( sprintf('obj.handles = %s(a{1}, a{2}, a{3}, a{4}, a{5}, obj.lastpos);', obj.name) );
             end
-            if ishandle(obj.handle)
-                set(obj.handle, 'visible',obj.visible, 'CloseRequestFcn',@obj.Close);
+            if ishandle(obj.handles.figure)
+                set(obj.handles.figure, 'visible',obj.visible, 'CloseRequestFcn',@obj.Close);
+                set(obj.handles.figure, 'visible',obj.visible, 'DeleteFcn',@obj.Close);
                 if ~isempty(obj.lastpos)
                     % Even though we pass the last position arg to the GUI
                     % there's no guarantee, the gui will take advantage of
                     % it. There we make sure to set last gui position if it
                     % is available. 
                     p = obj.lastpos;
-                    set(obj.handle, 'position',[p(1),p(2),p(3),p(4)]);
+                    set(obj.handles.figure, 'position',[p(1),p(2),p(3),p(4)]);
                 end
+                obj.SetTitle();
             end
         end
         
         
+        
         % -------------------------------------------------------------------
-        function Close(obj, hObject, eventdata)
-            if ~ishandle(obj.handle)
+        function Update(obj)
+            if isempty(obj.name)
+                return;
+            end            
+            if isempty(obj.handles)
                 return;
             end
-            obj.lastpos = get(obj.handle, 'position');
-            delete(obj.handle);
+            
+            % If GUI is not already up and running, then exit
+            if ~ishandle(obj.handles.figure)
+                return;
+            end
+            if ~isa(obj.handles.updateptr, 'function_handle')
+                return;
+            end            
+            obj.handles.updateptr(obj.handles);
+        end
+        
+        
+        
+        % -------------------------------------------------------------------
+        function Close(obj, hObject, eventdata)
+            if ~ishandle(obj.handles.figure)
+                return;
+            end
+            obj.lastpos = get(obj.handles.figure, 'position');
+            delete(obj.handles.figure);
+        end
+        
+        
+        
+        % -------------------------------------------------------------------
+        function [title, vernum] = SetTitle(obj, option)
+            %
+            % Syntax:
+            %    [title, vernum] = obj.SetTitle()
+            %    [title, vernum] = obj.SetTitle(option)
+            %
+            % Example:
+            %
+            %    [verstr, vernum, title] = obj.SetTitle('exclpath')
+            %            
+            if nargin==1 || ~ischar(option) || ~ismember(option, {'inclpath', 'exclpath'})
+                option = '';
+            end            
+            if isempty(option)
+                option = 'inclpath';
+            end
+            [verstr, vernum] = version2string();
+            if strcmp(option, 'inclpath')
+                title = sprintf('%s: (%s) - %s', obj.name, verstr, pwd);
+            elseif strcmp(option, 'exclpath')
+                title = sprintf('%s: (%s)', obj.name, verstr);
+            end
+            if ishandle(obj.handles.figure)
+                set(obj.handles.figure,'name', title);
+            end
         end
         
     end
@@ -141,12 +195,12 @@ classdef ChildGuiClass < handle
         
         % -------------------------------------------------------------------
         function SetHandle(obj, val)
-            obj.handle = val;
+            obj.handles.figure = val;
         end
         
         % -------------------------------------------------------------------
         function val = GetHandle(obj)
-            val = obj.handle;
+            val = obj.handles.figure;
         end
         
         % -------------------------------------------------------------------

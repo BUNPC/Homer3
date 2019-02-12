@@ -113,7 +113,6 @@ end
 
 guiMain   = InitGuiMain(handles, dataTree);
 plotprobe = PlotProbeClass(handles);
-stimEdit  = StimEditClass(dataTree);
 
 % If data set has no errors enable window gui objects
 Homer3_EnableDisableGUI(handles,'on');
@@ -121,7 +120,6 @@ Homer3_EnableDisableGUI(handles,'on');
 hmr.dataTree  = dataTree;
 hmr.guiMain   = guiMain;
 hmr.plotprobe = plotprobe;
-hmr.stimEdit  = stimEdit;
 
 % Display data from currently selected processing element
 hmr.dataTree.DisplayCurrElem(guiMain);
@@ -129,6 +127,7 @@ hmr.dataTree.DisplayCurrElem(guiMain);
 hmr.handles.this = hObject;
 hmr.handles.proccessOpt = [];
 hmr.childguis(1) = ChildGuiClass('procStreamGUI');
+hmr.childguis(2) = ChildGuiClass('stimGUI');
 
 setGuiFonts(hObject);
 
@@ -158,18 +157,14 @@ end
 if isempty(hmr.handles)
     return;
 end
-if isempty(hmr.stimEdit)
-    return;
-end
 
-delete(hmr.stimEdit);
 delete(hmr.plotprobe);
 delete(hmr.dataTree);
+for ii=1:length(hmr.childguis)
+    hmr.childguis(ii).Close();
+end
 if ishandle(hmr.handles.this)
     delete(hmr.handles.this);
-end
-for ii=1:length(hmr.childguis)
-    hmr.childguis.Close();
 end
 
 hmr = [];
@@ -202,8 +197,7 @@ dataTree.DisplayCurrElem(guiMain);
 dataTree.DisplayCurrElem(plotprobe, guiMain); 
 dataTree.UpdateCurrElemProcStreamOptionsGUI();
 
-hmr.stimEdit.Update();
-
+updateChildGuis();
 
 
 
@@ -241,8 +235,7 @@ dataTree.DisplayCurrElem(guiMain);
 dataTree.DisplayCurrElem(plotprobe, guiMain); 
 dataTree.UpdateCurrElemProcStreamOptionsGUI();
 
-hmr.stimEdit.Update();
-
+updateChildGuis();
 
 
 % --------------------------------------------------------------------
@@ -503,7 +496,8 @@ hmr.handles.proccessOpt = dataTree.currElem.handles.ProcStreamOptionsGUI;
 function menuItemLaunchStimGUI_Callback(hObject, eventdata, handles)
 global hmr
 
-hmr.stimEdit.Launch();
+idx = findChildGuiIdx('stimGUI');
+hmr.childguis(idx).Launch();
 
 
 % --------------------------------------------------------------------
@@ -557,12 +551,8 @@ hmr.guiMain   = guiMain;
 function menuItemProcStreamEdit_Callback(hObject, eventdata, handles)
 global hmr
 
-for ii=1:length(hmr.childguis)
-    if strcmp(hmr.childguis.GetName, 'procStreamGUI')
-        break;
-    end
-end
-hmr.childguis(ii).Launch();
+idx = findChildGuiIdx('procStreamGUI');
+hmr.childguis(idx).Launch();
 
 
 
@@ -575,3 +565,26 @@ if get(hObject, 'value')
 else
     hmr.guiMain.applyEditCurrNodeOnly = true;
 end
+
+
+
+% --------------------------------------------------------------------
+function idx = findChildGuiIdx(name)
+global hmr
+idx = [];
+for ii=1:length(hmr.childguis)
+    if strcmp(hmr.childguis.GetName, name)
+        break;
+    end
+end
+idx = ii;
+
+
+% --------------------------------------------------------------------
+function updateChildGuis()
+global hmr
+for ii=1:length(hmr.childguis)
+    hmr.childguis(ii).Update();
+end
+
+

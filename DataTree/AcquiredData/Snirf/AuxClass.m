@@ -25,13 +25,11 @@ classdef AuxClass  < matlab.mixin.Copyable
                 obj.d = [];
                 obj.t = [];
             end
-            
         end
         
         
         % -------------------------------------------------------
         function err = Load(obj, fname, parent)
-
             err = 0;
             
             % Overwrite 1st argument if the property filename is NOT empty
@@ -65,13 +63,11 @@ classdef AuxClass  < matlab.mixin.Copyable
                 err = -1;
                 return;
             end
-
         end
 
         
         % -------------------------------------------------------
         function Save(obj, fname, parent)
-            
             if ~exist(fname, 'file')
                 fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
@@ -80,7 +76,12 @@ classdef AuxClass  < matlab.mixin.Copyable
             hdf5write(fname, [parent, '/name'], obj.name, 'WriteMode','append');
             hdf5write_safe(fname, [parent, '/d'], obj.d);
             hdf5write_safe(fname, [parent, '/t'], obj.t);
-
+        end
+        
+        
+        % -------------------------------------------------------
+        function d = GetData(obj)
+            d = obj.d;
         end
         
     end

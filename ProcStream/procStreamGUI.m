@@ -129,6 +129,7 @@ LoadProcStream(handles);
 
 
 
+
 % -------------------------------------------------------------
 function LoadRegistry(handles)
 global procStreamGui
@@ -167,6 +168,7 @@ iSubjPanel  = procStreamGui.iSubjPanel;
 iRunPanel   = procStreamGui.iRunPanel;
 listPsUsage = procStreamGui.listPsUsage;
 funcReg     = procStreamGui.funcReg;
+
 if isempty(funcReg)
     return;
 end
@@ -217,6 +219,9 @@ if isempty(ii)
     return;
 end
 funcnames = get(hObject,'string');
+if isempty(funcnames)
+    return
+end
 usagenames = funcReg(iPanel).GetUsageNames(funcnames{ii});
 iUsage = get(handles.listboxUsageOptions(iPanel), 'value');
 if iUsage>length(usagenames)
@@ -269,11 +274,21 @@ function pushbuttonAddFunc_Callback(hObject, eventdata, handles)
 global procStreamGui
 iPanel = procStreamGui.iPanel;
 listPsUsage = procStreamGui.listPsUsage;
+procElem = procStreamGui.procElem;
+type = procElem{iPanel}.type;
 
 iFunc      = get(handles.listboxFuncReg(iPanel),'value');
 funcnames  = get(handles.listboxFuncReg(iPanel),'string');
 iUsage     = get(handles.listboxUsageOptions(iPanel),'value');
 usagenames = get(handles.listboxUsageOptions(iPanel),'string');
+
+if isempty(funcnames)
+    msg{1} = sprintf('There are no %s-level registry functions to choose from.\n', type);
+    msg{2} = sprintf('Please add %s-level functions to registry', type);
+    menu([msg{:}],'OK');
+    return;
+end
+
 fcallselect = sprintf('%s: %s', funcnames{iFunc}, usagenames{iUsage});
 
 iFcall = get(handles.listboxFuncProcStream(iPanel),'value');
@@ -294,6 +309,11 @@ global procStreamGui
 iPanel = procStreamGui.iPanel;
 listPsUsage = procStreamGui.listPsUsage;
 
+if isempty(listPsUsage)
+    menu('Processing stream is empty. Please load or create a processing stream before using Delete button.', 'OK');
+    return;
+end
+
 iFcall = get(handles.listboxFuncProcStream(iPanel), 'value');
 listPsUsage(iPanel).Delete(iFcall);
 updateProcStreamListbox(handles,iPanel);
@@ -305,6 +325,12 @@ function pushbuttonMoveUp_Callback(hObject, eventdata, handles)
 global procStreamGui
 iPanel = procStreamGui.iPanel;
 listPsUsage = procStreamGui.listPsUsage;
+
+if isempty(listPsUsage)
+    menu('Processing stream is empty. Please load or create a processing stream before using Move Up button.', 'OK');
+    return;
+end
+
 
 iFcall = get(handles.listboxFuncProcStream(iPanel),'value');
 if iFcall == 0
@@ -325,6 +351,11 @@ global procStreamGui
 iPanel = procStreamGui.iPanel;
 listPsUsage = procStreamGui.listPsUsage;
 
+if isempty(listPsUsage)
+    menu('Processing stream is empty. Please load or create a processing stream before using Move Down button.', 'OK');
+    return;
+end
+
 iFcall = get(handles.listboxFuncProcStream(iPanel),'value');
 if iFcall == 0
     return
@@ -344,11 +375,17 @@ global procStreamGui
 reg = procStreamGui.dataTree.reg;
 procElem = procStreamGui.procElem;
 
+if reg.IsEmpty()
+    msg{1} = sprintf('Cannot load processing stream because no user functions are registered.\n');
+    msg{2} = sprintf('Please add user functions to registry before loading processing stream.');
+    menu([msg{:}],'OK');
+    return;
+end
+
 q = menu('Load current processing stream or config file?','Current processing stream','Config file','Cancel');
 if q==3
     return;
 end
-
 reload=false;
 if q==1
     reload = true;
@@ -357,7 +394,7 @@ elseif q==2
     [filename,pathname] = uigetfile( '*.cfg', 'Process Options Config File to Load From?');
     if filename == 0
         return;
-    end    
+    end
     for iPanel=1:length(procElem)
         procElem{iPanel}.LoadProcInputConfigFile([pathname,filename], reg);
     end
@@ -376,6 +413,11 @@ funcReg     = procStreamGui.funcReg;
 iGroupPanel = procStreamGui.iGroupPanel;
 iSubjPanel  = procStreamGui.iSubjPanel;
 iRunPanel   = procStreamGui.iRunPanel;
+
+if isempty(listPsUsage)
+    menu('Processing stream is empty. Please load or create a processing stream before saving it.', 'OK');
+    return;
+end
 
 q = menu('Save to current processing stream or config file?','Current processing stream','Config file','Cancel');
 if q==3

@@ -1,5 +1,4 @@
 function varargout = procStreamGUI(varargin)
-
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
@@ -24,13 +23,18 @@ end
 
 % -------------------------------------------------------------
 function varargout = procStreamGUI_OutputFcn(hObject, eventdata, handles)
-varargout{1} = handles.output;
+handles.updateptr = @procStreamGUI_Update;
+varargout{1} = handles;
 
 
 % -------------------------------------------------------------
 function procStreamGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global procStreamGui
 global hmr
+
+% Choose default command line output for procStreamGUI
+handles.output = hObject;
+guidata(hObject, handles);
 
 procStreamGui = [];
 
@@ -68,14 +72,7 @@ p = procStreamGui.pos;
 if ~isempty(p)
     set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
 end
-
-[~, V] = procStreamGUI_version(hObject);
-procStreamGui.version = V;
-
-
-% Choose default command line output for procStreamGUI
-handles.output = hObject;
-guidata(hObject, handles);
+procStreamGui.version = get(hObject, 'name');
 
 procStreamGui.iRunPanel = 2;
 procStreamGui.iSubjPanel = 3;
@@ -541,4 +538,11 @@ for iPanel=1:length(procStreamGui.listPsUsage)
     procStreamGui.listPsUsage(iPanel).Initialize();
     updateProcStreamListbox(handles, iPanel);
 end
+
+
+
+% --------------------------------------------------------------------
+function procStreamGUI_Update(handles)
+global procStreamGui
+
 

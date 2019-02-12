@@ -62,17 +62,26 @@ classdef FuncRegClass < matlab.mixin.Copyable
             expr = sprintf('%shmr%s_*.m', obj.userfuncdir, upper(obj.type(1)));
             files = dir(expr);
             
+            heading = sprintf('Registry loading %s-level user functions:', [upper(obj.type(1)), obj.type(2:end)]);
+            fprintf('%s\n', heading);
+            h = waitbar(0, heading);
+            N = length(files);
             kk=1;
-            for ii=1:length(files)
+            for ii=1:N
                 if strfind(files(ii).name, '_result.m')
                     continue;
                 end
+                progressmsg = sprintf('Parsing %s', files(ii).name);
+                fprintf('%s\n', progressmsg); 
+                waitbar(kk/N, h, sprintf_waitbar(progressmsg));
                 obj.entries(kk) = FuncRegEntryClass(files(ii).name);
                 obj.userfuncfiles{kk} = [obj.userfuncdir, files(ii).name];
                 kk=kk+1;
             end
+            close(h)
+            fprintf('\n');
         end
-        
+                
                
         % ----------------------------------------------------------------------------------
         function userfuncdir = FindUserFuncDir(obj)

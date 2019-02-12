@@ -8,8 +8,8 @@ if ~ishandles(handles.figure)
     return;
 end
 
-conditions =  stimEdit.GetConditions();
-filename = stimEdit.GetName();
+conditions =  stimEdit.dataTree.currElem.procElem.GetConditions();
+filename = stimEdit.dataTree.currElem.procElem.GetName();
 [~, fname, ext] = fileparts(filename);
 stimGUI_SetTextFilename([fname, ext, ' :'], handles);
 
@@ -18,4 +18,6 @@ stimGUI_SetTextFilename([fname, ext, ' :'], handles);
 set(handles.popupmenuConditions, 'value',icond);
 set(handles.popupmenuConditions, 'string',conditions);
 stimGUI_SetUitableStimInfo(conditions{icond}, handles);
+stimGUI_Display(handles);
+figure(handles.figure);
 

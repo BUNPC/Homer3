@@ -2,8 +2,8 @@ classdef FuncCallClass < handle
     properties
         name
         nameUI
-        argOut
-        argIn
+        argOutStr
+        argInStr
         paramIn
         help
         encodedStr
@@ -24,19 +24,19 @@ classdef FuncCallClass < handle
             %
             %       ===> FuncCallClass with properties:
             %
-            %          name: 'hmrBandpassFilt'
-            %        nameUI: 'hmrBandpassFilt'
+            %             name: 'hmrBandpassFilt'
+            %           nameUI: 'hmrBandpassFilt'
             %        argOut: 'dod'
-            %         argIn: '(dod,t'
-            %       paramIn: [1x2 ParamClass]
-            %          help: '  Perform a bandpass filter…'
+            %         argInStr: '(dod,t'
+            %          paramIn: [1x2 ParamClass]
+            %             help: '  Perform a bandpass filter…'
             %
-            obj.name     = '';
-            obj.nameUI   = '';
-            obj.argOut   = '';
-            obj.argIn    = '';
-            obj.paramIn  = ParamClass().empty;
-            obj.help     = '';
+            obj.name      = '';
+            obj.nameUI    = '';
+            obj.argOutStr = '';
+            obj.argInStr  = '';
+            obj.paramIn   = ParamClass().empty;
+            obj.help      = '';
             obj.encodedStr = '';
             
             if nargin==0
@@ -57,8 +57,8 @@ classdef FuncCallClass < handle
             
             objnew.name = obj.name;
             objnew.nameUI = obj.name;
-            objnew.argOut = obj.argOut;
-            objnew.argIn = obj.argIn;
+            objnew.argOutStr = obj.argOutStr;
+            objnew.argInStr = obj.argInStr;
             for ii=1:length(obj.paramIn)
                 objnew.paramIn(ii) = obj.paramIn(ii).copy();
             end
@@ -112,7 +112,7 @@ classdef FuncCallClass < handle
             %          name: 'hmrBandpassFilt'
             %        nameUI: 'hmrBandpassFilt'
             %        argOut: 'dod'
-            %         argIn: '(dod,t'
+            %         argInStr: '(dod,t'
             %       paramIn: [1x2 ParamClass]
             %          help: '  Perform a bandpass filter…'
             %
@@ -150,8 +150,8 @@ classdef FuncCallClass < handle
                             obj.name = textstr{ii+1};
                             obj.nameUI = obj.name;
                         end
-                        obj.argOut = textstr{ii+2};
-                        obj.argIn = textstr{ii+3};
+                        obj.argOutStr = textstr{ii+2};
+                        obj.argInStr = textstr{ii+3};
                         obj.GetHelp();
                         flag = 3;
                     else
@@ -212,10 +212,10 @@ classdef FuncCallClass < handle
             if ~strcmp(obj.nameUI, obj2.nameUI)
                 return;
             end
-            if ~strcmp(obj.argOut, obj2.argOut)
+            if ~strcmp(obj.argOutStr, obj2.argOutStr)
                 return;
             end
-            if ~strcmp(obj.argIn, obj2.argIn)
+            if ~strcmp(obj.argInStr, obj2.argInStr)
                 return;
             end
             if length(obj.paramIn) ~= length(obj2.paramIn)

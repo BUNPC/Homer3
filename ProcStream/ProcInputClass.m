@@ -119,8 +119,9 @@ classdef ProcInputClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function args = GetInputArgs(obj, iFcall)
+        function [args, type] = GetInputArgs(obj, iFcall)
             args={};
+            type={};
             if isempty(obj.fcalls)
                 return;
             end
@@ -839,9 +840,15 @@ classdef ProcInputClass < handle
             persistent v;
             if nargin>1
                 iG = reg.igroup;
-                v = {...
+                tmp = {...
                     reg.funcReg(iG).GetUsageStrDecorated('hmrG_BlockAvg','dcAvg'); ...
                 };
+                for ii=1:length(tmp)
+                    if ~isempty(tmp{ii})
+                        v = tmp;
+                        break;
+                    end
+                end
             end
             val = v;
         end
@@ -852,9 +859,15 @@ classdef ProcInputClass < handle
             persistent v;
             if nargin>1
                 iS = reg.isubj;
-                v = {...
+                tmp = {...
                     reg.funcReg(iS).GetUsageStrDecorated('hmrS_BlockAvg','dcAvg'); ...
                 };
+                for ii=1:length(tmp)
+                    if ~isempty(tmp{ii})
+                        v = tmp;
+                        break;
+                    end
+                end
             end
             val = v;
         end
@@ -865,14 +878,20 @@ classdef ProcInputClass < handle
             persistent v;
             if nargin>1
                 iR = reg.irun;
-                v = {...
+                tmp = {...
                     reg.funcReg(iR).GetUsageStrDecorated('hmrR_Intensity2OD'); ...
                     reg.funcReg(iR).GetUsageStrDecorated('hmrR_MotionArtifact'); ...
                     reg.funcReg(iR).GetUsageStrDecorated('hmrR_BandpassFilt'); ...
                     reg.funcReg(iR).GetUsageStrDecorated('hmrR_OD2Conc'); ...
                     reg.funcReg(iR).GetUsageStrDecorated('hmrR_StimRejection'); ...
                     reg.funcReg(iR).GetUsageStrDecorated('hmrR_BlockAvg','dcAvg'); ...
-                };                
+                };
+                for ii=1:length(tmp)
+                    if ~isempty(tmp{ii})
+                        v = tmp;
+                        break;
+                    end
+                end
             end
             val = v;
         end

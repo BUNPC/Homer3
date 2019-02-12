@@ -36,6 +36,7 @@ procInput = currElem.procElem.procStream.input;
 fcalls = procInput.fcalls;
 
 if isempty(fcalls)
+    menu('Processing stream is empty. Please check the registry to see if any user functions were loaded.', 'OK')
     return;
 end
 
@@ -167,6 +168,10 @@ varargout{1} = hObject;
 
 % Restore the gui position set in ProcStreamOptionsGUI_OpeningFcn
 p = getappdata(hObject,'position');
+if isempty(p)
+    delete(hObject)
+    return;
+end
 set(hObject, 'position',[p(1), p(2), p(3), p(4)]);
 set(hObject,'visible','on');
 

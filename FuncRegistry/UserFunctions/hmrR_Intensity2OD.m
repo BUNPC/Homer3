@@ -7,10 +7,10 @@
 % DESCRIPTION:
 % Converts internsity (raw data) to optical density
 %
-% INPUT
+% INPUT:
 % d - intensity data (#time points x #data channels
 %
-% OUTPUT
+% OUTPUT:
 % dod - the change in optical density
 %
 % USAGE OPTIONS:

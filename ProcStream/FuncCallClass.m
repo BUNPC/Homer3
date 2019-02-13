@@ -2,8 +2,8 @@ classdef FuncCallClass < handle
     properties
         name
         nameUI
-        argOutStr
-        argInStr
+        argOut
+        argIn
         paramIn
         help
         encodedStr
@@ -27,16 +27,16 @@ classdef FuncCallClass < handle
             %             name: 'hmrBandpassFilt'
             %           nameUI: 'hmrBandpassFilt'
             %        argOut: 'dod'
-            %         argInStr: '(dod,t'
+            %         argIn.str: '(dod,t'
             %          paramIn: [1x2 ParamClass]
             %             help: '  Perform a bandpass filter…'
             %
-            obj.name      = '';
-            obj.nameUI    = '';
-            obj.argOutStr = '';
-            obj.argInStr  = '';
-            obj.paramIn   = ParamClass().empty;
-            obj.help      = '';
+            obj.name       = '';
+            obj.nameUI     = '';
+            obj.argOut     = ArgClass();
+            obj.argIn      = ArgClass();
+            obj.paramIn    = ParamClass().empty;
+            obj.help       = '';
             obj.encodedStr = '';
             
             if nargin==0
@@ -57,8 +57,8 @@ classdef FuncCallClass < handle
             
             objnew.name = obj.name;
             objnew.nameUI = obj.name;
-            objnew.argOutStr = obj.argOutStr;
-            objnew.argInStr = obj.argInStr;
+            objnew.argOut = obj.argOut.copy();
+            objnew.argIn = obj.argIn.copy();
             for ii=1:length(obj.paramIn)
                 objnew.paramIn(ii) = obj.paramIn(ii).copy();
             end
@@ -97,6 +97,25 @@ classdef FuncCallClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function DecodeArgIn(obj)
+            if isempty(obj.argIn.str)
+                return                
+            end
+            s = strtrim(obj.argIn.str);
+            if s(1)~='('
+                return;              
+            end
+            args = str2cell(s(2:end),',');
+            fhelp = FuncHelpClass(obj.name);
+            for ii=1:length(args)
+                obj.argIn.vars(ii).name = args{ii};
+                obj.argIn.vars(ii).help = fhelp.GetParamDescr(ii);
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
         function Decode(obj, fcallStrEncoded)
             %
             % Syntax:
@@ -112,7 +131,7 @@ classdef FuncCallClass < handle
             %          name: 'hmrBandpassFilt'
             %        nameUI: 'hmrBandpassFilt'
             %        argOut: 'dod'
-            %         argInStr: '(dod,t'
+            %         argIn.str: '(dod,t'
             %       paramIn: [1x2 ParamClass]
             %          help: '  Perform a bandpass filter…'
             %
@@ -150,9 +169,10 @@ classdef FuncCallClass < handle
                             obj.name = textstr{ii+1};
                             obj.nameUI = obj.name;
                         end
-                        obj.argOutStr = textstr{ii+2};
-                        obj.argInStr = textstr{ii+3};
                         obj.GetHelp();
+                        obj.argOut.str = textstr{ii+2};
+                        obj.argIn.str = textstr{ii+3};
+                        obj.DecodeArgIn();
                         flag = 3;
                     else
                         % If function call string continue, means we have
@@ -212,10 +232,10 @@ classdef FuncCallClass < handle
             if ~strcmp(obj.nameUI, obj2.nameUI)
                 return;
             end
-            if ~strcmp(obj.argOutStr, obj2.argOutStr)
+            if ~strcmp(obj.argOut.str, obj2.argOut.str)
                 return;
             end
-            if ~strcmp(obj.argInStr, obj2.argInStr)
+            if ~strcmp(obj.argIn.str, obj2.argIn.str)
                 return;
             end
             if length(obj.paramIn) ~= length(obj2.paramIn)

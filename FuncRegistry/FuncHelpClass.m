@@ -236,6 +236,18 @@ classdef FuncHelpClass < handle
             if isproperty(obj.sections,'inputs')
                 subsections = obj.sections.inputs.subsections;
             end
+            if isempty(subsections)
+                return;
+            end
+            
+            % if the input is a number index into the inputs arrays, then we 
+            % don't need to seach for the param name 
+            if iswholenum(param)
+                str = subsections(param).str;
+                return;
+            end
+            
+            % Search for the parameter with name <param>
             for ii=1:length(subsections)
                 if strcmp(param, subsections(ii).name)
                     str = subsections(ii).str;
@@ -250,6 +262,9 @@ classdef FuncHelpClass < handle
             if isproperty(obj.sections,'usageoptions')
                 subsections = obj.sections.usageoptions.subsections;
             end
+            if isempty(subsections)
+                return;
+            end
             usage        = cell(length(subsections),1);
             friendlyname = cell(length(subsections),1);
             for ii=1:length(subsections)
@@ -261,9 +276,14 @@ classdef FuncHelpClass < handle
         
         % -------------------------------------------------------------
         function [paramname, valformat] = GetParamUsage(obj)
+            paramname = {};
+            valformat = {};
             subsections = [];
             if isproperty(obj.sections,'parameters')
                 subsections = obj.sections.parameters.subsections;
+            end
+            if isempty(subsections)
+                return;
             end
             paramname = cell(length(subsections),1);
             valformat = cell(length(subsections),1);

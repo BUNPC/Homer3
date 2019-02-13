@@ -47,7 +47,7 @@ classdef ProcStreamClass
                 sargout = obj.input.ParseOutputArgs(iFcall);
                 
                 % call function
-                fcall = sprintf('%s = %s%s%s);', sargout, obj.input.GetFuncCallName(iFcall), obj.input.fcalls(iFcall).argInStr, sargin);
+                fcall = sprintf('%s = %s%s%s);', sargout, obj.input.GetFuncCallName(iFcall), obj.input.fcalls(iFcall).argIn.str, sargin);
                 if DEBUG
                     fprintf('%s\n', fcall);
                 end
@@ -63,7 +63,7 @@ classdef ProcStreamClass
                 %%%% Parse output parameters
                 
                 % remove '[', ']', and ','
-                foos = obj.input.fcalls(iFcall).argOutStr;
+                foos = obj.input.fcalls(iFcall).argOut.str;
                 for ii=1:length(foos)
                     if foos(ii)=='[' | foos(ii)==']' | foos(ii)==',' | foos(ii)=='#'
                         foos(ii) = ' ';

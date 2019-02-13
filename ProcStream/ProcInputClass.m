@@ -89,7 +89,7 @@ classdef ProcInputClass < handle
             % one VALID function is present
             b=1;
             for ii=1:length(obj.fcalls)
-                if ~isempty(obj.fcalls(ii).name) && ~isempty(obj.fcalls(ii).argOutStr)
+                if ~isempty(obj.fcalls(ii).name) && ~isempty(obj.fcalls(ii).argOut.str)
                     b=0;
                     return;
                 end
@@ -135,13 +135,13 @@ classdef ProcInputClass < handle
                 if iFcall(jj)>nFcall
                     continue;
                 end
-                if obj.fcalls(iFcall(jj)).argInStr(1) ~= '('
+                if obj.fcalls(iFcall(jj)).argIn.str(1) ~= '('
                     continue;
                 end
                 j=2;
-                k = [strfind(obj.fcalls(iFcall(jj)).argInStr,',') length(obj.fcalls(iFcall(jj)).argInStr)+1];
+                k = [strfind(obj.fcalls(iFcall(jj)).argIn.str,',') length(obj.fcalls(iFcall(jj)).argIn.str)+1];
                 for ii=1:length(k)
-                    args{kk} = obj.fcalls(iFcall(jj)).argInStr(j:k(ii)-1);
+                    args{kk} = obj.fcalls(iFcall(jj)).argIn.str(j:k(ii)-1);
                     j = k(ii)+1;
                     kk=kk+1;
                 end
@@ -189,7 +189,7 @@ classdef ProcInputClass < handle
             sarginVal = '';
             for iP = 1:nParam
                 p{iP} = obj.fcalls(iFcall).paramIn(iP).value;
-                if length(obj.fcalls(iFcall).argInStr)==1 & iP==1
+                if length(obj.fcalls(iFcall).argIn.str)==1 & iP==1
                     sargin = sprintf('%sp{%d}', sargin, iP);
                     if isnumeric(p{iP})
                         if length(p{iP})==1
@@ -229,8 +229,8 @@ classdef ProcInputClass < handle
             if iFcall>length(obj.fcalls)
                 return;
             end            
-            sargout = obj.fcalls(iFcall).argOutStr;
-            for ii=1:length(obj.fcalls(iFcall).argOutStr)
+            sargout = obj.fcalls(iFcall).argOut.str;
+            for ii=1:length(obj.fcalls(iFcall).argOut.str)
                 if sargout(ii)=='#'
                     sargout(ii) = ' ';
                 end

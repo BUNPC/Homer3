@@ -297,9 +297,10 @@ if listPsUsage(iPanel).IsMember(fcallselect, ':')
     menu('This usage already exist in processing stream. Each usage entry in processing stream must be unique.','OK')
     return;
 end
-listPsUsage(iPanel).Insert(fcallselect, iFcall);
+listPsUsage(iPanel).Insert(fcallselect, iFcall, 'before');
 listPsUsage(iPanel).Tabularize();
 updateProcStreamListbox(handles,iPanel);
+uicontrol(handles.listboxFuncProcStream(iPanel));
 
 
 
@@ -317,6 +318,7 @@ end
 iFcall = get(handles.listboxFuncProcStream(iPanel), 'value');
 listPsUsage(iPanel).Delete(iFcall);
 updateProcStreamListbox(handles,iPanel);
+uicontrol(handles.listboxFuncProcStream(iPanel));
 
 
 
@@ -342,6 +344,7 @@ if iFcall>1
 end
 set(handles.listboxFuncProcStream(iPanel), 'value',iFcall)
 set(handles.listboxFuncProcStream(iPanel), 'string',listPsUsage(iPanel).Get())
+uicontrol(handles.listboxFuncProcStream(iPanel));
 
 
 
@@ -366,6 +369,7 @@ if iFcall<listPsUsage(iPanel).GetSize()
 end
 set(handles.listboxFuncProcStream(iPanel), 'value',iFcall)
 set(handles.listboxFuncProcStream(iPanel), 'string',listPsUsage(iPanel).Get())
+uicontrol(handles.listboxFuncProcStream(iPanel));
 
 
 

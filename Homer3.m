@@ -122,7 +122,7 @@ hmr.guiMain   = guiMain;
 hmr.plotprobe = plotprobe;
 
 % Display data from currently selected processing element
-hmr.dataTree.DisplayCurrElem(guiMain);
+DisplayData();
 
 hmr.handles.this = hObject;
 hmr.handles.proccessOpt = [];
@@ -179,7 +179,6 @@ function uipanelProcessingType_SelectionChangeFcn(hObject, eventdata, handles)
 global hmr
 
 dataTree  = hmr.dataTree;
-guiMain   = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
 procType = get(hObject,'tag');
@@ -192,9 +191,9 @@ switch(procType)
         dataTree.currElem.procType = 3;
 end
 dataTree.LoadCurrElem();
-guiMain = UpdateAxesDataCondition(guiMain, dataTree);
-dataTree.DisplayCurrElem(guiMain);
-dataTree.DisplayCurrElem(plotprobe, guiMain); 
+hmr.guiMain = UpdateAxesDataCondition(hmr.guiMain, dataTree);
+DisplayData();
+dataTree.DisplayCurrElem(plotprobe, hmr.guiMain); 
 dataTree.UpdateCurrElemProcStreamOptionsGUI();
 
 updateChildGuis();
@@ -225,14 +224,13 @@ if isempty(idx==0)
     return;
 end
 
-guiMain = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
 dataTree.LoadCurrElem();
-guiMain = UpdateAxesDataCondition(guiMain, dataTree);
+hmr.guiMain = UpdateAxesDataCondition(hmr.guiMain, dataTree);
 
-dataTree.DisplayCurrElem(guiMain);
-dataTree.DisplayCurrElem(plotprobe, guiMain); 
+DisplayData();
+dataTree.DisplayCurrElem(plotprobe, hmr.guiMain); 
 dataTree.UpdateCurrElemProcStreamOptionsGUI();
 
 updateChildGuis();
@@ -243,14 +241,13 @@ function pushbuttonCalcProcStream_Callback(hObject, eventdata, handles)
 global hmr
 
 dataTree = hmr.dataTree;
-guiMain = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
 dataTree.CalcCurrElem();
 dataTree.SaveCurrElem();
 
-dataTree.DisplayCurrElem(guiMain);
-dataTree.DisplayCurrElem(plotprobe, guiMain); 
+DisplayData();
+dataTree.DisplayCurrElem(plotprobe, hmr.guiMain); 
 
 
 
@@ -270,32 +267,24 @@ function uipanelPlot_SelectionChangeFcn(hObject, eventdata, handles)
 global hmr
 
 dataTree  = hmr.dataTree;
-guiMain   = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
-guiMain = GetAxesDataType(guiMain);
-dataTree.DisplayCurrElem(guiMain);
-dataTree.DisplayCurrElem(plotprobe, guiMain);
+GetAxesDataType()
+DisplayData();
+dataTree.DisplayCurrElem(plotprobe, hmr.guiMain);
 
-datatype   = guiMain.datatype;
-buttonVals = guiMain.buttonVals;
+datatype   = hmr.guiMain.datatype;
+buttonVals = hmr.guiMain.buttonVals;
 if datatype == buttonVals.RAW || datatype == buttonVals.RAW_HRF
-    
-    set(guiMain.handles.listboxPlotWavelength, 'visible','on');
-    set(guiMain.handles.listboxPlotConc, 'visible','off');
-    
+    set(hmr.guiMain.handles.listboxPlotWavelength, 'visible','on');
+    set(hmr.guiMain.handles.listboxPlotConc, 'visible','off');
 elseif datatype == buttonVals.OD || datatype == buttonVals.OD_HRF
-    
-    set(guiMain.handles.listboxPlotWavelength, 'visible','on');
-    set(guiMain.handles.listboxPlotConc, 'visible','off');
-    
+    set(hmr.guiMain.handles.listboxPlotWavelength, 'visible','on');
+    set(hmr.guiMain.handles.listboxPlotConc, 'visible','off');
 elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF
-    
-    set(guiMain.handles.listboxPlotWavelength, 'visible','off');
-    set(guiMain.handles.listboxPlotConc, 'visible','on');
-    
+    set(hmr.guiMain.handles.listboxPlotWavelength, 'visible','off');
+    set(hmr.guiMain.handles.listboxPlotConc, 'visible','on');
 end
-hmr.guiMain = guiMain;
 
 
 
@@ -304,14 +293,12 @@ function checkboxPlotHRF_Callback(hObject, eventdata, handles)
 global hmr
 
 dataTree  = hmr.dataTree;
-guiMain   = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
-guiMain = GetAxesDataType(guiMain);
-dataTree.DisplayCurrElem(guiMain);
-dataTree.DisplayCurrElem(plotprobe, guiMain);
+GetAxesDataType();
+DisplayData();
+dataTree.DisplayCurrElem(plotprobe, hmr.guiMain);
 
-hmr.guiMain = guiMain;
 hmr.plotprobe = plotprobe;
 
 
@@ -334,20 +321,15 @@ function axesSDG_ButtonDownFcn(hObject, eventdata, handles)
 global hmr
 
 dataTree = hmr.dataTree;
-guiMain = hmr.guiMain;
-
 if dataTree.IsEmpty()
     return;
 end
 
 % Transfer the channels selection to guiMain
-guiMain = SetAxesDataCh(guiMain, dataTree.currElem);
+SetAxesDataCh();
 
 % Update the displays of the guiMain and axesSDG axes
-dataTree.DisplayCurrElem(guiMain);
-
-% the the modified objects
-hmr.guiMain = guiMain;
+DisplayData();
 
 
 
@@ -357,17 +339,13 @@ function popupmenuConditions_Callback(hObject, eventdata, handles)
 global hmr
 
 dataTree = hmr.dataTree;
-guiMain = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
-guiMain = GetAxesDataCondition(guiMain);
+GetAxesDataCondition();
 
 % Update the display of the guiMain axes
-dataTree.DisplayCurrElem(guiMain);
-dataTree.DisplayCurrElem(plotprobe, guiMain);
-
-% the the modified objects
-hmr.guiMain = guiMain;
+DisplayData();
+dataTree.DisplayCurrElem(plotprobe, hmr.guiMain);
 
 
 
@@ -378,17 +356,15 @@ function listboxPlotWavelength_Callback(hObject, eventdata, handles)
 global hmr
 
 dataTree  = hmr.dataTree;
-guiMain   = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
-guiMain = GetAxesDataWl(guiMain, dataTree.currElem.procElem.GetWls());
+GetAxesDataWl();
 
 % Update the displays of the guiMain and axesSDG axes
-dataTree.DisplayCurrElem(guiMain);
-dataTree.DisplayCurrElem(plotprobe, guiMain);
+DisplayData();
+dataTree.DisplayCurrElem(plotprobe, hmr.guiMain);
 
 % the the modified objects
-hmr.guiMain = guiMain;
 
 
 
@@ -399,18 +375,16 @@ function listboxPlotConc_Callback(hObject, eventdata, handles)
 global hmr
 
 dataTree  = hmr.dataTree;
-guiMain   = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
 % Transfer the channels selection to guiMain
-guiMain = GetAxesDataHbType(guiMain);
+GetAxesDataHbType();
 
 % Update the displays of the guiMain and axesSDG axes
-dataTree.DisplayCurrElem(guiMain);
-dataTree.DisplayCurrElem(plotprobe, guiMain);
+DisplayData();
+dataTree.DisplayCurrElem(plotprobe, hmr.guiMain);
 
 % the the modified objects
-hmr.guiMain = guiMain;
 hmr.plotprobe = plotprobe;
 
 
@@ -419,7 +393,6 @@ hmr.plotprobe = plotprobe;
 % --------------------------------------------------------------------
 function menuChangeDirectory_Callback(hObject, eventdata, handles)
 global hmr
-guiMain = hmr.guiMain;
 
 fmt = hmr.format;
 
@@ -453,12 +426,9 @@ function menuItemReset_Callback(hObject, eventdata, handles)
 global hmr
 
 dataTree = hmr.dataTree;
-guiMain  = hmr.guiMain;
-
 dataTree.currElem.procElem.Reset();
 dataTree.currElem.procElem.Save();
-dataTree.currElem.procElem.DisplayGuiMain(guiMain);
-
+DisplayData();
 
 
 % --------------------------------------------------------------------
@@ -466,9 +436,8 @@ function menuCopyCurrentPlot_Callback(hObject, eventdata, handles)
 global hmr
 
 currElem = hmr.dataTree.currElem;
-guiMain = hmr.guiMain;
 
-[hf, plotname] = CopyDisplayCurrElem(currElem, guiMain);
+[hf, plotname] = CopyDisplayCurrElem(currElem, hmr.guiMain);
 
 
 
@@ -511,24 +480,17 @@ hmr.dataTree.currElem.procElem.Save();
 function menuItemViewHRFStdErr_Callback(hObject, eventdata, handles)
 global hmr
 
-dataTree = hmr.dataTree;
-guiMain = hmr.guiMain;
-
 if strcmp(get(hObject, 'checked'), 'on')
     set(hObject, 'checked', 'off')
 elseif strcmp(get(hObject, 'checked'), 'off')
     set(hObject, 'checked', 'on')
 end
-
 if strcmp(get(hObject, 'checked'), 'on')
-    guiMain.showStdErr = true;
+    hmr.guiMain.showStdErr = true;
 elseif strcmp(get(hObject, 'checked'), 'off')
-    guiMain.showStdErr = false;
+    hmr.guiMain.showStdErr = false;
 end
-
-dataTree.DisplayCurrElem(guiMain);
-
-hmr.guiMain = guiMain;
+DisplayData();
 
 
 
@@ -537,14 +499,11 @@ function checkboxPlotProbe_Callback(hObject, eventdata, handles)
 global hmr
 
 dataTree  = hmr.dataTree;
-guiMain   = hmr.guiMain;
 plotprobe = hmr.plotprobe;
 
-guiMain = GetAxesDataType(guiMain);
+GetAxesDataType();
 plotprobe.active = get(hObject, 'value');
-dataTree.DisplayCurrElem(plotprobe, guiMain);
-
-hmr.guiMain   = guiMain;
+dataTree.DisplayCurrElem(plotprobe, hmr.guiMain);
 
 
 % --------------------------------------------------------------------
@@ -585,6 +544,217 @@ function updateChildGuis()
 global hmr
 for ii=1:length(hmr.childguis)
     hmr.childguis(ii).Update();
+end
+
+
+
+% ----------------------------------------------------------------------------------
+function DisplayData()
+global hmr
+dataTree = hmr.dataTree;
+guiMain = hmr.guiMain;
+procElem = dataTree.currElem.procElem;
+
+hAxes = guiMain.axesData.handles.axes;
+if ~ishandles(hAxes)
+    return;
+end
+
+axes(hAxes)
+cla;
+legend off
+set(hAxes,'ygrid','on');
+
+linecolor  = guiMain.axesData.linecolor;
+linestyle  = guiMain.axesData.linestyle;
+datatype   = guiMain.datatype;
+condition  = guiMain.condition;
+iCh        = guiMain.ch;
+iWl        = guiMain.wl;
+hbType     = guiMain.hbType;
+buttonVals = guiMain.buttonVals;
+sclConc    = guiMain.sclConc;        % convert Conc from Molar to uMolar
+showStdErr = guiMain.showStdErr;
+
+condition = find(procElem.CondName2Group == condition);
+
+d       = [];
+dStd    = [];
+t       = [];
+nTrials = [];
+
+if datatype == buttonVals.RAW
+    d = procElem.GetDataMatrix();
+    t = procElem.GetTime();
+elseif datatype == buttonVals.OD
+    d = procElem.procStream.output.dod;
+    t = procElem.GetTime();
+elseif datatype == buttonVals.CONC
+    d = procElem.procStream.output.dc;
+    t = procElem.GetTime();
+elseif datatype == buttonVals.OD_HRF
+    d = procElem.procStream.output.dodAvg;
+    t = procElem.procStream.output.tHRF;
+    if showStdErr
+        dStd = procElem.procStream.output.dodAvgStd;
+    end
+    nTrials = procElem.procStream.output.nTrials;
+    if isempty(condition)
+        return;
+    end
+elseif datatype == buttonVals.CONC_HRF
+    d = procElem.procStream.output.dcAvg;
+    t = procElem.procStream.output.tHRF;
+    if showStdErr
+        dStd = procElem.procStream.output.dcAvgStd * sclConc;
+    end
+    nTrials = procElem.procStream.output.nTrials;
+    if isempty(condition)
+        return;
+    end
+end
+ch      = procElem.GetMeasList();
+
+%%% Plot data
+if ~isempty(d)
+    xx = xlim();
+    yy = ylim();
+    if strcmpi(get(hAxes,'ylimmode'),'manual')
+        flagReset = 0;
+    else
+        flagReset = 1;
+    end
+    hold on
+    
+    % Set the axes ranges
+    if flagReset==1
+        set(hAxes,'xlim',[floor(min(t)) ceil(max(t))]);
+        set(hAxes,'ylimmode','auto');
+    else
+        xlim(xx);
+        ylim(yy);
+    end
+    chLst = find(ch.MeasListVis(iCh)==1);
+    
+    % Plot data
+    if datatype == buttonVals.RAW || datatype == buttonVals.OD
+        if  datatype == buttonVals.OD_HRF
+            d = d(:,:,condition);
+        end
+        d = procElem.reshape_y(d, ch.MeasList);
+        DisplayDataRawOrOD(t, d, dStd, iWl, iCh, chLst, nTrials, condition, linecolor, linestyle);
+    elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF
+        if  datatype == buttonVals.CONC_HRF
+            d = d(:,:,:,condition);
+        end
+        d = d * sclConc;
+        DisplayDataConc(t, d, dStd, hbType, iCh, chLst, nTrials, condition, linecolor, linestyle);
+    end
+end
+DisplayAxesSDG();
+DisplayStim();
+
+            
+            
+% ----------------------------------------------------------------------------------
+function DisplayStim()
+global hmr
+dataTree = hmr.dataTree;
+guiMain = hmr.guiMain;
+procElem = dataTree.currElem.procElem;
+
+if ~strcmp(procElem.type, 'run')
+    return;
+end
+
+hAxes = guiMain.axesData.handles.axes;
+if ~ishandles(hAxes)
+    return;
+end
+axes(hAxes);
+hold on;
+
+buttonVals = guiMain.buttonVals;
+
+if guiMain.datatype == buttonVals.RAW_HRF
+    return;
+end
+if guiMain.datatype == buttonVals.OD_HRF
+    return;
+end
+if guiMain.datatype == buttonVals.CONC_HRF
+    return;
+end
+
+procResult = procElem.procStream.output;
+
+%%% Plot stim marks. This has to be done before plotting exclude time
+%%% patches because stim legend doesn't work otherwise.
+if ~isempty(procElem.GetStims())
+    t = procElem.acquired.GetTime();
+    s = procElem.acquired.GetStims();
+    
+    % Plot included and excluded stims
+    yrange = GetAxesYRangeForStimPlot(hAxes);
+    hLg=[];
+    idxLg=[];
+    kk=1;
+    CondColTbl = procElem.CondColTbl;
+    for iS = 1:size(s,2)
+        iCond = procElem.CondName2Group(iS);
+        
+        lstS          = find(s(:,iS)==1 | s(:,iS)==-1);
+        lstExclS_Auto = [];
+        lstExclS_Man  = find(s(:,iS)==-1);
+        if isproperty(procResult,'s') && ~isempty(procResult.s)
+            lstExclS_Auto = find(s(:,iS)==1 & sum(procResult.s,2)<=-1);
+        end
+        
+        for iS2=1:length(lstS)
+            if ~isempty(find(lstS(iS2) == lstExclS_Auto))
+                hl = plot(t(lstS(iS2))*[1 1],yrange,'-.');
+                set(hl,'linewidth',1);
+                set(hl,'color',CondColTbl(iCond,:));
+            elseif ~isempty(find(lstS(iS2) == lstExclS_Man))
+                hl = plot(t(lstS(iS2))*[1 1],yrange,'--');
+                set(hl,'linewidth',1);
+                set(hl,'color',CondColTbl(iCond,:));
+            else
+                hl = plot(t(lstS(iS2))*[1 1],yrange,'-');
+                set(hl,'linewidth',1);
+                set(hl,'color',CondColTbl(iCond,:));
+            end
+        end
+        
+        % Get handles and indices of each stim condition
+        % for legend display
+        if ~isempty(lstS)
+            % We don't want dashed lines appearing in legend, so
+            % we draw invisible solid stims over all stims to
+            % trick the legend into only showing solid lines.
+            hLg(kk) = plot(t(lstS(iS2))*[1 1],yrange,'-', 'linewidth',4, 'visible','off');
+            set(hLg(kk),'color',CondColTbl(iCond,:));
+            idxLg(kk) = iCond;
+            kk=kk+1;
+        end
+    end
+    DisplayCondLegend(hLg, idxLg);
+end
+hold off
+set(hAxes,'ygrid','on');
+                
+                
+                
+% ----------------------------------------------------------------------------------
+function DisplayCondLegend(hLg, idxLg)
+global hmr
+dataTree = hmr.dataTree;
+procElem = dataTree.currElem.procElem;
+
+[idxLg, k] = sort(idxLg);
+CondNamesAll = procElem.CondNamesAll;
+if ishandles(hLg)
+    legend(hLg(k), CondNamesAll(idxLg));
 end
 
 

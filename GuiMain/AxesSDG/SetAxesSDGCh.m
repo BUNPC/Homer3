@@ -1,4 +1,7 @@
-function axesSDG = SetAxesSDGCh(axesSDG, currElem, maxCh)
+function SetAxesSDGCh()
+global hmr
+axesSDG = hmr.guiMain.axesSDG;
+currElem = hmr.dataTree.currElem;
 
 hAxesSDG = axesSDG.handles.axes;
 iCh      = axesSDG.iCh;
@@ -45,13 +48,11 @@ else
     lst = find( ch.MeasList(:,2)==idxMin & ch.MeasList(:,4)==idxLambda );
 end
 
-% Remove any channels from lst which are already part of the hmr.plotLst
+% Remove any channels from lst which are already part of the axesSDG.iCh
 % to avoid confusion with double counting of channels
-k = find(ismember(lst, axesSDG.iCh));
-lst(k) = [];
+lst(ismember(lst, axesSDG.iCh)) = [];
 
-
-if strcmp(mouseevent,'normal')   
+if strcmp(mouseevent,'normal')
     if SrcMin
         iCh = lst;
         iSrcDet = [idxMin*ones(length(lst),1) ch.MeasList(lst,2)];
@@ -76,3 +77,4 @@ end
 axesSDG.iCh     = iCh;
 axesSDG.iSrcDet = iSrcDet;
 
+hmr.guiMain.axesSDG = axesSDG;

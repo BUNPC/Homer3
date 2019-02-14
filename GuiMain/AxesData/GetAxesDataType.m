@@ -1,4 +1,5 @@
-function guiMain = GetAxesDataType(guiMain)
+function GetAxesDataType()
+global hmr
 
-guiMain.datatype = getDatatype(guiMain);
+hmr.guiMain.datatype = getDatatype(hmr.guiMain);
 

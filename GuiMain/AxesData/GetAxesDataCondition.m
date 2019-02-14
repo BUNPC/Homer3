@@ -1,4 +1,5 @@
-function guiMain = GetAxesDataCondition(guiMain)
+function  GetAxesDataCondition()
+global hmr
 
-guiMain.condition = getCondition(guiMain);
+hmr.guiMain.condition = getCondition(hmr.guiMain);
 

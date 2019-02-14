@@ -1,5 +1,5 @@
-function guiMain = GetAxesDataWl(guiMain, Lambda)
+function GetAxesDataWl()
+global hmr
+Lambda =  hmr.dataTree.currElem.procElem.GetWls();
 
-guiMain.wl = getWl(guiMain, Lambda);
-
-
+hmr.guiMain.wl = getWl(hmr.guiMain, Lambda);

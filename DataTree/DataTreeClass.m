@@ -169,7 +169,7 @@ classdef DataTreeClass <  handle
                 condition = canvas.condition;
             end
             if strcmp(canvas.name, 'guiMain')
-                obj.currElem.procElem.DisplayGuiMain(canvas);
+                DisplayGuiMain(canvas);
             elseif strcmp(canvas.name, 'plotprobe')
                 obj.currElem.procElem.DisplayPlotProbe(canvas, datatype, buttonVals, condition);
             end

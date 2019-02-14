@@ -146,94 +146,6 @@ classdef TreeNodeClass < handle
         end
         
         
-        % ----------------------------------------------------------------------------------
-        function DisplayGuiMain(obj, guiMain)
-            
-            hAxes = guiMain.axesData.handles.axes;
-            if ~ishandles(hAxes)
-                return;
-            end
-            
-            axes(hAxes)
-            cla;
-            legend off
-            set(hAxes,'ygrid','on');
-            
-            linecolor  = guiMain.axesData.linecolor;
-            linestyle  = guiMain.axesData.linestyle;
-            datatype   = guiMain.datatype;
-            condition  = guiMain.condition;
-            iCh        = guiMain.ch;
-            iWl        = guiMain.wl;
-            hbType     = guiMain.hbType;
-            buttonVals = guiMain.buttonVals;
-            sclConc    = guiMain.sclConc;        % convert Conc from Molar to uMolar
-            showStdErr = guiMain.showStdErr;
-            
-            condition = obj.GetCondNameIdx(condition);
-            
-            d       = [];
-            dStd    = [];
-            t       = [];
-            nTrials = [];
-            
-            if datatype == buttonVals.OD_HRF
-                t = obj.procStream.output.tHRF;
-                d = obj.procStream.output.dodAvg;
-                if showStdErr
-                    dStd = obj.procStream.output.dodAvgStd;
-                end
-                nTrials = obj.procStream.output.nTrials;
-            elseif datatype == buttonVals.CONC_HRF
-                t = obj.procStream.output.tHRF;
-                d = obj.procStream.output.dcAvg;
-                if showStdErr
-                    dStd = obj.procStream.output.dcAvgStd * sclConc;
-                end
-                nTrials = obj.procStream.output.nTrials;
-            end
-            ch = obj.GetMeasList();
-            
-            if isempty(condition)
-                return;
-            end
-            
-            %%% Plot data
-            if ~isempty(d)
-                xx = xlim();
-                yy = ylim();
-                if strcmpi(get(hAxes,'ylimmode'),'manual')
-                    flagReset = 0;
-                else
-                    flagReset = 1;
-                end
-                hold on
-                
-                % Set the axes ranges
-                if flagReset==1
-                    set(hAxes,'xlim',[floor(min(t)) ceil(max(t))]);
-                    set(hAxes,'ylimmode','auto');
-                else
-                    xlim(xx);
-                    ylim(yy);
-                end
-                
-                chLst = find(ch.MeasListVis(iCh)==1);
-                
-                % Plot data
-                if datatype == buttonVals.OD_HRF
-                    d = d(:,:,condition);
-                    d = obj.reshape_y(d, ch.MeasList);
-                    DisplayDataRawOrOD(t, d, dStd, iWl, iCh, chLst, nTrials, condition, linecolor, linestyle);
-                elseif datatype == buttonVals.CONC_HRF
-                    d = d(:,:,:,condition) * sclConc;
-                    DisplayDataConc(t, d, dStd, hbType, iCh, chLst, nTrials, condition, linecolor, linestyle);
-                end
-                
-            end
-            guiMain.axesSDG = DisplayAxesSDG(guiMain.axesSDG, obj);
-        end
-        
         
         % ----------------------------------------------------------------------------------
         function plotprobe = DisplayPlotProbe(obj, plotprobe, datatype, buttonVals, condition)
@@ -380,7 +292,17 @@ classdef TreeNodeClass < handle
         % ----------------------------------------------------------------------------------
         function name = GetName(obj)
             name = obj.name;
-        end        
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function d = GetDataMatrix(obj)
+            d = [];
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function t = GetTime(obj)
+            t = [];
+        end
         
     end
     

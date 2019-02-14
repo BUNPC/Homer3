@@ -36,7 +36,12 @@
 
 
 % --------------------------------------------------------------------
-function axesSDG = DisplayAxesSDG(axesSDG, procElem)
+function DisplayAxesSDG()
+global hmr
+dataTree = hmr.dataTree;
+guiMain = hmr.guiMain;
+axesSDG = guiMain.axesSDG;
+procElem = dataTree.currElem.procElem;
 
 % This function plots the prove geometry
 % Command line call:

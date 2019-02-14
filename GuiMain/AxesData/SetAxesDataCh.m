@@ -1,6 +1,6 @@
-function guiMain = SetAxesDataCh(guiMain, currElem)
+function SetAxesDataCh()
 
 % Find which channels were selected from axesSDG
-guiMain.axesSDG = SetAxesSDGCh(guiMain.axesSDG, currElem);
+SetAxesSDGCh();
+GetAxesSDGSelection();
 
-guiMain.ch = GetAxesSDGSelection(guiMain.axesSDG);

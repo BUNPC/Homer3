@@ -1,4 +1,4 @@
-function yrange = GetAxesYRange(hAxes)
+function yrange = GetAxesYRangeForStimPlot(hAxes)
 
 if ~exist('hAxes','var') || isempty(hAxes)
     hAxes = gca;

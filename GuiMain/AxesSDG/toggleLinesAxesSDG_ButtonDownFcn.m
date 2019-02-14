@@ -71,8 +71,7 @@ else
     return;
 end
 
-DisplayAxesSDG(axesSDG, currElem.procElem);
-currElem.procElem.DisplayGuiMain(guiMain);
+DisplayAxesSDG();
 
 
 

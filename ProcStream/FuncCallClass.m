@@ -26,7 +26,7 @@ classdef FuncCallClass < handle
             %
             %             name: 'hmrBandpassFilt'
             %           nameUI: 'hmrBandpassFilt'
-            %        argOut: 'dod'
+            %        argOut.str: 'dod'
             %         argIn.str: '(dod,t'
             %          paramIn: [1x2 ParamClass]
             %             help: '  Perform a bandpass filter…'

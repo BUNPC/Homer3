@@ -1,13 +1,5 @@
 classdef SnirfClass < AcqDataClass
-    
-    %
-    % Example usage:
-    %
-    %     snirf = SnirfClass('./Simple_Probe1_run04.snirf');
-    %     t = snirf.GetTime();
-    %     s = snirf.GetStims();
-    %     
-    
+        
     properties
         formatVersion
         data
@@ -23,7 +15,29 @@ classdef SnirfClass < AcqDataClass
         
         % -------------------------------------------------------
         function obj = SnirfClass(varargin)
-            
+            %
+            % Syntax:
+            %   obj = SnirfClass()
+            %   obj = SnirfClass(filename);
+            %   obj = SnirfClass(nirs);
+            %   obj = SnirfClass(d, t, SD, aux, s);
+            %   obj = SnirfClass(d, t, SD, aux, s, CondNames);
+            %
+            % Example 1:
+            %   Nirs2Snirf('./Simple_Probe1_run04.nirs');
+            %   snirf = SnirfClass('./Simple_Probe1_run04.snirf');
+            %    
+            %   Here's some of the output:
+            %
+            %   snirf(1).data ====>
+            % 
+            %       DataClass with properties:
+            %
+            %           d: [1200x8 double]
+            %           t: [1200x1 double]
+            %           ml: [1x8 MeasListClass]
+            %
+             
             % This parameter does NOT get saved when saving to Snirf file
             obj.filename = '';
             obj.fileformat = 'hdf5';

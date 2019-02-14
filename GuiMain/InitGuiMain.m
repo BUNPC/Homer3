@@ -43,7 +43,8 @@ guiMain.datatype  = getDatatype(guiMain);
 guiMain.condition = getCondition(guiMain);
 guiMain.wl        = getWl(guiMain, dataTree.currElem.procElem.GetWls());
 guiMain.hbType    = getHbType(guiMain);
-guiMain.ch        = GetAxesSDGSelection(guiMain.axesSDG);
+guiMain.ch        = axesSDG.iCh;
+
 if strcmp(get(handles.menuItemViewHRFStdErr, 'checked'), 'on');
     guiMain.showStdErr = true;
 elseif strcmp(get(handles.menuItemViewHRFStdErr, 'checked'), 'off');

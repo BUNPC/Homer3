@@ -1,6 +1,6 @@
 function snirf = Nirs2Snirf(nirsfiles0, replace)
 
-snirf = SnirfClass();
+snirf = SnirfClass().empty();
 
 if ~exist('nirsfiles0','var')
     nirsfiles0 = NirsFilesClass().files;
@@ -16,6 +16,8 @@ if iscell(nirsfiles0)
     end
 elseif ischar(nirsfiles0)
     nirsfiles = mydir(nirsfiles0);
+elseif isa(nirsfiles0, 'FileClass')
+    nirsfiles = nirsfiles0;
 end
 
 for ii=1:length(nirsfiles)

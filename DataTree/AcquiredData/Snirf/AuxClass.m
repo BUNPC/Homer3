@@ -1,7 +1,6 @@
-classdef AuxClass  < matlab.mixin.Copyable
+classdef AuxClass < FileLoadSaveClass
     
     properties
-        filename
         name
         d
         t
@@ -11,7 +10,6 @@ classdef AuxClass  < matlab.mixin.Copyable
         
         % -------------------------------------------------------
         function obj = AuxClass(varargin)
-            obj.filename = '';
             
             if nargin==1
                 obj.filename = varargin{1};
@@ -25,26 +23,19 @@ classdef AuxClass  < matlab.mixin.Copyable
                 obj.d = [];
                 obj.t = [];
             end
+            
+            % Set base class properties not part of the SNIRF format
+            obj.fileformat = 'hdf5';
         end
         
         
         % -------------------------------------------------------
-        function err = Load(obj, fname, parent)
+        function err = LoadHdf5(obj, fname, parent)
             err = 0;
             
-            % Overwrite 1st argument if the property filename is NOT empty
-            if ~isempty(obj.filename)
-                fname = obj.filename;
-            end
-            
             % Arg 1
-            if ~exist('fname','var')
-                err = -1;
-                return;
-            end
-            if ~exist(fname,'file')
-                err = -1;
-                return;
+            if ~exist('fname','var') || ~exist(fname,'file')
+                fname = '';
             end
             
             % Arg 2
@@ -53,6 +44,19 @@ classdef AuxClass  < matlab.mixin.Copyable
             elseif parent(1)~='/'
                 parent = ['/',parent];
             end
+            
+            % Do some error checking            
+            if ~isempty(fname)
+                obj.filename = fname;
+            else
+                fname = obj.filename;
+            end
+            if isempty(fname)
+               err=-1;
+               return;
+            end
+            
+            %%%%%%%%%%%% Ready to load from file
 
             try
                 name = strtrim(h5read(fname, [parent, '/name']));
@@ -67,7 +71,7 @@ classdef AuxClass  < matlab.mixin.Copyable
 
         
         % -------------------------------------------------------
-        function Save(obj, fname, parent)
+        function SaveHdf5(obj, fname, parent)
             if ~exist(fname, 'file')
                 fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);

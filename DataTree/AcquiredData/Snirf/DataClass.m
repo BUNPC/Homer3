@@ -1,4 +1,4 @@
-classdef DataClass  < matlab.mixin.Copyable
+classdef DataClass < FileLoadSaveClass
     
     properties
         d
@@ -6,14 +6,11 @@ classdef DataClass  < matlab.mixin.Copyable
         ml
     end
     
-    
     methods
         
         % -------------------------------------------------------
         function obj = DataClass(d, t, ml)
-
             obj.ml = MeasListClass();
-
             if nargin>0
                 obj.d = d;
                 obj.t = t;
@@ -24,21 +21,17 @@ classdef DataClass  < matlab.mixin.Copyable
                 obj.d = double([]);
                 obj.t = double([]);
             end
-
         end
         
 
 
         % -------------------------------------------------------
-        function err = Load(obj, fname, parent)
-            
+        function err = LoadHdf5(obj, fname, parent)
             err = 0;
-            
             if ~exist(fname, 'file')
                 err = -1;
                 return;
             end
-              
             try
                 obj.d = h5read(fname, [parent, '/d']);
                 obj.t = h5read(fname, [parent, '/t']);
@@ -53,16 +46,14 @@ classdef DataClass  < matlab.mixin.Copyable
                 if ii > length(obj.ml)
                     obj.ml(ii) = MeasListClass;
                 end
-                obj.ml(ii).Load(fname, [parent, '/ml_', num2str(ii)]);
+                obj.ml(ii).LoadHdf5(fname, [parent, '/ml_', num2str(ii)]);
                 ii=ii+1;
             end
-            
         end
         
         
         % -------------------------------------------------------
-        function Save(obj, fname, parent)
-            
+        function SaveHdf5(obj, fname, parent)
             if ~exist(fname, 'file')
                 fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
@@ -72,61 +63,46 @@ classdef DataClass  < matlab.mixin.Copyable
             hdf5write_safe(fname, [parent, '/t'], obj.t);
             
             for ii=1:length(obj.ml)
-                obj.ml(ii).Save(fname, [parent, '/ml_', num2str(ii)]);
+                obj.ml(ii).SaveHdf5(fname, [parent, '/ml_', num2str(ii)]);
             end
-            
         end
 
         
         
         % -------------------------------------------------------
         function b = Empty(obj)
-            
             b = false;
             if isempty(obj.d) && isempty(obj.t)
                 b = true;
             end
-            
         end
     
         
         % ---------------------------------------------------------
         function wls = GetWls(obj)
-            
             wls = obj.ml(1).GetWls();
-            
         end
         
         
         % ---------------------------------------------------------
         function ml = GetMeasList(obj)
-            
             ml = zeros(length(obj.ml), 4);
             for ii=1:length(obj.ml)
                 ml(ii,:) = [obj.ml(ii).GetSourceIndex(), obj.ml(ii).GetDetectorIndex(), 1, obj.ml(ii).GetWavelengthIndex()];
             end
-            
         end
         
         
         % ---------------------------------------------------------
         function t = GetTime(obj)
-            
             t = obj.t;
-            
         end
         
         
         % ---------------------------------------------------------
         function datamat = GetDataMatrix(obj)
-            
             datamat = obj.d;
-            
         end
         
-        
-        
-        
     end
-    
 end

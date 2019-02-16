@@ -1,4 +1,4 @@
-classdef SnirfClass < AcqDataClass
+classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
     properties
         formatVersion
@@ -8,7 +8,6 @@ classdef SnirfClass < AcqDataClass
         aux
         timeOffset
         metaDataTags
-        err=0;
     end
     
     methods
@@ -38,12 +37,7 @@ classdef SnirfClass < AcqDataClass
             %           ml: [1x8 MeasListClass]
             %
              
-            % This parameter does NOT get saved when saving to Snirf file
-            obj.filename = '';
-            obj.fileformat = 'hdf5';
-            
-            % Initialize fields that can be initialized without any
-            % arguments
+            % Initialize properties from SNIRF spec 
             obj.formatVersion = '1.0';
             obj.timeOffset     = 0;
             obj.metaDataTags   = {
@@ -56,6 +50,9 @@ classdef SnirfClass < AcqDataClass
             obj.stim           = StimClass();
             obj.sd             = SdClass();
             obj.aux            = AuxClass();
+            
+            % Set base class properties not part of the SNIRF format
+            obj.fileformat = 'hdf5';
             
             % See if we're loading .nirs data format
             if nargin>4
@@ -72,8 +69,7 @@ classdef SnirfClass < AcqDataClass
             % The basic 5 of a .nirs format in a struct
             if nargin==1
                 if ischar(varargin{1})
-                    obj.filename = varargin{1};
-                    obj.Load();
+                    obj.Load(varargin{1});
                 elseif isstruct(varargin{1})
                     nirs = varargin{1};                    
                     obj.data(1) = DataClass(nirs.d, nirs.t, nirs.SD.MeasList);
@@ -110,6 +106,7 @@ classdef SnirfClass < AcqDataClass
                     obj.aux(ii) = AuxClass(aux, t, sprintf('aux%d',ii));
                 end
             end
+            
         end
         
         
@@ -127,18 +124,12 @@ classdef SnirfClass < AcqDataClass
         
         
         % -------------------------------------------------------
-        function obj = LoadHdf5(obj, fname, parent)
-            % Overwrite 1st argument if the property filename is NOT empty
-            if ~isempty(obj.filename)
-                fname = obj.filename;
-            end
+        function err = LoadHdf5(obj, fname, parent)
+            err = 0;
             
             % Arg 1
-            if ~exist('fname','var')
-                return;
-            end
-            if ~exist(fname,'file')
-                return;
+            if ~exist('fname','var') || ~exist(fname,'file')
+                fname = '';
             end
             
             % Arg 2
@@ -147,11 +138,19 @@ classdef SnirfClass < AcqDataClass
             elseif parent(1)~='/'
                 parent = ['/',parent];
             end
-                       
-            % Overwrite 1st argument if the property filename is NOT empty
-            if ~isempty(obj.filename)
+            
+            % Do some error checking            
+            if ~isempty(fname)
+                obj.filename = fname;
+            else
                 fname = obj.filename;
             end
+            if isempty(fname)
+               err=-1;
+               return;
+            end
+            
+            %%%%%%%%%%%% Ready to load from file
             
             obj.formatVersion = strtrim(h5read(fname, [parent, '/formatVersion']));
             obj.timeOffset = hdf5read(fname, [parent, '/timeOffset']);
@@ -174,7 +173,7 @@ classdef SnirfClass < AcqDataClass
                 if ii > length(obj.data)
                     obj.data(ii) = DataClass;
                 end
-                if obj.data(ii).Load(fname, [parent, '/data_', num2str(ii)]) < 0
+                if obj.data(ii).LoadHdf5(fname, [parent, '/data_', num2str(ii)]) < 0
                     obj.data(ii).delete();
                     obj.data(ii) = [];
                     break;
@@ -191,7 +190,7 @@ classdef SnirfClass < AcqDataClass
                 if ii > length(obj.stim)
                     obj.stim(ii) = StimClass;
                 end
-                if obj.stim(ii).Load(fname, [parent, '/stim_', num2str(ii)]) < 0
+                if obj.stim(ii).LoadHdf5(fname, [parent, '/stim_', num2str(ii)]) < 0
                     obj.stim(ii).delete();
                     obj.stim(ii) = [];
                     break;
@@ -201,7 +200,7 @@ classdef SnirfClass < AcqDataClass
             obj.SortStims();
             
             % Load sd
-            obj.sd.Load(fname, [parent, '/sd']);
+            obj.sd.LoadHdf5(fname, [parent, '/sd']);
             
             % Load aux
             ii=1;
@@ -209,7 +208,7 @@ classdef SnirfClass < AcqDataClass
                 if ii > length(obj.aux)
                     obj.aux(ii) = AuxClass;
                 end
-                if obj.aux(ii).Load(fname, [parent, '/aux_', num2str(ii)]) < 0
+                if obj.aux(ii).LoadHdf5(fname, [parent, '/aux_', num2str(ii)]) < 0
                     obj.aux(ii).delete();
                     obj.aux(ii) = [];
                     break;
@@ -221,8 +220,9 @@ classdef SnirfClass < AcqDataClass
         
         % -------------------------------------------------------
         function SaveHdf5(obj, fname, parent)
-            if ~isempty(obj.filename)
-                fname = obj.filename;
+            % Arg 1
+            if ~exist('fname','var') || isempty(fname)
+                fname = '';
             end
             
             % Args
@@ -256,20 +256,20 @@ classdef SnirfClass < AcqDataClass
             
             % Save data
             for ii=1:length(obj.data)
-                obj.data(ii).Save(fname, [parent, '/data_', num2str(ii)]);
+                obj.data(ii).SaveHdf5(fname, [parent, '/data_', num2str(ii)]);
             end
             
             % Save stim
             for ii=1:length(obj.stim)
-                obj.stim(ii).Save(fname, [parent, '/stim_', num2str(ii)]);
+                obj.stim(ii).SaveHdf5(fname, [parent, '/stim_', num2str(ii)]);
             end
             
             % Save sd
-            obj.sd.Save(fname, [parent, '/sd']);
+            obj.sd.SaveHdf5(fname, [parent, '/sd']);
             
             % Save aux
             for ii=1:length(obj.aux)
-                obj.aux(ii).Save(fname, [parent, '/aux_', num2str(ii)]);
+                obj.aux(ii).SaveHdf5(fname, [parent, '/aux_', num2str(ii)]);
             end
         end
                 

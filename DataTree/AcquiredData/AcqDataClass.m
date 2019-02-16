@@ -1,11 +1,5 @@
 classdef AcqDataClass < matlab.mixin.Copyable
-    
-    properties
-        filename;
-        fileformat;        
-    end
-    
-    
+       
     methods(Abstract)
         
         % ---------------------------------------------------------
@@ -52,36 +46,6 @@ classdef AcqDataClass < matlab.mixin.Copyable
     
     methods
 
-        % ---------------------------------------------------------
-        function Load(obj, filename)
-            switch(lower(obj.fileformat))
-                case {'.mat','matlab','mat'}
-                    obj.LoadMatlabFormat();
-                case {'hdf','.hdf','hdf5','.hdf5','hf5','.hf5','h5','.h5'}
-                    if exist('filename','var')
-                        obj.LoadHdf5(filename);
-                    else
-                        obj.LoadHdf5();
-                    end
-            end
-        end
-               
-        
-        % ---------------------------------------------------------
-        function Save(obj, filename)
-            switch(lower(obj.fileformat))
-                case {'.mat','matlab','mat'}
-                    obj.SaveMatlabFormat();
-                case {'hdf5','.hdf5','hf5','.hf5','h5','.h5'}
-                    if exist('filename','var')
-                        obj.SaveHdf5(filename);
-                    else
-                        obj.SaveHdf5();
-                    end
-            end            
-        end
-        
-        
         % ---------------------------------------------------------
         function bbox = GetSdgBbox(obj)
             optpos = [obj.GetSrcPos(); obj.GetDetPos()];

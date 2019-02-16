@@ -1,5 +1,6 @@
-classdef MeasListClass  < matlab.mixin.Copyable
+classdef MeasListClass < FileLoadSaveClass
     
+    % Properties implementing the MeasList fields from the SNIRF spec
     properties
         sourceIndex
         detectorIndex
@@ -11,7 +12,6 @@ classdef MeasListClass  < matlab.mixin.Copyable
         detectorGain
     end
     
-
     methods
 
         function obj = MeasListClass(ml)
@@ -34,12 +34,33 @@ classdef MeasListClass  < matlab.mixin.Copyable
         
         
         % -------------------------------------------------------
-        function obj = Load(obj, fname, parent)
+        function obj = LoadHdf5(obj, fname, parent)
+            err = 0;
             
-            if ~exist(fname, 'file')
-                return;
+            % Arg 1
+            if ~exist('fname','var') || ~exist(fname,'file')
+                fname = '';
             end
-              
+            
+            % Arg 2
+            if ~exist('parent', 'var')
+                parent = '/snirf/ml_1';
+            elseif parent(1)~='/'
+                parent = ['/',parent];
+            end
+            
+            % Do some error checking            
+            if ~isempty(fname)
+                obj.filename = fname;
+            else
+                fname = obj.filename;
+            end
+            if isempty(fname)
+               err=-1;
+               return;
+            end
+            
+            %%%%%%%%%%%% Ready to load from file
             obj.sourceIndex = hdf5read(fname, [parent, '/sourceIndex']);
             obj.detectorIndex = hdf5read(fname, [parent, '/detectorIndex']);
             obj.wavelengthIndex = hdf5read(fname, [parent, '/wavelengthIndex']);
@@ -47,13 +68,11 @@ classdef MeasListClass  < matlab.mixin.Copyable
             obj.dataTypeIndex = hdf5read(fname, [parent, '/dataTypeIndex']);
             obj.sourcePower = hdf5read(fname, [parent, '/sourcePower']);
             obj.detectorGain = hdf5read(fname, [parent, '/detectorGain']);
-
         end
 
         
         % -------------------------------------------------------
-        function Save(obj, fname, parent)
-            
+        function SaveHdf5(obj, fname, parent)
             if ~exist(fname, 'file')
                 fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
@@ -66,39 +85,30 @@ classdef MeasListClass  < matlab.mixin.Copyable
             hdf5write(fname, [parent, '/dataTypeIndex'], obj.dataTypeIndex, 'WriteMode','append');
             hdf5write(fname, [parent, '/sourcePower'], obj.sourcePower, 'WriteMode','append');
             hdf5write(fname, [parent, '/detectorGain'], obj.detectorGain, 'WriteMode','append');
-            
         end
 
         
         % ---------------------------------------------------------
         function wls = GetWls(obj)
-            
             wls = obj.GetWls();
-            
         end
         
         
         % ---------------------------------------------------------
         function idx = GetSourceIndex(obj)
-            
             idx = obj.sourceIndex;
-            
         end
         
         
         % ---------------------------------------------------------
         function idx = GetDetectorIndex(obj)
-            
             idx = obj.detectorIndex;
-            
         end
         
         
         % ---------------------------------------------------------
         function idx = GetWavelengthIndex(obj)
-            
             idx = obj.wavelengthIndex;
-            
         end
         
         

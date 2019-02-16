@@ -1,75 +1,50 @@
-classdef StimClass  < matlab.mixin.Copyable
+classdef StimClass < FileLoadSaveClass
     
     properties
-        filename
         name
         data
     end
-
+   
+    % Properties not part of the SNIRF spec. These parameters aren't loaded or saved to files
     properties (Access = private)
         errmargin
-        status
-    end
-    
+    end    
     
     methods
         
         % -------------------------------------------------------
         function obj = StimClass(varargin)
-                        
             if nargin==3
-                
                 s        = varargin{1};
                 t        = varargin{2};
                 CondName = varargin{3};
-                
                 obj.name = CondName;
-
                 k = s>0;
                 obj.data = [t(k), 5*ones(length(t(k)),1), ones(length(t(k)),1)];
-
             elseif nargin==2
-                
                 t        = varargin{1};
                 CondName = varargin{2};
-                
                 obj.name = CondName;
                 for ii=1:length(t)
                     obj.data(end+1,:) = [t(ii), 5, 1];
                 end
-                
             elseif nargin==0
-
                 obj.name = '';
                 obj.data = [];
-
             end
             obj.errmargin = 1e-3;
-            obj.status = 0;
-            
         end
         
         
         % -------------------------------------------------------
-        function err = Load(obj, fname, parent)
-
+        function err = LoadHdf5(obj, fname, parent)
             err = 0;
             
-            % Overwrite 1st argument if the property filename is NOT empty
-            if ~isempty(obj.filename)
-                fname = obj.filename;
+            % Arg 1
+            if ~exist('fname','var') || ~exist(fname,'file')
+                fname = '';
             end
             
-            % Arg 1
-            if ~exist(fname, 'file')
-                err = -1;
-                return;
-            end
-            if ~exist(fname,'file')
-                err = -1;
-                return;
-            end
-                          
             % Arg 2
             if ~exist('parent', 'var')
                 parent = '/snirf/stim_1';
@@ -77,6 +52,19 @@ classdef StimClass  < matlab.mixin.Copyable
                 parent = ['/',parent];
             end
             
+            % Do some error checking            
+            if ~isempty(fname)
+                obj.filename = fname;
+            else
+                fname = obj.filename;
+            end
+            if isempty(fname)
+               err=-1;
+               return;
+            end
+            
+            %%%%%%%%%%%% Ready to load from file
+
             try
                 name = strtrim(h5read(fname, [parent, '/name']));
                 obj.name = name{1};
@@ -90,7 +78,7 @@ classdef StimClass  < matlab.mixin.Copyable
         
         
         % -------------------------------------------------------
-        function Save(obj, fname, parent)
+        function SaveHdf5(obj, fname, parent)
             
             if ~exist(fname, 'file')
                 fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');

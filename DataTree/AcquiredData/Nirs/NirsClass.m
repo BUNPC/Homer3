@@ -1,4 +1,4 @@
-classdef NirsClass < AcqDataClass
+classdef NirsClass < AcqDataClass & FileLoadSaveClass
     
     properties
         SD;
@@ -7,31 +7,33 @@ classdef NirsClass < AcqDataClass
         d;
         aux;
         CondNames;
-        errmargin;
+    end    
+
+    % Properties not part of the NIRS format. These parameters aren't loaded or saved to nirs files
+    properties (Access = private)
+        errmargin
     end    
     
     methods
         
         % ---------------------------------------------------------
         function obj = NirsClass(filename)
-            obj.filename  = '';
             obj.SD        = struct([]);
             obj.t         = [];
             obj.s         = [];
             obj.d         = [];
             obj.aux       = [];
             obj.CondNames = {};
-            obj.errmargin = 1e-3;
+
+            % Set base class properties not part of NIRS format 
+            obj.filename  = '';
             obj.fileformat = 'mat';
+            obj.errmargin = 1e-3;
             
-            if ~exist('filename','var')
+            if ~exist('filename','var') || ~exist(filename,'file')
                 return;
             end
-            if ~exist(filename,'file')
-                return;
-            end
-            obj.filename  = filename;
-            obj.Load();            
+            obj.Load(filename);
         end
         
         
@@ -44,12 +46,27 @@ classdef NirsClass < AcqDataClass
         
         
         % ---------------------------------------------------------
-        function LoadMatlabFormat(obj)
-            if isempty(obj.filename) || ~exist(obj.filename, 'file')
-                return;
+        function err = LoadMat(obj, fname)
+            err = 0;
+            
+            % Arg 1
+            if ~exist('fname','var') || ~exist(fname,'file')
+                fname = '';
             end
+                       
+            % Do some error checking            
+            if ~isempty(fname)
+                obj.filename = fname;
+            else
+                fname = obj.filename;
+            end
+            if isempty(fname)
+               err=-1;
+               return;
+            end
+                        
             warning('off', 'MATLAB:load:variableNotFound');
-            fdata = load(obj.filename,'-mat', 'SD','t','d','s','aux','CondNames');
+            fdata = load(fname,'-mat', 'SD','t','d','s','aux','CondNames');
             if isproperty(fdata,'d')
                 obj.d = fdata.d;
             end
@@ -79,11 +96,18 @@ classdef NirsClass < AcqDataClass
         
         
         % ---------------------------------------------------------
-        function SaveMatlabFormat(obj)
+        function SaveMat(obj, fname)
+            if ~exist('fname','var') || isempty(fname)
+                fname = '';
+            end
+            if isempty(fname)
+                fname = obj.filename;
+            end
+            
             SD        = obj.SD;
             s         = obj.s;
             CondNames = obj.CondNames;
-            save(obj.filename, '-mat', '-append', 'SD','s','CondNames');            
+            save(fname, '-mat', '-append', 'SD','s','CondNames');            
         end
                 
         

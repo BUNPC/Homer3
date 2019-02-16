@@ -1,7 +1,6 @@
-classdef SdClass  < matlab.mixin.Copyable
+classdef SdClass < FileLoadSaveClass
     
     properties
-        filename
         lambda
         lambdaEmission
         srcPos
@@ -21,8 +20,6 @@ classdef SdClass  < matlab.mixin.Copyable
         
         % -------------------------------------------------------
         function obj = SdClass(varargin)
-            
-            obj.filename = '';
             if nargin>0
                 if isstruct(varargin{1})
                     SD = varargin{1};
@@ -60,14 +57,12 @@ classdef SdClass  < matlab.mixin.Copyable
                 obj.srcLabels = {};
                 obj.detLabels = {};
             end
-
         end
 
         
         
         % -------------------------------------------------------
-        function obj = Load(obj, fname, parent)
-            
+        function obj = LoadHdf5(obj, fname, parent)
             % Overwrite 1st argument if the property filename is NOT empty
             if ~isempty(obj.filename)
                 fname = obj.filename;
@@ -100,18 +95,15 @@ classdef SdClass  < matlab.mixin.Copyable
             obj.correlationTimeDelayWidth = hdf5read(fname, [parent, '/correlationTimeDelayWidth']);
             obj.srcLabels                 = strtrim(h5read_safe(fname, [parent, '/srcLabels'], obj.srcLabels));
             obj.detLabels                 = strtrim(h5read_safe(fname, [parent, '/detLabels'], obj.detLabels));
-            
         end
 
         
         % -------------------------------------------------------
-        function Save(obj, fname, parent)
-            
+        function SaveHdf5(obj, fname, parent)
             if ~exist(fname, 'file')
                 fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end     
-            
             hdf5write_safe(fname, [parent, '/lambda'], obj.lambda);
             hdf5write_safe(fname, [parent, '/lambdaEmission'], obj.lambdaEmission);
             h5write_safe(fname, [parent, '/srcPos'], obj.srcPos);
@@ -124,33 +116,26 @@ classdef SdClass  < matlab.mixin.Copyable
             hdf5write(fname, [parent, '/correlationTimeDelayWidth'], obj.correlationTimeDelayWidth, 'WriteMode','append');
             hdf5write_safe(fname, [parent, '/srcLabels'], obj.srcLabels);
             hdf5write_safe(fname, [parent, '/detLabels'], obj.detLabels);
-                        
         end
         
         
         
         % ---------------------------------------------------------
         function wls = GetWls(obj)
-            
             wls = obj.lambda;
-            
         end
         
         
         
         % ---------------------------------------------------------
         function srcpos = GetSrcPos(obj)
-            
             srcpos = obj.srcPos;
-            
         end
         
         
         % ---------------------------------------------------------
         function detpos = GetDetPos(obj)
-            
             detpos = obj.detPos;
-            
         end
         
     end

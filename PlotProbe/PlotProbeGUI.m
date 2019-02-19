@@ -40,9 +40,9 @@ plotprobe.status = -1;
 % These are the parameters that are assigned from external sources,
 % either from GUI arguments or parent GUI. 
 plotprobe.format = '';
-plotprobe.pos = [];
 plotprobe.datatype = [];
 plotprobe.condition = [];
+plotprobe.pos = [];
 
 % Rest of the parameters 
 plotprobe.datatypeVals = struct('RAW',1, 'RAW_HRF',2, 'OD',4, 'OD_HRF',8, 'CONC',16, 'CONC_HRF',32);
@@ -83,9 +83,9 @@ varargin = args;
 %%%% either from GUI arguments or parent GUI. 
 %
 % plotprobe.format
-% plotprobe.pos
 % plotprobe.datatype
 % plotprobe.condition
+% plotprobe.pos
 %
 
 %  Syntax:
@@ -116,7 +116,7 @@ elseif length(varargin)==2
         plotprobe.format = varargin{1};
         if isreal(varargin{2}) & length(varargin{2})==4     
             plotprobe.pos = varargin{2};                    % PlotProbeGUI(format, pos)
-        elseif iswholenum(varargin{2}) && length(varargin{2})==1
+        elseif iswholenum(varargin{2}) & length(varargin{2})==1
             plotprobe.datatype = varargin{2};               % PlotProbeGUI(format, datatype)
         end
     elseif isreal(varargin{2}) & length(varargin{2})==4

@@ -33,7 +33,7 @@ classdef ChildGuiClass < handle
             %           The function pointers updateptr and closeptr can
             %           also be empty.
             %         
-            %       b)  
+            %       b) position argument pos must be last if it exists. 
             %      
             % Examples:
             %   gui = ChildGuiClass('procStreamGUI', true, '.nirs');
@@ -119,14 +119,14 @@ classdef ChildGuiClass < handle
             if ishandle(obj.handles.figure)
                 set(obj.handles.figure, 'visible',obj.visible, 'CloseRequestFcn',@obj.Close);
                 set(obj.handles.figure, 'visible',obj.visible, 'DeleteFcn',@obj.Close);
-                if ~isempty(obj.lastpos)
-                    % Even though we pass the last position arg to the GUI
-                    % there's no guarantee, the gui will take advantage of
-                    % it. There we make sure to set last gui position if it
-                    % is available. 
-                    p = obj.lastpos;
-                    set(obj.handles.figure, 'position',[p(1),p(2),p(3),p(4)]);
-                end
+%                 if ~isempty(obj.lastpos)
+%                     % Even though we pass the last position arg to the GUI
+%                     % there's no guarantee, the gui will take advantage of
+%                     % it. Therefore we make sure to set last gui position if it
+%                     % is available. 
+%                     p = obj.lastpos;
+%                     set(obj.handles.figure, 'position',[p(1),p(2),p(3),p(4)]);
+%                 end
                 obj.SetTitle();
             end
         end
@@ -144,7 +144,8 @@ classdef ChildGuiClass < handle
             if ~exist('varargin','var')
                 return;
             end
-            obj.args = varargin;               
+            obj.args = varargin;
+            obj.Update();
         end
 
         

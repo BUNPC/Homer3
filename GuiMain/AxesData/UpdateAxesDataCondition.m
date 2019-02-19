@@ -1,4 +1,9 @@
 function guiMain = UpdateAxesDataCondition(guiMain, dataTree)
+global hmr
+if nargin==0
+    guiMain = hmr.guiMain;
+    dataTree = hmr.dataTree;
+end
 
 if isempty(guiMain)
     return;
@@ -19,4 +24,6 @@ set(guiMain.handles.popupmenuConditions, 'string', CondNames);
 guiMain.condition = get(guiMain.handles.popupmenuConditions, 'value');
 set(guiMain.handles.popupmenuConditions, 'value', guiMain.condition);
 
-
+if nargin==0
+    hmr.guiMain = guiMain;
+end

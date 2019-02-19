@@ -1,15 +1,16 @@
-function plotProbeAndSetProperties(plotprobe)
+function plotProbeAndSetProperties(handles)
+global plotprobe
 
 y        = plotprobe.y;
-tHRF     = plotprobe.tHRF;
-SD       = plotprobe.SD;
-ch       = plotprobe.ch;
+t        = plotprobe.t;
 tMarkInt = plotprobe.tMarkInt;
 axScl    = plotprobe.axScl;
-bit0     = plotprobe.tMarkShow;
-bit1     = plotprobe.hidMeasShow;
 tMarkAmp = plotprobe.tMarkAmp;
+ch       = plotprobe.dataTree.currElem.procElem.GetMeasList();
+SD       = plotprobe.dataTree.currElem.procElem.GetSDG();
 
-hData = plotProbe( y, tHRF, SD, ch, [], axScl, tMarkInt, tMarkAmp );
-showHiddenObjs( 2*bit1+bit0, ch, y, hData );
+
+set(handles.textTimeMarkersAmpUnits, 'string',plotprobe.tMarkUnits);
+plotprobe.handles.data = plotProbe( y, t, SD, ch, [], axScl, tMarkInt, tMarkAmp );
+showHiddenObjs();
 

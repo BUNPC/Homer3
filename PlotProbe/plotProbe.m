@@ -78,8 +78,6 @@ if ~exist('ch','var') || isempty(ch)
     return;
 end
 
-
-
 % Clear axes
 cla(gca); 
 axis off;
@@ -229,13 +227,14 @@ try
 
             % Plot time markers starting with stim onset
             if length(tAmp)==1
-                % tAmp is a relative amplitude
                 AvgTmax0=max(max(AvgT));
                 AvgTmin0=min(min(AvgT));
                 if tAmp==0
+                    % tAmp is a relative amplitude
                     AvgTmax=AvgTmax0;
                     AvgTmin=AvgTmin0;
                 else
+                    % tAmp is a fixed amplitude
                     AvgTmax=ya-axHgt/4 + axHgt*((tAmp-cmin)/(cmax-cmin))/2;
                     AvgTmin=ya-axHgt/4 + axHgt*((0-cmin)/(cmax-cmin))/2;
                     AvgTmax=AvgTmax+AvgTmin0-AvgTmin;
@@ -246,7 +245,7 @@ try
                     AvgTmax=AvgTmax+(AvgTmax*.01);
                 end
             elseif length(tAmp)==2
-                % tAmp is a fixed range instead of relative amplitude
+                % tAmp is a fixed range
                 AvgTmax = ya-axHgt/4 + axHgt*(((cmax-offset(idx))-cmin)/(cmax-cmin))/2;
                 AvgTmin = ya-axHgt/4 + axHgt*(((cmin-offset(idx))-cmin)/(cmax-cmin))/2;
             end

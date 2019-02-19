@@ -1,4 +1,13 @@
-function showHiddenObjs(bitmask, ch, y, h)
+function showHiddenObjs()
+global plotprobe
+
+y        = plotprobe.y;
+ch       = plotprobe.dataTree.currElem.procElem.GetMeasList();
+h        = plotprobe.handles.data;
+bit0     = plotprobe.tMarkShow;
+bit1     = plotprobe.hidMeasShow;
+
+bitmask  = 2*bit1+bit0;
 
 if isempty(y)
     return;
@@ -8,8 +17,7 @@ if ~ishandles(h)
 end
 
 nDataTypes = ndims(y);
-lst = find(ch.MeasList(:,4)==1);
-MLact = ch.MeasListAct(lst); % option for future
+MLact = ch.MeasListAct(ch.MeasList(:,4)==1); % option for future
 
 j1 = find(MLact~=0);
 j2 = find(MLact==0);

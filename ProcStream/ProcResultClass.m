@@ -123,6 +123,29 @@ classdef ProcResultClass < handle
         end
         
           
+        % ----------------------------------------------------------------------------------
+        function t = GetTHRF(obj)
+            t = obj.tHRF;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function dodAvg = GetDodAvg(obj, condition)
+            if ~exist('condition','var')
+                condition = 1:size(obj.dodAvg,3);
+            end
+            dodAvg = obj.dodAvg(:,:,condition);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function dcAvg = GetDcAvg(obj, condition)
+            if ~exist('condition','var')
+                condition = 1:size(obj.dcAvg,4);
+            end
+            dcAvg = obj.dcAvg(:,:,:,condition);
+        end
+                  
     end
      
 end

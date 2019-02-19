@@ -1,5 +1,4 @@
 function varargout = PlotProbeGUI(varargin)
-
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
@@ -7,7 +6,10 @@ gui_State = struct('gui_Name',       mfilename, ...
                    'gui_OutputFcn',  @PlotProbeGUI_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
-if nargin && ischar(varargin{1})
+if nargin && ischar(varargin{1}) && ~strcmp(varargin{end},'userargs')
+    if varargin{1}(1)=='.'
+        varargin{1}(1) = '';
+    end
     gui_State.gui_Callback = str2func(varargin{1});
 end
 
@@ -18,36 +20,239 @@ else
 end
 
 
-% ----------------------------------------------------------------------
-function PlotProbeGUI_OpeningFcn(hObject, eventdata, handles, varargin)
-global hmr
-plotprobe = hmr.plotprobe;
 
-if ~isempty(plotprobe.figPosLast)
-    set(hObject, 'position',plotprobe.figPosLast);
+% -------------------------------------------------------------
+function varargout = PlotProbeGUI_OutputFcn(hObject, eventdata, handles)
+handles.updateptr = @PlotProbeGUI_Update;
+handles.closeptr = @PlotProbeGUI_Close;
+varargout{1} = handles;
+
+
+
+% ----------------------------------------------------------------------
+function Initialize(handles)
+global plotprobe
+
+plotprobe = [];
+
+plotprobe.status = -1;
+
+% These are the parameters that are assigned from external sources,
+% either from GUI arguments or parent GUI. 
+plotprobe.format = '';
+plotprobe.pos = [];
+plotprobe.datatype = [];
+plotprobe.condition = [];
+
+% Rest of the parameters 
+plotprobe.datatypeVals = struct('RAW',1, 'RAW_HRF',2, 'OD',4, 'OD_HRF',8, 'CONC',16, 'CONC_HRF',32);
+plotprobe.name = 'plotprobe';
+plotprobe.y = [];
+plotprobe.t = [];
+plotprobe.handles.data = [];
+plotprobe.handles.figureDup = [];
+SetGuiControls(handles)
+
+
+
+% ----------------------------------------------------------------------
+function SetGuiControls(handles)
+global plotprobe
+
+plotprobe.axScl       = str2num(get(handles.editPlotProbeAxScl, 'string'));
+plotprobe.tMarkInt    = str2num(get(handles.editPlotProbeTimeMarkersInt, 'string'));
+plotprobe.tMarkAmp    = str2num(get(handles.editPlotProbeTimeMarkersAmp, 'string'));
+plotprobe.tMarkShow   = get(handles.radiobuttonShowTimeMarkers, 'value');
+plotprobe.tMarkUnits  = str2num(get(handles.textTimeMarkersAmpUnits, 'string'));
+plotprobe.hidMeasShow = get(handles.radiobuttonShowHiddenMeas, 'value');
+ 
+
+
+% ----------------------------------------------------------------------
+function ParseArgs(args)
+global plotprobe
+global hmr
+
+if ~exist('args','var')
+    return;
 end
 
-% Choose default command line output for PlotProbeGUI
-handles.output = hObject;
+varargin = args;
 
-% Update handles structure
-guidata(hObject, handles);
+%%%% These are the parameters that are assigned from external soutrces,
+%%%% either from GUI arguments or parent GUI. 
+%
+% plotprobe.format
+% plotprobe.pos
+% plotprobe.datatype
+% plotprobe.condition
+%
 
-setGuiFonts(hObject);
+%  Syntax:
+%
+%     PlotProbeGUI()
+%     PlotProbeGUI(format)
+%     PlotProbeGUI(format, pos)
+%     PlotProbeGUI(format, datatype)
+%     PlotProbeGUI(format, datatype, pos)
+%     PlotProbeGUI(format, datatype, condition)
+%     PlotProbeGUI(format, datatype, condition, pos)
+%     PlotProbeGUI(datatype)
+%     PlotProbeGUI(datatype, pos)
+%     PlotProbeGUI(datatype, condition)
+%     PlotProbeGUI(datatype, condition, pos)
+
+% Arguments take precedence over parent gui parameters
+if length(varargin)==0
+    return;                                                  % PlotProbeGUI()
+elseif length(varargin)==1
+    if ischar(varargin{1})                 
+        plotprobe.format = varargin{1};                      % PlotProbeGUI(format)
+    elseif iswholenum(varargin{1}) & length(varargin{1})==1
+        plotprobe.datatype = varargin{1};                    % PlotProbeGUI(datatype)
+    end
+elseif length(varargin)==2
+    if ischar(varargin{1})
+        plotprobe.format = varargin{1};
+        if isreal(varargin{2}) & length(varargin{2})==4     
+            plotprobe.pos = varargin{2};                    % PlotProbeGUI(format, pos)
+        elseif iswholenum(varargin{2}) && length(varargin{2})==1
+            plotprobe.datatype = varargin{2};               % PlotProbeGUI(format, datatype)
+        end
+    elseif isreal(varargin{2}) & length(varargin{2})==4
+        plotprobe.datatype = varargin{1};                   % PlotProbeGUI(datatype, pos)
+        plotprobe.pos = varargin{2};
+    elseif iswholenum(varargin{2}) & length(varargin{2})==1
+        plotprobe.datatype = varargin{1};                   % PlotProbeGUI(datatype, condition)
+        plotprobe.condition = varargin{2};
+    end
+elseif length(varargin)==3
+    if ischar(varargin{1})
+        plotprobe.format = varargin{1};
+        if isreal(varargin{3}) & length(varargin{3})==4
+            plotprobe.datatype = varargin{2};
+            plotprobe.pos = varargin{3};                    % PlotProbeGUI(format, datatype, pos)
+        elseif iswholenum(varargin{3}) & length(varargin{3})==1
+            plotprobe.datatype = varargin{2};               
+            plotprobe.condition = varargin{3};              % PlotProbeGUI(format, datatype, condition)
+        end
+    elseif iswholenum(varargin{1})
+        plotprobe.datatype = varargin{1};
+        plotprobe.condition = varargin{2};                  % PlotProbeGUI(datatype, condition, pos)
+        plotprobe.pos = varargin{3};
+    end
+elseif length(varargin)==4
+    plotprobe.format    = varargin{1};
+    plotprobe.datatype  = varargin{2};
+    plotprobe.condition = varargin{3};
+    plotprobe.pos       = varargin{4};                      % PlotProbeGUI(format, datatype, condition, pos)
+end
+
+% Now whichever of the above parameters weren't assigned values
+% obtain values either from parent gui or assign default value
+if isempty(hmr)
+    if isempty(plotprobe.format)
+        plotprobe.format = 'snirf';
+    end
+    if isempty(plotprobe.datatype)
+        plotprobe.datatype = plotprobe.datatypeVals.CONC_HRF;
+    end
+    if isempty(plotprobe.condition)
+        plotprobe.condition = 1;
+    end
+else
+    if isempty(plotprobe.format)
+        plotprobe.format = hmr.format;
+    end
+    if isempty(plotprobe.datatype)
+        plotprobe.datatype = hmr.guiMain.datatype;
+    end
+    if isempty(plotprobe.condition)
+        plotprobe.condition = hmr.guiMain.condition;
+    end
+end
+
 
 
 % ----------------------------------------------------------------------
-function varargout = PlotProbeGUI_OutputFcn(hObject, eventdata, handles) 
+function PlotProbeGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+%
+%  Syntax:
+%
+%     PlotProbeGUI()
+%     PlotProbeGUI(format)
+%     PlotProbeGUI(format, pos)
+%     PlotProbeGUI(format, datatype, pos)
+%     PlotProbeGUI(format, datatype, condition)
+%     PlotProbeGUI(format, datatype, condition, pos)
+%     PlotProbeGUI(datatype, pos)
+%     PlotProbeGUI(datatype, condition)
+%     PlotProbeGUI(datatype, condition, pos)
+%
+%  Input:
+%    format:    Which acquisition type of files to load to dataTree: e.g., nirs, snirf, etc
+%    pos:       Size and position of last figure session
+%    datatype:  Takes 2 integer values {8 = OD HRF, 32 = concentration HRF}. Any other values will be ignored and nothing will be pl 
+%    condition: Integer index telling which condition 
+%
 
-% Get default command line output from handles structure
-varargout{1} = handles.output;
+global plotprobe
+global hmr
+
+% Choose default command line output for procStreamGUI
+handles.output = hObject;
+guidata(hObject, handles);
+
+Initialize(handles);
+
+% Parse GUI args
+ParseArgs(varargin);
+
+% See if we can recover previous position
+p = plotprobe.pos;
+if ~isempty(p)
+    set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
+end
+plotprobe.version  = get(hObject, 'name');
+plotprobe.dataTree = LoadDataTree(plotprobe.format, hmr);
+if ispc()
+    setGuiFonts(hObject, 7);
+else
+    setGuiFonts(hObject);
+end
+MapCondition();
+DisplayData(handles);
+
+
+
+% ----------------------------------------------------------------------
+function DisplayData(handles)
+global plotprobe
+
+axes(handles.axes1);
+set(handles.axes1, 'xlim', [0,1], 'ylim', [0,1]);
+
+condition = plotprobe.condition;
+datatype  = plotprobe.datatype;
+currElem  = plotprobe.dataTree.currElem;
+plotprobe.y = [];
+if datatype == plotprobe.datatypeVals.OD_HRF
+    plotprobe.y = currElem.procElem.GetDodAvg(condition);
+    plotprobe.t = currElem.procElem.GetTHRF();
+    plotprobe.tMarkUnits='(AU)';
+elseif datatype == plotprobe.datatypeVals.CONC_HRF
+    plotprobe.y = currElem.procElem.GetDcAvg(condition);
+    plotprobe.t = currElem.procElem.GetTHRF();
+    plotprobe.tMarkAmp = plotprobe.tMarkAmp/1e6;    
+    plotprobe.tMarkUnits = '(micro-molars)';
+end
+plotProbeAndSetProperties(handles);
 
 
 
 % ----------------------------------------------------------------------
 function editPlotProbeAxScl_Callback(hObject, eventdata, handles)
-global hmr
-plotprobe = hmr.plotprobe;
+global plotprobe
 
 foo = str2num( get(hObject,'string') );
 if length(foo)<2
@@ -57,185 +262,128 @@ elseif foo(1)<=0 | foo(2)<=0
 end    
 plotprobe.axScl = foo;
 set(hObject,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
-plotProbeAndSetProperties(plotprobe);
+plotProbeAndSetProperties(handles);
 
 
 
 % ----------------------------------------------------------------------
 function pushbuttonPlotProbeYdec_Callback(hObject, eventdata, handles)
-global hmr 
-plotprobe = hmr.plotprobe;
+global plotprobe 
 
 hEditScl = handles.editPlotProbeAxScl;
 
 plotprobe.axScl(2) = plotprobe.axScl(2) - 0.1;
-set(hEditScl,'string', sprintf('%0.1f %0.1f',plotprobe.axScl) );
-plotProbeAndSetProperties(plotprobe);
+set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
+plotProbeAndSetProperties(handles);
+
 
 
 % ----------------------------------------------------------------------
 function pushbuttonPlotProbeYinc_Callback(hObject, eventdata, handles)
-global hmr 
-plotprobe = hmr.plotprobe;
+global plotprobe 
 
 hEditScl = handles.editPlotProbeAxScl;
 
 plotprobe.axScl(2) = plotprobe.axScl(2) + 0.1;
-set(hEditScl,'string', sprintf('%0.1f %0.1f',plotprobe.axScl) );
-plotProbeAndSetProperties(plotprobe);
+set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
+plotProbeAndSetProperties(handles);
 
 
 
 % ----------------------------------------------------------------------
 function pushbuttonPlotProbeXdec_Callback(hObject, eventdata, handles)
-global hmr 
-plotprobe = hmr.plotprobe;
-
+global plotprobe 
 hEditScl = handles.editPlotProbeAxScl;
 
 plotprobe.axScl(1) = plotprobe.axScl(1) - 0.1;
-set(hEditScl,'string', sprintf('%0.1f %0.1f',plotprobe.axScl) );
-plotProbeAndSetProperties(plotprobe);
+set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
+plotProbeAndSetProperties(handles);
+
 
 
 % ----------------------------------------------------------------------
 function pushbuttonPlotProbeXinc_Callback(hObject, eventdata, handles)
-global hmr 
-plotprobe = hmr.plotprobe;
+global plotprobe 
 
 hEditScl = handles.editPlotProbeAxScl;
 
 plotprobe.axScl(1) = plotprobe.axScl(1) + 0.1;
-set(hEditScl,'string', sprintf('%0.1f %0.1f',plotprobe.axScl) );
-plotProbeAndSetProperties(plotprobe);
+set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
+plotProbeAndSetProperties(handles);
 
 
 
 % ----------------------------------------------------------------------
 function radiobuttonShowTimeMarkers_Callback(hObject, evendata, handles)
-global hmr
+global plotprobe
 
-plotprobe = hmr.plotprobe;
-currElem  = hmr.dataTree.currElem;
-guiMain   = hmr.guiMain;
-
-bit0 = get(hObject,'value');
-plotprobe.tMarkShow = bit0;
-bit1 = plotprobe.hidMeasShow;
-h = plotprobe.handles.Data;
-
-procResult  = currElem.procElem.procStream.output;
-ch          = currElem.procElem.GetMeasList();
-
-datatype    = guiMain.datatype;
-buttonVals  = guiMain.buttonVals;
-
-if currElem.procType==1
-    condition  = guiMain.condition;
-elseif currElem.procType==2
-    condition = find(currElem.procElem.CondName2Group == guiMain.condition);
-elseif currElem.procType==3
-    condition  = find(currElem.procElem.CondName2Group == guiMain.condition);
-end
-
-if datatype == buttonVals.OD_HRF && ~isempty(procResult.dodAvg)
-    y = procResult.dodAvg(:, :, condition);
-elseif datatype == buttonVals.CONC_HRF && ~isempty(procResult.dcAvg)
-    y = procResult.dcAvg(:, :, :, condition);
+plotprobe.tMarkShow = get(hObject,'value');
+if plotprobe.tMarkShow
+    set(plotprobe.handles.data(:,4:end), 'visible','on');
 else
-    return;
+    set(plotprobe.handles.data(:,4:end), 'visible','off');    
 end
-
-guiSettings = 2*bit1 + bit0;
-plotProbeAndSetProperties(plotprobe);
-showHiddenObjs(guiSettings,ch,y,h);
 
 
 
 % ----------------------------------------------------------------------
 function editPlotProbeTimeMarkersAmp_Callback(hObject, eventdata, handles)
-global hmr
-plotprobe = hmr.plotprobe;
-guiMain   = hmr.guiMain;
+global plotprobe
 
-datatype    = guiMain.datatype;
-buttonVals  = guiMain.buttonVals;
+datatype     = plotprobe.datatype;
+datatypeVals = plotprobe.datatypeVals;
 
 plotprobe.tMarkAmp = str2num(get(hObject,'string'));
-if datatype == buttonVals.CONC_HRF
+if datatype == datatypeVals.CONC_HRF
     plotprobe.tMarkAmp = plotprobe.tMarkAmp/1e6;
 end
-
-plotProbeAndSetProperties(plotprobe);
+plotProbeAndSetProperties(handles);
 
 
 % ----------------------------------------------------------------------
 function editPlotProbeTimeMarkersInt_Callback(hObject, eventdata, handles)
-global hmr
-plotprobe = hmr.plotprobe;
+global plotprobe
 
-tHRF     = plotprobe.tHRF;
+t  = plotprobe.dataTree.currElem.procElem.GetTHRF();
 
 foo = str2num( get(hObject,'string') );
 if length(foo)~=1
     foo = plotprobe.tMarkInt;
 elseif ~isnumeric(foo)
     foo = plotprobe.tMarkInt;
-elseif foo<5 || foo>tHRF(end)
+elseif foo<5 || foo>t(end)
     foo = plotprobe.tMarkInt;
 end
-
 plotprobe.tMarkInt = foo;
 set(hObject,'string', sprintf('%0.1f ',plotprobe.tMarkInt) );
-plotProbeAndSetProperties(plotprobe);
+plotProbeAndSetProperties(handles);
 
 
 
 % ----------------------------------------------------------------------
 function pushbuttonPlotProbeDuplicate_Callback(hObject, eventdata, handles)
-global hmr
-plotprobe = hmr.plotprobe;
+global plotprobe
 
-if ishandles(plotprobe.handles.FigureDup)
-    delete(plotprobe.handles.FigureDup);
+if ishandles(plotprobe.handles.figureDup)
+    delete(plotprobe.handles.figureDup);
 end
 
 %%%% Get the zoom level of the original plotProbe axes
-figure(plotprobe.handles.Figure);
+figure(handles.figure);
 a = get(gca,'xlim');
 b = get(gca,'ylim');
 
 %%%% Create new figure and use same zoom level and axes position 
 %%%% as original 
-plotprobe.handles.FigureDup = figure();
+plotprobe.handles.figureDup = figure();
 xlim(a);
 ylim(b);
-pos = getNewFigPos(plotprobe.handles.FigureDup);
-set(plotprobe.handles.FigureDup,'position',pos);
-y        = plotprobe.y;
-tHRF     = plotprobe.tHRF;
-SD       = plotprobe.SD;
-ch       = plotprobe.ch;
-tMarkInt = plotprobe.tMarkInt;
-axScl    = plotprobe.axScl;
-bit0     = plotprobe.tMarkShow;
-bit1     = plotprobe.hidMeasShow;
-tMarkAmp = plotprobe.tMarkAmp;
+pos = getNewFigPos(plotprobe.handles.figureDup);
+set(plotprobe.handles.figureDup, 'position',pos);
+plotProbeAndSetProperties(handles);
 
-hData = plotProbe( y, tHRF, SD, ch, [], axScl, tMarkInt, tMarkAmp );
-showHiddenObjs( 2*bit1+bit0, ch, y, hData );
 
-%{
-if plotprobe.tMarkAmp;
 
-    uicontrol('parent',hFig2,'style','text',...
-              'units','normalized','position',[.05 .01 .2 .1],...
-              'string',sprintf('Amplitude: %0.5g',tMarkAmp),...
-              'backgroundcolor',[1 1 1]);
-end  
-%}      
-      
-      
 % ---------------------------------------------
 function pos = getNewFigPos(hFig)
 
@@ -270,45 +418,60 @@ pos = [p(1)+offsetX p(2)+offsetY p(3) p(4)];
 
 % ----------------------------------------------------------------------
 function radiobuttonShowHiddenMeas_Callback(hObject, eventdata, handles)
-global hmr
-plotprobe = hmr.plotprobe;currElem = hmr.dataTree.currElem;
-guiMain = hmr.guiMain;
+global plotprobe
+plotprobe.hidMeasShow = get(hObject,'value');
+showHiddenObjs();
 
-bit1 = get(hObject,'value');
-plotprobe.hidMeasShow = bit1;
-bit0 = plotprobe.tMarkShow;
-
-h = plotprobe.handles.Data;
-
-procResult  = currElem.procElem.procStream.output;
-ch          = currElem.procElem.GetMeasList();
-
-datatype    = guiMain.datatype;
-buttonVals  = guiMain.buttonVals;
-
-if currElem.procType==1
-    condition  = guiMain.condition;
-elseif currElem.procType==2
-    condition = find(currElem.procElem.CondName2Group == guiMain.condition);
-elseif currElem.procType==3
-    condition  = find(currElem.procElem.CondName2Group == guiMain.condition);
-end
-
-if datatype == buttonVals.OD_HRF && ~isempty(procResult.dodAvg)
-    y = procResult.dodAvg(:, :, condition);
-elseif datatype == buttonVals.CONC_HRF && ~isempty(procResult.dcAvg)
-    y = procResult.dcAvg(:, :, :, condition);
-else
-    return;
-end
-
-guiSettings = 2*bit1 + bit0;
-showHiddenObjs(guiSettings,ch,y,h);
 
 
 % ----------------------------------------------------------------------
-function PlotProbeGUI_DeleteFcn(hObject, eventdata, handles)
-global hmr
-plotprobe = hmr.plotprobe;
+function PlotProbeGUI_Close(hObject, eventdata, handles)
+global plotprobe
+if ishandles(plotprobe.handles.figureDup)
+    delete(plotprobe.handles.figureDup);
+end
 
-plotprobe.CloseGUI();
+
+% ----------------------------------------------------------------------
+function PlotProbeGUI_Update(handles, varargin)
+global plotprobe
+
+if isempty(plotprobe)
+    return
+end
+
+ParseArgs(varargin);
+MapCondition();
+
+axes(handles.axes1);
+
+condition = plotprobe.condition;
+datatype  = plotprobe.datatype;
+currElem  = plotprobe.dataTree.currElem;
+plotprobe.y = [];
+if datatype == plotprobe.datatypeVals.OD_HRF
+    plotprobe.y = currElem.procElem.GetDodAvg(condition);
+    plotprobe.t = currElem.procElem.GetTHRF();
+    plotprobe.tMarkUnits='(AU)';
+elseif datatype == plotprobe.datatypeVals.CONC_HRF
+    plotprobe.y = currElem.procElem.GetDcAvg(condition);
+    plotprobe.t = currElem.procElem.GetTHRF();
+    plotprobe.tMarkUnits = '(micro-molars)';
+end
+plotProbeAndSetProperties(handles);
+
+
+
+% ----------------------------------------------------------------------
+function MapCondition()
+global plotprobe
+
+if isempty(plotprobe)
+    return
+end
+if isempty(plotprobe.dataTree)
+    return
+end
+currElem  = plotprobe.dataTree.currElem;
+plotprobe.condition = find(currElem.procElem.CondName2Group == plotprobe.condition);
+

@@ -18,12 +18,30 @@ classdef ChildGuiClass < handle
             %   gui = ChildGuiClass('guiname', true)
             %   gui = ChildGuiClass('guiname', true, arg1, arg2, ..., arg5);
             %
+            % Description:
+            %   Child GUIs must follow certain rules to be managed by this 
+            %   class. Rules are these:
+            % 
+            %       a) GUI output function <gui_name>_OutputFcn callback 
+            %          function must be in this form:
+            % 
+            %           function varargout = <gui_name>_OutputFcn(hObject, eventdata, handles)
+            %           handles.updateptr = @<function name for updating>;
+            %           handles.closeptr = @<function name for closing>;   
+            %           varargout{1} = handles;
+            %
+            %           The function pointers updateptr and closeptr can
+            %           also be empty.
+            %         
+            %       b)  
+            %      
             % Examples:
             %   gui = ChildGuiClass('procStreamGUI', true, '.nirs');
             %   gui = ChildGuiClass('procStreamGUI', true, '.snirf');
             %
+            
             obj.name = '';
-            obj.handles = struct('figure',[], 'updateptr',[]);
+            obj.handles = struct('figure',[], 'updateptr',[], 'closeptr',[]);
             obj.args = {};
             obj.visible = 'on';
             obj.lastpos = [];
@@ -113,6 +131,22 @@ classdef ChildGuiClass < handle
             end
         end
         
+               
+        
+        % -------------------------------------------------------------------
+        function UpdateArgs(obj, varargin)
+            if ~ishandle(obj.handles.figure)
+                return;
+            end
+            if isempty(obj.name)
+                return;
+            end
+            if ~exist('varargin','var')
+                return;
+            end
+            obj.args = varargin;               
+        end
+
         
         
         % -------------------------------------------------------------------
@@ -130,19 +164,47 @@ classdef ChildGuiClass < handle
             end
             if ~isa(obj.handles.updateptr, 'function_handle')
                 return;
-            end            
-            obj.handles.updateptr(obj.handles);
+            end
+            
+            % Allow up to 5 arguments to be passed to GUI
+            a = obj.args;
+            switch(length(a))
+                % Note that in addition to the guis known args we add as the last arg the last gui position. 
+                % We do this because even we can set the position after launching gui, it is much nices when 
+                % the gui is not seen to change position. If the position is set from within the GUI it 
+                % appears only in the position we pass it since it is invisible until the gui's open function 
+                % exits
+                case 0
+                    eval( sprintf('obj.handles.updateptr(obj.handles);') );
+                case 1
+                    eval( sprintf('obj.handles.updateptr(obj.handles, a{1});') );
+                case 2
+                    eval( sprintf('obj.handles.updateptr(obj.handles, a{1}, a{2});') );
+                case 3
+                    eval( sprintf('obj.handles.updateptr(obj.handles, a{1}, a{2}, a{3});') );
+                case 4
+                    eval( sprintf('obj.handles.updateptr(obj.handles, a{1}, a{2}, a{3}, a{4});') );
+                case 5
+                    eval( sprintf('obj.handles.updateptr(obj.handles, a{1}, a{2}, a{3}, a{4}, a{5});') );
+            end
         end
         
         
         
         % -------------------------------------------------------------------
         function Close(obj, hObject, eventdata)
+            obj.args = {};
             if ~ishandle(obj.handles.figure)
                 return;
             end
             obj.lastpos = get(obj.handles.figure, 'position');
             delete(obj.handles.figure);
+            
+            % See if there's a private GUI close function to call
+            if ~isa(obj.handles.closeptr, 'function_handle')
+                return;
+            end
+            obj.handles.closeptr();
         end
         
         

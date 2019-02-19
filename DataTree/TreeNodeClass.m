@@ -144,28 +144,29 @@ classdef TreeNodeClass < handle
         function CondNames = GetConditions(obj)
             CondNames = obj.CondNames;
         end
+
         
+        % ----------------------------------------------------------------------------------
+        function t = GetTHRF(obj)
+            t = obj.procStream.output.GetTHRF();
+        end
         
         
         % ----------------------------------------------------------------------------------
-        function plotprobe = DisplayPlotProbe(obj, plotprobe, datatype, buttonVals, condition)
-            SD          = obj.GetSDG();
-            ch          = obj.GetMeasList();
-            condition   = find(obj.CondName2Group == condition);
-            tMarkAmp    = plotprobe.GetTmarkAmp();
-            
-            y = [];
-            tMarkUnits = '';
-            if datatype == buttonVals.OD_HRF && ~isempty(obj.procStream.output.dodAvg)
-                y = obj.procStream.output.dodAvg(:, :, condition);
-                tMarkUnits='(AU)';
-            elseif datatype == buttonVals.CONC_HRF && ~isempty(obj.procStream.output.dcAvg)
-                y = obj.procStream.output.dcAvg(:, :, :, condition);
-                plotprobe.SetTmarkAmp(tMarkAmp/1e6);
-                tMarkUnits='(micro-molars)';
+        function dodAvg = GetDodAvg(obj, condition)
+            if ~exist('condition','var')
+                condition = 1:length(obj.GetConditions());
             end
-            tHRF = obj.procStream.output.tHRF;
-            plotprobe.Display(y, tHRF, SD, ch, tMarkUnits);
+            dodAvg = obj.procStream.output.GetDodAvg(condition);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function dcAvg = GetDcAvg(obj, condition)
+            if ~exist('condition','var')
+                condition = 1:length(obj.GetConditions());
+            end
+            dcAvg = obj.procStream.output.GetDcAvg(condition);
         end
         
         

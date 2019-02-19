@@ -23,6 +23,7 @@ end
 % -------------------------------------------------------------
 function varargout = stimGUI_OutputFcn(hObject, eventdata, handles)
 handles.updateptr = @stimGUI_Update;
+handles.closeptr = [];
 varargout{1} = handles;
 
 

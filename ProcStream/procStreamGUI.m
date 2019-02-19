@@ -24,6 +24,7 @@ end
 % -------------------------------------------------------------
 function varargout = procStreamGUI_OutputFcn(hObject, eventdata, handles)
 handles.updateptr = @procStreamGUI_Update;
+handles.closeptr = [];
 varargout{1} = handles;
 
 

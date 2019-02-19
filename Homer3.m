@@ -127,6 +127,7 @@ hmr.handles.proccessOpt = [];
 hmr.childguis(1) = ChildGuiClass('procStreamGUI');
 hmr.childguis(2) = ChildGuiClass('stimGUI');
 hmr.childguis(3) = ChildGuiClass('PlotProbeGUI');
+hmr.childguis(4) = ChildGuiClass('ProcStreamOptionsGUI');
 
 setGuiFonts(hObject);
 
@@ -363,7 +364,6 @@ function menuCopyCurrentPlot_Callback(hObject, eventdata, handles)
 global hmr
 
 currElem = hmr.dataTree.currElem;
-
 [hf, plotname] = CopyDisplayCurrElem(currElem, hmr.guiMain);
 
 
@@ -373,17 +373,12 @@ currElem = hmr.dataTree.currElem;
 function pushbuttonProcStreamOptionsEdit_Callback(hObject, eventdata, handles)
 global hmr
 
-dataTree  = hmr.dataTree;
-
+idx = FindChildGuiIdx('ProcStreamOptionsGUI');
 if get(hObject, 'value')
-    action = 'open';
+    hmr.childguis(idx).Launch(hmr.guiMain.applyEditCurrNodeOnly);
 else
-    action = 'close';
+    hmr.childguis(idx).Close();
 end
-
-% Reload current element selection
-dataTree.currElem = OpenCurrElemProcStreamOptionsGUI(dataTree.currElem, action);
-hmr.handles.proccessOpt = dataTree.currElem.handles.ProcStreamOptionsGUI;
 
 
 
@@ -457,6 +452,7 @@ if get(hObject, 'value')
 else
     hmr.guiMain.applyEditCurrNodeOnly = true;
 end
+UpdateArgsChildGuis();
 
 
 
@@ -477,18 +473,17 @@ function UpdateArgsChildGuis()
 global hmr
 
 hmr.childguis(FindChildGuiIdx('PlotProbeGUI')).UpdateArgs(hmr.guiMain.datatype, hmr.guiMain.condition);
-
+hmr.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(hmr.guiMain.applyEditCurrNodeOnly);
 
 
 % --------------------------------------------------------------------
 function UpdateChildGuis()
 global hmr
 
-UpdateArgsChildGuis();
+UpdateArgsChildGuis()
 for ii=1:length(hmr.childguis)
     hmr.childguis(ii).Update();
 end
-hmr.dataTree.UpdateCurrElemProcStreamOptionsGUI();
 
 
 

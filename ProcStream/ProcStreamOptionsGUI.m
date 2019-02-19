@@ -8,6 +8,9 @@ gui_State = struct('gui_Name',       mfilename, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1}) && ~strcmp(varargin{end},'userargs')
+    if varargin{1}(1)=='.'
+        varargin{1}(1) = '';
+    end
     gui_State.gui_Callback = str2func(varargin{1});
 end
 
@@ -18,21 +21,147 @@ else
 end
 
 
+% -------------------------------------------------------------
+function ProcStreamOptionsGUI_Update(varargin)
+if nargin==0
+    return;
+end
+handles = varargin{1};
+ParseArgs(varargin);
+Display(handles);
+
+
+
+% -------------------------------------------------------------
+function varargout = ProcStreamOptionsGUI_OutputFcn(hObject, eventdata, handles)
+handles.updateptr = @ProcStreamOptionsGUI_Update;
+handles.closeptr = [];
+varargout{1} = handles;
+
+
+
+% ----------------------------------------------------------------------
+function Initialize(handles)
+global procStreamOptions
+
+procStreamOptions = [];
+
+procStreamOptions.status = -1;
+
+% These are the parameters that are assigned from external sources,
+% either from GUI arguments or parent GUI. 
+procStreamOptions.format = '';
+procStreamOptions.applyEditCurrNodeOnly = [];
+procStreamOptions.pos = [];
+procStreamOptions.handles = [];
+
+
+
+
+% ----------------------------------------------------------------------
+function ParseArgs(args)
+global procStreamOptions
+global hmr
+
+if ~exist('args','var')
+    return;
+end
+
+varargin = args;
+
+%%%% These are the parameters that are assigned from external soutrces,
+%%%% either from GUI arguments or parent GUI. 
+%
+% procStreamOptions.format
+% procStreamOptions.applyEditCurrNodeOnly
+% procStreamOptions.pos
+%
+
+%  Syntax:
+%
+%     ProcStreamOptionsGUI()
+%     ProcStreamOptionsGUI(format)
+%     ProcStreamOptionsGUI(format, pos)
+%     ProcStreamOptionsGUI(format, applyEditCurrNodeOnly)
+%     ProcStreamOptionsGUI(format, applyEditCurrNodeOnly, pos)
+
+% Arguments take precedence over parent gui parameters
+if length(varargin)==0
+    return;                                                  % ProcStreamOptionsGUI()
+elseif length(varargin)==1
+    if ischar(varargin{1})                 
+        procStreamOptions.format = varargin{1};                      % ProcStreamOptionsGUI(format)
+    end
+elseif length(varargin)==2
+    if ischar(varargin{1})
+        procStreamOptions.format = varargin{1};
+        if isreal(varargin{2}) & length(varargin{2})==4     
+            procStreamOptions.pos = varargin{2};                    % PlotProbeGUI(format, pos)
+        elseif iswholenum(varargin{2}) & length(varargin{2})==1
+            procStreamOptions.applyEditCurrNodeOnly = varargin{2};               % PlotProbeGUI(format, applyEditCurrNodeOnly)
+        end
+    end
+elseif length(varargin)==3
+    procStreamOptions.format                 = varargin{1};
+    procStreamOptions.applyEditCurrNodeOnly  = varargin{2};
+    procStreamOptions.pos                    = varargin{3};                      % PlotProbeGUI(format, datatype, condition, pos)
+end
+
+% Now whichever of the above parameters weren't assigned values
+% obtain values either from parent gui or assign default value
+if isempty(hmr)
+    if isempty(procStreamOptions.format)
+        procStreamOptions.format = 'snirf';
+    end
+    if isempty(procStreamOptions.applyEditCurrNodeOnly)
+        procStreamOptions.applyEditCurrNodeOnly = false;
+    end
+else
+    procStreamOptions.format = hmr.format;
+    procStreamOptions.applyEditCurrNodeOnly = hmr.guiMain.applyEditCurrNodeOnly;
+end
 
 
 % ----------------------------------------------------------
 function ProcStreamOptionsGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+global procStreamOptions
+global hmr
 
 % Choose default command line output for ProcStreamOptionsGUI
 handles.output = hObject;
-
-% Update handles structure
 guidata(hObject, handles);
-set(hObject,'visible','off');  % to be turnedmade visible in ProcStreamOptionsGUI_OutputFcn
+set(hObject,'visible','off');  % to be made visible in ProcStreamOptionsGUI_OutputFcn
 
-currElem = varargin{1};
-currElem.handles.ProcStreamOptionsGUI = hObject;
-procInput = currElem.procElem.procStream.input;
+Initialize(handles);
+ParseArgs(varargin);
+
+% See if we can recover previous position
+p = procStreamOptions.pos;
+if ~isempty(p)
+    set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
+end
+procStreamOptions.version  = get(hObject, 'name');
+procStreamOptions.dataTree = LoadDataTree(procStreamOptions.format, hmr);
+if ispc()
+    setGuiFonts(hObject, 7);
+else
+    setGuiFonts(hObject);
+end
+Display(handles);
+
+
+
+% ----------------------------------------------------------
+function Display(handles)
+global procStreamOptions
+hObject = handles.figure;
+
+hc = get(hObject, 'children');
+if ishandles(hc)
+    delete(hc);
+end
+
+procInput = procStreamOptions.dataTree.currElem.procElem.procStream.input;
 fcalls = procInput.fcalls;
 
 if isempty(fcalls)
@@ -40,7 +169,6 @@ if isempty(fcalls)
     return;
 end
 
-clf(hObject);
 nFcall = length(fcalls);
 
 % If no functions, throw up empty gui
@@ -49,7 +177,6 @@ if nFcall==0
 	% Need to make sure position data is saved in pixel units at end of function 
 	% to as these are the units used to reposition GUI later if needed
     set(hObject, 'units','characters');
-    setappdata(hObject,'position',get(hObject, 'position'));
     return;
 end
 
@@ -69,12 +196,7 @@ xpos_pedit  = xpos_pname+xsize_pname+10;
 xpos_pbttn  = xpos_pedit++xsize_pval+15;
 xsize_tot   = xpos_pbttn+15;
 
-% Set figure size 
-if length(varargin)>2 && ~isempty( varargin{2})
-    pos = varargin{2};  % previous figures position
-else
-    pos = get(hObject, 'position');
-end
+pos = get(hObject, 'position');
 set(hObject, 'color',[1 1 1]);
 set(hObject, 'position',[pos(1),pos(2),xsize_tot,ysize_tot]);
 
@@ -134,11 +256,6 @@ for iFcall = 1:nFcall
     end
     
 end
-
-procInput.fcalls = fcalls;
-currElem.procStream.input = procInput;
-hmr.currElem = currElem;
-
 % Make sure the options GUI fits on screen
 [b, p] = guiOutsideScreenborders(hObject);
 if abs(b(4))>0 || abs(b(2))>0
@@ -160,28 +277,12 @@ setappdata(hObject,'position',get(hObject, 'position'));
 setGuiFonts(hObject);
 
 
-% ----------------------------------------------------------
-function varargout = ProcStreamOptionsGUI_OutputFcn(hObject, eventdata, handles) 
-
-% Get default command line output from handles structure
-varargout{1} = hObject;
-
-% Restore the gui position set in ProcStreamOptionsGUI_OpeningFcn
-p = getappdata(hObject,'position');
-if isempty(p)
-    delete(hObject)
-    return;
-end
-set(hObject, 'position',[p(1), p(2), p(3), p(4)]);
-set(hObject,'visible','on');
-
-
 
 % ----------------------------------------------------------
 function edit_Callback(hObject, eventdata, handles) 
-global hmr
+global procStreamOptions
 
-dataTree = hmr.dataTree;
+dataTree = procStreamOptions.dataTree;
 
 iFcall  = eventdata(1);
 iParam = eventdata(2);
@@ -192,7 +293,7 @@ set( hObject, 'string', str);
 
 % Check if we should apply the param edit to all nodes of the current nodes
 % level
-if ~hmr.guiMain.applyEditCurrNodeOnly
+if ~procStreamOptions.applyEditCurrNodeOnly
     if dataTree.currElem.procType==2
         for ii=1:length(dataTree.group.subjs)
             dataTree.group.subjs(ii).procStream.EditParam(iFcall, iParam, val);
@@ -209,9 +310,9 @@ end
 
 % ----------------------------------------------------------
 function pushbuttonProc_Callback(hObject, eventdata, handles) 
-global hmr
+global procStreamOptions
 
-dataTree = hmr.dataTree;
+dataTree = procStreamOptions.dataTree;
 procInput = dataTree.currElem.procElem.procStream.input;
 procResult = dataTree.currElem.procElem.procStream.output;
 
@@ -246,7 +347,7 @@ end
 
 eval( sprintf( '%s_result( %s );', procInput.fcalls(eventdata).name, sargin ) );
 
-hmr.dataTree.currElem.procStream.input = procInput.copy;
+procStreamOptions.dataTree.currElem.procStream.input = procInput.copy;
 
 
 

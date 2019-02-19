@@ -42,9 +42,6 @@ classdef DataTreeClass <  handle
             if isempty(obj.currElem)
                 return;
             end
-            if ishandle(obj.currElem.handles.ProcStreamOptionsGUI)
-                delete(obj.currElem.handles.ProcStreamOptionsGUI);
-            end
         end
 
 
@@ -235,28 +232,6 @@ classdef DataTreeClass <  handle
             obj.currElem.iFile = iFile;
             obj.currElem.iSubj = iSubj;
             obj.currElem.iRun = iRun;
-        end
-
-
-        % ----------------------------------------------------------
-        function UpdateCurrElemProcStreamOptionsGUI(obj)
-            % Update only if the gui is already active. Otherwise do nothing
-            if ishandles(obj.currElem.handles.ProcStreamOptionsGUI)
-                % Get position in character units
-                set(obj.currElem.handles.ProcStreamOptionsGUI, 'units','characters');
-                pos = get(obj.currElem.handles.ProcStreamOptionsGUI, 'position');
-                
-                % Race condition in matlab versions 2014b and higher: give some time
-                % for set/get to finish before deleting GUI
-                pause(0.1);
-                delete(obj.currElem.handles.ProcStreamOptionsGUI);
-                
-                % Another race condition, which might make GUI disappear when going through files in the
-                % listboxFiles and this time in any matlab version with the
-                % ProcStreamOptionsGUI active
-                pause(0.1);
-                obj.currElem.handles.ProcStreamOptionsGUI = ProcStreamOptionsGUI(obj.currElem, pos, 'userargs');
-            end
         end
 
 

@@ -8,8 +8,8 @@ if ~ishandles(handles.figure)
     return;
 end
 
-conditions =  stimEdit.dataTree.currElem.procElem.GetConditions();
-filename = stimEdit.dataTree.currElem.procElem.GetName();
+conditions =  stimEdit.dataTree.currElem.GetConditions();
+filename = stimEdit.dataTree.currElem.GetName();
 [~, fname, ext] = fileparts(filename);
 stimGUI_SetTextFilename([fname, ext, ' :'], handles);
 

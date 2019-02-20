@@ -4,7 +4,7 @@ global stimEdit
 if ~exist('condition','var')
     return;
 end
-conditions =  stimEdit.dataTree.currElem.procElem.GetConditions();
+conditions =  stimEdit.dataTree.currElem.GetConditions();
 if isempty(conditions)
     return;
 end
@@ -12,7 +12,7 @@ icond = find(strcmp(conditions, condition));
 if isempty(icond)
     return;
 end
-[tpts, duration, vals] = stimEdit.dataTree.currElem.procElem.GetStimData(icond);
+[tpts, duration, vals] = stimEdit.dataTree.currElem.GetStimData(icond);
 if isempty(tpts)
     set(handles.uitableStimInfo, 'data',[]);
     return;

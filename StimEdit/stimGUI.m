@@ -143,7 +143,7 @@ function uitableStimInfo_CellEditCallback(hObject, eventdata, handles)
 global stimEdit
 
 data = get(hObject,'data') ;
-conditions =  stimEdit.dataTree.currElem.procElem.GetConditions();
+conditions =  stimEdit.dataTree.currElem.GetConditions();
 icond = stimGUI_GetConditionIdxFromPopupmenu(conditions, handles);
 SetStimData(icond, data);
 r=eventdata.Indices(1);
@@ -235,7 +235,7 @@ end
 % Now that we made sure legit dataTree exists, we can match up
 % the selected stims to the stims in currElem
 currElem = stimEdit.dataTree.currElem;
-s = currElem.procElem.GetStims();
+s = currElem.GetStims();
 s2 = sum(abs(s(tPts_idxs_select,:)),2);
 stims_select = find(s2>=1);
 
@@ -244,7 +244,7 @@ stims_select = find(s2>=1);
 % ------------------------------------------------
 function EditSelectRange(t1, t2)
 global stimEdit
-t = stimEdit.dataTree.currElem.procElem.GetTime();
+t = stimEdit.dataTree.currElem.GetTime();
 if ~all(t1==t2)
     tPts_idxs_select = find(t>=t1 & t<=t2);
 else
@@ -270,7 +270,7 @@ stimEdit.status=0;
 % ------------------------------------------------
 function EditSelectTpts(tPts_select)
 global stimEdit
-t = stimEdit.dataTree.currElem.procElem.GetTime();
+t = stimEdit.dataTree.currElem.GetTime();
 tPts_idxs_select = [];
 for ii=1:length(tPts_select)
     tPts_idxs_select(ii) = binaraysearchnearest(t, tPts_select(ii));
@@ -300,7 +300,7 @@ function AddEditDelete(tPts_idxs_select, iS_lst)
 %
 % Inputs:
 %
-%     tPts  - time range selected in stim.currElem.procElem.t
+%     tPts  - time range selected in stim.currElem.t
 %     iS_lst - indices in tPts of existing stims
 global stimEdit
 
@@ -312,7 +312,7 @@ dataTree       = stimEdit.dataTree;
 currElem       = dataTree.currElem;
 group          = dataTree.group;
 CondNamesGroup = group.GetConditions();
-tc             = currElem.procElem.GetTime();
+tc             = currElem.GetTime();
 nCond          = length(CondNamesGroup);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -367,7 +367,7 @@ if isempty(iS_lst)
     end
     
     %%%% Add new stim to currElem's condition
-    currElem.procElem.AddStims(tc(tPts_idxs_select), CondName);
+    currElem.AddStims(tc(tPts_idxs_select), CondName);
     stimEdit.status = 1;
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -379,8 +379,8 @@ else
     if ch==nActions-1 & nActions==nCond+4
 
         % Delete stim entry from userdata first
-        % because it depends on stim.currElem.procElem.s
-        currElem.procElem.DeleteStims(tc(tPts_idxs_select));
+        % because it depends on stim.currElem.s
+        currElem.DeleteStims(tc(tPts_idxs_select));
 
     %%%% Toggle active/inactive stim
     elseif ch==nActions-2 & nActions==nCond+4
@@ -400,7 +400,7 @@ else
         else
             CondName = CondNamesGroup{ch};
         end
-        currElem.procElem.MoveStims(tc(tPts_idxs_select), CondName);
+        currElem.MoveStims(tc(tPts_idxs_select), CondName);
         
     end
     stimEdit.status = 1;
@@ -422,7 +422,7 @@ end
 if isempty(stimEdit.dataTree.currElem)
     return;
 end
-stimEdit.dataTree.currElem.procElem.SetStimDuration(icond, duration);
+stimEdit.dataTree.currElem.SetStimDuration(icond, duration);
 
 
 
@@ -438,21 +438,21 @@ end
 if isempty(stimEdit.dataTree.currElem)
     return;
 end
-duration = stimEdit.dataTree.currElem.procElem.GetStimDuration(icond);
+duration = stimEdit.dataTree.currElem.GetStimDuration(icond);
 
 
 % -------------------------------------------------------------------
 function [tpts, duration, vals] = GetStimData(icond)
 global stimEdit
-[tpts, duration, vals] = stimEdit.dataTree.currElem.procElem.GetStimData(icond);
+[tpts, duration, vals] = stimEdit.dataTree.currElem.GetStimData(icond);
 
 
 % -------------------------------------------------------------------
 function SetStimData(icond, data)
 global stimEdit
-stimEdit.dataTree.currElem.procElem.SetStimTpts(icond, data(:,1));
-stimEdit.dataTree.currElem.procElem.SetStimDuration(icond, data(:,2));
-stimEdit.dataTree.currElem.procElem.SetStimValues(icond, data(:,3));
+stimEdit.dataTree.currElem.SetStimTpts(icond, data(:,1));
+stimEdit.dataTree.currElem.SetStimDuration(icond, data(:,2));
+stimEdit.dataTree.currElem.SetStimValues(icond, data(:,3));
 
 
 % -------------------------------------------------------------------

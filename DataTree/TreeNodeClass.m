@@ -3,6 +3,9 @@ classdef TreeNodeClass < handle
     properties % (Access = private)        
         name;
         type;
+        iGroup;
+        iSubj;
+        iRun;
         procStream;
         err;
         ch;
@@ -17,6 +20,9 @@ classdef TreeNodeClass < handle
         % ---------------------------------------------------------------------------------
         function obj = TreeNodeClass(arg)
             obj.name = '';
+            obj.iGroup = 0;
+            obj.iSubj = 0;
+            obj.iRun = 0;
             obj.type = '';
             obj.procStream = ProcStreamClass();
             obj.err = 0;

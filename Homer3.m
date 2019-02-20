@@ -54,13 +54,13 @@ if ~isempty(args)
         
     end
 end
-
 positionGUI(hFig, 0.20, 0.10, 0.70, 0.85)
+setGuiFonts(hFig);
 
 
 
 % ---------------------------------------------------------------------
-function Homer3_EnableDisableGUI(handles,val)
+function Homer3_EnableDisableGUI(handles, val)
 
 set(handles.listboxFiles, 'enable', val);
 set(handles.radiobuttonProcTypeGroup, 'enable', val);
@@ -86,12 +86,6 @@ else
     hmr.format = varargin{1};
 end
 
-hmr.dataTree      = [];
-hmr.guiControls   = [];
-hmr.plotprobe     = [];
-hmr.stimEdit      = [];
-hmr.handles       = [];
-
 % Choose default command line output for Homer3
 handles.output = hObject;
 guidata(hObject, handles);
@@ -99,48 +93,35 @@ guidata(hObject, handles);
 % Set the Homer3_version version number
 [~, V] = Homer3_version(hObject);
 hmr.version = V;
+hmr.config = ConfigFileClass([fileparts(which('Homer3')), '/Homer3.cfg']);
 
 % Disable and reset all window gui objects
 Homer3_EnableDisableGUI(handles,'off');
-
 Homer3_Init(handles, {'zbuffer'});
 
 % Load date files into group tree object
-dataTree  = LoadDataTree(handles, @listboxFiles_Callback);
-if dataTree.IsEmpty()
+hmr.dataTree  = LoadDataTree(handles);
+if hmr.dataTree.IsEmpty()
     return;
 end
-
-guiControls   = InitGuiControls(handles, dataTree);
+hmr.guiControls = InitGuiControls(handles);
 
 % If data set has no errors enable window gui objects
 Homer3_EnableDisableGUI(handles,'on');
 
-hmr.dataTree  = dataTree;
-hmr.guiControls   = guiControls;
-
 % Display data from currently selected processing element
 DisplayData();
-
-hmr.handles.this = hObject;
-hmr.handles.proccessOpt = [];
 hmr.childguis(1) = ChildGuiClass('procStreamGUI');
 hmr.childguis(2) = ChildGuiClass('stimGUI');
 hmr.childguis(3) = ChildGuiClass('PlotProbeGUI');
 hmr.childguis(4) = ChildGuiClass('ProcStreamOptionsGUI');
 
-setGuiFonts(hObject);
-
+hmr.dirnameSubj = hmr.dataTree.files.GetFilesPath();
 
 
 % --------------------------------------------------------------------
 function varargout = Homer3_OutputFcn(hObject, eventdata, handles)
-global hmr
-
-varargout{1} = [];
-if ~isempty(hmr.handles)
-    varargout{1} = hmr.handles.this;
-end
+varargout{1} = handles.output;
 
 
 
@@ -149,9 +130,6 @@ function Homer3_DeleteFcn(hObject, eventdata, handles)
 global hmr;
 
 if isempty(hmr)
-    return;
-end
-if isempty(hmr.handles)
     return;
 end
 
@@ -173,15 +151,16 @@ global hmr
 dataTree  = hmr.dataTree;
 
 procType = get(hObject,'tag');
+iFile = get(handles.listboxFiles,'value');
+[iGroup,iSubj,iRun] = dataTree.MapFile2Group(iFile);
 switch(procType)
     case 'radiobuttonProcTypeGroup'
-        dataTree.currElem.procType = 1;
+        dataTree.SetCurrElem(iGroup);
     case 'radiobuttonProcTypeSubj'
-        dataTree.currElem.procType = 2;
+        dataTree.SetCurrElem(iGroup, iSubj);
     case 'radiobuttonProcTypeRun'
-        dataTree.currElem.procType = 3;
+        dataTree.SetCurrElem(iGroup, iSubj, iRun);
 end
-dataTree.LoadCurrElem();
 UpdateAxesDataCondition();
 DisplayData();
 UpdateChildGuis();
@@ -192,27 +171,35 @@ UpdateChildGuis();
 function listboxFiles_Callback(hObject, eventdata, handles)
 global hmr
 
+iFile = get(hObject,'value');
+if isempty(iFile==0)
+    return;
+end
+
 dataTree = hmr.dataTree;
 
 % If evendata isn't empty then caller is trying to set currElem
 if strcmp(class(eventdata), 'matlab.ui.eventdata.ActionData')
-    ;
+    [iGroup,iSubj,iRun] = dataTree.MapFile2Group(iFile);
+    procElem = dataTree.GetCurrElem();
+    switch(procElem.type)
+        case 'group'
+            dataTree.SetCurrElem(iGroup);
+        case 'subj'
+            dataTree.SetCurrElem(iGroup, iSubj);
+        case 'run'
+            dataTree.SetCurrElem(iGroup, iSubj, iRun);
+    end
 elseif ~isempty(eventdata)
     iSubj = eventdata(1);
     iRun = eventdata(2);
-    iFile = dataTree.MapGroup2File(iSubj, iRun);
+    iFile = dataTree.MapGroup2File(iGroup, iSubj, iRun);
     if iFile==0
         return;
     end
     set(hObject,'value', iFile);
 end
 
-idx = get(hObject,'value');
-if isempty(idx==0)
-    return;
-end
-
-dataTree.LoadCurrElem();
 UpdateAxesDataCondition();
 DisplayData();
 UpdateChildGuis();
@@ -354,8 +341,8 @@ function menuItemReset_Callback(hObject, eventdata, handles)
 global hmr
 
 dataTree = hmr.dataTree;
-dataTree.currElem.procElem.Reset();
-dataTree.currElem.procElem.Save();
+dataTree.currElem.Reset();
+dataTree.currElem.Save();
 DisplayData();
 
 
@@ -367,7 +354,7 @@ currElem = hmr.dataTree.currElem;
 hf = figure;
 set(hf, 'color', [1 1 1]);
 fields = fieldnames(guiControls.buttonVals);
-plotname = sprintf('%s_%s', currElem.procElem.name, fields{guiControls.datatype});
+plotname = sprintf('%s_%s', currElem.name, fields{guiControls.datatype});
 set(hf,'name', plotname);
 
 
@@ -408,7 +395,7 @@ hmr.childguis(idx).Launch();
 function pushbuttonSave_Callback(hObject, eventdata, handles)
 global hmr
 
-hmr.dataTree.currElem.procElem.Save();
+hmr.dataTree.currElem.Save();
 
 
 
@@ -505,7 +492,7 @@ function DisplayData()
 global hmr
 dataTree = hmr.dataTree;
 guiControls = hmr.guiControls;
-procElem = dataTree.currElem.procElem;
+procElem = dataTree.currElem;
 
 hAxes = guiControls.axesData.handles.axes;
 if ~ishandles(hAxes)
@@ -613,7 +600,7 @@ function DisplayStim()
 global hmr
 dataTree = hmr.dataTree;
 guiControls = hmr.guiControls;
-procElem = dataTree.currElem.procElem;
+procElem = dataTree.currElem;
 
 if ~strcmp(procElem.type, 'run')
     return;
@@ -701,7 +688,7 @@ set(hAxes,'ygrid','on');
 function DisplayCondLegend(hLg, idxLg)
 global hmr
 dataTree = hmr.dataTree;
-procElem = dataTree.currElem.procElem;
+procElem = dataTree.currElem;
 
 [idxLg, k] = sort(idxLg);
 CondNamesAll = procElem.CondNamesAll;

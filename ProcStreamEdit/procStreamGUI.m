@@ -109,7 +109,7 @@ end
 procStreamGui.procElem{iRunPanel} = procStreamGui.dataTree.group(1).subjs(1).runs(1).copy;
 procStreamGui.procElem{iSubjPanel} = procStreamGui.dataTree.group(1).subjs(1).copy;
 procStreamGui.procElem{iGroupPanel} = procStreamGui.dataTree.group(1).copy;
-switch(class(procStreamGui.dataTree.currElem.procElem))
+switch(class(procStreamGui.dataTree.currElem))
     case 'RunClass'
         htab = htabR;
         procStreamGui.iPanel = iRunPanel;

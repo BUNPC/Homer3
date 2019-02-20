@@ -2,7 +2,7 @@ function showHiddenObjs()
 global plotprobe
 
 y        = plotprobe.y;
-ch       = plotprobe.dataTree.currElem.procElem.GetMeasList();
+ch       = plotprobe.dataTree.currElem.GetMeasList();
 h        = plotprobe.handles.data;
 bit0     = plotprobe.tMarkShow;
 bit1     = plotprobe.hidMeasShow;

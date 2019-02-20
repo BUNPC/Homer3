@@ -161,7 +161,7 @@ if ishandles(hc)
     delete(hc);
 end
 
-procInput = procStreamOptions.dataTree.currElem.procElem.procStream.input;
+procInput = procStreamOptions.dataTree.currElem.procStream.input;
 fcalls = procInput.fcalls;
 
 if isempty(fcalls)
@@ -288,7 +288,7 @@ iFcall  = eventdata(1);
 iParam = eventdata(2);
 val = str2num( get(hObject,'string') ); % need to check if it is a valid string
 
-str = dataTree.currElem.procElem.procStream.EditParam(iFcall, iParam, val);
+str = dataTree.currElem.procStream.EditParam(iFcall, iParam, val);
 set( hObject, 'string', str);
 
 % Check if we should apply the param edit to all nodes of the current nodes
@@ -313,8 +313,8 @@ function pushbuttonProc_Callback(hObject, eventdata, handles)
 global procStreamOptions
 
 dataTree = procStreamOptions.dataTree;
-procInput = dataTree.currElem.procElem.procStream.input;
-procResult = dataTree.currElem.procElem.procStream.output;
+procInput = dataTree.currElem.procStream.input;
+procResult = dataTree.currElem.procStream.output;
 
 % parse output parameters
 sargout = procInput.fcalls(eventdata).argOut.str;

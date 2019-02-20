@@ -41,7 +41,7 @@ global hmr
 dataTree = hmr.dataTree;
 guiControls = hmr.guiControls;
 axesSDG = guiControls.axesSDG;
-procElem = dataTree.currElem.procElem;
+procElem = dataTree.currElem;
 
 % This function plots the prove geometry
 % Command line call:

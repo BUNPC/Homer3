@@ -87,7 +87,7 @@ classdef DataFilesClass < handle
                                 foos(jj).idx          = dirs(ii).idx+jj;
                                 foos(jj).filename     = foos(jj).name;
                                 foos(jj).name         = [dirs(ii).name, '/', foos(jj).name];
-                                foos(jj).map2group    = struct('iSubj',0,'iRun',0);
+                                foos(jj).map2group    = struct('iGroup',0, 'iSubj',0, 'iRun',0);
                             end
                             
                             % Add .nirs file from current subdir to files struct

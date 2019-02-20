@@ -10,13 +10,10 @@ classdef DataTreeClass <  handle
     methods
         
         % ---------------------------------------------------------------
-        function obj = DataTreeClass(handles, funcptr, fmt)
+        function obj = DataTreeClass(handles, fmt)
             if ~exist('handles','var')
                 handles = [];
             end
-            if ~exist('funcptr','var')
-                funcptr = [];
-            end            
             if ~exist('fmt','var')
                 fmt = '';
             end
@@ -32,8 +29,7 @@ classdef DataTreeClass <  handle
             obj.LoadData();
             
             % Initialize the current processing element within the group
-            obj.currElem = InitCurrElem(handles, funcptr);
-            obj.LoadCurrElem(1, 1);
+            obj.SetCurrElem(1,1,1);
         end
         
         
@@ -47,7 +43,6 @@ classdef DataTreeClass <  handle
 
         % ---------------------------------------------------------------
         function LoadData(obj)
-            
             obj.AcqData2Group();
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -66,13 +61,11 @@ classdef DataTreeClass <  handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.group.SetConditions();
             obj.group.SetMeasList();
-            
         end
         
         
         % ----------------------------------------------------------
         function AcqData2Group(obj)
-           
             obj.group = GroupClass().empty();
             
             if isempty(obj.files)
@@ -82,7 +75,7 @@ classdef DataTreeClass <  handle
             % Create new group based only on acquisition data
             rnum = 1;
             obj.group = GroupClass(obj.files(1).name);
-            obj.files(1).MapFile2Group(1, 1);
+            obj.files(1).MapFile2Group(1,1,1);
             hwait = waitbar(0, sprintf('Loading proc elements') );
             p = get(hwait,'position');
             set(hwait, 'Position',[p(1), p(2), p(3)*1.5, p(4)]);
@@ -95,7 +88,7 @@ classdef DataTreeClass <  handle
                 if obj.files(ii).isdir
                     jj = length(obj.group.subjs)+1;
                     obj.group.subjs(jj) = SubjClass(fname, jj, 0, rnum);
-                    obj.files(ii).MapFile2Group(jj,rnum);
+                    obj.files(ii).MapFile2Group(1,jj,rnum);
                 else
                     [sname, rnum_tmp, iExt] = getSubjNameAndRun(fname, rnum);
                     if rnum_tmp ~= rnum
@@ -129,7 +122,7 @@ classdef DataTreeClass <  handle
                             % Create new run in existing subject
                             obj.group.subjs(jj).runs(nRuns+1) = RunClass(fname, jj, nRuns+1, rnum);
                             obj.group.nFiles = obj.group.nFiles+1;
-                            obj.files(ii).MapFile2Group(jj, nRuns+1);
+                            obj.files(ii).MapFile2Group(1,jj,nRuns+1);
                             rnum=rnum+1;
                             break;
                         end
@@ -140,7 +133,7 @@ classdef DataTreeClass <  handle
                     if(jj>length(obj.group.subjs))
                         obj.group.subjs(jj) = SubjClass(fname, jj, 1, rnum);
                         obj.group.nFiles = obj.group.nFiles+1;
-                        obj.files(ii).MapFile2Group(jj, 1);
+                        obj.files(ii).MapFile2Group(1,jj,1);
                         rnum=rnum+1;
                     end
                 end
@@ -151,84 +144,61 @@ classdef DataTreeClass <  handle
 
        
         % ----------------------------------------------------------
-        function LoadCurrElem(obj, iSubj, iRun)
-            if exist('iSubj','var') & exist('iRun','var')
-                for ii=1:length(obj.files)
-                    if obj.files(ii).map2group.iSubj==iSubj && obj.files(ii).map2group.iRun==iRun
-                        iFile = ii;
-                        break;
-                    end
-                end
-                if ishandle(obj.currElem.handles.listboxFiles)
-                    set(obj.currElem.handles.listboxFiles,'value',iFile);
-                end
+        function SetCurrElem(obj, iGroup, iSubj, iRun)
+            if nargin==1
+                iGroup = 0;
+                iSubj = 0;
+                iRun  = 0;
+            elseif nargin==2
+                iSubj = 0;
+                iRun  = 0;
+            elseif nargin==3
+                iRun  = 0;
             end
+            
+            if iSubj==0 && iRun==0
+                obj.currElem = obj.group(iGroup);
+            elseif iSubj>0 && iRun==0
+                obj.currElem = obj.group(iGroup).subjs(iSubj);
+            elseif iSubj>0 && iRun>0
+                obj.currElem = obj.group(iGroup).subjs(iSubj).runs(iRun);
+            end
+        end
 
-            if ishandle(obj.currElem.handles.listboxFiles)
-                iFile = get(obj.currElem.handles.listboxFiles,'value');
-                iSubj = obj.files(iFile).map2group.iSubj;
-                iRun = obj.files(iFile).map2group.iRun;
-                
-                % iSubj==0 means the file chosen is a group directory - no
-                % subject or run processing allowed for the corresponding
-                % group tree element
-                if iSubj==0
-                    set(obj.currElem.handles.radiobuttonProcTypeSubj,'enable','off');
-                    set(obj.currElem.handles.radiobuttonProcTypeRun,'enable','off');
-                    set(obj.currElem.handles.radiobuttonProcTypeGroup,'value',1);
-                % iRun==0 means the file chosen is a subject directory - no single
-                % run processing allowed for the corresponding group tree element
-                elseif iSubj>0 && iRun==0
-                    set(obj.currElem.handles.radiobuttonProcTypeSubj,'enable','on');
-                    set(obj.currElem.handles.radiobuttonProcTypeRun,'enable','on');
-                    % Don't change the value of the button group unless it is
-                    % currently set to an illegal value
-                    if obj.currElem.procType==3
-                        set(obj.currElem.handles.radiobuttonProcTypeSubj,'value',1);
-                    end
-                % iRun==0 means the file chosen is a subject directory - no single
-                % run processing allowed for the corresponding group tree element
-                elseif iSubj>0 && iRun>0
-                    set(obj.currElem.handles.radiobuttonProcTypeSubj,'enable','on');
-                    set(obj.currElem.handles.radiobuttonProcTypeRun,'enable','on');
-                end
-            else
-                iFile = 1;
-                iSubj = 1;
-                iRun = 1;
-            end
 
-            obj.currElem = getProcType(obj.currElem);
-            if obj.currElem.procType==1
-                obj.currElem.procElem = obj.group(1);
-            elseif obj.currElem.procType==2
-                obj.currElem.procElem = obj.group(1).subjs(iSubj);
-            elseif obj.currElem.procType==3
-                obj.currElem.procElem = obj.group(1).subjs(iSubj).runs(iRun);
-            end
-            obj.currElem.iFile = iFile;
-            obj.currElem.iSubj = iSubj;
-            obj.currElem.iRun = iRun;
+        % ----------------------------------------------------------
+        function procElem = GetCurrElem(obj)
+            procElem = obj.currElem;
+        end
+
+
+        % ----------------------------------------------------------
+        function [iGroup, iSubj, iRun] = GetCurrElemIdx(obj)
+            iGroup = obj.currElem.iGroup;
+            iSubj = obj.currElem.iSubj;
+            iRun = obj.currElem.iRun;
         end
 
 
         % ----------------------------------------------------------
         function SaveCurrElem(obj)
-            obj.currElem.procElem.Save();
+            obj.currElem.Save();
         end
 
 
         % ----------------------------------------------------------
         function CalcCurrElem(obj)
-            obj.currElem.procElem.Calc(obj.currElem.handles.listboxFiles, obj.currElem.funcPtrListboxFiles);
+            obj.currElem.Calc();
         end
 
         
         % ----------------------------------------------------------
-        function iFile = MapGroup2File(obj, iSubj, iRun)
+        function iFile = MapGroup2File(obj, iGroup, iSubj, iRun)
             iFile = 0;
             for ii=1:length(obj.files)
-                if obj.files(ii).map2group.iSubj==iSubj && obj.files(ii).map2group.iRun==iRun
+                if obj.files(ii).map2group.iGroup==iGroup && ...
+                   obj.files(ii).map2group.iSubj==iSubj && ...
+                   obj.files(ii).map2group.iRun==iRun
                     iFile = ii;
                     break;
                 end
@@ -236,6 +206,14 @@ classdef DataTreeClass <  handle
         end
 
         
+        % ----------------------------------------------------------
+        function [iGroup, iSubj, iRun] = MapFile2Group(obj, iFile)
+            iGroup = obj.files(iFile).map2group.iGroup;
+            iSubj = obj.files(iFile).map2group.iSubj;
+            iRun = obj.files(iFile).map2group.iRun;
+        end
+
+
         % ----------------------------------------------------------
         function b = IsEmpty(obj)
             b = true;

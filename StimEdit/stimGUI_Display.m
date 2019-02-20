@@ -18,14 +18,14 @@ hold(handles.axes1, 'on');
 
 % As of now this operation is undefined for non-Run nodes (i.e., Subj and Group)
 % So we clear the axes and exit
-if stimEdit.dataTree.currElem.procType ~= 3
+if stimEdit.dataTree.currElem.iRun==0
     return;
 end
 
 CondNamesGroup = stimEdit.dataTree.group.GetConditions();
 CondColTbl     = stimEdit.dataTree.group.CondColTbl();
-t              = stimEdit.dataTree.currElem.procElem.GetTime();
-s              = stimEdit.dataTree.currElem.procElem.GetStims();
+t              = stimEdit.dataTree.currElem.GetTime();
+s              = stimEdit.dataTree.currElem.GetStims();
 
 [lstR,lstC] = find(abs(s)==1);
 [lstR,k] = sort(lstR);
@@ -43,7 +43,7 @@ for ii=1:nStim
         Lines(ii).handle = plot([1 1]*t(lstR(ii)), yy,'--', 'parent',handles.axes1);
     end
     
-    iCond = stimEdit.dataTree.currElem.procElem.CondName2Group(lstC(ii));
+    iCond = stimEdit.dataTree.currElem.CondName2Group(lstC(ii));
     Lines(ii).color = CondColTbl(iCond,1:3);
     try
         set(Lines(ii).handle,'color',Lines(ii).color);
@@ -69,7 +69,7 @@ end
 set(handles.axes1,'xlim', [t(1), t(end)]);
 
 % Update conditions popupmenu
-set(handles.popupmenuConditions, 'string', sort(stimEdit.dataTree.currElem.procElem.GetConditions()));
+set(handles.popupmenuConditions, 'string', sort(stimEdit.dataTree.currElem.GetConditions()));
 conditions = get(handles.popupmenuConditions, 'string');
 idx = get(handles.popupmenuConditions, 'value');
 condition = conditions{idx};

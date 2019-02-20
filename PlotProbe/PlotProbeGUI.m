@@ -237,12 +237,12 @@ datatype  = plotprobe.datatype;
 currElem  = plotprobe.dataTree.currElem;
 plotprobe.y = [];
 if datatype == plotprobe.datatypeVals.OD_HRF
-    plotprobe.y = currElem.procElem.GetDodAvg(condition);
-    plotprobe.t = currElem.procElem.GetTHRF();
+    plotprobe.y = currElem.GetDodAvg(condition);
+    plotprobe.t = currElem.GetTHRF();
     plotprobe.tMarkUnits='(AU)';
 elseif datatype == plotprobe.datatypeVals.CONC_HRF
-    plotprobe.y = currElem.procElem.GetDcAvg(condition);
-    plotprobe.t = currElem.procElem.GetTHRF();
+    plotprobe.y = currElem.GetDcAvg(condition);
+    plotprobe.t = currElem.GetTHRF();
     plotprobe.tMarkAmp = plotprobe.tMarkAmp/1e6;    
     plotprobe.tMarkUnits = '(micro-molars)';
 end
@@ -344,7 +344,7 @@ plotProbeAndSetProperties(handles);
 function editPlotProbeTimeMarkersInt_Callback(hObject, eventdata, handles)
 global plotprobe
 
-t  = plotprobe.dataTree.currElem.procElem.GetTHRF();
+t  = plotprobe.dataTree.currElem.GetTHRF();
 
 foo = str2num( get(hObject,'string') );
 if length(foo)~=1
@@ -450,12 +450,12 @@ datatype  = plotprobe.datatype;
 currElem  = plotprobe.dataTree.currElem;
 plotprobe.y = [];
 if datatype == plotprobe.datatypeVals.OD_HRF
-    plotprobe.y = currElem.procElem.GetDodAvg(condition);
-    plotprobe.t = currElem.procElem.GetTHRF();
+    plotprobe.y = currElem.GetDodAvg(condition);
+    plotprobe.t = currElem.GetTHRF();
     plotprobe.tMarkUnits='(AU)';
 elseif datatype == plotprobe.datatypeVals.CONC_HRF
-    plotprobe.y = currElem.procElem.GetDcAvg(condition);
-    plotprobe.t = currElem.procElem.GetTHRF();
+    plotprobe.y = currElem.GetDcAvg(condition);
+    plotprobe.t = currElem.GetTHRF();
     plotprobe.tMarkUnits = '(micro-molars)';
 end
 plotProbeAndSetProperties(handles);
@@ -473,5 +473,5 @@ if isempty(plotprobe.dataTree)
     return
 end
 currElem  = plotprobe.dataTree.currElem;
-plotprobe.condition = find(currElem.procElem.CondName2Group == plotprobe.condition);
+plotprobe.condition = find(currElem.CondName2Group == plotprobe.condition);
 

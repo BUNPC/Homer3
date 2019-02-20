@@ -45,6 +45,10 @@ classdef ChildGuiClass < handle
             obj.args = {};
             obj.visible = 'on';
             obj.lastpos = [];
+            
+            if isempty(which(name))
+                return;
+            end
 
             if nargin==0
                 return;
@@ -158,9 +162,8 @@ classdef ChildGuiClass < handle
             if isempty(obj.handles)
                 return;
             end
-            
-            % If GUI is not already up and running, then exit
             if ~ishandle(obj.handles.figure)
+                % If GUI is not already up and running, then exit
                 return;
             end
             if ~isa(obj.handles.updateptr, 'function_handle')
@@ -194,6 +197,9 @@ classdef ChildGuiClass < handle
         
         % -------------------------------------------------------------------
         function Close(obj, hObject, eventdata)
+            if isempty(obj.name)
+                return;
+            end
             obj.args = {};
             if ~ishandle(obj.handles.figure)
                 return;
@@ -221,6 +227,9 @@ classdef ChildGuiClass < handle
             %
             %    [verstr, vernum, title] = obj.SetTitle('exclpath')
             %            
+            if isempty(obj.name)
+                return;
+            end
             if nargin==1 || ~ischar(option) || ~ismember(option, {'inclpath', 'exclpath'})
                 option = '';
             end            

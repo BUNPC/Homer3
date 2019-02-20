@@ -5,10 +5,6 @@ function dataTree = LoadDataTree(varargin)
 %       dataTree = LoadDataTree()
 %       dataTree = LoadDataTree(fmt)
 %       dataTree = LoadDataTree(fmt, parent)
-%       dataTree = LoadDataTree(fmt, parent, handles)
-%       dataTree = LoadDataTree(fmt, parent, handles, fptr)
-%       dataTree = LoadDataTree(handles)
-%       dataTree = LoadDataTree(handles, fptr)
 %
 % Description:
 %       
@@ -22,28 +18,10 @@ function dataTree = LoadDataTree(varargin)
 % First get all the argument there are to get using the 7 possible syntax
 % calls 
 if nargin==1
-    if isstruct(varargin{1})
-        handles  = varargin{1};
-    elseif ischar(varargin{1})
-        fmt     = varargin{1};
-    end
+    fmt     = varargin{1};
 elseif nargin==2
-    if isstruct(varargin{1})
-        handles = varargin{1};
-        fptr    = varargin{2};
-    else
-        fmt     = varargin{1};
-        parent  = varargin{2};
-    end
-elseif nargin==3
     fmt     = varargin{1};
     parent  = varargin{2};
-    handles = varargin{3};
-elseif nargin==4
-    fmt     = varargin{1};
-    parent  = varargin{2};
-    handles = varargin{3};
-    fptr    = varargin{4};
 end
 
 % Instantiate any non-existent arguments 
@@ -53,15 +31,8 @@ end
 if ~exist('parent','var')
     parent = []';
 end
-if ~exist('handles','var')
-    handles = [];
-end
-if ~exist('fptr','var')
-    fptr = [];
-end
-
 if isempty(parent) || ~isproperty(parent, 'dataTree') || isempty(parent.dataTree)
-    dataTree = DataTreeClass(handles, fptr, fmt);
+    dataTree = DataTreeClass(fmt, parent);
 else
     dataTree = parent.dataTree;
 end

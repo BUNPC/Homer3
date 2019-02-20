@@ -1,8 +1,6 @@
 classdef RunClass < TreeNodeClass
     
     properties % (Access = private)
-        iSubj;
-        iRun;
         rnum;
         acquired;
     end
@@ -13,6 +11,7 @@ classdef RunClass < TreeNodeClass
         function obj = RunClass(varargin)
             obj@TreeNodeClass(varargin);
             obj.type  = 'run';
+            obj.iGroup = 1;
             if nargin==4
                 obj.name  = varargin{1};
                 obj.iSubj = varargin{2};
@@ -144,21 +143,9 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function Calc(obj, hListbox, listboxFuncPtr)
-            if ~exist('hListbox','var')
-                hListbox = [];
-            end
-            if ~exist('listboxFuncPtr','var')
-                listboxFuncPtr = [];
-            end
-            
+        function Calc(obj)           
             % Recalculating result means deleting old results
             % obj.procStream.output.Flush();
-
-            % Change and display position of current processing
-            if ~isempty(listboxFuncPtr)
-                listboxFuncPtr(hListbox, [obj.iSubj, obj.iRun]);
-            end
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Find all variables needed by proc stream, find them in this 

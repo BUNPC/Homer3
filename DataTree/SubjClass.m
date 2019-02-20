@@ -1,7 +1,6 @@
 classdef SubjClass < TreeNodeClass
     
     properties % (Access = private)
-        iSubj;
         runs;
     end
     
@@ -30,6 +29,7 @@ classdef SubjClass < TreeNodeClass
             end
             
             obj.name = sname;
+            obj.iGroup = 1;
             obj.type = 'subj';
             obj.iSubj = iSubj;
             obj.CondName2Group = [];
@@ -147,14 +147,7 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function Calc(obj, hListbox, listboxFuncPtr)
-            if ~exist('hListbox','var')
-                hListbox = [];
-            end
-            if ~exist('listboxFuncPtr','var')
-                listboxFuncPtr = [];
-            end
-            
+        function Calc(obj)            
             % Recalculating result means deleting old results
             % obj.procStream.output.Flush();
             
@@ -162,7 +155,7 @@ classdef SubjClass < TreeNodeClass
             runs = obj.runs;
             nRun = length(runs);
             for iRun = 1:nRun
-                runs(iRun).Calc(hListbox, listboxFuncPtr);
+                runs(iRun).Calc();
                 
                 % Find smallest tHRF among the runs. We should make this the common one.
                 if iRun==1
@@ -170,11 +163,6 @@ classdef SubjClass < TreeNodeClass
                 elseif length(runs(iRun).procStream.output.tHRF) < length(tHRF_common)
                     tHRF_common = runs(iRun).procStream.output.GetVar('tHRF');
                 end
-            end
-            
-            % Change and display position of current processing
-            if ~isempty(listboxFuncPtr)
-                listboxFuncPtr(hListbox, [obj.iSubj, 0]);
             end
             
             % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for

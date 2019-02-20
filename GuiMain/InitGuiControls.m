@@ -1,4 +1,6 @@
-function guiControls = InitGuiControls(handles, dataTree)
+function guiControls = InitGuiControls(handles)
+global hmr
+dataTree = hmr.dataTree;
 
 axesSDG = InitAxesSDG(handles);
 axesData = InitAxesData(handles, axesSDG);
@@ -37,11 +39,11 @@ guiControls = struct(...
                  );
 
 guiControls = UpdateAxesDataCondition(guiControls, dataTree);
-setWl(guiControls, dataTree.currElem.procElem.GetWls());
+setWl(guiControls, dataTree.currElem.GetWls());
 
 guiControls.datatype  = getDatatype(guiControls);
 guiControls.condition = getCondition(guiControls);
-guiControls.wl        = getWl(guiControls, dataTree.currElem.procElem.GetWls());
+guiControls.wl        = getWl(guiControls, dataTree.currElem.GetWls());
 guiControls.hbType    = getHbType(guiControls);
 guiControls.ch        = axesSDG.iCh;
 

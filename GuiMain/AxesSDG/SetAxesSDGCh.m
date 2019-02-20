@@ -6,8 +6,8 @@ currElem = hmr.dataTree.currElem;
 hAxesSDG = axesSDG.handles.axes;
 iCh      = axesSDG.iCh;
 iSrcDet  = axesSDG.iSrcDet;
-SD       = currElem.procElem.GetSDG();
-ch       = currElem.procElem.GetMeasList();
+SD       = currElem.GetSDG();
+ch       = currElem.GetMeasList();
 
 % Maximum number of channels that can be selected simultaneously
 maxCh    = size(axesSDG.linecolor,1);

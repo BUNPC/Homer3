@@ -40,6 +40,7 @@ classdef GroupClass < TreeNodeClass
             name = curr_dir(k(end)+1:end);
             
             obj.name = name;
+            obj.iGroup = 1;
             obj.type = 'group';
             obj.fileidx = 0;
             obj.nFiles = 0;
@@ -176,14 +177,7 @@ classdef GroupClass < TreeNodeClass
         
                 
         % ----------------------------------------------------------------------------------
-        function Calc(obj, hListbox, listboxFuncPtr)
-            if ~exist('hListbox','var')
-                hListbox = [];
-            end
-            if ~exist('listboxFuncPtr','var')
-                listboxFuncPtr = [];
-            end
-            
+        function Calc(obj)           
             % Recalculating result means deleting old results
             % obj.procStream.output.Flush();
 
@@ -191,7 +185,7 @@ classdef GroupClass < TreeNodeClass
             subjs = obj.subjs;
             nSubj = length(subjs);
             for iSubj = 1:nSubj
-                subjs(iSubj).Calc(hListbox, listboxFuncPtr);
+                subjs(iSubj).Calc();
                 
                 % Find smallest tHRF among the subjs. We should make this the common one.
                 if iSubj==1
@@ -200,12 +194,7 @@ classdef GroupClass < TreeNodeClass
                     tHRF_common = subjs(iSubj).procStream.output.GetVar('tHRF');
                 end
             end
-                        
-            % Change and display position of current processing
-            if ~isempty(listboxFuncPtr)
-                listboxFuncPtr(hListbox, [0,0]);
-            end
-            
+           
             % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
             % all subjs. Use smallest tHRF as the common one.
             for iSubj = 1:nSubj

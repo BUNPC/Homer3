@@ -6,8 +6,8 @@ t        = plotprobe.t;
 tMarkInt = plotprobe.tMarkInt;
 axScl    = plotprobe.axScl;
 tMarkAmp = plotprobe.tMarkAmp;
-ch       = plotprobe.dataTree.currElem.procElem.GetMeasList();
-SD       = plotprobe.dataTree.currElem.procElem.GetSDG();
+ch       = plotprobe.dataTree.currElem.GetMeasList();
+SD       = plotprobe.dataTree.currElem.GetSDG();
 
 
 set(handles.textTimeMarkersAmpUnits, 'string',plotprobe.tMarkUnits);

@@ -4,6 +4,7 @@ classdef FileClass < handle
         % Same properties as the fields in the file struct returned 
         % by matlab's dir function
         name
+        fid
         date
         bytes
         isdir
@@ -63,7 +64,8 @@ classdef FileClass < handle
 
 
         % ----------------------------------------------------------
-        function MapFile2Group(obj, iSubj, iRun)
+        function MapFile2Group(obj, iGroup, iSubj, iRun)
+            obj.map2group.iGroup = iGroup;
             obj.map2group.iSubj = iSubj;
             if ~obj.isdir
                 obj.map2group.iRun  = iRun;
@@ -71,7 +73,31 @@ classdef FileClass < handle
                 obj.map2group.iRun  = 0;
             end
         end
-
+        
+        
+        % -----------------------------------------------------------
+        function b = Exist(obj, filename)
+            % As of version R2016a, Matlab's exist function is not a reliable way to check if a 
+            % pathname is the name of an exiting file. For example, exist will report a file as 
+            % exiting even if it doesn't, but the file name with an extension does exit. So let's 
+            % say a file with the name <filename> does not exist but <filename>.cfg does. 
+            % exist(<filename>) will return 2 even though <filename> does not actually exist. This 
+            % is a problem which is fixed by this method.
+            % 
+            if nargin==2
+                fname = filename;
+            else
+                fname = obj.filename;
+            end
+            b = ~isempty(dir(fname));
+        end
+        
+        
+        % -----------------------------------------------------------
+        function p = GetFilesPath(obj)
+            p = obj.pathfull;            
+        end
+        
     end
     
 end

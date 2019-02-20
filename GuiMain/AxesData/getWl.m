@@ -1,8 +1,8 @@
-function iWl = getWl(guiMain, Lambda)
+function iWl = getWl(guiControls, Lambda)
 
 iWl=[];
-val = get(guiMain.handles.listboxPlotWavelength, 'value');
-strs = get(guiMain.handles.listboxPlotWavelength, 'string');
+val = get(guiControls.handles.listboxPlotWavelength, 'value');
+strs = get(guiControls.handles.listboxPlotWavelength, 'string');
 if isempty(strs)
     return;
 end

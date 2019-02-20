@@ -1,6 +1,6 @@
-function hbType = getHbType(guiMain)
+function hbType = getHbType(guiControls)
 
-hbType = get(guiMain.handles.listboxPlotConc, 'value');
+hbType = get(guiControls.handles.listboxPlotConc, 'value');
 
 
 

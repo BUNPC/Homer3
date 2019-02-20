@@ -1,4 +1,4 @@
-function condition = getCondition(guiMain)
+function condition = getCondition(guiControls)
 
-condition = get(guiMain.handles.popupmenuConditions, 'value');
+condition = get(guiControls.handles.popupmenuConditions, 'value');
 

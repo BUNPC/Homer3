@@ -165,10 +165,10 @@ else
         plotprobe.format = hmr.format;
     end
     if isempty(plotprobe.datatype)
-        plotprobe.datatype = hmr.guiMain.datatype;
+        plotprobe.datatype = hmr.guiControls.datatype;
     end
     if isempty(plotprobe.condition)
-        plotprobe.condition = hmr.guiMain.condition;
+        plotprobe.condition = hmr.guiControls.condition;
     end
 end
 

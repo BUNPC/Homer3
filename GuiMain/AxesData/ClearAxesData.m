@@ -1,9 +1,9 @@
-function ClearAxesData(guiMain)
+function ClearAxesData(guiControls)
 
 
 % clear axes
-axes(guiMain.axesData.handles.axes);
+axes(guiControls.axesData.handles.axes);
 legend off
 cla
 
-ClearAxesSDG(guiMain.axesSDG); 
+ClearAxesSDG(guiControls.axesSDG); 

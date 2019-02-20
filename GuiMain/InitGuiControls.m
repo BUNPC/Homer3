@@ -1,9 +1,9 @@
-function guiMain = InitGuiMain(handles, dataTree)
+function guiControls = InitGuiControls(handles, dataTree)
 
 axesSDG = InitAxesSDG(handles);
 axesData = InitAxesData(handles, axesSDG);
-guiMain = struct(...
-                     'name', 'guiMain', ...
+guiControls = struct(...
+                     'name', 'guiControls', ...
                      'handles', struct(...
                                        'radiobuttonPlotConc', handles.radiobuttonPlotConc, ...
                                        'radiobuttonPlotOD', handles.radiobuttonPlotOD, ...
@@ -36,42 +36,42 @@ guiMain = struct(...
                      'applyEditCurrNodeOnly', true ...
                  );
 
-guiMain = UpdateAxesDataCondition(guiMain, dataTree);
-setWl(guiMain, dataTree.currElem.procElem.GetWls());
+guiControls = UpdateAxesDataCondition(guiControls, dataTree);
+setWl(guiControls, dataTree.currElem.procElem.GetWls());
 
-guiMain.datatype  = getDatatype(guiMain);
-guiMain.condition = getCondition(guiMain);
-guiMain.wl        = getWl(guiMain, dataTree.currElem.procElem.GetWls());
-guiMain.hbType    = getHbType(guiMain);
-guiMain.ch        = axesSDG.iCh;
+guiControls.datatype  = getDatatype(guiControls);
+guiControls.condition = getCondition(guiControls);
+guiControls.wl        = getWl(guiControls, dataTree.currElem.procElem.GetWls());
+guiControls.hbType    = getHbType(guiControls);
+guiControls.ch        = axesSDG.iCh;
 
 if strcmp(get(handles.menuItemViewHRFStdErr, 'checked'), 'on');
-    guiMain.showStdErr = true;
+    guiControls.showStdErr = true;
 elseif strcmp(get(handles.menuItemViewHRFStdErr, 'checked'), 'off');
-    guiMain.showStdErr = false;
+    guiControls.showStdErr = false;
 end
 
-if guiMain.datatype == guiMain.buttonVals.RAW || guiMain.datatype == guiMain.buttonVals.RAW_HRF
+if guiControls.datatype == guiControls.buttonVals.RAW || guiControls.datatype == guiControls.buttonVals.RAW_HRF
 
-    set(guiMain.handles.listboxPlotWavelength, 'visible','on');
-    set(guiMain.handles.listboxPlotConc, 'visible','off');
+    set(guiControls.handles.listboxPlotWavelength, 'visible','on');
+    set(guiControls.handles.listboxPlotConc, 'visible','off');
     
-elseif guiMain.datatype == guiMain.buttonVals.OD || guiMain.datatype == guiMain.buttonVals.OD_HRF
+elseif guiControls.datatype == guiControls.buttonVals.OD || guiControls.datatype == guiControls.buttonVals.OD_HRF
     
-    set(guiMain.handles.listboxPlotWavelength, 'visible','on');
-    set(guiMain.handles.listboxPlotConc, 'visible','off');
+    set(guiControls.handles.listboxPlotWavelength, 'visible','on');
+    set(guiControls.handles.listboxPlotConc, 'visible','off');
     
-elseif guiMain.datatype == guiMain.buttonVals.CONC || guiMain.datatype == guiMain.buttonVals.CONC_HRF
+elseif guiControls.datatype == guiControls.buttonVals.CONC || guiControls.datatype == guiControls.buttonVals.CONC_HRF
     
-    set(guiMain.handles.listboxPlotWavelength, 'visible','off');
-    set(guiMain.handles.listboxPlotConc, 'visible','on');
+    set(guiControls.handles.listboxPlotWavelength, 'visible','off');
+    set(guiControls.handles.listboxPlotConc, 'visible','on');
     
 end
 
 
 if get(handles.checkboxApplyProcStreamEditToAll, 'value')
-    guiMain.applyEditCurrNodeOnly = false;
+    guiControls.applyEditCurrNodeOnly = false;
 else
-    guiMain.applyEditCurrNodeOnly = true;
+    guiControls.applyEditCurrNodeOnly = true;
 end
 

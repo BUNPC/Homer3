@@ -1,11 +1,11 @@
-function guiMain = UpdateAxesDataCondition(guiMain, dataTree)
+function guiControls = UpdateAxesDataCondition(guiControls, dataTree)
 global hmr
 if nargin==0
-    guiMain = hmr.guiMain;
+    guiControls = hmr.guiControls;
     dataTree = hmr.dataTree;
 end
 
-if isempty(guiMain)
+if isempty(guiControls)
     return;
 end
 if dataTree.IsEmpty()
@@ -20,10 +20,10 @@ for jj=1:length(CondNames)
         CondNames{jj} = ['-- ', CondNames{jj}];
     end
 end
-set(guiMain.handles.popupmenuConditions, 'string', CondNames);
-guiMain.condition = get(guiMain.handles.popupmenuConditions, 'value');
-set(guiMain.handles.popupmenuConditions, 'value', guiMain.condition);
+set(guiControls.handles.popupmenuConditions, 'string', CondNames);
+guiControls.condition = get(guiControls.handles.popupmenuConditions, 'value');
+set(guiControls.handles.popupmenuConditions, 'value', guiControls.condition);
 
 if nargin==0
-    hmr.guiMain = guiMain;
+    hmr.guiControls = guiControls;
 end

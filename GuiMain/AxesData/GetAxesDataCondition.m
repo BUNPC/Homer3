@@ -1,5 +1,5 @@
 function  GetAxesDataCondition()
 global hmr
 
-hmr.guiMain.condition = getCondition(hmr.guiMain);
+hmr.guiControls.condition = getCondition(hmr.guiControls);
 

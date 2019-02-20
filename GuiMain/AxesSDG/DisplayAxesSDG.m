@@ -39,8 +39,8 @@
 function DisplayAxesSDG()
 global hmr
 dataTree = hmr.dataTree;
-guiMain = hmr.guiMain;
-axesSDG = guiMain.axesSDG;
+guiControls = hmr.guiControls;
+axesSDG = guiControls.axesSDG;
 procElem = dataTree.currElem.procElem;
 
 % This function plots the prove geometry

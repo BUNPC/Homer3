@@ -149,30 +149,7 @@ classdef DataTreeClass <  handle
         end
 
 
-
-        % ----------------------------------------------------------
-        function DisplayCurrElem(obj, varargin)            
-            if nargin<2
-                return;
-            end
-            canvas = varargin{1};
-            if nargin>2
-                datatype = varargin{2}.datatype;
-                buttonVals = varargin{2}.buttonVals;
-                condition = varargin{2}.condition;
-            else
-                datatype = canvas.datatype;
-                buttonVals = canvas.buttonVals;
-                condition = canvas.condition;
-            end
-            if strcmp(canvas.name, 'guiMain')
-                DisplayGuiMain(canvas);
-            elseif strcmp(canvas.name, 'plotprobe')
-                obj.currElem.procElem.DisplayPlotProbe(canvas, datatype, buttonVals, condition);
-            end
-        end
-
-        
+       
         % ----------------------------------------------------------
         function LoadCurrElem(obj, iSubj, iRun)
             if exist('iSubj','var') & exist('iRun','var')

@@ -118,7 +118,7 @@ if isempty(hmr)
     end
 else
     procStreamOptions.format = hmr.format;
-    procStreamOptions.applyEditCurrNodeOnly = hmr.guiMain.applyEditCurrNodeOnly;
+    procStreamOptions.applyEditCurrNodeOnly = hmr.guiControls.applyEditCurrNodeOnly;
 end
 
 

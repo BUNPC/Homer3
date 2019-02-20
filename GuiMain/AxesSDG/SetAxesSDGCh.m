@@ -1,6 +1,6 @@
 function SetAxesSDGCh()
 global hmr
-axesSDG = hmr.guiMain.axesSDG;
+axesSDG = hmr.guiControls.axesSDG;
 currElem = hmr.dataTree.currElem;
 
 hAxesSDG = axesSDG.handles.axes;
@@ -77,4 +77,4 @@ end
 axesSDG.iCh     = iCh;
 axesSDG.iSrcDet = iSrcDet;
 
-hmr.guiMain.axesSDG = axesSDG;
+hmr.guiControls.axesSDG = axesSDG;

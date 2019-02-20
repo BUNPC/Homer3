@@ -86,11 +86,11 @@ else
     hmr.format = varargin{1};
 end
 
-hmr.dataTree  = [];
-hmr.guiMain   = [];
-hmr.plotprobe = [];
-hmr.stimEdit  = [];
-hmr.handles   = [];
+hmr.dataTree      = [];
+hmr.guiControls   = [];
+hmr.plotprobe     = [];
+hmr.stimEdit      = [];
+hmr.handles       = [];
 
 % Choose default command line output for Homer3
 handles.output = hObject;
@@ -111,13 +111,13 @@ if dataTree.IsEmpty()
     return;
 end
 
-guiMain   = InitGuiMain(handles, dataTree);
+guiControls   = InitGuiControls(handles, dataTree);
 
 % If data set has no errors enable window gui objects
 Homer3_EnableDisableGUI(handles,'on');
 
 hmr.dataTree  = dataTree;
-hmr.guiMain   = guiMain;
+hmr.guiControls   = guiControls;
 
 % Display data from currently selected processing element
 DisplayData();
@@ -243,17 +243,17 @@ GetAxesDataType()
 DisplayData();
 UpdateChildGuis();
 
-datatype   = hmr.guiMain.datatype;
-buttonVals = hmr.guiMain.buttonVals;
+datatype   = hmr.guiControls.datatype;
+buttonVals = hmr.guiControls.buttonVals;
 if datatype == buttonVals.RAW || datatype == buttonVals.RAW_HRF
-    set(hmr.guiMain.handles.listboxPlotWavelength, 'visible','on');
-    set(hmr.guiMain.handles.listboxPlotConc, 'visible','off');
+    set(hmr.guiControls.handles.listboxPlotWavelength, 'visible','on');
+    set(hmr.guiControls.handles.listboxPlotConc, 'visible','off');
 elseif datatype == buttonVals.OD || datatype == buttonVals.OD_HRF
-    set(hmr.guiMain.handles.listboxPlotWavelength, 'visible','on');
-    set(hmr.guiMain.handles.listboxPlotConc, 'visible','off');
+    set(hmr.guiControls.handles.listboxPlotWavelength, 'visible','on');
+    set(hmr.guiControls.handles.listboxPlotConc, 'visible','off');
 elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF
-    set(hmr.guiMain.handles.listboxPlotWavelength, 'visible','off');
-    set(hmr.guiMain.handles.listboxPlotConc, 'visible','on');
+    set(hmr.guiControls.handles.listboxPlotWavelength, 'visible','off');
+    set(hmr.guiControls.handles.listboxPlotConc, 'visible','on');
 end
 
 
@@ -268,7 +268,7 @@ UpdateChildGuis();
 
 
 % --------------------------------------------------------------------
-function guiMain_ButtonDownFcn(hObject, eventdata, handles)
+function guiControls_ButtonDownFcn(hObject, eventdata, handles)
 
 % Make sure the user clicked on the axes and not
 % some other object on top of the axes
@@ -286,10 +286,10 @@ if dataTree.IsEmpty()
     return;
 end
 
-% Transfer the channels selection to guiMain
+% Transfer the channels selection to guiControls
 SetAxesDataCh();
 
-% Update the displays of the guiMain and axesSDG axes
+% Update the displays of the guiControls and axesSDG axes
 DisplayData();
 
 
@@ -364,8 +364,21 @@ function menuCopyCurrentPlot_Callback(hObject, eventdata, handles)
 global hmr
 
 currElem = hmr.dataTree.currElem;
-[hf, plotname] = CopyDisplayCurrElem(currElem, hmr.guiMain);
+hf = figure;
+set(hf, 'color', [1 1 1]);
+fields = fieldnames(guiControls.buttonVals);
+plotname = sprintf('%s_%s', currElem.procElem.name, fields{guiControls.datatype});
+set(hf,'name', plotname);
 
+
+% DISPLAY DATA
+guiControls.axesData.handles.axes = axes('position',[0.05 0.05 0.6 0.9]);
+
+% DISPLAY SDG
+guiControls.axesSDG.handles.axes = axes('position',[0.65 0.05 0.3 0.9]);
+axis off
+
+% TBD: Display current element without help from dataTree
 
 
 
@@ -375,7 +388,7 @@ global hmr
 
 idx = FindChildGuiIdx('ProcStreamOptionsGUI');
 if get(hObject, 'value')
-    hmr.childguis(idx).Launch(hmr.guiMain.applyEditCurrNodeOnly);
+    hmr.childguis(idx).Launch(hmr.guiControls.applyEditCurrNodeOnly);
 else
     hmr.childguis(idx).Close();
 end
@@ -409,9 +422,9 @@ elseif strcmp(get(hObject, 'checked'), 'off')
     set(hObject, 'checked', 'on')
 end
 if strcmp(get(hObject, 'checked'), 'on')
-    hmr.guiMain.showStdErr = true;
+    hmr.guiControls.showStdErr = true;
 elseif strcmp(get(hObject, 'checked'), 'off')
-    hmr.guiMain.showStdErr = false;
+    hmr.guiControls.showStdErr = false;
 end
 DisplayData();
 
@@ -423,7 +436,7 @@ global hmr
 
 idx = FindChildGuiIdx('PlotProbeGUI');
 if get(hObject, 'value')
-    hmr.childguis(idx).Launch(hmr.guiMain.datatype, hmr.guiMain.condition);
+    hmr.childguis(idx).Launch(hmr.guiControls.datatype, hmr.guiControls.condition);
 else
     hmr.childguis(idx).Close();
 end
@@ -448,9 +461,9 @@ function checkboxApplyProcStreamEditToAll_Callback(hObject, eventdata, handles)
 global hmr
 
 if get(hObject, 'value')
-    hmr.guiMain.applyEditCurrNodeOnly = false;
+    hmr.guiControls.applyEditCurrNodeOnly = false;
 else
-    hmr.guiMain.applyEditCurrNodeOnly = true;
+    hmr.guiControls.applyEditCurrNodeOnly = true;
 end
 UpdateArgsChildGuis();
 
@@ -472,8 +485,8 @@ idx = ii;
 function UpdateArgsChildGuis()
 global hmr
 
-hmr.childguis(FindChildGuiIdx('PlotProbeGUI')).UpdateArgs(hmr.guiMain.datatype, hmr.guiMain.condition);
-hmr.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(hmr.guiMain.applyEditCurrNodeOnly);
+hmr.childguis(FindChildGuiIdx('PlotProbeGUI')).UpdateArgs(hmr.guiControls.datatype, hmr.guiControls.condition);
+hmr.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(hmr.guiControls.applyEditCurrNodeOnly);
 
 
 % --------------------------------------------------------------------
@@ -491,10 +504,10 @@ end
 function DisplayData()
 global hmr
 dataTree = hmr.dataTree;
-guiMain = hmr.guiMain;
+guiControls = hmr.guiControls;
 procElem = dataTree.currElem.procElem;
 
-hAxes = guiMain.axesData.handles.axes;
+hAxes = guiControls.axesData.handles.axes;
 if ~ishandles(hAxes)
     return;
 end
@@ -504,16 +517,16 @@ cla;
 legend off
 set(hAxes,'ygrid','on');
 
-linecolor  = guiMain.axesData.linecolor;
-linestyle  = guiMain.axesData.linestyle;
-datatype   = guiMain.datatype;
-condition  = guiMain.condition;
-iCh        = guiMain.ch;
-iWl        = guiMain.wl;
-hbType     = guiMain.hbType;
-buttonVals = guiMain.buttonVals;
-sclConc    = guiMain.sclConc;        % convert Conc from Molar to uMolar
-showStdErr = guiMain.showStdErr;
+linecolor  = guiControls.axesData.linecolor;
+linestyle  = guiControls.axesData.linestyle;
+datatype   = guiControls.datatype;
+condition  = guiControls.condition;
+iCh        = guiControls.ch;
+iWl        = guiControls.wl;
+hbType     = guiControls.hbType;
+buttonVals = guiControls.buttonVals;
+sclConc    = guiControls.sclConc;        % convert Conc from Molar to uMolar
+showStdErr = guiControls.showStdErr;
 
 condition = find(procElem.CondName2Group == condition);
 
@@ -599,29 +612,29 @@ DisplayStim();
 function DisplayStim()
 global hmr
 dataTree = hmr.dataTree;
-guiMain = hmr.guiMain;
+guiControls = hmr.guiControls;
 procElem = dataTree.currElem.procElem;
 
 if ~strcmp(procElem.type, 'run')
     return;
 end
 
-hAxes = guiMain.axesData.handles.axes;
+hAxes = guiControls.axesData.handles.axes;
 if ~ishandles(hAxes)
     return;
 end
 axes(hAxes);
 hold on;
 
-buttonVals = guiMain.buttonVals;
+buttonVals = guiControls.buttonVals;
 
-if guiMain.datatype == buttonVals.RAW_HRF
+if guiControls.datatype == buttonVals.RAW_HRF
     return;
 end
-if guiMain.datatype == buttonVals.OD_HRF
+if guiControls.datatype == buttonVals.OD_HRF
     return;
 end
-if guiMain.datatype == buttonVals.CONC_HRF
+if guiControls.datatype == buttonVals.CONC_HRF
     return;
 end
 

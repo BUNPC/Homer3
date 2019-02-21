@@ -187,7 +187,7 @@ classdef ConfigFileClass < FileClass
         
         % -------------------------------------------------------------------------------------------------
         function InitCfgSections(obj)
-            obj.params.ProcessingStreamFilename = {};
+            obj.params.ProcStreamFile = '';
         end
         
         
@@ -204,7 +204,7 @@ classdef ConfigFileClass < FileClass
                 % Check to see if param name is a valid config param 
                 k = strfind(name, fields);
                 if ~isempty(k)
-                    eval( sprintf('obj.params.%s = val;', fields{k}) );
+                    eval( sprintf('obj.params.%s = val{1};', fields{k}) );
                 end
             end
         end

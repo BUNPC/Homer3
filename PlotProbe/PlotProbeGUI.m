@@ -214,7 +214,7 @@ if ~isempty(p)
     set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
 end
 plotprobe.version  = get(hObject, 'name');
-plotprobe.dataTree = LoadDataTree(plotprobe.format, hmr);
+plotprobe.dataTree = LoadDataTree(plotprobe.format, '', hmr);
 if ispc()
     setGuiFonts(hObject, 7);
 else

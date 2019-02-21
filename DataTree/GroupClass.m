@@ -119,7 +119,11 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function InitProcInput(obj, reg)
+        function InitProcInput(obj, reg, cfgfilename)
+            if ~exist('cfgfilename','var')
+                cfgfilename = '';
+            end
+            
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Find out if we need to ask user for processing options 
             % config file to initialize procStream.input.fcalls at the 
@@ -147,7 +151,7 @@ classdef GroupClass < TreeNodeClass
             % If any of the tree nodes still have unintialized procStream input, ask 
             % user for a config file to load it from 
             if g.procStream.IsEmpty() || s.procStream.IsEmpty() || r.procStream.IsEmpty()
-                fname = g.procStream.input.GetConfigFileName();
+                fname = g.procStream.input.GetConfigFileName(cfgfilename);
                 
                 % If user did not provide procInput config filename and file does not exist
                 % then generate a config file with default contents

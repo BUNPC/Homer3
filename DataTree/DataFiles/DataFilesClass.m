@@ -1,3 +1,4 @@
+
 classdef DataFilesClass < handle
     
     properties
@@ -7,9 +8,6 @@ classdef DataFilesClass < handle
         errmsg;
         sd_common;
         pathnm;
-        handles;
-        listboxFiles; 
-        listboxFiles2;
         loadData;        
     end
     
@@ -22,27 +20,20 @@ classdef DataFilesClass < handle
             else
                 args = [];
             end
-            
             nargs = length(args);
             if nargs==0
-                obj.handles = [];
                 obj.pathnm = pwd;
             elseif nargs==1
                 if isstruct(args{1})
-                    obj.handles = args{1};
                     obj.pathnm = pwd;
                 elseif ischar(args{1})
-                    obj.handles = [];
                     obj.pathnm = args{1};
                 else
-                    obj.handles = [];
                     obj.pathnm = pwd;                    
                 end
-            elseif nargs==2
-                obj.handles = args{1};
+            elseif nargs==1
                 obj.pathnm = args{2};
             else
-                obj.handles = [];
                 if ischar(args)
                     obj.pathnm = args;
                 else
@@ -63,7 +54,6 @@ classdef DataFilesClass < handle
         
         % ----------------------------------------------------
         function findDataSet(obj, type)
-                       
             obj.files = mydir(['./*.', type]);
             if isempty( obj.files )
                 
@@ -75,7 +65,6 @@ classdef DataFilesClass < handle
                             ~strcmp(dirs(ii).name,'.') && ...
                             ~strcmp(dirs(ii).name,'..') && ...
                             ~strcmp(dirs(ii).name,'hide')
-                        
                         dirs(ii).idx = length(obj.files)+1;
                         cd(dirs(ii).name);
                         foos = mydir(['./*.', type]);
@@ -99,11 +88,9 @@ classdef DataFilesClass < handle
                             obj.files(end+1:end+nfoos) = foos;
                         end
                         cd('../');
-                        
                     end
                 end
-            end
-            
+            end            
         end
         
         
@@ -116,8 +103,6 @@ classdef DataFilesClass < handle
         
         % --------------------------------------------------------------------------------------------
         function dispErrmsgs(obj)
-            
-            
             if ~isempty(obj.errmsg)
                 hFig = figure('numbertitle','off','menubar','none','name','Errors Found','units','pixels',...
                     'position',[200 500 350 450],'resize','on');
@@ -174,93 +159,18 @@ classdef DataFilesClass < handle
                     end
                 end
                 obj.files(cc)=[];
-                
             end
-            
         end
         
         
         % --------------------------------------------------------------------------------------------
         function pushbuttonOk_Callback(obj, hObject, eventdata)
-            
             delete(get(hObject,'parent'));
-            
-        end
-        
-        
-        
-        % --------------------------------------------------------------------------------------------
-        function Display(obj)
-            
-            if isempty(obj.handles)
-                return;
-            end
-            
-            hText     = obj.handles.textStatus;
-            hListbox1 = obj.handles.listboxFiles;
-            hListbox2 = obj.handles.listboxFilesErr;
-            
-            % Set listbox for valid .nirs files
-            obj.listboxFiles = cell(length(obj.files),1);
-            nFiles=0;
-            for ii=1:length(obj.files)
-                if obj.files(ii).isdir
-                    obj.listboxFiles{ii} = obj.files(ii).name;
-                elseif ~isempty(obj.files(ii).subjdir)
-                    obj.listboxFiles{ii} = ['    ', obj.files(ii).filename];
-                    nFiles=nFiles+1;
-                else
-                    obj.listboxFiles{ii} = obj.files(ii).name;
-                    nFiles=nFiles+1;
-                end
-            end
-            
-            % Set listbox for invalid .nirs files
-            obj.listboxFiles2 = cell(length(obj.filesErr),1);
-            nFilesErr=0;
-            for ii=1:length(obj.filesErr)
-                if obj.filesErr(ii).isdir
-                    obj.listboxFiles2{ii} = obj.filesErr(ii).name;
-                elseif ~isempty(obj.filesErr(ii).subjdir)
-                    obj.listboxFiles2{ii} = ['    ', obj.filesErr(ii).filename];
-                    nFilesErr=nFilesErr+1;
-                else
-                    obj.listboxFiles2{ii} = obj.filesErr(ii).name;
-                    nFilesErr=nFilesErr+1;
-                end
-            end
-                                   
-            % Set graphics objects: text and listboxes if handles exist
-            if ~isempty(obj.handles)
-                % Report status in the status text object
-                set( hText, 'string', { ...
-                        sprintf('%d files loaded successfully',nFiles), ...
-                        sprintf('%d files failed to load',nFilesErr) ...
-                    } );
-                
-                if ~isempty(obj.files)
-                    set(hListbox1, 'value',1)
-                    set(hListbox1, 'string',obj.listboxFiles)
-                end
-                
-                if ~isempty(obj.filesErr)
-                    set(hListbox2, 'visible','on');
-                    set(hListbox2, 'value',1);
-                    set(hListbox2, 'string',obj.listboxFiles2)
-                elseif isempty(obj.filesErr)  && ishandle(hListbox2)
-                    set(hListbox2, 'visible','off');
-                    pos1 = get(hListbox1, 'position');
-                    pos2 = get(hListbox2, 'position');
-                    set(hListbox1, 'position', [pos1(1) pos2(2) pos1(3) .98-pos2(2)]);
-                end
-            end
-        
         end
 
-
+        
         % --------------------------------------------------------------------------------------------
         function reportGroupErrors(obj)
-            
             nSD = length(obj.sd_common);
             if nSD > 1
                 
@@ -303,13 +213,11 @@ classdef DataFilesClass < handle
             else
                 obj.loadData = 1;
             end
-
         end
         
         
         % -------------------------------------------------------
         function pushbuttonLoadDataset_Callback(obj, hObject)
-            
             hp = get(hObject,'parent');
             hc = get(hp,'children');
             for ii=1:length(hc)
@@ -330,7 +238,6 @@ classdef DataFilesClass < handle
                 obj.loadData = 0;
             end
             delete(hp);
-            
         end
             
         
@@ -342,9 +249,6 @@ classdef DataFilesClass < handle
                 b = false;
             end
         end
-
-        
+       
     end
-    
-    
 end

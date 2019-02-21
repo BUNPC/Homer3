@@ -4,7 +4,8 @@ function dataTree = LoadDataTree(varargin)
 %
 %       dataTree = LoadDataTree()
 %       dataTree = LoadDataTree(fmt)
-%       dataTree = LoadDataTree(fmt, parent)
+%       dataTree = LoadDataTree(fmt, cfgfilename)
+%       dataTree = LoadDataTree(fmt, cfgfilename, parent)
 %
 % Description:
 %       
@@ -17,22 +18,26 @@ function dataTree = LoadDataTree(varargin)
 
 % First get all the argument there are to get using the 7 possible syntax
 % calls 
-if nargin==1
-    fmt     = varargin{1};
+if nargin==0
+    fmt          = '';
+    cfgfilename  = '';
+    parent       = [];
+elseif nargin==1
+    fmt          = varargin{1};
+    cfgfilename  = '';
+    parent       = []';
 elseif nargin==2
-    fmt     = varargin{1};
-    parent  = varargin{2};
+    fmt          = varargin{1};
+    cfgfilename  = varargin{2};
+    parent       = []';
+elseif nargin==3
+    fmt          = varargin{1};
+    cfgfilename  = varargin{2};
+    parent       = varargin{3};
 end
 
-% Instantiate any non-existent arguments 
-if ~exist('fmt','var')
-    fmt = '';
-end
-if ~exist('parent','var')
-    parent = []';
-end
 if isempty(parent) || ~isproperty(parent, 'dataTree') || isempty(parent.dataTree)
-    dataTree = DataTreeClass(fmt, parent);
+    dataTree = DataTreeClass(fmt, cfgfilename);
 else
     dataTree = parent.dataTree;
 end

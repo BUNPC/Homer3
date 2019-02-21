@@ -73,6 +73,14 @@ set(handles.checkboxPlotHRF, 'enable', val);
 set(handles.textStatus, 'enable', val);
 
 
+% --------------------------------------------------------------------
+function LoadConfig()
+global hmr
+
+hmr.config = ConfigFileClass([fileparts(which('Homer3')), '/Homer3.cfg']);
+
+
+
 
 % --------------------------------------------------------------------
 function Homer3_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -93,14 +101,16 @@ guidata(hObject, handles);
 % Set the Homer3_version version number
 [~, V] = Homer3_version(hObject);
 hmr.version = V;
-hmr.config = ConfigFileClass([fileparts(which('Homer3')), '/Homer3.cfg']);
+
+LoadConfig();
+
 
 % Disable and reset all window gui objects
 Homer3_EnableDisableGUI(handles,'off');
 Homer3_Init(handles, {'zbuffer'});
 
 % Load date files into group tree object
-hmr.dataTree  = LoadDataTree(handles);
+hmr.dataTree  = LoadDataTree(hmr.format, hmr.config.params.ProcStreamFile);
 if hmr.dataTree.IsEmpty()
     return;
 end
@@ -111,12 +121,13 @@ Homer3_EnableDisableGUI(handles,'on');
 
 % Display data from currently selected processing element
 DisplayData();
+DisplayFiles(handles);
+
 hmr.childguis(1) = ChildGuiClass('procStreamGUI');
 hmr.childguis(2) = ChildGuiClass('stimGUI');
 hmr.childguis(3) = ChildGuiClass('PlotProbeGUI');
 hmr.childguis(4) = ChildGuiClass('ProcStreamOptionsGUI');
 
-hmr.dirnameSubj = hmr.dataTree.files.GetFilesPath();
 
 
 % --------------------------------------------------------------------
@@ -142,7 +153,68 @@ clear hmr;
 
 
 
-%%%% currElem
+% --------------------------------------------------------------------------------------------
+function DisplayFiles(handles)
+global hmr;
+
+files    = hmr.dataTree.files;
+filesErr = hmr.dataTree.filesErr;
+
+% Set listbox for valid .nirs files
+listboxFiles = cell(length(files),1);
+nFiles=0;
+for ii=1:length(files)
+    if files(ii).isdir
+        listboxFiles{ii} = files(ii).name;
+    elseif ~isempty(files(ii).subjdir)
+        listboxFiles{ii} = ['    ', files(ii).filename];
+        nFiles=nFiles+1;
+    else
+        listboxFiles{ii} = files(ii).name;
+        nFiles=nFiles+1;
+    end
+end
+
+% Set listbox for invalid .nirs files
+listboxFiles2 = cell(length(filesErr),1);
+nFilesErr=0;
+for ii=1:length(filesErr)
+    if filesErr(ii).isdir
+        listboxFiles2{ii} = filesErr(ii).name;
+    elseif ~isempty(filesErr(ii).subjdir)
+        listboxFiles2{ii} = ['    ', filesErr(ii).filename];
+        nFilesErr=nFilesErr+1;
+    else
+        listboxFiles2{ii} = filesErr(ii).name;
+        nFilesErr=nFilesErr+1;
+    end
+end
+
+% Set graphics objects: text and listboxes if handles exist
+if ~isempty(handles)
+    % Report status in the status text object
+    set( handles.textStatus, 'string', { ...
+        sprintf('%d files loaded successfully',nFiles), ...
+        sprintf('%d files failed to load',nFilesErr) ...
+        } );
+    
+    if ~isempty(files)
+        set(handles.listboxFiles, 'value',1)
+        set(handles.listboxFiles, 'string',listboxFiles)
+    end
+    
+    if ~isempty(filesErr)
+        set(handles.listboxFilesErr, 'visible','on');
+        set(handles.listboxFilesErr, 'value',1);
+        set(handles.listboxFilesErr, 'string',listboxFiles2)
+    else
+        set(handles.listboxFilesErr, 'visible','off');
+        pos1 = get(handles.listboxFiles, 'position');
+        pos2 = get(handles.listboxFilesErr, 'position');
+        set(handles.listboxFiles, 'position', [pos1(1) pos2(2) pos1(3) .98-pos2(2)]);
+    end
+end
+
 
 % --------------------------------------------------------------------
 function uipanelProcessingType_SelectionChangeFcn(hObject, eventdata, handles)
@@ -213,6 +285,8 @@ dataTree = hmr.dataTree;
 dataTree.CalcCurrElem();
 dataTree.SaveCurrElem();
 DisplayData();
+UpdateChildGuis();
+
 
 
 % --------------------------------------------------------------------

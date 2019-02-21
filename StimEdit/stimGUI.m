@@ -74,8 +74,7 @@ if ~isempty(p)
     set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
 end
 stimEdit.version = get(hObject, 'name');
-
-stimEdit.dataTree = LoadDataTree(stimEdit.format, hmr);
+stimEdit.dataTree = LoadDataTree(stimEdit.format, '', hmr);
 if ispc()
     setGuiFonts(hObject, 7);
 else

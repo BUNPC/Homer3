@@ -141,7 +141,7 @@ if ~isempty(p)
     set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
 end
 procStreamOptions.version  = get(hObject, 'name');
-procStreamOptions.dataTree = LoadDataTree(procStreamOptions.format, hmr);
+procStreamOptions.dataTree = LoadDataTree(procStreamOptions.format, '', hmr);
 if ispc()
     setGuiFonts(hObject, 7);
 else

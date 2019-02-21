@@ -8,18 +8,15 @@ classdef NirsFilesClass < DataFilesClass
         
         % -----------------------------------------------------------------------------------
         function obj = NirsFilesClass(varargin)
-
             % Call base class constructor explicitly in order to pass 
             % our derived class arguments. 
             obj@DataFilesClass(varargin);            
             obj.GetDataSet();
-            
         end
         
         
         % -----------------------------------------------------------------------------------
         function GetDataSet(obj)
-            
             if exist(obj.pathnm, 'dir')~=7
                 error(sprintf('Invalid subject folder: ''%s''', obj.pathnm));
             end
@@ -57,17 +54,12 @@ classdef NirsFilesClass < DataFilesClass
                     end
                 end
             end
-            
-            %%% Display loaded and error files in GUI
-%             obj.Display();
-            
         end
         
         
         
         % -----------------------------------------------------------------------------------
         function initErrFlags(obj, n)
-            
             flag = struct(...
                 'FileCorrupt',0, ...
                 'SD',0, ...
@@ -88,27 +80,21 @@ classdef NirsFilesClass < DataFilesClass
                 'status',0, ...
                 'subj',0 ...
                 );
-            
             obj.flags = repmat(flag,n,1);
-            
         end
         
         
         % -----------------------------------------------------------------------------------
         function getFileErrors(obj)
-            
             %
             % Function to check errors in a .nirs files set and
             % output the files that pass the .nirs error check and those that
             % don't.
             %
-            
             nFiles = length(obj.files);            
             obj.checkFormat();
-            
             count=1;
             for iF=1:nFiles
-                
                 obj.flags(iF).errCount=0;
                 obj.flags(iF).warningCount=0;
                 errmsg_tmp = [obj.files(iF).name ':  '];
@@ -202,7 +188,6 @@ classdef NirsFilesClass < DataFilesClass
                     end
                 end
                 
-                
                 %%% Tally up the errors and error count.
                 if obj.flags(iF).errCount==0 && obj.flags(iF).warningCount==0
                     continue;
@@ -216,17 +201,13 @@ classdef NirsFilesClass < DataFilesClass
                 end
                 obj.errmsg{count} = errmsg_tmp;
                 count=count+1;
-                
             end
-            
             obj.dispErrmsgs();
-            
         end
    
     
         % -----------------------------------------------------------------------------------
         function checkFormat(obj)
-        
             warning('off','MATLAB:load:variableNotFound');
             
             nFiles = length(obj.files);
@@ -262,7 +243,6 @@ classdef NirsFilesClass < DataFilesClass
                     end
                 end
                 
-                
                 %%%% d
                 if ~exist('d','var')
                     obj.flags(iF).d = bitor(obj.flags(iF).d,1);
@@ -279,7 +259,6 @@ classdef NirsFilesClass < DataFilesClass
                         end
                     end
                 end
-                
                 
                 %%%% SD
                 if ~exist('SD','var') || isempty(SD)
@@ -330,7 +309,6 @@ classdef NirsFilesClass < DataFilesClass
                     end
                 end
                 
-                
                 %%%%% s
                 if ~exist('s')
                     obj.flags(iF).s = bitor(obj.flags(iF).s,1);
@@ -351,7 +329,6 @@ classdef NirsFilesClass < DataFilesClass
                         obj.flags(iF).s = bitor(obj.flags(iF).s,16);
                     end
                 end
-                
                 
                 %%%%% aux
                 if ~exist('aux')
@@ -397,13 +374,11 @@ classdef NirsFilesClass < DataFilesClass
             close(hwait);
             
             warning('on','MATLAB:load:variableNotFound');            
-            
         end  
         
         
         % -----------------------------------------------------------------------------------
         function fixOrUpgrade(obj)
-            
             warning('off','MATLAB:load:variableNotFound');
             
             nFiles = length(obj.files);
@@ -429,7 +404,6 @@ classdef NirsFilesClass < DataFilesClass
                     ch_all(iF) = ch;
                     
                     if ch==1 || ch==2
-                        
                         % User chose to fix file.
                         savestr = [];
                         
@@ -455,7 +429,6 @@ classdef NirsFilesClass < DataFilesClass
                                 savestr = [savestr, '''d'','];
                             end
                         end
-                        
                         
                         % Error handling for s
                         if obj.flags(iF).s~=0
@@ -498,7 +471,6 @@ classdef NirsFilesClass < DataFilesClass
                             end
                         end
                         
-                        
                         % Error handling for aux
                         if obj.flags(iF).aux~=0
                             load(obj.files(iF).name,'-mat','aux');
@@ -533,7 +505,6 @@ classdef NirsFilesClass < DataFilesClass
                             end
                         end
                         
-                        
                         % Error handling for SD_Lambda
                         if obj.flags(iF).SD_Lambda~=0
                             load(obj.files(iF).name,'-mat','SD');
@@ -555,7 +526,6 @@ classdef NirsFilesClass < DataFilesClass
                                 savestr = [savestr, '''SD'','];
                             end
                         end
-                        
                         
                         % Error handling for SD_MeasList
                         if obj.flags(iF).SD_MeasList~=0
@@ -590,7 +560,6 @@ classdef NirsFilesClass < DataFilesClass
                                 savestr = [savestr, '''SD'','];
                             end
                         end
-                        
                         
                         % Error handling for SD_SpatialUnit
                         if obj.flags(iF).SD_SpatialUnit~=0
@@ -630,7 +599,6 @@ classdef NirsFilesClass < DataFilesClass
                                 end
                             end
                         end
-                        
                         
                         % Error handling for SD_auxChannels
                         if obj.flags(iF).SD_auxChannels~=0
@@ -693,10 +661,8 @@ classdef NirsFilesClass < DataFilesClass
                             end
                         end
                         
-                        
                         % Add more NIRS variable fixes here
-                        
-                        
+
                         % Now save fixed parameters to nirs files only if all errors
                         % were fixed. Otherwise tell user can't fix it and do nothing.
                         if obj.flags(iF).errCount==0
@@ -741,26 +707,20 @@ classdef NirsFilesClass < DataFilesClass
                 menu(sprintf('%d errors fixed - original .nirs files saved to .nirs.orig', informUserFilesCopiedFlag),'OK');
             end
             warning('on','MATLAB:load:variableNotFound');
-                     
         end
         
         
         
         % -----------------------------------------------------------------------------------
         function checkFormatAcrossFiles(obj)
-            
             nFiles = length(obj.files);
             uniqueSD = zeros(1,nFiles);
-            
             if isempty(obj.files)
                 return;
             end
-                       
             sd_common = {};
-            
             hwait = waitbar(0,sprintf('Checking .nirs format consistency across files: processing 1 of %d', nFiles) );
             for iF=1:nFiles
-                
                 waitbar(iF/nFiles,hwait,sprintf('Checking .nirs format consistency across files: processing %d of %d', iF, nFiles));
                 if obj.files(iF).isdir
                     continue;
@@ -780,7 +740,6 @@ classdef NirsFilesClass < DataFilesClass
                     nSD = 1;
                     uniqueSD(iF) = 1;
                 end
-                
                 
                 % Compare SD geometries
                 flag = [];
@@ -817,9 +776,7 @@ classdef NirsFilesClass < DataFilesClass
             
             % Report results
             obj.reportGroupErrors();
-            
-        end        
+        end
         
     end
-    
 end

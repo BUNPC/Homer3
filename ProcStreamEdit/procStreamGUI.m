@@ -84,7 +84,7 @@ iRunPanel   = procStreamGui.iRunPanel;
 iSubjPanel  = procStreamGui.iSubjPanel;
 iGroupPanel = procStreamGui.iGroupPanel;
 
-procStreamGui.dataTree = LoadDataTree(procStreamGui.format, hmr);
+procStreamGui.dataTree = LoadDataTree(procStreamGui.format, '', hmr);
 procStreamGui.funcReg = [];
 
 % Current proc stream listbox strings for the 3 panels

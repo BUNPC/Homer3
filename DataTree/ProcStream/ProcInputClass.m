@@ -300,7 +300,18 @@ classdef ProcInputClass < handle
     methods
 
         % ----------------------------------------------------------------------------------
-        function fname = GetConfigFileName(obj)
+        function fname = GetConfigFileName(obj, cfgfilename)            
+            if ~exist('cfgfilename','var')
+                cfgfilename = '';
+            end
+            
+            temp = FileClass();
+            if temp.Exist(cfgfilename)
+                fname = cfgfilename;
+                fprintf('Default config file exists. Processing stream will be loaded from %s\n', cfgfilename, cfgfilename);
+                return;
+            end
+            
             % This pause is a workaround for a matlab bug in version
             % 7.11 for Linux, where uigetfile won't block unless there's
             % a breakpoint.

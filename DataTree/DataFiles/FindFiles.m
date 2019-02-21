@@ -3,9 +3,6 @@ function [files, dirnameGroup] = FindFiles(varargin)
 % Syntax:
 %
 %    [files, dirnameGroup] = FindFiles()
-%    [files, dirnameGroup] = FindFiles(handles)
-%    [files, dirnameGroup] = FindFiles(handles, fmt);
-%    [files, dirnameGroup] = FindFiles(handles, fmt, dirnameGroup);
 %    [files, dirnameGroup] = FindFiles(fmt)
 %    [files, dirnameGroup] = FindFiles(fmt, dirnameGroup)
 %    [files, dirnameGroup] = FindFiles(fmt, dirnameGroup, handles)
@@ -18,13 +15,13 @@ function [files, dirnameGroup] = FindFiles(varargin)
 %
 %    Call FindFiles standalone
 % 
-%      files = FindFiles([], '.nirs', 'c:\users\public\group');
-%      files = FindFiles([], '.snirf');
+%      files = FindFiles('.nirs', 'c:\users\public\group');
+%      files = FindFiles('.snirf');
 %
 %    Call FindFiles in a GUI context: 
 %
-%      files = FindFiles(handles, '.nirs');
-%      files = FindFiles(handles, '.snirf');
+%      files = FindFiles('.nirs');
+%      files = FindFiles('.snirf');
 
 
 global hmr
@@ -40,35 +37,15 @@ supportedFormats = {
 % First get all the argument there are to get using the 7 possible syntax
 % calls 
 if nargin==1
-    if isstruct(varargin{1})
-        handles = varargin{1};
-    else
-        fmt = varargin{1};
-    end
+    fmt = varargin{1};
 elseif nargin==2
-    if ischar(varargin{1})
-        fmt = varargin{1};
-        dirnameGroup = varargin{2};
-    else
-        handles = varargin{1};
-        fmt = varargin{2};
-    end
+    fmt = varargin{1};
+    dirnameGroup = varargin{2};
 elseif nargin==3
-    if isstruct(varargin{1})
-        handles = varargin{1};
-        fmt = varargin{2};
-        dirnameGroup = varargin{2};
-    else
-        fmt = varargin{1};
-        dirnameGroup = varargin{2};
-        handles = varargin{3};
-    end
+    fmt = varargin{1};
+    dirnameGroup = varargin{2};
 end
 
-% Decide what to assign for missing arguments
-if ~exist('handles','var') || isempty(handles)
-    handles = [];
-end
 if ~exist('fmt','var') || isempty(fmt)
     if ~isempty(hmr) && isstruct(hmr) && isfield(hmr,'format')
         fmt = hmr.format;
@@ -88,9 +65,9 @@ while files.isempty()
     cd(dirnameGroup)
     switch fmt
         case {'snirf','.snirf'}
-            files = SnirfFilesClass(handles);
+            files = SnirfFilesClass();
             if files.isempty()
-                files = NirsFilesClass(handles);
+                files = NirsFilesClass();
                 if ~files.isempty()
                     msg{1} = sprintf('Homer3 did not find any .snirf files in the current folder but did find .nirs files.\n');
                     msg{2} = sprintf('Do you want to convert .nirs files to .snirf format and load them?');
@@ -101,10 +78,10 @@ while files.isempty()
                     end
                 end
                 Nirs2Snirf();
-                files = SnirfFilesClass(handles);
+                files = SnirfFilesClass();
             end
         case {'nirs','.nirs'}
-            files = NirsFilesClass(handles);
+            files = NirsFilesClass();
         otherwise
             q = menu(sprintf('Homer3 only supports file formats: {%s}. Please choose one.', cell2str(supportedFormats(:,1))), ...
                     'OK','CANCEL');

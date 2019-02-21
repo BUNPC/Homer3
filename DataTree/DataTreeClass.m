@@ -2,6 +2,7 @@ classdef DataTreeClass <  handle
     
     properties
         files
+        filesErr
         group
         currElem
         reg
@@ -10,23 +11,23 @@ classdef DataTreeClass <  handle
     methods
         
         % ---------------------------------------------------------------
-        function obj = DataTreeClass(handles, fmt)
-            if ~exist('handles','var')
-                handles = [];
-            end
+        function obj = DataTreeClass(fmt, cfgfilename)
             if ~exist('fmt','var')
                 fmt = '';
             end
+            if ~exist('cfgfilename','var')
+                cfgfilename = '';
+            end
             
             % Get file names
-            dataInit = FindFiles(handles, fmt);
+            dataInit = FindFiles(fmt);
             if isempty(dataInit) || dataInit.isempty()
                 return;
             end
-            dataInit.Display();            
-            obj.files = dataInit.files;
+            obj.files    = dataInit.files;
+            obj.filesErr = dataInit.filesErr;
             obj.reg = RegistriesClass();
-            obj.LoadData();
+            obj.LoadData(cfgfilename);
             
             % Initialize the current processing element within the group
             obj.SetCurrElem(1,1,1);
@@ -42,7 +43,11 @@ classdef DataTreeClass <  handle
 
 
         % ---------------------------------------------------------------
-        function LoadData(obj)
+        function LoadData(obj, cfgfilename)
+            if ~exist('cfgfilename','var')
+                cfgfilename = '';
+            end
+            
             obj.AcqData2Group();
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -54,7 +59,7 @@ classdef DataTreeClass <  handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Initialize procStream.input for all tree nodes
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.group.InitProcInput(obj.reg);
+            obj.group.InitProcInput(obj.reg, cfgfilename);
                         
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Copy input variables for group, subjects and runs

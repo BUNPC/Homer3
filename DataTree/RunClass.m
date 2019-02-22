@@ -34,7 +34,7 @@ classdef RunClass < TreeNodeClass
                 obj.acquired = SnirfClass(obj.name);
             end            
             obj.CondName2Group = [];
-            obj.Load();
+            obj.Load();            
         end
                 
         

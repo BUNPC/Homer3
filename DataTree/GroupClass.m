@@ -325,6 +325,7 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function SetMeasList(obj)
+            obj.ch = obj.GetMeasList();
             for ii=1:length(obj.subjs)
                 obj.subjs(ii).SetMeasList();
             end

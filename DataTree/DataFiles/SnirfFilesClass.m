@@ -8,18 +8,15 @@ classdef SnirfFilesClass < DataFilesClass
         
         % -----------------------------------------------------------------------------------
         function obj = SnirfFilesClass(varargin)
-
             % Call base class constructor explicitly in order to pass 
             % our derived class arguments to it.
             obj@DataFilesClass(varargin);
             obj.GetDataSet();
-            
         end
         
         
         % -----------------------------------------------------------------------------------
         function GetDataSet(obj)
-            
             cd(obj.pathnm);
             currdir = obj.pathnm;
             
@@ -53,38 +50,28 @@ classdef SnirfFilesClass < DataFilesClass
                     end
                 end
             end
-            
-            %%% Display loaded and error files in GUI
-%            obj.Display();
-            
         end
         
         
         
         % -----------------------------------------------------------------------------------
         function initErrFlags(obj, n)
-            
             flag = struct(...
                 'FileCorrupt',0 ...
                 );
-            
             obj.flags = repmat(flag,n,1);
-            
         end
         
         
         % -----------------------------------------------------------------------------------
         function getFileErrors(obj)
-            
             obj.dispErrmsgs();
-            
         end
 
     
 
         % -----------------------------------------------------------------------------------
         function checkFormat(obj)
-        
             warning('off','MATLAB:load:variableNotFound');
             
             nFiles = length(obj.files);
@@ -101,15 +88,12 @@ classdef SnirfFilesClass < DataFilesClass
                                 
             end
             close(hwait);
-            
             warning('on','MATLAB:load:variableNotFound');            
-            
         end  
         
         
         % -----------------------------------------------------------------------------------
         function fixOrUpgrade(obj)
-            
             warning('off','MATLAB:load:variableNotFound');
             
             nFiles = length(obj.files);
@@ -118,7 +102,6 @@ classdef SnirfFilesClass < DataFilesClass
             informUserFilesCopiedFlag = 0;
             spatialUnits = 0;
             for iF=1:nFiles
-                
                 if obj.flags(iF).errCount>0  &&  obj.flags(iF).FileCorrupt==0 &&  ~obj.files(iF).isdir
                     
                     if yestoallflag==1
@@ -135,14 +118,10 @@ classdef SnirfFilesClass < DataFilesClass
                     
                     ch_all(iF) = ch;                    
                     if ch==1 || ch==2
-                        
                         % User chose to fix file.
                         savestr = [];
-                                                
                     end
-                    
                 end
-                
             end
             
             if informUserFilesCopiedFlag == 1
@@ -151,40 +130,31 @@ classdef SnirfFilesClass < DataFilesClass
                 menu(sprintf('%d errors fixed - original .nirs files saved to .nirs.orig', informUserFilesCopiedFlag),'OK');
             end
             warning('on','MATLAB:load:variableNotFound');
-                     
         end
         
         
         
         % -----------------------------------------------------------------------------------
         function checkFormatAcrossFiles(obj)
-            
             nFiles = length(obj.files);
-            uniqueSD = zeros(1,nFiles);
-            
             if isempty(obj.files)
                 return;
             end
-            
             snirf = repmat(SnirfClass(), nFiles, 1);
             hwait = waitbar(0,sprintf('Checking .snirf format consistency across files: processing 1 of %d',nFiles) );
             for iF=1:nFiles
-                
                 if obj.files(iF).isdir
                     continue;
                 end
                 
                 waitbar(iF/nFiles,hwait,sprintf('Checking .snirf format consistency across files: processing %d of %d',iF,nFiles));                
-                snirf(iF).Load( obj.files(iF).name );
-
+                % snirf(iF).Load( obj.files(iF).name );
             end                
             close(hwait);
                         
             % Report results
             obj.reportGroupErrors(); 
-            
         end
                 
     end
-    
 end

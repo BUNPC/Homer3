@@ -1,7 +1,11 @@
-function status = unitTest_ModifiedLPF(datafmt, newval)
+function status = unitTest_ModifiedLPF(datafmt, dirname, newval)
 
+status = -1;
 if ~exist('datafmt','var')
     datafmt = 'nirs';
+end
+if ~exist('dirname','var')
+    return;
 end
 if ~exist('newval','var')
     newval = [];
@@ -10,7 +14,7 @@ end
 rootpath = fileparts(which('Homer3.m'));
 currpath = pwd;
 
-cd([rootpath, '/UnitTests/Example9_SessRuns']);
+cd([rootpath, '/', dirname]);
 resetGroupFolder();
 dataTree = calcProcStreamChanged(datafmt, newval);
 status = compareOutputs1();

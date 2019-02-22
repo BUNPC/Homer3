@@ -46,7 +46,11 @@ tHRF = [nPre*dt:dt:nPost*dt];
 
 for iS = 1:size(s,2)
     lstS = find(s(:,iS)==1);
-    yblk = zeros(nPost-nPre+1,size(y,2),size(y,3),length(lstS));
+    if ndim==3
+        yblk = zeros(nPost-nPre+1, size(y,2), size(y,3), length(lstS));
+    else
+        yblk = zeros(nPost-nPre+1, size(y,2), length(lstS));
+    end
     
     nBlk = 0;
     for iT = 1:length(lstS)

@@ -259,6 +259,7 @@ classdef SubjClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function SetMeasList(obj)
+            obj.ch = obj.GetMeasList();
             for ii=1:length(obj.runs)
                 obj.runs(ii).SetMeasList();
             end

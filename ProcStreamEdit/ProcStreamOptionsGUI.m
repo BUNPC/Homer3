@@ -294,11 +294,11 @@ set( hObject, 'string', str);
 % Check if we should apply the param edit to all nodes of the current nodes
 % level
 if ~procStreamOptions.applyEditCurrNodeOnly
-    if dataTree.currElem.procType==2
+    if dataTree.currElem.iRun==0
         for ii=1:length(dataTree.group.subjs)
             dataTree.group.subjs(ii).procStream.EditParam(iFcall, iParam, val);
         end
-    elseif dataTree.currElem.procType==3
+    elseif dataTree.currElem.iRun>0
         for ii=1:length(dataTree.group.subjs)
             for jj=1:length(dataTree.group.subjs(ii).runs)
                 dataTree.group.subjs(ii).runs(jj).procStream.EditParam(iFcall, iParam, val);

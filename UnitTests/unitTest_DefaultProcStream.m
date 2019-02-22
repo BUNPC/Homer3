@@ -1,13 +1,17 @@
-function status = unitTest_DefaultProcStream(datafmt)
+function status = unitTest_DefaultProcStream(datafmt, dirname)
 
+status = -1;
 if ~exist('datafmt','var')
     datafmt = 'nirs';
+end
+if ~exist('dirname','var')
+    return;
 end
 
 rootpath = fileparts(which('Homer3.m'));
 currpath = pwd;
 
-cd([rootpath, '/UnitTests/Example9_SessRuns']);
+cd([rootpath, '/', dirname]);
 resetGroupFolder();
 calcProcStream(datafmt);
 status = compareOutputs1();

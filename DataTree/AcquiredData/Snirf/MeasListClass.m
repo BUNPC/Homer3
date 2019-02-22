@@ -6,30 +6,58 @@ classdef MeasListClass < FileLoadSaveClass
         detectorIndex
         wavelengthIndex
         dataType
+        dataTypeLabel
         dataTypeIndex
+        condition
         sourcePower
         sourcePowerUnit 
         detectorGain
     end
     
+    properties
+    end
+    
     methods
 
-        function obj = MeasListClass(ml)
+        function obj = MeasListClass(varargin)
+            % Fields which are part of the SNIRF spec which are loaded and saved 
+            % from/to SNIRF files
             obj.dataType         = 1;
+            obj.dataTypeLabel    = 0;
             obj.dataTypeIndex    = 1;
+            obj.condition        = 0;
             obj.sourcePower      = 0;
             obj.sourcePowerUnit  = '';
             obj.detectorGain     = 0;
-
-            if nargin>0
-                obj.sourceIndex      = ml(1);
-                obj.detectorIndex    = ml(2);
-                obj.wavelengthIndex  = ml(4);
-            else
-                obj.sourceIndex      = 0;
-                obj.detectorIndex    = 0;
-                obj.wavelengthIndex  = 0;
+            obj.sourceIndex      = 0;
+            obj.detectorIndex    = 0;
+            obj.wavelengthIndex  = 0;
+            if nargin==1 && isa(varargin{1}, 'MeasListClass')
+                obj = ml.copy;
+            elseif nargin==1 
+                obj.sourceIndex      = varargin(1);
+                obj.detectorIndex    = varargin(2);
+                obj.wavelengthIndex  = varargin(4);
+            elseif nargin==3
+                obj.sourceIndex      = varargin{1};
+                obj.detectorIndex    = varargin{2};
+                obj.dataType         = varargin{3};
+            elseif nargin==4
+                obj.sourceIndex      = varargin{1};
+                obj.detectorIndex    = varargin{2};
+                obj.dataType         = varargin{3};
+                obj.dataTypeLabel    = varargin{4};
+            elseif nargin==5
+                obj.sourceIndex      = varargin{1};
+                obj.detectorIndex    = varargin{2};
+                obj.dataType         = varargin{3};
+                obj.dataTypeLabel    = varargin{4};
+                obj.condition        = varargin{5};
             end
+            
+            % These are fields helping to implement the MeasListClass
+            % which are NOT part of the SNIRF spec and are not loaded or saved from/to
+            % SNIRF files
         end
         
         
@@ -87,13 +115,7 @@ classdef MeasListClass < FileLoadSaveClass
             hdf5write(fname, [parent, '/detectorGain'], obj.detectorGain, 'WriteMode','append');
         end
 
-        
-        % ---------------------------------------------------------
-        function wls = GetWls(obj)
-            wls = obj.GetWls();
-        end
-        
-        
+                
         % ---------------------------------------------------------
         function idx = GetSourceIndex(obj)
             idx = obj.sourceIndex;
@@ -109,6 +131,50 @@ classdef MeasListClass < FileLoadSaveClass
         % ---------------------------------------------------------
         function idx = GetWavelengthIndex(obj)
             idx = obj.wavelengthIndex;
+        end
+        
+        
+        % ---------------------------------------------------------
+        function SetWavelengthIndex(obj, val)
+            obj.wavelengthIndex = val;
+        end
+        
+        
+        % ---------------------------------------------------------
+        function SetDataType(obj, dataType, dataTypeLabel)
+            obj.dataType = dataType;
+            obj.dataTypeLabel = dataTypeLabel;
+        end
+        
+        
+        % ---------------------------------------------------------
+        function SetDataTypeLabel(obj, dataTypeLabel)
+            obj.dataTypeLabel = dataTypeLabel;
+        end
+        
+        
+        % ---------------------------------------------------------
+        function [dataType, dataTypeLabel] = GetDataType(obj)
+            dataType = obj.dataType;
+            dataTypeLabel = obj.dataTypeLabel;
+        end
+        
+        
+        % ---------------------------------------------------------
+        function dataTypeLabel = GetDataTypeLabel(obj)
+            dataTypeLabel = obj.dataTypeLabel;
+        end
+        
+        
+        % ---------------------------------------------------------
+        function SetCondition(obj, val)
+            obj.condition = val;
+        end
+        
+        
+        % ---------------------------------------------------------
+        function val = GetCondition(obj)
+            val = obj.condition;
         end
         
         

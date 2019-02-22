@@ -16,7 +16,7 @@ function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg(yAvgSubjs, y
 % SDSubjs:
 % nTrialsSubjs:
 % CondName2Subj: 
-% tRange: Defines the range for the block average
+% trange: Defines the range for the block average
 % thresh: Threshold for excluding channels if it's data deviates too much
 %         from mean 
 %
@@ -64,6 +64,7 @@ for iSubj = 1:nSubj
             lstT = find(tHRF>=tRange(1) & tHRF<=tRange(2));
             grp1 = zeros(size(yAvg,1), size(yAvg,2), size(yAvg,3), nCond);
         end
+        
         if isempty(subjCh)
             subjCh = zeros(size(yAvg,3), nCond);
             grpAvgPass = zeros(size(yAvg,3), nCond, nSubj);
@@ -71,6 +72,7 @@ for iSubj = 1:nSubj
         
         for iC = 1:nCond
             iS = CondName2Subj(iSubj,iC);
+            
             if iS==0
                 continue;
             end
@@ -81,7 +83,7 @@ for iSubj = 1:nSubj
             % automatically included
             lstPass = find( (squeeze(mean(yAvgStd(lstT,1,:,iS),1))./sqrt(nTrials(:,iS)+eps)) <= thresh &...
                             (squeeze(mean(yAvgStd(lstT,2,:,iS),1))./sqrt(nTrials(:,iS)+eps)) <= thresh &...
-                             nTrials(:,iS)>0 );
+                            nTrials(:,iS)>0 );
             
             if chkFlag==0 | length(lstPass)==size(yAvg,3)
                 if iSubj==1 | iC>nStim
@@ -120,16 +122,13 @@ for iSubj = 1:nSubj
             lstT  = find(tHRF>=tRange(1) & tHRF<=tRange(2));
             grp1 = zeros(size(yAvg,1),size(yAvg,2),nCond);
         end
+        
         if isempty(subjCh)
             subjCh = zeros(size(yAvg,2),nCond);
             grpAvgPass = zeros(size(yAvg,2),nCond,nSubj);
         end
-        
         for iC = 1:nCond
             iS = CondName2Subj(iSubj,iC);
-            if iS==0
-                continue;
-            end
             
             for iWl = 1:2
                 % Calculate which channels to include and exclude from the group HRF avg,

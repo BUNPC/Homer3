@@ -19,6 +19,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %   obj = SnirfClass()
             %   obj = SnirfClass(filename);
             %   obj = SnirfClass(nirs);
+            %   obj = SnirfClass(data, stim);
+            %   obj = SnirfClass(data, stim, sd);
+            %   obj = SnirfClass(data, stim, sd, aux);
             %   obj = SnirfClass(d, t, SD, aux, s);
             %   obj = SnirfClass(d, t, SD, aux, s, CondNames);
             %
@@ -46,10 +49,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 {'MeasurementTime','hhmmss.ms'};
                 {'SpatialUnit','mm'};
                 };
-            obj.data           = DataClass();
-            obj.stim           = StimClass();
-            obj.sd             = SdClass();
-            obj.aux            = AuxClass();
+            obj.data           = DataClass().empty();
+            obj.stim           = StimClass().empty();
+            obj.sd             = SdClass().empty();
+            obj.aux            = AuxClass().empty();
             
             % Set base class properties not part of the SNIRF format
             obj.fileformat = 'hdf5';
@@ -65,6 +68,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if nargin>5
                 CondNames = varargin{6};
             end
+            
+            % TBD: Need to find better way of parsing arguments. It gets complicated 
+            % because of all the variations of calling this class constructor but 
+            % there is should be a simpler way to do this 
             
             % The basic 5 of a .nirs format in a struct
             if nargin==1
@@ -84,6 +91,19 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     for ii=1:size(nirs.aux,2)
                         obj.aux(ii) = AuxClass(nirs.aux(:,ii), nirs.t, sprintf('aux%d',ii));
                     end
+                end                
+            elseif nargin>1 && nargin<5
+                data = varargin{1};
+                obj.SetData(data);
+                stim = varargin{2};
+                obj.SetStim(stim);
+                if nargin>2
+                    sd = varargin{3};
+                    obj.SetSd(sd);
+                end
+                if nargin>3
+                    aux = varargin{4};
+                    obj.SetAux(aux);
                 end
             % The basic 5 of a .nirs format as separate args
             elseif nargin==5
@@ -200,6 +220,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             obj.SortStims();
             
             % Load sd
+            obj.sd = SdClass();
             obj.sd.LoadHdf5(fname, [parent, '/sd']);
             
             % Load aux
@@ -292,7 +313,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function SetData(obj, val)
-            obj.data = val;            
+            obj.data = val.copy;            
         end
         
         % ---------------------------------------------------------
@@ -302,17 +323,17 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function SetStim(obj, val)
-            obj.stim = val;            
+            obj.stim = val.copy;            
         end
         
         % ---------------------------------------------------------
         function val = GetStim(obj)
-            val = obj.stim;
+            val = obj.stim.copy;
         end
         
         % ---------------------------------------------------------
         function SetSd(obj, val)
-            obj.sd = val;            
+            obj.sd = val.copy;            
         end
         
         % ---------------------------------------------------------
@@ -322,7 +343,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function SetAux(obj, val)
-            obj.aux = val;            
+            obj.aux = val.copy;            
         end
         
         % ---------------------------------------------------------

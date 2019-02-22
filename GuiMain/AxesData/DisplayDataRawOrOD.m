@@ -12,7 +12,7 @@ for iWl=1:length(wl)
         if ~isempty(dStd)
             dWlMlStd    = squeeze(dStd( :, ch(chLst(ii)), wl(iWl)));
             dWlMlStdErr = dWlMlStd./sqrt(nTrials(condition));
-            idx         = [1:10:length(t)];
+            idx         = 1:10:length(t);
             h2          = errorbar(t(idx), dWlMl(idx), dWlMlStdErr(idx),'.');
             set(h2,'color',linecolor(chLst(ii),:));
         end

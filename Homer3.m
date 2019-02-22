@@ -81,7 +81,6 @@ hmr.config = ConfigFileClass([fileparts(which('Homer3')), '/Homer3.cfg']);
 
 
 
-
 % --------------------------------------------------------------------
 function Homer3_OpeningFcn(hObject, eventdata, handles, varargin)
 global hmr
@@ -101,6 +100,7 @@ guidata(hObject, handles);
 % Set the Homer3_version version number
 [~, V] = Homer3_version(hObject);
 hmr.version = V;
+hmr.childguis = ChildGuiClass().empty();
 
 LoadConfig();
 
@@ -214,6 +214,8 @@ if ~isempty(handles)
         set(handles.listboxFiles, 'position', [pos1(1) pos2(2) pos1(3) .98-pos2(2)]);
     end
 end
+listboxFiles_Callback(handles.listboxFiles,[1,1,1])
+
 
 
 % --------------------------------------------------------------------
@@ -247,24 +249,16 @@ iFile = get(hObject,'value');
 if isempty(iFile==0)
     return;
 end
-
 dataTree = hmr.dataTree;
 
 % If evendata isn't empty then caller is trying to set currElem
 if strcmp(class(eventdata), 'matlab.ui.eventdata.ActionData')
     [iGroup,iSubj,iRun] = dataTree.MapFile2Group(iFile);
-    procElem = dataTree.GetCurrElem();
-    switch(procElem.type)
-        case 'group'
-            dataTree.SetCurrElem(iGroup);
-        case 'subj'
-            dataTree.SetCurrElem(iGroup, iSubj);
-        case 'run'
-            dataTree.SetCurrElem(iGroup, iSubj, iRun);
-    end
+    dataTree.SetCurrElem(iGroup, iSubj, iRun);
 elseif ~isempty(eventdata)
-    iSubj = eventdata(1);
-    iRun = eventdata(2);
+    iGroup = eventdata(1);
+    iSubj = eventdata(2);
+    iRun = eventdata(3);
     iFile = dataTree.MapGroup2File(iGroup, iSubj, iRun);
     if iFile==0
         return;
@@ -546,6 +540,10 @@ idx = ii;
 function UpdateArgsChildGuis()
 global hmr
 
+if isempty(hmr.childguis)
+    return;
+end
+
 hmr.childguis(FindChildGuiIdx('PlotProbeGUI')).UpdateArgs(hmr.guiControls.datatype, hmr.guiControls.condition);
 hmr.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(hmr.guiControls.applyEditCurrNodeOnly);
 
@@ -554,6 +552,9 @@ hmr.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(hmr.guiControl
 function UpdateChildGuis()
 global hmr
 
+if isempty(hmr.childguis)
+    return;
+end
 UpdateArgsChildGuis()
 for ii=1:length(hmr.childguis)
     hmr.childguis(ii).Update();
@@ -650,7 +651,7 @@ if ~isempty(d)
     chLst = find(ch.MeasListVis(iCh)==1);
     
     % Plot data
-    if datatype == buttonVals.RAW || datatype == buttonVals.OD
+    if datatype == buttonVals.RAW || datatype == buttonVals.OD || datatype == buttonVals.OD_HRF
         if  datatype == buttonVals.OD_HRF
             d = d(:,:,condition);
         end
@@ -769,3 +770,35 @@ CondNamesAll = procElem.CondNamesAll;
 if ishandles(hLg)
     legend(hLg(k), CondNamesAll(idxLg));
 end
+
+
+
+% ----------------------------------------------------------------------------------
+function radiobuttonProcType_Callback(hObject, eventdata, handles)
+global hmr
+
+bttn = get(hObject, 'tag');
+if strcmp(bttn, 'radiobuttonProcTypeGroup')
+    hmr.guiControls.proctype = 1;
+elseif strcmp(bttn, 'radiobuttonProcTypeSubj')
+    hmr.guiControls.proctype = 2;
+elseif strcmp(bttn, 'radiobuttonProcTypeRun')
+    hmr.guiControls.proctype = 3;
+end
+
+iFile = get(handles.listboxFiles,'value');
+if isempty(iFile==0)
+    return;
+end
+
+% If evendata isn't empty then caller is trying to set currElem
+[iGroup,iSubj,iRun] = hmr.dataTree.MapFile2Group(iFile);
+switch(hmr.guiControls.proctype)
+    case 1
+        hmr.dataTree.SetCurrElem(iGroup);
+    case 2
+        hmr.dataTree.SetCurrElem(iGroup, iSubj);
+    case 3
+        hmr.dataTree.SetCurrElem(iGroup, iSubj, iRun);
+end
+

@@ -19,7 +19,6 @@ classdef ProcStreamClass
         % obj2 to obj
         % ----------------------------------------------------------------------------------
         function Calc(obj)
-            
             DEBUG = 0;
             
             % loop over functions
@@ -81,7 +80,6 @@ classdef ProcStreamClass
                         paramOut{end+1} = foo2;
                     end
                 end
-                
             end
             
             % Copy paramOut to output

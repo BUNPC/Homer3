@@ -197,6 +197,9 @@ classdef ConfigFileClass < FileClass
             for ii=1:length(obj.sections)
                 name = obj.sections(ii).name;
                 val = obj.sections(ii).val;
+                if isempty(val)
+                    continue;
+                end
                 
                 % Get rid of spaces, dashes and underscores from param name
                 name(name==' ' | name=='_' | name=='-') = '';

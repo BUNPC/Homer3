@@ -5,8 +5,7 @@ classdef SubjClass < TreeNodeClass
     end
     
     methods
-        
-        
+                
         % ----------------------------------------------------------------------------------
         function obj = SubjClass(varargin)
             obj@TreeNodeClass(varargin);

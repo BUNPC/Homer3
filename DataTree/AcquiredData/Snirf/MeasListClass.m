@@ -35,9 +35,9 @@ classdef MeasListClass < FileLoadSaveClass
             if nargin==1 && isa(varargin{1}, 'MeasListClass')
                 obj = ml.copy;
             elseif nargin==1 
-                obj.sourceIndex      = varargin(1);
-                obj.detectorIndex    = varargin(2);
-                obj.wavelengthIndex  = varargin(4);
+                obj.sourceIndex      = varargin{1}(1);
+                obj.detectorIndex    = varargin{1}(2);
+                obj.wavelengthIndex  = varargin{1}(4);
             elseif nargin==3
                 obj.sourceIndex      = varargin{1};
                 obj.detectorIndex    = varargin{2};

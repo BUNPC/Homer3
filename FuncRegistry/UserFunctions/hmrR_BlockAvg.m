@@ -24,8 +24,8 @@
 % yTrials: a structure containing the individual trial responses
 %
 % USAGE OPTIONS:
-% Block_Average_on_Concentration_Data: [data_dcAvg, data_dcAvgStd, nTrials, data_dcSum2] = hmrR_BlockAvg( data_dc, stim, trange )
-% Block_Average_on_Delta_OD_Data: [data_dodAvg, data_dodAvgStd, nTrials, data_dodSum2] = hmrR_BlockAvg( data_dod, stim, trange )
+% Block_Average_on_Concentration_Data: [dcAvg, dcAvgStd, nTrials, dcSum2] = hmrR_BlockAvg( dc, stim, trange )
+% Block_Average_on_Delta_OD_Data: [dodAvg, dodAvgStd, nTrials, dodSum2] = hmrR_BlockAvg( dod, stim, trange )
 %
 % PARAMETERS:
 % trange: [-2.0, 20.0]

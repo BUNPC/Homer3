@@ -14,7 +14,7 @@ group_h3 = load('./groupResults.mat');
 
 % Compare dcAvg
 dcAvg_h2  = group_h2.group.procResult.dcAvg;
-dcAvg_h3  = group_h3.group.procStream.output.dcAvg;
+dcAvg_h3  = group_h3.group.procStream.output.GetDcAvg();
 dcAvg_erridxs = [];
 idx=1;
 if ndims(dcAvg_h2)~=ndims(dcAvg_h3) || ~all(size(dcAvg_h2)==size(dcAvg_h3))
@@ -45,7 +45,7 @@ end
 
 % Compare dodAvg
 dodAvg_h2 = group_h2.group.procResult.dodAvg;
-dodAvg_h3 = group_h3.group.procStream.output.dodAvg;
+dodAvg_h3 = group_h3.group.procStream.output.GetDodAvg();
 dodAvg_erridxs = [];
 idx=1;
 if ndims(dcAvg_h2)~=ndims(dcAvg_h3) || ~all(size(dcAvg_h2)==size(dcAvg_h3))

@@ -15,4 +15,5 @@ end
 if isempty(dataTree.group.subjs(isubj).runs(irun).procStream.input.fcalls)
     return;
 end
-lpf = dataTree.group.subjs(isubj).runs(irun).procStream.input.fcalls(3).paramIn(2).value;
+iFcall = dataTree.group.subjs(isubj).runs(irun).procStream.input.GetFuncCallIdx('hmrR_BandpassFilt_Nirs');
+lpf = dataTree.group.subjs(isubj).runs(irun).procStream.input.fcalls(iFcall).paramIn(2).value;

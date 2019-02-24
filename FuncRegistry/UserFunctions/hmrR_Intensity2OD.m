@@ -14,7 +14,7 @@
 % dod - SNIRF data type where the d matrix is change in optical density 
 %
 % USAGE OPTIONS:
-% Intensity_to_Delta_OD: data_dod = hmrR_Intensity2OD(data)
+% Intensity_to_Delta_OD: dod = hmrR_Intensity2OD(data)
 %
 function dod = hmrR_Intensity2OD( intensity )
 

@@ -4,7 +4,7 @@ DEBUG1=0;
 
 delete ./*.snirf
 
-groupFolders = {'UnitTests/Example9_SessRuns', };
+groupFolders = {'UnitTests/Example9_SessRuns', 'UnitTests/Example6_GrpTap'};
 nGroups = length(groupFolders);
 status = zeros(4, nGroups);
 for ii=1:nGroups

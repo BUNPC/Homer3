@@ -126,7 +126,7 @@ classdef TreeNodeClass < handle
             
             % procResult
             if ~isempty(obj2.procStream.output)
-                obj.procStream.output = copyStructFieldByField(obj.procStream.output, obj2.procStream.output);
+                obj.procStream.output.copy(obj2.procStream.output);
             end            
         end
         
@@ -145,6 +145,11 @@ classdef TreeNodeClass < handle
             end
         end
         
+    end
+    
+    
+    
+    methods
         
         % ----------------------------------------------------------------------------------
         function CondNames = GetConditions(obj)
@@ -155,6 +160,18 @@ classdef TreeNodeClass < handle
         % ----------------------------------------------------------------------------------
         function t = GetTHRF(obj)
             t = obj.procStream.output.GetTHRF();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function dod = GetDod(obj)
+            dod = obj.procStream.output.GetDod();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function dc = GetDc(obj)
+            dc = obj.procStream.output.GetDc();
         end
         
         
@@ -175,6 +192,52 @@ classdef TreeNodeClass < handle
             dcAvg = obj.procStream.output.GetDcAvg(condition);
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function dodAvgStd = GetDodAvgStd(obj, condition)
+            if ~exist('condition','var')
+                condition = 1:length(obj.GetConditions());
+            end
+            dodAvgStd = obj.procStream.output.GetDodAvgStd(condition);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function dcAvgStd = GetDcAvgStd(obj, condition)
+            if ~exist('condition','var')
+                condition = 1:length(obj.GetConditions());
+            end
+            dcAvgStd = obj.procStream.output.GetDcAvgStd(condition);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function dodSum2 = GetDodSum2(obj, condition)
+            if ~exist('condition','var')
+                condition = 1:length(obj.GetConditions());
+            end
+            dodSum2 = obj.procStream.output.GetDodSum2(condition);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function dcSum2 = GetDcSum2(obj, condition)
+            if ~exist('condition','var')
+                condition = 1:length(obj.GetConditions());
+            end
+            dcSum2 = obj.procStream.output.GetDcSum2(condition);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function nTrials = GetNtrials(obj)
+            nTrials = obj.procStream.output.GetNtrials();
+        end
+        
+    end
+    
+    
+    methods
         
         % ----------------------------------------------------------------------------------
         function found = FindVar(obj, varname)

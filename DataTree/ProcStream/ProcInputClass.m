@@ -252,6 +252,23 @@ classdef ProcInputClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function idx = GetFuncCallIdx(obj, name)
+            % Find first occurrence of function call with function name
+            % <name>
+            idx = [];
+            if ~ischar(name)
+                return;                
+            end
+            for ii=1:length(obj.fcalls)
+                if strcmp(obj.fcalls(ii).name, name)
+                    idx=ii;
+                    break;
+                end
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function name = GetFcallNamePrettyPrint(obj, iFcall)
             name = '';
             if isempty(obj.fcalls)

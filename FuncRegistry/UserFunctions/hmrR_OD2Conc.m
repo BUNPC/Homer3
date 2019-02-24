@@ -21,7 +21,7 @@
 % dc: SNIRF.data container with the concentration data 
 %
 % USAGE OPTIONS:
-% Delta_OD_to_Conc: data_dc = hmrR_OD2Conc( data_dod, sd, ppf )
+% Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, sd, ppf )
 %
 % PARAMETERS:
 % ppf: [6.0, 6.0]

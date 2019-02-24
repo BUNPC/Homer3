@@ -104,7 +104,6 @@ hmr.childguis = ChildGuiClass().empty();
 
 LoadConfig();
 
-
 % Disable and reset all window gui objects
 Homer3_EnableDisableGUI(handles,'off');
 Homer3_Init(handles, {'zbuffer'});
@@ -249,17 +248,23 @@ iFile = get(hObject,'value');
 if isempty(iFile==0)
     return;
 end
-dataTree = hmr.dataTree;
 
 % If evendata isn't empty then caller is trying to set currElem
 if strcmp(class(eventdata), 'matlab.ui.eventdata.ActionData')
-    [iGroup,iSubj,iRun] = dataTree.MapFile2Group(iFile);
-    dataTree.SetCurrElem(iGroup, iSubj, iRun);
+    [iGroup,iSubj,iRun] = hmr.dataTree.MapFile2Group(iFile);
+    switch(hmr.guiControls.proctype)
+        case 1
+            hmr.dataTree.SetCurrElem(iGroup);
+        case 2
+            hmr.dataTree.SetCurrElem(iGroup, iSubj);
+        case 3
+            hmr.dataTree.SetCurrElem(iGroup, iSubj, iRun);
+    end
 elseif ~isempty(eventdata)
     iGroup = eventdata(1);
     iSubj = eventdata(2);
     iRun = eventdata(3);
-    iFile = dataTree.MapGroup2File(iGroup, iSubj, iRun);
+    iFile = hmr.dataTree.MapGroup2File(iGroup, iSubj, iRun);
     if iFile==0
         return;
     end
@@ -597,32 +602,33 @@ dStd    = [];
 t       = [];
 nTrials = [];
 
+% Get plot data from dataTree
 if datatype == buttonVals.RAW
     d = procElem.GetDataMatrix();
     t = procElem.GetTime();
 elseif datatype == buttonVals.OD
-    d = procElem.procStream.output.dod;
+    d = procElem.GetDod();
     t = procElem.GetTime();
 elseif datatype == buttonVals.CONC
-    d = procElem.procStream.output.dc;
+    d = procElem.GetDc();
     t = procElem.GetTime();
 elseif datatype == buttonVals.OD_HRF
-    d = procElem.procStream.output.dodAvg;
-    t = procElem.procStream.output.tHRF;
+    d = procElem.GetDodAvg();
+    t = procElem.GetTHRF();
     if showStdErr
-        dStd = procElem.procStream.output.dodAvgStd;
+        dStd = procElem.GetDodAvgStd();
     end
-    nTrials = procElem.procStream.output.nTrials;
+    nTrials = procElem.GetNtrials();
     if isempty(condition)
         return;
     end
 elseif datatype == buttonVals.CONC_HRF
-    d = procElem.procStream.output.dcAvg;
-    t = procElem.procStream.output.tHRF;
+    d = procElem.GetDcAvg();
+    t = procElem.GetTHRF();
     if showStdErr
-        dStd = procElem.procStream.output.dcAvgStd * sclConc;
+        dStd = procElem.GetDcAvgStd() * sclConc;
     end
-    nTrials = procElem.procStream.output.nTrials;
+    nTrials = procElem.GetNtrials();
     if isempty(condition)
         return;
     end

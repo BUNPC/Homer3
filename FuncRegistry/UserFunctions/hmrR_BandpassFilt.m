@@ -1,5 +1,5 @@
 % SYNTAX:
-% data = hmrR_BandpassFilt( data, hpf, lpf )
+% data2 = hmrR_BandpassFilt( data, hpf, lpf )
 %
 % UI NAME:
 % Bandpass_Filter
@@ -16,11 +16,11 @@
 %       Typical value is 0.5 to 3.
 %
 % OUTPUT:
-% data - SNIRF data type containing the filtered data time course, time 
+% data2 - SNIRF data type containing the filtered data time course, time 
 %        vector, and channels. 
 %
 % USAGE OPTIONS:
-% Bandpass_Filter: data_dod = hmrR_BandpassFilt( data_dod, hpf, lpf )
+% Bandpass_Filter: dod = hmrR_BandpassFilt( dod, hpf, lpf )
 %
 % PARAMETERS:
 % hpf: [0.010]

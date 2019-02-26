@@ -49,6 +49,10 @@ classdef TreeNodeClass < handle
             obj.CondNamesAll('init');
         end
         
+    end
+    
+    
+    methods
         
         % ---------------------------------------------------------------------------------
         function LoadProcInputConfigFile(obj, filename, reg)
@@ -73,6 +77,10 @@ classdef TreeNodeClass < handle
             procInput = obj.procStream.input.GetDefault(class(obj));
         end 
        
+    end
+    
+    
+    methods
         
         % ----------------------------------------------------------------------------------
         % Override == operator: 
@@ -146,17 +154,13 @@ classdef TreeNodeClass < handle
         end
         
     end
+        
     
-    
-    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Methods for setting/getting TreeNode procStream output
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
-        
-        % ----------------------------------------------------------------------------------
-        function CondNames = GetConditions(obj)
-            CondNames = obj.CondNames;
-        end
-
-        
+               
         % ----------------------------------------------------------------------------------
         function t = GetTHRF(obj)
             t = obj.procStream.output.GetTHRF();
@@ -165,13 +169,13 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function dod = GetDod(obj)
-            dod = obj.procStream.output.GetDod();
+            dod = obj.procStream.output.GetDataTimeCourse('dod');
         end
         
         
         % ----------------------------------------------------------------------------------
         function dc = GetDc(obj)
-            dc = obj.procStream.output.GetDc();
+            dc = obj.procStream.output.GetDataTimeCourse('dc');
         end
         
         
@@ -180,7 +184,7 @@ classdef TreeNodeClass < handle
             if ~exist('condition','var')
                 condition = 1:length(obj.GetConditions());
             end
-            dodAvg = obj.procStream.output.GetDodAvg(condition);
+            dodAvg = obj.procStream.output.GetDodAvg('dodAvg', condition);
         end
         
         
@@ -189,7 +193,7 @@ classdef TreeNodeClass < handle
             if ~exist('condition','var')
                 condition = 1:length(obj.GetConditions());
             end
-            dcAvg = obj.procStream.output.GetDcAvg(condition);
+            dcAvg = obj.procStream.output.GetDcAvg('dcAvg', condition);
         end
         
         
@@ -198,7 +202,7 @@ classdef TreeNodeClass < handle
             if ~exist('condition','var')
                 condition = 1:length(obj.GetConditions());
             end
-            dodAvgStd = obj.procStream.output.GetDodAvgStd(condition);
+            dodAvgStd = obj.procStream.output.GetDodAvg('dodAvgStd', condition);
         end
         
         
@@ -207,7 +211,7 @@ classdef TreeNodeClass < handle
             if ~exist('condition','var')
                 condition = 1:length(obj.GetConditions());
             end
-            dcAvgStd = obj.procStream.output.GetDcAvgStd(condition);
+            dcAvgStd = obj.procStream.output.GetDcAvg('dcAvgStd', condition);
         end
         
         
@@ -216,7 +220,7 @@ classdef TreeNodeClass < handle
             if ~exist('condition','var')
                 condition = 1:length(obj.GetConditions());
             end
-            dodSum2 = obj.procStream.output.GetDodSum2(condition);
+            dodSum2 = obj.procStream.output.GetDodSum2('dodSum2', condition);
         end
         
         
@@ -225,7 +229,7 @@ classdef TreeNodeClass < handle
             if ~exist('condition','var')
                 condition = 1:length(obj.GetConditions());
             end
-            dcSum2 = obj.procStream.output.GetDcSum2(condition);
+            dcSum2 = obj.procStream.output.GetDcSum2('dcSum2', condition);
         end
         
         
@@ -237,8 +241,16 @@ classdef TreeNodeClass < handle
     end
     
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Methods for retrieving TreeNode params
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
+        % ----------------------------------------------------------------------------------
+        function CondNames = GetConditions(obj)
+            CondNames = obj.CondNames;
+        end
+
         % ----------------------------------------------------------------------------------
         function found = FindVar(obj, varname)
             found = false;

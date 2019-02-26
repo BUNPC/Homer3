@@ -93,8 +93,8 @@ classdef SdClass < FileLoadSaveClass
             obj.momentOrder               = hdf5read_safe(fname, [parent, '/momentOrder'], obj.momentOrder);
             obj.correlationTimeDelay      = hdf5read(fname, [parent, '/correlationTimeDelay']);
             obj.correlationTimeDelayWidth = hdf5read(fname, [parent, '/correlationTimeDelayWidth']);
-            obj.srcLabels                 = strtrim(h5read_safe(fname, [parent, '/srcLabels'], obj.srcLabels));
-            obj.detLabels                 = strtrim(h5read_safe(fname, [parent, '/detLabels'], obj.detLabels));
+            obj.srcLabels                 = strtrim_improve(h5read_safe(fname, [parent, '/srcLabels'], obj.srcLabels));
+            obj.detLabels                 = strtrim_improve(h5read_safe(fname, [parent, '/detLabels'], obj.detLabels));
         end
 
         

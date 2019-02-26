@@ -1,5 +1,46 @@
 function DisplayDataRawOrOD(t, d, dStd, wl, ch, chLst, nTrials, condition, linecolor, linestyle)
 
+% Parse args
+if ~exist('t','var')
+    t = [];
+end
+if ~exist('d','var')
+    d = [];
+end
+if ~exist('dStd','var')
+    dStd = [];
+end
+if ~exist('wl','var')
+    wl = 1;
+end
+if ~exist('ch','var')
+    ch = 1;
+end
+if ~exist('chLst','var')
+    chLst = 1;
+end
+if ~exist('nTrials','var')
+    nTrials = [];
+end
+if ~exist('condition','var')
+    condition = 1;
+end
+if ~exist('linecolor','var')
+    linecolor = rand(length(chLst),3);
+end
+if ~exist('linestyle','var')
+    linestyle = {'-','--',':'};
+end
+
+% Error check args
+if isempty(t) || isempty(d) || isempty(wl) || isempty(ch) || isempty(chLst)
+    return;
+end
+if ~isempty(dStd) && (isempty(nTrials) || isempty(condition))
+    return;
+end
+
+
 for iWl=1:length(wl)
     for ii=1:length(ch(chLst))
         dWlMl = squeeze(d( :, ch(chLst(ii)), wl(iWl)));

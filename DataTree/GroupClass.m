@@ -385,7 +385,7 @@ classdef GroupClass < TreeNodeClass
 	
             % Generate mapping of group conditions to subject conditions
             % used when averaging subject HRF to get group HRF
-            obj.SetCondName2Subj();            
+            obj.SetCondName2Subj();
             for iSubj=1:length(obj.subjs)
                 obj.subjs(iSubj).SetCondName2Run();
                 obj.subjs(iSubj).SetCondName2Group(obj.CondNames);

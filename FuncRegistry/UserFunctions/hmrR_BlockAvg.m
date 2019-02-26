@@ -55,7 +55,7 @@ for kk=1:length(data)
     nPost = round(trange(2)/dt);
     nTpts = size(y,1);
     tHRF = [nPre*dt:dt:nPost*dt];
-    ml = data(kk).GetMeasList();
+    ml = data(kk).GetMeasListSrcDetPairs();
     
     for iS = 1:size(s,2)
         lstS = find(s(:,iS)==1);

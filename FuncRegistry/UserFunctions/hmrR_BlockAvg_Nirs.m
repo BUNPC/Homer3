@@ -34,7 +34,6 @@
 % trange: [-2.0, 20.0]
 %
 
-
 function [yavg, ystd, tHRF, nTrials, ysum2, yTrials] = hmrR_BlockAvg_Nirs( y, s, t, trange )
 
 ndim = ndims(y);

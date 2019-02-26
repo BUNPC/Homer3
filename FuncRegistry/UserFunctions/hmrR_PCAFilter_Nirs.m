@@ -1,5 +1,5 @@
 % SYNTAX:
-% [yc, svs, nSV] = hmrR_PCAFilter( y, SD, tInc, nSV )
+% [yc, svs, nSV] = hmrR_PCAFilter_Nirs( y, SD, tInc, nSV )
 %
 % UI NAME:
 % PCA_Filter
@@ -33,25 +33,25 @@
 % nSV: This is the number of components filtered from the data.
 %
 % USAGE OPTIONS:
-% PCA_Filter_on_Concentration1: [dc, svs_dod, nSV_dod]  = hmrR_PCAFilter( dc, SD, tInc, nSV )  
-% PCA_Filter_on_Delta_OD1:      [dod, svs, nSV]         = hmrR_PCAFilter( dod, SD, tInc, nSV ) 
-% PCA_Filter_on_Delta_OD2:      [dod, svs_dod, nSV_dod] = hmrR_PCAFilter( dod, SD, tInc, nSV )
+% PCA_Filter_on_Concentration1: [dc, svs_dod, nSV_dod]  = hmrR_PCAFilter_Nirs( dc, SD, tInc, nSV )  
+% PCA_Filter_on_Delta_OD1:      [dod, svs, nSV]         = hmrR_PCAFilter_Nirs( dod, SD, tInc, nSV ) 
+% PCA_Filter_on_Delta_OD2:      [dod, svs_dod, nSV_dod] = hmrR_PCAFilter_Nirs( dod, SD, tInc, nSV )
 %
 % PARAMETERS:
 % nSV: [0.00, 0.00]
 %
 
-function [yc, svs, nSV] = hmrR_PCAFilter( y, SD, tInc, nSV )
+function [yc, svs, nSV] = hmrR_PCAFilter_Nirs( y, SD, tInc, nSV )
 
 if ~exist('nSV')
-    disp('USAGE: [yc,svs,nSV] = hmrR_PCAFilter( y, SD, tInc, nSV )');
+    disp('USAGE: [yc,svs,nSV] = hmrR_PCAFilter_Nirs( y, SD, tInc, nSV )');
     yc = [];
     svs = [];
     nSV = [];
     return
 end
 if any(isinf(y(:)))
-    disp('WARNING: [yc,svs,nSV] = hmrR_PCAFilter( y, SD, tInc, nSV )');
+    disp('WARNING: [yc,svs,nSV] = hmrR_PCAFilter_Nirs( y, SD, tInc, nSV )');
     disp('      The data matrix y can not have any Inf numbers.');
     yc = [];
     svs = [];

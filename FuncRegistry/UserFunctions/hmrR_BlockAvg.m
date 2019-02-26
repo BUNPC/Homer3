@@ -96,12 +96,17 @@ for kk=1:length(data)
                 ysum2(:,:,ii,iS) = sum( yTrials(iS).yblk(:,:,ii,1:nBlk).^2 ,4);
                 
                 % Snirf stuff: set channel descriptors
+                % Concentration 
                 data_avg(kk).AddChannelDc(ml(ii,1), ml(ii,2), 6, iS);
                 data_avg(kk).AddChannelDc(ml(ii,1), ml(ii,2), 7, iS);
                 data_avg(kk).AddChannelDc(ml(ii,1), ml(ii,2), 8, iS);
+                
+                % Standard deviation 
                 data_std(kk).AddChannelDc(ml(ii,1), ml(ii,2), 6, iS);
                 data_std(kk).AddChannelDc(ml(ii,1), ml(ii,2), 7, iS);
                 data_std(kk).AddChannelDc(ml(ii,1), ml(ii,2), 8, iS);
+                
+                % 
                 data_sum2(kk).AddChannelDc(ml(ii,1), ml(ii,2), 6, iS);
                 data_sum2(kk).AddChannelDc(ml(ii,1), ml(ii,2), 7, iS);
                 data_sum2(kk).AddChannelDc(ml(ii,1), ml(ii,2), 8, iS);

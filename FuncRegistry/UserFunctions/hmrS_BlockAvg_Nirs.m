@@ -1,6 +1,6 @@
-function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg(yAvgRuns, yAvgStdRuns, ySum2Runs, SDRuns, nTrialsRuns, CondName2Run)
+function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondName2Run)
 % SYNTAX:
-% [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg(yAvgRuns, yAvgStdRuns, ySum2Runs, SDRuns, nTrialsRuns, CondName2Run)
+% [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondName2Run)
 %
 % UI NAME:
 % Block_Average_Subj
@@ -12,6 +12,7 @@ function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg(yAvgRuns, yAvgStdRuns, y
 % INPUTS:
 % yAvgRuns:
 % yAvgStdRuns:
+% tHRFRuns: 
 % SDRuns:
 % nTrialsRuns:
 % CondName2Run: 
@@ -26,8 +27,8 @@ function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg(yAvgRuns, yAvgStdRuns, y
 % nTrials: the number of trials averaged for each condition across all runs
 %
 % USAGE OPTIONS:
-% Block_Average_on_Subject_Concentration_Data:  [dcAvg, dcAvgStd, tHRF, nTrials]    = hmrS_BlockAvg(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, SDRuns, nTrialsRuns, CondName2Run)
-% Block_Average_on_Subject_Delta_OD_Data:       [dodAvg, dodAvgStd, tHRF, nTrials]  = hmrS_BlockAvg(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, SDRuns, nTrialsRuns, CondName2Run)
+% Block_Average_on_Subject_Concentration_Data:  [dcAvg, dcAvgStd, tHRF, nTrials]    = hmrS_BlockAvg_Nirs(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondName2Run)
+% Block_Average_on_Subject_Delta_OD_Data:       [dodAvg, dodAvgStd, tHRF, nTrials]  = hmrS_BlockAvg_Nirs(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondName2Run)
 %
 
 yAvg = [];
@@ -37,12 +38,12 @@ nTrials_tot = [];
 grp1=[];
 for iRun = 1:length(yAvgRuns)
     
-    tHRF      = yAvgRuns{iRun}.GetT();
-    yAvg      = yAvgRuns{iRun}.GetDataMatrix();
-    yAvgStd   = yAvgStdRuns{iRun}.GetDataMatrix();
-    ySum2     = ySum2Runs{iRun}.GetDataMatrix();
+    yAvg      = yAvgRuns{iRun};
+    yAvgStd   = yAvgStdRuns{iRun};
+    ySum2     = ySum2Runs{iRun};
+    tHRF      = tHRFRuns{iRun};
     nTrials   = nTrialsRuns{iRun};
-    SD        = SDRuns{iRun};
+    SD        = SDRuns{iRun};    
     
     if isempty(yAvg)
         break;
@@ -159,4 +160,3 @@ for iRun = 1:length(yAvgRuns)
     end
 end
 nTrials = nTrials_tot;
-

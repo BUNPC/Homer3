@@ -1,5 +1,5 @@
 % SYNTAX:
-% tInc = hmrR_MotionArtifact(d, fs, SD, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+% tInc = hmrR_MotionArtifact_Nirs(d, fs, SD, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % UI NAME:   
 % Motion_Artifacts
@@ -43,7 +43,7 @@
 %       and 0's indicate motion artifact
 %
 % USAGE OPTIONS:
-% Motion_Artifacts_By_Channel:  tIncAuto = hmrR_MotionArtifact(dod, t, SD, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+% Motion_Artifacts_By_Channel:  tIncAuto = hmrR_MotionArtifact_Nirs(dod, t, SD, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % PARAMETERS:
 % tMotion: 0.5
@@ -63,7 +63,7 @@
 % TO DO:
 % Consider tIncMan
 
-function tInc = hmrR_MotionArtifact(d, fs, SD, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
+function tInc = hmrR_MotionArtifact_Nirs(d, fs, SD, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
 
 % Input processing.  Check required inputs, throw errors if necessary.
 if nargin<3

@@ -10,16 +10,10 @@ end
 if isempty(dirs)
     return;
 end 
-% path_arr = getpathparts(str);
-% currpath_arr = getpathparts(pwd);
-% 
-% name = '';
-% for ii=1:length(fullpath_arr)
-%     if ~ismember(fullpath_arr)
-%     end
-% end
-%  
 for ii=1:length(dirs)
     files(ii) = FileClass(dirs(ii));
+    if isempty(files(ii).pathfull)
+        files(ii).pathfull = fileparts(fullpath(str));
+    end
 end
 

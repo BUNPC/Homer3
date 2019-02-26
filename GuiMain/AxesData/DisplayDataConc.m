@@ -1,6 +1,45 @@
 function DisplayDataConc(t, d, dStd, hbType, ch, chLst, nTrials, condition, linecolor, linestyle)
 
+% Parse args
+if ~exist('t','var')
+    t = [];
+end
+if ~exist('d','var')
+    d = [];
+end
+if ~exist('dStd','var')
+    dStd = [];
+end
+if ~exist('hbType','var')
+    hbType = 1;
+end
+if ~exist('ch','var')
+    ch = 1;
+end
+if ~exist('chLst','var')
+    chLst = 1;
+end
+if ~exist('nTrials','var')
+    nTrials = [];
+end
+if ~exist('condition','var')
+    condition = 1;
+end
+if ~exist('linecolor','var')
+    linecolor = rand(length(chLst),3);
+end
+if ~exist('linestyle','var')
+    linestyle = {'-','--',':'};
+end
 linewidth = [2,2,4];
+
+% Error check args
+if isempty(t) || isempty(d) || isempty(hbType) || isempty(ch) || isempty(chLst)
+    return;
+end
+if ~isempty(dStd) && (isempty(nTrials) || isempty(condition))
+    return;
+end
 
 for iHb=1:length(hbType)
     for ii=length(ch(chLst)):-1:1
@@ -20,3 +59,4 @@ for iHb=1:length(hbType)
         end
     end
 end
+

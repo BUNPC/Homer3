@@ -74,7 +74,13 @@ classdef DataClass < FileLoadSaveClass
             end
         end
         
-
+    end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Load/Save from/to file methods 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
 
         % -------------------------------------------------------
         function err = LoadHdf5(obj, fname, parent)
@@ -117,8 +123,14 @@ classdef DataClass < FileLoadSaveClass
                 obj.ml(ii).SaveHdf5(fname, [parent, '/ml_', num2str(ii)]);
             end
         end
-
         
+    end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Set/Get properties methods 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods        
         
         % -------------------------------------------------------
         function b = Empty(obj)
@@ -157,6 +169,19 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
+        function ml = GetMeasListSrcDetPairs(obj)
+            ml = zeros(0, 2);
+            jj=1;
+            for ii=1:length(obj.ml)
+                if isempty(find(ml(:,1)==obj.ml(ii).GetSourceIndex() & ml(:,2)==obj.ml(ii).GetDetectorIndex()))
+                    ml(jj,:) = [obj.ml(ii).GetSourceIndex(), obj.ml(ii).GetDetectorIndex()];
+                    jj=jj+1;
+                end
+            end
+        end
+        
+        
+        % ---------------------------------------------------------
         function ml = GetMeasListDod(obj)
             ml = zeros(length(obj.ml), 2);
             for ii=1:length(obj.ml)
@@ -185,8 +210,50 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function datamat = GetDataMatrix(obj)
-            datamat = obj.d;
+        function d = GetDataMatrix(obj)
+            % Get information for each ch in d matrix
+            dataTypeLabels = [];
+            srcDetPairs = zeros(0,2);
+            conditions = [];
+            wavelengths = [];
+            hh=1; jj=1; kk=1; ll=1;
+            for ii=1:length(obj.ml)
+                if ~ismember(obj.ml(ii).GetDataTypeLabel(), dataTypeLabels)
+                    dataTypeLabels(hh) = obj.ml(ii).GetDataTypeLabel(); 
+                    hh=hh+1;
+                end
+                if isempty(find(srcDetPairs(:,1)==obj.ml(ii).GetSourceIndex() & srcDetPairs(:,2)==obj.ml(ii).GetDetectorIndex()))
+                    srcDetPairs(jj,:) = [obj.ml(ii).GetSourceIndex(), obj.ml(ii).GetDetectorIndex()];
+                    jj=jj+1;
+                end
+                if ~ismember(obj.ml(ii).GetCondition(), conditions)
+                    conditions(kk) = obj.ml(ii).GetCondition();
+                    kk=kk+1;
+                end
+                if ~ismember(obj.ml(ii).GetWavelengthIndex(), wavelengths)
+                    wavelengths(ll) = obj.ml(ii).GetWavelengthIndex();
+                    ll=ll+1;
+                end
+            end
+            dim1 = length(obj.d(:,1));
+            if all(wavelengths(:)~=0) && all(conditions(:)==0)
+                dim2 = length(wavelengths(:)) * size(srcDetPairs,1);
+                dim3 = 1;
+                dim4 = 1;
+            elseif all(wavelengths(:)~=0) && all(conditions(:)~=0)
+                dim2 = length(wavelengths(:)) * size(srcDetPairs,1);
+                dim3 = length(conditions(:));
+                dim4 = 1;
+            elseif all(wavelengths(:)==0) && all(conditions(:)==0)
+                dim2 = length(dataTypeLabels(:));
+                dim3 = size(srcDetPairs,1);
+                dim4 = 1;
+            elseif all(wavelengths(:)==0) && all(conditions(:)~=0)
+                dim2 = length(dataTypeLabels(:));
+                dim3 = size(srcDetPairs,1);
+                dim4 = length(conditions(:));
+            end
+            d = reshape(obj.d, dim1, dim2, dim3, dim4);
         end
         
         
@@ -230,6 +297,7 @@ classdef DataClass < FileLoadSaveClass
             obj.ml = val.copy();
         end
         
+        
         % ---------------------------------------------------------
         function val = GetMl(obj)
             val = obj.ml;
@@ -243,6 +311,7 @@ classdef DataClass < FileLoadSaveClass
                 val(ii) = obj.ml(ii).GetDataType();
             end
         end
+        
         
         % ---------------------------------------------------------
         function val = GetDataTypeLabel(obj, ch_idx)
@@ -269,6 +338,10 @@ classdef DataClass < FileLoadSaveClass
         
     end
     
+        
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Adding/deleting data methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
         % ---------------------------------------------------------
@@ -336,12 +409,16 @@ classdef DataClass < FileLoadSaveClass
         % ----------------------------------------------------------------------------------
         function objnew = copydeep(obj)
             objnew = DataClass();
+            if isempty(obj)
+                return
+            end
             for ii=1:length(obj.ml)
                 objnew.ml(ii) = obj.ml(ii).copy();
             end
             objnew.d = obj.d;
             objnew.t = obj.t;
         end
+        
     end
 end
 

@@ -59,8 +59,8 @@ classdef AuxClass < FileLoadSaveClass
             %%%%%%%%%%%% Ready to load from file
 
             try
-                name = strtrim(h5read(fname, [parent, '/name']));
-                obj.name = name{1};
+                nm = strtrim_improve(h5read(fname, [parent, '/name']));
+                obj.name = nm{1};
                 obj.d    = h5read(fname, [parent, '/d']);
                 obj.t    = h5read(fname, [parent, '/t']);
             catch

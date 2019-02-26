@@ -129,156 +129,138 @@ classdef ProcResultClass < handle
     methods
            
         % ----------------------------------------------------------------------------------
+        function SetTHRF(obj, t)
+            obj.tHRF = t;
+        end
+                
+        % ----------------------------------------------------------------------------------
         function t = GetTHRF(obj)
             t = obj.tHRF;
         end
-        
-        
+
         % ----------------------------------------------------------------------------------
-        function dodAvg = GetDodAvg(obj, condition)
-            if ~exist('condition','var')
-                if isa(obj.dodAvg, 'handle')
-                    condition = 1;
-                else
-                    condition = 1:size(obj.dodAvg,3);
-                end
-            end
-            if isa(obj.dodAvg, 'handle')
-                dodAvg = [];
-            else
-                if isempty(obj.dodAvg)
-                    dodAvg = [];
-                    return
-                end
-                dodAvg = obj.dodAvg(:,:,condition);
-            end
+        function SetDodAvg(obj, val)
+            obj.dodAvg = val;
+        end
+                    
+        % ----------------------------------------------------------------------------------
+        function SetDcAvg(obj, val)
+            obj.dcAvg = val;
         end
         
+            
+        % ----------------------------------------------------------------------------------
+        function SetDodAvgStd(obj, val)
+            obj.dodAvgStd = val;
+        end
+                    
+        % ----------------------------------------------------------------------------------
+        function SetDcAvgStd(obj, val)
+            obj.dcAvgStd = val;
+        end
+        
+            
+        % ----------------------------------------------------------------------------------
+        function SetDodSum2(obj, val)
+            obj.dodSum2 = val;
+        end
+                    
+        % ----------------------------------------------------------------------------------
+        function SetDcSum2(obj, val)
+            obj.dcSum2 = val;
+        end
+        
+            
+        % ----------------------------------------------------------------------------------
+        function SetDod(obj, val)
+            obj.dod = val;
+        end
+                    
+        % ----------------------------------------------------------------------------------
+        function SetDc(obj, val)
+            obj.dc = val;
+        end
+        
+            
+        % ----------------------------------------------------------------------------------
+        function yavg = GetDodAvg(obj, type, condition)           
+            yavg = [];
+            
+            % Check type argument 
+            if ~exist('type','var') || isempty(type)
+                type = 'dodAvg';
+            end
+            if ~ischar(type)
+                return;
+            end
+            
+            % Get data matrix
+            if isa(eval(sprintf('obj.%s', type)), 'DataClass')
+                yavg       = eval(sprintf('obj.%s.GetDataMatrix()', type));
+            else
+                yavg       = eval(sprintf('obj.%s', type));
+            end
+            
+            % Get condition
+            if ~exist('condition','var') || isempty(condition)
+                condition = 1:size(yavg,3);
+            end
+            yavg = yavg(:,:,condition);
+        end
+
+        
         
         % ----------------------------------------------------------------------------------
-        function dcAvg = GetDcAvg(obj, condition)
-            if ~exist('condition','var')
-                if isa(obj.dcAvg, 'handle')
-                    condition = 1;
-                else
-                    condition = 1:size(obj.dcAvg,4);
-                end
+        function yavg = GetDcAvg(obj, type, condition)           
+            yavg = [];
+            
+            % Check type argument 
+            if ~exist('type','var') || isempty(type)
+                type = 'dcAvg';
             end
-            if isa(obj.dcAvg, 'handle')
-                dcAvg = [];
+            if ~ischar(type)
+                return;
+            end
+            
+            % Get data matrix
+            if isa(eval(sprintf('obj.%s', type)), 'DataClass')
+                yavg  = eval(sprintf('obj.%s.GetDataMatrix()', type));
             else
-                if isempty(obj.dcAvg)
-                    dcAvg = [];
-                    return
-                end
-                dcAvg = obj.dcAvg(:,:,:,condition);
+                yavg = eval(sprintf('obj.%s', type));
             end
+            
+            % Get condition
+            if ~exist('condition','var') || isempty(condition)
+                condition = 1:size(yavg,4);
+            end
+            yavg = yavg(:,:,:,condition);
         end
 
         
         % ----------------------------------------------------------------------------------
-        function dodAvgStd = GetDodAvgStd(obj, condition)
-            if ~exist('condition','var')
-                if isa(obj.dodAvgStd, 'handle')
-                    condition = 1;
-                else
-                    condition = 1:size(obj.dodAvgStd,3);
-                end
+        function y = GetDataTimeCourse(obj, type)
+            y = [];
+            
+            % Check type argument 
+            if ~exist('type','var') || isempty(type)
+                type = 'dcAvg';
             end
-            if isa(obj.dodAvgStd, 'handle')
-                dodAvgStd = [];
+            if ~ischar(type)
+                return;
+            end
+            
+            if isa(eval(sprintf('obj.%s', type)), 'DataClass')
+                y = eval(sprintf('obj.%s.GetDataMatrix()', type));
             else
-                if isempty(obj.dodAvgStd)
-                    dodAvgStd = [];
-                    return
-                end
-                dodAvgStd = obj.dodAvgStd(:,:,condition);
+                y = eval(sprintf('obj.%s', type));
             end
         end
-        
+                
         
         % ----------------------------------------------------------------------------------
-        function dcAvgStd = GetDcAvgStd(obj, condition)
-            if ~exist('condition','var')
-                if isa(obj.dcAvgStd, 'handle')
-                    condition = 1;
-                else
-                    condition = 1:size(obj.dcAvgStd,4);
-                end
-            end
-            if isa(obj.dcAvgStd, 'handle')
-                dcAvgStd = [];
-            else
-                if isempty(obj.dcAvgStd)
-                    dcAvgStd = [];
-                    return
-                end
-                dcAvgStd = obj.dcAvgStd(:,:,:,condition);
-            end
+        function SetNtrials(obj, val)
+            obj.nTrials = val;
         end
-
-        
-        % ----------------------------------------------------------------------------------
-        function dodSum2 = GetDodSum2(obj, condition)
-            if ~exist('condition','var')
-                if isa(obj.dodSum2, 'handle')
-                    condition = 1;
-                else
-                    condition = 1:size(obj.dodSum2,3);
-                end
-            end
-            if isa(obj.dodSum2, 'handle')
-                dodSum2 = [];
-            else
-                if isempty(obj.dodSum2)
-                    dodSum2 = [];
-                    return
-                end
-                dodSum2 = obj.dodSum2(:,:,condition);
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function dcSum2 = GetDcSum2(obj, condition)
-            if ~exist('condition','var')
-                if isa(obj.dodSum2, 'handle')
-                    condition = 1;
-                else
-                    condition = 1:size(obj.dcSum2,4);
-                end
-            end
-            if isa(obj.dcSum2, 'handle')
-                dcSum2 = [];
-            else
-                if isempty(obj.dcSum2)
-                    dcSum2 = [];
-                    return
-                end
-                dcSum2 = obj.dcSum2(:,:,:,condition);
-            end
-        end
-
-        
-        % ----------------------------------------------------------------------------------
-        function dod = GetDod(obj)
-            if isa(obj.dod, 'handle')
-                dod = [];
-            else
-                dod = obj.dod;
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function dc = GetDc(obj)
-            if isa(obj.dc, 'handle')
-                dc = [];      % Place holder to be implemented later
-            else
-                dc = obj.dc;
-            end
-        end
-        
         
         % ----------------------------------------------------------------------------------
         function nTrials = GetNtrials(obj)
@@ -301,11 +283,10 @@ classdef ProcResultClass < handle
                 if eval(sprintf('strcmp(objnew.%s, ''misc'')', fields{ii}))
                     continue;
                 end
-                prop = sprintf('obj.%s', fields{ii});
-                if isa(eval(prop), 'handle')
-                    sprintf('obj.%s = objnew.%s.copy()', prop, prop);
+                if isa(eval(sprintf('obj.%s', fields{ii})), 'handle')
+                    eval( sprintf('obj.%s = objnew.%s.copy()', fields{ii}, fields{ii}) );
                 else
-                    sprintf('obj.%s = objnew.%s', prop, prop);
+                    eval( sprintf('obj.%s = objnew.%s', fields{ii}, fields{ii}) );
                 end
             end
             
@@ -314,11 +295,10 @@ classdef ProcResultClass < handle
                 if ~eval(sprintf('isproperty(objnew.misc, ''%s'')', fields{ii}))
                     continue;
                 end
-                prop = sprintf('obj.misc.%s', fields{ii});
-                if isa(eval(prop), 'handle')
-                    sprintf('obj.%s = objnew.misc.%s.copy()', prop, prop);
+                if isa(eval(sprintf('obj.misc.%s', fields{ii})), 'handle')
+                    eval( sprintf('obj.%s = objnew.misc.%s.copy()', fields{ii}, fields{ii}) );
                 else
-                    sprintf('obj.%s = objnew.misc.%s', prop, prop);
+                    eval( sprintf('obj.%s = objnew.misc.%s', fields{ii}, fields{ii}) );
                 end
             end
         end

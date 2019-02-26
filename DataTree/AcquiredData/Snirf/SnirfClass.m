@@ -172,15 +172,15 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             %%%%%%%%%%%% Ready to load from file
             
-            obj.formatVersion = strtrim(h5read(fname, [parent, '/formatVersion']));
+            obj.formatVersion = strtrim_improve(h5read(fname, [parent, '/formatVersion']));
             obj.timeOffset = hdf5read(fname, [parent, '/timeOffset']);
             
             % Load metaDataTags
             ii=1;
             while 1
                 try
-                    obj.metaDataTags{ii}{1} = strtrim(h5read(fname, [parent, '/metaDataTags_', num2str(ii), '/k']));
-                    obj.metaDataTags{ii}{2} = strtrim(h5read(fname, [parent, '/metaDataTags_', num2str(ii), '/v']));
+                    obj.metaDataTags{ii}{1} = strtrim_improve(h5read(fname, [parent, '/metaDataTags_', num2str(ii), '/k']));
+                    obj.metaDataTags{ii}{2} = strtrim_improve(h5read(fname, [parent, '/metaDataTags_', num2str(ii), '/v']));
                 catch
                     break;
                 end
@@ -722,6 +722,19 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             end
             obj.stim(k).SetName(newname);
             obj.SortStims();
+        end
+     
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsEmpty(obj)
+            b = true;
+            if isempty(obj.data)
+                return;
+            end
+            if isempty(obj.sd)
+                return;
+            end
+            b = false;
         end
         
     end

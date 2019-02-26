@@ -11,7 +11,7 @@ for ii=1:nGroups
     status(1,ii) = unitTest_DefaultProcStream('.nirs', groupFolders{ii});
     status(2,ii) = unitTest_DefaultProcStream('.snirf',groupFolders{ii});
     status(3,ii) = unitTest_ModifiedLPF('.nirs', groupFolders{ii}, 0.70);
-    status(4,ii) = unitTest_ModifiedLPF('.snirf', groupFolders{ii}, 3.00);
+    status(4,ii) = unitTest_ModifiedLPF('.snirf', groupFolders{ii}, 1.00);
 end
 
 for jj=1:size(status,1)

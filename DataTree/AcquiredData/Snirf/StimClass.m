@@ -66,7 +66,7 @@ classdef StimClass < FileLoadSaveClass
             %%%%%%%%%%%% Ready to load from file
 
             try
-                name = strtrim(h5read(fname, [parent, '/name']));
+                name = strtrim_improve(h5read(fname, [parent, '/name']));
                 obj.name = name{1};
                 obj.data = h5read(fname, [parent, '/data']);
             catch
@@ -79,7 +79,6 @@ classdef StimClass < FileLoadSaveClass
         
         % -------------------------------------------------------
         function SaveHdf5(obj, fname, parent)
-            
             if ~exist(fname, 'file')
                 fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
@@ -93,21 +92,18 @@ classdef StimClass < FileLoadSaveClass
             if ~isempty(obj.data)
                 h5write(fname,[parent, '/data'], obj.data, [1,1], size(obj.data));
             end
-
         end
         
         
         
         % -------------------------------------------------------
         function Update(obj, fname, parent)
-            
             if ~exist(fname, 'file')
                 fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end
             hdf5write_safe(fname, [parent, '/name'], obj.name);
             h5write_safe(fname, [parent, '/data'], obj.data);
-            
         end
         
     end

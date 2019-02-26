@@ -1,5 +1,5 @@
 % SYNTAX:
-% SD = hmrR_PruneChannels(d,SD,tInc,dRange,SNRthresh,SDrange,reset)
+% SD = hmrR_PruneChannels_Nirs(d,SD,tInc,dRange,SNRthresh,SDrange,reset)
 %
 % UI NAME:
 % Prune_Channels
@@ -29,7 +29,7 @@
 % consider Conc as well as wavelength data
 %
 % USAGE OPTIONS:
-% Prune_Channels: SD = hmrR_PruneChannels(d,SD,tInc,dRange,SNRthresh,SDrange,reset)
+% Prune_Channels: SD = hmrR_PruneChannels_Nirs(d,SD,tInc,dRange,SNRthresh,SDrange,reset)
 %
 % PARAMETERS:
 % dRange: [1e4, 1e7]
@@ -39,7 +39,7 @@
 % 
 % 
 %
-function SD = hmrR_PruneChannels(d,SD,tInc,dRange,SNRthresh,SDrange,resetFlag)
+function SD = hmrR_PruneChannels_Nirs(d,SD,tInc,dRange,SNRthresh,SDrange,resetFlag)
 
 
 % Preset values

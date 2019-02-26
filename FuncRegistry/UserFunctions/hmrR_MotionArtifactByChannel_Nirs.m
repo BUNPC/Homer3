@@ -1,5 +1,5 @@
 % SYNTAX:
-% [tInc,tIncCh] = hmrR_MotionArtifactByChannel(d, fs, SD, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+% [tInc,tIncCh] = hmrR_MotionArtifactByChannel_Nirs(d, fs, SD, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % UI NAME:   
 % Motion_Artifacts_By_Channel
@@ -41,7 +41,7 @@
 %       channel basis
 %
 % USAGE OPTIONS:
-% Motion_Artifacts_By_Channel:  [tIncAuto,tIncChAuto] = hmrR_MotionArtifactByChannel(dod, t, SD, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+% Motion_Artifacts_By_Channel:  [tIncAuto,tIncChAuto] = hmrR_MotionArtifactByChannel_Nirs(dod, t, SD, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % PARAMETERS:
 % tMotion: 0.5
@@ -61,7 +61,7 @@
 % TO DO:
 % Consider tIncMan
 
-function [tInc,tIncCh] = hmrR_MotionArtifactByChannel(d, fs, SD, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
+function [tInc,tIncCh] = hmrR_MotionArtifactByChannel_Nirs(d, fs, SD, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
 
 % Input processing.  Check required inputs, throw errors if necessary.
 if nargin<3

@@ -135,7 +135,16 @@ classdef ProcResultClass < handle
                 
         % ----------------------------------------------------------------------------------
         function t = GetTHRF(obj)
-            t = obj.tHRF;
+            t = [];
+            if isempty(obj.tHRF)
+                if isa(obj.dcAvg, 'DataClass') && ~isempty(obj.dcAvg)
+                    t = obj.dcAvg.GetT();
+                elseif isa(obj.dodAvg, 'DataClass') && ~isempty(obj.dodAvg)
+                    t = obj.dodAvg.GetT();                    
+                end
+            else
+                t = obj.tHRF;
+            end
         end
 
         % ----------------------------------------------------------------------------------
@@ -205,6 +214,9 @@ classdef ProcResultClass < handle
             if ~exist('condition','var') || isempty(condition)
                 condition = 1:size(yavg,3);
             end
+            if isempty(yavg)
+                return;
+            end
             yavg = yavg(:,:,condition);
         end
 
@@ -232,6 +244,9 @@ classdef ProcResultClass < handle
             % Get condition
             if ~exist('condition','var') || isempty(condition)
                 condition = 1:size(yavg,4);
+            end
+            if isempty(yavg)
+                return;
             end
             yavg = yavg(:,:,:,condition);
         end

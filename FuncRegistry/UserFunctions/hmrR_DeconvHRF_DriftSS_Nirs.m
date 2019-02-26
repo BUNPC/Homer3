@@ -1,5 +1,5 @@
 % SYNTAX:
-% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] = hmrR_DeconvHRF_DriftSS(y, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] = hmrR_DeconvHRF_DriftSS_Nirs(y, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 %
 % UI NAME: 
 % GLM_HRF_Drift_SS
@@ -82,8 +82,8 @@
 %
 %
 % USAGE OPTIONS:
-% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgstd, tHRF, nTrials, dcNew, dcResid, dcSum2, beta, R]      = hmrR_DeconvHRF_DriftSS(dc, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
-% GLM_HRF_Drift_SS_Delta_OD:      [dodAvg, dodAvgstd, tHRF, nTrials, dodNew, dodResid, dodSum2, beta, R] = hmrR_DeconvHRF_DriftSS(dod, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgstd, tHRF, nTrials, dcNew, dcResid, dcSum2, beta, R]      = hmrR_DeconvHRF_DriftSS_Nirs(dc, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+% GLM_HRF_Drift_SS_Delta_OD:      [dodAvg, dodAvgstd, tHRF, nTrials, dodNew, dodResid, dodSum2, beta, R] = hmrR_DeconvHRF_DriftSS_Nirs(dod, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 %
 % PARAMETERS:
 % trange: [-2.0, 20.0]
@@ -98,7 +98,7 @@
 %
 
 function [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, yR] = ...
-    hmrR_DeconvHRF_DriftSS(y, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+    hmrR_DeconvHRF_DriftSS_Nirs(y, s, t, SD, aux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 
 
 dt = t(2)-t(1);

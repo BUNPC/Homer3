@@ -1,11 +1,10 @@
-function status = compareOutputs1()
+function status = compareOutputs1(group_h2)
 global DEBUG1
+DEBUG1=0;
 
 status = 0;
 prec = -10;
 
-% Load results from homer2 and homer3 
-group_h2 = load('./groupResults_homer2.mat');
 group_h3 = load('./groupResults.mat');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,7 +32,8 @@ else
                     dcAvg_erridxs(idx,:) = [ii,jj,kk];
                     idx=idx+1;
                     if DEBUG1
-                        fprintf('DC avg data for Hb type %d, Ch %d, Cond %d does not match\n', ii, jj, kk);
+                        fprintf('Group: DC avg data for Hb type %d, Ch %d, Cond %d does not match\n', ii, jj, kk);
+                        %compareOutputs_subjs(group_h2, group_h3, 'dcAvg');
                     end
                     status=1;
                 end
@@ -64,7 +64,8 @@ else
                     dodAvg_erridxs(idx,:) = [ii,jj,kk];
                     idx=idx+1;
                     if DEBUG1
-                        fprintf('DOD avg data for Wavelength %d, Ch %d, Cond %d does not match\n', ii, jj, kk);
+                        fprintf('Group: DOD avg data for Wavelength %d, Ch %d, Cond %d does not match\n', ii, jj, kk);
+                        %compareOutputs_subjs(group_h2, group_h3, 'dodAvg');
                     end
                     status=1;
                 end
@@ -99,5 +100,4 @@ if ~isempty(dcAvg_erridxs)
         grid on;
     end
 end
-
 

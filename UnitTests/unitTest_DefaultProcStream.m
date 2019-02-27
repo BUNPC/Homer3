@@ -1,4 +1,8 @@
 function status = unitTest_DefaultProcStream(datafmt, dirname)
+global procStreamStyle
+if isempty(procStreamStyle)
+    procStreamStyle = 'snirf';
+end
 global testidx
 if isempty(testidx)
     testidx=0;
@@ -18,16 +22,20 @@ currpath = pwd;
 
 cd([rootpath, '/', dirname]);
 resetGroupFolder();
-calcProcStream(datafmt);
+dataTree = calcProcStream(datafmt);
 
-groupFiles_h2 = mydir('./groupResults_homer2_*.mat');
+groupFiles_h2 = mydir('./groupResults_homer2_lpf_*.mat');
 for iG=1:length(groupFiles_h2)   
     group_h2 = load(groupFiles_h2(iG).name);
     status = compareOutputs1(group_h2);
     if status==0
         break;
     end
+    [~, groupFiles_h2(iG).pathfull] = fileparts(groupFiles_h2(iG).pathfull);
 end
+
+lpfs = getHomer2LpfValue(groupFiles_h2);
+lpf = getHomer3LpfValue(dataTree);
 
 if status==0
     fprintf('#%d - unitTest_DefaultProcStream(''%s'', ''%s''): TEST PASSED - Homer3 output matches %s.\n', ...

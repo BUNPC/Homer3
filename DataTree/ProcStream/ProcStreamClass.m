@@ -40,7 +40,7 @@ classdef ProcStreamClass
                 end
                 
                 % Parse obj.input parameters
-                [sargin, p] = obj.input.ParseInputParams(iFcall);
+                [sargin, p, sarginVal] = obj.input.ParseInputParams(iFcall);
                 
                 % Parse obj.input output arguments
                 sargout = obj.input.ParseOutputArgs(iFcall);
@@ -48,7 +48,7 @@ classdef ProcStreamClass
                 % call function
                 fcall = sprintf('%s = %s%s%s);', sargout, obj.input.GetFuncCallName(iFcall), obj.input.fcalls(iFcall).argIn.str, sargin);
                 if DEBUG
-                    fprintf('%s\n', fcall);
+                    fprintf('%s = %s%s%s);\n', sargout, obj.input.GetFuncCallName(iFcall), obj.input.fcalls(iFcall).argIn.str, sarginVal);
                 end
                 try
                     eval( fcall );

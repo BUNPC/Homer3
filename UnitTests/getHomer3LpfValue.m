@@ -1,4 +1,24 @@
-function lpf = getHomer3LpfValue(dataTree, isubj, irun)
+function lpf = getHomer3LpfValue(dataTree, igroup, isubj, irun)
+global procStreamStyle
+
+if ~exist('igroup','var')
+    igroup = 1;
+end
+if ~exist('isubj','var')
+    isubj = 1;
+end
+if ~exist('irun','var') || isempty(newval)
+    irun = 1;
+end
+
+if strcmp(procStreamStyle,'snirf')
+    funcToChange = 'hmrR_BandpassFilt';
+    paramIdx = 2;
+else
+    funcToChange = 'hmrR_BandpassFilt_Nirs';
+    paramIdx = 2;
+end
+
 lpf = [];
 if isempty(dataTree)
     return;
@@ -15,5 +35,9 @@ end
 if isempty(dataTree.group.subjs(isubj).runs(irun).procStream.input.fcalls)
     return;
 end
-iFcall = dataTree.group.subjs(isubj).runs(irun).procStream.input.GetFuncCallIdx('hmrR_BandpassFilt_Nirs');
-lpf = dataTree.group.subjs(isubj).runs(irun).procStream.input.fcalls(iFcall).paramIn(2).value;
+
+iFcall = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.input.GetFuncCallIdx(funcToChange);
+if isempty(iFcall)
+    return;
+end
+lpf = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.input.fcalls(iFcall).paramIn(paramIdx).value;

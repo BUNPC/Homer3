@@ -299,9 +299,9 @@ classdef ProcResultClass < handle
                     continue;
                 end
                 if isa(eval(sprintf('obj.%s', fields{ii})), 'handle')
-                    eval( sprintf('obj.%s = objnew.%s.copy()', fields{ii}, fields{ii}) );
+                    eval( sprintf('obj.%s = objnew.%s.copy();', fields{ii}, fields{ii}) );
                 else
-                    eval( sprintf('obj.%s = objnew.%s', fields{ii}, fields{ii}) );
+                    eval( sprintf('obj.%s = objnew.%s;', fields{ii}, fields{ii}) );
                 end
             end
             
@@ -311,9 +311,9 @@ classdef ProcResultClass < handle
                     continue;
                 end
                 if isa(eval(sprintf('obj.misc.%s', fields{ii})), 'handle')
-                    eval( sprintf('obj.%s = objnew.misc.%s.copy()', fields{ii}, fields{ii}) );
+                    eval( sprintf('obj.%s = objnew.misc.%s.copy();', fields{ii}, fields{ii}) );
                 else
-                    eval( sprintf('obj.%s = objnew.misc.%s', fields{ii}, fields{ii}) );
+                    eval( sprintf('obj.%s = objnew.misc.%s;', fields{ii}, fields{ii}) );
                 end
             end
         end

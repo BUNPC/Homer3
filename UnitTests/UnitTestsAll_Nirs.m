@@ -1,11 +1,15 @@
-function status = UnitTestsAll()
+function status = UnitTestsAll_Nirs()
 global DEBUG1
+global procStreamStyle
 global testidx;
 DEBUG1=0;
 testidx = 0;
 
+procStreamStyle = 'nirs';
+
 tic;
 delete ./*.snirf
+delete */*.snirf
 groupFolders = {'UnitTests/Example9_SessRuns', 'UnitTests/Example6_GrpTap'};
 nGroups = length(groupFolders);
 status = zeros(4, nGroups);
@@ -31,6 +35,9 @@ for ii=1:size(status,2)
         end
     end
 end
+
+testidx=[];
+procStreamStyle=[];
 
 toc
 

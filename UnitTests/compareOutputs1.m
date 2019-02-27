@@ -3,8 +3,6 @@ global DEBUG1
 DEBUG1=0;
 
 status = 0;
-prec = -10;
-
 group_h3 = load('./groupResults.mat');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -16,6 +14,14 @@ dcAvg_h2  = group_h2.group.procResult.dcAvg;
 dcAvg_h3  = group_h3.group.procStream.output.GetDcAvg();
 dcAvg_erridxs = [];
 idx=1;
+
+% Use the assumed true values from homer2 to determine tolerance for error
+if max(dcAvg_h2(:))>min(dcAvg_h2(:))
+    prec = int32(log10(  .001*(max(dcAvg_h2(:))-min(dcAvg_h2(:))) ));
+else
+    prec = 0;
+end
+
 if ndims(dcAvg_h2)~=ndims(dcAvg_h3) || ~all(size(dcAvg_h2)==size(dcAvg_h3))
     dcAvg_erridxs(1)=-1;
 else
@@ -27,7 +33,6 @@ else
                     status=1;
                     continue;
                 end
-                
                 if ~isequal_prec(dcAvg_h2(:,ii,jj,kk), dcAvg_h3(:,ii,jj,kk), prec)
                     dcAvg_erridxs(idx,:) = [ii,jj,kk];
                     idx=idx+1;

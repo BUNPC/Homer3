@@ -173,10 +173,10 @@ classdef ProcInputClass < handle
 
         
         % ----------------------------------------------------------------------------------
-        function [sargin, p] = ParseInputParams(obj, iFcall)
-            sargin = '';            
-            nParam = length(obj.fcalls(iFcall).paramIn);
-            
+        function [sargin, p, sarginVal] = ParseInputParams(obj, iFcall)
+            sargin = '';
+            sarginVal = '';
+            nParam = length(obj.fcalls(iFcall).paramIn);            
             p = cell(nParam, 1);
 
             if isempty(obj.fcalls)
@@ -184,9 +184,7 @@ classdef ProcInputClass < handle
             end
             if iFcall>length(obj.fcalls)
                 return;
-            end
-            
-            sarginVal = '';
+            end            
             for iP = 1:nParam
                 p{iP} = obj.fcalls(iFcall).paramIn(iP).value;
                 if length(obj.fcalls(iFcall).argIn.str)==1 & iP==1

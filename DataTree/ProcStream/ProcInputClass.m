@@ -24,7 +24,6 @@ classdef ProcInputClass < handle
             obj.tIncMan = [];
             obj.misc = [];
             obj.changeFlag = 0;
-            
             if nargin==0
                 return;
             end
@@ -33,16 +32,34 @@ classdef ProcInputClass < handle
                 
         
         % ----------------------------------------------------------------------------------
-        function objnew = copy(obj)
-            objnew = ProcInputClass();
-            for ii=1:length(obj.fcalls)
-                objnew.fcalls(ii) = obj.fcalls(ii).copy();
+        function Copy(obj, obj2)
+            if isempty(obj)
+                obj = ProcInputClass();
             end
-            objnew.CondName2Subj = obj.CondName2Subj;
-            objnew.CondName2Run = obj.CondName2Run;
-            objnew.tIncMan = obj.tIncMan;
-            objnew.misc = obj.misc;
-            objnew.changeFlag = obj.changeFlag;
+            for ii=1:length(obj2.fcalls)
+                if ii>length(obj.fcalls)
+                    obj.fcalls(ii) = FuncCallClass();
+                end
+                obj.fcalls(ii).Copy(obj2.fcalls(ii));
+            end
+            obj.CondName2Subj = obj2.CondName2Subj;
+            obj.CondName2Run = obj2.CondName2Run;
+            obj.tIncMan = obj2.tIncMan;
+            
+            % misc could contain handle objects, which use the Copy methods to transfer their contents 
+            fields = properties(obj.misc);
+            for ii=1:length(fields)
+                if ~eval(sprintf('isproperty(obj2.misc, ''%s'')', fields{ii}))
+                    continue;
+                end
+                if isa(eval(sprintf('obj.misc.%s', fields{ii})), 'handle')
+                    eval( sprintf('obj.misc.%s.Copy(obj2.misc.%s);', fields{ii}, fields{ii}) );
+                else
+                    eval( sprintf('obj.misc.%s = obj2.misc.%s;', fields{ii}, fields{ii}) );
+                end
+            end
+            
+            obj.changeFlag = obj2.changeFlag;
         end
         
         

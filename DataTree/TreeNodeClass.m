@@ -113,12 +113,11 @@ classdef TreeNodeClass < handle
             end
             objnew.name = obj.name;
             objnew.type = obj.type;
-            objnew.procStream = obj.procStream;
             objnew.err = obj.err;
             objnew.ch = obj.ch;
             objnew.CondNames = obj.CondNames;
             objnew.CondName2Group = obj.CondName2Group;
-            objnew.procStream.input = obj.procStream.input.copy();
+            objnew.procStream.input.Copy(obj.procStream.input);
         end
         
                
@@ -128,13 +127,13 @@ classdef TreeNodeClass < handle
         % ----------------------------------------------------------------------------------
         function copyProcParamsFieldByField(obj, obj2)
             % procInput
-            if ~isempty(obj2.procStream.input.fcalls)
-                obj.procStream.input = obj2.procStream.input.copy();
+            if ~isempty(obj2.procStream.input)
+                obj.procStream.input.Copy(obj2.procStream.input);
             end
             
             % procResult
             if ~isempty(obj2.procStream.output)
-                obj.procStream.output.copy(obj2.procStream.output);
+                obj.procStream.output.Copy(obj2.procStream.output);
             end            
         end
         

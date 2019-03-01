@@ -29,20 +29,13 @@ classdef DataClass < FileLoadSaveClass
             if nargin==0 
                 return;
             elseif nargin==1
-                if ~isa(varargin{1}, 'DataClass') && ~isa(varargin{1}, 'NirsClass')
-                    return;
-                end                
                 if isa(varargin{1}, 'DataClass')
-                    obj.d = varargin{1}.d;
-                    obj.t = varargin{1}.t;
-                    for ii=1:length(varargin{1}.ml)
-                        obj.ml(ii) = MeasListClass(varargin{1}.ml(ii));
-                    end
-                else
+                    obj.Copy(varargin{1});
+                elseif isa(varargin{1}, 'NirsClass')
                     obj.d = varargin{1}.d;
                     obj.t = varargin{1}.t;
                     for ii=1:size(varargin{1}.ml,1)
-                        obj.ml(ii) = MeasListClass(varargin{1}.ml(ii,:));
+                        obj.ml(end+1) = MeasListClass(varargin{1}.ml(ii,:));
                     end
                 end
             elseif nargin==3                
@@ -59,13 +52,13 @@ classdef DataClass < FileLoadSaveClass
                     obj.d = varargin{1};
                     obj.t = varargin{2};
                     for ii=1:length(varargin{3})
-                        obj.ml(ii) = MeasListClass(varargin{3}(ii));
+                        obj.ml(end+1) = MeasListClass(varargin{3}(ii));
                     end
                 else
                     obj.d = varargin{1};
                     obj.t = varargin{2};
                     for ii=1:size(varargin{3},1)
-                        obj.ml(ii) = MeasListClass(varargin{3}(ii,:));
+                        obj.ml(end+1) = MeasListClass(varargin{3}(ii,:));
                     end
                 end
             else
@@ -294,7 +287,7 @@ classdef DataClass < FileLoadSaveClass
         
         % ---------------------------------------------------------
         function SetMl(obj, val)
-            obj.ml = val.copy();
+            obj.ml = val.copy();      % shallow copy ok because MeasListClass has no handle properties 
         end
         
         
@@ -400,23 +393,24 @@ classdef DataClass < FileLoadSaveClass
             obj.d(:, end+1:end+size(y(:,:),2)) = y(:,:);
         end
         
-    end
+    end    
     
     
-    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
         % ----------------------------------------------------------------------------------
-        function objnew = copydeep(obj)
-            objnew = DataClass();
+        function Copy(obj, obj2)
             if isempty(obj)
-                return
+                obj = DataClass();
             end
-            for ii=1:length(obj.ml)
-                objnew.ml(ii) = obj.ml(ii).copy();
+            for ii=1:length(obj2.ml)
+                obj.ml(ii) = obj2.ml(ii).copy();      % shallow copy ok because MeasListClass has no handle properties 
             end
-            objnew.d = obj.d;
-            objnew.t = obj.t;
+            obj.d = obj2.d;
+            obj.t = obj2.t;
         end
         
     end

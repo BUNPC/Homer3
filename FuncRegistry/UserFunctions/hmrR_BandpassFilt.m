@@ -29,12 +29,10 @@
 
 function [data2, ylpf] = hmrR_BandpassFilt( data, hpf, lpf )
 
-% data is a handle object, make sure we don't change 
+% data is a handle object, make sure we don't change
 % it by working with a copy. 
-data2 = data.copydeep();
-if data.Empty()
-    return;
-end
+data2 = DataClass(data);
+ylpf = [];
 
 for ii=1:length(data)
     

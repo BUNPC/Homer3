@@ -19,8 +19,8 @@
 function dod = hmrR_Intensity2OD( intensity )
 
 % intensity is a handle object, make sure we don't change 
-% it by working only with a copy. 
-dod = intensity.copydeep();
+% it - we work only with a copy. 
+dod = DataClass(intensity);
 
 % convert to dod
 for ii=1:length(intensity)

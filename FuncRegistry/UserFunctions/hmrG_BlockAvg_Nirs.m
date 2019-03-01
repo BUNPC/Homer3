@@ -37,25 +37,30 @@ function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(yAvgSub
 % thresh: [5.0]
 %
 
+yAvg       = [];
+yAvgStd    = [];
+tHRF       = [];
+nTrials    = [];
+grpAvgPass = [];
+    
 subjCh = [];
 nStim = 0;
 grp1=[];
-grpAvgPass = [];
 nSubj = length(yAvgSubjs);
 thresh = thresh * 1e-6;
 chkFlag = 0;
 for iSubj = 1:nSubj
+    
+    if isempty(yAvgSubjs{iSubj}) || isempty(yAvgStdSubjs{iSubj}) || isempty(tHRFSubjs{iSubj}) || isempty(nTrialsSubjs{iSubj}) || isempty(SDSubjs{iSubj})
+        continue;
+    end
     
     yAvg      = yAvgSubjs{iSubj};
     yAvgStd   = yAvgStdSubjs{iSubj};
     tHRF      = tHRFSubjs{iSubj};
     nTrials   = nTrialsSubjs{iSubj};
     SD        = SDSubjs{iSubj};
-    
-    if isempty(yAvg)
-        break;
-    end
-    
+        
     nCond = size(CondName2Subj,2);
     
     if ndims(yAvg) == (4-(nCond<2))

@@ -37,6 +37,10 @@ nTrials_tot = [];
 grp1=[];
 for iRun = 1:length(yAvgRuns)
     
+    if isempty(yAvgRuns{iRun}) || isempty(yAvgStdRuns{iRun}) || isempty(ySum2Runs{iRun}) || isempty(nTrialsRuns{iRun}) || isempty(SDRuns{iRun})
+        continue;
+    end
+    
     tHRF      = yAvgRuns{iRun}.GetT();
     yAvg      = yAvgRuns{iRun}.GetDataMatrix();
     yAvgStd   = yAvgStdRuns{iRun}.GetDataMatrix();

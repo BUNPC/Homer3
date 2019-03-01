@@ -33,8 +33,8 @@ classdef FuncCallClass < handle
             %
             obj.name       = '';
             obj.nameUI     = '';
-            obj.argOut     = ArgClass();
-            obj.argIn      = ArgClass();
+            obj.argOut     = ArgClass().empty;
+            obj.argIn      = ArgClass().empty;
             obj.paramIn    = ParamClass().empty;
             obj.help       = '';
             obj.encodedStr = '';
@@ -46,24 +46,25 @@ classdef FuncCallClass < handle
             if ischar(arg) || iscell(arg)
                 obj.Decode(arg);
             elseif isa(arg, 'FuncCallClass')
-                obj = arg.copy();
+                obj.Copy(arg);
             end
         end
 
         
         % ----------------------------------------------------------------------------------
-        function objnew = copy(obj)
-            objnew = FuncCallClass();
-            
-            objnew.name = obj.name;
-            objnew.nameUI = obj.name;
-            objnew.argOut = obj.argOut.copy();
-            objnew.argIn = obj.argIn.copy();
-            for ii=1:length(obj.paramIn)
-                objnew.paramIn(ii) = obj.paramIn(ii).copy();
+        function Copy(obj, obj2)
+            if isempty(obj)
+                obj = FuncCallClass();
             end
-            objnew.help = obj.help;
-            objnew.encodedStr = obj.encodedStr;
+            obj.name = obj2.name;
+            obj.nameUI = obj2.name;
+            obj.argOut = obj2.argOut.copy();     % shallow copy ok because ArgClass has no handle properties 
+            obj.argIn = obj2.argIn.copy();       % shallow copy ok because ArgClass has no handle properties 
+            for ii=1:length(obj2.paramIn)
+                obj.paramIn(ii) = obj2.paramIn(ii).copy();   % shallow copy ok because ParamClass has no handle properties 
+            end
+            obj.help = obj2.help;
+            obj.encodedStr = obj2.encodedStr;
         end
         
         
@@ -170,6 +171,12 @@ classdef FuncCallClass < handle
                             obj.nameUI = obj.name;
                         end
                         obj.GetHelp();
+                        if isempty(obj.argOut)
+                            obj.argOut = ArgClass();
+                        end
+                        if isempty(obj.argIn)
+                            obj.argIn = ArgClass();
+                        end
                         obj.argOut.str = textstr{ii+2};
                         obj.argIn.str = textstr{ii+3};
                         obj.DecodeArgIn();
@@ -190,7 +197,7 @@ classdef FuncCallClass < handle
                                 textstr{ii+2}(jj) = ' ';
                             end
                         end
-                        pvalue = str2num(textstr{ii+2});
+                        pvalue = str2num(textstr{ii+2});                       
                         obj.paramIn(end+1) = ParamClass(pname, pformat, pvalue);
                         obj.GetParamHelp(length(obj.paramIn));
                         flag = 2;

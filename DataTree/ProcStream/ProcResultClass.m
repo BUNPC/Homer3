@@ -289,31 +289,31 @@ classdef ProcResultClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function copy(obj, objnew)
+        function Copy(obj, obj2)
             fields = properties(obj);
             for ii=1:length(fields)
-                if ~eval(sprintf('isproperty(objnew, ''%s'')', fields{ii}))
+                if ~eval(sprintf('isproperty(obj2, ''%s'')', fields{ii}))
                     continue;
                 end
-                if eval(sprintf('strcmp(objnew.%s, ''misc'')', fields{ii}))
+                if eval(sprintf('strcmp(obj2.%s, ''misc'')', fields{ii}))
                     continue;
                 end
                 if isa(eval(sprintf('obj.%s', fields{ii})), 'handle')
-                    eval( sprintf('obj.%s = objnew.%s.copy();', fields{ii}, fields{ii}) );
+                    eval( sprintf('obj.%s.Copy(obj2.%s);', fields{ii}, fields{ii}) );
                 else
-                    eval( sprintf('obj.%s = objnew.%s;', fields{ii}, fields{ii}) );
+                    eval( sprintf('obj.%s = obj2.%s;', fields{ii}, fields{ii}) );
                 end
             end
             
             fields = properties(obj.misc);
             for ii=1:length(fields)
-                if ~eval(sprintf('isproperty(objnew.misc, ''%s'')', fields{ii}))
+                if ~eval(sprintf('isproperty(obj2.misc, ''%s'')', fields{ii}))
                     continue;
                 end
                 if isa(eval(sprintf('obj.misc.%s', fields{ii})), 'handle')
-                    eval( sprintf('obj.%s = objnew.misc.%s.copy();', fields{ii}, fields{ii}) );
+                    eval( sprintf('obj.misc.%s.Copy(obj2.misc.%s);', fields{ii}, fields{ii}) );
                 else
-                    eval( sprintf('obj.%s = objnew.misc.%s;', fields{ii}, fields{ii}) );
+                    eval( sprintf('obj.misc.%s = obj2.misc.%s;', fields{ii}, fields{ii}) );
                 end
             end
         end

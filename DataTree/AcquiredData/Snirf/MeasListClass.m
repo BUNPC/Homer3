@@ -33,7 +33,7 @@ classdef MeasListClass < FileLoadSaveClass
             obj.detectorIndex    = 0;
             obj.wavelengthIndex  = 0;
             if nargin==1 && isa(varargin{1}, 'MeasListClass')
-                obj = ml.copy;
+                obj = varargin{1}.copy();                    % shallow copy ok because MeasListClass has no handle properties 
             elseif nargin==1 
                 obj.sourceIndex      = varargin{1}(1);
                 obj.detectorIndex    = varargin{1}(2);

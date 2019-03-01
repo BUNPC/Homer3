@@ -77,18 +77,18 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function CopyProcInput(obj, procInput, type)
-            % Copy default procInput to all nodes at a single 
+            % Copy default procInput to all nodes at a single level
             switch(type)
                 case 'group'
-                    obj.procStream.input = procInput.copy();
+                    obj.procStream.input.Copy(procInput);
                 case 'subj'
                     for jj=1:length(obj.subjs)
-                        obj.subjs(jj).procStream.input = procInput.copy();
+                        obj.subjs(jj).procStream.input.Copy(procInput);
                     end
                 case 'run'
                     for jj=1:length(obj.subjs)
                         for kk=1:length(obj.subjs(jj).runs)
-                            obj.subjs(jj).runs(kk).procStream.input = procInput.copy();
+                            obj.subjs(jj).runs(kk).procStream.input.Copy(procInput);
                         end
                     end
             end

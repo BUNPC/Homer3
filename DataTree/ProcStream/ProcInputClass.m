@@ -808,6 +808,8 @@ classdef ProcInputClass < handle
                     if temp.GetErr()==0 && (isempty(reg) || ~isempty(reg.GetUsageName(temp)))
                         obj.fcalls(kk) = FuncCallClass(temp);
                         kk=kk+1;
+                    else
+                        fprintf('Entry not found in registry: "%s"\n', section{ii})
                     end
                 end
             end

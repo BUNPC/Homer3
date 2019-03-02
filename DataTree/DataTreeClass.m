@@ -6,19 +6,20 @@ classdef DataTreeClass <  handle
         group
         currElem
         reg
+        config
     end
     
     methods
         
         % ---------------------------------------------------------------
-        function obj = DataTreeClass(fmt, cfgfilename)
+        function obj = DataTreeClass(fmt, procStreamCfgFile)
             if ~exist('fmt','var')
                 fmt = '';
             end
-            if ~exist('cfgfilename','var')
-                cfgfilename = '';
+            if ~exist('procStreamCfgFile','var')
+                procStreamCfgFile = '';
             end
-            
+                       
             % Get file names
             dataInit = FindFiles(fmt);
             if isempty(dataInit) || dataInit.isempty()
@@ -27,7 +28,7 @@ classdef DataTreeClass <  handle
             obj.files    = dataInit.files;
             obj.filesErr = dataInit.filesErr;
             obj.reg = RegistriesClass();
-            obj.LoadData(cfgfilename);
+            obj.LoadData(procStreamCfgFile);
             
             % Initialize the current processing element within the group
             obj.SetCurrElem(1,1,1);
@@ -43,9 +44,9 @@ classdef DataTreeClass <  handle
 
 
         % ---------------------------------------------------------------
-        function LoadData(obj, cfgfilename)
-            if ~exist('cfgfilename','var')
-                cfgfilename = '';
+        function LoadData(obj, procStreamCfgFile)
+            if ~exist('procStreamCfgFile','var')
+                procStreamCfgFile = '';
             end
             
             obj.AcqData2Group();
@@ -59,8 +60,8 @@ classdef DataTreeClass <  handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Initialize procStream.input for all tree nodes
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.group.InitProcInput(obj.reg, cfgfilename);
-                        
+            obj.group.InitProcInput(obj.reg, procStreamCfgFile);
+
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Copy input variables for group, subjects and runs
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

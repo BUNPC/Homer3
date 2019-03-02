@@ -36,6 +36,9 @@ Display(handles);
 function varargout = ProcStreamOptionsGUI_OutputFcn(hObject, eventdata, handles)
 handles.updateptr = @ProcStreamOptionsGUI_Update;
 handles.closeptr = [];
+if ~ishandles(hObject)
+    handles.figure = -1;
+end
 varargout{1} = handles;
 
 
@@ -135,6 +138,8 @@ set(hObject,'visible','off');  % to be made visible in ProcStreamOptionsGUI_Outp
 Initialize(handles);
 ParseArgs(varargin);
 
+procStreamOptions.err=0;
+
 % See if we can recover previous position
 p = procStreamOptions.pos;
 if ~isempty(p)
@@ -148,6 +153,10 @@ else
     setGuiFonts(hObject);
 end
 Display(handles);
+
+if procStreamOptions.err<0
+    delete(hObject)
+end
 
 
 
@@ -165,7 +174,8 @@ procInput = procStreamOptions.dataTree.currElem.procStream.input;
 fcalls = procInput.fcalls;
 
 if isempty(fcalls)
-    menu('Processing stream is empty. Please check the registry to see if any user functions were loaded.', 'OK')
+    menu('Processing stream is empty. Please check the registry to see if any user functions were loaded.', 'OK');
+    procStreamOptions.err=-1;
     return;
 end
 

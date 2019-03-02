@@ -15,5 +15,11 @@ elseif strcmp(procStreamStyle,'nirs')
 end
 
 dataTree = LoadDataTree(datafmt, procStreamConfigFile);
+if isempty(dataTree)
+    return;
+end
+if dataTree.IsEmpty()
+    return;
+end
 dataTree.group.Calc();
 dataTree.group.Save();

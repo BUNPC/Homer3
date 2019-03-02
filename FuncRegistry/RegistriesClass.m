@@ -61,5 +61,16 @@ classdef RegistriesClass < handle
             b = false;            
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function usagename = GetUsageName(obj, fcall)
+            for ii=1:length(obj.funcReg)
+                usagename = obj.funcReg(ii).GetUsageName(fcall);
+                if ~isempty(usagename)
+                    break;
+                end
+            end            
+        end
+       
     end
 end

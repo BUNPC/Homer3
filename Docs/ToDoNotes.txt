@@ -49,4 +49,11 @@ Feb 2, 2019
 
 -- DataFilesClass should use the same (acquisition-level) classes as the DataTreeClass to load and vet the data files. Also Homer3 should load the files ONLY ONCE not twice like it's done now. This will not only speed up the launching process but also make it much more coherent where the data files use the same mechanism to check their validity as the DataTreeClass object. 
 
+----------------
+Mar 1, 2019
+----------------
+
+-- Come up with a modular object oriented way to update Homer3 display after changes in stimGUI. Right now it does not update unless you do it manually - that is after changing stimGUI you have to click on a control in Homer3 to see the stim changes in Homer3 display.
+
+-- Come ip with a modular object oriented way to update Homer3 listboxFiles control when calculating proc stream. Right now it does not update. 
 

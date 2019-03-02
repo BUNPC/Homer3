@@ -80,15 +80,21 @@ classdef GroupClass < TreeNodeClass
             % Copy default procInput to all nodes at a single level
             switch(type)
                 case 'group'
-                    obj.procStream.input.Copy(procInput);
+                    if obj.procStream.input.IsEmpty()
+                        obj.procStream.input.Copy(procInput);
+                    end
                 case 'subj'
                     for jj=1:length(obj.subjs)
-                        obj.subjs(jj).procStream.input.Copy(procInput);
+                        if obj.subjs(jj).procStream.input.IsEmpty()
+                            obj.subjs(jj).procStream.input.Copy(procInput);
+                        end
                     end
                 case 'run'
                     for jj=1:length(obj.subjs)
                         for kk=1:length(obj.subjs(jj).runs)
-                            obj.subjs(jj).runs(kk).procStream.input.Copy(procInput);
+                            if obj.subjs(jj).runs(kk).procStream.input.IsEmpty()
+                                obj.subjs(jj).runs(kk).procStream.input.Copy(procInput);
+                            end
                         end
                     end
             end
@@ -119,9 +125,9 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function InitProcInput(obj, reg, cfgfilename)
-            if ~exist('cfgfilename','var')
-                cfgfilename = '';
+        function InitProcInput(obj, reg, procStreamCfgFile)
+            if ~exist('procStreamCfgFile','var')
+                procStreamCfgFile = '';
             end
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -151,7 +157,7 @@ classdef GroupClass < TreeNodeClass
             % If any of the tree nodes still have unintialized procStream input, ask 
             % user for a config file to load it from 
             if g.procStream.IsEmpty() || s.procStream.IsEmpty() || r.procStream.IsEmpty()
-                fname = g.procStream.input.GetConfigFileName(cfgfilename);
+                fname = g.procStream.input.GetConfigFileName(procStreamCfgFile);
                 
                 % If user did not provide procInput config filename and file does not exist
                 % then generate a config file with default contents
@@ -170,12 +176,13 @@ classdef GroupClass < TreeNodeClass
                 g.LoadProcInputConfigFile(fname, reg);
                 s.LoadProcInputConfigFile(fname, reg);
                 r.LoadProcInputConfigFile(fname, reg);
-
-                % Copy the loaded procInput at each processing level to all nodes of that level
-                g.CopyProcInput(g.procStream.input, 'group');
-                g.CopyProcInput(s.procStream.input, 'subj');
-                g.CopyProcInput(r.procStream.input, 'run');
             end
+            
+            % Copy the loaded procInput at each processing level to all nodes of that level
+            g.CopyProcInput(g.procStream.input, 'group');
+            g.CopyProcInput(s.procStream.input, 'subj');
+            g.CopyProcInput(r.procStream.input, 'run');
+            
         end
             
         
@@ -183,42 +190,42 @@ classdef GroupClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function Calc(obj)           
             % Recalculating result means deleting old results
-            % obj.procStream.output.Flush();
+            obj.procStream.output.Flush();
 
             % Calculate all subjs in this session
-            subjs = obj.subjs;
-            nSubj = length(subjs);
+            s = obj.subjs;
+            nSubj = length(s);
             for iSubj = 1:nSubj
-                subjs(iSubj).Calc();
+                s(iSubj).Calc();
                 
                 % Find smallest tHRF among the subjs. We should make this the common one.
                 if iSubj==1
-                    tHRF_common = subjs(iSubj).procStream.output.GetVar('tHRF');
-                elseif length(subjs(iSubj).procStream.output.tHRF) < length(tHRF_common)
-                    tHRF_common = subjs(iSubj).procStream.output.GetVar('tHRF');
+                    tHRF_common = s(iSubj).procStream.output.GetTHRF;
+                elseif length(s(iSubj).procStream.output.GetTHRF) < length(tHRF_common)
+                    tHRF_common = s(iSubj).procStream.output.GetTHRF;
                 end
             end
            
             % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
             % all subjs. Use smallest tHRF as the common one.
             for iSubj = 1:nSubj
-                subjs(iSubj).procStream.output.SettHRFCommon(tHRF_common, subjs(iSubj).name, subjs(iSubj).type);
+                s(iSubj).procStream.output.SettHRFCommon(tHRF_common, s(iSubj).name, s(iSubj).type);
             end
             
             % Instantiate all the variables that might be needed by
             % procStream.Calc() to calculate proc stream for this group
             vars = [];
             for iSubj = 1:nSubj
-                vars.dodAvgSubjs{iSubj}    = subjs(iSubj).procStream.output.GetVar('dodAvg');
-                vars.dodAvgStdSubjs{iSubj} = subjs(iSubj).procStream.output.GetVar('dodAvgStd');
-                vars.dcAvgSubjs{iSubj}     = subjs(iSubj).procStream.output.GetVar('dcAvg');
-                vars.dcAvgStdSubjs{iSubj}  = subjs(iSubj).procStream.output.GetVar('dcAvgStd');
-                vars.tHRFSubjs{iSubj}      = subjs(iSubj).procStream.output.GetVar('tHRF');
-                vars.nTrialsSubjs{iSubj}   = subjs(iSubj).procStream.output.GetVar('nTrials');
-                if ~isempty(subjs(iSubj).procStream.output.GetVar('ch'))
-                    vars.SDSubjs{iSubj}    = subjs(iSubj).procStream.output.GetVar('ch');
+                vars.dodAvgSubjs{iSubj}    = s(iSubj).procStream.output.GetVar('dodAvg');
+                vars.dodAvgStdSubjs{iSubj} = s(iSubj).procStream.output.GetVar('dodAvgStd');
+                vars.dcAvgSubjs{iSubj}     = s(iSubj).procStream.output.GetVar('dcAvg');
+                vars.dcAvgStdSubjs{iSubj}  = s(iSubj).procStream.output.GetVar('dcAvgStd');
+                vars.tHRFSubjs{iSubj}      = s(iSubj).procStream.output.GetTHRF;
+                vars.nTrialsSubjs{iSubj}   = s(iSubj).procStream.output.GetVar('nTrials');
+                if ~isempty(s(iSubj).procStream.output.GetVar('ch'))
+                    vars.SDSubjs{iSubj}    = s(iSubj).procStream.output.GetVar('ch');
                 else
-                    vars.SDSubjs{iSubj}    = subjs(iSubj).GetVar('ch');
+                    vars.SDSubjs{iSubj}    = s(iSubj).GetVar('ch');
                 end
             end
             
@@ -264,10 +271,22 @@ classdef GroupClass < TreeNodeClass
     methods
         
         % ----------------------------------------------------------------------------------
-        function Load(obj)
+        function Load(obj)            
+            group = [];
             if exist('./groupResults.mat','file')
-                load( './groupResults.mat' );
-                
+                procdata = load( './groupResults.mat' );
+
+                % Check compatibiliy with current version of Homer3
+                if isproperty(procdata, 'group')
+                    if isproperty(procdata.group, 'version')
+                        if ischar(procdata.group.version) && includes(procdata.group.version,'Homer3')
+                            group = procdata.group;
+                        end
+                    end
+                end
+            end
+            
+            if ~isempty(group)               
                 % copy procStream.output from previous group to current group for
                 % all nodes that still exist in the current group.
                 hwait = waitbar(0,'Loading group');
@@ -275,6 +294,10 @@ classdef GroupClass < TreeNodeClass
                 close(hwait);
             else
                 group = obj;
+                if exist('./groupResults.mat','file')
+                    fprintf('Warning: This folder contains old version of groupResults.mat. Will move it to groupResults_old.mat\n');
+                    movefile('./groupResults.mat', './groupResults_old.mat')
+                end
                 save( './groupResults.mat','group' );
             end
         end

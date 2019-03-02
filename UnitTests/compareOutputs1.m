@@ -3,7 +3,13 @@ global DEBUG1
 DEBUG1=0;
 
 status = 0;
+if ~exist('./groupResults.mat','file')
+    return;
+end
 group_h3 = load('./groupResults.mat');
+if isempty(group_h3)
+    return;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Compare results: Here are the tests we must pass to get clean bill of health

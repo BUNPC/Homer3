@@ -58,6 +58,8 @@ if ~exist('dirnameGroup','var') || isempty(dirnameGroup)
     dirnameGroup = pwd;
 end
 
+
+
 % Check files data set for errors. If there are no valid
 % nirs files don't attempt to load them.
 files = DataFilesClass();
@@ -69,9 +71,13 @@ while files.isempty()
             if files.isempty()
                 files = NirsFilesClass();
                 if ~files.isempty()
-                    msg{1} = sprintf('Homer3 did not find any .snirf files in the current folder but did find .nirs files.\n');
-                    msg{2} = sprintf('Do you want to convert .nirs files to .snirf format and load them?');
-                    q = menu([msg{:}],'YES','NO');
+                    if files.config.RegressionTestActive
+                        q = 1;
+                    else                        
+                        msg{1} = sprintf('Homer3 did not find any .snirf files in the current folder but did find .nirs files.\n');
+                        msg{2} = sprintf('Do you want to convert .nirs files to .snirf format and load them?');
+                        q = menu([msg{:}],'YES','NO');
+                    end
                     if q==2
                         files = DataFilesClass();
                         return;

@@ -11,6 +11,7 @@ classdef ProcInputClass < handle
         misc;
         changeFlag;              % Flag specifying if procInput+acquisition data is out 
                                  %    of sync with procResult (currently not implemented)
+        config;
     end
     
     
@@ -24,10 +25,13 @@ classdef ProcInputClass < handle
             obj.tIncMan = [];
             obj.misc = [];
             obj.changeFlag = 0;
+            obj.config = struct('procStreamCfgFile','');
             if nargin==0
                 return;
             end
             obj.CreateDefault(reg)
+            cfg = ConfigFileClass();
+            obj.config.procStreamCfgFile = cfg.GetValue('Processing Stream Config File');
         end
                 
         
@@ -332,15 +336,22 @@ classdef ProcInputClass < handle
     methods
 
         % ----------------------------------------------------------------------------------
-        function fname = GetConfigFileName(obj, cfgfilename)            
-            if ~exist('cfgfilename','var')
-                cfgfilename = '';
+        function fname = GetConfigFileName(obj, procStreamCfgFile)            
+            if ~exist('procStreamCfgFile','var')
+                procStreamCfgFile = '';
             end
             
+            % If procStream config filename wasn't passed down as an argument, check the 
+            % parent application AppSettings.cfg config file to see if it set there. 
+            if isempty(procStreamCfgFile)
+                procStreamCfgFile = obj.config.procStreamCfgFile;
+            end
+
+            % Check if file with name procStreamCfgFile exists
             temp = FileClass();
-            if temp.Exist(cfgfilename)
-                fname = cfgfilename;
-                fprintf('Default config file exists. Processing stream will be loaded from %s\n', cfgfilename, cfgfilename);
+            if temp.Exist(procStreamCfgFile)
+                fname = procStreamCfgFile;
+                fprintf('Default config file exists. Processing stream will be loaded from %s\n', procStreamCfgFile, procStreamCfgFile);
                 return;
             end
             
@@ -527,7 +538,7 @@ classdef ProcInputClass < handle
         function [G, S, R] = FindSections(obj, fid, mode)
             %
             % Syntax:
-            %    [G, S, R] = obj.FindSections(fid)
+            %    [G, S, R] = obj.FindSections(fid, mode)
             %
             % Description:
             %    Read in proc stream config file with file descriptor fid and returns the 
@@ -713,11 +724,11 @@ classdef ProcInputClass < handle
             [G, S, R] = obj.FindSections(fid);
             switch(lower(type))
                 case {'group', 'groupclass', 'grp'}
-                    obj.Decode(G);
+                    obj.Decode(G, reg);
                 case {'subj', 'session', 'subjclass'}
-                    obj.Decode(S);
+                    obj.Decode(S, reg);
                 case {'run', 'runclass'}
-                    obj.Decode(R);
+                    obj.Decode(R, reg);
                 otherwise
                     return;
             end
@@ -726,9 +737,9 @@ classdef ProcInputClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function Decode(obj, section)
+        function Decode(obj, section, reg)
             % Syntax:
-            %    obj.Decode(section)
+            %    obj.Decode(section, reg)
             %    
             % Description:
             %    Parse a cell array of strings, each string an encoded hmr*.m function call
@@ -772,6 +783,10 @@ classdef ProcInputClass < handle
             if nargin<2
                 return
             end
+            if nargin<3
+                reg = RegistriesClass.empty();
+            end
+            
             if ~iscell(section)
                 if ~ischar(section)
                     return;
@@ -786,13 +801,15 @@ classdef ProcInputClass < handle
                     continue;
                 end
                 if section{ii}(1)=='@'
-                    if kk>length(obj.fcalls)
-                        obj.fcalls(kk) = FuncCallClass(section{ii});
-                    else
-                        obj.fcalls(kk).Decode(section{ii});
+                    temp = FuncCallClass(section{ii});
+                    
+                    % If registry was not passed down to us, then add fcall entries unconditionally. 
+                    % Otherwise only include those user function calls that exist in the registry. 
+                    if temp.GetErr()==0 && (isempty(reg) || ~isempty(reg.GetUsageName(temp)))
+                        obj.fcalls(kk) = FuncCallClass(temp);
+                        kk=kk+1;
                     end
-                    kk=kk+1;
-                end    
+                end
             end
         end
         

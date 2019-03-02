@@ -40,49 +40,54 @@ classdef ProcResultClass < handle
             obj.grpAvgPass = [];
             obj.misc = [];
         end
-             
+        
         
         % ---------------------------------------------------------------------------
         function SettHRFCommon(obj, tHRF_common, name, type)
             if size(tHRF_common,2)<size(tHRF_common,1)
                 tHRF_common = tHRF_common';
             end
-            tHRF = obj.tHRF;
+            t = obj.GetTHRF();
+            if isempty(t)
+                return;
+            end
             n = length(tHRF_common);
-            m = length(tHRF);
+            m = length(t);
             d = n-m;
             if d<0
                 fprintf('WARNING: tHRF for %s %s is larger than the common tHRF.\n',type, name);
                 if ~isempty(obj.dodAvg)
-                    obj.dodAvg(n+1:m,:,:)=[];
-                    if strcmp(type,'run')
-                        obj.dodSum2(n+1:m,:,:)=[];
+                    if isa(obj.dodAvg, 'DataClass')
+                        obj.dodAvg.TruncateTpts(abs(d));
+                    else
+                        obj.dodAvg(n+1:m,:,:) = [];
+                    end
+                end
+                if ~isempty(obj.dodSum2)
+                    if isa(obj.dodSum2, 'DataClass')
+                        obj.dodSum2.TruncateTpts(abs(d));
+                    else
+                        obj.dodSum2(n+1:m,:,:) = [];
                     end
                 end
                 if ~isempty(obj.dcAvg)
-                    obj.dcAvg(n+1:m,:,:,:)=[];
-                    if strcmp(type,'run')
-                        obj.dcSum2(n+1:m,:,:,:)=[];
+                    if isa(obj.dcAvg, 'DataClass')
+                        obj.dcAvg.TruncateTpts(abs(d));
+                    else
+                        obj.dcAvg(n+1:m,:,:,:) = [];
                     end
                 end
-            elseif d>0
-                fprintf('WARNING: tHRF for %s %s is smaller than the common tHRF.\n',type, name);
-                if ~isempty(obj.dodAvg)
-                    obj.dodAvg(m:n,:,:)=zeros(d,size(obj.dodAvg,2),size(obj.dodAvg,3));
-                    if strcmp(type,'run')
-                        obj.dodSum2(m:n,:,:)=zeros(d,size(obj.dodSum2,2),size(obj.dodSum2,3));
-                    end
-                end
-                if ~isempty(obj.dcAvg)
-                    obj.dcAvg(m:n,:,:,:)=zeros(d,size(obj.dcAvg,2),size(obj.dcAvg,3),size(obj.dcAvg,4));
-                    if strcmp(type,'run')
-                        obj.dcSum2(m:m+d,:,:,:)=zeros(d,size(obj.dcSum2,2),size(obj.dcSum2,3),size(obj.dcSum2,4));
+                if ~isempty(obj.dcSum2)
+                    if isa(obj.dcSum2, 'DataClass')
+                        obj.dcSum2.TruncateTpts(abs(d));
+                    else
+                        obj.dcSum2(n+1:m,:,:,:) = [];
                     end
                 end
             end
-            obj.tHRF = tHRF_common;                                    
+            obj.tHRF = tHRF_common;
         end
-
+        
         
         % ----------------------------------------------------------------------------------
         function found = FindVar(obj, varname)
@@ -93,7 +98,7 @@ classdef ProcResultClass < handle
                 found = true;
             end
         end
-
+        
         
         % ----------------------------------------------------------------------------------
         function var = GetVar(obj, varname)
@@ -104,7 +109,7 @@ classdef ProcResultClass < handle
                 eval(sprintf('var = obj.misc.%s;', varname));
             end
         end
-
+        
         
         % ----------------------------------------------------------------------------------
         function Flush(obj)
@@ -122,17 +127,17 @@ classdef ProcResultClass < handle
             pretty_print_matrix(obj.nTrials, indent+4, sprintf('%%d'))
         end
         
-    end  
-        
+    end
+    
     
     
     methods
-           
+        
         % ----------------------------------------------------------------------------------
         function SetTHRF(obj, t)
             obj.tHRF = t;
         end
-                
+        
         % ----------------------------------------------------------------------------------
         function t = GetTHRF(obj)
             t = [];
@@ -140,62 +145,62 @@ classdef ProcResultClass < handle
                 if isa(obj.dcAvg, 'DataClass') && ~isempty(obj.dcAvg)
                     t = obj.dcAvg.GetT();
                 elseif isa(obj.dodAvg, 'DataClass') && ~isempty(obj.dodAvg)
-                    t = obj.dodAvg.GetT();                    
+                    t = obj.dodAvg.GetT();
                 end
             else
                 t = obj.tHRF;
             end
         end
-
+        
         % ----------------------------------------------------------------------------------
         function SetDodAvg(obj, val)
             obj.dodAvg = val;
         end
-                    
+        
         % ----------------------------------------------------------------------------------
         function SetDcAvg(obj, val)
             obj.dcAvg = val;
         end
         
-            
+        
         % ----------------------------------------------------------------------------------
         function SetDodAvgStd(obj, val)
             obj.dodAvgStd = val;
         end
-                    
+        
         % ----------------------------------------------------------------------------------
         function SetDcAvgStd(obj, val)
             obj.dcAvgStd = val;
         end
         
-            
+        
         % ----------------------------------------------------------------------------------
         function SetDodSum2(obj, val)
             obj.dodSum2 = val;
         end
-                    
+        
         % ----------------------------------------------------------------------------------
         function SetDcSum2(obj, val)
             obj.dcSum2 = val;
         end
         
-            
+        
         % ----------------------------------------------------------------------------------
         function SetDod(obj, val)
             obj.dod = val;
         end
-                    
+        
         % ----------------------------------------------------------------------------------
         function SetDc(obj, val)
             obj.dc = val;
         end
         
-            
+        
         % ----------------------------------------------------------------------------------
-        function yavg = GetDodAvg(obj, type, condition)           
+        function yavg = GetDodAvg(obj, type, condition)
             yavg = [];
             
-            % Check type argument 
+            % Check type argument
             if ~exist('type','var') || isempty(type)
                 type = 'dodAvg';
             end
@@ -219,14 +224,14 @@ classdef ProcResultClass < handle
             end
             yavg = yavg(:,:,condition);
         end
-
+        
         
         
         % ----------------------------------------------------------------------------------
-        function yavg = GetDcAvg(obj, type, condition)           
+        function yavg = GetDcAvg(obj, type, condition)
             yavg = [];
             
-            % Check type argument 
+            % Check type argument
             if ~exist('type','var') || isempty(type)
                 type = 'dcAvg';
             end
@@ -250,13 +255,13 @@ classdef ProcResultClass < handle
             end
             yavg = yavg(:,:,:,condition);
         end
-
+        
         
         % ----------------------------------------------------------------------------------
         function y = GetDataTimeCourse(obj, type)
             y = [];
             
-            % Check type argument 
+            % Check type argument
             if ~exist('type','var') || isempty(type)
                 type = 'dcAvg';
             end
@@ -270,7 +275,7 @@ classdef ProcResultClass < handle
                 y = eval(sprintf('obj.%s', type));
             end
         end
-                
+        
         
         % ----------------------------------------------------------------------------------
         function SetNtrials(obj, val)
@@ -320,5 +325,5 @@ classdef ProcResultClass < handle
         
         
     end
-     
+    
 end

@@ -505,6 +505,11 @@ foo = str2cell(usagename, ':');
 if isempty(foo) || ~iscell(foo) || ~ischar(foo{1})
     return;
 end
+if length(foo)<2
+    set(handles.textHelp(iPanel), 'value',1);
+    set(handles.textHelp(iPanel), 'string','Function call was NOT found in Registry.');
+    return;
+end
 funcname  = strtrim(foo{1});
 fcallname = strtrim(foo{2});
 

@@ -148,44 +148,44 @@ classdef SubjClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function Calc(obj)            
             % Recalculating result means deleting old results
-            % obj.procStream.output.Flush();
+            obj.procStream.output.Flush();
             
             % Calculate all runs in this session
-            runs = obj.runs;
-            nRun = length(runs);
+            r = obj.runs;
+            nRun = length(r);
             for iRun = 1:nRun
-                runs(iRun).Calc();
+                r(iRun).Calc();
                 
                 % Find smallest tHRF among the runs. We should make this the common one.
                 if iRun==1
-                    tHRF_common = runs(iRun).procStream.output.GetVar('tHRF');
-                elseif length(runs(iRun).procStream.output.tHRF) < length(tHRF_common)
-                    tHRF_common = runs(iRun).procStream.output.GetVar('tHRF');
+                    tHRF_common = r(iRun).procStream.output.GetTHRF();
+                elseif length(r(iRun).procStream.output.GetTHRF) < length(tHRF_common)
+                    tHRF_common = r(iRun).procStream.output.GetTHRF();
                 end
             end
             
             % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
             % all runs. Use smallest tHRF as the common one.
             for iRun = 1:nRun
-                runs(iRun).procStream.output.SettHRFCommon(tHRF_common, runs(iRun).name, runs(iRun).type);
+                r(iRun).procStream.output.SettHRFCommon(tHRF_common, r(iRun).name, r(iRun).type);
             end            
             
             % Instantiate all the variables that might be needed by
             % procStream.Calc() to calculate proc stream for this subject
             nTrials = zeros(1,length(obj.CondNames));
             for iRun = 1:nRun
-                vars.dodAvgRuns{iRun}    = runs(iRun).procStream.output.GetVar('dodAvg');
-                vars.dodAvgStdRuns{iRun} = runs(iRun).procStream.output.GetVar('dodAvgStd');
-                vars.dodSum2Runs{iRun}   = runs(iRun).procStream.output.GetVar('dodSum2');
-                vars.dcAvgRuns{iRun}     = runs(iRun).procStream.output.GetVar('dcAvg');
-                vars.dcAvgStdRuns{iRun}  = runs(iRun).procStream.output.GetVar('dcAvgStd');
-                vars.dcSum2Runs{iRun}    = runs(iRun).procStream.output.GetVar('dcSum2');
-                vars.tHRFRuns{iRun}      = runs(iRun).procStream.output.GetVar('tHRF');
-                vars.nTrialsRuns{iRun}   = runs(iRun).procStream.output.GetVar('nTrials');
-                if ~isempty(runs(iRun).procStream.output.GetVar('ch'))
-                    vars.SDRuns{iRun}    = runs(iRun).procStream.output.GetVar('ch');
+                vars.dodAvgRuns{iRun}    = r(iRun).procStream.output.GetVar('dodAvg');
+                vars.dodAvgStdRuns{iRun} = r(iRun).procStream.output.GetVar('dodAvgStd');
+                vars.dodSum2Runs{iRun}   = r(iRun).procStream.output.GetVar('dodSum2');
+                vars.dcAvgRuns{iRun}     = r(iRun).procStream.output.GetVar('dcAvg');
+                vars.dcAvgStdRuns{iRun}  = r(iRun).procStream.output.GetVar('dcAvgStd');
+                vars.dcSum2Runs{iRun}    = r(iRun).procStream.output.GetVar('dcSum2');
+                vars.tHRFRuns{iRun}      = r(iRun).procStream.output.GetTHRF;
+                vars.nTrialsRuns{iRun}   = r(iRun).procStream.output.GetVar('nTrials');
+                if ~isempty(r(iRun).procStream.output.GetVar('ch'))
+                    vars.SDRuns{iRun}    = r(iRun).procStream.output.GetVar('ch');
                 else
-                    vars.SDRuns{iRun}    = runs(iRun).GetMeasList();
+                    vars.SDRuns{iRun}    = r(iRun).GetMeasList();
                 end
             end
             

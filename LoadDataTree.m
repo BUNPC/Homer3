@@ -4,8 +4,8 @@ function dataTree = LoadDataTree(varargin)
 %
 %       dataTree = LoadDataTree()
 %       dataTree = LoadDataTree(fmt)
-%       dataTree = LoadDataTree(fmt, cfgfilename)
-%       dataTree = LoadDataTree(fmt, cfgfilename, parent)
+%       dataTree = LoadDataTree(fmt, procStreamCfgFile)
+%       dataTree = LoadDataTree(fmt, procStreamCfgFile, parent)
 %
 % Description:
 %       
@@ -20,24 +20,24 @@ function dataTree = LoadDataTree(varargin)
 % calls 
 if nargin==0
     fmt          = '';
-    cfgfilename  = '';
+    procStreamCfgFile  = '';
     parent       = [];
 elseif nargin==1
     fmt          = varargin{1};
-    cfgfilename  = '';
+    procStreamCfgFile  = '';
     parent       = []';
 elseif nargin==2
     fmt          = varargin{1};
-    cfgfilename  = varargin{2};
+    procStreamCfgFile  = varargin{2};
     parent       = []';
 elseif nargin==3
     fmt          = varargin{1};
-    cfgfilename  = varargin{2};
+    procStreamCfgFile  = varargin{2};
     parent       = varargin{3};
 end
 
 if isempty(parent) || ~isproperty(parent, 'dataTree') || isempty(parent.dataTree)
-    dataTree = DataTreeClass(fmt, cfgfilename);
+    dataTree = DataTreeClass(fmt, procStreamCfgFile);
 else
     dataTree = parent.dataTree;
 end

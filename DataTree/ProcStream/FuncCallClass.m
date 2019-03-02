@@ -7,6 +7,7 @@ classdef FuncCallClass < handle
         paramIn
         help
         encodedStr
+        err
     end
     
     methods
@@ -38,7 +39,7 @@ classdef FuncCallClass < handle
             obj.paramIn    = ParamClass().empty;
             obj.help       = '';
             obj.encodedStr = '';
-            
+            obj.err        = 0; 
             if nargin==0
                 return;
             end
@@ -135,14 +136,18 @@ classdef FuncCallClass < handle
             %         argIn.str: '(dod,t'
             %       paramIn: [1x2 ParamClass]
             %          help: '  Perform a bandpass filter…'
-            %
+            %   
+            obj.err = 0;            
             if nargin<2
+                obj.err=-1;
                 return;
             end
             if isempty(fcallStrEncoded)
+                obj.err=-1;
                 return;
             end
             if ~ischar(fcallStrEncoded)
+                obj.err=-1;
                 return;
             end
             obj.encodedStr = fcallStrEncoded;
@@ -182,10 +187,18 @@ classdef FuncCallClass < handle
                         obj.DecodeArgIn();
                         flag = 3;
                     else
-                        % If function call string continue, means we have
+                        % If function call string continues, means we have
                         % user-settable params, since params follow input
                         % arguments
                         pname = textstr{ii};
+                        if ~isalpha_num(pname(1))
+                            obj.err=-1;
+                            return;
+                        end
+                        if ii+1>length(textstr)
+                            obj.err=-1;
+                            return;
+                        end
                         for jj = 1:length(textstr{ii+1})
                             if textstr{ii+1}(jj)=='_'
                                 textstr{ii+1}(jj) = ' ';
@@ -266,6 +279,12 @@ classdef FuncCallClass < handle
             else
                 B = true;
             end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function val = GetErr(obj)
+            val = obj.err;
         end
         
     end

@@ -4,7 +4,6 @@ classdef ConfigFileClass < FileClass
         linestr;
         sections;
         err;
-        params;
     end
     
     methods
@@ -13,13 +12,15 @@ classdef ConfigFileClass < FileClass
         function obj = ConfigFileClass(filename0)
             obj.linestr = '';
             obj.sections = struct('name','','val','');
-            obj.InitCfgSections();
             obj.filename = '';
             
             % Error checks
             if nargin==0
-                return;
+                filename0 = which('AppSettings.cfg');
+            elseif nargin>1
+                obj.params = params;
             end
+            
             [pname, fname, ext] = fileparts(filename0); 
             if isempty(pname)
                 pname = '.';
@@ -41,7 +42,6 @@ classdef ConfigFileClass < FileClass
             % We have a filename of an exiting readdable file. 
             obj.filename = filename;
             obj.ParseFile();
-            obj.Sections2CfgParams();
         end
         
         
@@ -184,34 +184,6 @@ classdef ConfigFileClass < FileClass
             obj.err = err;
         end
         
-        
-        % -------------------------------------------------------------------------------------------------
-        function InitCfgSections(obj)
-            obj.params.ProcStreamFile = '';
-        end
-        
-        
-        % -------------------------------------------------------------------------------------------------
-        function  Sections2CfgParams(obj)
-            fields = propnames(obj.params);
-            for ii=1:length(obj.sections)
-                name = obj.sections(ii).name;
-                val = obj.sections(ii).val;
-                if isempty(val)
-                    continue;
-                end
-                
-                % Get rid of spaces, dashes and underscores from param name
-                name(name==' ' | name=='_' | name=='-') = '';
-                
-                % Check to see if param name is a valid config param 
-                k = strfind(name, fields);
-                if ~isempty(k)
-                    eval( sprintf('obj.params.%s = val{1};', fields{k}) );
-                end
-            end
-        end
-        
     end
     
     
@@ -224,7 +196,7 @@ classdef ConfigFileClass < FileClass
                 return;
             end
             for ii=1:length(obj.linestr)
-                if obj.linestr(ii)~=' ';
+                if obj.linestr(ii)~=' '
                     break;
                 end
             end
@@ -252,8 +224,10 @@ classdef ConfigFileClass < FileClass
             if isempty(obj.linestr)
                 return;
             end
-            k = find(obj.linestr==' ');
-            obj.linestr(k)=[];
+            
+            % Do not remove spaces from section name 
+            % k = find(obj.linestr==' ');
+            % obj.linestr(k)=[];
             if strcmpi(obj.linestr,'%end')
                 b=true;
             end
@@ -288,7 +262,7 @@ classdef ConfigFileClass < FileClass
             while jj<length(obj.linestr) && (obj.linestr(jj)~=sprintf('\n') || obj.linestr(jj)~=sprintf('\r'))
                 jj=jj+1;
             end
-            name = obj.linestr(ii:jj);
+            name = strtrim_improve(obj.linestr(ii:jj));
         end
         
         
@@ -308,6 +282,20 @@ classdef ConfigFileClass < FileClass
                 jj=jj+1;
             end
             val = obj.linestr(ii:jj);
+        end
+        
+        
+        % -------------------------------------------------------------------------------------------------
+        function val = GetValue(obj, section)
+            val = {};
+            if ~ischar(section)
+                return;
+            end
+            for ii=1:length(obj.sections)
+                if strcmp(obj.sections(ii).name, section)
+                    val = obj.sections(ii).val{1};
+                end
+            end
         end
         
     end

@@ -17,14 +17,15 @@ classdef DataClass < FileLoadSaveClass
             %     obj = DataClass(d,t,ml)
             %     
             %  Input:
-            %
             %     data - When there's one argument, then data can be either
             %            NirsClass object or DataClass object. 
             %     d    - When there are three arguments, d is the data time course matrix
             %     t    - When there are three arguments, t is the data time vector
             %     ml   - When there are three arguments, ml is the measurent list, which 
-            %            can be either a nirs style matrixor a MeasListClass object
+            %            can be either a nirs style matrix or a MeasListClass object
             %
+            %  Example:
+            %    
             obj.ml = MeasListClass().empty();
             if nargin==0 
                 return;
@@ -391,6 +392,13 @@ classdef DataClass < FileLoadSaveClass
         % ---------------------------------------------------------
         function AppendD(obj, y)
             obj.d(:, end+1:end+size(y(:,:),2)) = y(:,:);
+        end
+
+        
+        % ---------------------------------------------------------
+        function TruncateTpts(obj, n)
+            obj.d(end-n+1:end, :) = [];
+            obj.t(end-n+1:end) = [];
         end
         
     end    

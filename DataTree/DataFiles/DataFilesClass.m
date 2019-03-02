@@ -9,6 +9,7 @@ classdef DataFilesClass < handle
         sd_common;
         pathnm;
         loadData;        
+        config;
     end
     
     methods
@@ -45,6 +46,15 @@ classdef DataFilesClass < handle
             obj.sd_common = {};
             obj.loadData = -1;
             
+            obj.config = struct('RegressionTestActive','');
+            cfg = ConfigFileClass();
+            str = cfg.GetValue('Regression Test Active');
+            if strcmp(str,'true')
+                obj.config.RegressionTestActive=true;
+            else
+                obj.config.RegressionTestActive=false;
+            end
+
             foo = mydir(obj.pathnm);
             if ~isempty(foo) && ~foo(1).isdir
                 obj.files = foo;

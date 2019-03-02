@@ -227,7 +227,7 @@ end
 if isempty(stimEdit.dataTree.currElem)
     return;
 end
-if stimEdit.dataTree.currElem.procType~=3
+if ~isa(stimEdit.dataTree.currElem, 'RunClass')
     return;
 end
 

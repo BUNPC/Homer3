@@ -21,6 +21,12 @@ if strcmp(procStreamStyle,'snirf') && includes(datafmt,'snirf')
 end
 
 dataTree = LoadDataTree(datafmt, procStreamConfigFile);
+if isempty(dataTree)
+    return;
+end
+if dataTree.IsEmpty()
+    return;
+end
 iFcall = dataTree.group.subjs(1).runs(1).procStream.input.GetFuncCallIdx(funcToChange);
 for iSubj=1:length(dataTree.group.subjs)
     for iRun=1:length(dataTree.group.subjs(iSubj).runs)

@@ -74,14 +74,6 @@ set(handles.textStatus, 'enable', val);
 
 
 % --------------------------------------------------------------------
-function LoadConfig()
-global hmr
-
-hmr.config = ConfigFileClass([fileparts(which('Homer3')), '/Homer3.cfg']);
-
-
-
-% --------------------------------------------------------------------
 function Homer3_OpeningFcn(hObject, eventdata, handles, varargin)
 global hmr
 
@@ -102,14 +94,12 @@ guidata(hObject, handles);
 hmr.version = V;
 hmr.childguis = ChildGuiClass().empty();
 
-LoadConfig();
-
 % Disable and reset all window gui objects
 Homer3_EnableDisableGUI(handles,'off');
 Homer3_Init(handles, {'zbuffer'});
 
 % Load date files into group tree object
-hmr.dataTree  = LoadDataTree(hmr.format, hmr.config.params.ProcStreamFile);
+hmr.dataTree  = LoadDataTree(hmr.format);
 if hmr.dataTree.IsEmpty()
     return;
 end

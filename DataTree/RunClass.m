@@ -145,7 +145,7 @@ classdef RunClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function Calc(obj)           
             % Recalculating result means deleting old results
-            % obj.procStream.output.Flush();
+            obj.procStream.output.Flush();
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Find all variables needed by proc stream, find them in this 

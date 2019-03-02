@@ -174,4 +174,7 @@ for iSubj = 1:nSubj
         
     end
 end
-    
+
+% TBD: Calculate Standard deviation
+yAvgStd = [];
+

@@ -153,6 +153,9 @@ classdef GroupClass < TreeNodeClass
             % Generate procInput defaults at each level with which to initialize
             % any uninitialized procStream.input
             g.CreateProcInputDefault(reg);
+            procInputGroup = g.GetProcInputDefault();
+            procInputSubj = s.GetProcInputDefault();
+            procInputRun = r.GetProcInputDefault();
             
             % If any of the tree nodes still have unintialized procStream input, ask 
             % user for a config file to load it from 
@@ -160,15 +163,10 @@ classdef GroupClass < TreeNodeClass
                 fname = g.procStream.input.GetConfigFileName(procStreamCfgFile);
                 
                 % If user did not provide procInput config filename and file does not exist
-                % then generate a config file with default contents
+                % then create a config file with the default contents
                 if ~exist(fname, 'file')
-                    procInputGroup = g.GetProcInputDefault();
                     procInputGroup.SaveConfigFile(fname, 'group');
-                    
-                    procInputSubj = s.GetProcInputDefault();
                     procInputSubj.SaveConfigFile(fname, 'subj');
-                    
-                    procInputRun = r.GetProcInputDefault();
                     procInputRun.SaveConfigFile(fname, 'run');
                 end
                 
@@ -176,13 +174,25 @@ classdef GroupClass < TreeNodeClass
                 g.LoadProcInputConfigFile(fname, reg);
                 s.LoadProcInputConfigFile(fname, reg);
                 r.LoadProcInputConfigFile(fname, reg);
+                
+                % Copy the loaded procInput at each processing level to all
+                % nodes of that level that lack procInput 
+                
+                % If proc stream input is still empty it means the loaded config
+                % did not have valid proc stream input. If that's the case we
+                % load a default proc stream input
+                if g.procStream.IsEmpty() || s.procStream.IsEmpty() || r.procStream.IsEmpty()
+                    fprintf('Failed to load all function calls in proc stream config file . Loading default processing\n');
+                    g.CopyProcInput(procInputGroup, 'group');
+                    g.CopyProcInput(procInputSubj, 'subj');
+                    g.CopyProcInput(procInputRun, 'run');
+                else
+                    fprintf('Loading proc stream from %s\n', fname);
+                    g.CopyProcInput(g.procStream.input, 'group');
+                    g.CopyProcInput(s.procStream.input, 'subj');
+                    g.CopyProcInput(r.procStream.input, 'run');
+                end
             end
-            
-            % Copy the loaded procInput at each processing level to all nodes of that level
-            g.CopyProcInput(g.procStream.input, 'group');
-            g.CopyProcInput(s.procStream.input, 'subj');
-            g.CopyProcInput(r.procStream.input, 'run');
-            
         end
             
         

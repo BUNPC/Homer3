@@ -299,16 +299,19 @@ iParam = eventdata(2);
 val = str2num( get(hObject,'string') ); % need to check if it is a valid string
 
 str = dataTree.currElem.procStream.EditParam(iFcall, iParam, val);
+if isempty(str)
+    return;
+end
 set( hObject, 'string', str);
 
 % Check if we should apply the param edit to all nodes of the current nodes
 % level
 if ~procStreamOptions.applyEditCurrNodeOnly
-    if dataTree.currElem.iRun==0
+    if dataTree.currElem.iSubj>0 && dataTree.currElem.iRun==0
         for ii=1:length(dataTree.group.subjs)
             dataTree.group.subjs(ii).procStream.EditParam(iFcall, iParam, val);
         end
-    elseif dataTree.currElem.iRun>0
+    elseif dataTree.currElem.iSubj>0 && dataTree.currElem.iRun>0
         for ii=1:length(dataTree.group.subjs)
             for jj=1:length(dataTree.group.subjs(ii).runs)
                 dataTree.group.subjs(ii).runs(jj).procStream.EditParam(iFcall, iParam, val);

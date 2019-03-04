@@ -90,6 +90,9 @@ classdef ProcInputClass < handle
             if isempty(obj.fcalls)
                 return;
             end
+            if isempty(obj.fcalls(iFcall).paramIn)
+                return;
+            end
             obj.fcalls(iFcall).paramIn(iParam).value = val;
             str = sprintf(obj.fcalls(iFcall).paramIn(iParam).format, val);
         end

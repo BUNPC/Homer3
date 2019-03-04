@@ -57,6 +57,28 @@ end
 positionGUI(hFig, 0.20, 0.10, 0.70, 0.85)
 setGuiFonts(hFig);
 
+% Get rid of the useless "might be unsused" warnings for callback
+checkboxPlotHRF_Callback([]);
+checkboxApplyProcStreamEditToAll_Callback([]);
+pushbuttonCalcProcStream_Callback([]);
+listboxFilesErr_Callback([]);
+uipanelPlot_SelectionChangeFcn([]);
+menuItemProcStreamEdit_Callback([]);
+checkboxPlotProbe_Callback([]);
+pushbuttonSave_Callback([]);
+menuItemViewHRFStdErr_Callback([]);
+menuItemLaunchStimGUI_Callback([]);
+pushbuttonProcStreamOptionsEdit_Callback([]);
+guiControls_ButtonDownFcn([]);
+axesSDG_ButtonDownFcn([]);
+popupmenuConditions_Callback([]);
+listboxPlotWavelength_Callback([]);
+listboxPlotConc_Callback([]);
+menuChangeDirectory_Callback([]);
+menuExit_Callback([]);
+menuItemReset_Callback([]);
+menuCopyCurrentPlot_Callback([]);
+
 
 
 % ---------------------------------------------------------------------
@@ -74,7 +96,7 @@ set(handles.textStatus, 'enable', val);
 
 
 % --------------------------------------------------------------------
-function Homer3_OpeningFcn(hObject, eventdata, handles, varargin)
+function eventdata = Homer3_OpeningFcn(hObject, eventdata, handles, varargin)
 global hmr
 
 hmr = [];
@@ -126,7 +148,7 @@ varargout{1} = handles.output;
 
 
 % --------------------------------------------------------------------
-function Homer3_DeleteFcn(hObject, eventdata, handles)
+function [eventdata, handles] = Homer3_DeleteFcn(hObject, eventdata, handles)
 global hmr;
 
 if isempty(hmr)
@@ -203,7 +225,7 @@ if ~isempty(handles)
         set(handles.listboxFiles, 'position', [pos1(1) pos2(2) pos1(3) .98-pos2(2)]);
     end
 end
-listboxFiles_Callback(handles.listboxFiles,[1,1,1])
+listboxFiles_Callback([], [1,1,1], handles)
 
 
 
@@ -233,6 +255,10 @@ UpdateChildGuis();
 % --------------------------------------------------------------------
 function listboxFiles_Callback(hObject, eventdata, handles)
 global hmr
+
+if isempty(hObject)    
+    hObject = handles.listboxFiles;
+end
 
 iFile = get(hObject,'value');
 if isempty(iFile==0)
@@ -267,8 +293,11 @@ UpdateChildGuis();
 
 
 % --------------------------------------------------------------------
-function pushbuttonCalcProcStream_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = pushbuttonCalcProcStream_Callback(hObject, eventdata, handles)
 global hmr
+if ~ishandles(hObject)
+    return;
+end
 dataTree = hmr.dataTree;
 
 dataTree.CalcCurrElem();
@@ -279,15 +308,21 @@ UpdateChildGuis();
 
 
 % --------------------------------------------------------------------
-function listboxFilesErr_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = listboxFilesErr_Callback(hObject, eventdata, handles)
+if ~ishandles(hObject)
+    return;
+end
 
 % TBD: We may want to try fix files with errors
 
 
 
 % --------------------------------------------------------------------
-function uipanelPlot_SelectionChangeFcn(hObject, eventdata, handles)
+function [eventdata, handles] = uipanelPlot_SelectionChangeFcn(hObject, eventdata, handles)
 global hmr
+if ~ishandles(hObject)
+    return;
+end
 
 GetAxesDataType()
 DisplayData();
@@ -309,7 +344,10 @@ end
 
 
 % --------------------------------------------------------------------
-function checkboxPlotHRF_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = checkboxPlotHRF_Callback(hObject, eventdata, handles)
+if ~ishandles(hObject)
+    return;
+end
 
 GetAxesDataType();
 DisplayData();
@@ -318,7 +356,7 @@ UpdateChildGuis();
 
 
 % --------------------------------------------------------------------
-function guiControls_ButtonDownFcn(hObject, eventdata, handles)
+function [eventdata, handles] = guiControls_ButtonDownFcn(hObject, eventdata, handles)
 
 % Make sure the user clicked on the axes and not
 % some other object on top of the axes
@@ -328,8 +366,11 @@ end
 
 
 % --------------------------------------------------------------------
-function axesSDG_ButtonDownFcn(hObject, eventdata, handles)
+function [eventdata, handles] = axesSDG_ButtonDownFcn(hObject, eventdata, handles)
 global hmr
+if ~ishandles(hObject)
+    return;
+end
 
 dataTree = hmr.dataTree;
 if dataTree.IsEmpty()
@@ -345,7 +386,10 @@ DisplayData();
 
 
 % --------------------------------------------------------------------
-function popupmenuConditions_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = popupmenuConditions_Callback(hObject, eventdata, handles)
+if ~ishandles(hObject)
+    return;
+end
 
 GetAxesDataCondition();
 DisplayData();
@@ -354,7 +398,10 @@ UpdateChildGuis();
 
 
 % --------------------------------------------------------------------
-function listboxPlotWavelength_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = listboxPlotWavelength_Callback(hObject, eventdata, handles)
+if ~ishandles(hObject)
+    return;
+end
 
 GetAxesDataWl();
 DisplayData();
@@ -362,7 +409,10 @@ DisplayData();
 
 
 % --------------------------------------------------------------------
-function listboxPlotConc_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = listboxPlotConc_Callback(hObject, eventdata, handles)
+if ~ishandles(hObject)
+    return;
+end
 
 GetAxesDataHbType();
 DisplayData();
@@ -371,8 +421,11 @@ DisplayData();
 
 
 % --------------------------------------------------------------------
-function menuChangeDirectory_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = menuChangeDirectory_Callback(hObject, eventdata, handles)
 global hmr
+if ~ishandles(hObject)
+    return;
+end
 
 fmt = hmr.format;
 
@@ -393,6 +446,9 @@ Homer3(fmt);
 
 % --------------------------------------------------------------------
 function menuExit_Callback(hObject, eventdata, handles)
+if ~ishandles(hObject)
+    return;
+end
 
 hGui=get(get(hObject,'parent'),'parent');
 Homer3_DeleteFcn(hGui,eventdata,handles);
@@ -400,8 +456,11 @@ Homer3_DeleteFcn(hGui,eventdata,handles);
 
 
 % --------------------------------------------------------------------
-function menuItemReset_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = menuItemReset_Callback(hObject, eventdata, handles)
 global hmr
+if ~ishandles(hObject)
+    return;
+end
 
 dataTree = hmr.dataTree;
 dataTree.currElem.Reset();
@@ -410,14 +469,17 @@ DisplayData();
 
 
 % --------------------------------------------------------------------
-function menuCopyCurrentPlot_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = menuCopyCurrentPlot_Callback(hObject, eventdata, handles)
 global hmr
+if ~ishandles(hObject)
+    return;
+end
 
 currElem = hmr.dataTree.currElem;
 hf = figure;
 set(hf, 'color', [1 1 1]);
-fields = fieldnames(guiControls.buttonVals);
-plotname = sprintf('%s_%s', currElem.name, fields{guiControls.datatype});
+fields = fieldnames(hmr.guiControls.buttonVals);
+plotname = sprintf('%s_%s', currElem.name, fields{hmr.guiControls.datatype});
 set(hf,'name', plotname);
 
 
@@ -433,8 +495,11 @@ axis off
 
 
 % --------------------------------------------------------------------
-function pushbuttonProcStreamOptionsEdit_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = pushbuttonProcStreamOptionsEdit_Callback(hObject, eventdata, handles)
 global hmr
+if ~ishandles(hObject)
+    return;
+end
 
 idx = FindChildGuiIdx('ProcStreamOptionsGUI');
 if get(hObject, 'value')
@@ -446,8 +511,11 @@ end
 
 
 % -------------------------------------------------------------------
-function menuItemLaunchStimGUI_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = menuItemLaunchStimGUI_Callback(hObject, eventdata, handles)
 global hmr
+if ~ishandles(hObject)
+    return;
+end
 
 idx = FindChildGuiIdx('stimGUI');
 hmr.childguis(idx).Launch();
@@ -455,16 +523,22 @@ hmr.childguis(idx).Launch();
 
 
 % --------------------------------------------------------------------
-function pushbuttonSave_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = pushbuttonSave_Callback(hObject, eventdata, handles)
 global hmr
+if ~ishandles(hObject)
+    return;
+end
 
 hmr.dataTree.currElem.Save();
 
 
 
 % --------------------------------------------------------------------
-function menuItemViewHRFStdErr_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = menuItemViewHRFStdErr_Callback(hObject, eventdata, handles)
 global hmr
+if ~ishandles(hObject)
+    return;
+end
 
 if strcmp(get(hObject, 'checked'), 'on')
     set(hObject, 'checked', 'off')
@@ -481,8 +555,11 @@ DisplayData();
 
 
 % ---------------------------------------------------------------------------
-function checkboxPlotProbe_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = checkboxPlotProbe_Callback(hObject, eventdata, handles)
 global hmr
+if ~ishandles(hObject)
+    return;
+end
 
 idx = FindChildGuiIdx('PlotProbeGUI');
 if get(hObject, 'value')
@@ -494,8 +571,11 @@ end
 
 
 % --------------------------------------------------------------------
-function menuItemProcStreamEdit_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = menuItemProcStreamEdit_Callback(hObject, eventdata, handles)
 global hmr
+if ~ishandles(hObject)
+    return;
+end
 
 checked = get(hObject,'checked');
 idx = FindChildGuiIdx('procStreamGUI');
@@ -507,8 +587,11 @@ end
 
 
 % --------------------------------------------------------------------
-function checkboxApplyProcStreamEditToAll_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = checkboxApplyProcStreamEditToAll_Callback(hObject, eventdata, handles)
 global hmr
+if ~ishandles(hObject)
+    return;
+end
 
 if get(hObject, 'value')
     hmr.guiControls.applyEditCurrNodeOnly = false;
@@ -522,7 +605,7 @@ UpdateArgsChildGuis();
 % --------------------------------------------------------------------
 function idx = FindChildGuiIdx(name)
 global hmr
-idx = [];
+
 for ii=1:length(hmr.childguis)
     if strcmp(hmr.childguis(ii).GetName, name)
         break;
@@ -534,7 +617,6 @@ idx = ii;
 % --------------------------------------------------------------------
 function UpdateArgsChildGuis()
 global hmr
-
 if isempty(hmr.childguis)
     return;
 end
@@ -546,7 +628,6 @@ hmr.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(hmr.guiControl
 % --------------------------------------------------------------------
 function UpdateChildGuis()
 global hmr
-
 if isempty(hmr.childguis)
     return;
 end
@@ -560,6 +641,7 @@ end
 % ----------------------------------------------------------------------------------
 function DisplayData()
 global hmr
+
 dataTree = hmr.dataTree;
 guiControls = hmr.guiControls;
 procElem = dataTree.currElem;
@@ -770,7 +852,7 @@ end
 
 
 % ----------------------------------------------------------------------------------
-function radiobuttonProcType_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = radiobuttonProcType_Callback(hObject, eventdata, handles)
 global hmr
 
 bttn = get(hObject, 'tag');

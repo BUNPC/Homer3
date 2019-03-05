@@ -24,3 +24,4 @@ elseif plotConcVal && plotHRFVal
     datatype      = c.CONC_HRF;
 end
  
+hmr.guiControls.datatype = datatype;

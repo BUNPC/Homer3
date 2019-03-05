@@ -29,6 +29,7 @@ guiControls = struct(...
                                        'popupmenuConditions', handles.popupmenuConditions, ...
                                        'menuItemViewHRFStdErr', handles.menuItemViewHRFStdErr ...
                                       ), ...
+                     'datatype', 0, ...
                      'proclevel', 0, ...
                      'condition', 0, ...
                      'ch', 0, ...
@@ -46,7 +47,7 @@ guiControls = UpdateAxesDataCondition(guiControls, dataTree);
 setWl(guiControls, dataTree.currElem.GetWls());
 
 guiControls.proclevel = getProclevel(handles);
-datatype  = getDatatype(handles);
+guiControls.datatype  = getDatatype(handles);
 guiControls.condition = getCondition(guiControls);
 guiControls.wl        = getWl(guiControls, dataTree.currElem.GetWls());
 guiControls.hbType    = getHbType(guiControls);
@@ -58,17 +59,17 @@ elseif strcmp(get(handles.menuItemViewHRFStdErr, 'checked'), 'off');
     guiControls.showStdErr = false;
 end
 
-if datatype == hmr.buttonVals.RAW || datatype == hmr.buttonVals.RAW_HRF
+if guiControls.datatype == hmr.buttonVals.RAW || guiControls.datatype == hmr.buttonVals.RAW_HRF
 
     set(guiControls.handles.listboxPlotWavelength, 'visible','on');
     set(guiControls.handles.listboxPlotConc, 'visible','off');
     
-elseif datatype == hmr.buttonVals.OD || datatype == hmr.buttonVals.OD_HRF
+elseif guiControls.datatype == hmr.buttonVals.OD || guiControls.datatype == hmr.buttonVals.OD_HRF
     
     set(guiControls.handles.listboxPlotWavelength, 'visible','on');
     set(guiControls.handles.listboxPlotConc, 'visible','off');
     
-elseif datatype == hmr.buttonVals.CONC || datatype == hmr.buttonVals.CONC_HRF
+elseif guiControls.datatype == hmr.buttonVals.CONC || guiControls.datatype == hmr.buttonVals.CONC_HRF
     
     set(guiControls.handles.listboxPlotWavelength, 'visible','off');
     set(guiControls.handles.listboxPlotConc, 'visible','on');

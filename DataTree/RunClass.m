@@ -204,6 +204,15 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function d = GetRawData(obj, idx)
+            if nargin<2
+                idx = 1;
+            end
+            d = obj.acquired.GetDataMatrix(idx);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function d = GetDataMatrix(obj, idx)
             if nargin<2
                 idx = 1;

@@ -1,13 +1,14 @@
-function datatype = getDatatype(guiControls)
+function datatype = getDatatype(handles)
+global hmr
 
 datatype=0;
 
-plotRawVal  = get(guiControls.handles.radiobuttonPlotRaw, 'value');
-plotODVal   = get(guiControls.handles.radiobuttonPlotOD, 'value');
-plotConcVal = get(guiControls.handles.radiobuttonPlotConc, 'value');
-plotHRFVal  = get(guiControls.handles.checkboxPlotHRF, 'value');
+plotRawVal  = get(handles.radiobuttonPlotRaw, 'value');
+plotODVal   = get(handles.radiobuttonPlotOD, 'value');
+plotConcVal = get(handles.radiobuttonPlotConc, 'value');
+plotHRFVal  = get(handles.checkboxPlotHRF, 'value');
 
-c = guiControls.buttonVals;
+c = hmr.buttonVals;
 
 if plotRawVal && ~plotHRFVal
     datatype      = c.RAW;

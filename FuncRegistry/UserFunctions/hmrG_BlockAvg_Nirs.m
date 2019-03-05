@@ -76,8 +76,7 @@ for iSubj = 1:nSubj
         end
         
         for iC = 1:nCond
-            iS = CondName2Subj(iSubj,iC);
-            
+            iS = CondName2Subj(iSubj,iC);            
             if iS==0
                 continue;
             end
@@ -134,14 +133,21 @@ for iSubj = 1:nSubj
         end
         for iC = 1:nCond
             iS = CondName2Subj(iSubj,iC);
+            if iS==0
+                continue;
+            end
             
             for iWl = 1:2
                 % Calculate which channels to include and exclude from the group HRF avg,
                 % based on the subjects' standard error and store result in lstPass
+                try 
                 lstWl = find(SD.MeasList(:,4)==iWl);
                 lstPass = find( ((squeeze(mean(yAvgStd(lstT,lstWl,iS),1))./sqrt(nTrials(lstWl,iS)'+eps)) <= thresh) &...
                                  nTrials(lstWl,iS)'>0 );
                 lstPass = lstWl(lstPass);
+                catch
+                    d=1;
+                end
                 
                 if chkFlag==0 | length(lstPass)==size(yAvg,3)
                     if iSubj==1 | iC>nStim

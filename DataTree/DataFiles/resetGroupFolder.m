@@ -1,6 +1,5 @@
 function resetGroupFolder(dirname)
 
-fclose all;
 if ~exist('dirname','var')
     dirname = [pwd,'/'];
 end

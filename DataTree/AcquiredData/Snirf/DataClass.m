@@ -385,7 +385,7 @@ classdef DataClass < FileLoadSaveClass
             else
                 obj.ml(end+1) = MeasListClass(isrc, idet, 1000, 1, icond);
             end
-            obj.ml.SetWavelengthIndex(wl);
+            obj.ml(end).SetWavelengthIndex(wl);
         end
         
         

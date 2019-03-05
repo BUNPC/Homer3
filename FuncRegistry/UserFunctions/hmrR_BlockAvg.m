@@ -33,9 +33,12 @@
 
 function [data_avg, data_std, nTrials, data_sum2, yTrials] = hmrR_BlockAvg( data, stim, trange )
 
+% Initialize outputs;
 data_avg  = DataClass();
 data_std  = DataClass();
 data_sum2 = DataClass();
+nTrials   = [];
+yTrials   = [];
 
 % Get stim vector by instantiating temporary SnirfClass object with this 
 % function's stim argument as input, and then using the SnirfClass object's 
@@ -55,7 +58,13 @@ for kk=1:length(data)
     nPost = round(trange(2)/dt);
     nTpts = size(y,1);
     tHRF = [nPre*dt:dt:nPost*dt];
-    ml = data(kk).GetMeasListSrcDetPairs();
+    if datatype(1)==6
+        ml = data(kk).GetMeasListSrcDetPairs();
+    elseif datatype(1)==1
+        ml = data(kk).GetMeasList();
+    else
+        return;
+    end
     
     for iS = 1:size(s,2)
         lstS = find(s(:,iS)==1);

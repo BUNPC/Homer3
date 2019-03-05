@@ -139,13 +139,11 @@ classdef SnirfFilesClass < DataFilesClass
         function checkFormatAcrossFiles(obj)
             
             nFiles = length(obj.files);
-            uniqueSD = zeros(1,nFiles);
             
             if isempty(obj.files)
                 return;
             end
             
-            snirf = repmat(SnirfClass(), nFiles, 1);
             hwait = waitbar(0,sprintf('Checking .snirf format consistency across files: processing 1 of %d',nFiles) );
             for iF=1:nFiles
                 

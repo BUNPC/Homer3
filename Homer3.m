@@ -57,7 +57,7 @@ end
 positionGUI(hFig, 0.20, 0.10, 0.70, 0.85)
 setGuiFonts(hFig);
 
-% Get rid of the useless "might be unsused" warnings for callback
+% Get rid of the useless "might be unsused" warnings for GUI callbacks
 checkboxPlotHRF_Callback([]);
 checkboxApplyProcStreamEditToAll_Callback([]);
 pushbuttonCalcProcStream_Callback([]);
@@ -78,7 +78,7 @@ menuChangeDirectory_Callback([]);
 menuExit_Callback([]);
 menuItemReset_Callback([]);
 menuCopyCurrentPlot_Callback([]);
-
+uipanelProcessingType_SelectionChangeFcn([]);
 
 
 % ---------------------------------------------------------------------
@@ -106,6 +106,9 @@ if isempty(varargin)
 else
     hmr.format = varargin{1};
 end
+hmr.gid = 1;
+hmr.sid = 2;
+hmr.rid = 3;
 
 % Choose default command line output for Homer3
 handles.output = hObject;
@@ -230,27 +233,28 @@ listboxFiles_Callback([], [1,1,1], handles)
 
 
 % --------------------------------------------------------------------
-function uipanelProcessingType_SelectionChangeFcn(hObject, eventdata, handles)
+function eventdata = uipanelProcessingType_SelectionChangeFcn(hObject, eventdata, handles)
 global hmr
 
-dataTree  = hmr.dataTree;
+if isempty(hObject)    
+    return;
+end
 
-procType = get(hObject,'tag');
+proclevel = getProclevel(handles);
 iFile = get(handles.listboxFiles,'value');
-[iGroup,iSubj,iRun] = dataTree.MapFile2Group(iFile);
-switch(procType)
-    case 'radiobuttonProcTypeGroup'
-        dataTree.SetCurrElem(iGroup);
-    case 'radiobuttonProcTypeSubj'
-        dataTree.SetCurrElem(iGroup, iSubj);
-    case 'radiobuttonProcTypeRun'
-        dataTree.SetCurrElem(iGroup, iSubj, iRun);
+[iGroup,iSubj,iRun] = hmr.dataTree.MapFile2Group(iFile);
+switch(proclevel)
+	case hmr.gid
+        hmr.dataTree.SetCurrElem(iGroup);
+    case hmr.sid
+        hmr.dataTree.SetCurrElem(iGroup, iSubj);
+    case hmr.rid
+        hmr.dataTree.SetCurrElem(iGroup, iSubj, iRun);
 end
 UpdateAxesDataCondition();
 DisplayData();
 UpdateChildGuis();
-
-
+ 
 
 % --------------------------------------------------------------------
 function listboxFiles_Callback(hObject, eventdata, handles)
@@ -266,17 +270,20 @@ if isempty(iFile==0)
 end
 
 % If evendata isn't empty then caller is trying to set currElem
-if strcmp(class(eventdata), 'matlab.ui.eventdata.ActionData')
+if isa(eventdata, 'matlab.ui.eventdata.ActionData')
+    
+    % Get the [iGroup,iSubj,iRun] mapping of the clicked lisboxFiles entry
     [iGroup,iSubj,iRun] = hmr.dataTree.MapFile2Group(iFile);
-    switch(hmr.guiControls.proctype)
-        case 1
-            hmr.dataTree.SetCurrElem(iGroup);
-        case 2
-            hmr.dataTree.SetCurrElem(iGroup, iSubj);
-        case 3
-            hmr.dataTree.SetCurrElem(iGroup, iSubj, iRun);
-    end
+    
+    % Get the current processing level radio buttons setting
+    proclevel = getProclevel(handles);
+        
+    % Set new gui state based on current gui selections of listboxFiles
+    % (iGroup, iSubj, iRun) and proc level radio buttons (proclevel)
+    SetGuiProcLevel(handles, iGroup, iSubj, iRun, proclevel);
+    
 elseif ~isempty(eventdata)
+    
     iGroup = eventdata(1);
     iSubj = eventdata(2);
     iRun = eventdata(3);
@@ -285,11 +292,13 @@ elseif ~isempty(eventdata)
         return;
     end
     set(hObject,'value', iFile);
+    
 end
 
 UpdateAxesDataCondition();
 DisplayData();
 UpdateChildGuis();
+
 
 
 % --------------------------------------------------------------------
@@ -849,34 +858,4 @@ if ishandles(hLg)
     legend(hLg(k), CondNamesAll(idxLg));
 end
 
-
-
-% ----------------------------------------------------------------------------------
-function [eventdata, handles] = radiobuttonProcType_Callback(hObject, eventdata, handles)
-global hmr
-
-bttn = get(hObject, 'tag');
-if strcmp(bttn, 'radiobuttonProcTypeGroup')
-    hmr.guiControls.proctype = 1;
-elseif strcmp(bttn, 'radiobuttonProcTypeSubj')
-    hmr.guiControls.proctype = 2;
-elseif strcmp(bttn, 'radiobuttonProcTypeRun')
-    hmr.guiControls.proctype = 3;
-end
-
-iFile = get(handles.listboxFiles,'value');
-if isempty(iFile==0)
-    return;
-end
-
-% If evendata isn't empty then caller is trying to set currElem
-[iGroup,iSubj,iRun] = hmr.dataTree.MapFile2Group(iFile);
-switch(hmr.guiControls.proctype)
-    case 1
-        hmr.dataTree.SetCurrElem(iGroup);
-    case 2
-        hmr.dataTree.SetCurrElem(iGroup, iSubj);
-    case 3
-        hmr.dataTree.SetCurrElem(iGroup, iSubj, iRun);
-end
 

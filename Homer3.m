@@ -245,12 +245,31 @@ iFile = get(handles.listboxFiles,'value');
 [iGroup,iSubj,iRun] = hmr.dataTree.MapFile2Group(iFile);
 switch(proclevel)
 	case hmr.gid
+        if iGroup==0
+            iGroup=1;
+        end
         hmr.dataTree.SetCurrElem(iGroup);
     case hmr.sid
+        if iGroup==0
+            iGroup=1;
+        end
+        if iSubj==0
+            iSubj=1;
+        end
         hmr.dataTree.SetCurrElem(iGroup, iSubj);
     case hmr.rid
+        if iGroup==0
+            iGroup=1;
+        end
+        if iSubj==0
+            iSubj=1;
+        end
+        if iRun==0
+            iRun=1;
+        end
         hmr.dataTree.SetCurrElem(iGroup, iSubj, iRun);
 end
+listboxFiles_Callback([], [iGroup,iSubj,iRun], handles)
 UpdateAxesDataCondition();
 DisplayData(handles);
 UpdateChildGuis(handles);

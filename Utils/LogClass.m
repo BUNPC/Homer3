@@ -1,6 +1,7 @@
 classdef LogClass < handle
     
     properties
+        filename;
         fid;
         msg;
         options;
@@ -8,55 +9,59 @@ classdef LogClass < handle
     
     methods
         
+        % ---------------------------------------------------------------
         function obj = LogClass(appdir, appname, options)
-            
             if nargin == 0
                 appdir = [pwd, '/'];
-                appname = 'debug';
+                appname = 'History';
                 obj.options = 'file';
-            else
+            elseif nargin==3
                 obj.options = options;
             end
-            
-            if exist([appdir, appname, '.log'],'file')
-                delete([appdir, appname, '.log']);
+            obj.filename = [appdir, appname, '.log'];            
+            if exist(obj.filename,'file')
+                delete(obj.filename);
             end
-            
-            obj.fid = fopen([appdir, appname, '.log'], 'w');
+            obj.fid = fopen(obj.filename, 'w');
             obj.msg = '';
-            
         end
         
+        
+        % ---------------------------------------------------------------
         function Write(obj, msg)
-            
             if isempty(msg)
                 return;
             end
-            
             obj.msg = msg;
-            
             if obj.msg ~= sprintf('\n')
                 linefeed = sprintf('\n');
             else
                 linefeed = '';
             end
-            % fprintf(obj.fid, '%s%s', obj.msg, linefeed);
+            if obj.fid>0
+                fprintf(obj.fid, '%s%s', obj.msg, linefeed);
+            end
             fprintf('%s%s', obj.msg, linefeed);
-            
         end
         
         
+        % ---------------------------------------------------------------
         function Clear(obj)
-            
             obj.msg = '';
-            
         end
         
         
-        function delete(obj)
-            
-            fclose(obj.fid);
-            
+        % ---------------------------------------------------------------
+        function Close(obj)
+            if obj.fid>0
+                fclose(obj.fid);
+            end
+        end
+        
+        
+        % ---------------------------------------------------------------
+        function filename = GetFilename(obj)
+            [~, filename] = fileparts(obj.filename);
         end
         
     end

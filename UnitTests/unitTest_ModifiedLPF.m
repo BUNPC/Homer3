@@ -1,12 +1,13 @@
-function status = unitTest_ModifiedLPF(datafmt, dirname, newval)
+function status = unitTest_ModifiedLPF(datafmt, dirname, newval, logger)
 global procStreamStyle
+global testidx
+
 if isempty(procStreamStyle)
-    procStreamStyle = 'snirf';
+    procStreamStyle = datafmt;
 end
 if strcmp(procStreamStyle,'snirf')
     datafmt = 'snirf';
 end
-global testidx
 if isempty(testidx)
     testidx=0;
 end
@@ -21,6 +22,9 @@ if ~exist('dirname','var')
 end
 if ~exist('newval','var')
     newval = [];
+end
+if ~exist('logger','var') || isempty(logger)
+    logger = LogClass();
 end
 
 rootpath = fileparts(which('Homer3.m'));
@@ -44,15 +48,19 @@ lpfs = getHomer2LpfValue(groupFiles_h2);
 lpf = getHomer3LpfValue(dataTree);
 
 if status==0 & lpfs(iG)==lpf
-    fprintf('#%d - unitTest_ModifiedLPF(''%s'', ''%s'', %0.1f): TEST PASSED - Homer3 output matches %s.\n', ...
-             testidx, datafmt, dirname, newval, [groupFiles_h2(iG).pathfull, '/', groupFiles_h2(iG).name]);
+    logger.Write(sprintf('#%d - unitTest_ModifiedLPF(''%s'', ''%s'', %0.1f): TEST PASSED - Homer3 output matches %s.\n', ...
+             testidx, datafmt, dirname, newval, [groupFiles_h2(iG).pathfull, '/', groupFiles_h2(iG).name]));
 elseif status==0
-    fprintf('#%d - unitTest_ModifiedLPF(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 output matches %s which has a different lpf value {%0.2f ~= %0.2f}.\n', ...
-             testidx, datafmt, dirname, newval, [groupFiles_h2(iG).pathfull, '/', groupFiles_h2(iG).name], lpfs(iG), lpf);
+    logger.Write(sprintf('#%d - unitTest_ModifiedLPF(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 output matches %s which has a different lpf value {%0.2f ~= %0.2f}.\n', ...
+             testidx, datafmt, dirname, newval, [groupFiles_h2(iG).pathfull, '/', groupFiles_h2(iG).name], lpfs(iG), lpf));
 elseif status>0
-    fprintf('#%d - unitTest_ModifiedLPF(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 output does NOT match ANY Homer2 groupResults.\n', testidx, datafmt, dirname, newval);
+    logger.Write(sprintf('#%d - unitTest_ModifiedLPF(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 output does NOT match ANY Homer2 groupResults.\n', testidx, datafmt, dirname, newval));
 elseif status<0
-    fprintf('#%d - unitTest_ModifiedLPF(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 did not generate any output\n', testidx, datafmt, dirname, newval);
+    logger.Write(sprintf('#%d - unitTest_ModifiedLPF(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 did not generate any output\n', testidx, datafmt, dirname, newval));
+end
+
+if strcmp(logger.GetFilename(), 'History')
+    logger.Close();
 end
 
 cd(currpath);

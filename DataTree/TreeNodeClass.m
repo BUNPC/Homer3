@@ -167,6 +167,12 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function d = GetRawData(obj)
+            d = [];
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function dod = GetDod(obj)
             dod = obj.procStream.output.GetDataTimeCourse('dod');
         end

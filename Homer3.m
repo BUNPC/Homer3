@@ -134,8 +134,8 @@ hmr.guiControls = InitGuiControls(handles);
 Homer3_EnableDisableGUI(handles,'on');
 
 % Display data from currently selected processing element
-DisplayData();
 DisplayFiles(handles);
+DisplayData(handles);
 
 hmr.childguis(1) = ChildGuiClass('procStreamGUI');
 hmr.childguis(2) = ChildGuiClass('stimGUI');
@@ -252,8 +252,8 @@ switch(proclevel)
         hmr.dataTree.SetCurrElem(iGroup, iSubj, iRun);
 end
 UpdateAxesDataCondition();
-DisplayData();
-UpdateChildGuis();
+DisplayData(handles);
+UpdateChildGuis(handles);
  
 
 % --------------------------------------------------------------------
@@ -296,8 +296,8 @@ elseif ~isempty(eventdata)
 end
 
 UpdateAxesDataCondition();
-DisplayData();
-UpdateChildGuis();
+DisplayData(handles);
+UpdateChildGuis(handles);
 
 
 
@@ -307,12 +307,10 @@ global hmr
 if ~ishandles(hObject)
     return;
 end
-dataTree = hmr.dataTree;
-
-dataTree.CalcCurrElem();
-dataTree.SaveCurrElem();
-DisplayData();
-UpdateChildGuis();
+hmr.dataTree.CalcCurrElem();
+hmr.dataTree.SaveCurrElem();
+DisplayData(handles);
+UpdateChildGuis(handles);
 
 
 
@@ -333,34 +331,54 @@ if ~ishandles(hObject)
     return;
 end
 
-GetAxesDataType()
-DisplayData();
-UpdateChildGuis();
+if strcmp(get(hObject, 'tag'), 'radiobuttonPlotRaw')
+    set(handles.checkboxPlotHRF, 'value',0);
+elseif strcmp(get(hObject, 'tag'), 'radiobuttonPlotOD') && isempty(hmr.dataTree.currElem.GetDodAvg())
+    if isa(hmr.dataTree.currElem, 'RunClass')
+        set(handles.checkboxPlotHRF, 'value',0);
+    end
+elseif strcmp(get(hObject, 'tag'), 'radiobuttonPlotConc') && isempty(hmr.dataTree.currElem.GetDcAvg())
+    if isa(hmr.dataTree.currElem, 'RunClass')
+        set(handles.checkboxPlotHRF, 'value',0);
+    end
+end
 
-datatype   = hmr.guiControls.datatype;
-buttonVals = hmr.guiControls.buttonVals;
-if datatype == buttonVals.RAW || datatype == buttonVals.RAW_HRF
-    set(hmr.guiControls.handles.listboxPlotWavelength, 'visible','on');
-    set(hmr.guiControls.handles.listboxPlotConc, 'visible','off');
-elseif datatype == buttonVals.OD || datatype == buttonVals.OD_HRF
-    set(hmr.guiControls.handles.listboxPlotWavelength, 'visible','on');
-    set(hmr.guiControls.handles.listboxPlotConc, 'visible','off');
-elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF
-    set(hmr.guiControls.handles.listboxPlotWavelength, 'visible','off');
-    set(hmr.guiControls.handles.listboxPlotConc, 'visible','on');
+DisplayData(handles);
+UpdateChildGuis(handles);
+
+datatype   = getDatatype(handles);
+if datatype == hmr.buttonVals.RAW || datatype == hmr.buttonVals.RAW_HRF
+    set(handles.listboxPlotWavelength, 'visible','on');
+    set(handles.listboxPlotConc, 'visible','off');
+elseif datatype == hmr.buttonVals.OD || datatype == hmr.buttonVals.OD_HRF
+    set(handles.listboxPlotWavelength, 'visible','on');
+    set(handles.listboxPlotConc, 'visible','off');
+elseif datatype == hmr.buttonVals.CONC || datatype == hmr.buttonVals.CONC_HRF
+    set(handles.listboxPlotWavelength, 'visible','off');
+    set(handles.listboxPlotConc, 'visible','on');
 end
 
 
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = checkboxPlotHRF_Callback(hObject, eventdata, handles)
+global hmr
 if ~ishandles(hObject)
     return;
 end
 
-GetAxesDataType();
-DisplayData();
-UpdateChildGuis();
+if get(hObject, 'value')==1 
+    if ~isempty(hmr.dataTree.currElem.GetDcAvg())
+        set(handles.radiobuttonPlotConc, 'enable', 'on');
+        set(handles.radiobuttonPlotConc, 'value', 1);
+    elseif ~isempty(hmr.dataTree.currElem.GetDodAvg())
+        set(handles.radiobuttonPlotOD, 'enable', 'on');
+        set(handles.radiobuttonPlotOD, 'value', 1);
+    end
+end
+
+DisplayData(handles);
+UpdateChildGuis(handles);
 
 
 
@@ -390,7 +408,7 @@ end
 SetAxesDataCh();
 
 % Update the displays of the guiControls and axesSDG axes
-DisplayData();
+DisplayData(handles);
 
 
 
@@ -401,8 +419,8 @@ if ~ishandles(hObject)
 end
 
 GetAxesDataCondition();
-DisplayData();
-UpdateChildGuis();
+DisplayData(handles);
+UpdateChildGuis(handles);
 
 
 
@@ -413,7 +431,7 @@ if ~ishandles(hObject)
 end
 
 GetAxesDataWl();
-DisplayData();
+DisplayData(handles);
 
 
 
@@ -424,7 +442,7 @@ if ~ishandles(hObject)
 end
 
 GetAxesDataHbType();
-DisplayData();
+DisplayData(handles);
 
 
 
@@ -474,7 +492,7 @@ end
 dataTree = hmr.dataTree;
 dataTree.currElem.Reset();
 dataTree.currElem.Save();
-DisplayData();
+DisplayData(handles);
 
 
 % --------------------------------------------------------------------
@@ -487,7 +505,7 @@ end
 currElem = hmr.dataTree.currElem;
 hf = figure;
 set(hf, 'color', [1 1 1]);
-fields = fieldnames(hmr.guiControls.buttonVals);
+fields = fieldnames(hmr.buttonVals);
 plotname = sprintf('%s_%s', currElem.name, fields{hmr.guiControls.datatype});
 set(hf,'name', plotname);
 
@@ -559,7 +577,7 @@ if strcmp(get(hObject, 'checked'), 'on')
 elseif strcmp(get(hObject, 'checked'), 'off')
     hmr.guiControls.showStdErr = false;
 end
-DisplayData();
+DisplayData(handles);
 
 
 
@@ -624,23 +642,23 @@ idx = ii;
 
 
 % --------------------------------------------------------------------
-function UpdateArgsChildGuis()
+function UpdateArgsChildGuis(handles)
 global hmr
 if isempty(hmr.childguis)
     return;
 end
 
-hmr.childguis(FindChildGuiIdx('PlotProbeGUI')).UpdateArgs(hmr.guiControls.datatype, hmr.guiControls.condition);
+hmr.childguis(FindChildGuiIdx('PlotProbeGUI')).UpdateArgs(getDatatype(handles), hmr.guiControls.condition);
 hmr.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(hmr.guiControls.applyEditCurrNodeOnly);
 
 
 % --------------------------------------------------------------------
-function UpdateChildGuis()
+function UpdateChildGuis(handles)
 global hmr
 if isempty(hmr.childguis)
     return;
 end
-UpdateArgsChildGuis()
+UpdateArgsChildGuis(handles)
 for ii=1:length(hmr.childguis)
     hmr.childguis(ii).Update();
 end
@@ -648,12 +666,13 @@ end
 
 
 % ----------------------------------------------------------------------------------
-function DisplayData()
+function DisplayData(handles)
 global hmr
 
 dataTree = hmr.dataTree;
 guiControls = hmr.guiControls;
 procElem = dataTree.currElem;
+EnableDisableGuiPlotBttns(handles);
 
 hAxes = guiControls.axesData.handles.axes;
 if ~ishandles(hAxes)
@@ -667,12 +686,11 @@ set(hAxes,'ygrid','on');
 
 linecolor  = guiControls.axesData.linecolor;
 linestyle  = guiControls.axesData.linestyle;
-datatype   = guiControls.datatype;
+datatype   = getDatatype(handles);
 condition  = guiControls.condition;
 iCh        = guiControls.ch;
 iWl        = guiControls.wl;
 hbType     = guiControls.hbType;
-buttonVals = guiControls.buttonVals;
 sclConc    = guiControls.sclConc;        % convert Conc from Molar to uMolar
 showStdErr = guiControls.showStdErr;
 
@@ -684,16 +702,16 @@ t       = [];
 nTrials = [];
 
 % Get plot data from dataTree
-if datatype == buttonVals.RAW
+if datatype == hmr.buttonVals.RAW
     d = procElem.GetDataMatrix();
     t = procElem.GetTime();
-elseif datatype == buttonVals.OD
+elseif datatype == hmr.buttonVals.OD
     d = procElem.GetDod();
     t = procElem.GetTime();
-elseif datatype == buttonVals.CONC
+elseif datatype == hmr.buttonVals.CONC
     d = procElem.GetDc();
     t = procElem.GetTime();
-elseif datatype == buttonVals.OD_HRF
+elseif datatype == hmr.buttonVals.OD_HRF
     d = procElem.GetDodAvg();
     t = procElem.GetTHRF();
     if showStdErr
@@ -703,7 +721,7 @@ elseif datatype == buttonVals.OD_HRF
     if isempty(condition)
         return;
     end
-elseif datatype == buttonVals.CONC_HRF
+elseif datatype == hmr.buttonVals.CONC_HRF
     d = procElem.GetDcAvg();
     t = procElem.GetTHRF();
     if showStdErr
@@ -738,14 +756,14 @@ if ~isempty(d)
     chLst = find(ch.MeasListVis(iCh)==1);
     
     % Plot data
-    if datatype == buttonVals.RAW || datatype == buttonVals.OD || datatype == buttonVals.OD_HRF
-        if  datatype == buttonVals.OD_HRF
+    if datatype == hmr.buttonVals.RAW || datatype == hmr.buttonVals.OD || datatype == hmr.buttonVals.OD_HRF
+        if  datatype == hmr.buttonVals.OD_HRF
             d = d(:,:,condition);
         end
         d = procElem.reshape_y(d, ch.MeasList);
         DisplayDataRawOrOD(t, d, dStd, iWl, iCh, chLst, nTrials, condition, linecolor, linestyle);
-    elseif datatype == buttonVals.CONC || datatype == buttonVals.CONC_HRF
-        if  datatype == buttonVals.CONC_HRF
+    elseif datatype == hmr.buttonVals.CONC || datatype == hmr.buttonVals.CONC_HRF
+        if  datatype == hmr.buttonVals.CONC_HRF
             d = d(:,:,:,condition);
         end
         d = d * sclConc;
@@ -753,12 +771,11 @@ if ~isempty(d)
     end
 end
 DisplayAxesSDG();
-DisplayStim();
-
+DisplayStim(handles);
 
 
 % ----------------------------------------------------------------------------------
-function DisplayStim()
+function DisplayStim(handles)
 global hmr
 dataTree = hmr.dataTree;
 guiControls = hmr.guiControls;
@@ -775,18 +792,16 @@ end
 axes(hAxes);
 hold on;
 
-buttonVals = guiControls.buttonVals;
-
-if guiControls.datatype == buttonVals.RAW_HRF
+datatype = getDatatype(handles);
+if datatype == hmr.buttonVals.RAW_HRF
     return;
 end
-if guiControls.datatype == buttonVals.OD_HRF
+if datatype == hmr.buttonVals.OD_HRF
     return;
 end
-if guiControls.datatype == buttonVals.CONC_HRF
+if datatype == hmr.buttonVals.CONC_HRF
     return;
 end
-
 procResult = procElem.procStream.output;
 
 %%% Plot stim marks. This has to be done before plotting exclude time

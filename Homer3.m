@@ -525,7 +525,7 @@ currElem = hmr.dataTree.currElem;
 hf = figure;
 set(hf, 'color', [1 1 1]);
 fields = fieldnames(hmr.buttonVals);
-plotname = sprintf('%s_%s', currElem.name, fields{hmr.guiControls.datatype});
+plotname = sprintf('%s_%s', currElem.name, fields{getDatatype(handles)});
 set(hf,'name', plotname);
 
 
@@ -609,7 +609,7 @@ end
 
 idx = FindChildGuiIdx('PlotProbeGUI');
 if get(hObject, 'value')
-    hmr.childguis(idx).Launch(hmr.guiControls.datatype, hmr.guiControls.condition);
+    hmr.childguis(idx).Launch(getDatatype(handles), hmr.guiControls.condition);
 else
     hmr.childguis(idx).Close();
 end

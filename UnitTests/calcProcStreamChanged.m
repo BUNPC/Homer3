@@ -8,15 +8,16 @@ if ~exist('newval','var') || isempty(newval)
     newval = 1.6;
 end
 if isempty(procStreamStyle)
-    procStreamStyle = 'snirf';
+    procStreamStyle = datafmt;
 end
 
-procStreamConfigFile = 'processOpt_default_homer3_nirs.cfg';
-funcToChange = 'hmrR_BandpassFilt_Nirs';
-paramIdx = 2;
-if strcmp(procStreamStyle,'snirf') && includes(datafmt,'snirf')
+if strcmp(procStreamStyle, 'snirf') && includes(datafmt,'snirf')
     procStreamConfigFile = 'processOpt_default_homer3_snirf.cfg';
     funcToChange = 'hmrR_BandpassFilt';
+    paramIdx = 2;
+elseif strcmp(procStreamStyle, 'nirs')
+    procStreamConfigFile = 'processOpt_default_homer3_nirs.cfg';
+    funcToChange = 'hmrR_BandpassFilt_Nirs';
     paramIdx = 2;
 end
 

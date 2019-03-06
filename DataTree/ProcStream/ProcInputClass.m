@@ -908,11 +908,16 @@ classdef ProcInputClass < handle
                 tmp = {...
                     reg.funcReg(iG).GetUsageStrDecorated('hmrG_BlockAvg_Nirs','dcAvg'); ...
                 };
+                k=[]; kk=1;
                 for ii=1:length(tmp)
-                    if ~isempty(tmp{ii})
-                        v = tmp;
-                        break;
+                    if isempty(tmp{ii})
+                        k(kk)=ii;
+                        kk=kk+1;
                     end
+                end
+                tmp(k) = [];
+                if ~isempty(tmp)
+                    v = tmp;
                 end
             end
             val = v;
@@ -927,11 +932,16 @@ classdef ProcInputClass < handle
                 tmp = {...
                     reg.funcReg(iS).GetUsageStrDecorated('hmrS_BlockAvg','dcAvg'); ...
                 };
+                k=[]; kk=1;
                 for ii=1:length(tmp)
-                    if ~isempty(tmp{ii})
-                        v = tmp;
-                        break;
+                    if isempty(tmp{ii})
+                        k(kk)=ii;
+                        kk=kk+1;
                     end
+                end
+                tmp(k) = [];
+                if ~isempty(tmp)
+                    v = tmp;
                 end
             end
             val = v;
@@ -949,11 +959,16 @@ classdef ProcInputClass < handle
                     reg.funcReg(iR).GetUsageStrDecorated('hmrR_OD2Conc'); ...
                     reg.funcReg(iR).GetUsageStrDecorated('hmrR_BlockAvg','dcAvg'); ...
                 };
+                k=[]; kk=1;
                 for ii=1:length(tmp)
-                    if ~isempty(tmp{ii})
-                        v = tmp;
-                        break;
+                    if isempty(tmp{ii})
+                        k(kk)=ii;
+                        kk=kk+1;
                     end
+                end
+                tmp(k) = [];
+                if ~isempty(tmp)
+                    v = tmp;
                 end
             end
             val = v;

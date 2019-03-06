@@ -1,30 +1,34 @@
 classdef FuncRegEntryClass < matlab.mixin.Copyable
-
+    
     properties
         name
         uiname
         usageoptions
         params
         help
-    end    
+    end
     
     methods
         
         % ----------------------------------------------------------------------------------
-        function obj = FuncRegEntryClass(filename)
+        function obj = FuncRegEntryClass(varargin)
             if nargin==0
                 return;
             end
-            [~,funcname] = fileparts(filename);
-            obj.name = funcname;
-            obj.uiname = '';
-            obj.usageoptions = {};
-            obj.params       = {};
-            obj.help = FuncHelpClass(funcname);
-            obj.SetUsageFromHelp();
-            obj.EncodeUsage();
+            if ischar(varargin{1})
+                [~,funcname] = fileparts(varargin{1});
+                obj.name = funcname;
+                obj.uiname = '';
+                obj.usageoptions = {};
+                obj.params       = {};
+                obj.help = FuncHelpClass(funcname);
+                obj.SetUsageFromHelp();
+                obj.EncodeUsage();
+            elseif isa(varargin{1}, 'FuncRegEntryClass')
+                obj.Copy(varargin{1});
+            end
         end
-
+        
         
         % ----------------------------------------------------------------------------------
         function SetUsageFromHelp(obj)
@@ -41,46 +45,46 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
             for ii=1:length(usage)
                 obj.usageoptions{ii,1} = friendlyname{ii};
                 obj.usageoptions{ii,2} = usage{ii};
-            end            
+            end
             obj.uiname = obj.help.GetUiname();
         end
         
     end
     
-            
+    
     
     methods
         
         % ----------------------------------------------------------------------------------
         function EncodeUsage(obj)
-            % This function takes all the usage cases from the help sections "USAGE OPTIONS" 
+            % This function takes all the usage cases from the help sections "USAGE OPTIONS"
             % and "PARAMETERS" and encodes them into registry language:
             %
             % Here's the internal data flow for EncodeUsage:
             %   {obj.usageoptions{:,2}, obj.params} --> EncodeUsage() --> obj.usageoptions{:,3}
             %
-            % Here's a formal description of function usage encoding for the generic function F(), where 
-            % the first 4 lines are the decoded usage string equivalent and the 5th line with ===> is 
-            % the encoded string:  
+            % Here's a formal description of function usage encoding for the generic function F(), where
+            % the first 4 lines are the decoded usage string equivalent and the 5th line with ===> is
+            % the encoded string:
             %
-            % [r11,...,r1N] = F(a11,...,a1M,p1,...,pL)  
+            % [r11,...,r1N] = F(a11,...,a1M,p1,...,pL)
             % p1: [v11, ..., v1S1]
-            %  ...  
+            %  ...
             % pL: [vL1, ..., vLSL]
             % ===> F [r11,...,r1N] (a11,...,a1M p1 <v11_form>_..._<v1S1_form> v11_..._v1S1 ... pL <vL1_form>_..._<vLSL_form> vL1_..._vLSL
-            % 
-            %        -- OR -- 
             %
-            % [r11,...,r1N] = F(a11,...,a1M,p1,...,pL)  
+            %        -- OR --
+            %
+            % [r11,...,r1N] = F(a11,...,a1M,p1,...,pL)
             % p1: [v11, ..., v1S1]
-            %  ...  
+            %  ...
             % pj: [vj1, ..., vjSj], maxnum: Sj+k
             %  ...
             % pL: [vL1, ..., vLSL]
             % ===> F [r11,...,r1N] (a11,...,a1M p1 <v11_form>_..._<v1S1_form> v11_..._v1S1 pj <vj1_form>_..._<vjSj+k_form> vj1_..._vjSj ... pL <vL1_form>_..._<vLSL_form> vL1_..._vLSL
-            % 
             %
-            % Here are some concrete examples of the above encoding being applied to Homer3 user functions 
+            %
+            % Here are some concrete examples of the above encoding being applied to Homer3 user functions
             % hmrR_BandpassFilt, hmrR_PruneChannels and hmrR_BlockAvg
             %
             % dod = hmrR_BandpassFilt( dod, t, hpf, lpf )
@@ -99,7 +103,7 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
             % trange: [-2.10, 20.30]
             % ===> hmrR_BlockAvg [dcAvg,dcAvgStd,tHRF,nTrials,dcSum2] (dc,s,t trange %0.2f_%0.2f -2.10_20.30
             %
-            % 
+            %
             %
             % Here's an example illustrating use of maxnum (or maxsize) in parameter descritions
             %
@@ -129,7 +133,7 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                 % (a11,...,a1M
                 iparenopen = find(usage == '(');
                 iparenclose = find(usage == ')');
-                if isempty(iparenopen) 
+                if isempty(iparenopen)
                     continue;
                 end
                 if isempty(iparenclose)
@@ -152,18 +156,18 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                     p = sprintf('%s%s %s %s ',p, obj.params{jj,1}, obj.EncodeParamFormat(jj), obj.EncodeParamVals(jj));
                 end
                 encoding = strtrim(sprintf('@ %s%s ', encoding, p));
-
-				% Add encoded function call string to usage options
+                
+                % Add encoded function call string to usage options
                 obj.usageoptions{ii,3} = encoding;
                 
-                % Add a FuncCallClass object that is the parsed equivalent of the 
+                % Add a FuncCallClass object that is the parsed equivalent of the
                 % encoded function string in obj.usageoptions{ii,3}. This will allow
-                % easy lookup and comparison matching in the registry of proc stream 
-				% FuncCallClass objects. 
+                % easy lookup and comparison matching in the registry of proc stream
+                % FuncCallClass objects.
                 obj.usageoptions{ii,4} = FuncCallClass(encoding);
-            end            
+            end
         end
-                
+        
         
         % ----------------------------------------------------------------------------------
         function fmt = EncodeParamFormat(obj, idx)
@@ -204,14 +208,14 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
         % ----------------------------------------------------------------------------------
         function maxnum = GetNumScalars(obj, s)
             % Example usage standalone:
-            % Create empty registry entry to make this function avalable at the matlab prompt. 
+            % Create empty registry entry to make this function avalable at the matlab prompt.
             % Give it some data to parse out max number of scalar places
-            % 
+            %
             %   fregentry = FuncRegEntryClass();
             %   fregentry.GetNumScalars('[1,1,5.0]')
             %   fregentry.GetNumScalars('[6.0,1,7], 4')
             %
-            scalars = obj.IsolateScalars(s);            
+            scalars = obj.IsolateScalars(s);
             maxnum = length(scalars);
             i = find(s=='[');
             j = find(s==']');
@@ -221,34 +225,34 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                 if isempty(s(j+1:end))
                     return;
                 else
-                    % Check for keywords maxnum and maxsize to see if there information about the maximum 
-                    % number of values allowed for this parameter. Basically it is a check of the characters 
-                    % between end of the param list and end-of-the-line; it should be one of the following:  
+                    % Check for keywords maxnum and maxsize to see if there information about the maximum
+                    % number of values allowed for this parameter. Basically it is a check of the characters
+                    % between end of the param list and end-of-the-line; it should be one of the following:
                     %
-                    %  case a) ' maxnum: <n>'  
-                    %  case b) ' maxsize: <n>'  
+                    %  case a) ' maxnum: <n>'
+                    %  case b) ' maxsize: <n>'
                     %  case c) ', <n>'
                     %  case d) '; <n>'
                     %  case e) ' <n>'
-
+                    
                     k1 = strfind(s, 'maxnum');
                     k2 = strfind(s, 'maxsize');
                     
-                    % case a) 
+                    % case a)
                     if ~isempty(k1)
                         maxnumstr = s(k1+length('maxnum')+1:end);
                         if isempty(maxnumstr)
                             return;
                         end
                         
-                    % case b) 
+                        % case b)
                     elseif ~isempty(k2)
                         maxnumstr = s(k2+length('maxsize')+1:end);
                         if isempty(maxnumstr)
                             return;
                         end
                         
-                    % cases c), d), e) 
+                        % cases c), d), e)
                     else
                         s2 = s(j+1:end);
                         s2(s2==',' | s2==';') = '';
@@ -257,7 +261,7 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                         end
                         maxnumstr = s2;
                     end
-
+                    
                     % Check the resulting number, make sure it's not empty and a positive integer
                     if isempty(maxnumstr)
                         return;
@@ -268,9 +272,9 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                     end
                     maxnum = str2num(maxnumstr);
                     
-                    % Check to make sure the max number of scalrs after the param values list is smaller 
-                    % than length of the param value list. If it is smaller then save the user from themselves 
-                    % and assume they forgot to update that maxnum in the help. 
+                    % Check to make sure the max number of scalrs after the param values list is smaller
+                    % than length of the param value list. If it is smaller then save the user from themselves
+                    % and assume they forgot to update that maxnum in the help.
                     if maxnum<length(scalars)
                         maxnum = length(scalars);
                     end
@@ -292,7 +296,7 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                 fmt = '%d';
             end
         end
-                              
+        
         
     end
     
@@ -315,12 +319,12 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
             %
             % Syntax:
             %    str = GetUsageStr(obj, idx)
-            % 
-            % Example: 
+            %
+            % Example:
             %    fregentry = FuncRegEntryClass('hmrR_BlockAvg');
             %    fregentry.GetUsageStr('dcAvg')
             %
-            %      ans = 
+            %      ans =
             %
             %      hmrR_BlockAvg [dcAvg,dcAvgStd,tHRF,nTrials,dcSum2] (dc,s,t trange %0.1f_%0.1f -2.0_20.0
             %
@@ -334,17 +338,17 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                 else
                     for ii=1:size(obj.usageoptions,1)
                         
-                        % First see if usage name matches 
+                        % First see if usage name matches
                         if strcmp(obj.usageoptions{ii,1}, usagename)
                             idx = ii;
                             break;
-                        % Second see if usage name matches any of the input
-                        % or output arguments
+                            % Second see if usage name matches any of the input
+                            % or output arguments
                         elseif ~isempty(strfind(obj.usageoptions{ii,3}, usagename))
                             idx = ii;
                             break;
-                        end                        
-                    end                    
+                        end
+                    end
                 end
             end
             if isempty(idx)
@@ -428,7 +432,7 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
         end
         
         
-
+        
         % ----------------------------------------------------------------------------------
         function usagename = GetUsageName(obj, fcall)
             usagename = '';
@@ -452,7 +456,7 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
             end
         end
         
-
+        
         % ----------------------------------------------------------------------------------
         function fcallstr = GetFuncCallsEncoded(obj, fcall)
             fcallstr = '';
@@ -461,9 +465,54 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                     fcallstr = obj.usageoptions{jj,3};
                     break;
                 end
-            end        
+            end
         end
         
     end
+    
+    
+    methods
+        
+        % ----------------------------------------------------------------------------------
+        function Copy(obj, obj2)
+            obj.name = obj2.name;
+            obj.uiname = obj2.uiname;
+            for ii=1:size(obj2.usageoptions,1)
+                for jj=1:size(obj2.usageoptions,2)
+                    if isa(obj2.usageoptions{ii,jj}, 'FuncCallClass')
+                        obj.usageoptions{ii,jj} = FuncCallClass(obj2.usageoptions{ii,jj});
+                    else
+                        obj.usageoptions{ii,jj} = obj2.usageoptions{ii,jj};
+                    end
+                end
+            end
+            obj.params = obj2.params;
+            obj.help = obj2.help.copy();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsValid(obj)
+            b = false;
+            if isempty(obj)
+                return;
+            end
+            if isempty(obj.name)
+                return
+            end
+            if isempty(obj.uiname)
+                return
+            end
+            if isempty(obj.usageoptions)
+                return
+            end
+            if isempty(obj.help)
+                return
+            end
+            b = true;
+        end
+        
+    end
+    
     
 end

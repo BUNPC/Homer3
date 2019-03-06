@@ -74,7 +74,12 @@ classdef FuncRegClass < matlab.mixin.Copyable
                 progressmsg = sprintf('Parsing %s', files(ii).name);
                 fprintf('%s\n', progressmsg); 
                 waitbar(kk/N, h, sprintf_waitbar(progressmsg));
-                obj.entries(kk) = FuncRegEntryClass(files(ii).name);
+                temp = FuncRegEntryClass(files(ii).name);
+                if ~temp.IsValid()
+                    fprintf(' !!! Ignoring %s because it doesn''t have a valid help section ...\n', files(ii).name);
+                    continue;
+                end
+                obj.entries(kk) = FuncRegEntryClass(temp);
                 obj.userfuncfiles{kk} = [obj.userfuncdir, files(ii).name];
                 kk=kk+1;
             end

@@ -1,4 +1,4 @@
-classdef FuncHelpClass < handle
+classdef FuncHelpClass < matlab.mixin.Copyable
     
     properties
         funcname;
@@ -8,7 +8,7 @@ classdef FuncHelpClass < handle
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %  Initialization methods
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
         % -------------------------------------------------------------
@@ -16,7 +16,7 @@ classdef FuncHelpClass < handle
             % Syntax:
             %       fhelp = FuncHelpClass(funcname);
             %
-            % Examples:            
+            % Examples:
             %       fhelp = FuncHelpClass('hmrR_DeconvHRF_DriftSS');
             %
             if nargin==0
@@ -34,24 +34,24 @@ classdef FuncHelpClass < handle
             fieldname(fieldname==' ')='';
             fieldname = lower(fieldname);
             newsection = struct(...
-                         'name',name, ...
-                         'lines',[0,0], ...
-                         'str','', ...
-                         'subsections', [] ...
-                         );
+                'name',name, ...
+                'lines',[0,0], ...
+                'str','', ...
+                'subsections', [] ...
+                );
             eval( sprintf('obj.sections.%s = newsection;', fieldname) );
         end
         
     end
-
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %  Methods for parsing sections
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
         % -------------------------------------------------------------
         function ParseSections(obj)
-            % This method dynamically parses the help section of a matlab function 
+            % This method dynamically parses the help section of a matlab function
             % that is in the generic format described below. The format
             % consists of a series of sections and sub-sections like this:
             %
@@ -60,36 +60,36 @@ classdef FuncHelpClass < handle
             % <help text for <SECTION NAME i> spanning one or more lines>
             %
             %       -- OR --
-            %           
+            %
             % <SECTION NAME i>:
             % <sub-section1_i>: <help text for sub-section1_i spanning one or more lines>
             % <sub-section2_i>: <help text for sub-section2_i spanning one or more lines>
-            %  . . . . . . 
+            %  . . . . . .
             % <sub-sectionN_i>: <help text for sub-sectionN_i spanning one or more lines>
             %
             % ------------------------------------------------------------
-            % 
+            %
             % For <SECTION NAME i> to be considered a section (as opposed to sub-section)
-            % it must be in all uppercase, must be followed by a ':', and must not have 
-            % any other text on that line. A sub-section is any string without white 
-            % spaces preceding the first occurrence of ':', ' - ' or '--' on a line line. 
+            % it must be in all uppercase, must be followed by a ':', and must not have
+            % any other text on that line. A sub-section is any string without white
+            % spaces preceding the first occurrence of ':', ' - ' or '--' on a line line.
             %
-            % In addition to the generic parsing of sections, this class also provides 
-            % methods for accessing specific 'designated' sections should they exist in 
-            % the help comments. A section is defined as designated in this class if it 
-            % provides public Get* methods to access it. Current designated sections are 
+            % In addition to the generic parsing of sections, this class also provides
+            % methods for accessing specific 'designated' sections should they exist in
+            % the help comments. A section is defined as designated in this class if it
+            % provides public Get* methods to access it. Current designated sections are
             %
-            %       Designated Sections    Associated methods 
+            %       Designated Sections    Associated methods
             %       --------------------------------------
             %       'DESCRIPTION:'          % GetDescr()
             %       'INPUT(S):'             % GetParamDescr()
             %       'USAGE OPTIONS:'        % GetUsageOptions()
             %       'PARAMETERS:'           % GetParamUsage()
             %
-            % New methods can be added for any new designated sections added to this 
-            % class in the future 
+            % New methods can be added for any new designated sections added to this
+            % class in the future
             %
-            % Example from Homer3: formal description of user functions 
+            % Example from Homer3: formal description of user functions
             % help section syntax:
             % --------------------------------------------------------------
             % SYNTAX:
@@ -136,14 +136,14 @@ classdef FuncHelpClass < handle
             
             % Find the lines in the help that belong to each help section
             obj.FindSectionLines();
-                        
+            
             % Remove leading and trailing blank lines from each section
             obj.RemoveBlankLines();
             
             % Now that we have the lines associated with each help section,
             % assign the text from these lines to corresponding help sections.
             obj.AssignSectionText();
-        
+            
             % We have parsed all sections: now parse sub-sections for each
             % section
             sect = propnames(obj.sections);
@@ -174,7 +174,7 @@ classdef FuncHelpClass < handle
             fields = propnames(obj.sections);
             for iLine=1:length(obj.helpstr)
                 for jj=1:length(fields)
-                    secname = eval( sprintf('obj.sections.%s.name', fields{jj}) ); 
+                    secname = eval( sprintf('obj.sections.%s.name', fields{jj}) );
                     if includes(obj.helpstr{iLine}, secname)
                         EndPrevSection(obj, iLine);
                         eval( sprintf('obj.sections.%s.lines(1) = iLine+1;', fields{jj}) );
@@ -195,7 +195,7 @@ classdef FuncHelpClass < handle
                         continue;
                     end
                     eval( sprintf('obj.sections.%s.str = sprintf(''%%s%%s\\n'', obj.sections.%s.str, obj.helpstr{iLine});', ...
-                                  fields{jj}, fields{jj}) );
+                        fields{jj}, fields{jj}) );
                 end
             end
         end
@@ -205,17 +205,17 @@ classdef FuncHelpClass < handle
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Public methods for accessing designated sections
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
-               
+        
         % -------------------------------------------------------------
         function str = GetUiname(obj)
             str = '';
-            if isproperty(obj.sections,'uiname')                
+            if isproperty(obj.sections,'uiname')
                 str = strtrim(obj.sections.uiname.str);
             end
         end
-              
+        
         
         % -------------------------------------------------------------
         function str = GetDescr(obj)
@@ -224,7 +224,7 @@ classdef FuncHelpClass < handle
                 str = obj.sections.description.str;
             end
         end
-              
+        
         
         % -------------------------------------------------------------
         function str = GetParamDescr(obj, param)
@@ -240,8 +240,8 @@ classdef FuncHelpClass < handle
                 return;
             end
             
-            % if the input is a number index into the inputs arrays, then we 
-            % don't need to seach for the param name 
+            % if the input is a number index into the inputs arrays, then we
+            % don't need to seach for the param name
             if iswholenum(param)
                 str = subsections(param).str;
                 return;
@@ -254,10 +254,12 @@ classdef FuncHelpClass < handle
                 end
             end
         end
-
+        
         
         % -------------------------------------------------------------
         function [usage, friendlyname] = GetUsageOptions(obj)
+            usage = {};
+            friendlyname = {};
             subsections = [];
             if isproperty(obj.sections,'usageoptions')
                 subsections = obj.sections.usageoptions.subsections;
@@ -305,13 +307,13 @@ classdef FuncHelpClass < handle
                 helpstr = sprintf('%s%s\n', helpstr, str);
             end
         end
-                
-    end
-       
         
+    end
+    
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %  Methods for parsing sub-sections
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
         % -------------------------------------------------------------
@@ -338,7 +340,7 @@ classdef FuncHelpClass < handle
                     
                     % Assign starting line to current subsection
                     subsect(kk).lines(1) = iLine;
-                                        
+                    
                     % See if there's sub-section preceding current one. If
                     % so, end it
                     if kk>1 && subsect(kk-1).lines(2)==0
@@ -361,7 +363,7 @@ classdef FuncHelpClass < handle
             k = [];
             strs = str2cell(eval(sprintf('obj.sections.%s.str', section)), [], 'keepblanks');
             
-            % Rule 1: Valid section is must end with a ':',' - ', or '--' 
+            % Rule 1: Valid section is must end with a ':',' - ', or '--'
             k1 = find(strs{iLine}==':');
             k2 = strfind(strs{iLine}, ' - ');
             k3 = strfind(strs{iLine}, '--');
@@ -377,17 +379,17 @@ classdef FuncHelpClass < handle
                 return;
             end
             temp = strtrim(strs{iLine}(1:(k-d)));
-
+            
             %%%% Check to make sure string preceding ':' is a valid section name.
             
-            % Rule 2: If string preceding ':' (ie, potential section name) has spaces then it's 
-            % not a section name. 
+            % Rule 2: If string preceding ':' (ie, potential section name) has spaces then it's
+            % not a section name.
             if ~isempty(find(temp==' '))
                 return;
             end
             
-            % Rule 3: If string preceding ':' is indented greater than 2 spaces then it's not 
-            % a section name. 
+            % Rule 3: If string preceding ':' is indented greater than 2 spaces then it's not
+            % a section name.
             indent_size = strfind(strs{iLine}(1:(k-d)), temp)-1;
             if isempty(indent_size) || indent_size > 2
                 return;
@@ -409,13 +411,13 @@ classdef FuncHelpClass < handle
                     % starts after the colon (:) or double dash (--)
                     [~, k] = obj.GetSubSectionName(section, iLine);
                     if ~isempty(k)
-                          strs{iLine} = strtrim(strs{iLine}(k+1:end));
+                        strs{iLine} = strtrim(strs{iLine}(k+1:end));
                     end
                     subsect(ii).str = sprintf('%s%s\n', subsect(ii).str , strs{iLine});
                 end
             end
             eval( sprintf('obj.sections.%s.subsections = subsect;', section) );
-        end        
+        end
         
     end
     
@@ -430,12 +432,12 @@ classdef FuncHelpClass < handle
                 eval( sprintf('obj.sections.%s.lines = [0 0];', fields{ii}) );
             end
         end
-
+        
         
         % -----------------------------------------------------------------
-        function RemoveBlankLines(obj)            
+        function RemoveBlankLines(obj)
             % Identify lines in each section where actual text begins and
-            % ends and remove the leading and trailing blank lines            
+            % ends and remove the leading and trailing blank lines
             fields = propnames(obj.sections);
             for jj=1:length(fields)
                 lines = eval( sprintf('obj.sections.%s.lines(1):obj.sections.%s.lines(2)', fields{jj}, fields{jj}) );
@@ -464,7 +466,7 @@ classdef FuncHelpClass < handle
                 end
             end
         end
-
+        
         
         % -----------------------------------------------------------------
         function EndPrevSection(obj, iLine)
@@ -493,6 +495,15 @@ classdef FuncHelpClass < handle
             end
             b = true;
         end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Copy(obj, obj2)
+            obj.funcname = obj2.funcname;
+            obj.helpstr = obj2.helpstr;
+            obj.sections = obj2.sections;
+        end
+        
         
     end
 end

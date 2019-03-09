@@ -4,8 +4,8 @@ tic;
 
 CleanUp();
 
-rootpath = fileparts(which('Homer3.m'));
-logger = LogClass([rootpath, '/UnitTests/'], 'UnitTestsAll');
+rootpath = fileparts(which('UnitTestsAll.m'));
+logger = LogClass([rootpath, '/'], 'UnitTestsAll');
 UnitTestsAll_Nirs(false, logger);
 UnitTestsAll_Snirf(false, logger);
 

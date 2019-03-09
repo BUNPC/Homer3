@@ -7,12 +7,13 @@ tic;
 DEBUG1=0;
 testidx=0;
 procStreamStyle = 'snirf';
+rootpath = fileparts(which('UnitTestsAll_Snirf.m'));
 
 if ~exist('standalone','var') || isempty(standalone)
     standalone = true;
 end
 if ~exist('logger','var') || isempty(logger)
-    logger = LogClass();
+    logger = LogClass([rootpath, '/'], 'UnitTestsAll_Snirf');
 end
 
 

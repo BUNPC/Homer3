@@ -7,15 +7,14 @@ tic;
 DEBUG1=0;
 testidx=0;
 procStreamStyle = 'snirf';
-rootpath = fileparts(which('UnitTestsAll_Snirf.m'));
 
 if ~exist('standalone','var') || isempty(standalone)
     standalone = true;
 end
 if ~exist('logger','var') || isempty(logger)
+    rootpath = fileparts(which('UnitTestsAll_Snirf.m'));
     logger = LogClass([rootpath, '/'], 'UnitTestsAll_Snirf');
 end
-
 
 groupFolders = FindUnitTestsFolders();
 nGroups = length(groupFolders);
@@ -45,6 +44,9 @@ procStreamStyle=[];
 % If we are NOT standalone then we'll rely on the parent caller to cleanup 
 if standalone
     CleanUp();
+end
+if strcmp(logger.GetFilename(), 'UnitTestsAll_Snirf')
+    logger.Close();
 end
 
 toc

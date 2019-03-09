@@ -35,7 +35,4 @@ for ii=1:length(groupFolders)
         fprintf('Deleting %s\n', [rootpath, '/', groupFolders{ii}, '/', dirs(jj).name, '/*.snirf']);
         delete([rootpath, '/', groupFolders{ii}, '/', dirs(jj).name, '/*.snirf']);
     end
-    
 end
-
-fclose all;

@@ -5,6 +5,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
         userfuncfiles       
         entries
         type
+        config
     end
     
     
@@ -49,8 +50,14 @@ classdef FuncRegClass < matlab.mixin.Copyable
             if nargin==0
                 return;
             end            
-            obj.type = type;
+            obj.type = type;            
             obj.entries = FuncRegEntryClass().empty();
+            
+            % Get the parameter items from config file relevant to this class
+            obj.config = struct('InclArchivedFunctions','');
+            cfg = ConfigFileClass();
+            obj.config.InclArchivedFunctions = cfg.GetValue('Include Archived User Functions');
+
             obj.userfuncdir = obj.FindUserFuncDir();
             obj.userfuncfiles = [];
             obj.Load();
@@ -58,31 +65,38 @@ classdef FuncRegClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function Load(obj)            
-            expr = sprintf('%shmr%s_*.m', obj.userfuncdir, upper(obj.type(1)));
-            files = dir(expr);
-            
+        function Load(obj)
             heading = sprintf('Registry loading %s-level user functions:', [upper(obj.type(1)), obj.type(2:end)]);
             fprintf('%s\n', heading);
-            h = waitbar(0, heading);
-            N = length(files);
-            kk=1;
-            for ii=1:N
-                if strfind(files(ii).name, '_result.m')
-                    continue;
+
+            files = cell(length(obj.userfuncdir),1);
+            for jj=1:length(obj.userfuncdir)
+                expr = sprintf('%shmr%s_*.m', obj.userfuncdir{jj}, upper(obj.type(1)));
+                files{jj} = dir(expr);
+                for iF=1:length(files{jj})
+                    files{jj}(iF).folder = obj.userfuncdir{jj};
                 end
-                progressmsg = sprintf('Parsing %s', files(ii).name);
-                fprintf('%s\n', progressmsg); 
-                waitbar(kk/N, h, sprintf_waitbar(progressmsg));
-                temp = FuncRegEntryClass(files(ii).name);
-                if ~temp.IsValid()
-                    fprintf(' !!! Ignoring %s because it doesn''t have a valid help section ...\n', files(ii).name);
-                    continue;
-                end
-                obj.entries(kk) = FuncRegEntryClass(temp);
-                obj.userfuncfiles{kk} = [obj.userfuncdir, files(ii).name];
-                kk=kk+1;
+                fprintf('User functions folder %s\n', obj.userfuncdir{jj});
             end
+            
+            h = waitbar(0, heading);
+            
+            kk=1;
+            for jj=1:length(files)
+                N = length(files{jj});
+                for ii=1:N
+                    if strfind(files{jj}(ii).name, '_result.m')
+                        continue;
+                    end
+                    progressmsg = sprintf('Parsing %s', files{jj}(ii).name);
+                    fprintf('%s\n', progressmsg);
+                    waitbar(kk/N, h, sprintf_waitbar(progressmsg));
+                    obj.entries(kk) = FuncRegEntryClass(files{jj}(ii).name);
+                    obj.userfuncfiles{kk} = [files{jj}(ii).folder, files{jj}(ii).name];
+                    kk=kk+1;
+                end
+            end
+            
             close(h)
             fprintf('\n');
         end
@@ -90,19 +104,22 @@ classdef FuncRegClass < matlab.mixin.Copyable
                
         % ----------------------------------------------------------------------------------
         function userfuncdir = FindUserFuncDir(obj)
-            userfuncdir = '';
+            userfuncdir = {};
             if isdeployed()
                 if ispc
-                    userfuncdir = 'c:/Users/Public/homer3/FuncRegistry/UserFunctions/';
+                    userfuncdir{1} = 'c:/Users/Public/homer3/FuncRegistry/UserFunctions/';
                 elseif ismac()
-                    userfuncdir = '~/homer3/FuncRegistry/UserFunctions/';
+                    userfuncdir{1} = '~/homer3/FuncRegistry/UserFunctions/';
                 end
             else
                 srcdir = fileparts(which('FuncRegClass.m'));
                 if exist([srcdir, '/UserFunctions']', 'dir')
-                    userfuncdir = fullpath([srcdir, '/UserFunctions/']);
+                    userfuncdir{1} = fullpath([srcdir, '/UserFunctions/']);
                 elseif exist([srcdir, '/../UserFunctions']', 'dir')
-                    userfuncdir = fullpath([srcdir, '/../UserFunctions/']);
+                    userfuncdir{1} = fullpath([srcdir, '/../UserFunctions/']);
+                end
+                if strcmp(obj.config.InclArchivedFunctions, 'Yes')
+                    userfuncdir{2} = fullpath([userfuncdir{1}, 'Archive/']);
                 end
             end
         end

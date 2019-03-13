@@ -230,13 +230,9 @@ classdef GroupClass < TreeNodeClass
                 vars.dodAvgStdSubjs{iSubj} = s(iSubj).procStream.output.GetVar('dodAvgStd');
                 vars.dcAvgSubjs{iSubj}     = s(iSubj).procStream.output.GetVar('dcAvg');
                 vars.dcAvgStdSubjs{iSubj}  = s(iSubj).procStream.output.GetVar('dcAvgStd');
-                vars.tHRFSubjs{iSubj}      = s(iSubj).procStream.output.GetTHRF;
+                vars.tHRFSubjs{iSubj}      = s(iSubj).procStream.output.GetTHRF();
                 vars.nTrialsSubjs{iSubj}   = s(iSubj).procStream.output.GetVar('nTrials');
-                if ~isempty(s(iSubj).procStream.output.GetVar('ch'))
-                    vars.SDSubjs{iSubj}    = s(iSubj).procStream.output.GetVar('ch');
-                else
-                    vars.SDSubjs{iSubj}    = s(iSubj).GetVar('ch');
-                end
+                vars.SDSubjs{iSubj}        = s(iSubj).GetMeasList();
             end
             
             % Make variables in this group available to processing stream input

@@ -48,7 +48,6 @@ nStim = 0;
 grp1=[];
 nSubj = length(yAvgSubjs);
 thresh = thresh * 1e-6;
-chkFlag = 0;
 for iSubj = 1:nSubj
     
     if isempty(yAvgSubjs{iSubj}) || isempty(yAvgStdSubjs{iSubj}) || isempty(tHRFSubjs{iSubj}) || isempty(nTrialsSubjs{iSubj}) || isempty(SDSubjs{iSubj})
@@ -89,7 +88,7 @@ for iSubj = 1:nSubj
                             (squeeze(mean(yAvgStd(lstT,2,:,iS),1))./sqrt(nTrials(:,iS)+eps)) <= thresh &...
                             nTrials(:,iS)>0 );
             
-            if chkFlag==0 | length(lstPass)==size(yAvg,3)
+            if length(lstPass)==size(yAvg,3)
                 if iSubj==1 | iC>nStim
                     for iPass=1:length(lstPass)
                         for iHb=1:3
@@ -108,7 +107,8 @@ for iSubj = 1:nSubj
                 subjCh(lstPass,iC) = subjCh(lstPass,iC) + 1;
             end
             grpAvgPass(lstPass,iC,iSubj) = 1;
-        end        
+        end
+        
         yAvg = [];
         if ~isempty(grp1)
             for iC = 1:size(grp1,4)
@@ -140,16 +140,12 @@ for iSubj = 1:nSubj
             for iWl = 1:2
                 % Calculate which channels to include and exclude from the group HRF avg,
                 % based on the subjects' standard error and store result in lstPass
-                try 
                 lstWl = find(SD.MeasList(:,4)==iWl);
                 lstPass = find( ((squeeze(mean(yAvgStd(lstT,lstWl,iS),1))./sqrt(nTrials(lstWl,iS)'+eps)) <= thresh) &...
                                  nTrials(lstWl,iS)'>0 );
                 lstPass = lstWl(lstPass);
-                catch
-                    d=1;
-                end
                 
-                if chkFlag==0 | length(lstPass)==size(yAvg,3)
+                if length(lstPass)==size(yAvg,3)
                     if iSubj==1 | iC>nStim
                         for iPass=1:length(lstPass)
                             grp1(:,lstPass(iPass),iC) = interp1(tHRF,yAvg(:,lstPass(iPass),iS),tHRF');
@@ -163,9 +159,10 @@ for iSubj = 1:nSubj
                     end
                     subjCh(lstPass,iC) = subjCh(lstPass,iC) + 1;
                 end
-                grpAvgPass(lstPass,iC,iSubj) = 1;
             end
-        end        
+            grpAvgPass(lstPass,iC,iSubj) = 1;
+        end
+        
         yAvg = [];
         if ~isempty(grp1)
             for iC = 1:size(grp1,3)

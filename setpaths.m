@@ -111,11 +111,11 @@ paths_excl_str = [paths_str, paths_excl_str];
 % Either add all conflicting workspaces to the search path or remove the
 % current one, depending on user selection 
 if options.add
-    fprintf('ADDED search paths for worspace %s\n', pwd);    
+    fprintf('ADDED search paths for workspace %s\n', pwd);    
     addwspaths(wspaths, paths_excl_str, options);
     setpermissions(paths);
 else
-    fprintf('REMOVED search paths for worspace %s\n', pwd);
+    fprintf('REMOVED search paths for workspace %s\n', pwd);
     rmpath(paths_excl_str{1});
 end
 

@@ -17,8 +17,8 @@ classdef DataClass < FileLoadSaveClass
             %     obj = DataClass(d,t,ml)
             %     
             %  Input:
-            %     data - When there's one argument, then data can be either
-            %            NirsClass object or DataClass object. 
+            %     data - When there's one argument, data can be either NirsClass object or 
+            %            DataClass object. 
             %     d    - When there are three arguments, d is the data time course matrix
             %     t    - When there are three arguments, t is the data time vector
             %     ml   - When there are three arguments, ml is the measurent list, which 
@@ -127,7 +127,7 @@ classdef DataClass < FileLoadSaveClass
     methods        
         
         % -------------------------------------------------------
-        function b = Empty(obj)
+        function b = IsEmpty(obj)
             b = false;
             if isempty(obj.d) && isempty(obj.t)
                 b = true;

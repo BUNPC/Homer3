@@ -167,7 +167,7 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function d = GetRawData(obj)
+        function d = GetRawData(obj)            
             d = [];
         end
         

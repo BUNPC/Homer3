@@ -172,7 +172,7 @@ classdef SubjClass < TreeNodeClass
             
             % Instantiate all the variables that might be needed by
             % procStream.Calc() to calculate proc stream for this subject
-            nTrials = zeros(1,length(obj.CondNames));
+            vars = [];
             for iRun = 1:nRun
                 vars.dodAvgRuns{iRun}    = r(iRun).procStream.output.GetVar('dodAvg');
                 vars.dodAvgStdRuns{iRun} = r(iRun).procStream.output.GetVar('dodAvgStd');
@@ -182,11 +182,7 @@ classdef SubjClass < TreeNodeClass
                 vars.dcSum2Runs{iRun}    = r(iRun).procStream.output.GetVar('dcSum2');
                 vars.tHRFRuns{iRun}      = r(iRun).procStream.output.GetTHRF;
                 vars.nTrialsRuns{iRun}   = r(iRun).procStream.output.GetVar('nTrials');
-                if ~isempty(r(iRun).procStream.output.GetVar('ch'))
-                    vars.SDRuns{iRun}    = r(iRun).procStream.output.GetVar('ch');
-                else
-                    vars.SDRuns{iRun}    = r(iRun).GetMeasList();
-                end
+                vars.SDRuns{iRun}        = r(iRun).GetMeasList();
             end
             
             % Make variables in this subject available to processing stream input
@@ -211,7 +207,6 @@ classdef SubjClass < TreeNodeClass
             pretty_print_matrix(obj.CondName2Group, indent+4, sprintf('%%d'));
             obj.procStream.input.Print(indent+4);
             obj.procStream.output.Print(indent+4);
-            
             for ii=1:length(obj.runs)
                 obj.runs(ii).Print(indent+4);
             end

@@ -63,6 +63,13 @@ classdef ProcResultClass < handle
                         obj.dodAvg(n+1:m,:,:) = [];
                     end
                 end
+                if ~isempty(obj.dodAvgStd)
+                    if isa(obj.dodAvgStd, 'DataClass')
+                        obj.dodAvgStd.TruncateTpts(abs(d));
+                    else
+                        obj.dodAvgStd(n+1:m,:,:) = [];
+                    end
+                end
                 if ~isempty(obj.dodSum2)
                     if isa(obj.dodSum2, 'DataClass')
                         obj.dodSum2.TruncateTpts(abs(d));
@@ -75,6 +82,13 @@ classdef ProcResultClass < handle
                         obj.dcAvg.TruncateTpts(abs(d));
                     else
                         obj.dcAvg(n+1:m,:,:,:) = [];
+                    end
+                end
+                if ~isempty(obj.dcAvgStd)
+                    if isa(obj.dcAvgStd, 'DataClass')
+                        obj.dcAvgStd.TruncateTpts(abs(d));
+                    else
+                        obj.dcAvgStd(n+1:m,:,:) = [];
                     end
                 end
                 if ~isempty(obj.dcSum2)

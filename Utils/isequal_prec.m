@@ -41,7 +41,15 @@ else
     y1 = round(x1,-n);
     y2 = round(x2,-n);
 end
-b = isequaln(y1,y2);
+
+% We use isequaln instead of == because it handles NaN gracefully, 
+% whereas == operator does not (gives wrong answer when both sides 
+% are NaN). 
+if isequaln(y1,y2)
+    b = true;
+elseif all(abs(x1-x2)<(10^n))
+    b = true;
+end
 
 if DEBUG
     flag = 0;

@@ -23,7 +23,7 @@ idx=1;
 
 % Use the assumed true values from homer2 to determine tolerance for error
 if max(dcAvg_h2(:))>min(dcAvg_h2(:))
-    prec = int32(log10(  .001*(max(dcAvg_h2(:))-min(dcAvg_h2(:))) ));
+    prec = round(log10(  .001*(max(dcAvg_h2(:))-min(dcAvg_h2(:))) ));
 else
     prec = 0;
 end

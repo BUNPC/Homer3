@@ -48,6 +48,12 @@ nStim = 0;
 grp1=[];
 nSubj = length(yAvgSubjs);
 thresh = thresh * 1e-6;
+
+% chkFlag is a parameter that if true requires, for each channel, ALL corresponding 
+% subjects channels to pass before averaging that channel. TBD: Currently we set it to 
+% false unconditionally. In the future chkFlag should be a user-settable input parameter.
+chkFlag = false;
+
 for iSubj = 1:nSubj
     
     if isempty(yAvgSubjs{iSubj}) || isempty(yAvgStdSubjs{iSubj}) || isempty(tHRFSubjs{iSubj}) || isempty(nTrialsSubjs{iSubj}) || isempty(SDSubjs{iSubj})
@@ -88,7 +94,7 @@ for iSubj = 1:nSubj
                             (squeeze(mean(yAvgStd(lstT,2,:,iS),1))./sqrt(nTrials(:,iS)+eps)) <= thresh &...
                             nTrials(:,iS)>0 );
             
-            if length(lstPass)==size(yAvg,3)
+            if chkFlag==false | length(lstPass)==size(yAvg,3)
                 if iSubj==1 | iC>nStim
                     for iPass=1:length(lstPass)
                         for iHb=1:3
@@ -145,7 +151,7 @@ for iSubj = 1:nSubj
                                  nTrials(lstWl,iS)'>0 );
                 lstPass = lstWl(lstPass);
                 
-                if length(lstPass)==size(yAvg,3)
+                if chkFlag==false | length(lstPass)==size(yAvg,2)
                     if iSubj==1 | iC>nStim
                         for iPass=1:length(lstPass)
                             grp1(:,lstPass(iPass),iC) = interp1(tHRF,yAvg(:,lstPass(iPass),iS),tHRF');

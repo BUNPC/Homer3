@@ -20,6 +20,27 @@ classdef MeasListClass < FileLoadSaveClass
     methods
 
         function obj = MeasListClass(varargin)
+            %
+            %  Syntax:
+            %     obj = MeasListClass()
+            %     obj = MeasListClass(ml)
+            %     obj = MeasListClass(sourceIndex, detectorIndex, wavelengthIndex)
+            %     obj = MeasListClass(sourceIndex, detectorIndex, dataType)
+            %     obj = MeasListClass(sourceIndex, detectorIndex, dataType, dataTypeLabel)
+            %     obj = MeasListClass(sourceIndex, detectorIndex, dataType, dataTypeLabel, condition)
+            %     
+            %  Inputs:
+            %     ml            - When there's one argument, ml is the measurent list, which 
+            %                     can be either a nirs style matrix or a MeasListClass object.
+            %     sourceIndex   - When there are more than 2 arguments, ...
+            %     detectorIndex - When there are more than 2 arguments, ...
+            %     dataType      - When there are more than 2 arguments, ...
+            %     dataTypeLabel - When there are more than 2 arguments, ...
+            %     condition     - When there are more than 2 arguments, ...
+            %
+            %  Example:
+            %
+            
             % Fields which are part of the SNIRF spec which are loaded and saved 
             % from/to SNIRF files
             obj.dataType         = 1;

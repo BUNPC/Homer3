@@ -558,10 +558,10 @@ classdef ProcInputClass < handle
             %    Here's the output:
             %
             %     G = {
-            %          '@ hmrG_BlockAvg [dcAvg,dcAvgStd,tHRF,nTrials,grpAvgPass] (dcAvgSubjs,dcAvgStdSubjs,tHRFSubjs,SDSubjs,nTrialsSubjs,CondName2Subj tRange %0.1f…'
+            %          '@ hmrG_BlockAvg [dcAvg,dcAvgStd,nTrials,grpAvgPass] (dcAvgSubjs,dcAvgStdSubjs,SDSubjs,nTrialsSubjs,CondName2Subj tRange %0.1f…'
             %         }
             %     S = {
-            %          '@ hmrS_BlockAvg [dcAvg,dcAvgStd,tHRF,nTrials] (dcAvgRuns,dcAvgStdRuns,dcSum2Runs,tHRFRuns,SDRuns,nTrialsRuns,CondName2Run'
+            %          '@ hmrS_BlockAvg [dcAvg,dcAvgStd,nTrials] (dcAvgRuns,dcAvgStdRuns,dcSum2Runs,SDRuns,nTrialsRuns,CondName2Run'
             %         }
             %     R = {
             %         '@ hmrR_Intensity2OD dod (d'
@@ -906,7 +906,7 @@ classdef ProcInputClass < handle
             if nargin>1
                 iG = reg.igroup;
                 tmp = {...
-                    reg.funcReg(iG).GetUsageStrDecorated('hmrG_BlockAvg_Nirs','dcAvg'); ...
+                    reg.funcReg(iG).GetUsageStrDecorated('hmrG_BlockAvg','dcAvg'); ...
                 };
                 k=[]; kk=1;
                 for ii=1:length(tmp)

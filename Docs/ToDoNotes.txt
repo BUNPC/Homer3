@@ -57,3 +57,15 @@ Mar 1, 2019
 
 -- Come ip with a modular object oriented way to update Homer3 listboxFiles control when calculating proc stream. Right now it does not update. 
 
+----------------
+Mar 12, 2019
+----------------
+
+-- Display the group folder as a directory tree entru in listbox files same as subject folders are displyed for consistency and coherence when determining default behavior of processing level and plot data type button selections.
+
+-- Use usage names + function names instead of just function names in the ProcStreamOptionsGUI to let user see the proc stream as sequence of function calls (which is what it is) rather than sequence of function names.
+
+-- Add standard deviation calculation to GroupClass.Calc() method.
+
+-- Add checks of dodAvg and dodAvg and dcAvg standard deviations to unit test. 
+

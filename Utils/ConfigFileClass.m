@@ -42,6 +42,10 @@ classdef ConfigFileClass < FileClass
             % We have a filename of an exiting readdable file. 
             obj.filename = filename;
             obj.ParseFile();
+
+            fclose(obj.fid);
+            obj.fid = -1;
+            obj.linestr = '';            
         end
         
         
@@ -168,16 +172,37 @@ classdef ConfigFileClass < FileClass
                 obj.linestr='';
                 iP=iP+1;
             end            
-            fclose(obj.fid);
-            obj.linestr='';
         end
+        
+        
+        % -------------------------------------------------------------------------------------------------
+        function WriteFile(obj)
+            if obj.fid<0
+                obj.fid = fopen(obj.filename, 'w');
+            end
+            if obj.fid<0
+                return;
+            end
+            fprintf(obj.fid, '\n');
+            for ii=1:length(obj.sections)
+                fprintf(obj.fid, '%% %s\n', obj.sections(ii).name);
+                for jj=1:length(obj.sections(ii).val)
+                    fprintf(obj.fid, '%s\n', obj.sections(ii).val{jj});
+                end
+                fprintf(obj.fid, '\n');
+            end
+            fprintf(obj.fid, '%% END\n');
+            
+            fclose(obj.fid);
+            obj.fid = -1;
+        end
+        
         
         
         
         % -------------------------------------------------------------------------------------------------
         function ExitWithError(obj, err)
             obj.linestr='';
-            fclose(obj.fid);
             if nargin==1
                 return;
             end
@@ -288,6 +313,9 @@ classdef ConfigFileClass < FileClass
         % -------------------------------------------------------------------------------------------------
         function val = GetValue(obj, section)
             val = {};
+            if nargin<2
+                return;
+            end
             if ~ischar(section)
                 return;
             end
@@ -297,6 +325,34 @@ classdef ConfigFileClass < FileClass
                 end
             end
         end
+
+                
+        % -------------------------------------------------------------------------------------------------
+        function SetValue(obj, section, val)
+            if nargin<3
+                return;
+            end
+            if ~ischar(section)
+                return;
+            end
+            for ii=1:length(obj.sections)
+                if strcmp(obj.sections(ii).name, section)
+                    obj.sections(ii).val{1} = val;
+                end
+            end
+        end
+        
+        
+        % -------------------------------------------------------------------------------------------------
+        function Close(obj)
+            if obj.fid>0
+                fclose(obj.fid);                
+            end
+            obj.fid = -1;
+        end
+        
+        
+        
         
     end
 end

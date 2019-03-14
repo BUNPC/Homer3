@@ -308,7 +308,29 @@ classdef ProcInputClass < handle
             n = length(obj.fcalls);
         end
 
-                
+
+        % ----------------------------------------------------------------------------------
+        function maxnamelen = GetMaxCallNameLength(obj)
+            maxnamelen = 0;
+            for iFcall = 1:length(obj.fcalls)
+                if length(obj.fcalls(iFcall).GetNameUserFriendly()) > maxnamelen
+                    maxnamelen = length(obj.fcalls(iFcall).nameUI)+1;
+                end
+            end
+        end
+        
+        
+        % -----------------------------------------------------------------
+        function maxnamelen = GetMaxParamNameLength(obj)
+            maxnamelen = 0;
+            for iFcall = 1:length(obj.fcalls)
+                if obj.fcalls(iFcall).GetMaxParamNameLength() > maxnamelen
+                    maxnamelen = obj.fcalls(iFcall).GetMaxParamNameLength();
+                end
+            end
+        end
+        
+        
         % ----------------------------------------------------------------------------------
         function LoadVars(obj, vars)
             if ~isstruct(vars)
@@ -339,7 +361,7 @@ classdef ProcInputClass < handle
     methods
 
         % ----------------------------------------------------------------------------------
-        function fname = GetConfigFileName(obj, procStreamCfgFile)            
+        function fname = GetConfigFileName(obj, procStreamCfgFile)
             if ~exist('procStreamCfgFile','var')
                 procStreamCfgFile = '';
             end
@@ -810,12 +832,19 @@ classdef ProcInputClass < handle
                     % Otherwise only include those user function calls that exist in the registry. 
                     if temp.GetErr()==0 && (isempty(reg) || ~isempty(reg.GetUsageName(temp)))
                         obj.fcalls(kk) = FuncCallClass(temp);
+                        
+                        usagename = reg.GetUsageName(obj.fcalls(kk));
+                        obj.fcalls(kk).SetUsageName(usagename);
+                        
+                        fcallstr = reg.GetFuncCallStrDecoded(obj.fcalls(kk).GetName(), usagename);
+                        obj.fcalls(kk).AddHelpUsageStr(fcallstr);
+                        
                         kk=kk+1;
                     else
                         fprintf('Entry not found in registry: "%s"\n', section{ii})
                     end
                 end
-            end
+            end            
         end
         
 

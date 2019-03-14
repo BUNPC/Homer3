@@ -170,16 +170,15 @@ if ishandles(hc)
     delete(hc);
 end
 
-procInput = procStreamOptions.dataTree.currElem.procStream.input;
-fcalls = procInput.fcalls;
+p = procStreamOptions.dataTree.currElem.procStream.input;
 
-if isempty(fcalls)
+if isempty(p.fcalls)
     menu('Processing stream is empty. Please check the registry to see if any user functions were loaded.', 'OK');
     procStreamOptions.err=-1;
     return;
 end
 
-nFcall = length(fcalls);
+nFcall = length(p.fcalls);
 
 % If no functions, throw up empty gui
 if nFcall==0
@@ -193,13 +192,13 @@ end
 % Pre-calculate figure height
 funcHeight = zeros(nFcall,1);
 for iFcall = 1:nFcall
-    funcHeight(iFcall) = 1+length(fcalls(iFcall).paramIn)-1;
+    funcHeight(iFcall) = 1+length(p.fcalls(iFcall).paramIn)-1;
 end
 ystep = 1.8;
 ysize = 1.5;
 ysize_tot = sum(funcHeight)*ystep + nFcall*2 + 5;
-xsize_fname = getFuncNameMaxStrLength(fcalls)+2;
-xsize_pname = getParamNameMaxStrLength(fcalls)+2;
+xsize_fname = p.GetMaxCallNameLength()+2;
+xsize_pname = p.GetMaxParamNameLength()+2;
 xsize_pval  = 15;
 xpos_pname  = xsize_fname+10;
 xpos_pedit  = xpos_pname+xsize_pname+10;
@@ -215,16 +214,16 @@ ypos = ysize_tot-5;
 for iFcall = 1:nFcall
     
     % Draw function name
-    xsize = length(fcalls(iFcall).name)+5;
+    xsize = length(p.fcalls(iFcall).GetNameUserFriendly())+5;
     xsize = xsize+(5-mod(xsize,5));
     h_fname = uicontrol(hObject, 'style','text', 'units','characters', 'position',[2, ypos, xsize, ysize],...
-                        'string',fcalls(iFcall).name);
+                        'string',p.fcalls(iFcall).GetNameUserFriendly());
     set(h_fname, 'backgroundcolor',[1 1 1], 'units','normalized');
     set(h_fname, 'horizontalalignment','left');
-    set(h_fname, 'tooltipstring',fcalls(iFcall).help);
+    set(h_fname, 'tooltipstring', p.fcalls(iFcall).GetHelp());
     
     % Draw pushbutton to see output results if requested in config file
-    if fcalls(iFcall).argOut.str(1)=='#'
+    if p.fcalls(iFcall).argOut.str(1)=='#'
         h_bttn = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',[xpos_pbttn, ypos, 10, ysize],...
                           'string','Results');
         eval( sprintf(' fcn = @(hObject,eventdata)ProcStreamOptionsGUI(''pushbuttonProc_Callback'',hObject,%d,guidata(hObject));',iFcall) );
@@ -232,18 +231,18 @@ for iFcall = 1:nFcall
     end
     
     % Draw list of parameters
-    for iParam = 1:length(fcalls(iFcall).paramIn)
+    for iParam = 1:length(p.fcalls(iFcall).paramIn)
         % Draw parameter names
-        pname = fcalls(iFcall).paramIn(iParam).name;
+        pname = p.fcalls(iFcall).paramIn(iParam).name;
         h_pname=uicontrol(hObject, 'style','text', 'units','characters', 'position',[xpos_pname, ypos, xsize_pname, ysize],...
                           'string',pname);
         set(h_pname, 'backgroundcolor',[1 1 1], 'units','normalized');
         set(h_pname, 'horizontalalignment', 'left');
-        set(h_pname, 'tooltipstring', fcalls(iFcall).paramIn(iParam).help);
+        set(h_pname, 'tooltipstring', p.fcalls(iFcall).paramIn(iParam).help);
 
         % Draw parameter edit boxes
         h_pedit=uicontrol(hObject,'style','edit','units','characters','position',[xpos_pedit, ypos, xsize_pval, 1.5]);
-        set(h_pedit,'string',sprintf(fcalls(iFcall).paramIn(iParam).format, fcalls(iFcall).paramIn(iParam).value ) );
+        set(h_pedit,'string',sprintf(p.fcalls(iFcall).paramIn(iParam).format, p.fcalls(iFcall).paramIn(iParam).value ) );
         set(h_pedit,'backgroundcolor',[1 1 1]);
         eval( sprintf(' fcn = @(hObject,eventdata)ProcStreamOptionsGUI(''edit_Callback'',hObject,[%d %d],guidata(hObject));',iFcall,iParam) );
         set( h_pedit, 'Callback',fcn, 'units','normalized');
@@ -252,7 +251,7 @@ for iFcall = 1:nFcall
     end
     
     % If function has no parameters, skip a step in the y direction
-    if isempty(fcalls(iFcall).paramIn)
+    if isempty(p.fcalls(iFcall).paramIn)
         ypos = ypos - ystep;
     end
     
@@ -361,32 +360,6 @@ end
 eval( sprintf( '%s_result( %s );', procInput.fcalls(eventdata).name, sargin ) );
 
 procStreamOptions.dataTree.currElem.procStream.input = procInput.copy;
-
-
-
-% -----------------------------------------------------------------
-function maxnamelen = getFuncNameMaxStrLength(fcalls)
-
-maxnamelen=0;
-for iFcall =1:length(fcalls)
-    if length(fcalls(iFcall).name) > maxnamelen
-        maxnamelen = length(fcalls(iFcall).name)+1;
-    end
-end
-
-
-% -----------------------------------------------------------------
-function maxnamelen = getParamNameMaxStrLength(fcalls)
-
-maxnamelen=0;
-for iFcall=1:length(fcalls)
-    for iParam=1:length(fcalls(iFcall).paramIn)
-        if length(fcalls(iFcall).paramIn(iParam).name)>maxnamelen
-            maxnamelen = length(fcalls(iFcall).paramIn(iParam).name)+1;
-        end
-    end
-end
-
 
 
 

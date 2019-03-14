@@ -70,10 +70,14 @@ classdef FuncCallClass < handle
         
         
         % ------------------------------------------------------------
-        function GetHelp(obj)
-            fhelp = FuncHelpClass(obj.name);
-            obj.help = fhelp.GetDescr();
+        function helpstr = GetHelp(obj)
+            if isempty(obj.help)
+                fhelp = FuncHelpClass(obj.name);
+                obj.help = fhelp.GetDescr();
+            end
+            helpstr = obj.help;
         end
+        
         
         
         % ------------------------------------------------------------
@@ -82,6 +86,11 @@ classdef FuncCallClass < handle
         end
         
         
+        % ------------------------------------------------------------
+        function name = GetNameUserFriendly(obj)
+            name = obj.nameUI;
+        end
+               
         
         % ------------------------------------------------------------
         function GetParamHelp(obj, key)
@@ -97,6 +106,12 @@ classdef FuncCallClass < handle
         end
         
         
+        
+        % ----------------------------------------------------------------------------------
+        function SetUsageName(obj, usagename)
+            obj.nameUI = sprintf('%s:  %s', obj.name, usagename);
+        end
+
         
         % ----------------------------------------------------------------------------------
         function DecodeArgIn(obj)
@@ -285,6 +300,34 @@ classdef FuncCallClass < handle
         % ----------------------------------------------------------------------------------
         function val = GetErr(obj)
             val = obj.err;
+        end
+                       
+        
+        % -----------------------------------------------------------------
+        function maxnamelen = GetMaxParamNameLength(obj)
+            maxnamelen = 0;
+            for iParam = 1:length(obj.paramIn)
+                if length(obj.paramIn(iParam).name) > maxnamelen
+                    maxnamelen = length(obj.paramIn(iParam).name)+1;
+                end
+            end
+        end
+        
+        
+        % -----------------------------------------------------------------
+        function AddHelpUsageStr(obj, fcallstr)
+            if isempty(obj)
+                return;
+            end
+            if nargin<2
+                return;
+            end
+            if isempty(fcallstr)
+                return;
+            end
+            n = length(fcallstr);
+            sep = repmat('-', 1,n);
+            obj.help = sprintf('%s\n%s\n%s', fcallstr, sep, obj.help);
         end
         
     end

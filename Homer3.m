@@ -110,6 +110,8 @@ hmr.gid = 1;
 hmr.sid = 2;
 hmr.rid = 3;
 
+hmr.dataTree = [];
+
 % Choose default command line output for Homer3
 handles.output = hObject;
 guidata(hObject, handles);
@@ -155,6 +157,9 @@ function [eventdata, handles] = Homer3_DeleteFcn(hObject, eventdata, handles)
 global hmr;
 
 if isempty(hmr)
+    return;
+end
+if isempty(hmr.dataTree)
     return;
 end
 

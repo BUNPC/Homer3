@@ -36,3 +36,4 @@ for ii=1:length(groupFolders)
         delete([rootpath, '/', groupFolders{ii}, '/', dirs(jj).name, '/*.snirf']);
     end
 end
+

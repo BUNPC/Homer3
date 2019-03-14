@@ -9,6 +9,7 @@ testidx=0;
 procStreamStyle = 'nirs';
 
 if ~exist('standalone','var') || isempty(standalone)
+    SetConfig();
     standalone = true;
 end
 if ~exist('logger','var') || isempty(logger)
@@ -22,7 +23,7 @@ nGroups = length(groupFolders);
 status = zeros(4, nGroups);
 for ii=1:nGroups
     status(1,ii) = unitTest_DefaultProcStream('.nirs', groupFolders{ii}, logger); 
-    status(2,ii) = unitTest_DefaultProcStream('.snirf',groupFolders{ii}, logger); 
+    status(2,ii) = unitTest_DefaultProcStream('.snirf', groupFolders{ii}, logger); 
     status(3,ii) = unitTest_ModifiedLPF('.nirs', groupFolders{ii}, 0.30, logger); 
     status(4,ii) = unitTest_ModifiedLPF('.snirf', groupFolders{ii}, 0.30, logger);
     status(5,ii) = unitTest_ModifiedLPF('.nirs', groupFolders{ii}, 0.70, logger); 
@@ -48,6 +49,7 @@ procStreamStyle=[];
 
 % If we are NOT standalone then we'll rely on the parent caller to cleanup 
 if standalone
+    ResetConfig();
     CleanUp();
 end
 if strcmp(logger.GetFilename(), 'UnitTestsAll_Nirs')

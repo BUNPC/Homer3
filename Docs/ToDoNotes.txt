@@ -7,11 +7,11 @@ Jan 31, 2019:
 
 -- Minor mistakes and tough to notice errors in the user function help can mean it's not loaded and parsed properly in the registry. Need to fix this. Maybe add a tool where you enter {function name, input names, output names, parameter names} and it generates help text in the hmr*.m file. 
 
--- Add default traversal behavior for files in the Homer3 listbox so that user doesn't have to contantly click on the group, run, subj radiobuttons - include in this default behavior for datatype radiobuttons buttons. 
+-- DONE: Add default traversal behavior for files in the Homer3 listbox so that user doesn't have to contantly click on the group, run, subj radiobuttons - include in this default behavior for datatype radiobuttons buttons. 
 
 -- Add ability to fix x and y ranges in the homer3 data display. 
 
--- Rework stimGUI change name to StimEditGUI, get rid of associated class and add it to the ChildGuiClass object hmr.childguis. Do same for PlotProbeGUI and ProcStreamOptionsGUI. These all should just be 
+-- DONE: Rework stimGUI change name to StimEditGUI, get rid of associated class and add it to the ChildGuiClass object hmr.childguis. Do same for PlotProbeGUI and ProcStreamOptionsGUI. These all should just be 
 front-end client applications of DataTreeClass and FuncRegClass obects. 
 
 -- Revisit the idea of making a uniform sizes condition sets between Subj, Group and Run to allow getting rid of the need for CondNames2* tables. It would really, really simplify things with conditions and make the group and subject level proc stream averaging much easier. 
@@ -29,15 +29,15 @@ d) Snirf HDF5 saving/loading
 Feb 1, 2019
 -----------------
 
--- Make procStream.input.param part of the FuncClass. It is now part of the ProcInputClass which doesn't make sense and is annoying to work with.
+-- DONE: Make procStream.input.param part of the FuncClass. It is now part of the ProcInputClass which doesn't make sense and is annoying to work with.
 
--- Homer3 should do a sctrict check at startup time of any group folder it opens of the groupResults.mat and proccessOpt_default.cfg to make sure they are in the Homer3 format. If not either ignore them or have a well defined process for converting from a legacy version to homer3 version. If that's not possible treat these files as if they were not there, move them to different names or delete them altogether. Another option might be to use names for these that are unique to homer3. 
+-- DONE: Homer3 should do a strict check at startup time of any group folder it opens of the groupResults.mat and proccessOpt_default.cfg to make sure they are in the Homer3 format. If not either ignore them or have a well defined process for converting from a legacy version to homer3 version. If that's not possible treat these files as if they were not there, move them to different names or delete them altogether. Another option might be to use names for these that are unique to homer3. 
 
--- Change unit tests to be entirely automated, to run without any user interaction, so it would ask to load config file. Maybe change the loading process to check for a master config file which Homer3 could read in default choices. 
+-- DONE: Change unit tests to be entirely automated, to run without any user interaction, so it would ask to load config file. Maybe change the loading process to check for a master config file which Homer3 could read in default choices. 
 
 -- Add another unit tests which makes all sub unit tests fail by automatically modifying one of the source code files in a subtle ways, then unmodifying so that you don't accidentally commit the bad change. 
 
--- The unit test that tests different outputs for different values was revealed to be not valid, since faulty homer3 code that produces bad output will also produce a passing results.  Instead you have to have the correct result to compare against with non-default lpf values. Need to fix this. 
+-- DONE: The unit test that tests different outputs for different values was revealed to be not valid, since faulty homer3 code that produces bad output will also produce a passing results.  Instead you have to have the correct result to compare against with non-default lpf values. Need to fix this. 
 
 -----------------
 Feb 2, 2019
@@ -45,7 +45,7 @@ Feb 2, 2019
 
 -- Create a Simple basic LoggerClass to generate logging information for every Homer3 session, with version number, time stamps, etc. You should also be able to email the log as an attachment using a menu option. 
 
--- Insert Homer3 version numbers into groupResults (I think groupResults might already have it, check to make sure) and any proc stream config file, processOpt_*.cfg. 
+-- DONE: Insert Homer3 version numbers into groupResults (I think groupResults might already have it, check to make sure) and any proc stream config file, processOpt_*.cfg. 
 
 -- DataFilesClass should use the same (acquisition-level) classes as the DataTreeClass to load and vet the data files. Also Homer3 should load the files ONLY ONCE not twice like it's done now. This will not only speed up the launching process but also make it much more coherent where the data files use the same mechanism to check their validity as the DataTreeClass object. 
 
@@ -55,13 +55,13 @@ Mar 1, 2019
 
 -- Come up with a modular object oriented way to update Homer3 display after changes in stimGUI. Right now it does not update unless you do it manually - that is after changing stimGUI you have to click on a control in Homer3 to see the stim changes in Homer3 display.
 
--- Come ip with a modular object oriented way to update Homer3 listboxFiles control when calculating proc stream. Right now it does not update. 
+-- Come up with a modular object oriented way to update Homer3 listboxFiles control when calculating proc stream. Right now it does not update. 
 
 ----------------
 Mar 12, 2019
 ----------------
 
--- Display the group folder as a directory tree entru in listbox files same as subject folders are displyed for consistency and coherence when determining default behavior of processing level and plot data type button selections.
+-- Display the group folder as a directory tree in listbox files same as subject folders are displyed for consistency and coherence when determining default behavior of processing level and plot data type button selections.
 
 -- Use usage names + function names instead of just function names in the ProcStreamOptionsGUI to let user see the proc stream as sequence of function calls (which is what it is) rather than sequence of function names.
 

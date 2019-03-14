@@ -264,7 +264,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function fcallstr = GetFuncCallStrDecoded(obj, key, usagename)
-            usagestr = '';
+            fcallstr = '';
             idx = obj.GetIdx(key);
             if isempty(idx)
                 return;

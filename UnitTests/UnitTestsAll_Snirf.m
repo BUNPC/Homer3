@@ -10,6 +10,7 @@ procStreamStyle = 'snirf';
 
 if ~exist('standalone','var') || isempty(standalone)
     standalone = true;
+    SetConfig();
 end
 if ~exist('logger','var') || isempty(logger)
     rootpath = fileparts(which('UnitTestsAll_Snirf.m'));
@@ -20,7 +21,7 @@ groupFolders = FindUnitTestsFolders();
 nGroups = length(groupFolders);
 status = zeros(4, nGroups);
 for ii=1:nGroups
-    status(1,ii) = unitTest_DefaultProcStream('.snirf',groupFolders{ii}, logger); 
+    status(1,ii) = unitTest_DefaultProcStream('.snirf', groupFolders{ii}, logger); 
     status(2,ii) = unitTest_ModifiedLPF('.snirf', groupFolders{ii}, 0.30, logger);
     status(3,ii) = unitTest_ModifiedLPF('.snirf', groupFolders{ii}, 0.70, logger);
     status(4,ii) = unitTest_ModifiedLPF('.snirf', groupFolders{ii}, 1.00, logger);
@@ -44,6 +45,7 @@ procStreamStyle=[];
 % If we are NOT standalone then we'll rely on the parent caller to cleanup 
 if standalone
     CleanUp();
+    ResetConfig();
 end
 if strcmp(logger.GetFilename(), 'UnitTestsAll_Snirf')
     logger.Close();

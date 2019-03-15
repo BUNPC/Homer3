@@ -249,23 +249,24 @@ Yst     = yoffset + ((N+1)*b) + Sigma(N+1, Ys, m);    % GUI height
 
 % Set GUI position/size
 set(hObject, 'position', [p(1), p(2), Xst, Yst]);
-
+h=[]; p=[];
 for k = 1:nFcalls    
     Ypfk = Yst - (yoffset + k*b + Sigma(k, Ys, m));
+    
     if DEBUG
         fprintf('%d) %s:   p1 = [%0.1f, %0.1f, %0.1f, %0.1f]\n', k, fcalls(k).GetNameUserFriendly(), a, Ypfk, Xsf, Ys);
     end
     
     % Draw function call divider for clarity
-    p(1,:) = [0, Ypfk+b/2, Xst, .3];
-    h(1) = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',p(1,:),...
-                              'enable','off');                          
+    p(end+1,:) = [0, Ypfk+b/2, Xst, .3];
+    h(end+1,:) = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',p(end,:),...
+                                    'enable','off');
     % Draw function call
-    p(2,:) = [a, Ypfk, Xsf, Ys];
-    h(2) = uicontrol(hObject, 'style','text', 'units','characters', 'horizontalalignment','left', ...
-                              'units','characters', 'position',p(2,:), 'string',fcalls(k).GetNameUserFriendly(), ...
-                              'BackgroundColor',bgc, 'ForegroundColor',fgc, ...
-                              'tooltipstring',fcalls(k).GetHelp());
+    p(end+1,:) = [a, Ypfk, Xsf, Ys];
+    h(end+1,:) = uicontrol(hObject, 'style','text', 'units','characters', 'horizontalalignment','left', ...
+                                    'units','characters', 'position',p(end,:), 'string',fcalls(k).GetNameUserFriendly(), ...
+                                    'BackgroundColor',bgc, 'ForegroundColor',fgc, ...
+                                    'tooltipstring',fcalls(k).GetHelp());
     
     for j=1:fcalls(k).GetParamNum()
         Ypfkj = Yst - (yoffset + k*b + Sigma(k, Ys, m) + Ys*(j-1));
@@ -275,21 +276,21 @@ for k = 1:nFcalls
         end
         
         % Draw parameter j name 
-        p(3,:) = [Xp2, Ypfkj, Xsp, Ys];
-        h(3) = uicontrol(hObject, 'style','text', 'units','characters', 'horizontalalignment','left', ...
-                                  'units','characters', 'position',p(3,:), 'string',fcalls(k).GetParamName(j), ...
-                                  'BackgroundColor',bgc, 'ForegroundColor',fgc, ...
-                                  'tooltipstring', fcalls(k).GetParamHelp(j));
+        p(end+1,:) = [Xp2, Ypfkj, Xsp, Ys];
+        h(end+1,:) = uicontrol(hObject, 'style','text', 'units','characters', 'horizontalalignment','left', ...
+                                        'units','characters', 'position',p(end,:), 'string',fcalls(k).GetParamName(j), ...
+                                        'BackgroundColor',bgc, 'ForegroundColor',fgc, ...
+                                        'tooltipstring', fcalls(k).GetParamHelp(j));
 
         % Draw edit box for parameter j and fill it with the corresponding
         % value
-        p(4,:) = [Xp4, Ypfkj, Xse, Ys];
+        p(end+1,:) = [Xp4, Ypfkj, Xse, Ys];
         eval( sprintf(' fcn = @(hObject,eventdata)ProcStreamOptionsGUI(''edit_Callback'',hObject,[%d %d],guidata(hObject));',k,j) );
-        h(4) = uicontrol(hObject, 'style','edit', 'horizontalalignment','left', 'units','characters', 'position',p(4,:), ...
-                                  'string',fcalls(k).GetParamValStr(j), ...
-                                  'horizontalalignment','center', ...
-                                  'Callback',fcn);
-    end      
+        h(end+1,:) = uicontrol(hObject, 'style','edit', 'horizontalalignment','left', 'units','characters', 'position',p(end,:), ...
+                                        'string',fcalls(k).GetParamValStr(j), ...
+                                        'horizontalalignment','center', ...
+                                        'Callback',fcn);
+    end
 end
 
 % Set all GUI objects except figure to normalized units, so it can be
@@ -300,7 +301,7 @@ set(h, 'units','normalized');
 % % to as these are the units used to reposition GUI later if needed
 % set(hObject, 'units','pixels');
 setGuiFonts(hObject);
-
+figure(handles.figure);
 
 
 % ----------------------------------------------------------

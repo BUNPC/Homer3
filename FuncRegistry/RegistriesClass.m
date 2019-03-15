@@ -94,6 +94,24 @@ classdef RegistriesClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function usagenames = GetUsageNames(obj, funcname)
+            usagenames = {};
+            if isempty(obj)
+                return;
+            end
+            if nargin<2
+                return;
+            end
+            for ii=1:length(obj.funcReg)
+                usagenames = obj.funcReg(ii).GetUsageNames(funcname);
+                if ~isempty(usagenames)
+                    break;
+                end
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function fcallstr = GetFuncCallStrDecoded(obj, key, usagename)
             fcallstr = '';
             if isempty(obj)

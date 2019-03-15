@@ -312,7 +312,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function usagenames = GetUsageNames(obj, funcname)
-            usagenames = '';
+            usagenames = {};
             idx = obj.GetIdx(funcname);
             if isempty(idx)
                 return;

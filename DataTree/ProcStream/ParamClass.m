@@ -71,6 +71,12 @@ classdef ParamClass < matlab.mixin.Copyable
             end
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function val = GetName(obj)
+            val = obj.name;
+        end
+        
     end
 end
 

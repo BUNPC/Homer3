@@ -13,11 +13,12 @@ classdef FuncCallClass < handle
     methods
         
         % ------------------------------------------------------------
-        function obj = FuncCallClass(arg)
+        function obj = FuncCallClass(varargin)
             %
             % Syntax:
             %   obj = FuncCallClass()
             %   obj = FuncCallClass(fcallStrEncoded)
+            %   obj = FuncCallClass(fcallStrEncoded, reg)
             %
             % Example:
             %
@@ -44,11 +45,25 @@ classdef FuncCallClass < handle
                 return;
             end
             
-            if ischar(arg) || iscell(arg)
-                obj.Decode(arg);
-            elseif isa(arg, 'FuncCallClass')
-                obj.Copy(arg);
+            if ischar(varargin{1}) || iscell(varargin{1})
+                obj.Decode(varargin{1});
+            elseif isa(varargin{1}, 'FuncCallClass')
+                obj.Copy(varargin{1});
             end
+            
+            if nargin==1
+                return;
+            end            
+            reg = varargin{2};
+            
+            usagename = reg.GetUsageName(obj);
+            fcallstr = reg.GetFuncCallStrDecoded(obj.name, usagename);
+            obj.AddHelpUsageStr(fcallstr);            
+            
+            if length(reg.GetUsageNames(obj.name))<2
+                usagename = '';
+            end
+            obj.SetUsageName(usagename);
         end
 
         
@@ -58,7 +73,7 @@ classdef FuncCallClass < handle
                 obj = FuncCallClass();
             end
             obj.name = obj2.name;
-            obj.nameUI = obj2.name;
+            obj.nameUI = obj2.nameUI;
             obj.argOut = obj2.argOut.copy();     % shallow copy ok because ArgClass has no handle properties 
             obj.argIn = obj2.argIn.copy();       % shallow copy ok because ArgClass has no handle properties 
             for ii=1:length(obj2.paramIn)
@@ -93,7 +108,8 @@ classdef FuncCallClass < handle
                
         
         % ------------------------------------------------------------
-        function GetParamHelp(obj, key)
+        function phelp = GetParamHelp(obj, key)
+            phelp = '';
             if isempty(obj.paramIn)
                 return
             end
@@ -101,8 +117,54 @@ classdef FuncCallClass < handle
             if isempty(idx)
                 return;
             end
-            fhelp = FuncHelpClass(obj.name);
-            obj.paramIn(idx).help = fhelp.GetParamDescr(obj.paramIn(idx).name);
+            if isempty(obj.paramIn(idx).help)
+                fhelp = FuncHelpClass(obj.name);
+                obj.paramIn(idx).help = fhelp.GetParamDescr(obj.paramIn(idx).name);
+            end
+            phelp = obj.paramIn(idx).help;
+        end
+        
+        
+        % ------------------------------------------------------------
+        function fmt = GetParamFormat(obj, key)
+            fmt = '';
+            if isempty(obj.paramIn)
+                return
+            end
+            idx = obj.GetParamIdx(key);
+            if isempty(idx)
+                return;
+            end
+            fmt = obj.paramIn(idx).format;
+        end
+        
+        
+        % ------------------------------------------------------------
+        function val = GetParamVal(obj, key)
+            val = '';
+            if isempty(obj.paramIn)
+                return
+            end
+            idx = obj.GetParamIdx(key);
+            if isempty(idx)
+                return;
+            end
+            val = obj.paramIn(idx).value;
+        end
+        
+        
+        
+        % ------------------------------------------------------------
+        function valstr = GetParamValStr(obj, key)
+            valstr = '';
+            if isempty(obj.paramIn)
+                return
+            end
+            idx = obj.GetParamIdx(key);
+            if isempty(idx)
+                return;
+            end
+            valstr = sprintf(obj.paramIn(idx).format, obj.paramIn(idx).value);
         end
         
         
@@ -264,9 +326,6 @@ classdef FuncCallClass < handle
             if ~strcmp(obj.name, obj2.name)
                 return;
             end
-            if ~strcmp(obj.nameUI, obj2.nameUI)
-                return;
-            end
             if ~strcmp(obj.argOut.str, obj2.argOut.str)
                 return;
             end
@@ -328,6 +387,32 @@ classdef FuncCallClass < handle
             n = length(fcallstr);
             sep = repmat('-', 1,n);
             obj.help = sprintf('%s\n%s\n%s', fcallstr, sep, obj.help);
+        end
+        
+        
+        
+        % -----------------------------------------------------------------
+        function n = GetParamNum(obj)
+            n = length(obj.paramIn);
+        end
+        
+
+        % -----------------------------------------------------------------
+        function name = GetParamName(obj, idx)
+            name = '';
+            if nargin<2
+                return;
+            end
+            if ~iswholenum(idx)
+                return;
+            end
+            if ~isscalar(idx)
+                return;
+            end
+            if idx<1 || idx>length(obj.paramIn)
+                return;
+            end
+            name = obj.paramIn(idx).GetName();            
         end
         
     end

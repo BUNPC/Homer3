@@ -402,6 +402,12 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
         % ----------------------------------------------------------------------------------
         function fcallstr = GetFuncCallStrDecoded(obj, usagename)
             fcallstr = '';
+            if nargin<2
+                return;
+            end
+            if isempty(usagename)
+                return;
+            end            
             for ii=1:length(obj.usageoptions)
                 if strcmp(obj.usageoptions{ii,1}, usagename)
                     fcallstr = obj.usageoptions{ii,2};
@@ -450,7 +456,7 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function usagenames = GetUsageNames(obj)
-            usagenames = '';
+            usagenames = {};
             for jj=1:size(obj.usageoptions,1)
                 usagenames{jj} = obj.usageoptions{jj,1};
             end

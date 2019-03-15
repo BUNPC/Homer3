@@ -307,8 +307,8 @@ classdef ProcInputClass < handle
         function n = GetFuncCallNum(obj)
             n = length(obj.fcalls);
         end
-
-
+                
+        
         % ----------------------------------------------------------------------------------
         function maxnamelen = GetMaxCallNameLength(obj)
             maxnamelen = 0;
@@ -330,6 +330,15 @@ classdef ProcInputClass < handle
             end
         end
         
+        
+        % -----------------------------------------------------------------
+        function n = GetParamNum(obj)
+            n = zeros(1,length(obj.fcalls));
+            for iFcall = 1:length(obj.fcalls)
+                n(iFcall) = obj.fcalls(iFcall).GetParamNum();
+            end
+        end
+
         
         % ----------------------------------------------------------------------------------
         function LoadVars(obj, vars)
@@ -831,14 +840,7 @@ classdef ProcInputClass < handle
                     % If registry was not passed down to us, then add fcall entries unconditionally. 
                     % Otherwise only include those user function calls that exist in the registry. 
                     if temp.GetErr()==0 && (isempty(reg) || ~isempty(reg.GetUsageName(temp)))
-                        obj.fcalls(kk) = FuncCallClass(temp);
-                        
-                        usagename = reg.GetUsageName(obj.fcalls(kk));
-                        obj.fcalls(kk).SetUsageName(usagename);
-                        
-                        fcallstr = reg.GetFuncCallStrDecoded(obj.fcalls(kk).GetName(), usagename);
-                        obj.fcalls(kk).AddHelpUsageStr(fcallstr);
-                        
+                        obj.fcalls(kk) = FuncCallClass(temp, reg);                                                
                         kk=kk+1;
                     else
                         fprintf('Entry not found in registry: "%s"\n', section{ii})
@@ -850,9 +852,12 @@ classdef ProcInputClass < handle
 
         
         % ----------------------------------------------------------------------------------
-        function Add(obj, new)
+        function Add(obj, new, reg)
+            if ~exist('reg','var')
+                reg = Registries.empty();
+            end
             idx = length(obj.fcalls)+1;
-            obj.fcalls(idx) = FuncCallClass(new);
+            obj.fcalls(idx) = FuncCallClass(new, reg);
         end
         
         

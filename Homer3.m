@@ -649,7 +649,7 @@ if get(hObject, 'value')
 else
     hmr.guiControls.applyEditCurrNodeOnly = true;
 end
-UpdateArgsChildGuis();
+UpdateArgsChildGuis(handles);
 
 
 

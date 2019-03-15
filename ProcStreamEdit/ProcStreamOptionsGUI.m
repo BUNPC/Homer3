@@ -87,13 +87,16 @@ varargin = args;
 %     ProcStreamOptionsGUI(format, pos)
 %     ProcStreamOptionsGUI(format, applyEditCurrNodeOnly)
 %     ProcStreamOptionsGUI(format, applyEditCurrNodeOnly, pos)
+%     ProcStreamOptionsGUI(pos)
+%     ProcStreamOptionsGUI(applyEditCurrNodeOnly)
+%     ProcStreamOptionsGUI(applyEditCurrNodeOnly, pos)
 
 % Arguments take precedence over parent gui parameters
 if length(varargin)==0
-    return;                                                  % ProcStreamOptionsGUI()
+    return;                                                        % ProcStreamOptionsGUI()
 elseif length(varargin)==1
-    if ischar(varargin{1})                 
-        procStreamOptions.format = varargin{1};                      % ProcStreamOptionsGUI(format)
+    if ischar(varargin{1})                
+        procStreamOptions.format = varargin{1};                    % ProcStreamOptionsGUI(format)
     end
 elseif length(varargin)==2
     if ischar(varargin{1})
@@ -101,13 +104,16 @@ elseif length(varargin)==2
         if isreal(varargin{2}) & length(varargin{2})==4     
             procStreamOptions.pos = varargin{2};                    % PlotProbeGUI(format, pos)
         elseif iswholenum(varargin{2}) & length(varargin{2})==1
-            procStreamOptions.applyEditCurrNodeOnly = varargin{2};               % PlotProbeGUI(format, applyEditCurrNodeOnly)
+            procStreamOptions.applyEditCurrNodeOnly = varargin{2};  % PlotProbeGUI(format, applyEditCurrNodeOnly)
         end
+    else
+        procStreamOptions.applyEditCurrNodeOnly = varargin{1};      % PlotProbeGUI(applyEditCurrNodeOnly, pos)
+        procStreamOptions.pos = varargin{2};
     end
 elseif length(varargin)==3
     procStreamOptions.format                 = varargin{1};
     procStreamOptions.applyEditCurrNodeOnly  = varargin{2};
-    procStreamOptions.pos                    = varargin{3};                      % PlotProbeGUI(format, datatype, condition, pos)
+    procStreamOptions.pos                    = varargin{3};         % PlotProbeGUI(format, datatype, condition, pos)
 end
 
 % Now whichever of the above parameters weren't assigned values
@@ -161,8 +167,20 @@ end
 
 
 % ----------------------------------------------------------
+function s = Sigma(k, Ys, m)
+if k>1
+    s = sum(Ys*m(1:k-1));
+else
+    s = 0;
+end
+
+
+
+% ----------------------------------------------------------
 function Display(handles)
 global procStreamOptions
+
+DEBUG = 0;
 hObject = handles.figure;
 
 hc = get(hObject, 'children');
@@ -170,119 +188,117 @@ if ishandles(hc)
     delete(hc);
 end
 
-p = procStreamOptions.dataTree.currElem.procStream.input;
+inp = procStreamOptions.dataTree.currElem.procStream.input;
 
-if isempty(p.fcalls)
+if isempty(inp.fcalls)
     menu('Processing stream is empty. Please check the registry to see if any user functions were loaded.', 'OK');
     procStreamOptions.err=-1;
     return;
 end
 
-nFcall = length(p.fcalls);
+fcalls = inp.fcalls;
+nFcalls = length(fcalls);
 
 % If no functions, throw up empty gui
-if nFcall==0
+if nFcalls==0
     uicontrol(hObject, 'style','text', 'string','');
-	% Need to make sure position data is saved in pixel units at end of function 
-	% to as these are the units used to reposition GUI later if needed
-    set(hObject, 'units','characters');
     return;
 end
 
-% Pre-calculate figure height
-funcHeight = zeros(nFcall,1);
-for iFcall = 1:nFcall
-    funcHeight(iFcall) = 1+length(p.fcalls(iFcall).paramIn)-1;
-end
-ystep = 1.8;
-ysize = 1.5;
-ysize_tot = sum(funcHeight)*ystep + nFcall*2 + 5;
-xsize_fname = p.GetMaxCallNameLength()+2;
-xsize_pname = p.GetMaxParamNameLength()+2;
-xsize_pval  = 15;
-xpos_pname  = xsize_fname+10;
-xpos_pedit  = xpos_pname+xsize_pname+10;
-xpos_pbttn  = xpos_pedit++xsize_pval+15;
-xsize_tot   = xpos_pbttn+15;
+% Need to make sure position data is saved in pixel units at end of function
+% to as these are the units used to reposition GUI later if needed
+set(hObject, 'units','characters');
 
-pos = get(hObject, 'position');
-set(hObject, 'color',[1 1 1]);
-set(hObject, 'position',[pos(1),pos(2),xsize_tot,ysize_tot]);
-
-% Display functions and parameters in figure
-ypos = ysize_tot-5;
-for iFcall = 1:nFcall
-    
-    % Draw function name
-    xsize = length(p.fcalls(iFcall).GetNameUserFriendly())+5;
-    xsize = xsize+(5-mod(xsize,5));
-    h_fname = uicontrol(hObject, 'style','text', 'units','characters', 'position',[2, ypos, xsize, ysize],...
-                        'string',p.fcalls(iFcall).GetNameUserFriendly());
-    set(h_fname, 'backgroundcolor',[1 1 1], 'units','normalized');
-    set(h_fname, 'horizontalalignment','left');
-    set(h_fname, 'tooltipstring', p.fcalls(iFcall).GetHelp());
-    
-    % Draw pushbutton to see output results if requested in config file
-    if p.fcalls(iFcall).argOut.str(1)=='#'
-        h_bttn = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',[xpos_pbttn, ypos, 10, ysize],...
-                          'string','Results');
-        eval( sprintf(' fcn = @(hObject,eventdata)ProcStreamOptionsGUI(''pushbuttonProc_Callback'',hObject,%d,guidata(hObject));',iFcall) );
-        set( h_bttn, 'Callback',fcn, 'units','normalized')
-    end
-    
-    % Draw list of parameters
-    for iParam = 1:length(p.fcalls(iFcall).paramIn)
-        % Draw parameter names
-        pname = p.fcalls(iFcall).paramIn(iParam).name;
-        h_pname=uicontrol(hObject, 'style','text', 'units','characters', 'position',[xpos_pname, ypos, xsize_pname, ysize],...
-                          'string',pname);
-        set(h_pname, 'backgroundcolor',[1 1 1], 'units','normalized');
-        set(h_pname, 'horizontalalignment', 'left');
-        set(h_pname, 'tooltipstring', p.fcalls(iFcall).paramIn(iParam).help);
-
-        % Draw parameter edit boxes
-        h_pedit=uicontrol(hObject,'style','edit','units','characters','position',[xpos_pedit, ypos, xsize_pval, 1.5]);
-        set(h_pedit,'string',sprintf(p.fcalls(iFcall).paramIn(iParam).format, p.fcalls(iFcall).paramIn(iParam).value ) );
-        set(h_pedit,'backgroundcolor',[1 1 1]);
-        eval( sprintf(' fcn = @(hObject,eventdata)ProcStreamOptionsGUI(''edit_Callback'',hObject,[%d %d],guidata(hObject));',iFcall,iParam) );
-        set( h_pedit, 'Callback',fcn, 'units','normalized');
-
-        ypos = ypos - ystep;
-    end
-    
-    % If function has no parameters, skip a step in the y direction
-    if isempty(p.fcalls(iFcall).paramIn)
-        ypos = ypos - ystep;
-    end
-    
-    
-    % Draw divider between functions and function parameter lists
-    if iFcall<nFcall
-        h_linebttn = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',[0, ypos, xsize_tot, .3],...
-                               'enable','off');
-        set(h_linebttn, 'units','normalized');
-        ypos = ypos - ystep;
-    end
-    
-end
-% Make sure the options GUI fits on screen
-[b, p] = guiOutsideScreenborders(hObject);
-if abs(b(4))>0 || abs(b(2))>0
-    h = ysize_tot/100;
-    k = 1-h;
-    positionGUI(hObject, p(1), 0.12, p(3), k*h+h);
+if DEBUG
+    set(hObject, 'visible','on');
+    bgc = [0.10, 0.05, 0.03];
+    fgc = [0.80, 0.75, 0.95];
+else
+    bgc = [0.94, 0.94, 0.94];
+    fgc = [0.00, 0.00, 0.00];    
 end
 
-% Why do we save this? Matlab doesn't take into account multiple monitors 
-% when deciding whether a figure is going beyond it seems that whatever position is assigned to
-% the gui, if it's outside the primary monotor (ie, on a secondary monitor)
-% the gui_*** functions reposition it right back to the primary monitor, 
-% overriding the position settings in this function. Annoying! 
-% To overcome this problem we save the position data here and then 
-% reposition if back to this setting in the ProcStreamOptionsGUI_OutputFcn
-% which is called function after matlab's meddling. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Calculate GUI objects position/dimensions in the Y and Y 
+% directions, in characters units
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-setappdata(hObject,'position',get(hObject, 'position'));
+p = get(hObject, 'position');
+fs = 1.5; 
+
+% Position/dimensions in the X direction
+a     = 2;
+Xsf   = inp.GetMaxCallNameLength()*fs;
+Xsp   = inp.GetMaxParamNameLength()*fs;
+Xse   = 15;
+Xsb   = 10;
+Xp1   = Xsf + a;
+Xp2   = Xp1 + a;
+Xp3   = Xp2 + Xsp;
+Xp4   = Xp3 + a;
+Xp5   = Xp4 + Xse;
+Xst   = Xsf + Xsp + Xse + Xsb + 4*a; % GUI width
+
+% Position/dimensions in the Y direction
+N       = nFcalls;
+m       = inp.GetParamNum();
+b       = 3;
+Ys      = 1*fs;                     % Function call entry height
+yoffset = 2;
+Yst     = yoffset + ((N+1)*b) + Sigma(N+1, Ys, m);    % GUI height
+
+% Set GUI position/size
+set(hObject, 'position', [p(1), p(2), Xst, Yst]);
+
+for k = 1:nFcalls    
+    Ypfk = Yst - (yoffset + k*b + Sigma(k, Ys, m));
+    if DEBUG
+        fprintf('%d) %s:   p1 = [%0.1f, %0.1f, %0.1f, %0.1f]\n', k, fcalls(k).GetNameUserFriendly(), a, Ypfk, Xsf, Ys);
+    end
+    
+    % Draw function call divider for clarity
+    p(1,:) = [0, Ypfk+b/2, Xst, .3];
+    h(1) = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',p(1,:),...
+                              'enable','off');                          
+    % Draw function call
+    p(2,:) = [a, Ypfk, Xsf, Ys];
+    h(2) = uicontrol(hObject, 'style','text', 'units','characters', 'horizontalalignment','left', ...
+                              'units','characters', 'position',p(2,:), 'string',fcalls(k).GetNameUserFriendly(), ...
+                              'BackgroundColor',bgc, 'ForegroundColor',fgc, ...
+                              'tooltipstring',fcalls(k).GetHelp());
+    
+    for j=1:fcalls(k).GetParamNum()
+        Ypfkj = Yst - (yoffset + k*b + Sigma(k, Ys, m) + Ys*(j-1));
+        
+        if DEBUG
+            fprintf('    %d) %s:   p2 = [%0.1f, %0.1f, %0.1f, %0.1f]\n', k, fcalls(k).GetParamName(j), Xp2, Ypfkj, Xsp, Ys);
+        end
+        
+        % Draw parameter j name 
+        p(3,:) = [Xp2, Ypfkj, Xsp, Ys];
+        h(3) = uicontrol(hObject, 'style','text', 'units','characters', 'horizontalalignment','left', ...
+                                  'units','characters', 'position',p(3,:), 'string',fcalls(k).GetParamName(j), ...
+                                  'BackgroundColor',bgc, 'ForegroundColor',fgc, ...
+                                  'tooltipstring', fcalls(k).GetParamHelp(j));
+
+        % Draw edit box for parameter j and fill it with the corresponding
+        % value
+        p(4,:) = [Xp4, Ypfkj, Xse, Ys];
+        eval( sprintf(' fcn = @(hObject,eventdata)ProcStreamOptionsGUI(''edit_Callback'',hObject,[%d %d],guidata(hObject));',k,j) );
+        h(4) = uicontrol(hObject, 'style','edit', 'horizontalalignment','left', 'units','characters', 'position',p(4,:), ...
+                                  'string',fcalls(k).GetParamValStr(j), ...
+                                  'horizontalalignment','center', ...
+                                  'Callback',fcn);
+    end      
+end
+
+% Set all GUI objects except figure to normalized units, so it can be
+% resized gracefully
+set(h, 'units','normalized');
+
+% % Need to make sure position data is saved in pixel units at end of function
+% % to as these are the units used to reposition GUI later if needed
+% set(hObject, 'units','pixels');
 setGuiFonts(hObject);
 
 

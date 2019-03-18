@@ -236,6 +236,9 @@ classdef ProcResultClass < handle
             if isempty(yavg)
                 return;
             end
+            if max(condition)>size(yavg,3)
+                return;
+            end
             yavg = yavg(:,:,condition);
         end
         
@@ -265,6 +268,9 @@ classdef ProcResultClass < handle
                 condition = 1:size(yavg,4);
             end
             if isempty(yavg)
+                return;
+            end
+            if max(condition)>size(yavg,4)
                 return;
             end
             yavg = yavg(:,:,:,condition);

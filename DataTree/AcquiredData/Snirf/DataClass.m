@@ -129,8 +129,14 @@ classdef DataClass < FileLoadSaveClass
         % -------------------------------------------------------
         function b = IsEmpty(obj)
             b = false;
-            if isempty(obj.d) && isempty(obj.t)
+            if isempty(obj)
                 b = true;
+            end
+            if isempty(obj.d) || isempty(obj.t) || isempty(obj.ml)
+                b = true;
+            end
+            if obj.ml.IsEmpty()
+                return;
             end
         end
     
@@ -205,6 +211,11 @@ classdef DataClass < FileLoadSaveClass
         
         % ---------------------------------------------------------
         function d = GetDataMatrix(obj)
+            d = [];
+            if isempty(obj.d)
+                return;
+            end
+            
             % Get information for each ch in d matrix
             dataTypeLabels = [];
             srcDetPairs = zeros(0,2);

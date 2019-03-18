@@ -43,7 +43,6 @@ guiControls = struct(...
                      'applyEditCurrNodeOnly', true ...
                  );
 
-guiControls = UpdateAxesDataCondition(guiControls, dataTree);
 setWl(guiControls, dataTree.currElem.GetWls());
 
 guiControls.proclevel = getProclevel(handles);
@@ -82,3 +81,4 @@ else
     guiControls.applyEditCurrNodeOnly = true;
 end
 
+UpdateCondPopupmenu(handles);

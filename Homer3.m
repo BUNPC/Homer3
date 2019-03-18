@@ -144,6 +144,8 @@ hmr.childguis(2) = ChildGuiClass('stimGUI');
 hmr.childguis(3) = ChildGuiClass('PlotProbeGUI');
 hmr.childguis(4) = ChildGuiClass('ProcStreamOptionsGUI');
 
+hmr.handles = handles;
+hmr.Update = @Update;
 
 
 % --------------------------------------------------------------------
@@ -275,7 +277,7 @@ switch(proclevel)
         hmr.dataTree.SetCurrElem(iGroup, iSubj, iRun);
 end
 listboxFiles_Callback([], [iGroup,iSubj,iRun], handles)
-UpdateAxesDataCondition();
+UpdateCondPopupmenu(handles);
 DisplayData(handles);
 UpdateChildGuis(handles);
  
@@ -319,7 +321,7 @@ elseif ~isempty(eventdata)
     
 end
 
-UpdateAxesDataCondition();
+UpdateCondPopupmenu(handles);
 DisplayData(handles);
 UpdateChildGuis(handles);
 
@@ -898,3 +900,10 @@ if ishandles(hLg)
 end
 
 
+
+% ----------------------------------------------------------------------------------
+function Update()
+global hmr
+
+DisplayData(hmr.handles);
+UpdateCondPopupmenu(hmr.handles);

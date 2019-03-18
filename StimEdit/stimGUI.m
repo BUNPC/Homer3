@@ -44,8 +44,11 @@ stimEdit = [];
 stimEdit.status=-1;
 stimEdit.format = '';
 stimEdit.pos = [];
+stimEdit.updateParentGui = [];
+
 if ~isempty(hmr)
     stimEdit.format = hmr.format;
+    stimEdit.updateParentGui = hmr.Update;
 end
 
 % Format argument
@@ -88,7 +91,6 @@ set(get(handles.axes1,'children'), 'ButtonDownFcn', @axes1_ButtonDownFcn);
 zoom(hObject,'off');
 stimGUI_Update(handles);
 stimGUI_EnableGuiObjects('on', handles);
-stimGUI_Display(handles);
 
 stimEdit.status=0;
 
@@ -126,13 +128,14 @@ stimGUI_SetUitableStimInfo(condition, handles);
 
 %---------------------------------------------------------------------------
 function editSelectTpts_Callback(hObject, eventdata, handles)
+global stimEdit
 tPts_select = str2num(get(hObject,'string'));
 if isempty(tPts_select)
     return;
 end
 EditSelectTpts(tPts_select);
 stimGUI_Display(handles);
-DisplayGuiMain();
+stimEdit.updateParentGui();
 figure(handles.figure);
 
 
@@ -151,7 +154,7 @@ if c==2
     return;
 end
 stimGUI_Display(handles);
-DisplayGuiMain();
+stimEdit.updateParentGui();
 figure(handles.figure);
 
 
@@ -194,7 +197,7 @@ end
 stimEdit.dataTree.group.SetConditions();
 set(handles.popupmenuConditions, 'string', stimEdit.dataTree.group.GetConditions());
 stimGUI_Display(handles);
-DisplayGuiMain();
+stimEdit.updateParentGui();
 figure(handles.figure);
 
 
@@ -211,7 +214,7 @@ t1 = p1(1);
 t2 = p2(1);
 EditSelectRange(t1, t2);
 stimGUI_Display(handles);
-DisplayGuiMain();
+stimEdit.updateParentGui();
 figure(handles.figure);
 
 
@@ -283,11 +286,6 @@ end
 % Reset status
 stimEdit.status=0;
 
-
-
-% ------------------------------------------------
-function DisplayGuiMain(stimEdit)
-global hmr
 
 
 

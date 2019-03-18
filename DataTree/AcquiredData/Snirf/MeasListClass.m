@@ -199,6 +199,15 @@ classdef MeasListClass < FileLoadSaveClass
         end
         
         
+        % -------------------------------------------------------
+        function b = IsEmpty(obj)
+            b = false;
+            if obj.sourceIndex==0 && obj.detectorIndex==0
+                b = true;
+            end
+        end
+    
+        
     end
     
 end

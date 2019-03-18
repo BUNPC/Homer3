@@ -68,6 +68,10 @@ for kk=1:length(data)
     
     for iS = 1:size(s,2)
         lstS = find(s(:,iS)==1);
+        if isempty(lstS)
+            continue
+        end
+        
         if datatype(1)==6
             yblk = zeros(nPost-nPre+1,size(y,2),size(y,3),length(lstS));
         elseif datatype(1)==1

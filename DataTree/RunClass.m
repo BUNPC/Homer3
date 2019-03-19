@@ -254,7 +254,7 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function s = GetStims(obj)            
+        function s = GetStims(obj)
             s = obj.acquired.GetStims();
         end
         

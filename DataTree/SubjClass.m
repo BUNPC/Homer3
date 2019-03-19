@@ -153,11 +153,12 @@ classdef SubjClass < TreeNodeClass
             % Calculate all runs in this session
             r = obj.runs;
             nRun = length(r);
+            tHRF_common = [];
             for iRun = 1:nRun
                 r(iRun).Calc();
                 
                 % Find smallest tHRF among the runs. We should make this the common one.
-                if iRun==1
+                if isempty(tHRF_common)
                     tHRF_common = r(iRun).procStream.output.GetTHRF();
                 elseif length(r(iRun).procStream.output.GetTHRF) < length(tHRF_common)
                     tHRF_common = r(iRun).procStream.output.GetTHRF();

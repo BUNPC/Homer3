@@ -32,8 +32,13 @@ classdef ChildGuiClass < handle
             %
             %           The function pointers updateptr and closeptr can
             %           also be empty.
-            %         
+            %
             %       b) position argument pos must be last if it exists. 
+            %
+            %       c) GUI 'tag' property must be named 'figure'
+            %
+            %       d) Optoinal position argument 'pos' if it exist must be
+            %          last argument
             %      
             % Examples:
             %   gui = ChildGuiClass('procStreamGUI', true, '.nirs');

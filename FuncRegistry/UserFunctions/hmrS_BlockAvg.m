@@ -56,7 +56,7 @@ for iRun = 1:length(yAvgRuns)
         
         if ndims(yAvg) == (3-(nCond<2))
             
-            if iRun==1
+            if isempty(grp1)
                 grp1 = zeros(size(yAvg,1), size(yAvg,2), nCond);
                 grp1Sum2 = zeros(size(yAvg,1), size(yAvg,2), nCond);
                 nTrials_tot = zeros(size(yAvg,2), nCond);
@@ -121,7 +121,7 @@ for iRun = 1:length(yAvgRuns)
             
         elseif ndims(yAvg) == (4-(nCond<2))
             
-            if iRun==1
+            if isempty(grp1)
                 grp1 = zeros(size(yAvg,1), size(yAvg,2), size(yAvg,3), nCond);
                 grp1Sum2 = zeros(size(yAvg,1), size(yAvg,2), size(yAvg,3), nCond);
                 nTrials_tot = zeros(size(yAvg,3), nCond);

@@ -73,8 +73,11 @@ classdef TreeNodeClass < handle
         
         
         % ---------------------------------------------------------------------------------
-        function procInput = GetProcInputDefault(obj)
-            procInput = obj.procStream.input.GetDefault(class(obj));
+        function procInput = GetProcInputDefault(obj, reg)
+            if nargin<2
+                reg = RegistriesClass.empty();
+            end            
+            procInput = obj.procStream.input.GetDefault(class(obj), reg);
         end 
        
     end

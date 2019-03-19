@@ -598,3 +598,12 @@ function procStreamGUI_Update(handles)
 global procStreamGui
 
 
+
+% --------------------------------------------------------------------
+function pushbuttonExit_Callback(hObject, eventdata, handles)
+if ishandles(handles.figure)
+    delete(handles.figure);
+end
+
+
+

@@ -36,7 +36,10 @@ classdef ProcInputClass < handle
                 
         
         % ----------------------------------------------------------------------------------
-        function Copy(obj, obj2)
+        function Copy(obj, obj2, reg)
+            if nargin<3
+                reg = RegistriesClass.empty();
+            end
             if isempty(obj)
                 obj = ProcInputClass();
             end
@@ -44,7 +47,7 @@ classdef ProcInputClass < handle
                 if ii>length(obj.fcalls)
                     obj.fcalls(ii) = FuncCallClass();
                 end
-                obj.fcalls(ii).Copy(obj2.fcalls(ii));
+                obj.fcalls(ii).Copy(obj2.fcalls(ii), reg);
             end
             obj.CondName2Subj = obj2.CondName2Subj;
             obj.CondName2Run = obj2.CondName2Run;
@@ -486,7 +489,8 @@ classdef ProcInputClass < handle
             %   Save this ProcInputClass function call chain to config file fname. If type argument 
             %   isn't provided the class defaults to run-level (type = 'run'). The ProcInputClass 
             %   object is not associated with a processing level - all it knows is it's 
-            %   function call chain. It needs the type argument when saving to know how to label 
+            %   function call chain. It needs the type argument when saving
+            %   to know how to label  
             %   the section it's saving in the file. It writes that header as '% <section name>' before
             %   the list of function call strings beginning with '@ '.
             %
@@ -909,15 +913,18 @@ classdef ProcInputClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function obj2 = GetDefault(obj, type)
-            obj2 = ProcInputClass();            
+        function obj2 = GetDefault(obj, type, reg)
+            if nargin<3
+                reg = RegistriesClass.empty();
+            end
+            obj2 = ProcInputClass();
             switch(lower(type))
                 case {'group', 'groupclass'}
-                    obj2.Decode(obj.fcallStrEncodedGroup);
+                    obj2.Decode(obj.fcallStrEncodedGroup, reg);
                 case {'subj', 'session', 'subjclass'}
-                    obj2.Decode(obj.fcallStrEncodedSubj);
+                    obj2.Decode(obj.fcallStrEncodedSubj, reg);
                 case {'run', 'runclass'}
-                    obj2.Decode(obj.fcallStrEncodedRun);
+                    obj2.Decode(obj.fcallStrEncodedRun, reg);
                 otherwise
                     return;
             end

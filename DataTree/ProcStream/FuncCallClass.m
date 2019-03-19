@@ -53,24 +53,21 @@ classdef FuncCallClass < handle
             
             if nargin==1
                 return;
-            end            
-            reg = varargin{2};
-            
-            usagename = reg.GetUsageName(obj);
-            fcallstr = reg.GetFuncCallStrDecoded(obj.name, usagename);
-            obj.AddHelpUsageStr(fcallstr);            
-            
-            if length(reg.GetUsageNames(obj.name))<2
-                usagename = '';
             end
-            obj.SetUsageName(usagename);
+            
+            reg = varargin{2};            
+            obj.AddUsageInfo(reg);
+            
         end
 
         
         % ----------------------------------------------------------------------------------
-        function Copy(obj, obj2)
+        function Copy(obj, obj2, reg)
             if isempty(obj)
                 obj = FuncCallClass();
+            end
+            if nargin<3
+                reg = RegistriesClass.empty();
             end
             obj.name = obj2.name;
             obj.nameUI = obj2.nameUI;
@@ -81,6 +78,7 @@ classdef FuncCallClass < handle
             end
             obj.help = obj2.help;
             obj.encodedStr = obj2.encodedStr;
+            obj.AddUsageInfo(reg);
         end
         
         
@@ -171,7 +169,20 @@ classdef FuncCallClass < handle
         
         % ----------------------------------------------------------------------------------
         function SetUsageName(obj, usagename)
-            obj.nameUI = sprintf('%s:  %s', obj.name, usagename);
+            if nargin<2
+                usagename='';
+            end
+            
+            % If usage name is already set, then we're done
+            c = str2cell(obj.nameUI, ':');
+            if length(c)==2 && isempty(usagename)
+                return;
+            end
+            if isempty(usagename)
+                obj.nameUI = sprintf('%s', obj.name);
+            else
+                obj.nameUI = sprintf('%s:  %s', obj.name, usagename);
+            end
         end
 
         
@@ -413,6 +424,22 @@ classdef FuncCallClass < handle
                 return;
             end
             name = obj.paramIn(idx).GetName();            
+        end
+       
+        
+        % -----------------------------------------------------------------
+        function AddUsageInfo(obj, reg)
+            if nargin<2
+                return;
+            end
+            usagename = reg.GetUsageName(obj);
+            fcallstr = reg.GetFuncCallStrDecoded(obj.name, usagename);
+            obj.AddHelpUsageStr(fcallstr);            
+            
+            if length(reg.GetUsageNames(obj.name))<2
+                usagename = '';
+            end
+            obj.SetUsageName(usagename);
         end
         
     end

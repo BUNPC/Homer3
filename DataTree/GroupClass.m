@@ -76,24 +76,28 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function CopyProcInput(obj, procInput, type)
+        function CopyProcInput(obj, procInput, type, reg)
+            if nargin<4
+                reg = RegistriesClass.empty();
+            end
+            
             % Copy default procInput to all nodes at a single level
             switch(type)
                 case 'group'
                     if obj.procStream.input.IsEmpty()
-                        obj.procStream.input.Copy(procInput);
+                        obj.procStream.input.Copy(procInput, reg);
                     end
                 case 'subj'
                     for jj=1:length(obj.subjs)
                         if obj.subjs(jj).procStream.input.IsEmpty()
-                            obj.subjs(jj).procStream.input.Copy(procInput);
+                            obj.subjs(jj).procStream.input.Copy(procInput, reg);
                         end
                     end
                 case 'run'
                     for jj=1:length(obj.subjs)
                         for kk=1:length(obj.subjs(jj).runs)
                             if obj.subjs(jj).runs(kk).procStream.input.IsEmpty()
-                                obj.subjs(jj).runs(kk).procStream.input.Copy(procInput);
+                                obj.subjs(jj).runs(kk).procStream.input.Copy(procInput, reg);
                             end
                         end
                     end
@@ -153,9 +157,9 @@ classdef GroupClass < TreeNodeClass
             % Generate procInput defaults at each level with which to initialize
             % any uninitialized procStream.input
             g.CreateProcInputDefault(reg);
-            procInputGroup = g.GetProcInputDefault();
-            procInputSubj = s.GetProcInputDefault();
-            procInputRun = r.GetProcInputDefault();
+            procInputGroup = g.GetProcInputDefault(reg);
+            procInputSubj = s.GetProcInputDefault(reg);
+            procInputRun = r.GetProcInputDefault(reg);
             
             % If any of the tree nodes still have unintialized procStream input, ask 
             % user for a config file to load it from 
@@ -183,14 +187,25 @@ classdef GroupClass < TreeNodeClass
                 % load a default proc stream input
                 if g.procStream.IsEmpty() || s.procStream.IsEmpty() || r.procStream.IsEmpty()
                     fprintf('Failed to load all function calls in proc stream config file . Loading default processing\n');
-                    g.CopyProcInput(procInputGroup, 'group');
-                    g.CopyProcInput(procInputSubj, 'subj');
-                    g.CopyProcInput(procInputRun, 'run');
+                    g.CopyProcInput(procInputGroup, 'group', reg);
+                    g.CopyProcInput(procInputSubj, 'subj', reg);
+                    g.CopyProcInput(procInputRun, 'run', reg);
+                    
+                    % Move exiting default config to same name with .bak extension
+                    if ~exist([fname, '.bak'], 'file')
+                        fprintf('Moving existing %s to %s.bak\n', fname, fname);
+                        movefile(fname, [fname, '.bak']);
+                    end
+                    
+                    % Save default proc stream in default config file
+                    procInputGroup.SaveConfigFile(fname, 'group');
+                    procInputSubj.SaveConfigFile(fname, 'subj');
+                    procInputRun.SaveConfigFile(fname, 'run');
                 else
                     fprintf('Loading proc stream from %s\n', fname);
-                    g.CopyProcInput(g.procStream.input, 'group');
-                    g.CopyProcInput(s.procStream.input, 'subj');
-                    g.CopyProcInput(r.procStream.input, 'run');
+                    g.CopyProcInput(g.procStream.input, 'group', reg);
+                    g.CopyProcInput(s.procStream.input, 'subj', reg);
+                    g.CopyProcInput(r.procStream.input, 'run', reg);
                 end
             end
         end
@@ -205,11 +220,12 @@ classdef GroupClass < TreeNodeClass
             % Calculate all subjs in this session
             s = obj.subjs;
             nSubj = length(s);
+            tHRF_common = [];            
             for iSubj = 1:nSubj
                 s(iSubj).Calc();
                 
                 % Find smallest tHRF among the subjs. We should make this the common one.
-                if iSubj==1
+                if isempty(tHRF_common)
                     tHRF_common = s(iSubj).procStream.output.GetTHRF;
                 elseif length(s(iSubj).procStream.output.GetTHRF) < length(tHRF_common)
                     tHRF_common = s(iSubj).procStream.output.GetTHRF;

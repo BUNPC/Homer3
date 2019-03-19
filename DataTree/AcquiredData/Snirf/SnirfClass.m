@@ -413,23 +413,20 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function SetStims_MatInput(obj, s, t, CondNames)
-            if ~exist('CondNames', 'var')
-                CondNames = str2cell(num2str(1:size(s,2)));
+        function SetStims_MatInput(obj, s, t)
+            if nargin<2
+                return
             end
-            CondNamesCurr = obj.GetConditions();
+            if isempty(t)
+                return;
+            end
             for ii=1:size(s,2)
-                k = find(strcmp(CondNames{ii}, CondNamesCurr));
-                if isempty(k)
-                    obj.stim(end+1) = StimClass(s(:,ii), t, CondNames{ii});
-                    continue;
-                end
                 tidxs = find(s(:,ii)~=0);
                 for jj=1:length(tidxs)
-                    if ~obj.stim(k).Exists(t(tidxs(jj)))
-                        obj.stim(k).AddStims(t(tidxs(jj)));
+                    if ~obj.stim(ii).Exists(t(tidxs(jj)))
+                        obj.stim(ii).AddStims(t(tidxs(jj)));
                     else
-                        obj.stim(k).EditValue(t(tidxs(jj)), s(tidxs(jj),ii));
+                        obj.stim(ii).EditValue(t(tidxs(jj)), s(tidxs(jj),ii));
                     end
                 end
             end
@@ -437,8 +434,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function s = GetStims(obj)
-            t = obj.data(1).GetTime();
+        function s = GetStims(obj, timebaseIdx)
+            if ~exist('timebaseIdx','var') || isempty(timebaseIdx)
+                timebaseIdx=1;
+            end
+            t = obj.data(timebaseIdx).GetTime();
             s = zeros(length(t), length(obj.stim));
             for ii=1:length(obj.stim)
                 [ts, v] = obj.stim(ii).GetStim();
@@ -556,6 +556,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
     end
         
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % All other public methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

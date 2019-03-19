@@ -169,6 +169,14 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
+        function ml = GetMeasListAct(obj)
+            % TBD: Implement this later. For now we hard code this to all
+            % channels active 
+            ml = ones(length(obj.ml), 1);
+        end
+        
+        
+        % ---------------------------------------------------------
         function ml = GetMeasListSrcDetPairs(obj)
             ml = zeros(0, 2);
             jj=1;
@@ -272,8 +280,15 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function SetT(obj, val)
+        function SetT(obj, val, datacheck)
             if ~exist('val','var')
+                return;
+            end
+            if ~exist('datacheck','var')
+                datacheck = false;
+            end
+            if isempty(obj.d) && datacheck==true
+                obj.t = [];
                 return;
             end
             obj.t = val;

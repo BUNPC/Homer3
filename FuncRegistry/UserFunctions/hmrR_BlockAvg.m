@@ -37,7 +37,6 @@ function [data_avg, data_std, nTrials, data_sum2, yTrials] = hmrR_BlockAvg( data
 data_avg  = DataClass();
 data_std  = DataClass();
 data_sum2 = DataClass();
-nTrials   = [];
 yTrials   = [];
 
 % Get stim vector by instantiating temporary SnirfClass object with this 
@@ -45,6 +44,7 @@ yTrials   = [];
 % GetStims method to convert stim to the s vector that this function needs. 
 snirf = SnirfClass(data, stim);
 s = snirf.GetStims();
+nTrials = zeros(1, size(s,2));
 
 for kk=1:length(data)
     datatype = data(kk).GetDataTypeLabel();  % Get the input data type
@@ -65,7 +65,7 @@ for kk=1:length(data)
     else
         return;
     end
-    
+        
     for iS = 1:size(s,2)
         lstS = find(s(:,iS)==1);
         if isempty(lstS)
@@ -159,8 +159,12 @@ for kk=1:length(data)
     end
     
     % Snirf stuff: set time vectors
-    data_avg(kk).SetT(tHRF);
-    data_std(kk).SetT(tHRF);
-    data_sum2(kk).SetT(tHRF);
+    data_avg(kk).SetT(tHRF, true);
+    data_std(kk).SetT(tHRF, true);
+    data_sum2(kk).SetT(tHRF, true);
 
 end
+
+
+
+

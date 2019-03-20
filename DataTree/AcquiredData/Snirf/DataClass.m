@@ -135,7 +135,7 @@ classdef DataClass < FileLoadSaveClass
             if isempty(obj.d) || isempty(obj.t) || isempty(obj.ml)
                 b = true;
             end
-            if obj.ml.IsEmpty()
+            if isempty(obj.ml)
                 return;
             end
         end

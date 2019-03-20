@@ -100,6 +100,7 @@ classdef ChildGuiClass < handle
             
             % If GUI already up and running, then don't relaunch it, simply exit
             if ishandle(obj.handles.figure)
+                figure(obj.handles.figure);
                 return;
             end
             if exist('varargin','var') && isempty(obj.args)

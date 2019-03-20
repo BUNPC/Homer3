@@ -308,6 +308,23 @@ classdef StimClass < FileLoadSaveClass
             obj.data(k,:) = [];
         end
         
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsEmpty(obj)
+            b = true;
+            if isempty(obj)
+                return;
+            end
+            if isempty(obj.name)
+                return;
+            end
+            if isempty(obj.data)
+                return;
+            end
+            b = false;
+        end
+        
     end
     
 end

@@ -302,32 +302,10 @@ classdef ProcResultClass < handle
             obj.nTrials = val;
         end
         
-        
         % ----------------------------------------------------------------------------------
         function nTrials = GetNtrials(obj)
             nTrials = obj.nTrials;
         end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function s = GetStims(obj)
-            s = obj.GetVar('s');
-            if isempty(s)
-                if isempty(obj.dod) || ~isa(obj.dod, 'DataClass')
-                    return;
-                end
-                if obj.dod.IsEmpty()
-                    return;
-                end
-                stim = obj.GetVar('stim');
-                if isempty(stim)
-                    return;
-                end
-                snirf = SnirfClass(obj.dod, stim);
-                s = snirf.GetStims();
-            end
-        end
-        
         
     end
     

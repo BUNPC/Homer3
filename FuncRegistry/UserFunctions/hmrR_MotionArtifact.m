@@ -80,10 +80,6 @@ for kk=1:length(data)
     Lambda      = sd.GetWls();
     nWav        = length(Lambda);
     
-    if length(fs)~=1
-        fs = 1/(fs(2)-fs(1));
-    end
-    
     if isempty(tIncMan)
         tIncMan = repmat({ones(size(d,1),1)}, length(data), 1);
     end
@@ -91,7 +87,7 @@ for kk=1:length(data)
     tInc = ones(size(d,1),1);
     
     % Calculate the diff of d to to set the threshold if ncssesary
-    diff_d = diff(d);
+    diff_d=diff(d);
     
     % set artifact buffer for tMask seconds on each side of spike
     art_buffer=round(tMask*fs); % time in seconds times sample rate
@@ -115,25 +111,26 @@ for kk=1:length(data)
     % calculate max_diff across channels for different time delays
     max_diff = zeros(size(d,1)-1,length(lstAct));
     for ii=1:round(tMotion*fs)
-        max_diff = max([abs(d((ii+1):end,lstAct)-d(1:(end-ii),lstAct)); zeros(ii-1,length(lstAct))], max_diff);
+        max_diff=max([abs(d((ii+1):end,lstAct)-d(1:(end-ii),lstAct)); zeros(ii-1,length(lstAct))], max_diff);
     end
     
     % find indices with motion artifacts based on std_thresh or amp_thresh
     bad_inds = [];
-    mc_thresh = std_diff*std_thresh;
+    mc_thresh=std_diff*std_thresh;
     bad_inds = find( max(max_diff > ones(size(max_diff,1),1)*mc_thresh ,[],2)==1 | ...
         max(max_diff,[],2) > amp_thresh  );
     
     % Eliminate time points before or after motion artifacts
     if ~isempty(bad_inds)
-        bad_inds = repmat(bad_inds, 1, 2*art_buffer+1)+repmat(-art_buffer:art_buffer,length(bad_inds), 1);
-        bad_inds = bad_inds((bad_inds>0)&(bad_inds<=(size(d, 1)-1)));
+        bad_inds=repmat(bad_inds, 1, 2*art_buffer+1)+repmat(-art_buffer:art_buffer,length(bad_inds), 1);
+        bad_inds=bad_inds((bad_inds>0)&(bad_inds<=(size(d, 1)-1)));
         
         % exclude points that were manually excluded
         bad_inds(find(tIncMan{kk}(bad_inds)==0)) = [];
         
         % Set t and diff of data to 0 at the bad inds
-        tInc(1+bad_inds) = 0; % bad inds calculated on diff so add 1        
+        tInc(1+bad_inds)=0; % bad inds calculated on diff so add 1
+        
     end
     
     % calculate the variance due to motion relative to total variance

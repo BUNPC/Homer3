@@ -255,17 +255,10 @@ classdef TreeNodeClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function s = GetStims(obj)
-            s = [];
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
         function CondNames = GetConditions(obj)
             CondNames = obj.CondNames;
         end
 
-        
         % ----------------------------------------------------------------------------------
         function found = FindVar(obj, varname)
             found = false;

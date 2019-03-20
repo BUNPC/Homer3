@@ -1,5 +1,5 @@
 % SYNTAX:
-% [stim, tRange] = hmrR_StimRejection(data, stim, tIncAuto, tIncMan, tRange)
+% [stim,tRange] = hmrR_StimRejection(data,stim,tIncAuto,tIncMan,tRange)
 %
 % UI NAME:
 % Stim_Exclude
@@ -10,8 +10,10 @@
 %
 %
 % INPUT:
-% data:     SNIRF data object    
-% stim:     SNIRF stim object
+% data:     the time vector (#time points x 1)
+% stim:     s matrix (#time points x #conditions) containing 1 for
+%           each time point and condition that has a stimulus and
+%           zeros otherwise.
 % tIncAuto: time points (#time points x 1) identified as motion
 %           artifacts by processing stream.
 % tIncMan:  time points (#time points x 1) identified as motion
@@ -24,16 +26,21 @@
 %           duration.
 %
 % OUTPUT:
-% stim:     SNIRF stim object
+% stim:     s matrix (#time points x #conditions) containing 1 for
+%           each time point and condition that has a stimulus that is
+%           included in the HRF calculation, -1 for a stimulus that is
+%           excluded automatically in the processing stream, -2
+%           for each stimulus excluded by a manually set patch and
+%           zeros otherwise.
 % tRange:   same tRange array as in the input
 %
 % USAGE OPTIONS:
-% Stim_Exclude: [stim,tRange] = hmrR_StimRejection(dod,stim,tIncAuto,tIncMan,tRange)
+% Stim_Exclude: [stim,tRange] = hmrR_StimRejection(data,stim,tIncAuto,tIncMan,tRange)
 %
 % PARAMETERS:
 % tRange: [-5.0, 10.0]
 %
-function [stim, tRange] = hmrR_StimRejection(data, stim, tIncAuto, tIncMan, tRange)
+function [stim,tRange] = hmrR_StimRejection(data,stim,tIncAuto,tIncMan,tRange)
 
 snirf = SnirfClass(data, stim);
 for ii=1:length(snirf.data)

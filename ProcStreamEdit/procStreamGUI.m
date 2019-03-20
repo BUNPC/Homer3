@@ -298,7 +298,7 @@ if listPsUsage(iPanel).IsMember(fcallselect, ':')
     menu('This usage already exist in processing stream. Each usage entry in processing stream must be unique.','OK')
     return;
 end
-listPsUsage(iPanel).Insert(fcallselect, iFcall, 'after');
+listPsUsage(iPanel).Insert(fcallselect, iFcall, 'before');
 listPsUsage(iPanel).Tabularize();
 updateProcStreamListbox(handles,iPanel);
 uicontrol(handles.listboxFuncProcStream(iPanel));

@@ -255,10 +255,7 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function s = GetStims(obj)
-            s = obj.procStream.output.GetStims();
-            if isempty(s)
-                s = obj.acquired.GetStims();
-            end
+            s = obj.acquired.GetStims();
         end
         
         

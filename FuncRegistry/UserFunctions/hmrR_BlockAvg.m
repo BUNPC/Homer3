@@ -60,23 +60,16 @@ for kk=1:length(data)
     tHRF = [nPre*dt:dt:nPost*dt];
     if datatype(1)==6
         ml = data(kk).GetMeasListSrcDetPairs();
+        yblk = zeros(nPost-nPre+1,size(y,2),size(y,3),size(s,2));
     elseif datatype(1)==1
         ml = data(kk).GetMeasList();
+        yblk = zeros(nPost-nPre+1,size(y,2),size(s,2));
     else
         return;
     end
-        
+           
     for iS = 1:size(s,2)
         lstS = find(s(:,iS)==1);
-        if isempty(lstS)
-            continue
-        end
-        
-        if datatype(1)==6
-            yblk = zeros(nPost-nPre+1,size(y,2),size(y,3),length(lstS));
-        elseif datatype(1)==1
-            yblk = zeros(nPost-nPre+1,size(y,2),length(lstS));
-        end
         nBlk = 0;
         for iT = 1:length(lstS)
             if (lstS(iT)+nPre)>=1 && (lstS(iT)+nPost)<=nTpts

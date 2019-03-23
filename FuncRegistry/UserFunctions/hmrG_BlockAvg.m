@@ -59,6 +59,7 @@ for iSubj = 1:nSubj
         yAvgStd   = yAvgStdSubjs{iSubj}(kk).GetDataMatrix();
         nTrials   = nTrialsSubjs{iSubj};
         SD        = SDSubjs{iSubj};
+        datatype  = unique(yAvgSubjs{iSubj}(kk).GetDataTypeLabel());
         
         if isempty(yAvg)
             continue;
@@ -69,7 +70,7 @@ for iSubj = 1:nSubj
         yAvgOut(kk).SetT(tHRF);
         yAvgStdOut(kk).SetT(tHRF);
         
-        if ndims(yAvg) == (4-(nCond<2))
+        if datatype(1)==6 || datatype(1)==7 || datatype(1)==8
             
             if iSubj==1
                 lstT = find(tHRF>=tRange(1) & tHRF<=tRange(2));
@@ -133,7 +134,7 @@ for iSubj = 1:nSubj
                 end
             end
             
-        elseif ndims(yAvg) == (3-(nCond<2))
+        elseif datatype(1)==1
             
             if iSubj==1
                 lstT  = find(tHRF>=tRange(1) & tHRF<=tRange(2));

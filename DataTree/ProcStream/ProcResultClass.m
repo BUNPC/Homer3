@@ -230,13 +230,17 @@ classdef ProcResultClass < handle
             end
             
             % Get condition
-            if ~exist('condition','var') || isempty(condition)
+            if ~exist('condition','var')
                 condition = 1:size(yavg,3);
+            end
+            if isempty(condition)
+                yavg = [];
             end
             if isempty(yavg)
                 return;
             end
-            if max(condition)>size(yavg,3)
+            if all(isnan(yavg(:,:,condition)))
+                yavg = [];
                 return;
             end
             yavg = yavg(:,:,condition);
@@ -264,13 +268,17 @@ classdef ProcResultClass < handle
             end
             
             % Get condition
-            if ~exist('condition','var') || isempty(condition)
+            if ~exist('condition','var')
                 condition = 1:size(yavg,4);
+            end
+            if isempty(condition)
+                yavg = [];
             end
             if isempty(yavg)
                 return;
             end
-            if max(condition)>size(yavg,4)
+            if all(isnan(yavg(:,:,:,condition)))
+                yavg = [];
                 return;
             end
             yavg = yavg(:,:,:,condition);

@@ -44,6 +44,7 @@ for iRun = 1:length(yAvgRuns)
         ySum2     = ySum2Runs{iRun}(kk).GetDataMatrix();
         nTrials   = nTrialsRuns{iRun};
         SD        = SDRuns{iRun};
+        datatype  = unique(yAvgRuns{iRun}(kk).GetDataTypeLabel());
                
         if isempty(yAvg)
             continue;
@@ -54,7 +55,7 @@ for iRun = 1:length(yAvgRuns)
         yAvgOut(kk).SetT(tHRF);
         yAvgStdOut(kk).SetT(tHRF);
         
-        if ndims(yAvg) == (3-(nCond<2))
+        if datatype(1)==1
             
             if isempty(grp1)
                 grp1 = zeros(size(yAvg,1), size(yAvg,2), nCond);
@@ -78,7 +79,11 @@ for iRun = 1:length(yAvgRuns)
                         nTrials_tot(lstChInc,iC) = nT;
                     else
                         for iCh=1:length(lstChInc) %size(yAvg,2)
-                            grp1(:,lstChInc(iCh),iC) = grp1(:,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,lstChInc(iCh),iS),tHRF') * nT;
+                            try
+                                grp1(:,lstChInc(iCh),iC) = grp1(:,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,lstChInc(iCh),iS),tHRF') * nT;
+                            catch
+                                d = 1;
+                            end
                             grp1Sum2(:,lstChInc(iCh),iC) = grp1Sum2(:,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,lstChInc(iCh),iS),tHRF');
                             nTrials_tot(lstChInc(iCh),iC) = nTrials_tot(lstChInc(iCh),iC) + nT;
                         end
@@ -119,7 +124,7 @@ for iRun = 1:length(yAvgRuns)
                 end
             end
             
-        elseif ndims(yAvg) == (4-(nCond<2))
+        elseif datatype(1)==6 || datatype(1)==7 || datatype(1)==8
             
             if isempty(grp1)
                 grp1 = zeros(size(yAvg,1), size(yAvg,2), size(yAvg,3), nCond);
@@ -145,7 +150,11 @@ for iRun = 1:length(yAvgRuns)
                     else
                         for iCh=1:length(lstChInc) %size(yAvg,3)
                             for iHb=1:size(yAvg,2)
-                                grp1(:,iHb,lstChInc(iCh),iC) = grp1(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,iHb,lstChInc(iCh),iS),tHRF') * nT;
+                                try
+                                    grp1(:,iHb,lstChInc(iCh),iC) = grp1(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,iHb,lstChInc(iCh),iS),tHRF') * nT;
+                                catch
+                                    d=1;
+                                end
                                 grp1Sum2(:,iHb,lstChInc(iCh),iC) = grp1Sum2(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,iHb,lstChInc(iCh),iS),tHRF');
                             end
                             nTrials_tot(lstChInc(iCh),iC) = nTrials_tot(lstChInc(iCh),iC) + nT;

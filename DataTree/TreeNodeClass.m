@@ -189,19 +189,27 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function dodAvg = GetDodAvg(obj, condition)
-            if ~exist('condition','var')
-                condition = 1:length(obj.GetConditions());
+            if ~exist('condition','var') || isempty(condition)
+                icond = 1:length(obj.GetConditions());
+            elseif ischar(condition)
+                icond = obj.GetConditionIdx(condition);
+            else
+                icond = condition;
             end
-            dodAvg = obj.procStream.output.GetDodAvg('dodAvg', condition);
+            dodAvg = obj.procStream.output.GetDodAvg('dodAvg', icond);
         end
         
         
         % ----------------------------------------------------------------------------------
         function dcAvg = GetDcAvg(obj, condition)
-            if ~exist('condition','var')
-                condition = 1:length(obj.GetConditions());
+            if ~exist('condition','var') || isempty(condition)
+                icond = 1:length(obj.GetConditions());
+            elseif ischar(condition)
+                icond = obj.GetConditionIdx(condition);
+            else
+                icond = condition;
             end
-            dcAvg = obj.procStream.output.GetDcAvg('dcAvg', condition);
+            dcAvg = obj.procStream.output.GetDcAvg('dcAvg', icond);
         end
         
         
@@ -265,6 +273,13 @@ classdef TreeNodeClass < handle
             CondNames = obj.CondNames;
         end
 
+        
+        % ----------------------------------------------------------------------------------
+        function idx = GetConditionIdx(obj, CondName)
+            C = obj.GetConditions();
+            idx = find(strcmp(C, CondName));
+        end
+        
         
         % ----------------------------------------------------------------------------------
         function found = FindVar(obj, varname)

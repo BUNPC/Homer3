@@ -36,7 +36,9 @@ else
     Conc_enable  = false;
 end
 
-if ~isempty(hmr.dataTree.currElem.GetDodAvg()) || ~isempty(hmr.dataTree.currElem.GetDcAvg())
+iCondGrp = get(handles.popupmenuConditions, 'value'); 
+CondName = hmr.dataTree.group.CondNamesAll{iCondGrp};
+if ~isempty(hmr.dataTree.currElem.GetDodAvg(CondName)) || ~isempty(hmr.dataTree.currElem.GetDcAvg(CondName))
     set(handles.checkboxPlotHRF, 'enable','on');
     set(handles.checkboxPlotProbe, 'enable','on');
     if ~isa(hmr.dataTree.currElem, 'RunClass')
@@ -55,6 +57,10 @@ elseif ~OD_enable && ~Conc_enable
     set(handles.checkboxPlotHRF, 'enable','off');
     set(handles.checkboxPlotProbe, 'enable','off');
     set(handles.checkboxPlotHRF, 'value',0);
+else
+    set(handles.checkboxPlotHRF, 'enable','off');
+    set(handles.checkboxPlotProbe, 'enable','off');
+    set(handles.checkboxPlotHRF, 'value',0);    
 end
 
 if isa(hmr.dataTree.currElem, 'RunClass')

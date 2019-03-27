@@ -17,19 +17,23 @@ if ~exist('logger','var') || isempty(logger)
     logger = LogClass([rootpath, '/'], 'UnitTestsAll_Nirs');
 end
 
+lpf = [00.30, 00.70, 01.00];
+std = [05.00, 10.00, 15.00, 20.00];
 
 groupFolders = FindUnitTestsFolders();
 nGroups = length(groupFolders);
 status = zeros(4, nGroups);
 for ii=1:nGroups
-    status(1,ii) = unitTest_DefaultProcStream('.nirs', groupFolders{ii}, logger); 
+    status(1,ii) = unitTest_DefaultProcStream('.nirs',  groupFolders{ii}, logger); 
     status(2,ii) = unitTest_DefaultProcStream('.snirf', groupFolders{ii}, logger); 
-    status(3,ii) = unitTest_ModifiedLPF('.nirs', groupFolders{ii}, 0.30, logger); 
-    status(4,ii) = unitTest_ModifiedLPF('.snirf', groupFolders{ii}, 0.30, logger);
-    status(5,ii) = unitTest_ModifiedLPF('.nirs', groupFolders{ii}, 0.70, logger); 
-    status(6,ii) = unitTest_ModifiedLPF('.snirf', groupFolders{ii}, 0.70, logger);
-    status(7,ii) = unitTest_ModifiedLPF('.nirs', groupFolders{ii}, 1.00, logger);
-    status(8,ii) = unitTest_ModifiedLPF('.snirf', groupFolders{ii}, 1.00, logger);
+    for jj=1:length(lpf)
+        status(jj,ii)   = unitTest_BandpassFilt_LPF('.nirs',  groupFolders{ii}, lpf(jj), logger);
+        status(jj+1,ii) = unitTest_BandpassFilt_LPF('.snirf', groupFolders{ii}, lpf(jj), logger);
+    end
+    for kk=1:length(std)
+        status(kk+jj,  ii) = unitTest_MotionCorrect_STDEV('.nirs',  groupFolders{ii}, std(kk), logger);
+        status(kk+1+jj,ii) = unitTest_MotionCorrect_STDEV('.snirf', groupFolders{ii}, std(kk), logger);
+    end
 end
 
 testidx = 0;

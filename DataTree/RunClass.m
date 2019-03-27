@@ -34,9 +34,9 @@ classdef RunClass < TreeNodeClass
                 obj.acquired = SnirfClass(obj.name);
             end            
             obj.CondName2Group = [];
-            obj.Load();            
+            obj.Load();
         end
-                
+
         
             
         % ----------------------------------------------------------------------------------
@@ -255,9 +255,17 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function s = GetStims(obj)
+            % First look in derived data, then acquired
+            
+            % Proc stream output 
             s = obj.procStream.output.GetStims();
             if isempty(s)
-                s = obj.acquired.GetStims();
+                % Proc stream input
+                s = obj.procStream.input.GetStims();
+                if isempty(s)
+                    % Acquired data
+                    s = obj.acquired.GetStims();
+                end
             end
         end
         
@@ -435,6 +443,13 @@ classdef RunClass < TreeNodeClass
             end
             obj.acquired.RenameCondition(oldname, newname);
         end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function vals = GetStimValSettings(obj)
+            vals = obj.procStream.input.GetStimValSettings();
+        end        
+        
         
     end
 

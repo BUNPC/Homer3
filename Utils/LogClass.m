@@ -32,15 +32,19 @@ classdef LogClass < handle
             if isempty(msg)
                 return;
             end
-            obj.msg = msg;
-            if obj.msg ~= sprintf('\n')
+            obj.msg = sprintf(msg);
+            if obj.msg(end) ~= sprintf('\n')
                 linefeed = sprintf('\n');
             else
                 linefeed = '';
             end
+            
+            % Write msg to file 
             if obj.fid>0
                 fprintf(obj.fid, '%s%s', obj.msg, linefeed);
             end
+            
+            % Write msg to standard output
             fprintf('%s%s', obj.msg, linefeed);
         end
         

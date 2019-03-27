@@ -106,6 +106,25 @@ classdef FuncCallClass < handle
                
         
         % ------------------------------------------------------------
+        function idx = GetParamIdx(obj, key)
+            idx = [];
+            if ~exist('key','var') || isempty(key)
+                key=1;
+            end
+            if ischar(key)
+                for ii=1:length(obj.paramIn)
+                    if strcmp(key, obj.paramIn(ii).name)
+                        idx=ii;
+                        break;
+                    end
+                end
+            elseif iswholenum(key) && (key <= length(obj.paramIn))
+                idx = key;
+            end
+        end
+        
+        
+        % ------------------------------------------------------------
         function phelp = GetParamHelp(obj, key)
             phelp = '';
             if isempty(obj.paramIn)
@@ -449,25 +468,6 @@ classdef FuncCallClass < handle
     % Private methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Access = 'private')
-        
-        % ------------------------------------------------------------
-        function idx = GetParamIdx(obj, key)
-            idx = [];
-            if ~exist('key','var') || isempty(key)
-                key=1;
-            end
-            if ischar(key)
-                for ii=1:length(obj.paramIn)
-                    if strcmp(key, obj.paramIn(ii).name)
-                        idx=ii;
-                        break;
-                    end
-                end
-            elseif iswholenum(key) && (key <= length(obj.paramIn))
-                idx = key;
-            end
-        end
-        
         
     end
 end

@@ -26,8 +26,9 @@ CondNamesGroup = stimEdit.dataTree.group.GetConditions();
 CondColTbl     = stimEdit.dataTree.group.CondColTbl();
 t              = stimEdit.dataTree.currElem.GetTime();
 s              = stimEdit.dataTree.currElem.GetStims();
+stimVals       = stimEdit.dataTree.currElem.GetStimValSettings();
 
-[lstR,lstC] = find(abs(s)==1);
+[lstR,lstC] = find(abs(s) ~= stimVals.none);
 [lstR,k] = sort(lstR);
 lstC = lstC(k);
 nStim = length(lstR);
@@ -37,11 +38,14 @@ idxLg=[];
 hLg=[];
 kk=1;
 for ii=1:nStim
-    if(s(lstR(ii),lstC(ii))==1)
-        Lines(ii).handle = plot([1 1]*t(lstR(ii)), yy,'-', 'parent',handles.axes1);
-    elseif(s(lstR(ii),lstC(ii))==-1)
-        Lines(ii).handle = plot([1 1]*t(lstR(ii)), yy,'--', 'parent',handles.axes1);
+    if(s(lstR(ii),lstC(ii))==stimVals.incl)
+        linestyle = '-';
+    elseif(s(lstR(ii),lstC(ii))==stimVals.excl_manual)
+        linestyle = '--';
+    elseif(s(lstR(ii),lstC(ii))==stimVals.excl_auto)
+        linestyle = '-.';
     end
+    Lines(ii).handle = plot([1 1]*t(lstR(ii)), yy, linestyle, 'parent',handles.axes1);
     
     iCond = stimEdit.dataTree.currElem.CondName2Group(lstC(ii));
     Lines(ii).color = CondColTbl(iCond,1:3);

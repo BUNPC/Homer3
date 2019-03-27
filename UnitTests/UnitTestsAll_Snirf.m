@@ -17,21 +17,29 @@ if ~exist('logger','var') || isempty(logger)
     logger = LogClass([rootpath, '/'], 'UnitTestsAll_Snirf');
 end
 
+lpf = [00.30, 00.70, 01.00];
+std = [05.00, 10.00, 15.00, 20.00];
+
 groupFolders = FindUnitTestsFolders();
 nGroups = length(groupFolders);
 status = zeros(4, nGroups);
 for ii=1:nGroups
-    status(1,ii) = unitTest_DefaultProcStream('.snirf', groupFolders{ii}, logger); 
-    status(2,ii) = unitTest_ModifiedLPF('.snirf', groupFolders{ii}, 0.30, logger);
-    status(3,ii) = unitTest_ModifiedLPF('.snirf', groupFolders{ii}, 0.70, logger);
-    status(4,ii) = unitTest_ModifiedLPF('.snirf', groupFolders{ii}, 1.00, logger);
+    status(1,ii) = unitTest_DefaultProcStream('.snirf', groupFolders{ii}, logger);
+    for jj=1:length(lpf)
+        status(jj,ii) = unitTest_BandpassFilt_LPF('.snirf', groupFolders{ii}, lpf(jj), logger);
+    end
+    for kk=1:length(std)
+        status(kk+jj,ii) = unitTest_MotionCorrect_STDEV('.snirf', groupFolders{ii}, std(kk), logger);
+    end
 end
 
 testidx = 0;
 for ii=1:size(status,2)
     for jj=1:size(status,1)
         testidx=testidx+1;
-        if status(jj,ii)~=0
+        if status(jj,ii)==3
+            logger.Write(sprintf('#%d - Unit test %d,%d was skipped.\n', testidx, jj, ii));
+        elseif status(jj,ii)~=0
             logger.Write(sprintf('#%d - Unit test %d,%d did NOT pass.\n', testidx, jj, ii));
         else
             logger.Write(sprintf('#%d - Unit test %d,%d passed.\n', testidx, jj, ii));

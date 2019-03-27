@@ -8,6 +8,7 @@ classdef ProcInputClass < handle
         CondName2Subj;           % Used by group processing stream
         CondName2Run;            % Used by subject processing stream      
         tIncMan;                 % Manually include/excluded time points
+        stimValSettings;         % Derived stim values 
         misc;
         changeFlag;              % Flag specifying if procInput+acquisition data is out 
                                  %    of sync with procResult (currently not implemented)
@@ -26,6 +27,7 @@ classdef ProcInputClass < handle
             obj.misc = [];
             obj.changeFlag = 0;
             obj.config = struct('procStreamCfgFile','');
+            obj.stimValSettings = struct('none',0, 'incl',1, 'excl_manual',-1, 'excl_auto',-2);
             if nargin==0
                 return;
             end
@@ -353,13 +355,31 @@ classdef ProcInputClass < handle
                 eval( sprintf('obj.misc.%s = vars.%s;', fields{ii}, fields{ii}) );
             end
         end
-
+        
+    end
+        
+    
+    
+    methods
+        
+        % ----------------------------------------------------------------------------------
+        function vals = GetStimValSettings(obj)
+            vals = obj.stimValSettings;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function s = GetStims(obj)
+            s = [];
+        end
+        
         
         % ----------------------------------------------------------------------------------
         function SetTincMan(obj, val)
             obj.tIncMan = val;
         end
-                
+        
+        
         % ----------------------------------------------------------------------------------
         function val = GetTincMan(obj)
              val = obj.tIncMan;

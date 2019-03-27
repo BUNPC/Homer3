@@ -327,7 +327,7 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function Save(obj, options)
-            if ~exist('optionsstr','var')
+            if ~exist('options','var')
                 options = 'acquired:derived';
             end
             options_s = obj.parseSaveOptions(options);

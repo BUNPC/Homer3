@@ -831,52 +831,46 @@ end
 
 %%% Plot stim marks. This has to be done before plotting exclude time
 %%% patches because stim legend doesn't work otherwise.
-if ~isempty(procElem.GetStims())
-    t  = procElem.acquired.GetTime();
-    s  = procElem.acquired.GetStims();
-    
-    % Plot included and excluded stims
-    yrange = GetAxesYRangeForStimPlot(hAxes);
-    hLg=[];
-    idxLg=[];
-    kk=1;
-    CondColTbl = procElem.CondColTbl;
-    for iS = 1:size(s,2)
-        iCond         = procElem.CondName2Group(iS);
-        lstS          = find(s(:,iS)  ~=  0);
-        lstExclS_Auto = [];
-        lstExclS_Man  = find(s(:,iS)  == -1);
-        
-        for iS2=1:length(lstS)
-            if ~isempty(find(lstS(iS2) == lstExclS_Auto))
-                hl = plot(t(lstS(iS2))*[1 1],yrange,'-.');
-                set(hl,'linewidth',1);
-                set(hl,'color',CondColTbl(iCond,:));
-            elseif ~isempty(find(lstS(iS2) == lstExclS_Man))
-                hl = plot(t(lstS(iS2))*[1 1],yrange,'--');
-                set(hl,'linewidth',1);
-                set(hl,'color',CondColTbl(iCond,:));
-            else
-                hl = plot(t(lstS(iS2))*[1 1],yrange,'-');
-                set(hl,'linewidth',1);
-                set(hl,'color',CondColTbl(iCond,:));
-            end
+t          = procElem.GetTime();
+s          = procElem.GetStims();
+stimVals   = procElem.GetStimValSettings();
+CondColTbl = procElem.CondColTbl;
+
+% Plot included and excluded stims
+yrange = GetAxesYRangeForStimPlot(hAxes);
+hLg=[];
+idxLg=[];
+kk=1;
+for iCond = 1:size(s,2)
+    iCondGroup = procElem.CondName2Group(iCond);
+    iS = find(s(:,iCond) ~= stimVals.none);
+    for ii=1:length(iS)
+        linestyle = '';
+        if     s(iS(ii),iCond) == stimVals.excl_auto
+            linestyle = '-.';
+        elseif s(iS(ii),iCond) == stimVals.excl_manual
+            linestyle = '--';
+        elseif s(iS(ii),iCond) == stimVals.incl
+            linestyle = '-';
         end
-        
-        % Get handles and indices of each stim condition
-        % for legend display
-        if ~isempty(lstS)
-            % We don't want dashed lines appearing in legend, so
-            % we draw invisible solid stims over all stims to
-            % trick the legend into only showing solid lines.
-            hLg(kk) = plot(t(lstS(iS2))*[1 1],yrange,'-', 'linewidth',4, 'visible','off');
-            set(hLg(kk),'color',CondColTbl(iCond,:));
-            idxLg(kk) = iCond;
-            kk=kk+1;
-        end
+        hl = plot(t(iS(ii))*[1 1], yrange, linestyle);
+        set(hl, 'linewidth',1);
+        set(hl, 'color',CondColTbl(iCondGroup,:));
     end
-    DisplayCondLegend(hLg, idxLg);
+    
+    % Get handles and indices of each stim condition
+    % for legend display
+    if ~isempty(iS)
+        % We don't want dashed lines appearing in legend, so
+        % we draw invisible solid stims over all stims to
+        % trick the legend into only showing solid lines.
+        hLg(kk) = plot(t(iS(1))*[1 1],yrange,'-', 'linewidth',4, 'visible','off');
+        set(hLg(kk),'color',CondColTbl(iCondGroup,:));
+        idxLg(kk) = iCondGroup;
+        kk=kk+1;
+    end
 end
+DisplayCondLegend(hLg, idxLg);
 hold off
 set(hAxes,'ygrid','on');
                 
@@ -888,6 +882,12 @@ global hmr
 dataTree = hmr.dataTree;
 procElem = dataTree.currElem;
 
+if isempty(hLg)
+    return;    
+end
+if isempty(idxLg)
+    return;    
+end
 [idxLg, k] = sort(idxLg);
 CondNamesAll = procElem.CondNamesAll;
 if ishandles(hLg)

@@ -371,7 +371,14 @@ end
 
 DisplayData(handles);
 UpdateChildGuis(handles);
+UpdateDatatypePanel(handles);
 
+
+
+% --------------------------------------------------------------------
+function UpdateDatatypePanel(handles)
+
+global hmr
 datatype   = getDatatype(handles);
 if datatype == hmr.buttonVals.RAW || datatype == hmr.buttonVals.RAW_HRF
     set(handles.listboxPlotWavelength, 'visible','on');
@@ -405,6 +412,7 @@ end
 
 DisplayData(handles);
 UpdateChildGuis(handles);
+UpdateDatatypePanel(handles);
 
 
 
@@ -798,7 +806,7 @@ if ~isempty(d)
 end
 DisplayAxesSDG();
 DisplayStim(handles);
-DisplayExcludedTime();
+DisplayExcludedTime(handles, datatype);
 
 
 

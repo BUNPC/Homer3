@@ -1,5 +1,12 @@
-function DisplayExcludedTime(mode,col)
+function DisplayExcludedTime(handles, datatype, mode, col)
 global hmr
+
+if ~exist('mode','var') || isempty(mode)
+    mode = 'auto';
+end
+if strcmp(mode,'manual') || ~exist('col')
+    col = setColor(mode);
+end
 
 tInc = hmr.dataTree.currElem.GetTincAuto();
 t    = hmr.dataTree.currElem.GetTime();
@@ -7,12 +14,8 @@ t    = hmr.dataTree.currElem.GetTime();
 if isempty(tInc)
     return;
 end
-
-if ~exist('mode','var') || isempty(mode)
-    mode = 'auto';
-end
-if strcmp(mode,'manual') || ~exist('col')
-    col = setColor(mode);
+if  datatype == hmr.buttonVals.OD_HRF || datatype == hmr.buttonVals.CONC_HRF
+    return;
 end
 
 % Patch in some versions of matlab messes up the renreder, that is it changes the 
@@ -22,7 +25,7 @@ renderer = get(gcf, 'renderer');
 
 hold on
 p = timeExcludeRanges(tInc,t);
-yy = ylim();
+yy = GetAxesYRangeForStimPlot(handles.axesData);
 for ii=1:size(p,1)
     h = patch([p(ii,1) p(ii,2) p(ii,2) p(ii,1) p(ii,1)], [yy(1) yy(1) yy(2) yy(2) yy(1)], col, ...
              'facealpha',0.3, 'edgecolor','none' );
@@ -41,9 +44,9 @@ function col = setColor(mode)
 
 if strcmp(get(gcf,'renderer'),'zbuffer')
     if strcmp(mode,'auto')
-        col=[1.0 0.5 0.5];
+        col=[1.0 0.1 0.1];
     else
-        col=[1.0 0.5 1.0];
+        col=[1.0 0.3 0.8];
     end
 else
     if strcmp(mode,'auto')

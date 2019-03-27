@@ -337,6 +337,14 @@ classdef ProcResultClass < handle
         end
         
         
+        % ----------------------------------------------------------------------------------
+        function val = GetTincAuto(obj)
+            val = [];
+            if isproperty(obj.misc, 'tIncAuto')
+                val = obj.misc.tIncAuto;
+            end
+        end
+        
     end
     
     

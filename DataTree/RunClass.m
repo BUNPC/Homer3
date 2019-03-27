@@ -320,6 +320,19 @@ classdef RunClass < TreeNodeClass
             aux = obj.acquired.GetAux();            
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function tIncAuto = GetTincAuto(obj)
+             tIncAuto = obj.procStream.output.GetTincAuto();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function tIncMan = GetTincMan(obj)
+             tIncMan = obj.procStream.input.GetTincMan();
+        end
+        
+        
     end        % Public Set/Get methods
     
     

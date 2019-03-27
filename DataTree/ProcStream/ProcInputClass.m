@@ -384,6 +384,7 @@ classdef ProcInputClass < handle
         function val = GetTincMan(obj)
              val = obj.tIncMan;
         end
+        
     end
     
     

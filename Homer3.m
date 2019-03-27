@@ -798,6 +798,8 @@ if ~isempty(d)
 end
 DisplayAxesSDG();
 DisplayStim(handles);
+DisplayExcludedTime();
+
 
 
 % ----------------------------------------------------------------------------------

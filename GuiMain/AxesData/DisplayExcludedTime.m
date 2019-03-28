@@ -22,7 +22,7 @@ end
 % renderer property. Therefore we save current renderer before patch to
 % restore it to what it was to pre-patch time. 
 renderer = get(gcf, 'renderer');
-
+axes(handles.axesData);
 hold on
 p = timeExcludeRanges(tInc,t);
 yy = GetAxesYRangeForStimPlot(handles.axesData);

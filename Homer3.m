@@ -704,11 +704,10 @@ function DisplayData(handles)
 global hmr
 
 dataTree = hmr.dataTree;
-guiControls = hmr.guiControls;
 procElem = dataTree.currElem;
 EnableDisableGuiPlotBttns(handles);
 
-hAxes = guiControls.axesData.handles.axes;
+hAxes = hmr.guiControls.axesData.handles.axes;
 if ~ishandles(hAxes)
     return;
 end
@@ -718,15 +717,15 @@ cla;
 legend off
 set(hAxes,'ygrid','on');
 
-linecolor  = guiControls.axesData.linecolor;
-linestyle  = guiControls.axesData.linestyle;
+linecolor  = hmr.guiControls.axesData.linecolor;
+linestyle  = hmr.guiControls.axesData.linestyle;
 datatype   = getDatatype(handles);
-condition  = guiControls.condition;
-iCh        = guiControls.ch;
-iWl        = guiControls.wl;
-hbType     = guiControls.hbType;
-sclConc    = guiControls.sclConc;        % convert Conc from Molar to uMolar
-showStdErr = guiControls.showStdErr;
+condition  = hmr.guiControls.condition;
+iCh        = hmr.guiControls.ch;
+iWl        = hmr.guiControls.wl;
+hbType     = hmr.guiControls.hbType;
+sclConc    = hmr.guiControls.sclConc;        % convert Conc from Molar to uMolar
+showStdErr = hmr.guiControls.showStdErr;
 
 condition = find(procElem.CondName2Group == condition);
 
@@ -805,8 +804,8 @@ if ~isempty(d)
     end
 end
 DisplayAxesSDG();
-DisplayStim(handles);
 DisplayExcludedTime(handles, datatype);
+DisplayStim(handles);
 
 
 

@@ -26,7 +26,7 @@ classdef ProcInputClass < handle
             obj.tIncMan = [];
             obj.misc = [];
             obj.changeFlag = 0;
-            obj.config = struct('procStreamCfgFile','');
+            obj.config = struct('procStreamCfgFile','', 'defaultProcStream','','suffix','');
             obj.stimValSettings = struct('none',0, 'incl',1, 'excl_manual',-1, 'excl_auto',-2);
             if nargin==0
                 return;
@@ -67,7 +67,6 @@ classdef ProcInputClass < handle
                     eval( sprintf('obj.misc.%s = obj2.misc.%s;', fields{ii}, fields{ii}) );
                 end
             end
-            
             obj.changeFlag = obj2.changeFlag;
         end
         
@@ -955,6 +954,24 @@ classdef ProcInputClass < handle
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Static methods 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods (Access = private, Static = true)
+
+        % ----------------------------------------------------------------------------------
+        function suffix = getDefaultProcStream()
+            suffix = '';
+            defaultProcStream = ConfigFileClass().GetValue('Default Processing Stream');
+            if includes(lower(defaultProcStream),'nirs')
+                suffix = '_Nirs';
+            end
+        end
+        
+    end
+    
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Methods implementing static variables for this class. The static variable 
     % for this class are the default function call chains for group, subject and run. 
     % There is only one instance of each of these because these variables are the 
@@ -967,8 +984,9 @@ classdef ProcInputClass < handle
             persistent v;
             if nargin>1
                 iG = reg.igroup;
+                suffix = obj.getDefaultProcStream();
                 tmp = {...
-                    reg.funcReg(iG).GetUsageStrDecorated('hmrG_BlockAvg','dcAvg'); ...
+                    reg.funcReg(iG).GetUsageStrDecorated(['hmrG_BlockAvg',suffix],'dcAvg'); ...
                 };
                 k=[]; kk=1;
                 for ii=1:length(tmp)
@@ -991,8 +1009,9 @@ classdef ProcInputClass < handle
             persistent v;
             if nargin>1
                 iS = reg.isubj;
+                suffix = obj.getDefaultProcStream();
                 tmp = {...
-                    reg.funcReg(iS).GetUsageStrDecorated('hmrS_BlockAvg','dcAvg'); ...
+                    reg.funcReg(iS).GetUsageStrDecorated(['hmrS_BlockAvg',suffix],'dcAvg'); ...
                 };
                 k=[]; kk=1;
                 for ii=1:length(tmp)
@@ -1015,11 +1034,12 @@ classdef ProcInputClass < handle
             persistent v;
             if nargin>1
                 iR = reg.irun;
+                suffix = obj.getDefaultProcStream();
                 tmp = {...
-                    reg.funcReg(iR).GetUsageStrDecorated('hmrR_Intensity2OD'); ...
-                    reg.funcReg(iR).GetUsageStrDecorated('hmrR_BandpassFilt'); ...
-                    reg.funcReg(iR).GetUsageStrDecorated('hmrR_OD2Conc'); ...
-                    reg.funcReg(iR).GetUsageStrDecorated('hmrR_BlockAvg','dcAvg'); ...
+                    reg.funcReg(iR).GetUsageStrDecorated(['hmrR_Intensity2OD',suffix]); ...
+                    reg.funcReg(iR).GetUsageStrDecorated(['hmrR_BandpassFilt',suffix]); ...
+                    reg.funcReg(iR).GetUsageStrDecorated(['hmrR_OD2Conc',suffix]); ...
+                    reg.funcReg(iR).GetUsageStrDecorated(['hmrR_BlockAvg',suffix],'dcAvg'); ...
                 };
                 k=[]; kk=1;
                 for ii=1:length(tmp)

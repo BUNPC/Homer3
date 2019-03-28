@@ -1,4 +1,4 @@
-function status = unitTest_MotionCorrect_STDEV(datafmt, dirname, newval, logger)
+function status = unitTest_MotionArtifact_STDEV(datafmt, dirname, newval, logger)
 global procStreamStyle
 global testidx
 
@@ -28,7 +28,7 @@ if ~exist('logger','var') || isempty(logger)
 end
 
 logger.Write('######################################\n');
-logger.Write(sprintf('Running test #%d - unitTest_MotionCorrect_STDEV(''%s'', ''%s'', %0.1f)\n', testidx, datafmt, dirname, newval));
+logger.Write(sprintf('Running test #%d - unitTest_MotionArtifact_STDEV(''%s'', ''%s'', %0.1f)\n', testidx, datafmt, dirname, newval));
 fprintf('\n');
 
 rootpath = fileparts(which('Homer3.m'));
@@ -37,9 +37,9 @@ currpath = pwd;
 cd([rootpath, '/', dirname]);
 resetGroupFolder();
 
-[dataTree, procStreamConfigFile] = changeProcStream(datafmt, 'processOpt_motionCorrect_homer3', 'hmrR_MotionArtifact', 'STDEVthresh', newval);
+[dataTree, procStreamConfigFile] = changeProcStream(datafmt, 'processOpt_motionArtifact_homer3', 'hmrR_MotionArtifact', 'STDEVthresh', newval);
 if isempty(dataTree)
-    status = exitEarly(sprintf('#%d - unitTest_MotionCorrect_STDEV(''%s'', ''%s'', %0.1f): SKIPPING - This test does not apply to %s.\n', ...
+    status = exitEarly(sprintf('#%d - unitTest_MotionArtifact_STDEV(''%s'', ''%s'', %0.1f): SKIPPING - This test does not apply to %s.\n', ...
                                testidx, datafmt, dirname, newval, dirname), logger);
     return;
 end
@@ -64,18 +64,18 @@ amps = getHomer2_paramValue('hmrMotionArtifact','AMPthresh', groupFiles_h2);
 amp  = getHomer3_paramValue('hmrR_MotionArtifact','AMPthresh', dataTree);
 
 if status==0 & (~isempty(stdevs{iG}) & stdevs{iG}==stdev) & (~isempty(amps{iG}) & amps{iG}==amp)
-    logger.Write(sprintf('#%d - unitTest_MotionCorrect_STDEV(''%s'', ''%s'', %0.1f): TEST PASSED - Homer3 output matches %s.\n', ...
+    logger.Write(sprintf('#%d - unitTest_MotionArtifact_STDEV(''%s'', ''%s'', %0.1f): TEST PASSED - Homer3 output matches %s.\n', ...
              testidx, datafmt, dirname, newval, [groupFiles_h2(iG).pathfull, '/', groupFiles_h2(iG).name]));
 elseif status==0 & ~isempty(stdevs{iG}) & stdevs{iG}~=stdev
-    logger.Write(sprintf('#%d - unitTest_MotionCorrect_STDEV(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 output matches %s which has a different stdev value {%0.2f ~= %0.2f}.\n', ...
+    logger.Write(sprintf('#%d - unitTest_MotionArtifact_STDEV(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 output matches %s which has a different stdev value {%0.2f ~= %0.2f}.\n', ...
              testidx, datafmt, dirname, newval, [groupFiles_h2(iG).pathfull, '/', groupFiles_h2(iG).name], stdevs{iG}, stdev));
 elseif status==0 & ~isempty(stdevs{iG}) & amps{iG}~=amp
-    logger.Write(sprintf('#%d - unitTest_MotionCorrect_STDEV(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 output matches %s which has a different amp value {%0.2f ~= %0.2f}.\n', ...
+    logger.Write(sprintf('#%d - unitTest_MotionArtifact_STDEV(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 output matches %s which has a different amp value {%0.2f ~= %0.2f}.\n', ...
              testidx, datafmt, dirname, newval, [groupFiles_h2(iG).pathfull, '/', groupFiles_h2(iG).name], amps{iG}, amp));
 elseif status>0
-    logger.Write(sprintf('#%d - unitTest_MotionCorrect_STDEV(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 output does NOT match ANY Homer2 groupResults.\n', testidx, datafmt, dirname, newval));
+    logger.Write(sprintf('#%d - unitTest_MotionArtifact_STDEV(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 output does NOT match ANY Homer2 groupResults.\n', testidx, datafmt, dirname, newval));
 elseif status<0
-    logger.Write(sprintf('#%d - unitTest_MotionCorrect_STDEV(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 did not generate any output\n', testidx, datafmt, dirname, newval));
+    logger.Write(sprintf('#%d - unitTest_MotionArtifact_STDEV(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 did not generate any output\n', testidx, datafmt, dirname, newval));
 end
 
 

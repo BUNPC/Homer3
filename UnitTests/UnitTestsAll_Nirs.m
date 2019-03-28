@@ -24,29 +24,34 @@ groupFolders = FindUnitTestsFolders();
 nGroups = length(groupFolders);
 status = zeros(4, nGroups);
 for ii=1:nGroups
-    status(1,ii) = unitTest_DefaultProcStream('.nirs',  groupFolders{ii}, logger); 
-    status(2,ii) = unitTest_DefaultProcStream('.snirf', groupFolders{ii}, logger); 
+    irow = 1;
+    status(irow,ii) = unitTest_DefaultProcStream('.nirs',  groupFolders{ii}, logger);  irow=irow+1;
+    status(irow,ii) = unitTest_DefaultProcStream('.snirf', groupFolders{ii}, logger);  irow=irow+1;
     for jj=1:length(lpf)
-        status(jj,ii)   = unitTest_BandpassFilt_LPF('.nirs',  groupFolders{ii}, lpf(jj), logger);
-        status(jj+1,ii) = unitTest_BandpassFilt_LPF('.snirf', groupFolders{ii}, lpf(jj), logger);
+        status(irow,ii) = unitTest_BandpassFilt_LPF('.nirs',  groupFolders{ii}, lpf(jj), logger);  irow=irow+1;
+        status(irow,ii) = unitTest_BandpassFilt_LPF('.snirf', groupFolders{ii}, lpf(jj), logger);  irow=irow+1;
     end
     for kk=1:length(std)
-        status(kk+jj,  ii) = unitTest_MotionCorrect_STDEV('.nirs',  groupFolders{ii}, std(kk), logger);
-        status(kk+1+jj,ii) = unitTest_MotionCorrect_STDEV('.snirf', groupFolders{ii}, std(kk), logger);
+        status(irow,ii) = unitTest_MotionArtifact_STDEV('.nirs',  groupFolders{ii}, std(kk), logger);  irow=irow+1;
+        status(irow,ii)   = unitTest_MotionArtifact_STDEV('.snirf', groupFolders{ii}, std(kk), logger);  irow=irow+1;
     end
 end
+logger.Write('\n');
 
 testidx = 0;
 for ii=1:size(status,2)
     for jj=1:size(status,1)
         testidx=testidx+1;
-        if status(jj,ii)~=0
+        if status(jj,ii)==3
+            logger.Write(sprintf('#%d - Unit test %d,%d was skipped.\n', testidx, jj, ii));
+        elseif status(jj,ii)~=0
             logger.Write(sprintf('#%d - Unit test %d,%d did NOT pass.\n', testidx, jj, ii));
         else
             logger.Write(sprintf('#%d - Unit test %d,%d passed.\n', testidx, jj, ii));
         end
     end
 end
+logger.Write('\n');
 
 testidx=[];
 procStreamStyle=[];

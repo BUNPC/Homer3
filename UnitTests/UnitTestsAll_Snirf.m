@@ -24,14 +24,16 @@ groupFolders = FindUnitTestsFolders();
 nGroups = length(groupFolders);
 status = zeros(4, nGroups);
 for ii=1:nGroups
-    status(1,ii) = unitTest_DefaultProcStream('.snirf', groupFolders{ii}, logger);
+    irow = 1;
+    status(irow,ii) = unitTest_DefaultProcStream('.snirf', groupFolders{ii}, logger); irow=irow+1;
     for jj=1:length(lpf)
-        status(jj,ii) = unitTest_BandpassFilt_LPF('.snirf', groupFolders{ii}, lpf(jj), logger);
+        status(irow,ii) = unitTest_BandpassFilt_LPF('.snirf', groupFolders{ii}, lpf(jj), logger); irow=irow+1;
     end
     for kk=1:length(std)
-        status(kk+jj,ii) = unitTest_MotionCorrect_STDEV('.snirf', groupFolders{ii}, std(kk), logger);
+        status(irow,ii) = unitTest_MotionArtifact_STDEV('.snirf', groupFolders{ii}, std(kk), logger); irow=irow+1;
     end
 end
+logger.Write('\n');
 
 testidx = 0;
 for ii=1:size(status,2)
@@ -46,6 +48,7 @@ for ii=1:size(status,2)
         end
     end
 end
+logger.Write('\n');
 
 testidx=[];
 procStreamStyle=[];

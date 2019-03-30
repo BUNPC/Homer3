@@ -188,15 +188,15 @@ if ishandles(hc)
     delete(hc);
 end
 
-inp = procStreamOptions.dataTree.currElem.procStream.input;
+ps = procStreamOptions.dataTree.currElem.procStream;
 
-if isempty(inp.fcalls)
+if isempty(ps.fcalls)
     menu('Processing stream is empty. Please check the registry to see if any user functions were loaded.', 'OK');
     procStreamOptions.err=-1;
     return;
 end
 
-fcalls = inp.fcalls;
+fcalls = ps.fcalls;
 nFcalls = length(fcalls);
 
 % If no functions, throw up empty gui
@@ -228,8 +228,8 @@ fs = 1.5;
 
 % Position/dimensions in the X direction
 a     = 2;
-Xsf   = inp.GetMaxCallNameLength()*fs;
-Xsp   = inp.GetMaxParamNameLength()*fs;
+Xsf   = ps.GetMaxCallNameLength()*fs;
+Xsp   = ps.GetMaxParamNameLength()*fs;
 Xse   = 15;
 Xsb   = 10;
 Xp1   = Xsf + a;
@@ -241,7 +241,7 @@ Xst   = Xsf + Xsp + Xse + Xsb + 4*a; % GUI width
 
 % Position/dimensions in the Y direction
 N       = nFcalls;
-m       = inp.GetParamNum();
+m       = ps.GetParamNum();
 b       = 3;
 Ys      = 1*fs;                     % Function call entry height
 yoffset = 2;
@@ -335,49 +335,6 @@ if ~procStreamOptions.applyEditCurrNodeOnly
         end
     end
 end
-
-
-% ----------------------------------------------------------
-function pushbuttonProc_Callback(hObject, eventdata, handles) 
-global procStreamOptions
-
-dataTree = procStreamOptions.dataTree;
-procInput = dataTree.currElem.procStream.input;
-procResult = dataTree.currElem.procStream.output;
-
-% parse output parameters
-sargout = procInput.fcalls(eventdata).argOut.str;
-
-% remove '[', ']', and ','
-for ii=1:length(sargout)
-    if sargout(ii)=='[' | sargout(ii)==']' | sargout(ii)==',' | sargout(ii)=='#'
-        sargout(ii) = ' ';
-    end
-end
-sargout_arr = str2cell(sargout, ' ');
-
-% get parameters for Output to procResult
-sargin = '';
-for ii=1:length(sargout_arr)
-    if isempty(sargin)
-        if isproperty(procResult, sargout_arr{ii})
-            sargin = sprintf('procResult.%s', sargout_arr{ii});
-        elseif isproperty(procResult.misc, sargout_arr{ii})
-            sargin = sprintf('procResult.misc.%s', sargout_arr{ii});
-        end
-    else
-        if isproperty(procResult, sargout_arr{ii})
-            sargin = sprintf('%s, procResult.%s', sargin, sargout_arr{ii});
-        elseif isproperty(procResult.misc, sargout_arr{ii})
-            sargin = sprintf('%s, procResult.misc.%s', sargin, sargout_arr{ii});
-        end
-    end
-end
-
-eval( sprintf( '%s_result( %s );', procInput.fcalls(eventdata).name, sargin ) );
-
-procStreamOptions.dataTree.currElem.procStream.input = procInput.copy;
-
 
 
 % --------------------------------------------------------------------

@@ -76,28 +76,28 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function CopyProcInput(obj, procInput, type, reg)
+        function CopyProcStream(obj, procStream, type, reg)
             if nargin<4
                 reg = RegistriesClass.empty();
             end
             
-            % Copy default procInput to all nodes at a single level
+            % Copy default procStream to all nodes at a single level
             switch(type)
                 case 'group'
-                    if obj.procStream.input.IsEmpty()
-                        obj.procStream.input.Copy(procInput, reg);
+                    if obj.procStream.IsEmpty()
+                        obj.procStream.Copy(procStream, reg);
                     end
                 case 'subj'
                     for jj=1:length(obj.subjs)
-                        if obj.subjs(jj).procStream.input.IsEmpty()
-                            obj.subjs(jj).procStream.input.Copy(procInput, reg);
+                        if obj.subjs(jj).procStream.IsEmpty()
+                            obj.subjs(jj).procStream.Copy(procStream, reg);
                         end
                     end
                 case 'run'
                     for jj=1:length(obj.subjs)
                         for kk=1:length(obj.subjs(jj).runs)
-                            if obj.subjs(jj).runs(kk).procStream.input.IsEmpty()
-                                obj.subjs(jj).runs(kk).procStream.input.Copy(procInput, reg);
+                            if obj.subjs(jj).runs(kk).procStream.IsEmpty()
+                                obj.subjs(jj).runs(kk).procStream.Copy(procStream, reg);
                             end
                         end
                     end
@@ -107,20 +107,20 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function CopyFcalls(obj, procElem)
-            % Copy default procInput function call chain to all uninitialized nodes 
+            % Copy default procStream function call chain to all uninitialized nodes 
             % in the group
-            procInput = procElem.procStream.input;
+            procStream = procElem.procStream;
             switch(procElem.type)
                 case 'group'
-                    obj.procStream.input.CopyFcalls(procInput);
+                    obj.procStream.CopyFcalls(procStream);
                 case 'subj'
                     for jj=1:length(obj.subjs)
-                        obj.subjs(jj).procStream.input.CopyFcalls(procInput);
+                        obj.subjs(jj).procStream.CopyFcalls(procStream);
                     end
                 case 'run'
                     for jj=1:length(obj.subjs)
                         for kk=1:length(obj.subjs(jj).runs)
-                            obj.subjs(jj).runs(kk).procStream.input.CopyFcalls(procInput);
+                            obj.subjs(jj).runs(kk).procStream.CopyFcalls(procStream);
                         end
                     end
             end
@@ -129,14 +129,14 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function InitProcInput(obj, reg, procStreamCfgFile)
+        function InitProcStream(obj, reg, procStreamCfgFile)
             if ~exist('procStreamCfgFile','var')
                 procStreamCfgFile = '';
             end
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Find out if we need to ask user for processing options 
-            % config file to initialize procStream.input.fcalls at the 
+            % config file to initialize procStream.fcalls at the 
             % run, subject or group level. First try to find the proc 
             % input at each level from the save results groupresults.mat 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -154,42 +154,42 @@ classdef GroupClass < TreeNodeClass
                 end
             end
             
-            % Generate procInput defaults at each level with which to initialize
+            % Generate procStream defaults at each level with which to initialize
             % any uninitialized procStream.input
-            g.CreateProcInputDefault(reg);
-            procInputGroup = g.GetProcInputDefault(reg);
-            procInputSubj = s.GetProcInputDefault(reg);
-            procInputRun = r.GetProcInputDefault(reg);
+            g.CreateProcStreamDefault(reg);
+            procStreamGroup = g.GetProcStreamDefault(reg);
+            procStreamSubj = s.GetProcStreamDefault(reg);
+            procStreamRun = r.GetProcStreamDefault(reg);
             
             % If any of the tree nodes still have unintialized procStream input, ask 
             % user for a config file to load it from 
             if g.procStream.IsEmpty() || s.procStream.IsEmpty() || r.procStream.IsEmpty()
-                fname = g.procStream.input.GetConfigFileName(procStreamCfgFile);
+                fname = g.procStream.GetConfigFileName(procStreamCfgFile);
                 
-                % If user did not provide procInput config filename and file does not exist
+                % If user did not provide procStream config filename and file does not exist
                 % then create a config file with the default contents
                 if ~exist(fname, 'file')
-                    procInputGroup.SaveConfigFile(fname, 'group');
-                    procInputSubj.SaveConfigFile(fname, 'subj');
-                    procInputRun.SaveConfigFile(fname, 'run');
+                    procStreamGroup.SaveConfigFile(fname, 'group');
+                    procStreamSubj.SaveConfigFile(fname, 'subj');
+                    procStreamRun.SaveConfigFile(fname, 'run');
                 end
                 
-                % Load file to the first empty procInput in the dataTree at each processing level
-                g.LoadProcInputConfigFile(fname, reg);
-                s.LoadProcInputConfigFile(fname, reg);
-                r.LoadProcInputConfigFile(fname, reg);
+                % Load file to the first empty procStream in the dataTree at each processing level
+                g.LoadProcStreamConfigFile(fname, reg);
+                s.LoadProcStreamConfigFile(fname, reg);
+                r.LoadProcStreamConfigFile(fname, reg);
                 
-                % Copy the loaded procInput at each processing level to all
-                % nodes of that level that lack procInput 
+                % Copy the loaded procStream at each processing level to all
+                % nodes of that level that lack procStream 
                 
                 % If proc stream input is still empty it means the loaded config
                 % did not have valid proc stream input. If that's the case we
                 % load a default proc stream input
                 if g.procStream.IsEmpty() || s.procStream.IsEmpty() || r.procStream.IsEmpty()
                     fprintf('Failed to load all function calls in proc stream config file . Loading default processing\n');
-                    g.CopyProcInput(procInputGroup, 'group', reg);
-                    g.CopyProcInput(procInputSubj, 'subj', reg);
-                    g.CopyProcInput(procInputRun, 'run', reg);
+                    g.CopyProcStream(procStreamGroup, 'group', reg);
+                    g.CopyProcStream(procStreamSubj, 'subj', reg);
+                    g.CopyProcStream(procStreamRun, 'run', reg);
                     
                     % Move exiting default config to same name with .bak extension
                     if ~exist([fname, '.bak'], 'file')
@@ -198,14 +198,14 @@ classdef GroupClass < TreeNodeClass
                     end
                     
                     % Save default proc stream in default config file
-                    procInputGroup.SaveConfigFile(fname, 'group');
-                    procInputSubj.SaveConfigFile(fname, 'subj');
-                    procInputRun.SaveConfigFile(fname, 'run');
+                    procStreamGroup.SaveConfigFile(fname, 'group');
+                    procStreamSubj.SaveConfigFile(fname, 'subj');
+                    procStreamRun.SaveConfigFile(fname, 'run');
                 else
                     fprintf('Loading proc stream from %s\n', fname);
-                    g.CopyProcInput(g.procStream.input, 'group', reg);
-                    g.CopyProcInput(s.procStream.input, 'subj', reg);
-                    g.CopyProcInput(r.procStream.input, 'run', reg);
+                    g.CopyProcStream(g.procStream, 'group', reg);
+                    g.CopyProcStream(s.procStream, 'subj', reg);
+                    g.CopyProcStream(r.procStream, 'run', reg);
                 end
             end
         end
@@ -265,7 +265,7 @@ classdef GroupClass < TreeNodeClass
                 indent = 0;
             end
             fprintf('%sGroup 1:\n', blanks(indent));
-            obj.procStream.input.Print(indent+4);
+            obj.procStream.Print(indent+4);
             obj.procStream.output.Print(indent+4);
             for ii=1:length(obj.subjs)
                 obj.subjs(ii).Print(indent+4);
@@ -503,8 +503,6 @@ classdef GroupClass < TreeNodeClass
                 end
                 if obj == G
                     obj.copyProcParamsFieldByField(G);
-                else
-                    obj.procStream.input.changeFlag=1;
                 end
             end           
         end

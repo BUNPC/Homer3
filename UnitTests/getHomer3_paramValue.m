@@ -28,17 +28,17 @@ end
 if isempty(dataTree.group.subjs(isubj).runs)
     return;
 end
-if isempty(dataTree.group.subjs(isubj).runs(irun).procStream.input.fcalls)
+if isempty(dataTree.group.subjs(isubj).runs(irun).procStream.fcalls)
     return;
 end
        
-iFcall = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.input.GetFuncCallIdx(funcName);
+iFcall = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.GetFuncCallIdx(funcName);
 if isempty(iFcall)
     return;
 end
-paramIdx = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.input.fcalls(iFcall).GetParamIdx(paramName);
+paramIdx = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.fcalls(iFcall).GetParamIdx(paramName);
 if isempty(paramIdx)
     return;
 end
-val = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.input.fcalls(iFcall).paramIn(paramIdx).value;
+val = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.fcalls(iFcall).paramIn(paramIdx).value;
 

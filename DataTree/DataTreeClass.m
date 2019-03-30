@@ -58,9 +58,9 @@ classdef DataTreeClass <  handle
             obj.group.Load();
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Initialize procStream.input for all tree nodes
+            % Initialize procStream for all tree nodes
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.group.InitProcInput(obj.reg, procStreamCfgFile);
+            obj.group.InitProcStream(obj.reg, procStreamCfgFile);
 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Copy input variables for group, subjects and runs

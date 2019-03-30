@@ -55,29 +55,29 @@ classdef TreeNodeClass < handle
     methods
         
         % ---------------------------------------------------------------------------------
-        function LoadProcInputConfigFile(obj, filename, reg)
-            obj.procStream.input.LoadConfigFile(filename, reg, class(obj));
+        function LoadProcStreamConfigFile(obj, filename, reg)
+            obj.procStream.LoadConfigFile(filename, reg, class(obj));
         end        
         
                 
         % ---------------------------------------------------------------------------------
-        function SaveProcInputConfigFile(obj, filename)
-            obj.procStream.input.SaveConfigFile(filename, class(obj));
+        function SaveProcStreamConfigFile(obj, filename)
+            obj.procStream.SaveConfigFile(filename, class(obj));
         end        
                 
         
         % ---------------------------------------------------------------------------------
-        function CreateProcInputDefault(obj, reg)
-            obj.procStream.input.CreateDefault(reg)
+        function CreateProcStreamDefault(obj, reg)
+            obj.procStream.CreateDefault(reg)
         end
         
         
         % ---------------------------------------------------------------------------------
-        function procInput = GetProcInputDefault(obj, reg)
+        function procStream = GetProcStreamDefault(obj, reg)
             if nargin<2
                 reg = RegistriesClass.empty();
             end            
-            procInput = obj.procStream.input.GetDefault(class(obj), reg);
+            procStream = obj.procStream.GetDefault(class(obj), reg);
         end 
        
     end
@@ -120,7 +120,7 @@ classdef TreeNodeClass < handle
             objnew.ch = obj.ch;
             objnew.CondNames = obj.CondNames;
             objnew.CondName2Group = obj.CondName2Group;
-            objnew.procStream.input.Copy(obj.procStream.input);
+            objnew.procStream.Copy(obj.procStream);
         end
         
                
@@ -129,15 +129,9 @@ classdef TreeNodeClass < handle
         % obj2 to obj
         % ----------------------------------------------------------------------------------
         function copyProcParamsFieldByField(obj, obj2)
-            % procInput
-            if ~isempty(obj2.procStream.input)
-                obj.procStream.input.Copy(obj2.procStream.input);
+            if ~isempty(obj2.procStream)
+                obj.procStream.Copy(obj2.procStream);
             end
-            
-            % procResult
-            if ~isempty(obj2.procStream.output)
-                obj.procStream.output.Copy(obj2.procStream.output);
-            end            
         end
         
                 

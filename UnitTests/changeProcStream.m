@@ -63,15 +63,15 @@ igroup = 1;
 isubj = 1;
 irun = 1;
 
-iFcall = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.input.GetFuncCallIdx(funcName);
+iFcall = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.GetFuncCallIdx(funcName);
 if isempty(iFcall)
     return;
 end
-paramIdx = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.input.fcalls(iFcall).GetParamIdx(paramName);
+paramIdx = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.fcalls(iFcall).GetParamIdx(paramName);
 if isempty(paramIdx)
     return;
 end
-oldval = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.input.fcalls(iFcall).GetParamVal(paramName);
+oldval = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.fcalls(iFcall).GetParamVal(paramName);
 if ~exist('newval','var') || isempty(newval)
     newval = oldval;
 end

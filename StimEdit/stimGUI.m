@@ -79,9 +79,9 @@ end
 stimEdit.version = get(hObject, 'name');
 stimEdit.dataTree = LoadDataTree(stimEdit.format, '', hmr);
 if ispc()
-    setGuiFonts(hObject, 7);
-else
     setGuiFonts(hObject);
+else
+    setGuiFonts(hObject, 7);
 end
 if isempty(stimEdit.dataTree)
     stimGUI_EnableGuiObjects('off', hObject);
@@ -236,8 +236,7 @@ end
 
 % Now that we made sure legit dataTree exists, we can match up
 % the selected stims to the stims in currElem
-currElem = stimEdit.dataTree.currElem;
-s = currElem.GetStims();
+s = stimEdit.dataTree.currElem.GetStims();
 s2 = sum(abs(s(tPts_idxs_select,:)),2);
 stims_select = find(s2>=1);
 
@@ -258,7 +257,6 @@ if isempty(stims_select) & ~(t1==t2)
     menu( 'Drag a box around the stim to edit.','Okay');
     return;
 end
-
 AddEditDelete(tPts_idxs_select, stims_select);
 if stimEdit.status==0
     return;
@@ -278,7 +276,15 @@ for ii=1:length(tPts_select)
     tPts_idxs_select(ii) = binaraysearchnearest(t, tPts_select(ii));
 end
 stims_select = GetStimsFromTpts(tPts_idxs_select);
-AddEditDelete(tPts_idxs_select, stims_select);
+if length(tPts_idxs_select) == length(stims_select)
+    AddEditDelete(tPts_idxs_select, stims_select);
+elseif isempty(stims_select)
+    AddEditDelete(tPts_idxs_select);
+else
+    k = ismember(1:length(tPts_idxs_select), stims_select);
+    menu_choice = AddEditDelete(tPts_idxs_select(k==0));
+    AddEditDelete(tPts_idxs_select(k==1), 1:length(stims_select), 'non-interactive', menu_choice);
+end
 if stimEdit.status==0
     return;
 end
@@ -288,9 +294,42 @@ stimEdit.status=0;
 
 
 
+% ------------------------------------------------
+function [menu_choice, nActions] = GetUserMenuSelection(tPts_idxs_select, iS_lst)
+global stimEdit
+
+if ~exist('tPts_idxs_select','var') || isempty(tPts_idxs_select)
+    return;
+end
+if ~exist('iS_lst','var') || isempty(iS_lst)
+    iS_lst = [];
+end
+                    
+CondNamesGroup = stimEdit.dataTree.group.GetConditions();
+tc             = stimEdit.dataTree.currElem.GetTime();
+
+% Create menu actions list
+actionLst = CondNamesGroup;
+actionLst{end+1} = 'New condition';
+if ~isempty(iS_lst)
+    actionLst{end+1} = 'Toggle active on/off';
+    actionLst{end+1} = 'Delete';
+    menuTitleStr = sprintf('Edit/Delete stim mark(s) at t=%0.1f-%0.1f to...', ...
+                            tc(tPts_idxs_select(iS_lst(1))), ...
+                            tc(tPts_idxs_select(iS_lst(end))));
+else
+    menuTitleStr = sprintf('Add stim mark at t=%0.1f...', tc(tPts_idxs_select(1)));
+end
+actionLst{end+1} = 'Cancel';
+nActions = length(actionLst);
+
+% Get user's responce to menu question
+menu_choice = menu(menuTitleStr, actionLst);
+
+
 
 % ------------------------------------------------
-function AddEditDelete(tPts_idxs_select, iS_lst)
+function menu_choice = AddEditDelete(tPts_idxs_select, iS_lst, mode, menu_choice)
 % Usage:
 %
 %     AddEditDelete(tPts_select, iS_lst)
@@ -301,43 +340,35 @@ function AddEditDelete(tPts_idxs_select, iS_lst)
 %     iS_lst - indices in tPts of existing stims
 global stimEdit
 
-if isempty(tPts_idxs_select)
+if ~exist('tPts_idxs_select','var') || isempty(tPts_idxs_select)
     return;
 end
+if ~exist('iS_lst','var') || isempty(iS_lst)
+    iS_lst = [];
+end
+if ~exist('mode','var') || isempty(mode)
+    mode = 'interactive';
+end
                     
-dataTree       = stimEdit.dataTree;
-currElem       = dataTree.currElem;
-group          = dataTree.group;
-CondNamesGroup = group.GetConditions();
-tc             = currElem.GetTime();
+CondNamesGroup = stimEdit.dataTree.group.GetConditions();
+tc             = stimEdit.dataTree.currElem.GetTime();
 nCond          = length(CondNamesGroup);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Create menu actions list
+% Get user menu selection
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-actionLst = CondNamesGroup;
-actionLst{end+1} = 'New condition';
-if ~isempty(iS_lst)
-    actionLst{end+1} = 'Toggle active on/off';
-    actionLst{end+1} = 'Delete';
-    menuTitleStr = sprintf('Edit/Delete stim mark(s) at t=%0.1f-%0.1f to...', ...
-                           tc(tPts_idxs_select(iS_lst(1))), ...
-                           tc(tPts_idxs_select(iS_lst(end))));
+if strcmpi(mode, 'interactive')
+     [menu_choice, nActions] = GetUserMenuSelection(tPts_idxs_select, iS_lst);
+elseif ~exist('menu_choice','var') || isempty(menu_choice)
+    return;
 else
-    menuTitleStr = sprintf('Add stim mark at t=%0.1f...', tc(tPts_idxs_select(1)));
+    nActions = length(CondNamesGroup)+1;
 end
-actionLst{end+1} = 'Cancel';
-nActions = length(actionLst);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Get user's responce to menu question
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-ch = menu(menuTitleStr, actionLst);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Cancel
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if ch==nActions || ch==0
+if menu_choice==nActions || menu_choice==0
     return;
 end
 
@@ -347,7 +378,7 @@ end
 if isempty(iS_lst)
     
     % If stim added to new condition update group conditions
-    if ch==nCond+1
+    if menu_choice==nCond+1
         CondNameNew = inputdlg('','New Condition name');
         if isempty(CondNameNew)
             return;
@@ -360,11 +391,11 @@ if isempty(iS_lst)
         end
         CondName = CondNameNew{1};
     else
-        CondName = CondNamesGroup{ch};
+        CondName = CondNamesGroup{menu_choice};
     end
     
     %%%% Add new stim to currElem's condition
-    currElem.AddStims(tc(tPts_idxs_select), CondName);
+    stimEdit.dataTree.currElem.AddStims(tc(tPts_idxs_select), CondName);
     stimEdit.status = 1;
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -373,37 +404,37 @@ if isempty(iS_lst)
 else
     
     %%%% Delete stim
-    if ch==nActions-1 & nActions==nCond+4
+    if menu_choice==nActions-1 & nActions==nCond+4
 
         % Delete stim entry from userdata first
         % because it depends on stim.currElem.s
-        currElem.DeleteStims(tc(tPts_idxs_select));
+        stimEdit.dataTree.currElem.DeleteStims(tc(tPts_idxs_select));
 
     %%%% Toggle active/inactive stim
-    elseif ch==nActions-2 & nActions==nCond+4
+    elseif menu_choice==nActions-2 & nActions==nCond+4
 
         ;
     
     %%%% Edit stim
-    elseif ch<=nCond+1
+    elseif menu_choice<=nCond+1
         
         % Assign new condition to edited stim
-        if ch==nCond+1
+        if menu_choice==nCond+1
             CondNameNew = inputdlg('','New Condition name');
             if isempty(CondNameNew)
                 return;
             end
             CondName = CondNameNew{1};
         else
-            CondName = CondNamesGroup{ch};
+            CondName = CondNamesGroup{menu_choice};
         end
-        currElem.MoveStims(tc(tPts_idxs_select), CondName);
+        stimEdit.dataTree.currElem.MoveStims(tc(tPts_idxs_select), CondName);
         
     end
     stimEdit.status = 1;
     
 end
-group.SetConditions();
+stimEdit.dataTree.group.SetConditions();
 
 
 
@@ -454,3 +485,4 @@ stimEdit.dataTree.currElem.SetStimValues(icond, data(:,3));
 
 % -------------------------------------------------------------------
 function stimGUI_DeleteFcn(hObject, eventdata, handles)
+

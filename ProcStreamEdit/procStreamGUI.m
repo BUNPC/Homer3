@@ -190,10 +190,10 @@ if isempty(listPsUsage)
 end
 for iPanel=1:length(procStreamGui.procElem)
     listPsUsage(iPanel).Initialize();    
-    procInput = procStreamGui.procElem{iPanel}.procStream.input;
-    for iFcall=1:procInput.GetFuncCallNum()
-        fname     = procInput.fcalls(iFcall).GetName();
-        fcallname = funcReg(iPanel).GetUsageName(procInput.fcalls(iFcall));
+    procStream = procStreamGui.procElem{iPanel}.procStream;
+    for iFcall=1:procStream.GetFuncCallNum()
+        fname     = procStream.fcalls(iFcall).GetName();
+        fcallname = funcReg(iPanel).GetUsageName(procStream.fcalls(iFcall));
         
         % Line up the procStream entries into 2 columns: func name and func call name, so it's cleares
         listPsUsage(iPanel).Insert(sprintf('%s: %s', fname, fcallname));
@@ -401,7 +401,7 @@ elseif q==2
         return;
     end
     for iPanel=1:length(procElem)
-        procElem{iPanel}.LoadProcInputConfigFile([pathname,filename], reg);
+        procElem{iPanel}.LoadProcStreamConfigFile([pathname,filename], reg);
     end
 end
 LoadProcStream(handles, reload);
@@ -435,9 +435,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for iPanel=1:length(procElem)
     % First clear the existing func call chain for this procElem
-    procElem{iPanel}.procStream.input.ClearFcalls();
+    procElem{iPanel}.procStream.ClearFcalls();
     
-    % Add each listbox selection to the procElem{iPanel}.procStream.input list 
+    % Add each listbox selection to the procElem{iPanel}.procStream list 
     % of function calls
     for jj=1:listPsUsage(iPanel).GetSize()
         selection = listPsUsage(iPanel).GetVal(jj);
@@ -449,7 +449,7 @@ for iPanel=1:length(procElem)
         funcname = strtrim(parts{1});
         usagename = strtrim(parts{2});
         fcall = funcReg(iPanel).GetFuncCallDecoded(funcname, usagename);
-        procElem{iPanel}.procStream.input.Add(fcall, funcReg(iPanel));
+        procElem{iPanel}.procStream.Add(fcall, funcReg(iPanel));
     end
 end
 
@@ -467,7 +467,7 @@ elseif q==2
         return;
     end
     for iPanel=1:length(procElem)
-        procElem{iPanel}.SaveProcInputConfigFile([pathname,filename]);
+        procElem{iPanel}.SaveProcStreamConfigFile([pathname,filename]);
     end
 end
 

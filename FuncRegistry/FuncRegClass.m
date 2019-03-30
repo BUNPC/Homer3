@@ -210,15 +210,15 @@ classdef FuncRegClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function fcallsstr = GetFuncCallsEncoded(obj, procInput)
+        function fcallsstr = GetFuncCallsEncoded(obj, procStream)
             fcallsstr = {};
             if ~isa(fcall,'FuncCallClass')
                 return
             end
-            if isempty(procInput)
+            if isempty(procStream)
                 return;
             end
-            fcalls = procInput.fcalls;
+            fcalls = procStream.fcalls;
             kk=1;
             for iFcall=1:length(fcalls)
                 idx = obj.GetIdx(fcall(iFcall).GetName());

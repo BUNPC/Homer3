@@ -124,10 +124,18 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function found = FindVar(obj, varname)
+            found = false;
             if isproperty(obj, varname)
                 found = true;
-            else
-                found = obj.acquired.FindVar(varname);
+                return;
+            end
+            if obj.procStream.FindVar(varname)==true
+                found = true;
+                return;
+            end            
+            if obj.acquired.FindVar(varname)==true
+                found = true;
+                return;
             end
         end
         
@@ -136,6 +144,8 @@ classdef RunClass < TreeNodeClass
         function varval = GetVar(obj, varname)
             if isproperty(obj, varname)
                 varval = eval( sprintf('obj.%s', varname) );
+            elseif obj.procStream.FindVar(varname)==true
+                varval = obj.procStream.GetVar(varname);
             else
                 varval = obj.acquired.GetVar(varname);
             end
@@ -153,7 +163,7 @@ classdef RunClass < TreeNodeClass
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
             % a) Find all variables needed by proc stream
-            args = obj.procStream.input.GetInputArgs();
+            args = obj.procStream.GetInputArgs();
 
             % b) Find these variables in this run
             vars = [];

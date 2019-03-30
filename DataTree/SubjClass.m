@@ -50,8 +50,6 @@ classdef SubjClass < TreeNodeClass
                 end
                 if obj == S
                     obj.copyProcParamsFieldByField(S);
-                else
-                    obj.procStream.input.changeFlag = 1;
                 end
             end
         end

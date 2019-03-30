@@ -911,3 +911,10 @@ global hmr
 
 DisplayData(hmr.handles);
 UpdateCondPopupmenu(hmr.handles);
+
+
+% --------------------------------------------------------------------
+function menuItemResetGroupFolder_Callback(hObject, eventdata, handles)
+
+resetGroupFolder();
+

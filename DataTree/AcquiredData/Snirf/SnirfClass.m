@@ -9,6 +9,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         timeOffset
         metaDataTags
     end
+
+    properties (Access = private)
+        nirs_tb;
+    end
+    
+    
     
     methods
         
@@ -24,6 +30,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %   obj = SnirfClass(data, stim, sd, aux);
             %   obj = SnirfClass(d, t, SD, aux, s);
             %   obj = SnirfClass(d, t, SD, aux, s, CondNames);
+            %   
+            %   Also for debugging/simulation of time bases 
+            % 
+            %   obj = SnirfClass(nirs, tfactors);
             %
             % Example 1:
             %   Nirs2Snirf('./Simple_Probe1_run04.nirs');
@@ -74,12 +84,20 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % there is should be a simpler way to do this 
             
             % The basic 5 of a .nirs format in a struct
-            if nargin==1
+            if nargin==1 || (nargin==2 && isa(varargin{2}, 'double'))
                 if ischar(varargin{1})
                     obj.Load(varargin{1});
                 elseif isstruct(varargin{1})
-                    nirs = varargin{1};                    
-                    obj.data(1) = DataClass(nirs.d, nirs.t, nirs.SD.MeasList);
+                    tfactors = 1;    % Debug simulation parameter
+                    if nargin==2
+                        tfactors = varargin{2};
+                    end                    
+                    nirs = varargin{1};
+                    obj.GenSimulatedTimeBases(nirs, tfactors);
+                    for ii=1:length(tfactors)                        
+                        obj.data(ii) = DataClass(obj.nirs_tb(ii).d, obj.nirs_tb(ii).t, obj.nirs_tb(ii).SD.MeasList);
+                    end
+                    
                     for ii=1:size(nirs.s,2)
                         if isfield(nirs, 'CondNames')
                             obj.stim(ii) = StimClass(nirs.s(:,ii), nirs.t, nirs.CondNames{ii});
@@ -736,6 +754,69 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 return;
             end
             b = false;
+        end
+        
+    end
+ 
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Private methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods (Access = private)
+        
+        function GenSimulatedTimeBases(obj, nirs, tfactors)
+            obj.nirs_tb = struct('SD', struct('Lambda',nirs.SD.Lambda, 'MeasList',[], 'SrcPOos',[], 'DetPOos',[]), ...
+                                 't',[], ...
+                                 'd',[] ...
+                                 );
+                             
+            if length(tfactors)==1 && tfactors==1
+                obj.nirs_tb = nirs;
+                return;
+            end
+            
+            % a) Subdivide data and measurement list among time bases
+            % b) Resample time and data
+            % c) Throw out source and detectors that don't belong in each time base
+            nCh = size(nirs.SD.MeasList,1)/length(nirs.SD.Lambda);
+            nTimeBases = length(tfactors);
+            baseSize = round(nCh/nTimeBases);
+            irows = 1:baseSize:nCh;
+                            
+            % Assign channels for time bases
+            obj.nirs_tb = repmat(obj.nirs_tb, nTimeBases,1);
+            for iWl=1:length(nirs.SD.Lambda)
+                iBase = 1;
+                for ii=irows+(iWl-1)*nCh
+                    istart = ii;
+                    if ii+baseSize-1 <= iWl*nCh
+                        iend = ii+baseSize-1;
+                    else
+                        iend = iWl*nCh;
+                    end
+                    nChAdd = iend-istart+1;
+                    obj.nirs_tb(iBase).d(:,end+1:end+nChAdd) = nirs.d(:,istart:iend);
+                    obj.nirs_tb(iBase).SD.MeasList(end+1:end+nChAdd,:) = nirs.SD.MeasList(istart:iend,:);
+                    iBase = iBase+1;
+                end
+            end
+            
+            % Resample data time and throw out optodes that don't belong in each time base
+            for iBase=1:length(obj.nirs_tb)
+                % Resample time
+                [n,d] = rat(tfactors(iBase));
+                obj.nirs_tb(iBase).t = resample(nirs.t, n, d);
+
+                % Resample data
+                obj.nirs_tb(iBase).d = resample(obj.nirs_tb(iBase).d, n, d);
+                
+                % Throw out source and detectors that don't belong in each time base
+                iSrc = unique(obj.nirs_tb(iBase).SD.MeasList(:,1));
+                obj.nirs_tb(iBase).SD.SrcPos = nirs.SD.SrcPos(iSrc);
+                iDet = unique(obj.nirs_tb(iBase).SD.MeasList(:,2));
+                obj.nirs_tb(iBase).SD.DetPos = nirs.SD.DetPos(iDet);
+            end
+            
         end
         
     end

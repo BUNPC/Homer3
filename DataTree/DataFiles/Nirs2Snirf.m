@@ -1,12 +1,22 @@
-function snirf = Nirs2Snirf(nirsfiles0, replace)
-
+function snirf = Nirs2Snirf(nirsfiles0, replace, tfactors)
+%
+% Syntax:
+%   snirf = Nirs2Snirf(nirsfiles)
+%   snirf = Nirs2Snirf(nirsfiles, replace)
+%   snirf = Nirs2Snirf(nirsfiles, replace, tfactors)
+%
+% 
+%
 snirf = SnirfClass().empty();
 
-if ~exist('nirsfiles0','var')
+if ~exist('nirsfiles0','var') || isempty(nirsfiles0)
     nirsfiles0 = NirsFilesClass().files;
 end
 if ~exist('replace','var') || isempty(replace)
     replace = false;
+end
+if ~exist('tfactors','var') || isempty(tfactors)
+    tfactors = 1;
 end
 
 nirsfiles = mydir('');
@@ -27,7 +37,7 @@ for ii=1:length(nirsfiles)
     [pname,fname,ext] = fileparts([nirsfiles(ii).pathfull, '/', nirsfiles(ii).filename]);
     fprintf('Converting %s to %s\n', [pname,'/',fname,ext], [pname,'/',fname,'.snirf']);    
     nirs = load([pname,'/',fname,ext],'-mat');
-    snirf(ii) = SnirfClass(nirs);
+    snirf(ii) = SnirfClass(nirs, tfactors);
     snirf(ii).Save([pname,'/',fname,'.snirf']);
     if replace
         delete([pname,'/',fname,ext]);

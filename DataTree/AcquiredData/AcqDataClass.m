@@ -39,7 +39,13 @@ classdef AcqDataClass < matlab.mixin.Copyable
         SetStimDuration(obj, icond, duration);
         
         % ---------------------------------------------------------
-        duration = GetStimDuration(obj, icond)
+        duration = GetStimDuration(obj, icond);
+        
+        % ---------------------------------------------------------
+        n = GetNumTimeBases(obj);
+        
+        % ---------------------------------------------------------
+        params = MutableParams(obj);
         
     end
     

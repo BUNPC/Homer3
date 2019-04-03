@@ -80,13 +80,13 @@ else
 	fs = 10;
 end
 
-% get procResult and replace MeasListAct if it exists
+% get mlActAuto from procResult if it exists and replace ch.MeasListActMan 
 
 lst   = find(ch.MeasList(:,1)>0);
 ml    = ch.MeasList(lst,:);
 lstML = find(ml(:,4)==1); %cw6info.displayLambda);
 
-lst2 = find(ch.MeasListAct(1:length(lstML))==0);
+lst2 = find(ch.MeasListActMan(1:length(lstML))==0);
 for ii=1:length(lst2)
     h = line2(SD.SrcPos(ml(lstML(lst2(ii)),1),:), SD.DetPos(ml(lstML(lst2(ii)),2),:));
     set(h, 'color',[1 .85 .85]*1);
@@ -94,7 +94,7 @@ for ii=1:length(lst2)
     set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
 end
 
-lst2 = find(ch.MeasListAct(1:length(lstML))==1);
+lst2 = find(ch.MeasListActMan(1:length(lstML))==1);
 for ii=1:length(lst2)
     h = line2(SD.SrcPos(ml(lstML(lst2(ii)),1),:), SD.DetPos(ml(lstML(lst2(ii)),2),:));
     set(h, 'color',[1 1 1]*.85);
@@ -102,17 +102,17 @@ for ii=1:length(lst2)
     set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
 end
 
-if isproperty(procResult,'SD')
-    if isproperty(procResult.SD,'MeasListActAuto')
-        lst2 = find(procResult.SD.MeasListActAuto(1:length(lstML))==0);
-        for ii=1:length(lst2)
-            h = line2(SD.SrcPos(ml(lstML(lst2(ii)),1),:), SD.DetPos(ml(lstML(lst2(ii)),2),:));
-            set(h, 'color',[1 1 .85]*1);
-            set(h, 'linewidth',6);
-            set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
-        end
+mlActAuto = procResult.GetVar('mlActAuto');
+if ~isempty(mlActAuto)
+    lst2 = find(mlActAuto(1:length(lstML))==0);
+    for ii=1:length(lst2)
+        h = line2(SD.SrcPos(ml(lstML(lst2(ii)),1),:), SD.DetPos(ml(lstML(lst2(ii)),2),:));
+        set(h, 'color',[1 1 .85]*1);
+        set(h, 'linewidth',6);
+        set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
     end
 end
+
 
 
 % DRAW PLOT LINES
@@ -135,11 +135,11 @@ if ~isempty(iSrcDet) && iSrcDet(1,1)~=0
         set(h,'ButtonDownFcn',sprintf('toggleLinesAxesSDG_ButtonDownFcn(gcbo,[%d],guidata(gcbo))',idx));
         set(h,'linewidth',2);
         if ~isempty(iCh) && ...
-           (~ch.MeasListAct(iCh2(idx)) & ~ch.MeasListVis(iCh2(idx)))
+           (~ch.MeasListActMan(iCh2(idx)) & ~ch.MeasListVis(iCh2(idx)))
             set(h,'linewidth',2);
             set(h,'linestyle','-.');
         else               
-            if ~isempty(iCh) && ~ch.MeasListAct(iCh2(idx))
+            if ~isempty(iCh) && ~ch.MeasListActMan(iCh2(idx))
                 set(h,'linewidth',2);
                 set(h,'linestyle','--');
             end

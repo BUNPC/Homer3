@@ -60,7 +60,7 @@ for iRun = 1:length(yAvgRuns)
             nTrials_tot = zeros(size(yAvg,2), nCond);
         end
         
-        lstChInc = find(SD.MeasListAct==1);
+        lstChInc = find(SD.MeasListActAuto==1);
         for iC = 1:nCond
             iS = CondName2Run(iRun,iC);
             if(iS==0)
@@ -113,7 +113,7 @@ for iRun = 1:length(yAvgRuns)
         end
         
         lst1 = find(SD.MeasList(:,4)==1);
-        lstChInc = find(SD.MeasListAct(lst1)==1);
+        lstChInc = find(SD.MeasListActAuto(lst1)==1);
         for iC = 1:1:nCond
             iS = CondName2Run(iRun,iC);
             if(iS==0)

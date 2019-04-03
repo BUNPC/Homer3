@@ -169,14 +169,6 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasListAct(obj)
-            % TBD: Implement this later. For now we hard code this to all
-            % channels active 
-            ml = ones(length(obj.ml), 1);
-        end
-        
-        
-        % ---------------------------------------------------------
         function ml = GetMeasListSrcDetPairs(obj)
             ml = zeros(0, 2);
             jj=1;

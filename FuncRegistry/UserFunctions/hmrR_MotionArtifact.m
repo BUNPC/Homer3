@@ -1,5 +1,5 @@
 % SYNTAX:
-% tInc = hmrR_MotionArtifact(data, sd, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+% tInc = hmrR_MotionArtifact(data, sd, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % UI NAME:
 % Motion_Artifacts
@@ -11,10 +11,12 @@
 % motion artifact.
 %
 % INPUTS:
-% data: 
-% sd: 
-% tIncMan: Data that has been manually excluded. 0-excluded. 1-included.
-%          Vector same length as d.
+% data: SNIRF data structure data, containing time course data
+% sd:   SNIRF data structure sd, containing probe source/detector geometry
+% mlActMan: Cell array of vectors, one for each time base in data, specifying 
+%        active/inactive channels with 1 meaning active, 0 meaning inactive
+% tIncMan: Cell array of vectors corresponding to the number of time bases in data. 
+%          tIncMan has been manually excluded. 0-excluded. 1-included. Vector same length as d.
 % tMotion: Check for signal change indicative of a motion artifact over
 %     time range tMotion. Units of seconds.
 %     Typical value ranges from 0.1 to 0.5.
@@ -36,11 +38,11 @@
 %
 %
 % OUTPUTS:
-% tInc: a vector of length time points with 1's indicating data included
-%       and 0's indicate motion artifact
+% tInc: A cell array of vectors corresponding to the number of time bases. Each array elemt is a vector of length time points 
+%       with 1's indicating data included and 0's indicate motion artifact
 %
 % USAGE OPTIONS:
-% Motion_Artifacts_By_Channel:  tIncAuto = hmrR_MotionArtifact(dod, sd, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+% Motion_Artifacts_By_Channel:  tIncAuto = hmrR_MotionArtifact(dod, sd, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % PARAMETERS:
 % tMotion: 0.5
@@ -58,7 +60,7 @@
 % JDUBB 3/18/2019 Adapted to SNIRF format
 %
 %
-function tInc = hmrR_MotionArtifact(data, sd, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
+function tInc = hmrR_MotionArtifact(data, sd, mlActMan, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
 
 % Input processing.  Check required inputs, throw errors if necessary.
 if nargin<3
@@ -76,7 +78,6 @@ for kk=1:length(data)
     d           = data(kk).GetD();
     fs          = data(kk).GetT();
     MeasList    = data(kk).GetMeasList();
-    MeasListAct = data(kk).GetMeasListAct();
     Lambda      = sd.GetWls();
     nWav        = length(Lambda);
     
@@ -86,15 +87,20 @@ for kk=1:length(data)
     
     if isempty(tIncMan)
         tIncMan = repmat({ones(size(d,1),1)}, length(data), 1);
-    end
-    
+    end    
     tInc = ones(size(d,1),1);
+    
+    if isempty(mlActMan)
+        MeasListAct = ones(size(MeasList,1),1);
+    else
+        MeasListAct = mlActMan{kk};        
+    end    
     
     % Calculate the diff of d to to set the threshold if ncssesary
     diff_d = diff(d);
     
     % set artifact buffer for tMask seconds on each side of spike
-    art_buffer=round(tMask*fs); % time in seconds times sample rate
+    art_buffer = round(tMask*fs); % time in seconds times sample rate
     
     % get list of active channels
     lstAct = zeros(size(MeasList,1),1);

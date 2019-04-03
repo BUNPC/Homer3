@@ -16,7 +16,7 @@
 %     If empty, then the probe is plotted with lines joining sources 
 %     and detectors in the ch.MeasList with solid line and
 %     dotted line distringuishing active measurements as indicated in
-%     ch.MeasListAct
+%     ch.MeasListActMan
 %
 % t - is the corresponding time vector
 %
@@ -127,7 +127,7 @@ try
     ml = ch.MeasList;
     if isproperty(SD,'MeasListAct')
         lst = find(ch.MeasList(:,4)==1);
-        MLact = ch.MeasListAct(lst);
+        MLact = ch.MeasListActMan(lst);
     else
         lst = find(ch.MeasList(:,4)==1);
         MLact = ones(length(lst),1);

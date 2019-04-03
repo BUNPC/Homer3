@@ -12,9 +12,11 @@
 % INPUT:
 % data:     SNIRF data object    
 % stim:     SNIRF stim object
-% tIncAuto: time points (#time points x 1) identified as motion
+% tIncAuto: Cell array of length equal to the # of time bases in data. Each 
+%           cell element is time points (#time points x 1) identified as motion
 %           artifacts by processing stream.
-% tIncMan:  time points (#time points x 1) identified as motion
+% tIncMan:  Cell array of length equal to the # of time bases in data. Each 
+%           cell element is time points (#time points x 1) identified as motion
 %           artifacts by user.
 % tRange:   an array of 2 numbers [t1 t2] specifying how many
 %           seconds surrounding motion artifacts, tIncMan and tIncAuto,

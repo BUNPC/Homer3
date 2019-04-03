@@ -9,6 +9,14 @@ classdef RunClass < TreeNodeClass
                 
         % ----------------------------------------------------------------------------------
         function obj = RunClass(varargin)
+            %
+            % Syntax:
+            %   obj = RunClass()
+            %   obj = RunClass(filename, iSubj, iRun, rnum);
+            %
+            % Example 1:
+            %   r = RunClass('./s1/neuro_run01.nirs',1,1,1);
+            %
             obj@TreeNodeClass(varargin);
             obj.type  = 'run';
             obj.iGroup = 1;
@@ -21,11 +29,14 @@ classdef RunClass < TreeNodeClass
                 if ischar(varargin{1}) && strcmp(varargin{1},'copy')
                     return;
                 end
-            else
+            elseif nargin==0
                 obj.name  = '';
                 obj.iSubj = 0;
                 obj.iRun  = 0;
                 obj.rnum  = 0;
+                return;
+            else
+                return;
             end            
 
             if obj.IsNirs()
@@ -33,6 +44,7 @@ classdef RunClass < TreeNodeClass
             else
                 obj.acquired = SnirfClass(obj.name);
             end            
+            obj.procStream = ProcStreamClass([], obj.acquired);
             obj.CondName2Group = [];
             obj.Load();
         end
@@ -83,7 +95,7 @@ classdef RunClass < TreeNodeClass
         % Copy processing params (procInut and procResult) from
         % N2 to N1 if N1 and N2 are same nodes
         % ----------------------------------------------------------------------------------
-        function copyProcParams(obj, R)
+        function Copy(obj, R)
             if obj == R
                 obj.copyProcParamsFieldByField(R);
             end
@@ -242,7 +254,8 @@ classdef RunClass < TreeNodeClass
         function SetMeasList(obj)
             obj.ch.Lambda      = obj.acquired.GetWls();
             obj.ch.MeasList    = obj.acquired.GetMeasList();
-            obj.ch.MeasListAct = ones(size(obj.ch.MeasList,1), 1);
+            obj.ch.MeasListActMan = ones(size(obj.ch.MeasList,1), 1);
+            obj.ch.MeasListActAuto = ones(size(obj.ch.MeasList,1), 1);
             obj.ch.MeasListVis = ones(size(obj.ch.MeasList,1), 1);
         end
         
@@ -252,7 +265,24 @@ classdef RunClass < TreeNodeClass
         function ch = GetMeasList(obj)
             ch.Lambda      = obj.acquired.GetWls();
             ch.MeasList    = obj.acquired.GetMeasList();
-            ch.MeasListAct = ones(size(ch.MeasList,1), 1);
+            mlActMan       = obj.procStream.GetMeasListActMan();
+            ch.MeasListActMan = [];
+            if isempty(mlActMan)
+                ch.MeasListActMan = ones(size(ch.MeasList,1),1);
+            else
+                for ii=1:length(mlActMan)
+                    ch.MeasListActMan = [ch.MeasListActMan; mlActMan{ii}];
+                end
+            end
+            mlActAuto       = obj.procStream.GetMeasListActMan();
+            ch.MeasListActAuto = [];
+            if isempty(mlActAuto)
+                ch.MeasListActAuto = ones(size(ch.MeasList,1),1);
+            else
+                for ii=1:length(mlActAuto)
+                    ch.MeasListActAuto = [ch.MeasListActAuto; mlActMan{ii}];
+                end
+            end
             ch.MeasListVis = ones(size(ch.MeasList,1), 1);
         end
 

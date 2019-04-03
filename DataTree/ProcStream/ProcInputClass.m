@@ -7,6 +7,7 @@ classdef ProcInputClass < handle
         CondName2Subj;           % Used by group processing stream
         CondName2Run;            % Used by subject processing stream      
         tIncMan;                 % Manually include/excluded time points
+        mlActMan;                   % Manually include/excluded time points
         stimValSettings;         % Derived stim values 
         misc;
     end
@@ -15,12 +16,29 @@ classdef ProcInputClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function obj = ProcInputClass(reg)
+        function obj = ProcInputClass(acquired)
             obj.CondName2Subj = [];
             obj.CondName2Run = [];
-            obj.tIncMan = [];
+            obj.tIncMan = {};
+            obj.mlActMan = {};
             obj.misc = [];
             obj.stimValSettings = struct('none',0, 'incl',1, 'excl_manual',-1, 'excl_auto',-2);
+            if nargin==0
+                return;
+            end
+            obj.GenerateDerivedParams(acquired);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function  GenerateDerivedParams(obj, acquired)
+            if isempty(acquired)
+                return;
+            end
+            params = acquired.MutableParams();
+            for ii=1:length(params)
+                eval( sprintf('obj.misc.%s = acquired.Get%s();', params{ii}, params{ii}) );
+            end
         end
                 
         
@@ -129,8 +147,14 @@ classdef ProcInputClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function val = GetTincMan(obj)
-             val = obj.tIncMan;
+        function tIncMan = GetTincMan(obj)
+             tIncMan = obj.tIncMan;
+        end
+        
+                
+        % ----------------------------------------------------------------------------------
+        function mlActMan = GetMeasListActMan(obj, idx)
+            mlActMan = {};            
         end
         
     end

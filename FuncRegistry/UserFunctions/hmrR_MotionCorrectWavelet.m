@@ -1,5 +1,5 @@
 % SYNTAX:
-% data_dod = hmrR_MotionCorrectWavelet(data_dod, iqr, turnon)
+% data_dod = hmrR_MotionCorrectWavelet(data_dod, ml_act_man, iqr, turnon)
 %
 % UI NAME:
 % Wavelet_Motion_Correction
@@ -14,7 +14,9 @@
 % Molavi et al.,Physiol Meas, 33, 259-270 (2012).
 %
 % INPUTS:
-% data_dod - SNIRF data structure containing delta_OD data
+% data_dod - SNIRF data structure data, containing delta_OD data
+% ml_act_man - Cell array of vectors, one for each time base in data_dod, specifying 
+%            active/inactive channels with 1 meaning active, 0 meaning inactive.
 % iqr -      parameter used to compute the statistics (iqr = 1.5 is 1.5 times the
 %            interquartile range and is usually used to detect outliers). 
 %            Increasing it, it will delete fewer coefficients.
@@ -26,7 +28,7 @@
 %            size as dod (Channels that are not in the active ml remain unchanged)
 %
 % USAGE OPTIONS:
-% Wavelet_Motion_Correction:  dod = hmrR_MotionArtifact_Nirs(dod, iqr, turnon)
+% Wavelet_Motion_Correction:  dod = hmrR_MotionArtifact_Nirs(dod, mlActMan, iqr, turnon)
 %
 % PARAMETERS:
 % iqr: 1.5
@@ -37,7 +39,7 @@
 % modified 10/17/2012 by S. Brigadoi
 % modified 03/27/2019 by J. Dubb
 %
-function data_dod = hmrR_MotionCorrectWavelet(data_dod, iqr, turnon)
+function data_dod = hmrR_MotionCorrectWavelet(data_dod, ml_act_man, iqr, turnon)
 
 if ~exist('turnon','var')
    turnon = 1;
@@ -51,13 +53,11 @@ end
 
 for kk=1:length(data_dod)
 
-    dod         = data_dod(kk).GetD();
-    MeasListAct = data_dod(kk).GetMeasListAct();   
-
+    dod        = data_dod(kk).GetD();
+    mlActMan   = ml_act_man{kk};
     dodWavelet = dod;
     
-    mlAct = MeasListAct; % prune bad channels
-    lstAct = find(mlAct==1);
+    lstAct = find(mlActMan==1);
     SignalLength = size(dod,1); % #time points of original signal
     N = ceil(log2(SignalLength)); % #of levels for the wavelet decomposition
     DataPadded = zeros(2^N,1); % data length should be power of 2

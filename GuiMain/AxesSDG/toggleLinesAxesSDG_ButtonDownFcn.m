@@ -54,16 +54,16 @@ if strcmp(mouseevent,'alt')
 elseif strcmp(mouseevent,'normal')
     if strcmp(get(h2(idx),'linestyle'), '-')
         set(h2(idx),'linestyle','--')
-        ch.MeasListAct(lst)=0;
+        ch.MeasListActMan(lst)=0;
     elseif strcmp(get(h2(idx),'linestyle'), '--')
         set(h2(idx),'linestyle','-.')
-        ch.MeasListAct(lst)=1;
+        ch.MeasListActMan(lst)=1;
     elseif strcmp(get(h2(idx),'linestyle'), ':')
         set(h2(idx),'linestyle','-')
-        ch.MeasListAct(lst)=0;
+        ch.MeasListActMan(lst)=0;
     elseif strcmp(get(h2(idx),'linestyle'), '-.')
         set(h2(idx),'linestyle','--')
-        ch.MeasListAct(lst)=1;
+        ch.MeasListActMan(lst)=1;
     end
     
 %%%% Exit function for any other mouse event 

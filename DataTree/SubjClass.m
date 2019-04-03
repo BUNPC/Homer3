@@ -40,12 +40,12 @@ classdef SubjClass < TreeNodeClass
         % Copy processing params (procInut and procResult) from
         % S to obj if obj and S are equivalent nodes
         % ----------------------------------------------------------------------------------
-        function copyProcParams(obj, S)
+        function Copy(obj, S)
             if strcmp(obj.name, S.name)
                 for i=1:length(obj.runs)
                     j = obj.existRun(i,S);
                     if (j>0)
-                        obj.runs(i).copyProcParams(S.runs(j));
+                        obj.runs(i).Copy(S.runs(j));
                     end
                 end
                 if obj == S

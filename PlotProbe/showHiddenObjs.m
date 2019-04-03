@@ -17,7 +17,7 @@ if ~ishandles(h)
 end
 
 nDataTypes = ndims(y);
-MLact = ch.MeasListAct(ch.MeasList(:,4)==1); % option for future
+MLact = ch.MeasListActAuto(ch.MeasList(:,4)==1); % option for future
 
 j1 = find(MLact~=0);
 j2 = find(MLact==0);

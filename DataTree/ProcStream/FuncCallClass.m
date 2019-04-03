@@ -415,6 +415,12 @@ classdef FuncCallClass < handle
                 return;
             end
             n = length(fcallstr);
+            
+            % Check to make sure we haven't already added the usage function call as may 
+            % happend when selecting wrong config file
+            if strncmp(fcallstr, obj.help, n)
+                return;
+            end
             sep = repmat('-', 1,n);
             obj.help = sprintf('%s\n%s\n%s', fcallstr, sep, obj.help);
         end

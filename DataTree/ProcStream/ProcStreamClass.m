@@ -10,9 +10,12 @@ classdef ProcStreamClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function obj = ProcStreamClass(reg)
+        function obj = ProcStreamClass(reg, acquired)
+            if nargin<2
+                acquired=[];
+            end
             obj.fcalls = FuncCallClass().empty();
-            obj.input = ProcInputClass();
+            obj.input = ProcInputClass(acquired);
             obj.output = ProcResultClass();
             obj.config = struct('procStreamCfgFile','', 'defaultProcStream','','suffix','');
             if nargin==0
@@ -385,7 +388,8 @@ classdef ProcStreamClass < handle
     methods
 
         % ----------------------------------------------------------------------------------
-        function fname = GetConfigFileName(obj, procStreamCfgFile)
+        function [fname, autoGenDefault] = GetConfigFileName(obj, procStreamCfgFile)
+            autoGenDefault = false;
             if ~exist('procStreamCfgFile','var')
                 procStreamCfgFile = '';
             end
@@ -412,8 +416,9 @@ classdef ProcStreamClass < handle
             if fname==0
                 menu( sprintf('Loading default config file.'),'Okay');
                 fname = [pwd, '/processOpt_default.cfg'];
+                autoGenDefault = true;
             else
-                fname = [pname, '/', fname];
+                fname = [pname, fname];
             end
             fname(fname=='\')='/';
         end
@@ -1062,6 +1067,24 @@ classdef ProcStreamClass < handle
         % ----------------------------------------------------------------------------------
         function var = GetVar(obj, varname)
             var = obj.input.GetVar(varname);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function tIncMan = GetTincMan(obj, idx)
+            if ~exist('idx','var')
+                idx = [];
+            end
+            tIncMan = obj.input.GetTincMan(idx);
+        end
+        
+
+        % ----------------------------------------------------------------------------------
+        function mlActMan = GetMeasListActMan(obj, idx)
+            if ~exist('idx','var')
+                idx = [];
+            end
+            mlActMan = obj.input.GetMeasListActMan(idx);
         end
         
     end

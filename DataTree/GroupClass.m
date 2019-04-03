@@ -164,7 +164,7 @@ classdef GroupClass < TreeNodeClass
             % If any of the tree nodes still have unintialized procStream input, ask 
             % user for a config file to load it from 
             if g.procStream.IsEmpty() || s.procStream.IsEmpty() || r.procStream.IsEmpty()
-                fname = g.procStream.GetConfigFileName(procStreamCfgFile);
+                [fname, autoGenDefaultFile] = g.procStream.GetConfigFileName(procStreamCfgFile);                                
                 
                 % If user did not provide procStream config filename and file does not exist
                 % then create a config file with the default contents
@@ -173,6 +173,8 @@ classdef GroupClass < TreeNodeClass
                     procStreamSubj.SaveConfigFile(fname, 'subj');
                     procStreamRun.SaveConfigFile(fname, 'run');
                 end
+                
+                fprintf('Loading proc stream from %s\n', fname);
                 
                 % Load file to the first empty procStream in the dataTree at each processing level
                 g.LoadProcStreamConfigFile(fname, reg);
@@ -186,21 +188,24 @@ classdef GroupClass < TreeNodeClass
                 % did not have valid proc stream input. If that's the case we
                 % load a default proc stream input
                 if g.procStream.IsEmpty() || s.procStream.IsEmpty() || r.procStream.IsEmpty()
-                    fprintf('Failed to load all function calls in proc stream config file . Loading default processing\n');
+                    fprintf('Failed to load all function calls in proc stream config file. Loading default proc stream...\n');
                     g.CopyProcStream(procStreamGroup, 'group', reg);
                     g.CopyProcStream(procStreamSubj, 'subj', reg);
                     g.CopyProcStream(procStreamRun, 'run', reg);
                     
+                    % If user asked default config file to be generated ...
+                    if autoGenDefaultFile                        
+                        fprintf('Generating default proc stream config file %s\n', fname);
+                            
                     % Move exiting default config to same name with .bak extension
                     if ~exist([fname, '.bak'], 'file')
                         fprintf('Moving existing %s to %s.bak\n', fname, fname);
                         movefile(fname, [fname, '.bak']);
                     end
-                    
-                    % Save default proc stream in default config file
                     procStreamGroup.SaveConfigFile(fname, 'group');
                     procStreamSubj.SaveConfigFile(fname, 'subj');
                     procStreamRun.SaveConfigFile(fname, 'run');
+                    end
                 else
                     fprintf('Loading proc stream from %s\n', fname);
                     g.CopyProcStream(g.procStream, 'group', reg);
@@ -312,7 +317,7 @@ classdef GroupClass < TreeNodeClass
                 % copy procStream.output from previous group to current group for
                 % all nodes that still exist in the current group.
                 hwait = waitbar(0,'Loading group');
-                obj.copyProcParams(group);
+                obj.Copy(group);
                 close(hwait);
             else
                 group = obj;
@@ -493,12 +498,12 @@ classdef GroupClass < TreeNodeClass
         % Copy processing params (procInut and procStream.output) from
         % N2 to obj if obj and N2 are equivalent nodes
         % ----------------------------------------------------------------------------------
-        function copyProcParams(obj, G)
+        function Copy(obj, G)
             if strcmp(obj.name,G.name)
                 for i=1:length(obj.subjs)
                     j = obj.existSubj(i,G);
                     if (j>0)
-                        obj.subjs(i).copyProcParams(G.subjs(j));
+                        obj.subjs(i).Copy(G.subjs(j));
                     end
                 end
                 if obj == G

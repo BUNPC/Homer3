@@ -18,7 +18,7 @@ if  datatype == hmr.buttonVals.OD_HRF || datatype == hmr.buttonVals.CONC_HRF
     return;
 end
 
-% Patch in some versions of matlab messes up the renreder, that is it changes the 
+% Patch in some versions of matlab messes up the renderer, that is it changes the 
 % renderer property. Therefore we save current renderer before patch to
 % restore it to what it was to pre-patch time. 
 renderer = get(gcf, 'renderer');

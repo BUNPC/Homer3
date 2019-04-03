@@ -220,7 +220,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Acquired data class methods that must be implemented
+    % Methods that must be implemented as a child class of AcqDataClass
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
 
@@ -302,6 +302,19 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             end
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function n = GetNumTimeBases(obj)
+            n = 1;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function params = MutableParams(obj)
+            params = {'SD'};
+            % params = {'SD','s'};
+        end
+        
     end
     
     
@@ -342,8 +355,9 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 
     end
     
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % All other public methods
+    % Methods for stims & conditions
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
@@ -482,5 +496,6 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
 
     end
     
+   
 end
 

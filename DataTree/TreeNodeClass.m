@@ -27,7 +27,7 @@ classdef TreeNodeClass < handle
             obj.procStream = ProcStreamClass();
             obj.err = 0;
             obj.CondNames = {};
-            obj.ch = struct('MeasList',[],'MeasListVis',[],'MeasListAct',[], 'Lambda',[]);
+            obj.ch = struct('MeasList',[],'MeasListVis',[],'MeasListActMan',[], 'MeasListActAuto',[], 'Lambda',[]);
             
             % If this constructor is called from this class' copy method,
             % then we want to exit before we obliterate the persistent

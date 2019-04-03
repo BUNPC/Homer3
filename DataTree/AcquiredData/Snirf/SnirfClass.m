@@ -393,7 +393,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Acquired data class methods that must be implemented
+    % Methods that must be implemented as a child class of AcqDataClass
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
 
@@ -418,9 +418,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % ---------------------------------------------------------
         function ml = GetMeasList(obj, idx)
             if nargin==1
-                idx=1;
+                idx=1:length(obj.data);
             end
-            ml = obj.data(idx).GetMeasList();
+            ml=[];
+            for ii=idx
+                ml = [ml; obj.data(idx).GetMeasList()];
+            end
         end
         
         
@@ -505,6 +508,18 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 aux.data(:,ii) = obj.aux(ii).GetData();
                 aux.names{ii} = obj.aux(ii).GetName();
             end
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function n = GetNumTimeBases(obj)
+            n = length(obj.data);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function params = MutableParams(obj)
+            params = {};
+            % params = {'stim'};
         end
         
     end

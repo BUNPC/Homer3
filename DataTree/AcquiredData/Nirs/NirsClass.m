@@ -304,7 +304,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function n = GetNumTimeBases(obj)
+        function n = GetDataBlocksNum(obj)
             n = 1;
         end
         
@@ -315,6 +315,12 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             % params = {'SD','s'};
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function idx = GetDataBlocksIdxs(obj, ich)
+            idx = 1;
+        end
+
     end
     
     

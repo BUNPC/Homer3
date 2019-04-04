@@ -398,32 +398,29 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
     methods
 
         % ---------------------------------------------------------
-        function t = GetTime(obj, idx)
-            if nargin==1
-                idx=1;
+        function t = GetTime(obj, iDataBlk)
+            if ~exist('iDataBlk','var') || isempty(iDataBlk)
+                iDataBlk=1;
             end
-            t = obj.data(idx).GetTime();
+            t = obj.data(iDataBlk).GetTime();
         end
         
         
         % ---------------------------------------------------------
-        function datamat = GetDataMatrix(obj, idx)
-            if nargin==1
-                idx=1;
+        function datamat = GetDataMatrix(obj, iDataBlk)
+            if ~exist('iDataBlk','var') || isempty(iDataBlk)
+                iDataBlk=1;
             end
-            datamat = obj.data(idx).GetDataMatrix();
+            datamat = obj.data(iDataBlk).GetDataMatrix();
         end
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasList(obj, idx)
-            if nargin==1
-                idx=1:length(obj.data);
+        function ml = GetMeasList(obj, iDataBlk)
+            if ~exist('iDataBlk','var') || isempty(iDataBlk)
+                iDataBlk=1;
             end
-            ml=[];
-            for ii=idx
-                ml = [ml; obj.data(idx).GetMeasList()];
-            end
+            ml = obj.data(iDataBlk).GetMeasList();
         end
         
         
@@ -455,11 +452,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function s = GetStims(obj, timebaseIdx)
-            if ~exist('timebaseIdx','var') || isempty(timebaseIdx)
-                timebaseIdx=1;
+        function s = GetStims(obj, iDataBlk)
+            if ~exist('iDataBlk','var') || isempty(iDataBlk)
+                iDataBlk=1;
             end
-            t = obj.data(timebaseIdx).GetTime();
+            t = obj.data(iDataBlk).GetTime();
             s = zeros(length(t), length(obj.stim));
             for ii=1:length(obj.stim)
                 [ts, v] = obj.stim(ii).GetStim();
@@ -510,8 +507,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             end
         end
         
+        
         % ----------------------------------------------------------------------------------
-        function n = GetNumTimeBases(obj)
+        function n = GetDataBlocksNum(obj)
             n = length(obj.data);
         end
         
@@ -522,6 +520,30 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % params = {'stim'};
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function iDataBlk = GetDataBlocksIdxs(obj, ich)
+            if nargin==1
+                iDataBlk=1:length(obj.data);
+                return;
+            end
+            
+            ml = obj.GetMeasList();
+            iSrc = ml(ich,1);
+            iDet = ml(ich,2);
+
+            iDataBlk=[];
+            for iBase=1:length(obj.data)
+                ml = obj.GetMeasList(iBase);
+                for ii=1:length(ich)
+                    if ismember(iSrc(ii), ml(:,1)) && ismember(iDet(ii), ml(:,2))
+                        iDataBlk = [iDataBlk, iBase];
+                    end
+                end
+            end
+            iDataBlk = unique(iDataBlk);
+        end
+
     end
     
     
@@ -531,32 +553,32 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
     methods
         
         % ----------------------------------------------------------------------------------
-        function d = Get_d(obj, idx)
-            if ~exist('idx','var')
-                idx = 1;
+        function d = Get_d(obj, iDataBlk)
+            if ~exist('iDataBlk','var') || isempty(iDataBlk)
+                iDataBlk = 1;
             end
-            d = obj.data(idx).GetDataMatrix();
+            d = obj.data(iDataBlk).GetDataMatrix();
         end
         
         
         % ----------------------------------------------------------------------------------
-        function t = Get_t(obj, idx)
-            if ~exist('idx','var')
-                idx = 1;
+        function t = Get_t(obj, iDataBlk)
+            if ~exist('iDataBlk','var') || isempty(iDataBlk)
+                iDataBlk = 1;
             end
-            t = obj.data(idx).GetTime();
+            t = obj.data(iDataBlk).GetTime();
         end
         
         
         % ----------------------------------------------------------------------------------
-        function SD = Get_SD(obj, idx)
-            if ~exist('idx','var')
-                idx = 1;
+        function SD = Get_SD(obj, iDataBlk)
+            if ~exist('iDataBlk','var') || isempty(iDataBlk)
+                iDataBlk = 1;
             end
             SD.Lambda   = obj.sd.GetWls();
             SD.SrcPos   = obj.sd.GetSrcPos();
             SD.DetPos   = obj.sd.GetDetPos();
-            SD.MeasList = obj.data(idx).GetMeasList();
+            SD.MeasList = obj.data(iDataBlk).GetMeasList();
             SD.MeasListAct = ones(size(SD.MeasList,1),1);
         end
         
@@ -571,11 +593,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function s = Get_s(obj, idx)
-            if ~exist('idx','var')
-                idx = 1;
+        function s = Get_s(obj, iDataBlk)
+            if ~exist('iDataBlk','var') || isempty(iDataBlk)
+                iDataBlk = 1;
             end            
-            t = obj.data(idx).GetTime();
+            t = obj.data(iDataBlk).GetTime();
             s = zeros(length(t), length(obj.stim));
             for ii=1:length(obj.stim)
                 [ts, v] = obj.stim(ii).GetStim();

@@ -217,31 +217,46 @@ classdef RunClass < TreeNodeClass
     methods
             
         % ----------------------------------------------------------------------------------
-        function t = GetTime(obj, idx)
+        function t = GetTime(obj, iDataBlk)
             if nargin==1
-                idx=1;
+                iDataBlk=1;
             end
-            t = obj.acquired.GetTime(idx);
+            t = obj.acquired.GetTime(iDataBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function d = GetRawData(obj, idx)
+        function d = GetRawData(obj, iDataBlk)
             if nargin<2
-                idx = 1;
+                iDataBlk = 1;
             end
-            d = obj.acquired.GetDataMatrix(idx);
+            d = obj.acquired.GetDataMatrix(iDataBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function d = GetDataMatrix(obj, idx)
+        function d = GetDataMatrix(obj, iDataBlk)
             if nargin<2
-                idx = 1;
+                iDataBlk = 1;
             end
-            d = obj.acquired.GetDataMatrix(idx);
+            d = obj.acquired.GetDataMatrix(iDataBlk);
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function iDataBlks = GetDataBlocksIdxs(obj, iCh)
+            if nargin<2
+                iCh = [];
+            end
+            iDataBlks = obj.acquired.GetDataBlocksIdxs(iCh);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function n = GetDataBlocksNum(obj)
+            n = obj.acquired.GetDataBlocksNum();
+        end
+       
         
         % ----------------------------------------------------------------------------------
         function SD = GetSDG(obj)

@@ -151,22 +151,27 @@ classdef SubjClass < TreeNodeClass
             % Calculate all runs in this session
             r = obj.runs;
             nRun = length(r);
-            tHRF_common = [];
+            tHRF_common = {};
             for iRun = 1:nRun
                 r(iRun).Calc();
                 
                 % Find smallest tHRF among the runs. We should make this the common one.
-                if isempty(tHRF_common)
-                    tHRF_common = r(iRun).procStream.output.GetTHRF();
-                elseif length(r(iRun).procStream.output.GetTHRF) < length(tHRF_common)
-                    tHRF_common = r(iRun).procStream.output.GetTHRF();
+                nDataBlks = r(iRun).GetDataBlocksNum();
+                for iDataBlk = 1:nDataBlks
+	                if isempty(tHRF_common)
+                        tHRF_common{iDataBlk} = r(iRun).procStream.output.GetTHRF(iDataBlk);
+                    elseif length(r(iRun).procStream.output.GetTHRF(iDataBlk)) < length(tHRF_common{iDataBlk})
+                        tHRF_common{iDataBlk} = r(iRun).procStream.output.GetTHRF(iDataBlk);
+                    end
                 end
             end
             
             % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
             % all runs. Use smallest tHRF as the common one.
             for iRun = 1:nRun
-                r(iRun).procStream.output.SettHRFCommon(tHRF_common, r(iRun).name, r(iRun).type);
+                for iDataBlk = length(tHRF_common)
+                    r(iRun).procStream.output.SettHRFCommon(tHRF_common{iDataBlk}, r(iRun).name, r(iRun).type, iDataBlk);
+                end
             end            
             
             % Instantiate all the variables that might be needed by
@@ -179,7 +184,7 @@ classdef SubjClass < TreeNodeClass
                 vars.dcAvgRuns{iRun}     = r(iRun).procStream.output.GetVar('dcAvg');
                 vars.dcAvgStdRuns{iRun}  = r(iRun).procStream.output.GetVar('dcAvgStd');
                 vars.dcSum2Runs{iRun}    = r(iRun).procStream.output.GetVar('dcSum2');
-                vars.tHRFRuns{iRun}      = r(iRun).procStream.output.GetTHRF;
+                vars.tHRFRuns{iRun}      = r(iRun).procStream.output.GetTHRF();
                 vars.nTrialsRuns{iRun}   = r(iRun).procStream.output.GetVar('nTrials');
                 vars.SDRuns{iRun}        = r(iRun).GetMeasList();
             end
@@ -270,6 +275,21 @@ classdef SubjClass < TreeNodeClass
             wls = obj.runs(1).GetWls();
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function iDataBlks = GetDataBlocksIdxs(obj, iCh)
+            if nargin<2
+                iCh = [];
+            end
+            iDataBlks = obj.runs(1).GetDataBlocksIdxs(iCh);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function n = GetDataBlocksNum(obj)
+            n = obj.runs(1).GetDataBlocksNum();
+        end
+       
         
         % ----------------------------------------------------------------------------------
         function SetConditions(obj)

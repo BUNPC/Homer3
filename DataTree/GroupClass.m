@@ -230,17 +230,23 @@ classdef GroupClass < TreeNodeClass
                 s(iSubj).Calc();
                 
                 % Find smallest tHRF among the subjs. We should make this the common one.
-                if isempty(tHRF_common)
-                    tHRF_common = s(iSubj).procStream.output.GetTHRF;
-                elseif length(s(iSubj).procStream.output.GetTHRF) < length(tHRF_common)
-                    tHRF_common = s(iSubj).procStream.output.GetTHRF;
+                nDataBlks = s(iSubj).GetDataBlocksNum();
+                for iDataBlk = 1:nDataBlks
+                    if isempty(tHRF_common)
+                        tHRF_common{iDataBlk} = s(iSubj).procStream.output.GetTHRF(iDataBlk);
+                    elseif length(s(iSubj).procStream.output.GetTHRF(iDataBlk)) < length(tHRF_common{iDataBlk})
+                        tHRF_common{iDataBlk} = s(iSubj).procStream.output.GetTHRF(iDataBlk);
+                    end
                 end
+                
             end
            
             % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
             % all subjs. Use smallest tHRF as the common one.
             for iSubj = 1:nSubj
-                s(iSubj).procStream.output.SettHRFCommon(tHRF_common, s(iSubj).name, s(iSubj).type);
+                for iDataBlk = length(tHRF_common)
+                    s(iSubj).procStream.output.SettHRFCommon(tHRF_common{iDataBlk}, s(iSubj).name, s(iSubj).type, iDataBlk);
+                end
             end
             
             % Instantiate all the variables that might be needed by
@@ -395,6 +401,29 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function iDataBlks = GetDataBlocksIdxs(obj, iCh)
+            if nargin<2
+                iCh = [];
+            end
+            iDataBlks = obj.subjs(1).GetDataBlocksIdxs(iCh);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function n = GetDataBlocksNum(obj)
+            n = obj.subjs(1).GetDataBlocksNum();
+        end
+        
+    end      % Public Set/Get methods
+
+        
+       
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Conditions related methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+        
+        % ----------------------------------------------------------------------------------
         function RenameCondition(obj, oldname, newname)
             % Function to rename a condition. Important to remeber that changing the
             % condition involves 2 distinct well defined steps:
@@ -485,7 +514,8 @@ classdef GroupClass < TreeNodeClass
             end
         end
                 
-    end      % Public Set/Get methods
+    end
+    
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

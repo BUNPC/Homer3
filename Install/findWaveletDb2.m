@@ -5,7 +5,7 @@ if isempty(pathname)
     if isempty(pathname)
         msg{1} = sprintf('Warning: db2.mat wavelet file not found. This may be because the Wavelet Toolbox\n');
         msg{2} = sprintf('in the Matlab version you''re using has stopped supporting it or the Wavelet Toolbox\n');
-        msg{3} = sprintf('is missing. Homer2 is generating a db2 file from known values and saving it in the\n');
+        msg{3} = sprintf('is missing. Homer3 is generating a db2 file from known values and saving it in the\n');
         msg{4} = sprintf('INSTALL folder\n');
         % menu([msg{:}], 'OK');
         fprintf('%s\n', [msg{:}]);

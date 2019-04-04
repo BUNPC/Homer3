@@ -43,11 +43,11 @@ classdef ProcResultClass < handle
         
         
         % ---------------------------------------------------------------------------
-        function SettHRFCommon(obj, tHRF_common, name, type)
+        function SettHRFCommon(obj, tHRF_common, name, type, iDataBlk)
             if size(tHRF_common,2)<size(tHRF_common,1)
                 tHRF_common = tHRF_common';
             end
-            t = obj.GetTHRF();
+            t = obj.GetTHRF(iDataBlk);
             if isempty(t)
                 return;
             end
@@ -58,41 +58,41 @@ classdef ProcResultClass < handle
                 fprintf('WARNING: tHRF for %s %s is larger than the common tHRF.\n',type, name);
                 if ~isempty(obj.dodAvg)
                     if isa(obj.dodAvg, 'DataClass')
-                        obj.dodAvg.TruncateTpts(abs(d));
+                        obj.dodAvg(iDataBlk).TruncateTpts(abs(d));
                     else
                         obj.dodAvg(n+1:m,:,:) = [];
                     end
                 end
                 if ~isempty(obj.dodAvgStd)
-                    if isa(obj.dodAvgStd, 'DataClass')
+                    if isa(obj.dodAvgStd(iDataBlk), 'DataClass')
                         obj.dodAvgStd.TruncateTpts(abs(d));
                     else
                         obj.dodAvgStd(n+1:m,:,:) = [];
                     end
                 end
                 if ~isempty(obj.dodSum2)
-                    if isa(obj.dodSum2, 'DataClass')
+                    if isa(obj.dodSum2(iDataBlk), 'DataClass')
                         obj.dodSum2.TruncateTpts(abs(d));
                     else
                         obj.dodSum2(n+1:m,:,:) = [];
                     end
                 end
                 if ~isempty(obj.dcAvg)
-                    if isa(obj.dcAvg, 'DataClass')
+                    if isa(obj.dcAvg(iDataBlk), 'DataClass')
                         obj.dcAvg.TruncateTpts(abs(d));
                     else
                         obj.dcAvg(n+1:m,:,:,:) = [];
                     end
                 end
                 if ~isempty(obj.dcAvgStd)
-                    if isa(obj.dcAvgStd, 'DataClass')
+                    if isa(obj.dcAvgStd(iDataBlk), 'DataClass')
                         obj.dcAvgStd.TruncateTpts(abs(d));
                     else
                         obj.dcAvgStd(n+1:m,:,:) = [];
                     end
                 end
                 if ~isempty(obj.dcSum2)
-                    if isa(obj.dcSum2, 'DataClass')
+                    if isa(obj.dcSum2(iDataBlk), 'DataClass')
                         obj.dcSum2.TruncateTpts(abs(d));
                     else
                         obj.dcSum2(n+1:m,:,:,:) = [];
@@ -153,13 +153,17 @@ classdef ProcResultClass < handle
         end
         
         % ----------------------------------------------------------------------------------
-        function t = GetTHRF(obj)
+        function t = GetTHRF(obj, iDataBlk)
             t = [];
+            if ~exist('iDataBlk','var') || isempty(iDataBlk)
+                iDataBlk = 1;
+            end
+            
             if isempty(obj.tHRF)
                 if isa(obj.dcAvg, 'DataClass') && ~isempty(obj.dcAvg)
-                    t = obj.dcAvg.GetT();
+                    t = obj.dcAvg(iDataBlk).GetT;
                 elseif isa(obj.dodAvg, 'DataClass') && ~isempty(obj.dodAvg)
-                    t = obj.dodAvg.GetT();
+                    t = obj.dodAvg(iDataBlk).GetT;
                 end
             else
                 t = obj.tHRF;
@@ -211,20 +215,24 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function yavg = GetDodAvg(obj, type, condition)
+        function yavg = GetDodAvg(obj, type, condition, iDataBlk)
             yavg = [];
             
             % Check type argument
             if ~exist('type','var') || isempty(type)
                 type = 'dodAvg';
             end
+            if ~exist('iDataBlk','var') || isempty(iDataBlk)
+                iDataBlk = 1;
+            end
+            
             if ~ischar(type)
                 return;
             end
             
             % Get data matrix
             if isa(eval(sprintf('obj.%s', type)), 'DataClass')
-                yavg       = eval(sprintf('obj.%s.GetDataMatrix()', type));
+                yavg       = eval(sprintf('obj.%s(iDataBlk).GetDataMatrix()', type));
             else
                 yavg       = eval(sprintf('obj.%s', type));
             end
@@ -249,20 +257,24 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function yavg = GetDcAvg(obj, type, condition)
+        function yavg = GetDcAvg(obj, type, condition, iDataBlk)
             yavg = [];
             
             % Check type argument
             if ~exist('type','var') || isempty(type)
                 type = 'dcAvg';
             end
+            if ~exist('iDataBlk','var') || isempty(iDataBlk)
+                iDataBlk = 1;
+            end
+            
             if ~ischar(type)
                 return;
             end
             
             % Get data matrix
             if isa(eval(sprintf('obj.%s', type)), 'DataClass')
-                yavg  = eval(sprintf('obj.%s.GetDataMatrix()', type));
+                yavg  = eval(sprintf('obj.%s(iDataBlk).GetDataMatrix()', type));
             else
                 yavg = eval(sprintf('obj.%s', type));
             end
@@ -286,19 +298,23 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function y = GetDataTimeCourse(obj, type)
+        function y = GetDataTimeCourse(obj, type, iDataBlk)
             y = [];
             
             % Check type argument
             if ~exist('type','var') || isempty(type)
                 type = 'dcAvg';
             end
+            if ~exist('iDataBlk','var') || isempty(iDataBlk)
+                iDataBlk = 1;
+            end
+            
             if ~ischar(type)
                 return;
             end
             
             if isa(eval(sprintf('obj.%s', type)), 'DataClass')
-                y = eval(sprintf('obj.%s.GetDataMatrix()', type));
+                y = eval(sprintf('obj.%s(iDataBlk).GetDataMatrix()', type));
             else
                 y = eval(sprintf('obj.%s', type));
             end
@@ -342,6 +358,17 @@ classdef ProcResultClass < handle
             val = [];
             if isproperty(obj.misc, 'tIncAuto')
                 val = obj.misc.tIncAuto;
+            end
+        end
+       
+        
+        % ----------------------------------------------------------------------------------
+        function n = GetDataBlocksNum(obj)
+            n = 0;
+            if ~isempty(obj.dcAvg)
+                n = length(obj.dcAvg);
+            elseif ~isempty(obj.dodAvg)
+                n = length(obj.dodAvg);                
             end
         end
         

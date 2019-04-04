@@ -1071,20 +1071,20 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function tIncMan = GetTincMan(obj, idx)
-            if ~exist('idx','var')
-                idx = [];
+        function tIncMan = GetTincMan(obj, iDataBlk)
+            if ~exist('iDataBlk','var')
+                iDataBlk = [];
             end
-            tIncMan = obj.input.GetTincMan(idx);
+            tIncMan = obj.input.GetTincMan(iDataBlk);
         end
         
 
         % ----------------------------------------------------------------------------------
-        function mlActMan = GetMeasListActMan(obj, idx)
-            if ~exist('idx','var')
-                idx = [];
+        function mlActMan = GetMeasListActMan(obj, iDataBlk)
+            if ~exist('iDataBlk','var')
+                iDataBlk = [];
             end
-            mlActMan = obj.input.GetMeasListActMan(idx);
+            mlActMan = obj.input.GetMeasListActMan(iDataBlk);
         end
         
     end

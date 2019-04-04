@@ -729,80 +729,84 @@ showStdErr = hmr.guiControls.showStdErr;
 
 condition = find(procElem.CondName2Group == condition);
 
-d       = [];
-dStd    = [];
-t       = [];
-nTrials = [];
-
-% Get plot data from dataTree
-if datatype == hmr.buttonVals.RAW
-    d = procElem.GetDataMatrix();
-    t = procElem.GetTime();
-elseif datatype == hmr.buttonVals.OD
-    d = procElem.GetDod();
-    t = procElem.GetTime();
-elseif datatype == hmr.buttonVals.CONC
-    d = procElem.GetDc();
-    t = procElem.GetTime();
-elseif datatype == hmr.buttonVals.OD_HRF
-    d = procElem.GetDodAvg();
-    t = procElem.GetTHRF();
-    if showStdErr
-        dStd = procElem.GetDodAvgStd();
+DataBlks = procElem.GetDataBlocksIdxs(iCh);
+for iDataBlk = DataBlks
+    d       = [];
+    dStd    = [];
+    t       = [];
+    nTrials = [];    
+    
+    % Get plot data from dataTree
+    if datatype == hmr.buttonVals.RAW
+        d = procElem.GetDataMatrix(iDataBlk);
+        t = procElem.GetTime(iDataBlk);
+    elseif datatype == hmr.buttonVals.OD
+        d = procElem.GetDod(iDataBlk);
+        t = procElem.GetTime(iDataBlk);
+    elseif datatype == hmr.buttonVals.CONC
+        d = procElem.GetDc(iDataBlk);
+        t = procElem.GetTime(iDataBlk);
+    elseif datatype == hmr.buttonVals.OD_HRF
+        d = procElem.GetDodAvg(iDataBlk);
+        t = procElem.GetTHRF(iDataBlk);
+        if showStdErr
+            dStd = procElem.GetDodAvgStd(iDataBlk);
+        end
+        nTrials = procElem.GetNtrials();
+        if isempty(condition)
+            return;
+        end
+    elseif datatype == hmr.buttonVals.CONC_HRF
+        d = procElem.GetDcAvg(iDataBlk);
+        t = procElem.GetTHRF(iDataBlk);
+        if showStdErr
+            dStd = procElem.GetDcAvgStd(iDataBlk) * sclConc;
+        end
+        nTrials = procElem.GetNtrials();
+        if isempty(condition)
+            return;
+        end
     end
-    nTrials = procElem.GetNtrials();
-    if isempty(condition)
-        return;
-    end
-elseif datatype == hmr.buttonVals.CONC_HRF
-    d = procElem.GetDcAvg();
-    t = procElem.GetTHRF();
-    if showStdErr
-        dStd = procElem.GetDcAvgStd() * sclConc;
-    end
-    nTrials = procElem.GetNtrials();
-    if isempty(condition)
-        return;
+    ch      = procElem.GetMeasList();
+    
+    %%% Plot data
+    if ~isempty(d)
+        xx = xlim();
+        yy = ylim();
+        if strcmpi(get(hAxes,'ylimmode'),'manual')
+            flagReset = 0;
+        else
+            flagReset = 1;
+        end
+        hold on
+        
+        % Set the axes ranges
+        if flagReset==1
+            set(hAxes,'xlim',[t(1), t(end)]);
+            set(hAxes,'ylimmode','auto');
+        else
+            xlim(xx);
+            ylim(yy);
+        end
+        chLst = find(ch.MeasListVis(iCh)==1);
+        
+        % Plot data
+        if datatype == hmr.buttonVals.RAW || datatype == hmr.buttonVals.OD || datatype == hmr.buttonVals.OD_HRF
+            if  datatype == hmr.buttonVals.OD_HRF
+                d = d(:,:,condition);
+            end
+            d = procElem.reshape_y(d, ch.MeasList);
+            DisplayDataRawOrOD(t, d, dStd, iWl, iCh, chLst, nTrials, condition, linecolor, linestyle);
+        elseif datatype == hmr.buttonVals.CONC || datatype == hmr.buttonVals.CONC_HRF
+            if  datatype == hmr.buttonVals.CONC_HRF
+                d = d(:,:,:,condition);
+            end
+            d = d * sclConc;
+            DisplayDataConc(t, d, dStd, hbType, iCh, chLst, nTrials, condition, linecolor, linestyle);
+        end
     end
 end
-ch      = procElem.GetMeasList();
 
-%%% Plot data
-if ~isempty(d)
-    xx = xlim();
-    yy = ylim();
-    if strcmpi(get(hAxes,'ylimmode'),'manual')
-        flagReset = 0;
-    else
-        flagReset = 1;
-    end
-    hold on
-    
-    % Set the axes ranges
-    if flagReset==1
-        set(hAxes,'xlim',[t(1), t(end)]);
-        set(hAxes,'ylimmode','auto');
-    else
-        xlim(xx);
-        ylim(yy);
-    end
-    chLst = find(ch.MeasListVis(iCh)==1);
-    
-    % Plot data
-    if datatype == hmr.buttonVals.RAW || datatype == hmr.buttonVals.OD || datatype == hmr.buttonVals.OD_HRF
-        if  datatype == hmr.buttonVals.OD_HRF
-            d = d(:,:,condition);
-        end
-        d = procElem.reshape_y(d, ch.MeasList);
-        DisplayDataRawOrOD(t, d, dStd, iWl, iCh, chLst, nTrials, condition, linecolor, linestyle);
-    elseif datatype == hmr.buttonVals.CONC || datatype == hmr.buttonVals.CONC_HRF
-        if  datatype == hmr.buttonVals.CONC_HRF
-            d = d(:,:,:,condition);
-        end
-        d = d * sclConc;
-        DisplayDataConc(t, d, dStd, hbType, iCh, chLst, nTrials, condition, linecolor, linestyle);
-    end
-end
 DisplayAxesSDG();
 DisplayExcludedTime(handles, datatype);
 DisplayStim(handles);

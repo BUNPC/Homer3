@@ -3,10 +3,10 @@ classdef AcqDataClass < matlab.mixin.Copyable
     methods(Abstract)
         
         % ---------------------------------------------------------
-        t         = GetTime(obj, idx)
+        t         = GetTime(obj, iDataBlk)
         
         % ---------------------------------------------------------
-        datamat   = GetDataMatrix(obj, idx)
+        datamat   = GetDataMatrix(obj, iDataBlk)
         
         % ---------------------------------------------------------
         SD        = GetSDG(obj)
@@ -18,7 +18,7 @@ classdef AcqDataClass < matlab.mixin.Copyable
         detpos    = GetDetPos(obj)
         
         % ---------------------------------------------------------
-        ml        = GetMeasList(obj, idx)
+        ml        = GetMeasList(obj, iDataBlk)
                 
         % ---------------------------------------------------------
         wls       = GetWls(obj)
@@ -42,7 +42,10 @@ classdef AcqDataClass < matlab.mixin.Copyable
         duration = GetStimDuration(obj, icond);
         
         % ---------------------------------------------------------
-        n = GetNumTimeBases(obj);
+        n = GetDataBlocksNum(obj);
+
+        % ---------------------------------------------------------
+        iDataBlks = GetDataBlocksIdxs(obj, ich);
         
         % ---------------------------------------------------------
         params = MutableParams(obj);

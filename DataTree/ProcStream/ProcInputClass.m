@@ -153,9 +153,16 @@ classdef ProcInputClass < handle
         
                 
         % ----------------------------------------------------------------------------------
-        function mlActMan = GetMeasListActMan(obj, idx)
+        function mlActMan = GetMeasListActMan(obj, iDataBlk)
             mlActMan = {};            
         end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function n = GetDataBlocksNum(obj)
+            n = length(obj.tIncMan);
+        end
+        
         
     end
     

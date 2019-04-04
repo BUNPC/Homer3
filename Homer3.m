@@ -729,8 +729,8 @@ showStdErr = hmr.guiControls.showStdErr;
 
 condition = find(procElem.CondName2Group == condition);
 
-DataBlks = procElem.GetDataBlocksIdxs(iCh);
-for iDataBlk = DataBlks
+DataBlkIdxs = procElem.GetDataBlocksIdxs(iCh);
+for iDataBlk = DataBlkIdxs
     d       = [];
     dStd    = [];
     t       = [];

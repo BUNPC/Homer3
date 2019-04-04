@@ -834,7 +834,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     nChAdd = iend-istart+1;
                     obj.nirs_tb(iBase).d(:,end+1:end+nChAdd) = nirs.d(:,istart:iend);
                     obj.nirs_tb(iBase).SD.MeasList(end+1:end+nChAdd,:) = nirs.SD.MeasList(istart:iend,:);
-                    iBase = iBase+1;
+                    if iBase<nTimeBases
+                        iBase = iBase+1;
+                    end
                 end
             end
             

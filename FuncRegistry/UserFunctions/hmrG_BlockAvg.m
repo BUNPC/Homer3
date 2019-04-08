@@ -1,6 +1,6 @@
-function [yAvgOut, yAvgStdOut, nTrials, grpAvgPass] = hmrG_BlockAvg(yAvgSubjs, yAvgStdSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
+function [yAvgOut, yAvgStdOut] = hmrG_BlockAvg(yAvgSubjs, yAvgStdSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
 % SYNTAX:
-% [yAvgOut, yAvgStdOut, nTrials, grpAvgPass] = hmrG_BlockAvg(yAvgSubjs, yAvgStdSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
+% [yAvgOut, yAvgStdOut, nTrials] = hmrG_BlockAvg(yAvgSubjs, yAvgStdSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
 %
 % UI NAME:
 % Block_Average_Group
@@ -12,7 +12,6 @@ function [yAvgOut, yAvgStdOut, nTrials, grpAvgPass] = hmrG_BlockAvg(yAvgSubjs, y
 % INPUTS:
 % yAvgSubjs:
 % yAvgStdSubjs:
-% SDSubjs:
 % nTrialsSubjs:
 % CondName2Subj:
 % trange: Defines the range for the block average
@@ -22,27 +21,19 @@ function [yAvgOut, yAvgStdOut, nTrials, grpAvgPass] = hmrG_BlockAvg(yAvgSubjs, y
 % OUTPUTS:
 % yAvgOut: the averaged results
 % yAvgStdOut: the standard deviation across trials
-% nTrials: the number of trials averaged for each condition across all
-%          subjects
-% grpAvgPass:
 %
 % USAGE OPTIONS:
-% Block_Average_on_Group_Concentration_Data: [dcAvg, dcAvgStd, nTrials, grpAvgPass] = hmrG_BlockAvg(dcAvgSubjs, dcAvgStdSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
-% Block_Average_on_Group_Delta_OD_Data:      [dodAvg, dodAvgStd, nTrials, grpAvgPass] = hmrG_BlockAvg(dodAvgSubjs, dodAvgStdSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
+% Block_Average_on_Group_Concentration_Data: [dcAvg, dcAvgStd] = hmrG_BlockAvg(dcAvgSubjs, dcAvgStdSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
+% Block_Average_on_Group_Delta_OD_Data:      [dodAvg, dodAvgStd] = hmrG_BlockAvg(dodAvgSubjs, dodAvgStdSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
 %
 % PARAMETERS:
 % tRange: [5.0, 10.0]
 % thresh: [5.0]
 %
 
-yAvgOut    = DataClass();
-yAvgStdOut = DataClass();
-nTrials    = [];
-grpAvgPass = [];
+yAvgOut    = DataClass().empty();
+yAvgStdOut = DataClass().empty();
 
-subjCh = [];
-nStim = 0;
-grp1 = [];
 nSubj = length(yAvgSubjs);
 thresh = thresh * 1e-6;
 
@@ -51,22 +42,34 @@ thresh = thresh * 1e-6;
 % false unconditionally. In the future chkFlag should be a user-settable input parameter.
 chkFlag = false;
 
-for iSubj = 1:nSubj
-    for kk = 1:length(yAvgSubjs{iSubj})
+for kk = 1:length(yAvgSubjs{1})
+    
+    subjCh = [];
+    nStim = 0;
+    grp1 = [];
+    
+    for iSubj = 1:nSubj
+        
+        yAvgOut(kk) = DataClass();
+        yAvgStdOut(kk) = DataClass();
         
         tHRF      = yAvgSubjs{iSubj}(kk).GetT();
         yAvg      = yAvgSubjs{iSubj}(kk).GetDataMatrix();
         yAvgStd   = yAvgStdSubjs{iSubj}(kk).GetDataMatrix();
-        nTrials   = nTrialsSubjs{iSubj};
-        SD        = SDSubjs{iSubj};
+        nTrials   = nTrialsSubjs{iSubj}{kk};
         datatype  = unique(yAvgSubjs{iSubj}(kk).GetDataTypeLabel());
+        if datatype(1)==6 || datatype(1)==7 || datatype(1)==8
+            ml    = yAvgSubjs{iSubj}(kk).GetMeasListSrcDetPairs();
+        elseif datatype(1)==1
+            ml    = yAvgSubjs{iSubj}(kk).GetMeasList();
+        end
         
         if isempty(yAvg)
             continue;
         end
         
         nCond = size(CondName2Subj,2);
-        ml = SD.MeasList;
+        
         yAvgOut(kk).SetT(tHRF);
         yAvgStdOut(kk).SetT(tHRF);
         
@@ -79,7 +82,6 @@ for iSubj = 1:nSubj
             
             if isempty(subjCh)
                 subjCh = zeros(size(yAvg,3), nCond);
-                grpAvgPass = zeros(size(yAvg,3), nCond, nSubj);
             end
             
             for iC = 1:nCond
@@ -114,7 +116,6 @@ for iSubj = 1:nSubj
                     end
                     subjCh(lstPass,iC) = subjCh(lstPass,iC) + 1;
                 end
-                grpAvgPass(lstPass,iC,iSubj) = 1;
             end
             
             yAvg = [];
@@ -143,7 +144,6 @@ for iSubj = 1:nSubj
             
             if isempty(subjCh)
                 subjCh = zeros(size(yAvg,2),nCond);
-                grpAvgPass = zeros(size(yAvg,2),nCond,nSubj);
             end
             for iC = 1:nCond
                 iS = CondName2Subj(iSubj,iC);
@@ -154,7 +154,7 @@ for iSubj = 1:nSubj
                 for iWl = 1:2
                     % Calculate which channels to include and exclude from the group HRF avg,
                     % based on the subjects' standard error and store result in lstPass
-                    lstWl = find(SD.MeasList(:,4)==iWl);
+                    lstWl = find(ml(:,4)==iWl);
                     lstPass = find( ((squeeze(mean(yAvgStd(lstT,lstWl,iS),1))./sqrt(nTrials(lstWl,iS)'+eps)) <= thresh) &...
                                       nTrials(lstWl,iS)'>0 );
                     lstPass = lstWl(lstPass);
@@ -173,7 +173,6 @@ for iSubj = 1:nSubj
                         end
                         subjCh(lstPass,iC) = subjCh(lstPass,iC) + 1;
                     end
-                    grpAvgPass(lstPass,iC,iSubj) = 1;
                 end
             end
             
@@ -190,7 +189,6 @@ for iSubj = 1:nSubj
                 if iSubj == nSubj
                     yAvgOut(kk).AppendD(yAvg);
                 end
-                grpAvgPass = grpAvgPass(1:size(yAvg,2)/2 ,:,:);
             end
             
         end

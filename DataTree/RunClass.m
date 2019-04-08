@@ -244,11 +244,11 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function iDataBlks = GetDataBlocksIdxs(obj, iCh)
+        function [iDataBlks, iCh] = GetDataBlocksIdxs(obj, iCh)
             if nargin<2
                 iCh = [];
             end
-            iDataBlks = obj.acquired.GetDataBlocksIdxs(iCh);
+            [iDataBlks, iCh] = obj.acquired.GetDataBlocksIdxs(iCh);
         end
         
         
@@ -260,45 +260,25 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function SD = GetSDG(obj)
-            SD.SrcPos = obj.acquired.GetSrcPos();
-            SD.DetPos = obj.acquired.GetDetPos();
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function SetMeasList(obj)
-            obj.ch.Lambda      = obj.acquired.GetWls();
-            obj.ch.MeasList    = obj.acquired.GetMeasList();
-            obj.ch.MeasListActMan = ones(size(obj.ch.MeasList,1), 1);
-            obj.ch.MeasListActAuto = ones(size(obj.ch.MeasList,1), 1);
-            obj.ch.MeasListVis = ones(size(obj.ch.MeasList,1), 1);
+            SD.Lambda  = obj.acquired.GetWls();
+            SD.SrcPos  = obj.acquired.GetSrcPos();
+            SD.DetPos  = obj.acquired.GetDetPos();
         end
         
         
         
         % ----------------------------------------------------------------------------------
-        function ch = GetMeasList(obj)
-            ch.Lambda      = obj.acquired.GetWls();
-            ch.MeasList    = obj.acquired.GetMeasList();
-            mlActMan       = obj.procStream.GetMeasListActMan();
-            ch.MeasListActMan = [];
-            if isempty(mlActMan)
-                ch.MeasListActMan = ones(size(ch.MeasList,1),1);
-            else
-                for ii=1:length(mlActMan)
-                    ch.MeasListActMan = [ch.MeasListActMan; mlActMan{ii}];
-                end
+        function ch = GetMeasList(obj, iDataBlk)
+            if ~exist('iDataBlk','var') || isempty(iDataBlk)
+                iDataBlk=1;
             end
-            mlActAuto       = obj.procStream.GetMeasListActMan();
-            ch.MeasListActAuto = [];
-            if isempty(mlActAuto)
-                ch.MeasListActAuto = ones(size(ch.MeasList,1),1);
-            else
-                for ii=1:length(mlActAuto)
-                    ch.MeasListActAuto = [ch.MeasListActAuto; mlActMan{ii}];
-                end
-            end
-            ch.MeasListVis = ones(size(ch.MeasList,1), 1);
+            ch                 = InitMeasLists();
+            
+            ch.MeasList        = obj.acquired.GetMeasList(iDataBlk);
+            ch.MeasListVis     = ones(size(ch.MeasList,1), 1);
+            ch.MeasListActMan  = ones(size(ch.MeasList,1),1);
+            ch.MeasListActAuto = ones(size(ch.MeasList,1),1);
+            ch.MeasListAct     = bitand(ch.MeasListActMan, ch.MeasListActMan);
         end
 
         

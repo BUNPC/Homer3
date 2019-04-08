@@ -143,7 +143,7 @@ try
                0.50 0.80 0.30
               ];
     else
-        if ch.Lambda(1)<ch.Lambda(2)
+        if SD.Lambda(1)<SD.Lambda(2)
             color=[
                     0.00 0.00 1.00;
                     1.00 0.00 0.00;

@@ -8,7 +8,6 @@ classdef TreeNodeClass < handle
         iRun;
         procStream;
         err;
-        ch;
         CondNames;        
         CondName2Group;   % Global table used at subject and run levels to convert 
                           % condition index to global (or group-level) condition index.
@@ -27,7 +26,6 @@ classdef TreeNodeClass < handle
             obj.procStream = ProcStreamClass();
             obj.err = 0;
             obj.CondNames = {};
-            obj.ch = struct('MeasList',[],'MeasListVis',[],'MeasListActMan',[], 'MeasListActAuto',[], 'Lambda',[]);
             
             % If this constructor is called from this class' copy method,
             % then we want to exit before we obliterate the persistent
@@ -117,7 +115,6 @@ classdef TreeNodeClass < handle
             objnew.name = obj.name;
             objnew.type = obj.type;
             objnew.err = obj.err;
-            objnew.ch = obj.ch;
             objnew.CondNames = obj.CondNames;
             objnew.CondName2Group = obj.CondName2Group;
             objnew.procStream.Copy(obj.procStream);
@@ -224,7 +221,7 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function dodAvgStd = GetDodAvgStd(obj, condition, iDataBlk)
-            if ~exist('condition','var')
+            if ~exist('condition','var') || isempty(condition)
                 condition = 1:length(obj.GetConditions());
             end
             if ~exist('iDataBlk','var') || isempty(iDataBlk)
@@ -236,7 +233,7 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function dcAvgStd = GetDcAvgStd(obj, condition, iDataBlk)
-            if ~exist('condition','var')
+            if ~exist('condition','var') || isempty(condition)
                 condition = 1:length(obj.GetConditions());
             end
             if ~exist('iDataBlk','var') || isempty(iDataBlk)
@@ -248,7 +245,7 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function dodSum2 = GetDodSum2(obj, condition, iDataBlk)
-            if ~exist('condition','var')
+            if ~exist('condition','var') || isempty(condition)
                 condition = 1:length(obj.GetConditions());
             end
             if ~exist('iDataBlk','var') || isempty(iDataBlk)
@@ -260,7 +257,7 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function dcSum2 = GetDcSum2(obj, condition, iDataBlk)
-            if ~exist('condition','var')
+            if ~exist('condition','var') || isempty(condition)
                 condition = 1:length(obj.GetConditions());
             end
             if ~exist('iDataBlk','var') || isempty(iDataBlk)

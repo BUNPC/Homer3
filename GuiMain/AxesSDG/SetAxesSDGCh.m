@@ -1,5 +1,6 @@
 function SetAxesSDGCh()
 global hmr
+
 axesSDG = hmr.guiControls.axesSDG;
 currElem = hmr.dataTree.currElem;
 
@@ -7,7 +8,13 @@ hAxesSDG = axesSDG.handles.axes;
 iCh      = axesSDG.iCh;
 iSrcDet  = axesSDG.iSrcDet;
 SD       = currElem.GetSDG();
-ch       = currElem.GetMeasList();
+
+nDataBlks = currElem.GetDataBlocksNum();
+ml = [];
+for iDataBlk = 1:nDataBlks
+    ch = currElem.GetMeasList(iDataBlk);
+    ml = [ml; ch.MeasList];
+end
 
 % Maximum number of channels that can be selected simultaneously
 maxCh    = size(axesSDG.linecolor,1);
@@ -43,30 +50,29 @@ end
 % Copied from cw6_plotLst
 idxLambda = 1;  %hmr.displayLambda;
 if SrcMin
-    lst = find( ch.MeasList(:,1)==idxMin & ch.MeasList(:,4)==idxLambda );
+    lst = find( ml(:,1)==idxMin & ml(:,4)==idxLambda );
 else
-    lst = find( ch.MeasList(:,2)==idxMin & ch.MeasList(:,4)==idxLambda );
+    lst = find( ml(:,2)==idxMin & ml(:,4)==idxLambda );
 end
 
 % Remove any channels from lst which are already part of the axesSDG.iCh
 % to avoid confusion with double counting of channels
 lst(ismember(lst, axesSDG.iCh)) = [];
-
 if strcmp(mouseevent,'normal')
     if SrcMin
         iCh = lst;
-        iSrcDet = [idxMin*ones(length(lst),1) ch.MeasList(lst,2)];
+        iSrcDet = [idxMin*ones(length(lst),1) ml(lst,2)];
     else
         iCh = lst;
-        iSrcDet = [ch.MeasList(lst,1) idxMin*ones(length(lst),1)];
+        iSrcDet = [ml(lst,1) idxMin*ones(length(lst),1)];
     end
 elseif strcmp(mouseevent,'extend')
     if SrcMin
         iCh(end+[1:length(lst)]) = lst;
-        iSrcDet(end+[1:length(lst)],:) = [idxMin*ones(length(lst),1) ch.MeasList(lst,2)];
+        iSrcDet(end+[1:length(lst)],:) = [idxMin*ones(length(lst),1) ml(lst,2)];
     else
         iCh(end+[1:length(lst)]) = lst;
-        iSrcDet(end+[1:length(lst)],:) = [ch.MeasList(lst,1) idxMin*ones(length(lst),1)];
+        iSrcDet(end+[1:length(lst)],:) = [ml(lst,1) idxMin*ones(length(lst),1)];
     end
 end
 
@@ -74,7 +80,7 @@ if length(iCh) > maxCh
     menu('Number of selected channels exceeds max for waterfall display.','OK');
     return;
 end
-axesSDG.iCh     = iCh;
-axesSDG.iSrcDet = iSrcDet;
 
-hmr.guiControls.axesSDG = axesSDG;
+hmr.guiControls.axesSDG.iCh     = iCh;
+hmr.guiControls.axesSDG.iSrcDet = iSrcDet;
+

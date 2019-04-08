@@ -522,26 +522,41 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function iDataBlk = GetDataBlocksIdxs(obj, ich)
+        function [iDataBlks, ich] = GetDataBlocksIdxs(obj, ich)
+            iDataBlks=[];
             if nargin==1
-                iDataBlk=1:length(obj.data);
+                ich=[];
+            end
+            if isempty(ich)
+                iDataBlks=1:length(obj.data);
                 return;
             end
             
-            ml = obj.GetMeasList();
-            iSrc = ml(ich,1);
-            iDet = ml(ich,2);
+            % Get channel matrix for whole probe
+            mlAll = [];
+            nDataBlks = length(obj.data);
+            for iDataBlk = 1:nDataBlks
+                mlAll = [mlAll; obj.GetMeasList(iDataBlk)];
+            end
+            iSrc = mlAll(ich,1);
+            iDet = mlAll(ich,2);
 
-            iDataBlk=[];
-            for iBase=1:length(obj.data)
-                ml = obj.GetMeasList(iBase);
+            % Now search block by block for the selecdted channels
+            for iDataBlk=1:nDataBlks
+                ml = obj.GetMeasList(iDataBlk);
                 for ii=1:length(ich)
-                    if ismember(iSrc(ii), ml(:,1)) && ismember(iDet(ii), ml(:,2))
-                        iDataBlk = [iDataBlk, iBase];
+                    k = find(ml(:,1)==iSrc(ii) & ml(:,2)==iDet(ii));
+                    if ~isempty(k)
+                        iDataBlks = [iDataBlks; iDataBlk];                        
+                        ich(ii) = k(1);
                     end
                 end
             end
-            iDataBlk = unique(iDataBlk);
+            
+            % Important: make sure iDataBlks is row vector (: + transpose does that) .
+            % For some reason a for-loop traversing through empty column vector doesn't work properly
+            iDataBlks = sort(unique(iDataBlks(:)'));
+            
         end
 
     end

@@ -20,6 +20,7 @@ classdef AcqDataClass < matlab.mixin.Copyable
         % ---------------------------------------------------------
         ml        = GetMeasList(obj, iDataBlk)
                 
+
         % ---------------------------------------------------------
         wls       = GetWls(obj)
         
@@ -45,7 +46,7 @@ classdef AcqDataClass < matlab.mixin.Copyable
         n = GetDataBlocksNum(obj);
 
         % ---------------------------------------------------------
-        iDataBlks = GetDataBlocksIdxs(obj, ich);
+        [iDataBlks, ich] = GetDataBlocksIdxs(obj, ich);
         
         % ---------------------------------------------------------
         params = MutableParams(obj);

@@ -69,7 +69,6 @@ classdef DataTreeClass <  handle
             % Copy input variables for group, subjects and runs
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.group.SetConditions();
-            obj.group.SetMeasList();
         end
         
         

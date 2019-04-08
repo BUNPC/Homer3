@@ -28,9 +28,9 @@
 %
 function dc = hmrR_OD2Conc( dod, sd, ppf )
 
-dc = repmat(DataClass(), length(dod),1);
-
 for ii=1:length(dod)
+    dc(ii) = DataClass();
+    
     Lambda = sd.GetWls();
     SrcPos = sd.GetSrcPos();
     DetPos = sd.GetDetPos();

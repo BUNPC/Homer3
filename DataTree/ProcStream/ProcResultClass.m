@@ -36,7 +36,6 @@ classdef ProcResultClass < handle
             obj.dcSum2 = [];
             obj.tHRF = [];
             obj.nTrials = [];
-            obj.ch = [];
             obj.grpAvgPass = [];
             obj.misc = [];
         end
@@ -169,6 +168,7 @@ classdef ProcResultClass < handle
                 t = obj.tHRF;
             end
         end
+        
         
         % ----------------------------------------------------------------------------------
         function SetDodAvg(obj, val)
@@ -340,9 +340,6 @@ classdef ProcResultClass < handle
                 if isempty(obj.dod) || ~isa(obj.dod, 'DataClass')
                     return;
                 end
-                if obj.dod.IsEmpty()
-                    return;
-                end
                 stim = obj.GetVar('stim');
                 if isempty(stim)
                     return;
@@ -369,6 +366,10 @@ classdef ProcResultClass < handle
                 n = length(obj.dcAvg);
             elseif ~isempty(obj.dodAvg)
                 n = length(obj.dodAvg);                
+            elseif ~isempty(obj.dc)
+                n = length(obj.dc);
+            elseif ~isempty(obj.dod)
+                n = length(obj.dod);
             end
         end
         

@@ -18,15 +18,15 @@
 %
 function dod = hmrR_Intensity2OD( intensity )
 
-% intensity is a handle object, make sure we don't change 
-% it - we work only with a copy. 
-dod = DataClass(intensity);
-
 % convert to dod
+dod = DataClass().empty();
 for ii=1:length(intensity)
-    d = dod(ii).GetD();
+    dod(ii) = DataClass();
+    d = intensity(ii).GetD();
     dm = mean(abs(d),1);
     nTpts = size(d,1);
+    dod(ii).SetT(intensity(ii).GetT());
     dod(ii).SetD(-log(abs(d)./(ones(nTpts,1)*dm)));
+    dod(ii).SetMl(intensity(ii).GetMl());
     dod(ii).SetDataType(1000, 1);
 end

@@ -151,14 +151,14 @@ classdef SubjClass < TreeNodeClass
             % Calculate all runs in this session
             r = obj.runs;
             nRun = length(r);
-            tHRF_common = {};
+            nDataBlks = r(1).GetDataBlocksNum();
+            tHRF_common = cell(nDataBlks,1);
             for iRun = 1:nRun
                 r(iRun).Calc();
                 
                 % Find smallest tHRF among the runs. We should make this the common one.
-                nDataBlks = r(iRun).GetDataBlocksNum();
                 for iDataBlk = 1:nDataBlks
-	                if isempty(tHRF_common)
+	                if isempty(tHRF_common{iDataBlk})
                         tHRF_common{iDataBlk} = r(iRun).procStream.output.GetTHRF(iDataBlk);
                     elseif length(r(iRun).procStream.output.GetTHRF(iDataBlk)) < length(tHRF_common{iDataBlk})
                         tHRF_common{iDataBlk} = r(iRun).procStream.output.GetTHRF(iDataBlk);
@@ -186,6 +186,7 @@ classdef SubjClass < TreeNodeClass
                 vars.dcSum2Runs{iRun}    = r(iRun).procStream.output.GetVar('dcSum2');
                 vars.tHRFRuns{iRun}      = r(iRun).procStream.output.GetTHRF();
                 vars.nTrialsRuns{iRun}   = r(iRun).procStream.output.GetVar('nTrials');
+                vars.mlActRuns{iRun}     = r(iRun).procStream.output.GetVar('mlActAuto');
                 vars.SDRuns{iRun}        = r(iRun).GetMeasList();
             end
             
@@ -256,17 +257,11 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetMeasList(obj)
-            obj.ch = obj.GetMeasList();
-            for ii=1:length(obj.runs)
-                obj.runs(ii).SetMeasList();
+        function ch = GetMeasList(obj, iDataBlk)
+            if ~exist('iDataBlk','var') || isempty(iDataBlk)
+                iDataBlk=1;
             end
-        end
-
-        
-        % ----------------------------------------------------------------------------------
-        function ch = GetMeasList(obj)
-            ch = obj.runs(1).GetMeasList();
+            ch = obj.runs(1).GetMeasList(iDataBlk);
         end
                 
         
@@ -277,11 +272,11 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function iDataBlks = GetDataBlocksIdxs(obj, iCh)
+        function [iDataBlks, iCh] = GetDataBlocksIdxs(obj, iCh)
             if nargin<2
                 iCh = [];
             end
-            iDataBlks = obj.runs(1).GetDataBlocksIdxs(iCh);
+            [iDataBlks, iCh] = obj.runs(1).GetDataBlocksIdxs(iCh);
         end
         
         

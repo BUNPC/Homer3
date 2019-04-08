@@ -225,14 +225,14 @@ classdef GroupClass < TreeNodeClass
             % Calculate all subjs in this session
             s = obj.subjs;
             nSubj = length(s);
-            tHRF_common = [];            
+            nDataBlks = s(1).GetDataBlocksNum();
+            tHRF_common = cell(nDataBlks,1);
             for iSubj = 1:nSubj
                 s(iSubj).Calc();
                 
                 % Find smallest tHRF among the subjs. We should make this the common one.
-                nDataBlks = s(iSubj).GetDataBlocksNum();
                 for iDataBlk = 1:nDataBlks
-                    if isempty(tHRF_common)
+	                if isempty(tHRF_common{iDataBlk})
                         tHRF_common{iDataBlk} = s(iSubj).procStream.output.GetTHRF(iDataBlk);
                     elseif length(s(iSubj).procStream.output.GetTHRF(iDataBlk)) < length(tHRF_common{iDataBlk})
                         tHRF_common{iDataBlk} = s(iSubj).procStream.output.GetTHRF(iDataBlk);
@@ -380,17 +380,11 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetMeasList(obj)
-            obj.ch = obj.GetMeasList();
-            for ii=1:length(obj.subjs)
-                obj.subjs(ii).SetMeasList();
+        function ch = GetMeasList(obj, iDataBlk)
+            if ~exist('iDataBlk','var')
+                iDataBlk=1;
             end
-        end
-
-        
-        % ----------------------------------------------------------------------------------
-        function ch = GetMeasList(obj)
-            ch = obj.subjs(1).GetMeasList();
+            ch = obj.subjs(1).GetMeasList(iDataBlk);
         end
 
         
@@ -401,11 +395,11 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function iDataBlks = GetDataBlocksIdxs(obj, iCh)
+        function [iDataBlks, ich] = GetDataBlocksIdxs(obj, ich)
             if nargin<2
-                iCh = [];
+                ich = [];
             end
-            iDataBlks = obj.subjs(1).GetDataBlocksIdxs(iCh);
+            [iDataBlks, ich] = obj.subjs(1).GetDataBlocksIdxs(ich);
         end
         
         

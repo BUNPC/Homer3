@@ -38,55 +38,60 @@
 % --------------------------------------------------------------------
 function DisplayAxesSDG()
 global hmr
-dataTree = hmr.dataTree;
-guiControls = hmr.guiControls;
-axesSDG = guiControls.axesSDG;
-procElem = dataTree.currElem;
 
 % This function plots the prove geometry
 % Command line call:
 % plotAxes_SDG(guidata(gcbo),bool);
 %
+hAxesSDG    = hmr.guiControls.axesSDG.handles.axes;
+iCh         = hmr.guiControls.axesSDG.iCh;
+iSrcDet     = hmr.guiControls.axesSDG.iSrcDet;
+color       = hmr.guiControls.axesSDG.linecolor;
 
-hAxesSDG    = axesSDG.handles.axes;
-iCh         = axesSDG.iCh;
-iSrcDet     = axesSDG.iSrcDet;
-color       = axesSDG.linecolor;
-SD          = procElem.GetSDG();
-ch          = procElem.GetMeasList();
-bbox        = procElem.GetSdgBbox();
-procResult  = procElem.procStream.output;
+SD          = hmr.dataTree.currElem.GetSDG();
+bbox        = hmr.dataTree.currElem.GetSdgBbox();
+procResult  = hmr.dataTree.currElem.procStream.output;
 
-nSrcs       = size(SD.SrcPos,1);
-nDets       = size(SD.DetPos,1);
-
-
+% Set axes handle properties and parameters 
 if ~ishandles(hAxesSDG)
     return;
 end
-
 axes(hAxesSDG);
 cla
 axis(hAxesSDG, [bbox(1), bbox(2), bbox(3), bbox(4)]);
-
 set(gca, 'xticklabel','')
 set(gca, 'yticklabel','')
 set(gca, 'ygrid','off')
-
 edgecol = 'none';
 if ismac() || islinux()
 	fs = 12;
 else
 	fs = 10;
 end
+hold on;
+
+% Go through all the data blocks and plot the channels in each block   
+nSrcs       = size(SD.SrcPos,1);
+nDets       = size(SD.DetPos,1);
 
 % get mlActAuto from procResult if it exists and replace ch.MeasListActMan 
+% [iDataBlks, iCh] = hmr.dataTree.currElem.GetDataBlocksIdxs(iCh);
+MeasList = [];
+MeasListActMan = [];
+MeasListVis = [];
+nDataBlks = hmr.dataTree.currElem.GetDataBlocksNum();
+for iDataBlk = 1:nDataBlks   
+    ch = hmr.dataTree.currElem.GetMeasList(iDataBlk);
+    MeasList = [MeasList; ch.MeasList];
+    MeasListActMan = [MeasListActMan; ch.MeasListActMan];
+    MeasListVis = [MeasListVis; ch.MeasListVis];
+end
 
-lst   = find(ch.MeasList(:,1)>0);
-ml    = ch.MeasList(lst,:);
+
+lst   = find(MeasList(:,1)>0);
+ml    = MeasList(lst,:);
 lstML = find(ml(:,4)==1); %cw6info.displayLambda);
-
-lst2 = find(ch.MeasListActMan(1:length(lstML))==0);
+lst2 = find(MeasListActMan(1:length(lstML))==0);
 for ii=1:length(lst2)
     h = line2(SD.SrcPos(ml(lstML(lst2(ii)),1),:), SD.DetPos(ml(lstML(lst2(ii)),2),:));
     set(h, 'color',[1 .85 .85]*1);
@@ -94,7 +99,7 @@ for ii=1:length(lst2)
     set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
 end
 
-lst2 = find(ch.MeasListActMan(1:length(lstML))==1);
+lst2 = find(MeasListActMan(1:length(lstML))==1);
 for ii=1:length(lst2)
     h = line2(SD.SrcPos(ml(lstML(lst2(ii)),1),:), SD.DetPos(ml(lstML(lst2(ii)),2),:));
     set(h, 'color',[1 1 1]*.85);
@@ -113,8 +118,6 @@ if ~isempty(mlActAuto)
     end
 end
 
-
-
 % DRAW PLOT LINES
 % THESE LINES HAVE TO BE THE LAST
 % ITEMS ADDED TO THE AXES
@@ -122,10 +125,10 @@ end
 % cw6_sdgToggleLines()
 if ~isempty(iSrcDet) && iSrcDet(1,1)~=0
     lst2 = [];
-    lst3 = find(ch.MeasList(:,4)==1);
+    lst3 = find(MeasList(:,4)==1);
     for ii=1:length(iCh);
-        lst2(ii) = find(ch.MeasList(lst3,1)==ch.MeasList(iCh(ii),1) & ...
-                        ch.MeasList(lst3,2)==ch.MeasList(iCh(ii),2) );
+        lst2(ii) = find(MeasList(lst3,1)==MeasList(iCh(ii),1) & ...
+            MeasList(lst3,2)==MeasList(iCh(ii),2) );
     end
     iCh2 = lst2;
     
@@ -135,15 +138,15 @@ if ~isempty(iSrcDet) && iSrcDet(1,1)~=0
         set(h,'ButtonDownFcn',sprintf('toggleLinesAxesSDG_ButtonDownFcn(gcbo,[%d],guidata(gcbo))',idx));
         set(h,'linewidth',2);
         if ~isempty(iCh) && ...
-           (~ch.MeasListActMan(iCh2(idx)) & ~ch.MeasListVis(iCh2(idx)))
+                (~MeasListActMan(iCh2(idx)) & ~MeasListVis(iCh2(idx)))
             set(h,'linewidth',2);
             set(h,'linestyle','-.');
-        else               
-            if ~isempty(iCh) && ~ch.MeasListActMan(iCh2(idx))
+        else
+            if ~isempty(iCh) && ~MeasListActMan(iCh2(idx))
                 set(h,'linewidth',2);
                 set(h,'linestyle','--');
             end
-            if ~isempty(iCh) && ~ch.MeasListVis(iCh2(idx))
+            if ~isempty(iCh) && ~MeasListVis(iCh2(idx))
                 set(h,'linewidth',1);
                 set(h,'linestyle',':');
             end
@@ -153,13 +156,13 @@ end
 
 % ADD SOURCE AND DETECTOR LABELS
 for idx=1:nSrcs
-    if ~isempty(find(ch.MeasList(:,1)==idx))
+    if ~isempty(find(MeasList(:,1)==idx))
         h = text( SD.SrcPos(idx,1), SD.SrcPos(idx,2), sprintf('%d', idx), 'fontsize',fs, 'fontweight','bold', 'color','r' );
         set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
     end
 end
 for idx=1:nDets
-    if ~isempty(find(ch.MeasList(:,2)==idx))
+    if ~isempty(find(MeasList(:,2)==idx))
         h = text( SD.DetPos(idx,1), SD.DetPos(idx,2), sprintf('%d', idx), 'fontsize',fs, 'fontweight','bold', 'color','b' );
         set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
     end

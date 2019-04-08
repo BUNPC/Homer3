@@ -74,8 +74,8 @@ axesSDG_ButtonDownFcn([]);
 popupmenuConditions_Callback([]);
 listboxPlotWavelength_Callback([]);
 listboxPlotConc_Callback([]);
-menuChangeDirectory_Callback([]);
-menuExit_Callback([]);
+menuChangeGroupFolder_Callback([]);
+menuItemExit_Callback([]);
 menuItemReset_Callback([]);
 menuCopyCurrentPlot_Callback([]);
 uipanelProcessingType_SelectionChangeFcn([]);
@@ -158,13 +158,15 @@ varargout{1} = handles.output;
 function [eventdata, handles] = Homer3_DeleteFcn(hObject, eventdata, handles)
 global hmr;
 
+if ishandles(hObject)
+    delete(hObject)
+end
 if isempty(hmr)
     return;
 end
 if isempty(hmr.dataTree)
     return;
 end
-
 delete(hmr.dataTree);
 for ii=1:length(hmr.childguis)
     hmr.childguis(ii).Close();
@@ -482,7 +484,7 @@ DisplayData(handles);
 
 
 % --------------------------------------------------------------------
-function [eventdata, handles] = menuChangeDirectory_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = menuChangeGroupFolder_Callback(hObject, eventdata, handles)
 global hmr
 if ~ishandles(hObject)
     return;
@@ -496,7 +498,6 @@ if pathnm==0
     return;
 end
 cd(pathnm);
-
 hGui=get(get(hObject,'parent'),'parent');
 Homer3_DeleteFcn(hGui,[],handles);
 
@@ -506,11 +507,10 @@ Homer3(fmt);
 
 
 % --------------------------------------------------------------------
-function menuExit_Callback(hObject, eventdata, handles)
+function menuItemExit_Callback(hObject, eventdata, handles)
 if ~ishandles(hObject)
     return;
 end
-
 hGui=get(get(hObject,'parent'),'parent');
 Homer3_DeleteFcn(hGui,eventdata,handles);
 
@@ -729,8 +729,12 @@ showStdErr = hmr.guiControls.showStdErr;
 
 condition = find(procElem.CondName2Group == condition);
 
-DataBlkIdxs = procElem.GetDataBlocksIdxs(iCh);
-for iDataBlk = DataBlkIdxs
+[iDataBlks, iCh] = procElem.GetDataBlocksIdxs(iCh);
+fprintf('Displaying channels [%s] in data blocks [%s]\n', num2str(iCh(:)'), num2str(iDataBlks(:)'))
+for iDataBlk = iDataBlks
+
+    ch      = procElem.GetMeasList(iDataBlk);
+    chVis   = find(ch.MeasListVis(iCh)==1);
     d       = [];
     dStd    = [];
     t       = [];
@@ -747,7 +751,7 @@ for iDataBlk = DataBlkIdxs
         d = procElem.GetDc(iDataBlk);
         t = procElem.GetTime(iDataBlk);
     elseif datatype == hmr.buttonVals.OD_HRF
-        d = procElem.GetDodAvg(iDataBlk);
+        d = procElem.GetDodAvg([], iDataBlk);
         t = procElem.GetTHRF(iDataBlk);
         if showStdErr
             dStd = procElem.GetDodAvgStd(iDataBlk);
@@ -757,17 +761,16 @@ for iDataBlk = DataBlkIdxs
             return;
         end
     elseif datatype == hmr.buttonVals.CONC_HRF
-        d = procElem.GetDcAvg(iDataBlk);
+        d = procElem.GetDcAvg([], iDataBlk);
         t = procElem.GetTHRF(iDataBlk);
         if showStdErr
-            dStd = procElem.GetDcAvgStd(iDataBlk) * sclConc;
+            dStd = procElem.GetDcAvgStd([], iDataBlk) * sclConc;
         end
         nTrials = procElem.GetNtrials();
         if isempty(condition)
             return;
         end
     end
-    ch      = procElem.GetMeasList();
     
     %%% Plot data
     if ~isempty(d)
@@ -788,7 +791,6 @@ for iDataBlk = DataBlkIdxs
             xlim(xx);
             ylim(yy);
         end
-        chLst = find(ch.MeasListVis(iCh)==1);
         
         % Plot data
         if datatype == hmr.buttonVals.RAW || datatype == hmr.buttonVals.OD || datatype == hmr.buttonVals.OD_HRF
@@ -796,13 +798,13 @@ for iDataBlk = DataBlkIdxs
                 d = d(:,:,condition);
             end
             d = procElem.reshape_y(d, ch.MeasList);
-            DisplayDataRawOrOD(t, d, dStd, iWl, iCh, chLst, nTrials, condition, linecolor, linestyle);
+            DisplayDataRawOrOD(t, d, dStd, iWl, iCh, chVis, nTrials, condition, linecolor, linestyle);
         elseif datatype == hmr.buttonVals.CONC || datatype == hmr.buttonVals.CONC_HRF
             if  datatype == hmr.buttonVals.CONC_HRF
                 d = d(:,:,:,condition);
             end
             d = d * sclConc;
-            DisplayDataConc(t, d, dStd, hbType, iCh, chLst, nTrials, condition, linecolor, linestyle);
+            DisplayDataConc(t, d, dStd, hbType, iCh, chVis, nTrials, condition, linecolor, linestyle);
         end
     end
 end

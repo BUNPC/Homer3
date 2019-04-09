@@ -1,9 +1,12 @@
-function showHiddenObjs()
+function showHiddenObjs(iDataBlk, hData)
 global plotprobe
 
-y        = plotprobe.y;
-ch       = plotprobe.dataTree.currElem.GetMeasList();
-h        = plotprobe.handles.data;
+if ~exist('hData','var')
+    hData = plotprobe.handles.data;
+end
+y        = plotprobe.y{iDataBlk};
+ch       = plotprobe.dataTree.currElem.GetMeasList(iDataBlk);
+h        = hData;
 bit0     = plotprobe.tMarkShow;
 bit1     = plotprobe.hidMeasShow;
 

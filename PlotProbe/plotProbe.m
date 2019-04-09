@@ -78,10 +78,6 @@ if ~exist('ch','var') || isempty(ch)
     return;
 end
 
-% Clear axes
-cla(gca); 
-axis off;
-
 % This section will give the option to display subsections of the probe
 % based on nearest-neighbor etc distances.  If the probe only has one
 % distance, this option is not given
@@ -124,14 +120,9 @@ try
     % error ocurred.
     idx = 0;
 
-    ml = ch.MeasList;
-    if isproperty(SD,'MeasListAct')
-        lst = find(ch.MeasList(:,4)==1);
-        MLact = ch.MeasListActMan(lst);
-    else
-        lst = find(ch.MeasList(:,4)==1);
-        MLact = ones(length(lst),1);
-    end
+    ml    = ch.MeasList;
+    lst   = find(ch.MeasList(:,4)==1);
+    mlAct = ch.MeasListActMan(lst);
 
     if ndims(y)==3
         color=[
@@ -169,7 +160,7 @@ try
     if ~isempty(y)
         lstW1 = find(ml(:,4)==1);
         lstW2 = find(ml(:,4)==2);
-        nCh = length(MLact);
+        nCh = length(mlAct);
         nDataTypes = ndims(y);
 
         % To eliminate displayed data drifting when scaling y up 
@@ -263,6 +254,7 @@ try
                 end
             end
 
+            % Plot standard deviation if provided
             if ~isempty(ystd)
                 if ndims(Avg)==3
                     AvgT = ya-axHgt/4 + axHgt*((Avg(:,:,idx)-ystd(:,:,idx)-cmin)/(cmax-cmin))/2;
@@ -295,7 +287,7 @@ try
                 
 
             % Record line graphics properties based on the object type
-            [lc,lv,lw,ls] = setLineProperties(lc,lv,lw,ls,idx,MLact,color,nDataTypes,nTSteps);
+            [lc,lv,lw,ls] = setLineProperties(lc,lv,lw,ls,idx,mlAct,color,nDataTypes,nTSteps);
             
         end
 
@@ -308,9 +300,8 @@ try
     end
     
     
-    %This code adds the probe src-det lines to the figure
-    if 1 %isproperty(AdvOptions,'ImgOptions') && AdvOptions.ImgOptions.ShowProbe==1
-        %Draw the probe on the image
+    % Plot the optodes on the axes
+    if ~isProbeDrawn(SD)
         for idx2=1:size(sPos,1)
             xa = sPos(idx2,1) - axXoff;
             ya = sPos(idx2,2) - axYoff;
@@ -326,9 +317,8 @@ try
             
             ht=text(xa,ya,sprintf('D%d',idx2));
             set(ht,'fontweight','bold')
-            set(ht,'color',[0 0 1])
-            
-        end        
+            set(ht,'color',[0 0 1])            
+        end
     end
     
 catch
@@ -337,17 +327,15 @@ catch
     h=[];
     
 end
-
-
 hold off
 
 
 
 
 % ----------------------------------------------------------------------------------------
-function [lc,lv,lw,ls] = setLineProperties(lc,lv,lw,ls,idx,MLact,color,nDataTypes,nTSteps)
+function [lc,lv,lw,ls] = setLineProperties(lc,lv,lw,ls,idx,mlAct,color,nDataTypes,nTSteps)
 
-if MLact(idx)==0
+if mlAct(idx)==0
     ls{idx} = ':';
     for ii=1:nDataTypes
         lw(idx,ii) = 2.0;
@@ -358,7 +346,7 @@ if MLact(idx)==0
         lc(idx,ii,:) = [0 0 0];
         lv{idx,ii} = 'off';
     end
-elseif MLact(idx)==1
+elseif mlAct(idx)==1
     ls{idx} = '-';
     for ii=1:nDataTypes
         lw(idx,ii) = 2.0;
@@ -369,7 +357,7 @@ elseif MLact(idx)==1
         lc(idx,ii,:) = [0 0 0];
         lv{idx,ii} = 'on';
     end
-elseif MLact(idx)==2
+elseif mlAct(idx)==2
     ls{idx} = '-';
     for ii=1:nDataTypes
         lw(idx,ii) = 1.0;
@@ -410,4 +398,23 @@ for idx=1:nCh
     end
 end
 
+
+
+
+% ------------------------------------------------------
+function b = isProbeDrawn(SD)
+b = false;
+nOpt = size(SD.SrcPos,1)+size(SD.DetPos,1);
+hc = get(gca, 'children');
+nOptDrawn = 0;
+for ii=1:length(hc)
+    if strcmpi(hc(ii).Type, 'Text')
+        if hc(ii).String(1)=='S' || hc(ii).String(1)=='D'
+            nOptDrawn = nOptDrawn+1;
+        end
+    end
+end
+if nOptDrawn==nOpt
+    b = true;
+end
 

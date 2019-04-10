@@ -98,9 +98,6 @@ classdef ProcStreamClass < handle
                 argIn = obj.GetInputArgs(iFcall);
                 for ii = 1:length(argIn)
                     if ~exist(argIn{ii},'var')
-                        if ~obj.input.FindVar(argIn{ii})
-                            continue;
-                        end
                         eval(sprintf('%s = obj.input.GetVar(''%s'');', argIn{ii}, argIn{ii}));
                     end
                 end

@@ -1,21 +1,15 @@
 function DisplayExcludedTime(handles, datatype, mode, col)
 global hmr
 
+if  datatype == hmr.buttonVals.OD_HRF || datatype == hmr.buttonVals.CONC_HRF
+    return;
+end
+
 if ~exist('mode','var') || isempty(mode)
     mode = 'auto';
 end
 if strcmp(mode,'manual') || ~exist('col')
     col = setColor(mode);
-end
-
-tInc = hmr.dataTree.currElem.GetTincAuto();
-t    = hmr.dataTree.currElem.GetTime();
-
-if isempty(tInc)
-    return;
-end
-if  datatype == hmr.buttonVals.OD_HRF || datatype == hmr.buttonVals.CONC_HRF
-    return;
 end
 
 % Patch in some versions of matlab messes up the renderer, that is it changes the 
@@ -24,15 +18,37 @@ end
 renderer = get(gcf, 'renderer');
 axes(handles.axesData);
 hold on
-p = timeExcludeRanges(tInc,t);
-yy = GetAxesYRangeForStimPlot(handles.axesData);
-for ii=1:size(p,1)
-    h = patch([p(ii,1) p(ii,2) p(ii,2) p(ii,1) p(ii,1)], [yy(1) yy(1) yy(2) yy(2) yy(1)], col, ...
-             'facealpha',0.3, 'edgecolor','none' );
+
+iCh       = hmr.guiControls.ch;
+iDataBlks = hmr.dataTree.currElem.GetDataBlocksIdxs(iCh);
+tPtsExclTot = [];
+for iBlk = iDataBlks
+    tIncAuto = hmr.dataTree.currElem.GetTincAuto(iBlk);
+    t        = hmr.dataTree.currElem.GetTime(iBlk);
+    
+    if isempty(tIncAuto)
+        continue;
+    end
+    
+    % Find time points that've already been excluded from previous blocks
+    % and set them to 1 in order not to redundantly exclude. 
+    tPtsExcl = t(tIncAuto==0);
+    j = find(ismember(tPtsExcl, tPtsExclTot));
+    k = find(ismember(t, tPtsExcl(j)));
+    tIncAuto(k) = 1;
+    
+    % Display exclusion patches
+    p = timeExcludeRanges(tIncAuto,t);
+    yy = GetAxesYRangeForStimPlot(handles.axesData);
+    for ii=1:size(p,1)
+        h = patch([p(ii,1) p(ii,2) p(ii,2) p(ii,1) p(ii,1)], [yy(1) yy(1) yy(2) yy(2) yy(1)], col, ...
+            'facealpha',0.3, 'edgecolor','none' );
+    end
+    tPtsExclTot = [tPtsExclTot(:)', tPtsExcl(:)'];
 end
-hold off
 
 % Restore previous renderer
+hold off
 set(gcf, 'renderer', renderer);
 
 

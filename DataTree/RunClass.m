@@ -357,14 +357,20 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function tIncAuto = GetTincAuto(obj)
-             tIncAuto = obj.procStream.output.GetTincAuto();
+        function tIncAuto = GetTincAuto(obj, iDataBlk)
+            if nargin<2
+                iDataBlk = 1;
+            end
+            tIncAuto = obj.procStream.output.GetTincAuto(iDataBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function tIncMan = GetTincMan(obj)
-             tIncMan = obj.procStream.input.GetTincMan();
+        function tIncMan = GetTincMan(obj, iDataBlk)
+            if nargin<2
+                iDataBlk = 1;
+            end
+            tIncMan = obj.procStream.input.GetTincMan(iDataBlk);
         end
         
         

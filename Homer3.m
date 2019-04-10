@@ -721,7 +721,7 @@ linecolor  = hmr.guiControls.axesData.linecolor;
 linestyle  = hmr.guiControls.axesData.linestyle;
 datatype   = getDatatype(handles);
 condition  = hmr.guiControls.condition;
-iCh        = hmr.guiControls.ch;
+iCh0       = hmr.guiControls.ch;
 iWl        = hmr.guiControls.wl;
 hbType     = hmr.guiControls.hbType;
 sclConc    = hmr.guiControls.sclConc;        % convert Conc from Molar to uMolar
@@ -729,12 +729,19 @@ showStdErr = hmr.guiControls.showStdErr;
 
 condition = find(procElem.CondName2Group == condition);
 
-[iDataBlks, iCh] = procElem.GetDataBlocksIdxs(iCh);
-fprintf('Displaying channels [%s] in data blocks [%s]\n', num2str(iCh(:)'), num2str(iDataBlks(:)'))
+[iDataBlks, iCh] = procElem.GetDataBlocksIdxs(iCh0);
+fprintf('Displaying channels [%s] in data blocks [%s]\n', num2str(iCh0(:)'), num2str(iDataBlks(:)'))
+iColor = 1;
 for iDataBlk = iDataBlks
 
+    if isempty(iCh)
+        iChBlk  = [];
+    else
+        iChBlk  = iCh{iDataBlk};
+    end
+    
     ch      = procElem.GetMeasList(iDataBlk);
-    chVis   = find(ch.MeasListVis(iCh)==1);
+    chVis   = find(ch.MeasListVis(iChBlk)==1);
     d       = [];
     dStd    = [];
     t       = [];
@@ -792,21 +799,24 @@ for iDataBlk = iDataBlks
             ylim(yy);
         end
         
+        linecolors = linecolor(iColor:iColor+length(iChBlk)-1,:);
+        
         % Plot data
         if datatype == hmr.buttonVals.RAW || datatype == hmr.buttonVals.OD || datatype == hmr.buttonVals.OD_HRF
             if  datatype == hmr.buttonVals.OD_HRF
                 d = d(:,:,condition);
             end
             d = procElem.reshape_y(d, ch.MeasList);
-            DisplayDataRawOrOD(t, d, dStd, iWl, iCh, chVis, nTrials, condition, linecolor, linestyle);
+            DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors, linestyle);
         elseif datatype == hmr.buttonVals.CONC || datatype == hmr.buttonVals.CONC_HRF
             if  datatype == hmr.buttonVals.CONC_HRF
                 d = d(:,:,:,condition);
             end
             d = d * sclConc;
-            DisplayDataConc(t, d, dStd, hbType, iCh, chVis, nTrials, condition, linecolor, linestyle);
+            DisplayDataConc(t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors, linestyle);
         end
     end
+    iColor = iColor+length(iChBlk);
 end
 
 DisplayAxesSDG();

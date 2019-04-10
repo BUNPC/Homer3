@@ -46,6 +46,7 @@ for iHb=1:length(hbType)
         dHbMl = squeeze(d(:, hbType(iHb), ch(chLst(ii))));
         h     = plot(t, dHbMl);
         
+        % fprintf('Plotting channel: %d, color: [%0.1f, %0.1f, %0.1f]\n', chLst(ii), linecolor(chLst(ii),:));
         set(h, 'color', linecolor(chLst(ii),:));
         set(h, 'linewidth', linewidth(hbType(iHb)));
         set(h, 'linestyle', linestyle{hbType(iHb)});

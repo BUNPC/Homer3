@@ -414,7 +414,7 @@ classdef ProcStreamClass < handle
             pause(.5);
             [fname, pname] = uigetfile('*.cfg', 'Load Process Options File' );
             if fname==0
-                menu( sprintf('Loading default config file.'),'Okay');
+                MessageBox( sprintf('Loading default config file.'),'Creating default config');
                 fname = [pwd, '/processOpt_default.cfg'];
                 autoGenDefault = true;
             else

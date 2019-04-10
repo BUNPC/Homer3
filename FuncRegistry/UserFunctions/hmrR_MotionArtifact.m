@@ -42,7 +42,7 @@
 %       with 1's indicating data included and 0's indicate motion artifact
 %
 % USAGE OPTIONS:
-% Motion_Artifacts_By_Channel:  tIncAuto = hmrR_MotionArtifact(dod, sd, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+% Motion_Artifacts:  tIncAuto = hmrR_MotionArtifact(dod, sd, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % PARAMETERS:
 % tMotion: 0.5
@@ -73,11 +73,11 @@ if ~isa(sd, 'SdClass')
     error('Second input must be sd SNIRF objects of type SdClass.')
 end
 
-for kk=1:length(data)
+for iBlk=1:length(data)
 
-    d           = data(kk).GetD();
-    fs          = data(kk).GetT();
-    MeasList    = data(kk).GetMeasList();
+    d           = data(iBlk).GetD();
+    fs          = data(iBlk).GetT();
+    MeasList    = data(iBlk).GetMeasList();
     Lambda      = sd.GetWls();
     nWav        = length(Lambda);
     
@@ -88,12 +88,12 @@ for kk=1:length(data)
     if isempty(tIncMan)
         tIncMan = repmat({ones(size(d,1),1)}, length(data), 1);
     end    
-    tInc = ones(size(d,1),1);
+    tInc{iBlk} = ones(size(d,1),1);
     
     if isempty(mlActMan)
         MeasListAct = ones(size(MeasList,1),1);
     else
-        MeasListAct = mlActMan{kk};        
+        MeasListAct = mlActMan{iBlk};        
     end    
     
     % Calculate the diff of d to to set the threshold if ncssesary
@@ -136,16 +136,16 @@ for kk=1:length(data)
         bad_inds = bad_inds((bad_inds>0)&(bad_inds<=(size(d, 1)-1)));
         
         % exclude points that were manually excluded
-        bad_inds(find(tIncMan{kk}(bad_inds)==0)) = [];
+        bad_inds(find(tIncMan{iBlk}(bad_inds)==0)) = [];
         
         % Set t and diff of data to 0 at the bad inds
-        tInc(1+bad_inds) = 0; % bad inds calculated on diff so add 1        
+        tInc{iBlk}(1+bad_inds) = 0; % bad inds calculated on diff so add 1        
     end
     
     % calculate the variance due to motion relative to total variance
-    lst = find(tInc==0);
+    lst = find(tInc{iBlk}==0);
     dstd0 = std(d(lst,:),[],1);
-    lst = find(tInc==1);
+    lst = find(tInc{iBlk}==1);
     dstd1 = std(d(lst,:),[],1);
     
 end

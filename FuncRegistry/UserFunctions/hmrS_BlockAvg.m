@@ -92,11 +92,7 @@ for kk = 1:nDataBlks
                         nTrials_tot{kk}(lstChInc,iC) = nT;
                     else
                         for iCh=1:length(lstChInc) %size(yAvg,2)
-                            try
-                                grp1(:,lstChInc(iCh),iC) = grp1(:,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,lstChInc(iCh),iS),tHRF') * nT;
-                            catch
-                                d = 1;
-                            end
+                            grp1(:,lstChInc(iCh),iC) = grp1(:,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,lstChInc(iCh),iS),tHRF') * nT;
                             grp1Sum2(:,lstChInc(iCh),iC) = grp1Sum2(:,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,lstChInc(iCh),iS),tHRF');
                             nTrials_tot{kk}(lstChInc(iCh),iC) = nTrials_tot{kk}(lstChInc(iCh),iC) + nT;
                         end

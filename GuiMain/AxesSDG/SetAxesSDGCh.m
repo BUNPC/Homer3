@@ -24,6 +24,11 @@ while ~strcmpi(get(h,'type'),'figure')
     h = get(h,'parent');
 end
 mouseevent = get(h,'selectiontype');
+if strcmp(mouseevent,'extend') && nDataBlks>1
+    MessageBox('Warning: Extended channel selection has not yet been implemented for data with multiple data blocks.', ...
+               'Not Yet Implemented')
+    return;
+end
 
 pos = get(hAxesSDG, 'currentpoint');
 
@@ -57,7 +62,7 @@ end
 
 % Remove any channels from lst which are already part of the axesSDG.iCh
 % to avoid confusion with double counting of channels
-lst(ismember(lst, axesSDG.iCh)) = [];
+% lst(ismember(lst, axesSDG.iCh)) = [];
 if strcmp(mouseevent,'normal')
     if SrcMin
         iCh = lst;

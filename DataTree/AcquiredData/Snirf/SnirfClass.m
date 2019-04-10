@@ -522,12 +522,13 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function [iDataBlks, ich] = GetDataBlocksIdxs(obj, ich)
+        function [iDataBlks, ich] = GetDataBlocksIdxs(obj, ich0)
             iDataBlks=[];
+            ich={};
             if nargin==1
-                ich=[];
+                ich0=[];
             end
-            if isempty(ich)
+            if isempty(ich0)
                 iDataBlks=1:length(obj.data);
                 return;
             end
@@ -538,17 +539,19 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             for iDataBlk = 1:nDataBlks
                 mlAll = [mlAll; obj.GetMeasList(iDataBlk)];
             end
-            iSrc = mlAll(ich,1);
-            iDet = mlAll(ich,2);
+            
+            iSrc = mlAll(ich0,1);
+            iDet = mlAll(ich0,2);
 
             % Now search block by block for the selecdted channels
+            ich = cell(nDataBlks,1);
             for iDataBlk=1:nDataBlks
                 ml = obj.GetMeasList(iDataBlk);
-                for ii=1:length(ich)
+                for ii=1:length(ich0)
                     k = find(ml(:,1)==iSrc(ii) & ml(:,2)==iDet(ii));
                     if ~isempty(k)
-                        iDataBlks = [iDataBlks; iDataBlk];                        
-                        ich(ii) = k(1);
+                        iDataBlks = [iDataBlks; iDataBlk];
+                        ich{iDataBlk} = [ich{iDataBlk}, k(1)];
                     end
                 end
             end

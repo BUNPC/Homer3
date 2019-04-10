@@ -223,6 +223,14 @@ end
 MapCondition();
 DisplayData(handles);
 
+if length(plotprobe.y)>1
+    msg{1} = sprintf('Warning: Data in this plot probe uses different Y scales for different data blocks ');
+    msg{2} = sprintf('for which a single scale has not yet been implemented. A single scale for mutiple data blocks ');
+    msg{3} = sprintf('will be implemented in a future release. Note that single block data sets are ');
+    msg{4} = sprintf('unaffected by this issue; i.e., all data from all channels are plotted using the same scale.');
+    MessageBox([msg{:}], 'Feature Not Yet Fully Implemented');
+    return;
+end
 
 
 % ----------------------------------------------------------------------

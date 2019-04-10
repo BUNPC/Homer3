@@ -169,7 +169,7 @@ classdef SubjClass < TreeNodeClass
             % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
             % all runs. Use smallest tHRF as the common one.
             for iRun = 1:nRun
-                for iDataBlk = length(tHRF_common)
+                for iDataBlk = 1:length(tHRF_common)
                     r(iRun).procStream.output.SettHRFCommon(tHRF_common{iDataBlk}, r(iRun).name, r(iRun).type, iDataBlk);
                 end
             end            

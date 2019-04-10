@@ -147,8 +147,13 @@ classdef ProcInputClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function tIncMan = GetTincMan(obj)
-             tIncMan = obj.tIncMan;
+        function tIncMan = GetTincMan(obj, iBlk)
+            if ~exist('iBlk','var')
+                iBlk=1;
+            end
+            
+            % TBD: need to implement this
+            tIncMan = obj.tIncMan;
         end
         
                 

@@ -63,36 +63,36 @@ classdef ProcResultClass < handle
                     end
                 end
                 if ~isempty(obj.dodAvgStd)
-                    if isa(obj.dodAvgStd(iDataBlk), 'DataClass')
-                        obj.dodAvgStd.TruncateTpts(abs(d));
+                    if isa(obj.dodAvgStd, 'DataClass')
+                        obj.dodAvgStd(iDataBlk).TruncateTpts(abs(d));
                     else
                         obj.dodAvgStd(n+1:m,:,:) = [];
                     end
                 end
                 if ~isempty(obj.dodSum2)
-                    if isa(obj.dodSum2(iDataBlk), 'DataClass')
-                        obj.dodSum2.TruncateTpts(abs(d));
+                    if isa(obj.dodSum2, 'DataClass')
+                        obj.dodSum2(iDataBlk).TruncateTpts(abs(d));
                     else
                         obj.dodSum2(n+1:m,:,:) = [];
                     end
                 end
                 if ~isempty(obj.dcAvg)
-                    if isa(obj.dcAvg(iDataBlk), 'DataClass')
-                        obj.dcAvg.TruncateTpts(abs(d));
+                    if isa(obj.dcAvg, 'DataClass')
+                        obj.dcAvg(iDataBlk).TruncateTpts(abs(d));
                     else
                         obj.dcAvg(n+1:m,:,:,:) = [];
                     end
                 end
                 if ~isempty(obj.dcAvgStd)
-                    if isa(obj.dcAvgStd(iDataBlk), 'DataClass')
-                        obj.dcAvgStd.TruncateTpts(abs(d));
+                    if isa(obj.dcAvgStd, 'DataClass')
+                        obj.dcAvgStd(iDataBlk).TruncateTpts(abs(d));
                     else
                         obj.dcAvgStd(n+1:m,:,:) = [];
                     end
                 end
                 if ~isempty(obj.dcSum2)
-                    if isa(obj.dcSum2(iDataBlk), 'DataClass')
-                        obj.dcSum2.TruncateTpts(abs(d));
+                    if isa(obj.dcSum2, 'DataClass')
+                        obj.dcSum2(iDataBlk).TruncateTpts(abs(d));
                     else
                         obj.dcSum2(n+1:m,:,:,:) = [];
                     end
@@ -151,6 +151,7 @@ classdef ProcResultClass < handle
             obj.tHRF = t;
         end
         
+        
         % ----------------------------------------------------------------------------------
         function t = GetTHRF(obj, iDataBlk)
             t = [];
@@ -158,12 +159,10 @@ classdef ProcResultClass < handle
                 iDataBlk = 1;
             end
             
-            if isempty(obj.tHRF)
-                if isa(obj.dcAvg, 'DataClass') && ~isempty(obj.dcAvg)
-                    t = obj.dcAvg(iDataBlk).GetT;
-                elseif isa(obj.dodAvg, 'DataClass') && ~isempty(obj.dodAvg)
-                    t = obj.dodAvg(iDataBlk).GetT;
-                end
+            if ~isempty(obj.dcAvg) && isa(obj.dcAvg, 'DataClass')
+                t = obj.dcAvg(iDataBlk).GetT;
+            elseif ~isempty(obj.dodAvg) && isa(obj.dodAvg, 'DataClass')
+                t = obj.dodAvg(iDataBlk).GetT;            
             else
                 t = obj.tHRF;
             end
@@ -351,10 +350,14 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function val = GetTincAuto(obj)
-            val = [];
+        function val = GetTincAuto(obj, iBlk)
+            val = {};
             if isproperty(obj.misc, 'tIncAuto')
-                val = obj.misc.tIncAuto;
+                if iscell(obj.misc.tIncAuto)
+                    val = obj.misc.tIncAuto{iBlk};
+                else
+                    val = obj.misc.tIncAuto;
+                end
             end
         end
        

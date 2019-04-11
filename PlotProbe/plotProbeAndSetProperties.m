@@ -1,19 +1,19 @@
-function plotProbeAndSetProperties(handles, iDataBlk)
+function plotProbeAndSetProperties(handles, iBlk)
 global plotprobe
 
-if ~exist('iDataBlk','var') || isempty(iDataBlk)
-    iDataBlk=1;
+if ~exist('iBlk','var') || isempty(iBlk)
+    iBlk=1;
 end
 
-y        = plotprobe.y{iDataBlk};
-t        = plotprobe.t{iDataBlk};
+y        = plotprobe.y{iBlk};
+t        = plotprobe.t{iBlk};
 tMarkInt = plotprobe.tMarkInt;
 axScl    = plotprobe.axScl;
 tMarkAmp = plotprobe.tMarkAmp;
-ch       = plotprobe.dataTree.currElem.GetMeasList(iDataBlk);
+ch       = plotprobe.dataTree.currElem.GetMeasList(iBlk);
 SD       = plotprobe.dataTree.currElem.GetSDG();
 
 set(handles.textTimeMarkersAmpUnits, 'string',plotprobe.tMarkUnits);
 hData = plotProbe( y, t, SD, ch, [], axScl, tMarkInt, tMarkAmp );
-showHiddenObjs(iDataBlk, hData);
+showHiddenObjs(iBlk, hData);
 plotprobe.handles.data = [plotprobe.handles.data; hData];

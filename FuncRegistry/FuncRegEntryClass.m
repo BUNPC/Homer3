@@ -288,7 +288,8 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
             k1 = find(s=='.');
             k2 = find(s=='e');
             if ~isempty(k2)
-                fmt = '%e';
+                m = length(s(k1+1:k2-1));
+                fmt = sprintf('%%0.%de', m);                
             elseif ~isempty(k1)
                 m = length(s(k1+1:end));
                 fmt = sprintf('%%0.%df', m);

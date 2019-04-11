@@ -155,11 +155,11 @@ classdef TreeNodeClass < handle
     methods
                
         % ----------------------------------------------------------------------------------
-        function t = GetTHRF(obj, iDataBlk)
-            if ~exist('iDataBlk','var') || isempty(iDataBlk)
-                iDataBlk=1;
+        function t = GetTHRF(obj, iBlk)
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk=1;
             end
-            t = obj.procStream.output.GetTHRF(iDataBlk);
+            t = obj.procStream.output.GetTHRF(iBlk);
         end
         
         
@@ -170,25 +170,25 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function dod = GetDod(obj, iDataBlk)
-            if ~exist('iDataBlk','var') || isempty(iDataBlk)
-                iDataBlk=1;
+        function dod = GetDod(obj, iBlk)
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk=1;
             end
-            dod = obj.procStream.output.GetDataTimeCourse('dod',iDataBlk);
+            dod = obj.procStream.output.GetDataTimeCourse('dod',iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function dc = GetDc(obj, iDataBlk)
-            if ~exist('iDataBlk','var') || isempty(iDataBlk)
-                iDataBlk=1;
+        function dc = GetDc(obj, iBlk)
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk=1;
             end
-            dc = obj.procStream.output.GetDataTimeCourse('dc',iDataBlk);
+            dc = obj.procStream.output.GetDataTimeCourse('dc',iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function dodAvg = GetDodAvg(obj, condition, iDataBlk)
+        function dodAvg = GetDodAvg(obj, condition, iBlk)
             if ~exist('condition','var') || isempty(condition)
                 icond = 1:length(obj.GetConditions());
             elseif ischar(condition)
@@ -196,15 +196,15 @@ classdef TreeNodeClass < handle
             else
                 icond = condition;
             end
-            if ~exist('iDataBlk','var') || isempty(iDataBlk)
-                iDataBlk=1;
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk=1;
             end
-            dodAvg = obj.procStream.output.GetDodAvg('dodAvg', icond, iDataBlk);
+            dodAvg = obj.procStream.output.GetDodAvg('dodAvg', icond, iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function dcAvg = GetDcAvg(obj, condition, iDataBlk)
+        function dcAvg = GetDcAvg(obj, condition, iBlk)
             if ~exist('condition','var') || isempty(condition)
                 icond = 1:length(obj.GetConditions());
             elseif ischar(condition)
@@ -212,58 +212,58 @@ classdef TreeNodeClass < handle
             else
                 icond = condition;
             end
-            if ~exist('iDataBlk','var') || isempty(iDataBlk)
-                iDataBlk=1;
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk=1;
             end
-            dcAvg = obj.procStream.output.GetDcAvg('dcAvg', icond, iDataBlk);
+            dcAvg = obj.procStream.output.GetDcAvg('dcAvg', icond, iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function dodAvgStd = GetDodAvgStd(obj, condition, iDataBlk)
+        function dodAvgStd = GetDodAvgStd(obj, condition, iBlk)
             if ~exist('condition','var') || isempty(condition)
                 condition = 1:length(obj.GetConditions());
             end
-            if ~exist('iDataBlk','var') || isempty(iDataBlk)
-                iDataBlk=1;
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk=1;
             end
-            dodAvgStd = obj.procStream.output.GetDodAvg('dodAvgStd', condition, iDataBlk);
+            dodAvgStd = obj.procStream.output.GetDodAvg('dodAvgStd', condition, iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function dcAvgStd = GetDcAvgStd(obj, condition, iDataBlk)
+        function dcAvgStd = GetDcAvgStd(obj, condition, iBlk)
             if ~exist('condition','var') || isempty(condition)
                 condition = 1:length(obj.GetConditions());
             end
-            if ~exist('iDataBlk','var') || isempty(iDataBlk)
-                iDataBlk=1;
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk=1;
             end
-            dcAvgStd = obj.procStream.output.GetDcAvg('dcAvgStd', condition, iDataBlk);
+            dcAvgStd = obj.procStream.output.GetDcAvg('dcAvgStd', condition, iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function dodSum2 = GetDodSum2(obj, condition, iDataBlk)
+        function dodSum2 = GetDodSum2(obj, condition, iBlk)
             if ~exist('condition','var') || isempty(condition)
                 condition = 1:length(obj.GetConditions());
             end
-            if ~exist('iDataBlk','var') || isempty(iDataBlk)
-                iDataBlk=1;
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk=1;
             end
-            dodSum2 = obj.procStream.output.GetDodSum2('dodSum2', condition, iDataBlk);
+            dodSum2 = obj.procStream.output.GetDodSum2('dodSum2', condition, iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function dcSum2 = GetDcSum2(obj, condition, iDataBlk)
+        function dcSum2 = GetDcSum2(obj, condition, iBlk)
             if ~exist('condition','var') || isempty(condition)
                 condition = 1:length(obj.GetConditions());
             end
-            if ~exist('iDataBlk','var') || isempty(iDataBlk)
-                iDataBlk=1;
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk=1;
             end
-            dcSum2 = obj.procStream.output.GetDcSum2('dcSum2', condition, iDataBlk);
+            dcSum2 = obj.procStream.output.GetDcSum2('dcSum2', condition, iBlk);
         end
         
         
@@ -429,25 +429,25 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function d = GetDataMatrix(obj, iDataBlk)
+        function d = GetDataMatrix(obj, iBlk)
             d = [];
         end
 
         
         % ----------------------------------------------------------------------------------
-        function t = GetTime(obj, iDataBlk)
+        function t = GetTime(obj, iBlk)
             t = [];
         end
 
         
         % ----------------------------------------------------------------------------------
-        function t = GetTincAuto(obj, iDataBlk)
+        function t = GetTincAuto(obj, iBlk)
             t = [];
         end
         
         
         % ----------------------------------------------------------------------------------
-        function t = GetTincMan(obj, iDataBlk)
+        function t = GetTincMan(obj, iBlk)
             t = [];
         end
 

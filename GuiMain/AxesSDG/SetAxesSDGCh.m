@@ -11,8 +11,8 @@ SD       = currElem.GetSDG();
 
 nDataBlks = currElem.GetDataBlocksNum();
 ml = [];
-for iDataBlk = 1:nDataBlks
-    ch = currElem.GetMeasList(iDataBlk);
+for iBlk = 1:nDataBlks
+    ch = currElem.GetMeasList(iBlk);
     ml = [ml; ch.MeasList];
 end
 

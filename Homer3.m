@@ -137,7 +137,7 @@ Homer3_EnableDisableGUI(handles,'on');
 
 % Display data from currently selected processing element
 DisplayFiles(handles);
-DisplayData(handles);
+DisplayData(handles, hObject);
 
 hmr.childguis(1) = ChildGuiClass('procStreamGUI');
 hmr.childguis(2) = ChildGuiClass('stimGUI');
@@ -146,6 +146,7 @@ hmr.childguis(4) = ChildGuiClass('ProcStreamOptionsGUI');
 
 hmr.handles = handles;
 hmr.Update = @Update;
+
 
 
 % --------------------------------------------------------------------
@@ -245,10 +246,9 @@ listboxFiles_Callback([], [1,1,1], handles)
 function eventdata = uipanelProcessingType_SelectionChangeFcn(hObject, eventdata, handles)
 global hmr
 
-if isempty(hObject)    
+if isempty(hObject)
     return;
 end
-
 proclevel = getProclevel(handles);
 iFile = get(handles.listboxFiles,'value');
 [iGroup,iSubj,iRun] = hmr.dataTree.MapFile2Group(iFile);
@@ -279,17 +279,18 @@ switch(proclevel)
         hmr.dataTree.SetCurrElem(iGroup, iSubj, iRun);
 end
 listboxFiles_Callback([], [iGroup,iSubj,iRun], handles)
-UpdateCondPopupmenu(handles);
-DisplayData(handles);
-UpdateChildGuis(handles);
- 
+DisplayData(handles, hObject);
+
+
 
 % --------------------------------------------------------------------
-function listboxFiles_Callback(hObject, eventdata, handles)
+function listboxFiles_Callback(hObject0, eventdata, handles)
 global hmr
 
-if isempty(hObject)    
+if isempty(hObject0)    
     hObject = handles.listboxFiles;
+else
+    hObject = hObject0;
 end
 
 iFile = get(hObject,'value');
@@ -322,11 +323,7 @@ elseif ~isempty(eventdata)
     set(hObject,'value', iFile);
     
 end
-
-UpdateCondPopupmenu(handles);
-DisplayData(handles);
-UpdateChildGuis(handles);
-
+DisplayData(handles, hObject0);
 
 
 % --------------------------------------------------------------------
@@ -335,10 +332,12 @@ global hmr
 if ~ishandles(hObject)
     return;
 end
+% Set the display status to pending. In order to avoid redisplaying 
+% in a single callback thread in functions called from here which 
+% also call DisplayData
 hmr.dataTree.CalcCurrElem();
 hmr.dataTree.SaveCurrElem();
-DisplayData(handles);
-UpdateChildGuis(handles);
+DisplayData(handles, hObject);
 
 
 
@@ -370,16 +369,12 @@ elseif strcmp(get(hObject, 'tag'), 'radiobuttonPlotConc') && isempty(hmr.dataTre
         set(handles.checkboxPlotHRF, 'value',0);
     end
 end
-
-DisplayData(handles);
-UpdateChildGuis(handles);
-UpdateDatatypePanel(handles);
+DisplayData(handles, hObject);
 
 
 
 % --------------------------------------------------------------------
 function UpdateDatatypePanel(handles)
-
 global hmr
 datatype   = getDatatype(handles);
 if datatype == hmr.buttonVals.RAW || datatype == hmr.buttonVals.RAW_HRF
@@ -401,8 +396,7 @@ global hmr
 if ~ishandles(hObject)
     return;
 end
-
-if get(hObject, 'value')==1 
+if get(hObject, 'value')==1
     if ~isempty(hmr.dataTree.currElem.GetDcAvg())
         set(handles.radiobuttonPlotConc, 'enable', 'on');
         set(handles.radiobuttonPlotConc, 'value', 1);
@@ -411,11 +405,7 @@ if get(hObject, 'value')==1
         set(handles.radiobuttonPlotOD, 'value', 1);
     end
 end
-
-DisplayData(handles);
-UpdateChildGuis(handles);
-UpdateDatatypePanel(handles);
-
+DisplayData(handles, hObject);
 
 
 % --------------------------------------------------------------------
@@ -434,7 +424,6 @@ global hmr
 if ~ishandles(hObject)
     return;
 end
-
 dataTree = hmr.dataTree;
 if dataTree.IsEmpty()
     return;
@@ -444,7 +433,7 @@ end
 SetAxesDataCh();
 
 % Update the displays of the guiControls and axesSDG axes
-DisplayData(handles);
+DisplayData(handles, hObject);
 
 
 
@@ -453,10 +442,8 @@ function [eventdata, handles] = popupmenuConditions_Callback(hObject, eventdata,
 if ~ishandles(hObject)
     return;
 end
-
 GetAxesDataCondition();
-DisplayData(handles);
-UpdateChildGuis(handles);
+DisplayData(handles, hObject);
 
 
 
@@ -465,9 +452,8 @@ function [eventdata, handles] = listboxPlotWavelength_Callback(hObject, eventdat
 if ~ishandles(hObject)
     return;
 end
-
 GetAxesDataWl();
-DisplayData(handles);
+DisplayData(handles, hObject);
 
 
 
@@ -476,10 +462,8 @@ function [eventdata, handles] = listboxPlotConc_Callback(hObject, eventdata, han
 if ~ishandles(hObject)
     return;
 end
-
 GetAxesDataHbType();
-DisplayData(handles);
-
+DisplayData(handles, hObject);
 
 
 
@@ -522,11 +506,10 @@ global hmr
 if ~ishandles(hObject)
     return;
 end
-
 dataTree = hmr.dataTree;
 dataTree.currElem.Reset();
 dataTree.currElem.Save();
-DisplayData(handles);
+DisplayData(handles, hObject);
 
 
 % --------------------------------------------------------------------
@@ -589,7 +572,6 @@ global hmr
 if ~ishandles(hObject)
     return;
 end
-
 hmr.dataTree.currElem.Save();
 
 
@@ -611,7 +593,7 @@ if strcmp(get(hObject, 'checked'), 'on')
 elseif strcmp(get(hObject, 'checked'), 'off')
     hmr.guiControls.showStdErr = false;
 end
-DisplayData(handles);
+DisplayData(handles, hObject);
 
 
 
@@ -698,10 +680,21 @@ for ii=1:length(hmr.childguis)
 end
 
 
-
 % ----------------------------------------------------------------------------------
-function DisplayData(handles)
+function DisplayData(handles, hObject)
 global hmr
+
+
+% Some callbacks which call DisplayData, serve double duty as called functions 
+% from other callbacks which also call DisplayData. To avoid double or
+% triple redisplaying in a single thread, exit DisplayData if hObject is
+% not a handle. 
+if ~exist('hObject','var')
+    hObject=[];
+end
+if ~ishandles(hObject)
+    return;
+end
 
 dataTree = hmr.dataTree;
 procElem = dataTree.currElem;
@@ -732,15 +725,15 @@ condition = find(procElem.CondName2Group == condition);
 [iDataBlks, iCh] = procElem.GetDataBlocksIdxs(iCh0);
 fprintf('Displaying channels [%s] in data blocks [%s]\n', num2str(iCh0(:)'), num2str(iDataBlks(:)'))
 iColor = 1;
-for iDataBlk = iDataBlks
+for iBlk = iDataBlks
 
     if isempty(iCh)
         iChBlk  = [];
     else
-        iChBlk  = iCh{iDataBlk};
+        iChBlk  = iCh{iBlk};
     end
     
-    ch      = procElem.GetMeasList(iDataBlk);
+    ch      = procElem.GetMeasList(iBlk);
     chVis   = find(ch.MeasListVis(iChBlk)==1);
     d       = [];
     dStd    = [];
@@ -749,29 +742,29 @@ for iDataBlk = iDataBlks
     
     % Get plot data from dataTree
     if datatype == hmr.buttonVals.RAW
-        d = procElem.GetDataMatrix(iDataBlk);
-        t = procElem.GetTime(iDataBlk);
+        d = procElem.GetDataMatrix(iBlk);
+        t = procElem.GetTime(iBlk);
     elseif datatype == hmr.buttonVals.OD
-        d = procElem.GetDod(iDataBlk);
-        t = procElem.GetTime(iDataBlk);
+        d = procElem.GetDod(iBlk);
+        t = procElem.GetTime(iBlk);
     elseif datatype == hmr.buttonVals.CONC
-        d = procElem.GetDc(iDataBlk);
-        t = procElem.GetTime(iDataBlk);
+        d = procElem.GetDc(iBlk);
+        t = procElem.GetTime(iBlk);
     elseif datatype == hmr.buttonVals.OD_HRF
-        d = procElem.GetDodAvg([], iDataBlk);
-        t = procElem.GetTHRF(iDataBlk);
+        d = procElem.GetDodAvg([], iBlk);
+        t = procElem.GetTHRF(iBlk);
         if showStdErr
-            dStd = procElem.GetDodAvgStd(iDataBlk);
+            dStd = procElem.GetDodAvgStd(iBlk);
         end
         nTrials = procElem.GetNtrials();
         if isempty(condition)
             return;
         end
     elseif datatype == hmr.buttonVals.CONC_HRF
-        d = procElem.GetDcAvg([], iDataBlk);
-        t = procElem.GetTHRF(iDataBlk);
+        d = procElem.GetDcAvg([], iBlk);
+        t = procElem.GetTHRF(iBlk);
         if showStdErr
-            dStd = procElem.GetDcAvgStd([], iDataBlk) * sclConc;
+            dStd = procElem.GetDcAvgStd([], iBlk) * sclConc;
         end
         nTrials = procElem.GetNtrials();
         if isempty(condition)
@@ -822,6 +815,9 @@ end
 DisplayAxesSDG();
 DisplayExcludedTime(handles, datatype);
 DisplayStim(handles);
+UpdateCondPopupmenu(handles);
+UpdateDatatypePanel(handles);
+UpdateChildGuis(handles);
 
 
 
@@ -926,11 +922,12 @@ function Update()
 global hmr
 
 DisplayData(hmr.handles);
-UpdateCondPopupmenu(hmr.handles);
+
 
 
 % --------------------------------------------------------------------
 function menuItemResetGroupFolder_Callback(hObject, eventdata, handles)
 
 resetGroupFolder();
+
 

@@ -101,12 +101,22 @@ classdef ProcInputClass < handle
 
         
         % ----------------------------------------------------------------------------------
-        function var = GetVar(obj, varname)
+        function var = GetVar(obj, varname, iBlk)
             var = [];
+            if exist('iBlk','var') && isempty(iBlk)
+                iBlk=1;
+            end
             if isproperty(obj, varname)
                 eval(sprintf('var = obj.%s;', varname));
             elseif isproperty(obj.misc, varname)
                 eval(sprintf('var = obj.misc.%s;', varname));
+            end            
+            if ~isempty(var) && exist('iBlk','var')
+                if iscell(var)
+                    var = var{iBlk};
+                else
+                    var = var(iBlk);
+                end
             end
         end
         
@@ -158,7 +168,7 @@ classdef ProcInputClass < handle
         
                 
         % ----------------------------------------------------------------------------------
-        function mlActMan = GetMeasListActMan(obj, iDataBlk)
+        function mlActMan = GetMeasListActMan(obj, iBlk)
             mlActMan = {};            
         end
         

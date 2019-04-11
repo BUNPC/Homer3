@@ -1,4 +1,3 @@
-function [yAvgOut, yAvgStdOut, nTrials] = hmrS_BlockAvg(yAvgRuns, yAvgStdRuns, ySum2Runs, mlActRuns, nTrialsRuns, CondName2Run)
 % SYNTAX:
 % [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg(yAvgRuns, yAvgStdRuns, ySum2Runs, mlActRuns, nTrialsRuns, CondName2Run)
 %
@@ -29,51 +28,58 @@ function [yAvgOut, yAvgStdOut, nTrials] = hmrS_BlockAvg(yAvgRuns, yAvgStdRuns, y
 % Block_Average_on_Subject_Delta_OD_Data:       [dodAvg, dodAvgStd, nTrials]  = hmrS_BlockAvg(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, mlActRuns, nTrialsRuns, CondName2Run)
 %
 
+function [yAvgOut, yAvgStdOut, nTrials] = hmrS_BlockAvg(yAvgRuns, yAvgStdRuns, ySum2Runs, mlActRuns, nTrialsRuns, CondName2Run)
+
 yAvgOut    = DataClass().empty();
 yAvgStdOut = DataClass().empty();
 
 nDataBlks = length(yAvgRuns{1});
 nTrials_tot = cell(nDataBlks,1);
 
-for kk = 1:nDataBlks
+for iBlk = 1:nDataBlks
     
     grp1 = [];
     
     for iRun = 1:length(yAvgRuns)
             
-        yAvgOut(kk) = DataClass();
-        yAvgStdOut(kk) = DataClass();
+        yAvgOut(iBlk) = DataClass();
+        yAvgStdOut(iBlk) = DataClass();
         
-        tHRF      = yAvgRuns{iRun}(kk).GetT();
-        yAvg      = yAvgRuns{iRun}(kk).GetDataMatrix();
-        yAvgStd   = yAvgStdRuns{iRun}(kk).GetDataMatrix();
-        ySum2     = ySum2Runs{iRun}(kk).GetDataMatrix();
+        tHRF      = yAvgRuns{iRun}(iBlk).GetT();
+        yAvg      = yAvgRuns{iRun}(iBlk).GetDataMatrix();
+        yAvgStd   = yAvgStdRuns{iRun}(iBlk).GetDataMatrix();
+        ySum2     = ySum2Runs{iRun}(iBlk).GetDataMatrix();
         nTrials   = nTrialsRuns{iRun};
-        datatype  = unique(yAvgRuns{iRun}(kk).GetDataTypeLabel());
+        datatype  = unique(yAvgRuns{iRun}(iBlk).GetDataTypeLabel());
         if datatype(1)==6 || datatype(1)==7 || datatype(1)==8
-            ml    = yAvgRuns{iRun}(kk).GetMeasListSrcDetPairs();
+            ml    = yAvgRuns{iRun}(iBlk).GetMeasListSrcDetPairs();
         elseif datatype(1)==1
-            ml    = yAvgRuns{iRun}(kk).GetMeasList();
+            ml    = yAvgRuns{iRun}(iBlk).GetMeasList();
         end
-        
-        % TBD: Need to implment mlAct in the near future. For now we hard
-        % code all channels to active. 
-        mlAct = ones(size(ml,1),1);
-        
+        if isempty(mlActRuns)
+            mlAct = ones(size(ml,1),1);
+        else
+            if isempty(mlActRuns{iRun})
+                mlAct = ones(size(ml,1),1);
+            else
+                mlAct = mlActRuns{iRun}{iBlk}(1:size(ml,1));
+            end
+        end
+                
         if isempty(yAvg)
             continue;
         end
         
         nCond = size(CondName2Run,2);
-        yAvgOut(kk).SetT(tHRF);
-        yAvgStdOut(kk).SetT(tHRF);
+        yAvgOut(iBlk).SetT(tHRF);
+        yAvgStdOut(iBlk).SetT(tHRF);
         
         if datatype(1)==1
             
             if isempty(grp1)
                 grp1 = zeros(size(yAvg,1), size(yAvg,2), nCond);
                 grp1Sum2 = zeros(size(yAvg,1), size(yAvg,2), nCond);
-                nTrials_tot{kk} = zeros(size(yAvg,2), nCond);
+                nTrials_tot{iBlk} = zeros(size(yAvg,2), nCond);
             end
             
             lstChInc = find(mlAct==1);
@@ -89,12 +95,12 @@ for kk = 1:nDataBlks
                     if iRun==1
                         grp1(:,lstChInc,iC) = yAvg(:,lstChInc,iS) * nT;
                         grp1Sum2(:,lstChInc,iC) = ySum2(:,lstChInc,iS);
-                        nTrials_tot{kk}(lstChInc,iC) = nT;
+                        nTrials_tot{iBlk}(lstChInc,iC) = nT;
                     else
                         for iCh=1:length(lstChInc) %size(yAvg,2)
                             grp1(:,lstChInc(iCh),iC) = grp1(:,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,lstChInc(iCh),iS),tHRF') * nT;
                             grp1Sum2(:,lstChInc(iCh),iC) = grp1Sum2(:,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,lstChInc(iCh),iS),tHRF');
-                            nTrials_tot{kk}(lstChInc(iCh),iC) = nTrials_tot{kk}(lstChInc(iCh),iC) + nT;
+                            nTrials_tot{iBlk}(lstChInc(iCh),iC) = nTrials_tot{iBlk}(lstChInc(iCh),iC) + nT;
                         end
                     end
                 end
@@ -103,14 +109,14 @@ for kk = 1:nDataBlks
             if ~isempty(grp1)
                 for iC = 1:size(grp1,3)
                     for iCh = 1:size(grp1,2)
-                        yAvg(:,iCh,iC) = grp1(:,iCh,iC) / nTrials_tot{kk}(iCh,iC);
+                        yAvg(:,iCh,iC) = grp1(:,iCh,iC) / nTrials_tot{iBlk}(iCh,iC);
                         
                         % We want to distinguish between no trials and 1 trial:
                         % If there are no trials, we have no HRF data and no std which
                         % the first case will calculate as opposed to one trial (2nd case)
                         % where we have all zeros.
-                        if(nTrials_tot{kk}(iCh,iC)~=1)
-                            yAvgStd(:,iCh,iC) = ( (1/(nTrials_tot{kk}(iCh,iC)-1))*grp1Sum2(:,iCh,iC) - (nTrials_tot{kk}(iCh,iC)/(nTrials_tot{kk}(iCh,iC)-1))*(grp1(:,iCh,iC) / nTrials_tot{kk}(iCh,iC)).^2).^0.5 ;
+                        if(nTrials_tot{iBlk}(iCh,iC)~=1)
+                            yAvgStd(:,iCh,iC) = ( (1/(nTrials_tot{iBlk}(iCh,iC)-1))*grp1Sum2(:,iCh,iC) - (nTrials_tot{iBlk}(iCh,iC)/(nTrials_tot{iBlk}(iCh,iC)-1))*(grp1(:,iCh,iC) / nTrials_tot{iBlk}(iCh,iC)).^2).^0.5 ;
                         else
                             yAvgStd(:,iCh,iC) = zeros(size(grp1Sum2(:,iCh,iC)));
                         end
@@ -118,16 +124,16 @@ for kk = 1:nDataBlks
                         %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages. 
                         %%%% Now we can set channel descriptors for avg and standard deviation
                         if iRun == length(yAvgRuns)
-                            yAvgOut(kk).AddChannelDod(ml(iCh,1), ml(iCh,2), ml(iCh,4), iC);
-                            yAvgStdOut(kk).AddChannelDod(ml(iCh,1), ml(iCh,2), ml(iCh,4), iC);
+                            yAvgOut(iBlk).AddChannelDod(ml(iCh,1), ml(iCh,2), ml(iCh,4), iC);
+                            yAvgStdOut(iBlk).AddChannelDod(ml(iCh,1), ml(iCh,2), ml(iCh,4), iC);
                         end
                     end
                     
                     %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages.
                     %%%% Now we can set channel descriptors for avg and standard deviation
                     if iRun == length(yAvgRuns)
-                        yAvgOut(kk).AppendD(yAvg(:,:,iC));
-                        yAvgStdOut(kk).AppendD(yAvgStd(:,:,iC));
+                        yAvgOut(iBlk).AppendD(yAvg(:,:,iC));
+                        yAvgStdOut(iBlk).AppendD(yAvgStd(:,:,iC));
                     end
                 end
             end
@@ -137,7 +143,7 @@ for kk = 1:nDataBlks
             if isempty(grp1)
                 grp1 = zeros(size(yAvg,1), size(yAvg,2), size(yAvg,3), nCond);
                 grp1Sum2 = zeros(size(yAvg,1), size(yAvg,2), size(yAvg,3), nCond);
-                nTrials_tot{kk} = zeros(size(yAvg,3), nCond);
+                nTrials_tot{iBlk} = zeros(size(yAvg,3), nCond);
             end
             
             lstChInc = find(mlAct==1);
@@ -153,14 +159,14 @@ for kk = 1:nDataBlks
                     if iRun==1
                         grp1(:,:,lstChInc,iC) = yAvg(:,:,lstChInc,iS) * nT;
                         grp1Sum2(:,:,lstChInc,iC) = ySum2(:,:,lstChInc,iS);
-                        nTrials_tot{kk}(lstChInc,iC) = nT;
+                        nTrials_tot{iBlk}(lstChInc,iC) = nT;
                     else
                         for iCh=1:length(lstChInc) %size(yAvg,3)
                             for iHb=1:size(yAvg,2)
                                 grp1(:,iHb,lstChInc(iCh),iC) = grp1(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,iHb,lstChInc(iCh),iS),tHRF') * nT;
                                 grp1Sum2(:,iHb,lstChInc(iCh),iC) = grp1Sum2(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,iHb,lstChInc(iCh),iS),tHRF');
                             end
-                            nTrials_tot{kk}(lstChInc(iCh),iC) = nTrials_tot{kk}(lstChInc(iCh),iC) + nT;
+                            nTrials_tot{iBlk}(lstChInc(iCh),iC) = nTrials_tot{iBlk}(lstChInc(iCh),iC) + nT;
                         end
                     end
                 end
@@ -169,14 +175,14 @@ for kk = 1:nDataBlks
             if ~isempty(grp1)
                 for iC = 1:size(grp1,4)
                     for iCh = 1:size(grp1,3)
-                        yAvg(:,:,iCh,iC) = grp1(:,:,iCh,iC) / nTrials_tot{kk}(iCh,iC);
+                        yAvg(:,:,iCh,iC) = grp1(:,:,iCh,iC) / nTrials_tot{iBlk}(iCh,iC);
                         
                         % We want to distinguish between no trials and 1 trial:
                         % If there are no trials, we have no HRF data and no std which
                         % the first case will calculate as opposed to one trial (2nd case)
                         % where we have all zeros.
-                        if(nTrials_tot{kk}(iCh,iC)~=1)
-                            yAvgStd(:,:,iCh,iC) = ( (1/(nTrials_tot{kk}(iCh,iC)-1))*grp1Sum2(:,:,iCh,iC) - (nTrials_tot{kk}(iCh,iC)/(nTrials_tot{kk}(iCh,iC)-1))*(grp1(:,:,iCh,iC) / nTrials_tot{kk}(iCh,iC)).^2).^0.5 ;
+                        if(nTrials_tot{iBlk}(iCh,iC)~=1)
+                            yAvgStd(:,:,iCh,iC) = ( (1/(nTrials_tot{iBlk}(iCh,iC)-1))*grp1Sum2(:,:,iCh,iC) - (nTrials_tot{iBlk}(iCh,iC)/(nTrials_tot{iBlk}(iCh,iC)-1))*(grp1(:,:,iCh,iC) / nTrials_tot{iBlk}(iCh,iC)).^2).^0.5 ;
                         else
                             yAvgStd(:,:,iCh,iC) = zeros(size(grp1Sum2(:,:,iCh,iC)));
                         end
@@ -184,20 +190,20 @@ for kk = 1:nDataBlks
                         %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages. 
                         %%%% Now we can set channel descriptors for avg and standard deviation
                         if iRun == length(yAvgRuns)
-                            yAvgOut(kk).AddChannelDc(ml(iCh,1), ml(iCh,2), 6, iC);
-                            yAvgOut(kk).AddChannelDc(ml(iCh,1), ml(iCh,2), 7, iC);
-                            yAvgOut(kk).AddChannelDc(ml(iCh,1), ml(iCh,2), 8, iC);
-                            yAvgStdOut(kk).AddChannelDc(ml(iCh,1), ml(iCh,2), 6, iC);
-                            yAvgStdOut(kk).AddChannelDc(ml(iCh,1), ml(iCh,2), 7, iC);
-                            yAvgStdOut(kk).AddChannelDc(ml(iCh,1), ml(iCh,2), 8, iC);
+                            yAvgOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 6, iC);
+                            yAvgOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 7, iC);
+                            yAvgOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 8, iC);
+                            yAvgStdOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 6, iC);
+                            yAvgStdOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 7, iC);
+                            yAvgStdOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 8, iC);
                         end
                     end
                     
                     %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages.
                     %%%% Now we can set channel descriptors for avg and standard deviation
                     if iRun == length(yAvgRuns)
-                        yAvgOut(kk).AppendD(yAvg(:,:,:,iC));
-                        yAvgStdOut(kk).AppendD(yAvgStd(:,:,:,iC));
+                        yAvgOut(iBlk).AppendD(yAvg(:,:,:,iC));
+                        yAvgStdOut(iBlk).AppendD(yAvgStd(:,:,:,iC));
                     end
                 end                
             end            

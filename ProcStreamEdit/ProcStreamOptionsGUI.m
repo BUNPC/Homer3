@@ -60,7 +60,6 @@ procStreamOptions.handles = [];
 
 
 
-
 % ----------------------------------------------------------------------
 function ParseArgs(args)
 global procStreamOptions
@@ -183,10 +182,7 @@ global procStreamOptions
 DEBUG = 0;
 hObject = handles.figure;
 
-hc = get(hObject, 'children');
-if ishandles(hc)
-    delete(hc);
-end
+ResetDisplay(handles);
 
 ps = procStreamOptions.dataTree.currElem.procStream;
 
@@ -206,7 +202,7 @@ if nFcalls==0
 end
 
 % Need to make sure position data is saved in pixel units at end of function
-% to as these are the units used to reposition GUI later if needed
+% as these are the units used to reposition GUI later if needed
 set(hObject, 'units','characters');
 
 if DEBUG
@@ -215,7 +211,7 @@ if DEBUG
     fgc = [0.80, 0.75, 0.95];
 else
     bgc = [0.94, 0.94, 0.94];
-    fgc = [0.00, 0.00, 0.00];    
+    fgc = [0.00, 0.00, 0.00];
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -230,27 +226,33 @@ fs = 1.5;
 a     = 2;
 Xsf   = ps.GetMaxCallNameLength()*fs;
 Xsp   = ps.GetMaxParamNameLength()*fs;
-Xse   = 15;
+Xse   = 20;
 Xsb   = 10;
 Xp1   = Xsf + a;
 Xp2   = Xp1 + a;
 Xp3   = Xp2 + Xsp;
 Xp4   = Xp3 + a;
 Xp5   = Xp4 + Xse;
-Xst   = Xsf + Xsp + Xse + Xsb + 4*a; % GUI width
+Xst   = Xsf + Xsp + Xse + Xsb + 4*a;                   % GUI width
 
 % Position/dimensions in the Y direction
 N       = nFcalls;
 m       = ps.GetParamNum();
 b       = 3;
-Ys      = 1*fs;                     % Function call entry height
+Ys      = 1*fs;                                       % Height of each function call
 yoffset = 2;
 Yst     = yoffset + ((N+1)*b) + Sigma(N+1, Ys, m);    % GUI height
 
 % Set GUI position/size
 set(hObject, 'position', [p(1), p(2), Xst, Yst]);
+
+% Set Exit button size and position
+SetExitButtonPosSize(handles, Ys);
+
+% Loop over all functions in proc stream and draw each one starting from the 
+% top of the gui going down
 h=[]; p=[];
-for k = 1:nFcalls    
+for k = 1:nFcalls
     Ypfk = Yst - (yoffset + k*b + Sigma(k, Ys, m));
     
     if DEBUG
@@ -268,6 +270,7 @@ for k = 1:nFcalls
                                     'BackgroundColor',bgc, 'ForegroundColor',fgc, ...
                                     'tooltipstring',fcalls(k).GetHelp());
     
+    % Draw parameter list names and corresponding edit boxes with the current values
     for j=1:fcalls(k).GetParamNum()
         Ypfkj = Yst - (yoffset + k*b + Sigma(k, Ys, m) + Ys*(j-1));
         
@@ -282,8 +285,7 @@ for k = 1:nFcalls
                                         'BackgroundColor',bgc, 'ForegroundColor',fgc, ...
                                         'tooltipstring', fcalls(k).GetParamHelp(j));
 
-        % Draw edit box for parameter j and fill it with the corresponding
-        % value
+        % Draw edit box for parameter j and fill it with the corresponding value
         p(end+1,:) = [Xp4, Ypfkj, Xse, Ys];
         eval( sprintf(' fcn = @(hObject,eventdata)ProcStreamOptionsGUI(''edit_Callback'',hObject,[%d %d],guidata(hObject));',k,j) );
         h(end+1,:) = uicontrol(hObject, 'style','edit', 'horizontalalignment','left', 'units','characters', 'position',p(end,:), ...
@@ -302,6 +304,8 @@ set(h, 'units','normalized');
 % set(hObject, 'units','pixels');
 setGuiFonts(hObject);
 figure(handles.figure);
+set(handles.pushbuttonExit, 'units','normalized');
+
 
 
 % ----------------------------------------------------------
@@ -346,7 +350,7 @@ close(hGui);
 
 
 % -------------------------------------------------------------------
-function [b, p] = guiOutsideScreenborders(hObject)
+function [b, p] = guiOutsideScreenBorders(hObject)
 
 b = [0, 0, 0, 0];
 units_orig = get(hObject,'units');
@@ -375,4 +379,37 @@ end
 set(hObject,'units',units_orig);
 
 
+
+% -------------------------------------------------------------------
+function pushbuttonExit_Callback(hObject, eventdata, handles)
+if ishandles(handles.figure)
+    delete(handles.figure);
+end
+
+
+
+% -------------------------------------------------------------------
+function ResetDisplay(handles)
+
+hc = get(handles.figure, 'children');
+for ii=1:length(hc)
+    if ishandles(hc(ii)) && hc(ii)~=handles.pushbuttonExit
+        delete(hc(ii));
+    end
+end
+
+
+
+% -------------------------------------------------------------------
+function SetExitButtonPosSize(handles, Ys)
+
+pf = get(handles.figure, 'position');
+
+set(handles.pushbuttonExit, 'units','characters');
+pB = get(handles.pushbuttonExit, 'position');
+factor = 1;
+Xp = pf(3)/2-pB(3)/2;
+Yb = Ys*factor;
+Ypb = pB(2)+(pB(4)-Ys*factor);
+set(handles.pushbuttonExit, 'position', [Xp, Ypb, pB(3), Yb]);
 

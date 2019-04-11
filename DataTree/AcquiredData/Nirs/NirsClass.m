@@ -225,13 +225,13 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
     methods
 
         % ---------------------------------------------------------
-        function t = GetTime(obj, iDataBlk)
+        function t = GetTime(obj, iBlk)
             t = obj.t;
         end
         
         
         % ---------------------------------------------------------
-        function datamat = GetDataMatrix(obj, iDataBlk)
+        function datamat = GetDataMatrix(obj, iBlk)
             datamat = obj.d;
         end
         
@@ -249,7 +249,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasList(obj, iDataBlk)
+        function ml = GetMeasList(obj, iBlk)
             ml = obj.SD.MeasList;
         end
         

@@ -1062,26 +1062,63 @@ classdef ProcStreamClass < handle
 
         
         % ----------------------------------------------------------------------------------
-        function var = GetVar(obj, varname)
-            var = obj.input.GetVar(varname);
+        function var = GetVar(obj, varname, iBlk)
+            if ~exist('iBlk','var')
+                var = obj.input.GetVar(varname);
+                if isempty(var)
+                    var = obj.output.GetVar(varname);
+                end
+            else
+                var = obj.input.GetVar(varname, iBlk);
+                if isempty(var)
+                    var = obj.output.GetVar(varname, iBlk);
+                end                
+            end
         end
         
         
         % ----------------------------------------------------------------------------------
-        function tIncMan = GetTincMan(obj, iDataBlk)
-            if ~exist('iDataBlk','var')
-                iDataBlk = [];
+        function tIncMan = GetTincMan(obj, iBlk)
+            if ~exist('iBlk','var')
+                iBlk = [];
             end
-            tIncMan = obj.input.GetTincMan(iDataBlk);
+            tIncMan = obj.input.GetVar('tIncMan', iBlk);
         end
         
 
         % ----------------------------------------------------------------------------------
-        function mlActMan = GetMeasListActMan(obj, iDataBlk)
-            if ~exist('iDataBlk','var')
-                iDataBlk = [];
+        function tIncAuto = GetTincAuto(obj, iBlk)
+            if ~exist('iBlk','var')
+                iBlk = [];
             end
-            mlActMan = obj.input.GetMeasListActMan(iDataBlk);
+            tIncAuto = obj.output.GetVar('tIncAuto', iBlk);
+        end
+        
+
+        % ----------------------------------------------------------------------------------
+        function mlActMan = GetMeasListActMan(obj, iBlk)
+            if ~exist('iBlk','var')
+                iBlk = [];
+            end
+            mlActMan = obj.input.GetVar('mlActMan',iBlk);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function mlActAuto = GetMeasListActAuto(obj, iBlk)
+            if ~exist('iBlk','var')
+                iBlk = [];
+            end
+            mlActAuto = obj.output.GetVar('mlActAuto',iBlk);
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function mlVis = GetMeasListVis(obj, iBlk)
+            if ~exist('iBlk','var')
+                iBlk = [];
+            end
+            mlVis = obj.input.GetVar('mlVis',iBlk);
         end
         
     end

@@ -68,8 +68,7 @@ for kk = 1:length(yAvgSubjs{1})
             continue;
         end
         
-        nCond = size(CondName2Subj,2);
-        
+        nCond = size(CondName2Subj,2);        
         yAvgOut(kk).SetT(tHRF);
         yAvgStdOut(kk).SetT(tHRF);
         

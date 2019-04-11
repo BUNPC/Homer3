@@ -217,29 +217,29 @@ classdef RunClass < TreeNodeClass
     methods
             
         % ----------------------------------------------------------------------------------
-        function t = GetTime(obj, iDataBlk)
+        function t = GetTime(obj, iBlk)
             if nargin==1
-                iDataBlk=1;
+                iBlk=1;
             end
-            t = obj.acquired.GetTime(iDataBlk);
+            t = obj.acquired.GetTime(iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function d = GetRawData(obj, iDataBlk)
+        function d = GetRawData(obj, iBlk)
             if nargin<2
-                iDataBlk = 1;
+                iBlk = 1;
             end
-            d = obj.acquired.GetDataMatrix(iDataBlk);
+            d = obj.acquired.GetDataMatrix(iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function d = GetDataMatrix(obj, iDataBlk)
+        function d = GetDataMatrix(obj, iBlk)
             if nargin<2
-                iDataBlk = 1;
+                iBlk = 1;
             end
-            d = obj.acquired.GetDataMatrix(iDataBlk);
+            d = obj.acquired.GetDataMatrix(iBlk);
         end
         
         
@@ -268,16 +268,26 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function ch = GetMeasList(obj, iDataBlk)
-            if ~exist('iDataBlk','var') || isempty(iDataBlk)
-                iDataBlk=1;
+        function ch = GetMeasList(obj, iBlk)
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk=1;
             end
-            ch                 = InitMeasLists();
+            ch                    = InitMeasLists();
             
-            ch.MeasList        = obj.acquired.GetMeasList(iDataBlk);
-            ch.MeasListVis     = ones(size(ch.MeasList,1), 1);
-            ch.MeasListActMan  = ones(size(ch.MeasList,1),1);
-            ch.MeasListActAuto = ones(size(ch.MeasList,1),1);
+            ch.MeasList        = obj.acquired.GetMeasList(iBlk);
+            ch.MeasListActMan  = obj.procStream.GetMeasListActMan(iBlk);
+            ch.MeasListActAuto = obj.procStream.GetMeasListActAuto(iBlk);
+            ch.MeasListVis     = obj.procStream.GetMeasListVis(iBlk);
+            
+            if isempty(ch.MeasListActMan)
+                ch.MeasListActMan  = ones(size(ch.MeasList,1),1);
+            end
+            if isempty(ch.MeasListActAuto)
+                ch.MeasListActAuto = ones(size(ch.MeasList,1),1);
+            end
+            if isempty(ch.MeasListVis)
+                ch.MeasListVis = ones(size(ch.MeasList,1),1);
+            end
             ch.MeasListAct     = bitand(ch.MeasListActMan, ch.MeasListActMan);
         end
 
@@ -357,20 +367,20 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function tIncAuto = GetTincAuto(obj, iDataBlk)
+        function tIncAuto = GetTincAuto(obj, iBlk)
             if nargin<2
-                iDataBlk = 1;
+                iBlk = 1;
             end
-            tIncAuto = obj.procStream.output.GetTincAuto(iDataBlk);
+            tIncAuto = obj.procStream.output.GetTincAuto(iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function tIncMan = GetTincMan(obj, iDataBlk)
+        function tIncMan = GetTincMan(obj, iBlk)
             if nargin<2
-                iDataBlk = 1;
+                iBlk = 1;
             end
-            tIncMan = obj.procStream.input.GetTincMan(iDataBlk);
+            tIncMan = obj.procStream.input.GetTincMan(iBlk);
         end
         
         

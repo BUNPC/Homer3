@@ -231,11 +231,11 @@ classdef GroupClass < TreeNodeClass
                 s(iSubj).Calc();
                 
                 % Find smallest tHRF among the subjs. We should make this the common one.
-                for iDataBlk = 1:nDataBlks
-	                if isempty(tHRF_common{iDataBlk})
-                        tHRF_common{iDataBlk} = s(iSubj).procStream.output.GetTHRF(iDataBlk);
-                    elseif length(s(iSubj).procStream.output.GetTHRF(iDataBlk)) < length(tHRF_common{iDataBlk})
-                        tHRF_common{iDataBlk} = s(iSubj).procStream.output.GetTHRF(iDataBlk);
+                for iBlk = 1:nDataBlks
+	                if isempty(tHRF_common{iBlk})
+                        tHRF_common{iBlk} = s(iSubj).procStream.output.GetTHRF(iBlk);
+                    elseif length(s(iSubj).procStream.output.GetTHRF(iBlk)) < length(tHRF_common{iBlk})
+                        tHRF_common{iBlk} = s(iSubj).procStream.output.GetTHRF(iBlk);
                     end
                 end
                 
@@ -244,8 +244,8 @@ classdef GroupClass < TreeNodeClass
             % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
             % all subjs. Use smallest tHRF as the common one.
             for iSubj = 1:nSubj
-                for iDataBlk = 1:length(tHRF_common)
-                    s(iSubj).procStream.output.SettHRFCommon(tHRF_common{iDataBlk}, s(iSubj).name, s(iSubj).type, iDataBlk);
+                for iBlk = 1:length(tHRF_common)
+                    s(iSubj).procStream.output.SettHRFCommon(tHRF_common{iBlk}, s(iSubj).name, s(iSubj).type, iBlk);
                 end
             end
             
@@ -380,11 +380,11 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function ch = GetMeasList(obj, iDataBlk)
-            if ~exist('iDataBlk','var')
-                iDataBlk=1;
+        function ch = GetMeasList(obj, iBlk)
+            if ~exist('iBlk','var')
+                iBlk=1;
             end
-            ch = obj.subjs(1).GetMeasList(iDataBlk);
+            ch = obj.subjs(1).GetMeasList(iBlk);
         end
 
         

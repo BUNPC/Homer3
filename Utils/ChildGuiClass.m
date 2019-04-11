@@ -157,7 +157,6 @@ classdef ChildGuiClass < handle
                 return;
             end
             obj.args = varargin;
-            obj.Update();
         end
 
         

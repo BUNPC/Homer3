@@ -78,13 +78,15 @@ nDets       = size(SD.DetPos,1);
 % [iDataBlks, iCh] = hmr.dataTree.currElem.GetDataBlocksIdxs(iCh);
 MeasList = [];
 MeasListActMan = [];
+MeasListActAuto = [];
 MeasListVis = [];
 nDataBlks = hmr.dataTree.currElem.GetDataBlocksNum();
-for iDataBlk = 1:nDataBlks   
-    ch = hmr.dataTree.currElem.GetMeasList(iDataBlk);
-    MeasList = [MeasList; ch.MeasList];
-    MeasListActMan = [MeasListActMan; ch.MeasListActMan];
-    MeasListVis = [MeasListVis; ch.MeasListVis];
+for iBlk = 1:nDataBlks   
+    ch = hmr.dataTree.currElem.GetMeasList(iBlk);
+    MeasList        = [MeasList; ch.MeasList];
+    MeasListActMan  = [MeasListActMan; ch.MeasListActMan];
+    MeasListActAuto = [MeasListActAuto; ch.MeasListActAuto];
+    MeasListVis     = [MeasListVis; ch.MeasListVis];
 end
 
 
@@ -107,16 +109,14 @@ for ii=1:length(lst2)
     set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
 end
 
-mlActAuto = procResult.GetVar('mlActAuto');
-if ~isempty(mlActAuto)
-    lst2 = find(mlActAuto(1:length(lstML))==0);
-    for ii=1:length(lst2)
-        h = line2(SD.SrcPos(ml(lstML(lst2(ii)),1),:), SD.DetPos(ml(lstML(lst2(ii)),2),:));
-        set(h, 'color',[1 1 .85]*1);
-        set(h, 'linewidth',6);
-        set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
-    end
+lst2 = find(MeasListActAuto(1:length(lstML))==0);
+for ii=1:length(lst2)
+    h = line2(SD.SrcPos(ml(lstML(lst2(ii)),1),:), SD.DetPos(ml(lstML(lst2(ii)),2),:));
+    set(h, 'color',[1 1 .85]*1);
+    set(h, 'linewidth',6);
+    set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
 end
+
 
 % DRAW PLOT LINES
 % THESE LINES HAVE TO BE THE LAST

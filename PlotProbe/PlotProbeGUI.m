@@ -221,7 +221,7 @@ else
     setGuiFonts(hObject);
 end
 MapCondition();
-DisplayData(handles);
+DisplayData(handles, hObject);
 
 if length(plotprobe.y)>1
     msg{1} = sprintf('Warning: Data in this plot probe uses different Y scales for different data blocks ');
@@ -255,18 +255,18 @@ hold on
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 plotprobe.y = cell(nDataBlks,1);
 plotprobe.t = cell(nDataBlks,1);
-for iDataBlk=1:nDataBlks
+for iBlk=1:nDataBlks
     if datatype == plotprobe.datatypeVals.OD_HRF
-        plotprobe.y{iDataBlk} = currElem.GetDodAvg(condition, iDataBlk);
-        plotprobe.t{iDataBlk} = currElem.GetTHRF();
+        plotprobe.y{iBlk} = currElem.GetDodAvg(condition, iBlk);
+        plotprobe.t{iBlk} = currElem.GetTHRF();
         plotprobe.tMarkUnits='(AU)';
     elseif datatype == plotprobe.datatypeVals.CONC_HRF
-        plotprobe.y{iDataBlk} = currElem.GetDcAvg(condition, iDataBlk);
-        plotprobe.t{iDataBlk} = currElem.GetTHRF();
+        plotprobe.y{iBlk} = currElem.GetDcAvg(condition, iBlk);
+        plotprobe.t{iBlk} = currElem.GetTHRF();
         plotprobe.tMarkAmp = plotprobe.tMarkAmp/1e6;
         plotprobe.tMarkUnits = '(micro-molars)';
     end
-    plotProbeAndSetProperties(handles, iDataBlk);
+    plotProbeAndSetProperties(handles, iBlk);
 end
 hold off
 
@@ -289,8 +289,8 @@ ClearAxesData();
 
 set(hObject,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
-for iDataBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iDataBlk);
+for iBlk=1:nDataBlks
+    plotProbeAndSetProperties(handles, iBlk);
 end
 
 
@@ -308,8 +308,8 @@ set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 ClearAxesData();
 
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
-for iDataBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iDataBlk);
+for iBlk=1:nDataBlks
+    plotProbeAndSetProperties(handles, iBlk);
 end
 
 
@@ -327,8 +327,8 @@ set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 ClearAxesData();
 
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
-for iDataBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iDataBlk);
+for iBlk=1:nDataBlks
+    plotProbeAndSetProperties(handles, iBlk);
 end
 
 
@@ -345,8 +345,8 @@ set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 ClearAxesData();
 
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
-for iDataBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iDataBlk);
+for iBlk=1:nDataBlks
+    plotProbeAndSetProperties(handles, iBlk);
 end
 
 
@@ -364,8 +364,8 @@ nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 % Clear axes of previous data, before redisplaying it
 ClearAxesData();
 
-for iDataBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iDataBlk);
+for iBlk=1:nDataBlks
+    plotProbeAndSetProperties(handles, iBlk);
 end
 
 
@@ -399,8 +399,8 @@ end
 ClearAxesData();
 
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
-for iDataBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iDataBlk);
+for iBlk=1:nDataBlks
+    plotProbeAndSetProperties(handles, iBlk);
 end
 
 
@@ -425,8 +425,8 @@ set(hObject,'string', sprintf('%0.1f ',plotprobe.tMarkInt) );
 ClearAxesData();
 
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
-for iDataBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iDataBlk);
+for iBlk=1:nDataBlks
+    plotProbeAndSetProperties(handles, iBlk);
 end
 
 
@@ -453,8 +453,8 @@ pos = getNewFigPos(plotprobe.handles.figureDup);
 set(plotprobe.handles.figureDup, 'position',pos);
 
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
-for iDataBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iDataBlk);
+for iBlk=1:nDataBlks
+    plotProbeAndSetProperties(handles, iBlk);
 end
 
 
@@ -496,8 +496,8 @@ function radiobuttonShowHiddenMeas_Callback(hObject, eventdata, handles)
 global plotprobe
 plotprobe.hidMeasShow = get(hObject,'value');
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
-for iDataBlk=1:nDataBlks    
-    showHiddenObjs(iDataBlk);
+for iBlk=1:nDataBlks    
+    showHiddenObjs(iBlk);
 end
 
 
@@ -532,18 +532,18 @@ ClearAxesData();
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 plotprobe.y = cell(nDataBlks,1);
 plotprobe.t = cell(nDataBlks,1);
-for iDataBlk=1:nDataBlks
+for iBlk=1:nDataBlks
     if datatype == plotprobe.datatypeVals.OD_HRF
-        plotprobe.y{iDataBlk} = plotprobe.dataTree.currElem.GetDodAvg(condition, iDataBlk);
-        plotprobe.t{iDataBlk} = plotprobe.dataTree.currElem.GetTHRF();
+        plotprobe.y{iBlk} = plotprobe.dataTree.currElem.GetDodAvg(condition, iBlk);
+        plotprobe.t{iBlk} = plotprobe.dataTree.currElem.GetTHRF();
         plotprobe.tMarkUnits='(AU)';
     elseif datatype == plotprobe.datatypeVals.CONC_HRF
-        plotprobe.y{iDataBlk} = plotprobe.dataTree.currElem.GetDcAvg(condition, iDataBlk);
-        plotprobe.t{iDataBlk} = plotprobe.dataTree.currElem.GetTHRF();
+        plotprobe.y{iBlk} = plotprobe.dataTree.currElem.GetDcAvg(condition, iBlk);
+        plotprobe.t{iBlk} = plotprobe.dataTree.currElem.GetTHRF();
         plotprobe.tMarkAmp = plotprobe.tMarkAmp/1e6;
         plotprobe.tMarkUnits = '(micro-molars)';
     end
-    plotProbeAndSetProperties(handles, iDataBlk);
+    plotProbeAndSetProperties(handles, iBlk);
 end
 
 

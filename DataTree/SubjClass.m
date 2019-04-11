@@ -157,11 +157,11 @@ classdef SubjClass < TreeNodeClass
                 r(iRun).Calc();
                 
                 % Find smallest tHRF among the runs. We should make this the common one.
-                for iDataBlk = 1:nDataBlks
-	                if isempty(tHRF_common{iDataBlk})
-                        tHRF_common{iDataBlk} = r(iRun).procStream.output.GetTHRF(iDataBlk);
-                    elseif length(r(iRun).procStream.output.GetTHRF(iDataBlk)) < length(tHRF_common{iDataBlk})
-                        tHRF_common{iDataBlk} = r(iRun).procStream.output.GetTHRF(iDataBlk);
+                for iBlk = 1:nDataBlks
+	                if isempty(tHRF_common{iBlk})
+                        tHRF_common{iBlk} = r(iRun).procStream.output.GetTHRF(iBlk);
+                    elseif length(r(iRun).procStream.output.GetTHRF(iBlk)) < length(tHRF_common{iBlk})
+                        tHRF_common{iBlk} = r(iRun).procStream.output.GetTHRF(iBlk);
                     end
                 end
             end
@@ -169,8 +169,8 @@ classdef SubjClass < TreeNodeClass
             % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
             % all runs. Use smallest tHRF as the common one.
             for iRun = 1:nRun
-                for iDataBlk = 1:length(tHRF_common)
-                    r(iRun).procStream.output.SettHRFCommon(tHRF_common{iDataBlk}, r(iRun).name, r(iRun).type, iDataBlk);
+                for iBlk = 1:length(tHRF_common)
+                    r(iRun).procStream.output.SettHRFCommon(tHRF_common{iBlk}, r(iRun).name, r(iRun).type, iBlk);
                 end
             end            
             
@@ -257,11 +257,11 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function ch = GetMeasList(obj, iDataBlk)
-            if ~exist('iDataBlk','var') || isempty(iDataBlk)
-                iDataBlk=1;
+        function ch = GetMeasList(obj, iBlk)
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk=1;
             end
-            ch = obj.runs(1).GetMeasList(iDataBlk);
+            ch = obj.runs(1).GetMeasList(iBlk);
         end
                 
         

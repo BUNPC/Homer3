@@ -69,3 +69,15 @@ Mar 12, 2019
 
 -- Add checks of dodAvg and dodAvg and dcAvg standard deviations to unit test. 
 
+----------------
+Apr 10, 2019
+----------------
+
+-- Fix PlotProbe using different Y scales for multiple data blocks
+
+-- Fix extended channels selection (i.e. waterfall display) not working for multiple data blocks. That is, the colors of the data curves plots in the data axes do not match the selected channel colors. 
+
+-- When editing and saving current processing stream it's nice to have the ProcStreamOptionsEditGUI updating automatically if it is active at the time of the proc stream update. 
+
+-- Add to data axes Fix y-range and Fix x-range features that are in Homer2_UI. These are very useful. 
+

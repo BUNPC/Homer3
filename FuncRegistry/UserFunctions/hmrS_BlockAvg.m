@@ -45,11 +45,15 @@ for iBlk = 1:nDataBlks
         yAvgOut(iBlk) = DataClass();
         yAvgStdOut(iBlk) = DataClass();
         
-        tHRF      = yAvgRuns{iRun}(iBlk).GetT();
         yAvg      = yAvgRuns{iRun}(iBlk).GetDataMatrix();
+        if isempty(yAvg)
+            continue;
+        end
         yAvgStd   = yAvgStdRuns{iRun}(iBlk).GetDataMatrix();
         ySum2     = ySum2Runs{iRun}(iBlk).GetDataMatrix();
+        tHRF      = yAvgRuns{iRun}(iBlk).GetT();
         nTrials   = nTrialsRuns{iRun};
+                
         datatype  = unique(yAvgRuns{iRun}(iBlk).GetDataTypeLabel());
         if datatype(1)==6 || datatype(1)==7 || datatype(1)==8
             ml    = yAvgRuns{iRun}(iBlk).GetMeasListSrcDetPairs();
@@ -98,8 +102,10 @@ for iBlk = 1:nDataBlks
                         nTrials_tot{iBlk}(lstChInc,iC) = nT;
                     else
                         for iCh=1:length(lstChInc) %size(yAvg,2)
-                            grp1(:,lstChInc(iCh),iC) = grp1(:,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,lstChInc(iCh),iS),tHRF') * nT;
-                            grp1Sum2(:,lstChInc(iCh),iC) = grp1Sum2(:,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,lstChInc(iCh),iS),tHRF');
+                            % Make sure 3rd arg to interp1 is column vector to guarauntee interp1 output is column vector
+                            % which matches grp1 dimensions when adding the two.
+                            grp1(:,lstChInc(iCh),iC) = grp1(:,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,lstChInc(iCh),iS),tHRF(:)) * nT;
+                            grp1Sum2(:,lstChInc(iCh),iC) = grp1Sum2(:,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,lstChInc(iCh),iS),tHRF(:));
                             nTrials_tot{iBlk}(lstChInc(iCh),iC) = nTrials_tot{iBlk}(lstChInc(iCh),iC) + nT;
                         end
                     end
@@ -163,8 +169,10 @@ for iBlk = 1:nDataBlks
                     else
                         for iCh=1:length(lstChInc) %size(yAvg,3)
                             for iHb=1:size(yAvg,2)
-                                grp1(:,iHb,lstChInc(iCh),iC) = grp1(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,iHb,lstChInc(iCh),iS),tHRF') * nT;
-                                grp1Sum2(:,iHb,lstChInc(iCh),iC) = grp1Sum2(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,iHb,lstChInc(iCh),iS),tHRF');
+                                % Make sure 3rd arg to interp1 is column vector to guarauntee interp1 output is column vector
+                                % which matches grp1 dimensions when adding the two.
+                                grp1(:,iHb,lstChInc(iCh),iC) = grp1(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,iHb,lstChInc(iCh),iS),tHRF(:)) * nT;
+                                grp1Sum2(:,iHb,lstChInc(iCh),iC) = grp1Sum2(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,iHb,lstChInc(iCh),iS),tHRF(:));
                             end
                             nTrials_tot{iBlk}(lstChInc(iCh),iC) = nTrials_tot{iBlk}(lstChInc(iCh),iC) + nT;
                         end

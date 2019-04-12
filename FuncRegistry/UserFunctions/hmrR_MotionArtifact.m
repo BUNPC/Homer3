@@ -73,6 +73,8 @@ if ~isa(sd, 'SdClass')
     error('Second input must be sd SNIRF objects of type SdClass.')
 end
 
+tInc = cell(length(data),1);
+
 for iBlk=1:length(data)
 
     d           = data(iBlk).GetD();

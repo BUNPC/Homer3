@@ -98,7 +98,7 @@ for iSubj = 1:nSubj
                 if iSubj==1 | iC>nStim
                     for iPass=1:length(lstPass)
                         for iHb=1:3
-                            grp1(:,iHb,lstPass(iPass),iC) = interp1(tHRF,yAvg(:,iHb,lstPass(iPass),iS),tHRF');
+                            grp1(:,iHb,lstPass(iPass),iC) = interp1(tHRF,yAvg(:,iHb,lstPass(iPass),iS),tHRF(:));
                         end
                     end
                     subjCh(size(yAvg,3),iC)=0;
@@ -106,7 +106,7 @@ for iSubj = 1:nSubj
                 else
                     for iPass=1:length(lstPass)
                         for iHb=1:3
-                            grp1(:,iHb,lstPass(iPass),iC) = grp1(:,iHb,lstPass(iPass),iC) + interp1(tHRF,yAvg(:,iHb,lstPass(iPass),iS),tHRF');
+                            grp1(:,iHb,lstPass(iPass),iC) = grp1(:,iHb,lstPass(iPass),iC) + interp1(tHRF,yAvg(:,iHb,lstPass(iPass),iS),tHRF(:));
                         end
                     end
                 end
@@ -154,13 +154,13 @@ for iSubj = 1:nSubj
                 if chkFlag==false | length(lstPass)==size(yAvg,2)
                     if iSubj==1 | iC>nStim
                         for iPass=1:length(lstPass)
-                            grp1(:,lstPass(iPass),iC) = interp1(tHRF,yAvg(:,lstPass(iPass),iS),tHRF');
+                            grp1(:,lstPass(iPass),iC) = interp1(tHRF,yAvg(:,lstPass(iPass),iS),tHRF(:));
                         end
                         subjCh(size(yAvg,2),iC)=0;
                         nStim = iC;
                     else
                         for iPass=1:length(lstPass)
-                            grp1(:,lstPass(iPass),iC) = grp1(:,lstPass(iPass),iC) + interp1(tHRF,yAvg(:,lstPass(iPass),iS),tHRF');
+                            grp1(:,lstPass(iPass),iC) = grp1(:,lstPass(iPass),iC) + interp1(tHRF,yAvg(:,lstPass(iPass),iS),tHRF(:));
                         end
                     end
                     subjCh(lstPass,iC) = subjCh(lstPass,iC) + 1;

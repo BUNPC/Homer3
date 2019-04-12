@@ -53,9 +53,12 @@ for kk = 1:length(yAvgSubjs{1})
         yAvgOut(kk) = DataClass();
         yAvgStdOut(kk) = DataClass();
         
-        tHRF      = yAvgSubjs{iSubj}(kk).GetT();
         yAvg      = yAvgSubjs{iSubj}(kk).GetDataMatrix();
+        if isempty(yAvg)
+            continue;
+        end
         yAvgStd   = yAvgStdSubjs{iSubj}(kk).GetDataMatrix();
+        tHRF      = yAvgSubjs{iSubj}(kk).GetT();
         nTrials   = nTrialsSubjs{iSubj}{kk};
         datatype  = unique(yAvgSubjs{iSubj}(kk).GetDataTypeLabel());
         if datatype(1)==6 || datatype(1)==7 || datatype(1)==8
@@ -101,7 +104,9 @@ for kk = 1:length(yAvgSubjs{1})
                     if iSubj==1 | iC>nStim
                         for iPass=1:length(lstPass)
                             for iHb=1:3
-                                grp1(:,iHb,lstPass(iPass),iC) = interp1(tHRF,yAvg(:,iHb,lstPass(iPass),iS),tHRF');
+                                % Make sure 3rd arg to interp1 is column vector to guarauntee interp1 output is column vector
+                                % which matches grp1 dimensions when adding the two.
+                                grp1(:,iHb,lstPass(iPass),iC) = interp1(tHRF,yAvg(:,iHb,lstPass(iPass),iS),tHRF(:));
                             end
                         end
                         subjCh(size(yAvg,3),iC)=0;
@@ -109,7 +114,9 @@ for kk = 1:length(yAvgSubjs{1})
                     else
                         for iPass=1:length(lstPass)
                             for iHb=1:3
-                                grp1(:,iHb,lstPass(iPass),iC) = grp1(:,iHb,lstPass(iPass),iC) + interp1(tHRF,yAvg(:,iHb,lstPass(iPass),iS),tHRF');
+                                % Make sure 3rd arg to interp1 is column vector to guarauntee interp1 output is column vector
+                                % which matches grp1 dimensions when adding the two.
+                                grp1(:,iHb,lstPass(iPass),iC) = grp1(:,iHb,lstPass(iPass),iC) + interp1(tHRF,yAvg(:,iHb,lstPass(iPass),iS),tHRF(:));
                             end
                         end
                     end
@@ -161,13 +168,15 @@ for kk = 1:length(yAvgSubjs{1})
                     if chkFlag==false | length(lstPass)==size(yAvg,2)
                         if iSubj==1 | iC>nStim
                             for iPass=1:length(lstPass)
-                                grp1(:,lstPass(iPass),iC) = interp1(tHRF,yAvg(:,lstPass(iPass),iS),tHRF');
+                                grp1(:,lstPass(iPass),iC) = interp1(tHRF,yAvg(:,lstPass(iPass),iS),tHRF(:));
                             end
                             subjCh(size(yAvg,2),iC)=0;
                             nStim = iC;
                         else
                             for iPass=1:length(lstPass)
-                                grp1(:,lstPass(iPass),iC) = grp1(:,lstPass(iPass),iC) + interp1(tHRF,yAvg(:,lstPass(iPass),iS),tHRF');
+                                % Make sure 3rd arg to interp1 is column vector to guarauntee interp1 output is column vector
+                                % which matches grp1 dimensions when adding the two.
+                                grp1(:,lstPass(iPass),iC) = grp1(:,lstPass(iPass),iC) + interp1(tHRF,yAvg(:,lstPass(iPass),iS),tHRF(:));
                             end
                         end
                         subjCh(lstPass,iC) = subjCh(lstPass,iC) + 1;

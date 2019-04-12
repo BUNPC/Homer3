@@ -56,21 +56,19 @@ for iBlk=1:length(data)
     MeasList = data(iBlk).GetMeasList();
     Lambda   = sd.GetWls();
     SrcPos   = sd.GetSrcPos();
-    DetPos   = sd.GetDetPos();
-    
+    DetPos   = sd.GetDetPos();    
     if isempty(mlActMan)
         MeasListAct = ones(size(MeasList,1),1);
     else
-        MeasListAct = mlActMan{iBlk};        
-    end
-    
+        MeasListAct = mlActMan{iBlk};
+    end    
     if isempty(tIncMan)
-        tInc = {ones(length(t),1)};
+        tInc = ones(length(t),1);
     else
-        tInc = tIncMan{iBlk};        
+        tInc = tIncMan{iBlk};
     end
         
-    lstInc = find(tInc{iBlk}==1);
+    lstInc = find(tInc==1);
     d = d(lstInc,:);
 
     % check for dRange and SNRthresh

@@ -99,8 +99,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
                     progressmsg = sprintf('Parsing %s', files{jj}(ii).name);
                     fprintf('%s\n', progressmsg);
                     waitbar(kk/N, h, sprintf_waitbar(progressmsg));
-                    obj.entries(kk) = FuncRegEntryClass(files{jj}(ii).name);
-                    obj.userfuncfiles{kk} = [files{jj}(ii).folder, files{jj}(ii).name];
+                    obj.AddEntry(files{jj}(ii));
                     kk=kk+1;
                 end
             end
@@ -109,6 +108,30 @@ classdef FuncRegClass < matlab.mixin.Copyable
             fprintf('\n');
             
         end
+        
+
+        % -------------------------------------------------------------------------------
+        function AddEntry(obj, file)
+            idx = obj.GetIdx(file.name);
+            if ~isempty(idx)
+                q = menu('Function entry already exists in registry. Do you want to reload it?', 'YES','NO');
+                if q==2
+                    return;
+                end
+            end
+            idx = length(obj.entries)+1;
+            obj.entries(idx)       = FuncRegEntryClass(file.name);
+            obj.userfuncfiles{idx} = [file.folder, file.name];
+        end
+        
+        
+        
+        % -------------------------------------------------------------------------------
+        function ReloadEntry(obj, funcname)
+            idx = obj.GetIdx(funcname);
+            obj.entries(idx) = FuncRegEntryClass(funcname);
+        end
+        
         
         
         

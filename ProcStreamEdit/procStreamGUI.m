@@ -606,4 +606,38 @@ if ishandles(handles.figure)
 end
 
 
+% --------------------------------------------------------------------
+function menuItemAddFunction_Callback(hObject, eventdata, handles)
+global procStreamGui
+reg = procStreamGui.dataTree.reg;
+
+filenames = {};
+files = dir([reg.userfuncdir, 'hmr*.m']); 
+for ii=1:length(files)
+    filenames = [filenames; files(ii).name];
+end
+idx = listdlg('PromptString','Select Function File to Add to Registry:',...
+              'SelectionMode','single',...
+              'ListString',filenames);
+reg.AddEntry(files{idx});
+
+
+
+% -------------------------------------------------------------------------------
+function menuItemReloadFunction_Callback(hObject, eventdata, handles)
+global procStreamGui
+reg = procStreamGui.dataTree.reg;
+
+funcnames = {};
+kk=1;
+for ii=1:length(reg.funcReg)
+    for jj=1:length(reg.funcReg(ii).entries)
+        funcnames{kk,1} = reg.funcReg(ii).GetFuncName(jj);
+        kk=kk+1;
+    end
+end
+idx = listdlg('PromptString','Select function to reload:',...
+                'SelectionMode','single',...
+                'ListString',funcnames);
+reg.ReloadEntry(funcnames{idx});
 

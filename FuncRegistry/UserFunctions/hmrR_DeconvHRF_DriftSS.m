@@ -124,7 +124,7 @@ for iBlk=1:length(data_y)
 
     y      = data_y(iBlk).GetDataMatrix();
     t      = data_y(iBlk).GetT();
-    ml     = data_y(iBlk).GetMeasListSrcDetPairs();    
+    ml     = data_y(iBlk).GetMeasListSrcDetPairs();
     SrcPos = sd.GetSrcPos();
     DetPos = sd.GetDetPos();
     if isempty(mlActAuto)
@@ -147,11 +147,11 @@ for iBlk=1:length(data_y)
     nPost = round(trange(2)/dt);
     nTpts = size(y,1);
     tHRF = (1*nPre*dt:dt:nPost*dt)';
-    ntHRF=length(tHRF);
-    nT=length(t);
+    ntHRF = length(tHRF);
+    nT = length(t);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % find corresponding short separation channel for every channel
+    % Find corresponding short separation channel for every channel
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     lst = 1:size(ml,1);
     rhoSD = zeros(length(lst),1);
@@ -205,7 +205,7 @@ for iBlk=1:length(data_y)
     end
     
     %%%%%%%%%%%%%%%%
-    %prune good stim
+    % Prune good stim
     %%%%%%%%%%%%%%%%
     % handle case of conditions with 0 trials
     lstCond = find(sum(s>0,1)>0);
@@ -221,7 +221,7 @@ for iBlk=1:length(data_y)
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % construct the basis functions
+    % Construct the basis functions
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if idxBasis==1
         % Gaussians
@@ -623,7 +623,7 @@ for iBlk=1:length(data_y)
     % Snirf stuff: 
     %%%%%%%%%%%%%%%%%%%%%%%%%
     
-    % Add the channels describing the concentration data
+    % Add the channels describing the data
     for iConc = 1:size(yavg,2)
         for iCh = 1:size(yavg,3)
             for iCond = 1:size(yavg,4)                
@@ -634,7 +634,7 @@ for iBlk=1:length(data_y)
         end
     end
     
-    % Set data vectors for the avgerages
+    % Set data vectors for the averages
     data_yavg(iBlk).AppendD(yavg);
     data_yavgstd(iBlk).AppendD(yavgstd);
     data_ysum2(iBlk).AppendD(ysum2);

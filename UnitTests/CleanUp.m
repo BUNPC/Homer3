@@ -8,6 +8,9 @@ DEBUG1=[];
 testidx=[];
 procStreamStyle=[];
 
+reg = RegistriesClass('empty');
+reg.DeleteSaved();
+
 groupFolders = FindUnitTestsFolders();
 rootpath = fileparts(which('Homer3.m'));
 
@@ -37,4 +40,5 @@ for ii=1:length(groupFolders)
     end
 end
 fprintf('\n');
+
 

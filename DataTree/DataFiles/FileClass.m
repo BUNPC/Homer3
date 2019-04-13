@@ -1,4 +1,5 @@
-classdef FileClass < handle
+classdef FileClass < matlab.mixin.Copyable
+
     
     properties
         % Same properties as the fields in the file struct returned 

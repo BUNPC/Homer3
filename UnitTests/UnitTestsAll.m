@@ -3,6 +3,7 @@ function UnitTestsAll()
 tic;
 
 CleanUp();
+
 c = ConfigFileClass();
 c.SetValue('Regression Test Active','true');
 c.SetValue('Include Archived User Functions','Yes');

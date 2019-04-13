@@ -1,30 +1,89 @@
 classdef RegistriesClass < handle
     
     properties
+        userfuncdir
         igroup
         isubj
         irun
         funcReg
+        config        
     end
     
     methods
         
         % ----------------------------------------------------------------
-        function obj = RegistriesClass()
+        function obj = RegistriesClass(mode)
             %
             % Class containing an array of registries named 'group', 
             % 'subj', and 'run'
             %
             %
+
+            % Added mode argument to allow 'empty' option to avoid loading 
+            % registry but make the methods AND config options available. 
+            % This is useful for deleting saved Registry.mat when unit testing.
+            if nargin==0
+                mode = 'normal';
+            end
+            
             obj.igroup = 1;
             obj.isubj = 2;
             obj.irun = 3;
-            
             obj.funcReg = FuncRegClass().empty();
 
+            % Get the parameter items from config file relevant to this class
+            obj.config = struct('InclArchivedFunctions','');
+            cfg = ConfigFileClass();
+            obj.config.InclArchivedFunctions = cfg.GetValue('Include Archived User Functions');
+            obj.userfuncdir = FindUserFuncDir(obj);
+            
+            if strcmp(mode, 'empty')
+                return;
+            end
+            
+            % Check if saved registry exists. If so load that and exit
+            if exist([obj.userfuncdir{1}, 'Registry.mat'], 'file')
+                fprintf('Loading saved registry %s\n', [obj.userfuncdir{1}, 'Registry.mat']);
+                r = load([obj.userfuncdir{1}, 'Registry.mat'], 'reg');
+                if isa(r.reg, 'RegistriesClass') && ~isempty(r.reg)
+                    obj.Copy(r.reg);
+                    return;
+                end
+            end
+            
             obj.funcReg(obj.igroup) = FuncRegClass('group');
             obj.funcReg(obj.isubj) = FuncRegClass('subj');
             obj.funcReg(obj.irun) = FuncRegClass('run');
+            
+            % Save registry for next time
+            obj.Save();
+            
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Save(obj)
+            reg = obj;
+            save([obj.userfuncdir{1}, 'Registry.mat'], 'reg');
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function DeleteSaved(obj)
+            if exist([obj.userfuncdir{1}, 'Registry.mat'], 'file')
+                delete([obj.userfuncdir{1}, 'Registry.mat']);
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Copy(obj, obj2)
+            obj.igroup = obj2.igroup;
+            obj.isubj = obj2.isubj;
+            obj.irun = obj2.irun;
+            for ii=1:length(obj2.funcReg)
+                obj.funcReg(ii) = FuncRegClass(obj2.funcReg(ii));
+            end
         end
         
         

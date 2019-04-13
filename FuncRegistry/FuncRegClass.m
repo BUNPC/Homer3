@@ -12,10 +12,11 @@ classdef FuncRegClass < matlab.mixin.Copyable
     methods
         
         % ----------------------------------------------------------------------------------
-        function obj = FuncRegClass(type)
+        function obj = FuncRegClass(arg)
             % 
             % Syntax:
             %    obj = FuncRegClass(type);
+            %    obj = FuncRegClass(obj2);
             % 
             % Description:
             %    Generates a list of FuncRegEntryClass objects of type
@@ -47,18 +48,25 @@ classdef FuncRegClass < matlab.mixin.Copyable
             %              params: {2x2 cell}
             %                help: [1x1 FuncHelpClass]
             %
+            obj.entries = FuncRegEntryClass().empty();
+
             if nargin==0
                 return;
-            end            
+            end
+            if isa(arg, 'FuncRegClass')
+                obj.Copy(arg);
+                return;
+            end
+            
+            type = arg;
             obj.type = type;            
-            obj.entries = FuncRegEntryClass().empty();
             
             % Get the parameter items from config file relevant to this class
             obj.config = struct('InclArchivedFunctions','');
             cfg = ConfigFileClass();
             obj.config.InclArchivedFunctions = cfg.GetValue('Include Archived User Functions');
 
-            obj.userfuncdir = obj.FindUserFuncDir();
+            obj.userfuncdir = FindUserFuncDir(obj);
             obj.userfuncfiles = [];
             obj.Load();
         end
@@ -99,32 +107,24 @@ classdef FuncRegClass < matlab.mixin.Copyable
             
             close(h)
             fprintf('\n');
+            
         end
-                
-               
+        
+        
+        
         % ----------------------------------------------------------------------------------
-        function userfuncdir = FindUserFuncDir(obj)
-            userfuncdir = {};
-            if isdeployed()
-                if ispc
-                    userfuncdir{1} = 'c:/Users/Public/homer3/FuncRegistry/UserFunctions/';
-                elseif ismac()
-                    userfuncdir{1} = '~/homer3/FuncRegistry/UserFunctions/';
-                end
-            else
-                srcdir = fileparts(which('FuncRegClass.m'));
-                if exist([srcdir, '/UserFunctions']', 'dir')
-                    userfuncdir{1} = fullpath([srcdir, '/UserFunctions/']);
-                elseif exist([srcdir, '/../UserFunctions']', 'dir')
-                    userfuncdir{1} = fullpath([srcdir, '/../UserFunctions/']);
-                end
-                if strcmp(obj.config.InclArchivedFunctions, 'Yes')
-                    userfuncdir{2} = fullpath([userfuncdir{1}, 'Archive/']);
-                end
+        function Copy(obj, obj2)
+            obj.userfuncdir = obj2.userfuncdir;
+            obj.userfuncfiles = obj2.userfuncfiles;
+            obj.type = obj2.type;
+            obj.config = obj2.config;
+            for ii=1:length(obj2.entries)
+                obj.entries(ii) = FuncRegEntryClass(obj2.entries(ii));
             end
         end
         
-                
+        
+
         % ----------------------------------------------------------------------------------
         function b = IsEmpty(obj)
             b = true;

@@ -1,5 +1,5 @@
 % SYNTAX:
-% dod = hmrR_MotionCorrectSpline(dod, mlAct, tIncCh, p, turnon)
+% data_dod = hmrR_MotionCorrectSpline(data_dod, mlAct, tIncCh, p, turnon)
 %
 % UI NAME:
 % Spline_Motion_Correction
@@ -11,7 +11,7 @@
 % this function.
 %
 % INPUTS:
-% dod:      SNIRF data structure containing delta_OD 
+% data_dod: SNIRF data structure containing delta_OD 
 % mlAct:
 % tIncCh:   Matrix of included time points (1=included; 0=not included (movement)
 %           The matrix is #time points x #channels and usually comes from

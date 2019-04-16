@@ -505,5 +505,21 @@ classdef FuncHelpClass < matlab.mixin.Copyable
         end
         
         
+        % ----------------------------------------------------------------------------------
+        function b = IsEmpty(obj)
+            b = false;
+            if isempty(obj.funcname)
+                b=true;
+            end
+            if isempty(obj.helpstr)
+                b=true;
+            end
+            if isempty(obj.sections)
+                b=true;
+            end
+        end
+        
+        
     end
 end
+

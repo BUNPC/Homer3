@@ -2,7 +2,7 @@
 % [data_dN, tInc, svs, nSV, tInc0] = hmrR_MotionCorrectPCArecurse(data_d, sd, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh, nSV, maxIter, turnon)
 %
 %
-% UI NAME
+% UI NAME:
 % Motion_Correct_PCA_Recurse
 %
 %

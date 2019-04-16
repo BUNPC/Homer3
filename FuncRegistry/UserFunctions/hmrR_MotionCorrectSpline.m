@@ -39,7 +39,6 @@
 %
 % TO DO:
 %
-
 function data_dod = hmrR_MotionCorrectSpline(data_dod, mlAct, tIncCh, p, turnon)
 
 if ~exist('turnon','var')
@@ -49,7 +48,6 @@ if turnon==0
     return;
 end
 
-% if p outside its authorized range, set to 0.99
 % Check input args
 if isempty(mlAct)
     mlAct = cell(length(data_dod),1);
@@ -57,7 +55,7 @@ end
 if isempty(tIncCh)
     tIncCh = cell(length(data_dod),1);
 end
-if p>1 || p<0
+if p>1 || p<0    % if p outside its authorized range, exit with warning
     display('Parameter has to be between 0 and 1. Returning with no correction');
     return;
 end

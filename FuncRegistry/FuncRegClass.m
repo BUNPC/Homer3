@@ -119,9 +119,12 @@ classdef FuncRegClass < matlab.mixin.Copyable
                     return;
                 end
             end
-            idx = length(obj.entries)+1;
-            obj.entries(idx)       = FuncRegEntryClass(funcname);
-            obj.userfuncfiles{idx} = [obj.userfuncdir{1}, funcname];
+            tmp = FuncRegEntryClass(funcname);
+            if tmp.IsValid()
+                idx = length(obj.entries)+1;
+                obj.entries(idx) = FuncRegEntryClass(tmp);
+                obj.userfuncfiles{idx} = [obj.userfuncdir{1}, funcname];
+            end
         end
         
         

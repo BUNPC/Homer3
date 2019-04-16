@@ -53,22 +53,21 @@ for iBlk = 1:nDataBlks
         ySum2     = ySum2Runs{iRun}(iBlk).GetDataMatrix();
         tHRF      = yAvgRuns{iRun}(iBlk).GetT();
         nTrials   = nTrialsRuns{iRun};
-                
+        if isempty(mlActRuns{iRun})
+            mlActRuns{iRun} = cell(length(nDataBlks),1);
+        end
+        
+        % 
         datatype  = unique(yAvgRuns{iRun}(iBlk).GetDataTypeLabel());
         if datatype(1)==6 || datatype(1)==7 || datatype(1)==8
             ml    = yAvgRuns{iRun}(iBlk).GetMeasListSrcDetPairs();
         elseif datatype(1)==1
             ml    = yAvgRuns{iRun}(iBlk).GetMeasList();
         end
-        if isempty(mlActRuns)
-            mlAct = ones(size(ml,1),1);
-        else
-            if isempty(mlActRuns{iRun})
-                mlAct = ones(size(ml,1),1);
-            else
-                mlAct = mlActRuns{iRun}{iBlk}(1:size(ml,1));
-            end
+        if isempty(mlActRuns{iRun}{iBlk})
+            mlActRuns{iRun}{iBlk} = ones(size(ml,1),1);
         end
+        mlAct = mlActRuns{iRun}{iBlk}(1:size(ml,1));
                 
         if isempty(yAvg)
             continue;

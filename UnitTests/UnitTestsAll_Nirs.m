@@ -9,9 +9,11 @@ testidx=0;
 procStreamStyle = 'nirs';
 
 if ~exist('standalone','var') || isempty(standalone)
-    SetConfig();
     standalone = true;
+    CleanUp();
+    SetConfig();
 end
+
 if ~exist('logger','var') || isempty(logger)
     rootpath = fileparts(which('UnitTestsAll_Nirs.m'));
     logger = LogClass([rootpath, '/'], 'UnitTestsAll_Nirs');
@@ -56,13 +58,14 @@ logger.Write('\n');
 testidx=[];
 procStreamStyle=[];
 
+if strcmp(logger.GetFilename(), 'UnitTestsAll_Nirs')
+    logger.Close();
+end
+
 % If we are NOT standalone then we'll rely on the parent caller to cleanup 
 if standalone
     ResetConfig();
     CleanUp();
-end
-if strcmp(logger.GetFilename(), 'UnitTestsAll_Nirs')
-    logger.Close();
 end
 
 toc

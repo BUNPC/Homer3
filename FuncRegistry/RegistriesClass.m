@@ -69,23 +69,7 @@ classdef RegistriesClass < handle
         
         
         % -------------------------------------------------------------------------------
-        function AddEntry(obj, file)
-            switch(file.name(1:5))
-                case 'hmrG_'
-                    itype = obj.igroup;
-                case 'hmrS_'
-                    itype = obj.isubj;
-                case 'hmrR_'
-                    itype = obj.irun;
-                otherwise
-                    return;
-            end
-            obj.funcReg(itype).AddEntry(file);
-        end
-        
-        
-        % -------------------------------------------------------------------------------
-        function ReloadEntry(obj, funcname)                      
+        function err = AddEntry(obj, funcname)
             switch(funcname(1:5))
                 case 'hmrG_'
                     itype = obj.igroup;
@@ -94,9 +78,27 @@ classdef RegistriesClass < handle
                 case 'hmrR_'
                     itype = obj.irun;
                 otherwise
+                    err = 1;
                     return;
             end
-            obj.funcReg(itype).ReloadEntry(funcname);
+            err = obj.funcReg(itype).AddEntry(funcname);
+        end
+        
+        
+        % -------------------------------------------------------------------------------
+        function err = ReloadEntry(obj, funcname)                      
+            switch(funcname(1:5))
+                case 'hmrG_'
+                    itype = obj.igroup;
+                case 'hmrS_'
+                    itype = obj.isubj;
+                case 'hmrR_'
+                    itype = obj.irun;
+                otherwise
+                    err = 1;
+                    return;
+            end
+            err = obj.funcReg(itype).ReloadEntry(funcname);
         end
         
         

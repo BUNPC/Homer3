@@ -41,4 +41,4 @@ for ii=1:length(groupFolders)
 end
 fprintf('\n');
 
-
+fclose all;

@@ -43,13 +43,20 @@
 function data_dod = hmrR_MotionCorrectSpline(data_dod, mlAct, tIncCh, p, turnon)
 
 if ~exist('turnon','var')
-   turnon = 1;
+    turnon = 1;
 end
 if turnon==0
     return;
 end
 
 % if p outside its authorized range, set to 0.99
+% Check input args
+if isempty(mlAct)
+    mlAct = cell(length(data_dod),1);
+end
+if isempty(tIncCh)
+    tIncCh = cell(length(data_dod),1);
+end
 if p>1 || p<0
     display('Parameter has to be between 0 and 1. Returning with no correction');
     return;
@@ -60,10 +67,12 @@ for iBlk=1:length(data_dod)
     dod         = data_dod(iBlk).GetD();
     t           = data_dod(iBlk).GetT();
     MeasList    = data_dod(iBlk).GetMeasList();
-    if isempty(mlAct)
-        MeasListAct = ones(size(MeasList,1),1);
-    else
-        MeasListAct = mlAct{iBlk};
+    if isempty(mlAct{iBlk})
+        mlAct{iBlk} = ones(size(MeasList,1),1);
+    end
+    MeasListAct = mlAct{iBlk};
+    if isempty(tIncCh{iBlk})
+        tIncCh{iBlk} = ones(size(dod,1),1);
     end
     
     lstAct = find(MeasListAct==1);

@@ -681,7 +681,7 @@ end
 
 
 % ----------------------------------------------------------------------------------
-function DisplayData(handles, hObject)
+function hObject = DisplayData(handles, hObject)
 global hmr
 
 
@@ -921,7 +921,7 @@ end
 function Update()
 global hmr
 
-DisplayData(hmr.handles);
+DisplayData(hmr.handles, hmr.handles.axesData);
 
 
 

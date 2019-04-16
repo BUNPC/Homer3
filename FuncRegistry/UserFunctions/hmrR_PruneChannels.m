@@ -41,12 +41,19 @@
 %
 function mlAct = hmrR_PruneChannels(data, sd, mlActMan, tIncMan, dRange, SNRthresh, SDrange, resetFlag)
 
+% Init output 
 mlAct = cell(length(data),1);
 
-% Preset values
+% Check input args
 if nargin<7
     disp( 'USAGE: hmrR_PruneChannels(data, sd, mlActMan, tIncMan, dRange, SNRthresh, SDrange, resetFlag)' )
     return
+end
+if isempty(tIncMan)
+    tIncMan = cell(length(data),1);
+end
+if isempty(mlActMan)
+    mlActMan = cell(length(data),1);
 end
 
 for iBlk=1:length(data)
@@ -57,16 +64,14 @@ for iBlk=1:length(data)
     Lambda   = sd.GetWls();
     SrcPos   = sd.GetSrcPos();
     DetPos   = sd.GetDetPos();    
-    if isempty(mlActMan)
-        MeasListAct = ones(size(MeasList,1),1);
-    else
-        MeasListAct = mlActMan{iBlk};
+    if isempty(mlActMan{iBlk})
+        mlActMan{iBlk} = ones(size(MeasList,1),1);
     end    
-    if isempty(tIncMan)
-        tInc = ones(length(t),1);
-    else
-        tInc = tIncMan{iBlk};
+    MeasListAct = mlActMan{iBlk};
+    if isempty(tIncMan{iBlk})
+        tIncMan{iBlk} = ones(length(t),1);
     end
+    tInc = tIncMan{iBlk};
         
     lstInc = find(tInc==1);
     d = d(lstInc,:);

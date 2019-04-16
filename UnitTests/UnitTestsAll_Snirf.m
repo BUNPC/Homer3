@@ -10,8 +10,10 @@ procStreamStyle = 'snirf';
 
 if ~exist('standalone','var') || isempty(standalone)
     standalone = true;
+    CleanUp();
     SetConfig();
 end
+
 if ~exist('logger','var') || isempty(logger)
     rootpath = fileparts(which('UnitTestsAll_Snirf.m'));
     logger = LogClass([rootpath, '/'], 'UnitTestsAll_Snirf');
@@ -53,13 +55,14 @@ logger.Write('\n');
 testidx=[];
 procStreamStyle=[];
 
+if strcmp(logger.GetFilename(), 'UnitTestsAll_Snirf')
+    logger.Close();
+end
+
 % If we are NOT standalone then we'll rely on the parent caller to cleanup 
 if standalone
     CleanUp();
     ResetConfig();
-end
-if strcmp(logger.GetFilename(), 'UnitTestsAll_Snirf')
-    logger.Close();
 end
 
 toc

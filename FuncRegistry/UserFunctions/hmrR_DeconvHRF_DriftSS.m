@@ -99,6 +99,7 @@
 function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks] = ...
     hmrR_DeconvHRF_DriftSS(data_y, stim, sd, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 
+% Init output
 data_yavg     = DataClass().empty();
 data_yavgstd  = DataClass().empty();
 data_ynew     = DataClass().empty();
@@ -106,6 +107,14 @@ data_ysum2    = DataClass().empty();
 data_yresid   = DataClass().empty();
 beta_blks     = cell(length(data_y),1);
 yR_blks       = cell(length(data_y),1);
+
+% Check input args
+if isempty(tIncAuto)
+    tIncAuto = cell(length(data_y),1);
+end
+if isempty(mlActAuto)
+    mlActAuto = cell(length(data_y),1);
+end
 
 % Get stim vector by instantiating temporary SnirfClass object with this 
 % function's stim argument as input, and then using the SnirfClass object's 
@@ -127,17 +136,15 @@ for iBlk=1:length(data_y)
     ml     = data_y(iBlk).GetMeasListSrcDetPairs();
     SrcPos = sd.GetSrcPos();
     DetPos = sd.GetDetPos();
-    if isempty(mlActAuto)
-        mlAct = ones(size(ml,1),1);
-    else
-        mlAct = mlActAuto{iBlk};
+    if isempty(mlActAuto{iBlk})
+        mlActAuto{iBlk} = ones(size(ml,1),1);
     end
-    if isempty(tIncAuto)
-        tInc = ones(length(t),1);
-    else
-        tInc = tIncAuto{iBlk};
+    mlAct = mlActAuto{iBlk};
+    if isempty(tIncAuto{iBlk})
+        tIncAuto{iBlk} = ones(length(t),1);
     end
-            
+    tInc = tIncAuto{iBlk};
+    
     yavg = [];
     yavgstd = [];
     ysum2 = [];

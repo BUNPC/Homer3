@@ -45,6 +45,13 @@ svs     = cell(length(data_y),1);
 nSV     = repmat({nSV}, length(data_y),1);
 
 % Error check arguments
+% Check input args
+if isempty(tIncAuto)
+    tIncAuto = cell(length(data_y),1);
+end
+if isempty(mlActAuto)
+    mlActAuto = cell(length(data_y),1);
+end
 if ~exist('nSV','var')
     disp('USAGE: [yc,svs,nSV] = hmrR_PCAFilter( y, SD, tInc, nSV )');
     return
@@ -59,16 +66,14 @@ for iBlk=1:length(data_y)
     y        = data_y(iBlk).GetDataMatrix();
     t        = data_y(iBlk).GetT();
     MeasList = data_y(iBlk).GetMeasList();
-    if isempty(mlActAuto)
-        MeasListAct = ones(size(MeasList,1),1);
-    else
-        MeasListAct = mlActAuto{iBlk};
+    if isempty(mlActAuto{iBlk})
+        mlActAuto{iBlk} = ones(size(MeasList,1),1);
     end
-    if isempty(tIncAuto)
-        tInc = ones(length(t),1);
-    else
-        tInc = tIncAuto{iBlk};
-    end           
+    MeasListAct = mlActAuto{iBlk};
+    if isempty(tIncAuto{iBlk})
+        tIncAuto{iBlk} = ones(length(t),1);
+    end
+    tInc = tIncAuto{iBlk};
     
     lstInc   = find(tInc==1);    
     ml       = MeasList;
@@ -98,13 +103,13 @@ for iBlk=1:length(data_y)
             svs{iBlk}(:,iConc) = diag(s)/sum(diag(s));
             if nSV{iBlk}(iConc)<1 % find number of SV to get variance up to nSV
                 svsc = svs{iBlk}(:,iConc);
-                for idx = 2:size(svs,1)
+                for idx = 2:size(svs{iBlk},1)
                     svsc(idx) = svsc(idx-1) + svs{iBlk}(idx,iConc);
                 end
                 ev = diag(svsc<nSV{iBlk}(iConc));
                 nSV{iBlk}(iConc) = find(diag(ev)==0,1)-1;
             else
-                ev = zeros(size(svs,1),1);
+                ev = zeros(size(svs{iBlk},1),1);
                 ev(1:nSV{iBlk}(iConc)) = 1;
                 ev = diag(ev);
             end
@@ -125,19 +130,19 @@ for iBlk=1:length(data_y)
             
             c = y.' * y;
             [V,St,foo] = svd(c);
-            svs = diag(St) / sum(diag(St));
+            svs{iBlk} = diag(St) / sum(diag(St));
             %        [foo,St,V] = svd(y);
-            %        svs = diag(St).^2/sum(diag(St).^2);
+            %        svs{iBlk} = diag(St).^2/sum(diag(St).^2);
             %        figure; plot(svsc,'*-');
             if nSV{iBlk}<1 % find number of SV to get variance up to nSV{iBlk}
-                svsc = svs;
-                for idx = 2:size(svs,1)
+                svsc = svs{iBlk};
+                for idx = 2:size(svs{iBlk},1)
                     svsc(idx) = svsc(idx-1) + svs{iBlk}(idx);
                 end
                 ev = diag(svsc<nSV{iBlk});
                 nSV{iBlk} = find(diag(ev)==0,1)-1;
             else
-                ev = zeros(size(svs,1),1);
+                ev = zeros(size(svs{iBlk},1),1);
                 ev(1:nSV{iBlk}) = 1;
                 ev = diag(ev);
             end
@@ -156,17 +161,17 @@ for iBlk=1:length(data_y)
                 [V,St,foo] = svd(c);
                 svs{iBlk}(:,iW) = diag(St) / sum(diag(St));
                 %        [foo,St,V] = svd(y);
-                %        svs = diag(St).^2/sum(diag(St).^2);
+                %        svs{iBlk} = diag(St).^2/sum(diag(St).^2);
                 %        figure; plot(svsc,'*-');
                 if nSV{iBlk}(iW)<1 % find number of SV to get variance up to nSV{iBlk}
                     svsc = svs{iBlk}(:,iW);
-                    for idx = 2:size(svs,1)
+                    for idx = 2:size(svs{iBlk},1)
                         svsc(idx) = svsc(idx-1) + svs{iBlk}(idx,iW);
                     end
                     ev = diag(svsc<nSV{iBlk}(iW));
                     nSV{iBlk}(iW) = find(diag(ev)==0,1)-1;
                 else
-                    ev = zeros(size(svs,1),1);
+                    ev = zeros(size(svs{iBlk},1),1);
                     ev(1:nSV{iBlk}(iW)) = 1;
                     ev = diag(ev);
                 end

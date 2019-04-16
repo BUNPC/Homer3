@@ -71,6 +71,12 @@ end
 if ~isa(sd, 'SdClass')
     error('Second input must be sd SNIRF objects of type SdClass.')
 end
+if isempty(tIncMan)
+    tIncMan = cell(length(data,1),1);
+end
+if isempty(mlActMan)
+    mlActMan = cell(size(data,1),1);
+end
 
 for iBlk=1:length(data)
     
@@ -83,19 +89,18 @@ for iBlk=1:length(data)
         fs = 1/(fs(2)-fs(1));
     end
        
-    if isempty(tIncMan)
-        tIncMan = ones(size(d,1),1);
+    if isempty(tIncMan{iBlk})
+        tIncMan{iBlk} = ones(size(d,1),1);
     end
     
     tInc{iBlk}   = ones(size(d,1),1);
-    tIncCh{iBlk} = ones(size(d,1),size(MeasList,1));
+    tIncCh{iBlk} = ones(size(d,1), size(MeasList,1));
     
-    if isempty(mlActMan)
-        MeasListAct = ones(size(MeasList,1),1);
-    else
-        MeasListAct = mlActMan{iBlk};        
+    if isempty(mlActMan{iBlk})
+        mlActMan{iBlk} = ones(size(MeasList,1),1);
     end
-    
+    MeasListAct = mlActMan{iBlk};
+        
     % Calculate the diff of d to to set the threshold if ncssesary
     diff_d = diff(d);
        
@@ -146,7 +151,7 @@ for iBlk=1:length(data)
             bad_inds=bad_inds((bad_inds>0)&(bad_inds<=(size(d, 1)-1)));
             
             % exclude points that were manually excluded
-            bad_inds(find(tIncMan(bad_inds)==0)) = [];
+            bad_inds(find(tIncMan{iBlk}(bad_inds)==0)) = [];
             
             % Set t and diff of data to 0 at the bad inds
             tInc{iBlk}(1+bad_inds)=0; % bad inds calculated on diff so add 1
@@ -155,8 +160,8 @@ for iBlk=1:length(data)
         
     end % loop over channels
     
-    tInc{iBlk}(find(tIncMan==0)) = 0;
-    tIncCh{iBlk}(find(tIncMan==0),:) = 0;
+    tInc{iBlk}(find(tIncMan{iBlk}==0)) = 0;
+    tIncCh{iBlk}(find(tIncMan{iBlk}==0),:) = 0;
     
     % calculate the variance due to motion relative to total variance
     lst = find(tInc{iBlk}==0);

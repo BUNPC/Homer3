@@ -62,6 +62,9 @@
 %
 function tInc = hmrR_MotionArtifact(data, sd, mlActMan, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
 
+% Init output 
+tInc = cell(length(data),1);
+
 % Input processing.  Check required inputs, throw errors if necessary.
 if nargin<3
     error('First and second inputs must be data and sd SNIRF objects of type DataClass and SdClass.')
@@ -72,8 +75,12 @@ end
 if ~isa(sd, 'SdClass')
     error('Second input must be sd SNIRF objects of type SdClass.')
 end
-
-tInc = cell(length(data),1);
+if isempty(tIncMan)
+    tIncMan = cell(length(data),1);
+end
+if isempty(mlActMan)
+    mlActMan = cell(length(data),1);
+end
 
 for iBlk=1:length(data)
 
@@ -86,17 +93,14 @@ for iBlk=1:length(data)
     if length(fs)~=1
         fs = 1/(fs(2)-fs(1));
     end
-    
-    if isempty(tIncMan)
-        tIncMan = repmat({ones(size(d,1),1)}, length(data), 1);
-    end    
-    tInc{iBlk} = ones(size(d,1),1);
-    
-    if isempty(mlActMan)
-        MeasListAct = ones(size(MeasList,1),1);
-    else
-        MeasListAct = mlActMan{iBlk};        
-    end    
+    if isempty(tIncMan{iBlk})
+        tIncMan{iBlk} = ones(size(d,1),1);
+    end
+    tInc{iBlk} = tIncMan{iBlk};
+    if isempty(mlActMan{iBlk})
+        mlActMan{iBlk} = ones(size(MeasList,1),1);
+    end
+    MeasListAct = mlActMan{iBlk};        
     
     % Calculate the diff of d to to set the threshold if ncssesary
     diff_d = diff(d);

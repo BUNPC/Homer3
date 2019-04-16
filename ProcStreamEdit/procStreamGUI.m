@@ -45,6 +45,7 @@ procStreamGui.format = '';
 procStreamGui.pos = [];
 if ~isempty(hmr)
     procStreamGui.format = hmr.format;
+    procStreamGui.updateParentGui = hmr.Update;
 end
 
 % Format argument
@@ -155,7 +156,7 @@ for iPanel=1:length(procStreamGui.procElem)
     funcname = funcReg(iPanel).GetFuncName(iFunc);
     set(handles.listboxUsageOptions(iPanel),'string',funcReg(iPanel).GetUsageNames(funcname));
     set(handles.listboxUsageOptions(iPanel), 'value',1);
-    LookupHelp(iFunc, handles);
+    LookupHelp(iPanel, iFunc, handles);
 end
 
 
@@ -189,7 +190,7 @@ if isempty(listPsUsage)
     listPsUsage(length(procStreamGui.procElem)) = StringsClass();
 end
 for iPanel=1:length(procStreamGui.procElem)
-    listPsUsage(iPanel).Initialize();    
+    listPsUsage(iPanel).Initialize();
     procStream = procStreamGui.procElem{iPanel}.procStream;
     for iFcall=1:procStream.GetFuncCallNum()
         fname     = procStream.fcalls(iFcall).GetName();
@@ -230,7 +231,7 @@ if iUsage>length(usagenames)
 end
 set(handles.listboxUsageOptions(iPanel), 'value', iUsage);
 set(handles.listboxUsageOptions(iPanel), 'string', usagenames);
-LookupHelp(ii, handles);
+LookupHelp(iPanel, ii, handles);
 
 
 
@@ -248,7 +249,7 @@ usagename = listPsUsage(iPanel).GetVal(ii);
 if isempty(usagename) || ~ischar(usagename)
     return;
 end
-LookupHelpFuncCall(usagename, handles);
+LookupHelpFuncCall(iPanel, usagename, handles);
 
 
 
@@ -266,7 +267,7 @@ iFunc      = get(handles.listboxFuncReg(iPanel),'value');
 funcnames  = get(handles.listboxFuncReg(iPanel),'string');
 usagename  = sprintf('%s: %s', funcnames{iFunc}, usagenames{iUsage});
 
-LookupHelpFuncCall(usagename, handles);
+LookupHelpFuncCall(iPanel, usagename, handles);
 
 
 
@@ -460,6 +461,7 @@ if q==1
     group.CopyFcalls(procElem{iGroupPanel});
     group.CopyFcalls(procElem{iSubjPanel});
     group.CopyFcalls(procElem{iRunPanel});
+    procStreamGui.updateParentGui();
 elseif q==2
     % load cfg file
     [filename,pathname] = uiputfile( '*.cfg', 'Process Options Config File to Save To?');
@@ -474,10 +476,9 @@ end
 
 
 % -------------------------------------------------
-function helptxt = LookupHelp(name, handles)
+function helptxt = LookupHelp(iPanel, name, handles)
 global procStreamGui
 funcReg = procStreamGui.funcReg;
-iPanel = procStreamGui.iPanel;
 
 helptxt = '';
 if isempty(funcReg)
@@ -495,10 +496,9 @@ set(handles.textHelp(iPanel), 'value',1);
 
 
 % -------------------------------------------------
-function helptxt = LookupHelpFuncCall(usagename, handles)
+function helptxt = LookupHelpFuncCall(iPanel, usagename, handles)
 global procStreamGui
 funcReg = procStreamGui.funcReg;
-iPanel = procStreamGui.iPanel;
 
 helptxt = '';
 foo = str2cell(usagename, ':');
@@ -530,7 +530,7 @@ iPanel = procStreamGui.iPanel;
 helptxt = get(handles.textHelp(iPanel),'string');
 if isempty(helptxt)
     iFunc = get(handles.listboxFuncReg(iPanel),'value');
-    LookupHelp(iFunc, handles);
+    LookupHelp(iPanel, iFunc, handles);
 end
 
 
@@ -543,7 +543,7 @@ iPanel = procStreamGui.iPanel;
 helptxt = get(handles.textHelp(iPanel),'string');
 if isempty(helptxt)
     iFunc = get(handles.listboxFuncReg(iPanel),'value');
-    LookupHelp(iFunc, handles);
+    LookupHelp(iPanel, iFunc, handles);
 end
 
 
@@ -556,7 +556,7 @@ iPanel = procStreamGui.iPanel;
 helptxt = get(handles.textHelp(iPanel),'string');
 if isempty(helptxt)
     iFunc = get(handles.listboxFuncReg(iPanel),'value');
-    LookupHelp(iFunc, handles);
+    LookupHelp(iPanel, iFunc, handles);
 end
 
 
@@ -611,15 +611,31 @@ function menuItemAddFunction_Callback(hObject, eventdata, handles)
 global procStreamGui
 reg = procStreamGui.dataTree.reg;
 
-filenames = {};
-files = dir([reg.userfuncdir, 'hmr*.m']); 
+files = dir([reg.userfuncdir{1}, 'hmr*.m']);
+filenames = cell(length(files),1);
 for ii=1:length(files)
-    filenames = [filenames; files(ii).name];
+    [~,filenames{ii}] = fileparts(files(ii).name);
 end
+
+funcnames = {};
+for ii=1:length(reg.funcReg)
+    funcnames = [funcnames; {reg.funcReg(ii).entries.name}'];
+end
+k = ~ismember(filenames, funcnames);
+flst = filenames(k);
 idx = listdlg('PromptString','Select Function File to Add to Registry:',...
               'SelectionMode','single',...
-              'ListString',filenames);
-reg.AddEntry(files{idx});
+              'ListString',flst);
+if isempty(idx)
+    return;
+end         
+err = reg.AddEntry(flst{idx});
+if err
+    MessageBox(sprintf('ERROR: Could not add %s. Function is not valid', flst{idx}), 'ERROR');
+    return;
+end
+LoadRegistry(handles);
+reg.Save();
 
 
 
@@ -629,15 +645,22 @@ global procStreamGui
 reg = procStreamGui.dataTree.reg;
 
 funcnames = {};
-kk=1;
 for ii=1:length(reg.funcReg)
-    for jj=1:length(reg.funcReg(ii).entries)
-        funcnames{kk,1} = reg.funcReg(ii).GetFuncName(jj);
-        kk=kk+1;
-    end
+    funcnames = [funcnames; {reg.funcReg(ii).entries.name}'];
 end
-idx = listdlg('PromptString','Select function to reload:',...
+if isempty(funcnames)
+    return;
+end
+idx = listdlg('PromptString','Select Function File to Reload to Registry:',...
                 'SelectionMode','single',...
                 'ListString',funcnames);
-reg.ReloadEntry(funcnames{idx});
-
+if isempty(idx)
+    return;
+end
+err = reg.ReloadEntry(funcnames{idx});
+if err
+    MessageBox(sprintf('ERROR: Could not reload %s. Function no longer valid', funcnames{idx}), 'ERROR');
+    return;
+end
+LoadRegistry(handles);
+reg.Save();

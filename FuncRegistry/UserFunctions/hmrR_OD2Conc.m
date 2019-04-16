@@ -28,6 +28,8 @@
 %
 function dc = hmrR_OD2Conc( dod, sd, ppf )
 
+dc = DataClass().empty();
+
 for ii=1:length(dod)
     dc(ii) = DataClass();
     

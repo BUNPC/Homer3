@@ -14,7 +14,11 @@ classdef StimClass < FileLoadSaveClass
         
         % -------------------------------------------------------
         function obj = StimClass(varargin)
-            if nargin==3
+            if nargin==1 
+                if isa(varargin{1}, 'StimClass')
+                    obj.Copy(varargin{1});
+                end
+            elseif nargin==3
                 s        = varargin{1};
                 t        = varargin{2};
                 CondName = varargin{3};
@@ -105,6 +109,13 @@ classdef StimClass < FileLoadSaveClass
             hdf5write_safe(fname, [parent, '/name'], obj.name);
             h5write_safe(fname, [parent, '/data'], obj.data);
         end
+        
+        
+        % -------------------------------------------------------
+        function Copy(obj, obj2)
+            obj.name = obj2.name;
+            obj.data = obj2.data;
+        end        
         
     end
     

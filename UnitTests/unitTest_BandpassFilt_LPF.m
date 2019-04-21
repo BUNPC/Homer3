@@ -35,7 +35,7 @@ rootpath = fileparts(which('Homer3.m'));
 currpath = pwd;
 
 cd([rootpath, '/', dirname]);
-resetGroupFolder();
+resetGroupFolder('', 'registry_keep');
 
 [dataTree, procStreamConfigFile] = changeProcStream(datafmt, 'processOpt_default_homer3', 'hmrR_BandpassFilt', 'lpf', newval);
 if isempty(dataTree)

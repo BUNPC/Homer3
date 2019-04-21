@@ -89,17 +89,33 @@ classdef AcqDataClass < matlab.mixin.Copyable
         end
         
         
+        % ----------------------------------------------------------------------------------
+        function obj2 = Copy(obj)
+            % Create instance of acquired data class by doing a shallow
+            % copy. We don't need a deep copy here because we will 
+            % do that further down in the function only for the mutable
+            % properties.
+            obj2 = obj.copy;
+            
+            % Deep copy mutable properties from obj to obj2
+            for ii=1:length(obj.mutable)
+                if isa( eval( sprintf('obj.%s', obj.mutable{ii}) ), 'handle')
+                    nProp = eval( sprintf('length(obj.%s(:));', obj.mutable{ii}) );
+                    constructorName = sprintf('%sClass', [upper(obj.mutable{ii}(1)), obj.mutable{ii}(2:end)] );
+                    for kk=1:nProp
+                        eval( sprintf('obj2.%s(kk) = %s(obj.%s(kk));', obj.mutable{ii}, constructorName, obj.mutable{ii}) );
+                    end
+                else
+                    eval( sprintf('obj2.%s = obj.%s;', obj.mutable{ii}, obj.mutable{ii}) );
+                end
+            end
+                        
+        end
+        
         
         % ----------------------------------------------------------------------------------
-        function found = FindVar(obj, varname)
-            found = false;
-            if isproperty(obj, varname)
-                found = true;
-            elseif ismethod(obj,['Get', varname])
-                found = true;
-            elseif ismethod(obj,['Get_', varname])
-                found = true;
-            end
+        function props = properties_mutable(obj)
+            props = obj.mutable;
         end        
         
     end

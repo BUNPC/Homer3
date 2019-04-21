@@ -81,3 +81,11 @@ Apr 10, 2019
 
 -- Add to data axes Fix y-range and Fix x-range features that are in Homer2_UI. These are very useful. 
 
+----------------
+Apr 16, 2019
+----------------
+
+-- Check the at the channel dataTypeLabels that are being used conform to spec. 
+-- Instead of using hard coded numbers for dataTypeLabels to label channels, create a list of data type values in SnirfClass. 
+
+

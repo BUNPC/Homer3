@@ -432,6 +432,9 @@ classdef DataClass < FileLoadSaveClass
             if isempty(obj)
                 obj = DataClass();
             end
+            if ~isa(obj2, 'DataClass')
+                return;
+            end
             for ii=1:length(obj2.ml)
                 obj.ml(ii) = obj2.ml(ii).copy();      % shallow copy ok because MeasListClass has no handle properties 
             end

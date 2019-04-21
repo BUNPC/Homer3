@@ -303,19 +303,13 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function found = FindVar(obj, varname)
-            found = false;
-            if isproperty(obj, varname)
-                found = true;
-            end
-        end
-        
-               
-        % ----------------------------------------------------------------------------------
         function varval = GetVar(obj, varname)
             varval = [];
             if isproperty(obj, varname)
                 varval = eval( sprintf('obj.%s', varname) );
+            end
+            if isempty(varval)
+                varval = obj.procStream.GetVar(varname);
             end
         end
         

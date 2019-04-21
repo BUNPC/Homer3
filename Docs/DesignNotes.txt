@@ -1,0 +1,7 @@
+Apr 21, 2019
+
+Processing Stream Notes:
+
+-- procStream.input parameters are modified ONLY during manual GUI operations but NOT during processing.
+-- All output parametsrs generated during processing (Calc method) are added to procStream.output (or procStream.output.mis)
+

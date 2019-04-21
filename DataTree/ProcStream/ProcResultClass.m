@@ -22,7 +22,6 @@ classdef ProcResultClass < handle
         function obj = ProcResultClass()
             obj.Initialize();
         end
-        cd 
         
         % ---------------------------------------------------------------------------
         function Initialize(obj)
@@ -103,17 +102,6 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function found = FindVar(obj, varname)
-            found = false;
-            if isproperty(obj, varname)
-                found = true;
-            elseif isproperty(obj.misc, varname)
-                found = true;
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
         function var = GetVar(obj, varname, iBlk)
             var = [];
             if exist('iBlk','var') && isempty(iBlk)
@@ -132,8 +120,6 @@ classdef ProcResultClass < handle
                 end
             end
         end
-        
-        
         
         
         % ----------------------------------------------------------------------------------

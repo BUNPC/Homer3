@@ -38,22 +38,20 @@ classdef RunClass < TreeNodeClass
             else
                 return;
             end            
-
-            if obj.IsNirs()
-                obj.acquired = NirsClass(obj.name);
-            else
-                obj.acquired = SnirfClass(obj.name);
-            end            
-            obj.procStream = ProcStreamClass([], obj.acquired);
-            obj.CondName2Group = [];
             obj.Load();
+            obj.CondName2Group = [];
         end
 
         
             
         % ----------------------------------------------------------------------------------
         function Load(obj)
-            obj.acquired.Load();
+            if obj.IsNirs()
+                obj.acquired = NirsClass(obj.name);
+            else
+                obj.acquired = SnirfClass(obj.name);
+            end            
+            obj.procStream = ProcStreamClass([], obj.acquired);
         end
         
         
@@ -135,30 +133,15 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function found = FindVar(obj, varname)
-            found = false;
-            if isproperty(obj, varname)
-                found = true;
-                return;
-            end
-            if obj.procStream.FindVar(varname)==true
-                found = true;
-                return;
-            end            
-            if obj.acquired.FindVar(varname)==true
-                found = true;
-                return;
-            end
-        end
-        
-                
-        % ----------------------------------------------------------------------------------
         function varval = GetVar(obj, varname)
+            varval = [];
             if isproperty(obj, varname)
                 varval = eval( sprintf('obj.%s', varname) );
-            elseif obj.procStream.FindVar(varname)==true
+            end
+            if isempty(varval)
                 varval = obj.procStream.GetVar(varname);
-            else
+            end
+            if isempty(varval)
                 varval = obj.acquired.GetVar(varname);
             end
         end
@@ -180,9 +163,6 @@ classdef RunClass < TreeNodeClass
             % b) Find these variables in this run
             vars = [];
             for ii=1:length(args)
-                if ~obj.FindVar(args{ii})
-                    continue;
-                end
                 eval( sprintf('vars.%s = obj.GetVar(args{ii});', args{ii}) );
             end
             

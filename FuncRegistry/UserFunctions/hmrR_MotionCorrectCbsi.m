@@ -1,8 +1,10 @@
-% function data_dcCbsi = hmrR_MotionCorrectCbsi(data_dc, mlActAuto, turnon)
+% SYNTAX:
+% function data_dc = hmrR_MotionCorrectCbsi(data_dc, mlActAuto, turnon)
 %
 % UI NAME:
 % Cbsi_Motion_Correction
 %
+% DESCRIPTION:
 % Perform a correlation-based signal improvement of the concentration
 % changes in order to correct for motion artifacts.
 % The algorithm follows the procedure described by

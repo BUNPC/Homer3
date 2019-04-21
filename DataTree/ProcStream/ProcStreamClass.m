@@ -1056,22 +1056,16 @@ classdef ProcStreamClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function found = FindVar(obj, varname)
-            found = obj.input.FindVar(varname);
-        end
-
-        
-        % ----------------------------------------------------------------------------------
-        function var = GetVar(obj, varname, iBlk)
+        function varval = GetVar(obj, varname, iBlk)
             if ~exist('iBlk','var')
-                var = obj.input.GetVar(varname);
-                if isempty(var)
-                    var = obj.output.GetVar(varname);
+                varval = obj.input.GetVar(varname);
+                if isempty(varval)
+                    varval = obj.output.GetVar(varname);
                 end
             else
-                var = obj.input.GetVar(varname, iBlk);
-                if isempty(var)
-                    var = obj.output.GetVar(varname, iBlk);
+                varval = obj.input.GetVar(varname, iBlk);
+                if isempty(varval)
+                    varval = obj.output.GetVar(varname, iBlk);
                 end                
             end
         end

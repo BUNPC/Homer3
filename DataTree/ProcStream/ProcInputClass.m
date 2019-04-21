@@ -90,32 +90,21 @@ classdef ProcInputClass < handle
                
         
         % ----------------------------------------------------------------------------------
-        function found = FindVar(obj, varname)
-            found = false;
-            if isproperty(obj, varname)
-                found = true;
-            elseif isproperty(obj.misc, varname)
-                found = true;
-            end
-        end
-
-        
-        % ----------------------------------------------------------------------------------
-        function var = GetVar(obj, varname, iBlk)
-            var = [];
+        function varval = GetVar(obj, varname, iBlk)
+            varval = [];
             if exist('iBlk','var') && isempty(iBlk)
                 iBlk=1;
             end
             if isproperty(obj, varname)
-                eval(sprintf('var = obj.%s;', varname));
+                eval(sprintf('varval = obj.%s;', varname));
             elseif isproperty(obj.misc, varname)
-                eval(sprintf('var = obj.misc.%s;', varname));
+                eval(sprintf('varval = obj.misc.%s;', varname));
             end            
-            if ~isempty(var) && exist('iBlk','var')
-                if iscell(var)
-                    var = var{iBlk};
+            if ~isempty(varval) && exist('iBlk','var')
+                if iscell(varval)
+                    varval = varval{iBlk};
                 else
-                    var = var(iBlk);
+                    varval = varval(iBlk);
                 end
             end
         end
@@ -178,10 +167,7 @@ classdef ProcInputClass < handle
             n = length(obj.tIncMan);
         end
         
-        
     end
     
-    
-        
 end
 

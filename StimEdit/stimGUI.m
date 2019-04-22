@@ -236,7 +236,8 @@ end
 
 % Now that we made sure legit dataTree exists, we can match up
 % the selected stims to the stims in currElem
-s = stimEdit.dataTree.currElem.GetStims();
+t = stimEdit.dataTree.currElem.GetTimeCombined();
+s = stimEdit.dataTree.currElem.GetStims(t);
 s2 = sum(abs(s(tPts_idxs_select,:)),2);
 stims_select = find(s2>=1);
 

@@ -120,7 +120,8 @@ end
 % function's stim argument as input, and then using the SnirfClass object's 
 % GetStims method to convert stim to the s vector that this function needs. 
 snirf = SnirfClass(data_y, stim);
-s = snirf.GetStims();
+t = snirf.GetTimeCombined();
+s = snirf.GetStims(t);
 nTrials = zeros(1, size(s,2));
 
 for iBlk=1:length(data_y)

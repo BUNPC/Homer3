@@ -1,5 +1,8 @@
 classdef AcqDataClass < matlab.mixin.Copyable
        
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % These methods must be implemented in any derived class
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods(Abstract)
         
         % ---------------------------------------------------------
@@ -28,7 +31,7 @@ classdef AcqDataClass < matlab.mixin.Copyable
         SetStims_MatInput(obj, s, t, CondNames)
         
         % ---------------------------------------------------------
-        s         = GetStims(obj)
+        s         = GetStims(obj, t)
         
         % ---------------------------------------------------------
         CondNames = GetConditions(obj)
@@ -49,8 +52,8 @@ classdef AcqDataClass < matlab.mixin.Copyable
         [iDataBlks, ich] = GetDataBlocksIdxs(obj, ich);
         
         % ---------------------------------------------------------
-        params = MutableParams(obj);
-        
+        objnew = CopyMutable(obj);
+
     end
     
     
@@ -90,34 +93,29 @@ classdef AcqDataClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function obj2 = Copy(obj)
-            % Create instance of acquired data class by doing a shallow
-            % copy. We don't need a deep copy here because we will 
-            % do that further down in the function only for the mutable
-            % properties.
-            obj2 = obj.copy;
+        function t = GetTimeCombined(obj)
+            t = obj.GetTime(1);
+            tStart = t(1);
+            tEnd   = t(end);
+            tStep  = mean(diff(t));
             
-            % Deep copy mutable properties from obj to obj2
-            for ii=1:length(obj.mutable)
-                if isa( eval( sprintf('obj.%s', obj.mutable{ii}) ), 'handle')
-                    nProp = eval( sprintf('length(obj.%s(:));', obj.mutable{ii}) );
-                    constructorName = sprintf('%sClass', [upper(obj.mutable{ii}(1)), obj.mutable{ii}(2:end)] );
-                    for kk=1:nProp
-                        eval( sprintf('obj2.%s(kk) = %s(obj.%s(kk));', obj.mutable{ii}, constructorName, obj.mutable{ii}) );
-                    end
-                else
-                    eval( sprintf('obj2.%s = obj.%s;', obj.mutable{ii}, obj.mutable{ii}) );
+            nBlks = obj.GetDataBlocksNum();
+            for iBlk=2:nBlks
+                t = obj.GetTime(iBlk);
+                if t(1) < tStart
+                    tStart = t(1);
+                end
+                if t(end) > tEnd
+                    tEnd = t(end);
+                end
+                if mean(diff(t)) < tStep
+                    tStep = mean(diff(t));
                 end
             end
-                        
+            t = tStart:tStep:tEnd;            
         end
         
-        
-        % ----------------------------------------------------------------------------------
-        function props = properties_mutable(obj)
-            props = obj.mutable;
-        end        
-        
+                
     end
     
 end

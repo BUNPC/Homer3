@@ -7,7 +7,9 @@ classdef ProcInputClass < handle
         CondName2Subj;           % Used by group processing stream
         CondName2Run;            % Used by subject processing stream      
         tIncMan;                 % Manually include/excluded time points
-        mlActMan;                   % Manually include/excluded time points
+        mlActMan;                % Manually include/excluded time points
+        acquiredEditable;        % Copy of acquisition parameters that are editable 
+                                 % through manual GUI operations. 
         stimValSettings;         % Derived stim values 
         misc;
     end
@@ -23,27 +25,22 @@ classdef ProcInputClass < handle
             obj.mlActMan = {};
             obj.misc = [];
             obj.stimValSettings = struct('none',0, 'incl',1, 'excl_manual',-1, 'excl_auto',-2);
+            obj.acquiredEditable = GenericAcqClass();
             if nargin==0
                 return;
             end
-            obj.GenerateDerivedParams(acquired);
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function  GenerateDerivedParams(obj, acquired)
             if isempty(acquired)
                 return;
             end
-            params = acquired.MutableParams();
-            for ii=1:length(params)
-                eval( sprintf('obj.misc.%s = acquired.Get%s();', params{ii}, params{ii}) );
-            end
+            obj.acquiredEditable = acquired.CopyMutable();
         end
-                
         
+                
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2)
+            if ~isa(obj, 'ProcInputClass')
+                return;
+            end
             if isempty(obj)
                 obj = ProcInputClass();
             end
@@ -51,18 +48,17 @@ classdef ProcInputClass < handle
             obj.CondName2Run = obj2.CondName2Run;
             obj.tIncMan = obj2.tIncMan;
             
-            % misc could contain handle objects, which use the Copy methods to transfer their contents 
             fields = properties(obj.misc);
             for ii=1:length(fields)
                 if ~eval(sprintf('isproperty(obj2.misc, ''%s'')', fields{ii}))
                     continue;
                 end
-                if isa(eval(sprintf('obj.misc.%s', fields{ii})), 'handle')
-                    eval( sprintf('obj.misc.%s.Copy(obj2.misc.%s);', fields{ii}, fields{ii}) );
-                else
-                    eval( sprintf('obj.misc.%s = obj2.misc.%s;', fields{ii}, fields{ii}) );
-                end
+                
+                % misc could contain fields that are handle objects. Use
+                % CopyHandles instead of plain old assignment statement 
+                eval( sprintf('obj.misc.%s = CopyHandles(obj.misc.%s, obj2.misc.%s);', fields{ii}, fields{ii}) );
             end
+            obj.acquiredEditable = CopyHandles(obj.acquiredEditable, obj2.acquiredEditable);
         end
         
         
@@ -99,6 +95,8 @@ classdef ProcInputClass < handle
                 eval(sprintf('varval = obj.%s;', varname));
             elseif isproperty(obj.misc, varname)
                 eval(sprintf('varval = obj.misc.%s;', varname));
+            elseif isproperty(obj.acquiredEditable, varname)
+                eval(sprintf('varval = obj.acquiredEditable.%s;', varname));
             end            
             if ~isempty(varval) && exist('iBlk','var')
                 if iscell(varval)
@@ -134,8 +132,11 @@ classdef ProcInputClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function s = GetStims(obj)
-            s = [];
+        function s = GetStims(obj, t)
+            if nargin==1
+                t = [];
+            end
+            s = obj.acquiredEditable.GetStims(t);
         end
         
         

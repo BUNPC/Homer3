@@ -206,6 +206,12 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function t = GetTimeCombined(obj)
+            t = obj.acquired.GetTimeCombined();
+        end
+            
+            
+        % ----------------------------------------------------------------------------------
         function d = GetRawData(obj, iBlk)
             if nargin<2
                 iBlk = 1;
@@ -279,17 +285,15 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function s = GetStims(obj)
-            % First look in derived data, then acquired
-            
+        function s = GetStims(obj, t)            
             % Proc stream output 
-            s = obj.procStream.output.GetStims();
+            s = obj.procStream.output.GetStims(t);
             if isempty(s)
                 % Proc stream input
-                s = obj.procStream.input.GetStims();
+                s = obj.procStream.input.GetStims(t);
                 if isempty(s)
                     % Acquired data
-                    s = obj.acquired.GetStims();
+                    s = obj.acquired.GetStims(t);
                 end
             end
         end
@@ -310,7 +314,8 @@ classdef RunClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function CondNames = GetConditionsActive(obj)
             CondNames = obj.CondNames;
-            s = obj.GetStims();
+            t = obj.GetTime();
+            s = obj.GetStims(t);
             for ii=1:size(s,2)
                 if ismember(abs(1), s(:,ii))
                     CondNames{ii} = ['-- ', CondNames{ii}];

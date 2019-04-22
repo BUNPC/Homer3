@@ -685,8 +685,8 @@ function hObject = DisplayData(handles, hObject)
 global hmr
 
 
-% Some callbacks which call DisplayData, serve double duty as called functions 
-% from other callbacks which also call DisplayData. To avoid double or
+% Some callbacks which call DisplayData serve double duty as called functions 
+% from other callbacks which in turn call DisplayData. To avoid double or
 % triple redisplaying in a single thread, exit DisplayData if hObject is
 % not a handle. 
 if ~exist('hObject','var')
@@ -852,8 +852,8 @@ end
 
 %%% Plot stim marks. This has to be done before plotting exclude time
 %%% patches because stim legend doesn't work otherwise.
-t          = procElem.GetTime();
-s          = procElem.GetStims();
+t          = procElem.GetTimeCombined();
+s          = procElem.GetStims(t);
 stimVals   = procElem.GetStimValSettings();
 CondColTbl = procElem.CondColTbl;
 

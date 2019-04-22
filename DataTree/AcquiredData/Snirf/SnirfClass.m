@@ -14,8 +14,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         nirs_tb;
     end
     
-    
-    
     methods
         
         % -------------------------------------------------------
@@ -85,6 +83,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % The basic 5 of a .nirs format in a struct
             if nargin==1 || (nargin==2 && isa(varargin{2}, 'double'))
+                if isa(varargin{1}, 'SnirfClass')
+                    obj.Copy(varargin{1});
+                    return;
+                end                
+                
                 if ischar(varargin{1})
                     obj.Load(varargin{1});
                 elseif isstruct(varargin{1})
@@ -148,11 +151,40 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         end
         
         
+        
+        % -------------------------------------------------------
+        function err = Copy(obj, obj2)
+            err=0;
+            if ~isa(obj2, 'SnirfClass')
+                err=1;
+                return;
+            end
+            obj.formatVersion = obj2.formatVersion;
+            obj.data          = CopyHandles(obj2.data);
+            obj.stim          = CopyHandles(obj2.stim);
+            obj.sd            = CopyHandles(obj2.sd);
+            obj.aux           = CopyHandles(obj2.aux);
+            obj.timeOffset    = obj2.timeOffset;
+            obj.metaDataTags  = obj2.metaDataTags;
+        end
+        
+        
+        % -------------------------------------------------------
+        function objnew = CopyMutable(obj)
+            % Generate new instance of SnirfClass
+            objnew = SnirfClass();
+            
+            % Copy mutable properties to new object instance;
+            objnew.stim = CopyHandles(obj.stim);
+        end
+       
+        
+        
         % -------------------------------------------------------
         function SortStims(obj)
-            temp = obj.stim.copy;
+            temp = CopyHandles(obj.stim);
             delete(obj.stim);
-            names = {};
+            names = cell(length(temp),1);
             for ii=1:length(temp)
                 names{ii} = temp(ii).name;
             end
@@ -314,6 +346,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 
     end
     
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Basic methods to Set/Get native variable 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -331,7 +364,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function SetData(obj, val)
-            obj.data = val.copy;            
+            obj.data = CopyHandles(val);            
         end
         
         % ---------------------------------------------------------
@@ -341,17 +374,17 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function SetStim(obj, val)
-            obj.stim = val.copy;            
+            obj.stim = CopyHandles(val);
         end
         
         % ---------------------------------------------------------
         function val = GetStim(obj)
-            val = obj.stim.copy;
+            val = obj.stim;
         end
         
         % ---------------------------------------------------------
         function SetSd(obj, val)
-            obj.sd = val.copy;            
+            obj.sd = CopyHandles(val);            
         end
         
         % ---------------------------------------------------------
@@ -361,7 +394,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function SetAux(obj, val)
-            obj.aux = val.copy;            
+            obj.aux = CopyHandles(val);            
         end
         
         % ---------------------------------------------------------
@@ -452,11 +485,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function s = GetStims(obj, iBlk)
-            if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk=1;
-            end
-            t = obj.data(iBlk).GetTime();
+        function s = GetStims(obj, t)
             s = zeros(length(t), length(obj.stim));
             for ii=1:length(obj.stim)
                 [ts, v] = obj.stim(ii).GetStim();
@@ -511,13 +540,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % ----------------------------------------------------------------------------------
         function n = GetDataBlocksNum(obj)
             n = length(obj.data);
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function params = MutableParams(obj)
-            params = {};
-            % params = {'stim'};
         end
         
         

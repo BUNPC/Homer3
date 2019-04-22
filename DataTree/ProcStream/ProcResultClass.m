@@ -331,7 +331,10 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function s = GetStims(obj)
+        function s = GetStims(obj, t)
+            if nargin==1
+                t = [];
+            end
             s = obj.GetVar('s');
             if isempty(s)
                 if isempty(obj.dod) || ~isa(obj.dod, 'DataClass')
@@ -342,7 +345,7 @@ classdef ProcResultClass < handle
                     return;
                 end
                 snirf = SnirfClass(obj.dod, stim);
-                s = snirf.GetStims();
+                s = snirf.GetStims(t);
             end
         end
         
@@ -396,19 +399,18 @@ classdef ProcResultClass < handle
         
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2)
+            if ~isa(obj, 'ProcResultClass')
+                return;
+            end
             fields = properties(obj);
             for ii=1:length(fields)
                 if ~eval(sprintf('isproperty(obj2, ''%s'')', fields{ii}))
                     continue;
                 end
-                if eval(sprintf('strcmp(obj2.%s, ''misc'')', fields{ii}))
-                    continue;
-                end
-                if isa(eval(sprintf('obj.%s', fields{ii})), 'handle')
-                    eval( sprintf('obj.%s.Copy(obj2.%s);', fields{ii}, fields{ii}) );
-                else
-                    eval( sprintf('obj.%s = obj2.%s;', fields{ii}, fields{ii}) );
-                end
+                
+                % obj2 could contain properties that are handle objects. Use
+                % CopyHandles instead of plain old assignment statement 
+                eval( sprintf('obj.%s = CopyHandles(obj.%s, obj2.%s);', fields{ii}, fields{ii}, fields{ii}) );
             end
             
             fields = properties(obj.misc);
@@ -416,11 +418,10 @@ classdef ProcResultClass < handle
                 if ~eval(sprintf('isproperty(obj2.misc, ''%s'')', fields{ii}))
                     continue;
                 end
-                if isa(eval(sprintf('obj.misc.%s', fields{ii})), 'handle')
-                    eval( sprintf('obj.misc.%s.Copy(obj2.misc.%s);', fields{ii}, fields{ii}) );
-                else
-                    eval( sprintf('obj.misc.%s = obj2.misc.%s;', fields{ii}, fields{ii}) );
-                end
+                
+                % obj2.misc could contain properties that are handle objects. Use
+                % CopyHandles instead of plain old assignment statement 
+                eval( sprintf('obj.misc.%s = CopyHandles(obj.misc.%s, obj2.misc.%s);', fields{ii}, fields{ii}, fields{ii}) );
             end
         end
         

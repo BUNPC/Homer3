@@ -30,6 +30,9 @@ classdef ProcStreamClass < handle
         
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2, reg)
+            if ~isa(obj, 'ProcStreamClass')
+                return;
+            end
             if nargin<3
                 reg = RegistriesClass.empty();
             end

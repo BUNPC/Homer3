@@ -14,5 +14,9 @@ else
 end
 
 if length(V)>2 && ~isempty(V{3})
-    verstr = sprintf('%s, %s', verstr, V{3});
+    if isnumber(V{3})
+        verstr = sprintf('%s.%s', verstr, V{3});
+    else
+        verstr = sprintf('%s, %s', verstr, V{3});
+    end
 end    

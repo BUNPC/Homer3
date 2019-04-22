@@ -17,7 +17,9 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
     methods
         
         % ---------------------------------------------------------
-        function obj = NirsClass(filename)
+        function obj = NirsClass(arg)
+            
+            % Initialize Nirs public properties
             obj.SD        = struct([]);
             obj.t         = [];
             obj.s         = [];
@@ -30,6 +32,15 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             obj.fileformat = 'mat';
             obj.errmargin = 1e-3;
             
+            if nargin==0
+                return;
+            end
+            
+            if isa(arg, 'NirsClass')
+                obj.Copy(arg);
+                return;
+            end
+            filename = arg;
             if ~exist('filename','var') || ~exist(filename,'file')
                 return;
             end
@@ -110,6 +121,33 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             save(fname, '-mat', '-append', 'SD','s','CondNames');            
         end
                 
+        
+        % ---------------------------------------------------------
+        function err = Copy(obj, obj2)
+            err=0;
+            if ~isa(obj2, 'NirsClass')
+                err=1;
+                return;
+            end
+            obj.SD         = obj2.SD;
+            obj.t          = obj2.t;
+            obj.d          = obj2.d;
+            obj.s          = obj2.s;
+            obj.aux        = obj2.aux;
+            obj.CondNames  = obj2.CondNames;
+        end
+        
+        
+        % -------------------------------------------------------
+        function objnew = CopyMutable(obj)
+            % Generate new instance of NirsClass
+            objnew = NirsClass(obj);
+            
+            % Copy mutable properties to new object instance;
+            objnew.SD = obj.SD;
+            objnew.s  = obj.s;
+        end
+              
         
         % ---------------------------------------------------------
         function nTrials = InitCondNames(obj)
@@ -267,7 +305,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 
         
         % ---------------------------------------------------------
-        function s = GetStims(obj)
+        function s = GetStims(obj, t)
             s = obj.s;
         end
         
@@ -310,15 +348,9 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function params = MutableParams(obj)
-            params = {'SD'};
-            % params = {'SD','s'};
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
         function [iDataBlks, ich] = GetDataBlocksIdxs(obj, ich)
             iDataBlks = 1;
+            ich={ich};
         end
 
     end

@@ -234,8 +234,19 @@ end
 
 
 % ----------------------------------------------------------------------
-function DisplayData(handles)
+function DisplayData(handles, hObject)
 global plotprobe
+
+% Some callbacks which call DisplayData serve double duty as called functions 
+% from other callbacks which in turn call DisplayData. To avoid double or
+% triple redisplaying in a single thread, exit DisplayData if hObject is
+% not a handle. 
+if ~exist('hObject','var')
+    hObject=[];
+end
+if ~ishandles(hObject)
+    return;
+end
 
 axes(handles.axes1);
 set(handles.axes1, 'xlim', [0,1], 'ylim', [0,1]);

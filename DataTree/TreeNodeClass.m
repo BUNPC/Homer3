@@ -284,7 +284,7 @@ classdef TreeNodeClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function s = GetStims(obj)
+        function s = GetStims(obj, t)
             s = [];
         end
         
@@ -433,6 +433,12 @@ classdef TreeNodeClass < handle
             t = [];
         end
 
+        
+        % ----------------------------------------------------------------------------------
+        function t = GetTimeCombined(obj)
+            t = [];
+        end
+        
         
         % ----------------------------------------------------------------------------------
         function t = GetTincAuto(obj, iBlk)

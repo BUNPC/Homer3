@@ -37,10 +37,17 @@
 %
 function [stim, tRange] = hmrR_StimRejection(data, stim, tIncAuto, tIncMan, tRange)
 
+if isempty(tIncAuto)
+    tIncAuto = cell(length(data),1);
+end
+if isempty(tIncMan)
+    tIncMan = cell(length(data),1);
+end
+
 snirf = SnirfClass(data, stim);
 for iBlk=1:length(snirf.data)
     t = snirf.data(iBlk).GetT();
-    s = snirf.GetStims(iBlk);
+    s = snirf.GetStims(t);
     
     dt = (t(end)-t(1))/length(t);
     tRangeIdx = [floor(tRange(1)/dt):ceil(tRange(2)/dt)];
@@ -52,7 +59,7 @@ for iBlk=1:length(snirf.data)
         if ~isempty(tIncAuto{iBlk}) && min(tIncAuto{iBlk}(lst))==0
             s(lstS(iS),:) = -2*abs(s(lstS(iS),:));
         end
-        if ~isempty(tIncMan) && min(tIncMan(lst))==0
+        if ~isempty(tIncMan{iBlk}) && min(tIncMan{iBlk}(lst))==0
             s(lstS(iS),:) = -1*abs(s(lstS(iS),:));
         end
     end

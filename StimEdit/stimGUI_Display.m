@@ -24,8 +24,8 @@ end
 
 CondNamesGroup = stimEdit.dataTree.group.GetConditions();
 CondColTbl     = stimEdit.dataTree.group.CondColTbl();
-t              = stimEdit.dataTree.currElem.GetTime();
-s              = stimEdit.dataTree.currElem.GetStims();
+t              = stimEdit.dataTree.currElem.GetTimeCombined();
+s              = stimEdit.dataTree.currElem.GetStims(t);
 stimVals       = stimEdit.dataTree.currElem.GetStimValSettings();
 
 [lstR,lstC] = find(abs(s) ~= stimVals.none);

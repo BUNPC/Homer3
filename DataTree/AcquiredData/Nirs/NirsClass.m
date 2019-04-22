@@ -144,8 +144,9 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             objnew = NirsClass();
             
             % Copy mutable properties to new object instance;
-            objnew.SD = obj.SD;
-            objnew.s  = obj.s;
+            objnew.SD         = obj.SD;
+            objnew.s          = obj.s;
+            objnew.CondNames  = obj.CondNames;
         end
               
         
@@ -307,6 +308,23 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         % ---------------------------------------------------------
         function s = GetStims(obj, t)
             s = obj.s;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetConditions(obj, CondNames)
+            if nargin==1
+                return;
+            end
+            snew = zeros(size(obj.s,1), length(CondNames));
+            for ii=1:length(CondNames)
+                k = find(strcmp(obj.CondNames, CondNames{ii}));
+                if ~isempty(k)
+                    snew(:,ii) = obj.s(:,k);
+                end
+            end
+            obj.CondNames = CondNames;
+            obj.s = snew;
         end
         
         

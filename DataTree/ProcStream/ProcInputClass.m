@@ -273,7 +273,17 @@ classdef ProcInputClass < handle
         function CondNames = GetConditions(obj)
             CondNames = obj.acquiredEditable.GetConditions();
         end
-               
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetConditions(obj, CondNames)
+            if nargin==1
+                return;
+            end
+            obj.acquiredEditable.SetConditions(CondNames);
+        end
+        
+        
         % ----------------------------------------------------------------------------------
         function RenameCondition(obj, oldname, newname)
             % Function to rename a condition. Important to remeber that changing the

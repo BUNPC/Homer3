@@ -1248,6 +1248,15 @@ classdef ProcStreamClass < handle
         
 
         % ----------------------------------------------------------------------------------
+        function SetConditions(obj, CondNames)
+            if nargin==1
+                return;
+            end
+            obj.input.SetConditions(CondNames);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function RenameCondition(obj, oldname, newname)
             % Function to rename a condition. Important to remeber that changing the
             % condition involves 2 distinct well defined steps:

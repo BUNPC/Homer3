@@ -17,6 +17,9 @@ classdef StimClass < FileLoadSaveClass
             if nargin==1 
                 if isa(varargin{1}, 'StimClass')
                     obj.Copy(varargin{1});
+                elseif ischar(varargin{1})
+                    obj.name = varargin{1};
+                    obj.data = [];
                 end
             elseif nargin==3
                 s        = varargin{1};

@@ -31,7 +31,7 @@ classdef GenericAcqClass < AcqDataClass
         
         % ---------------------------------------------------------
         function SetSDG(obj, SD)
-            obj.SD = [];
+            return;
         end
         
         
@@ -49,13 +49,19 @@ classdef GenericAcqClass < AcqDataClass
         
         % ---------------------------------------------------------
         function SetStims_MatInput(obj,s,t,CondNames)
-            obj.s = [];
+            return;
         end
                 
         
         % ---------------------------------------------------------
         function s = GetStims(obj, t)
             s = [];
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetConditions(obj, CondNames)
+            return;
         end
         
         

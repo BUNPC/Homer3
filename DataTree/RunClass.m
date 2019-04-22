@@ -37,8 +37,9 @@ classdef RunClass < TreeNodeClass
                 return;
             else
                 return;
-            end            
+            end
             obj.Load();
+            obj.procStream = ProcStreamClass([], obj.acquired);
             obj.CondName2Group = [];
         end
 
@@ -51,7 +52,6 @@ classdef RunClass < TreeNodeClass
             else
                 obj.acquired = SnirfClass(obj.name);
             end            
-            obj.procStream = ProcStreamClass([], obj.acquired);
         end
         
         
@@ -300,7 +300,10 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetConditions(obj)
+        function SetConditions(obj, CondNames)
+            if nargin==2
+                obj.procStream.SetConditions(CondNames);
+            end
             obj.CondNames = unique(obj.procStream.GetConditions());
         end
         

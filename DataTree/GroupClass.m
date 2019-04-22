@@ -437,9 +437,7 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetConditions(obj)
-            C0 = obj.GetConditions();
-            
+        function SetConditions(obj)            
             CondNames = {};
             for ii=1:length(obj.subjs)
                 obj.subjs(ii).SetConditions();
@@ -448,6 +446,12 @@ classdef GroupClass < TreeNodeClass
             obj.CondNames    = unique(CondNames);
             obj.CondNamesAll(obj.CondNames);
            
+            % Now that we have all conditions, set the conditions across 
+            % the whole group to these
+            for ii=1:length(obj.subjs)
+                obj.subjs(ii).SetConditions(obj.CondNames);
+            end
+            
             % Generate mapping of group conditions to subject conditions
             % used when averaging subject HRF to get group HRF
             obj.SetCondName2Subj();

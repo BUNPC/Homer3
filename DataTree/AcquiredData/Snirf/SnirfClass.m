@@ -498,6 +498,25 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         end
         
         
+        % ----------------------------------------------------------------------------------
+        function SetConditions(obj, CondNames)
+            if nargin==1
+                return;
+            end
+            CondNamesLocal = unique({obj.stim.name});
+            stimnew = StimClass().empty;
+            for ii=1:length(CondNames)
+                k = find(strcmp(CondNamesLocal, CondNames{ii}));
+                if ~isempty(k)
+                    stimnew(ii) = StimClass(obj.stim(k));
+                else
+                    stimnew(ii) = StimClass(CondNames{ii});
+                end
+            end
+            obj.stim = stimnew;
+        end
+        
+        
         % ---------------------------------------------------------
         function CondNames = GetConditions(obj)
             CondNames = cell(1,length(obj.stim));
@@ -594,6 +613,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ----------------------------------------------------------------------------------
         function d = Get_d(obj, iBlk)
+            d = [];
+            if isempty(obj.data)
+                return;
+            end
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
@@ -603,6 +626,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ----------------------------------------------------------------------------------
         function t = Get_t(obj, iBlk)
+            t = [];
+            if isempty(obj.data)
+                return;
+            end
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
@@ -612,6 +639,13 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ----------------------------------------------------------------------------------
         function SD = Get_SD(obj, iBlk)
+            SD = [];
+            if isempty(obj.sd)
+                return;
+            end
+            if isempty(obj.data)
+                return;
+            end
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
@@ -633,11 +667,17 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function s = Get_s(obj, iBlk)
+        function s = Get_s(obj, t, iBlk)
+            s = [];
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
-            end            
-            t = obj.data(iBlk).GetTime();
+            end
+            if ~exist('t','var') || isempty(t)
+                t = obj.data(iBlk).GetTime();
+            end
+            if isempty(t)
+                return;
+            end
             s = zeros(length(t), length(obj.stim));
             for ii=1:length(obj.stim)
                 [ts, v] = obj.stim(ii).GetStim();

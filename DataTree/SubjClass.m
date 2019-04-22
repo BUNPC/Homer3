@@ -287,11 +287,17 @@ classdef SubjClass < TreeNodeClass
        
         
         % ----------------------------------------------------------------------------------
-        function SetConditions(obj)
-            CondNames = {};
-            for ii=1:length(obj.runs)
-                obj.runs(ii).SetConditions();
-                CondNames = [CondNames, obj.runs(ii).GetConditions()];
+        function SetConditions(obj, CondNames)
+            if nargin==1
+                CondNames = {};
+                for ii=1:length(obj.runs)
+                    obj.runs(ii).SetConditions();
+                    CondNames = [CondNames, obj.runs(ii).GetConditions()];
+                end
+            elseif nargin==2
+                for ii=1:length(obj.runs)
+                    obj.runs(ii).SetConditions(CondNames);
+                end                
             end
             obj.CondNames = unique(CondNames);
         end

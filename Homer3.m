@@ -720,8 +720,6 @@ hbType     = hmr.guiControls.hbType;
 sclConc    = hmr.guiControls.sclConc;        % convert Conc from Molar to uMolar
 showStdErr = hmr.guiControls.showStdErr;
 
-condition = find(procElem.CondName2Group == condition);
-
 [iDataBlks, iCh] = procElem.GetDataBlocksIdxs(iCh0);
 fprintf('Displaying channels [%s] in data blocks [%s]\n', num2str(iCh0(:)'), num2str(iDataBlks(:)'))
 iColor = 1;
@@ -863,7 +861,6 @@ hLg=[];
 idxLg=[];
 kk=1;
 for iCond = 1:size(s,2)
-    iCondGroup = procElem.CondName2Group(iCond);
     iS = find(s(:,iCond) ~= stimVals.none);
     for ii=1:length(iS)
         linestyle = '';
@@ -876,7 +873,7 @@ for iCond = 1:size(s,2)
         end
         hl = plot(t(iS(ii))*[1 1], yrange, linestyle);
         set(hl, 'linewidth',1.5);
-        set(hl, 'color',CondColTbl(iCondGroup,:));
+        set(hl, 'color',CondColTbl(iCond,:));
     end
     
     % Get handles and indices of each stim condition
@@ -886,8 +883,8 @@ for iCond = 1:size(s,2)
         % we draw invisible solid stims over all stims to
         % trick the legend into only showing solid lines.
         hLg(kk) = plot(t(iS(1))*[1 1],yrange,'-', 'linewidth',4, 'visible','off');
-        set(hLg(kk),'color',CondColTbl(iCondGroup,:));
-        idxLg(kk) = iCondGroup;
+        set(hLg(kk),'color',CondColTbl(iCond,:));
+        idxLg(kk) = iCond;
         kk=kk+1;
     end
 end

@@ -570,7 +570,6 @@ if isempty(plotprobe.dataTree)
     return
 end
 currElem  = plotprobe.dataTree.currElem;
-plotprobe.condition = find(currElem.CondName2Group == plotprobe.condition);
 
 
 

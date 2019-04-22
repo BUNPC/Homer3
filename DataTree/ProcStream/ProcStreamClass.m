@@ -15,16 +15,22 @@ classdef ProcStreamClass < handle
                 acquired=[];
             end
             obj.fcalls = FuncCallClass().empty();
-            obj.input = ProcInputClass(acquired);
-            obj.output = ProcResultClass();
+
             obj.config = struct('procStreamCfgFile','', 'defaultProcStream','','suffix','');
+            cfg = ConfigFileClass();
+            obj.config.procStreamCfgFile = cfg.GetValue('Processing Stream Config File');
+            copyOptions = '';
+            if strcmpi(obj.getDefaultProcStream(), '_nirs')
+                copyOptions = 'extended';
+            end
+            
+            obj.input = ProcInputClass(acquired, copyOptions);
+            obj.output = ProcResultClass();
+            
             if nargin==0
                 return;
             end
             obj.CreateDefault(reg)
-            cfg = ConfigFileClass();
-            obj.config.procStreamCfgFile = cfg.GetValue('Processing Stream Config File');
-            obj.config = struct('procStreamCfgFile','', 'defaultProcStream','','suffix','');            
         end
         
         
@@ -477,8 +483,6 @@ classdef ProcStreamClass < handle
             %      ProcStreamClass with properties:
             %
             %            fcalls: [1x1 FuncCallClass]
-            %     CondName2Subj: []
-            %      CondName2Run: []
             %           tIncMan: []
             %              misc: []
             %        changeFlag: 0
@@ -490,7 +494,7 @@ classdef ProcStreamClass < handle
             %              name: 'hmrS_BlockAvg'
             %            nameUI: 'hmrS_BlockAvg'
             %            argOut: '[dcAvg,dcAvgStd,tHRF,nTrials]'
-            %             argIn: '(dcAvgRuns,dcAvgStdRuns,dcSum2Runs,tHRFRuns,SDRuns,nTrialsRuns,CondName2Run'
+            %             argIn: '(dcAvgRuns,dcAvgStdRuns,dcSum2Runs,tHRFRuns,SDRuns,nTrialsRuns'
             %           paramIn: [0x0 ParamClass]
             %              help: '  Calculate the block average for all subjects, for all common stimuli…'
             %
@@ -632,10 +636,10 @@ classdef ProcStreamClass < handle
             %    Here's the output:
             %
             %     G = {
-            %          '@ hmrG_BlockAvg [dcAvg,dcAvgStd,nTrials,grpAvgPass] (dcAvgSubjs,dcAvgStdSubjs,SDSubjs,nTrialsSubjs,CondName2Subj tRange %0.1f…'
+            %          '@ hmrG_BlockAvg [dcAvg,dcAvgStd,nTrials,grpAvgPass] (dcAvgSubjs,dcAvgStdSubjs,SDSubjs,nTrialsSubjs tRange %0.1f…'
             %         }
             %     S = {
-            %          '@ hmrS_BlockAvg [dcAvg,dcAvgStd,nTrials] (dcAvgRuns,dcAvgStdRuns,dcSum2Runs,SDRuns,nTrialsRuns,CondName2Run'
+            %          '@ hmrS_BlockAvg [dcAvg,dcAvgStd,nTrials] (dcAvgRuns,dcAvgStdRuns,dcSum2Runs,SDRuns,nTrialsRuns'
             %         }
             %     R = {
             %         '@ hmrR_Intensity2OD dod (d'
@@ -759,8 +763,6 @@ classdef ProcStreamClass < handle
             %        ===> ProcStreamClass with properties:
             %
             %            fcalls: [1x6 FuncCallClass]
-            %     CondName2Subj: []
-            %      CondName2Run: []
             %           tIncMan: []
             %              misc: []
             %        changeFlag: 0
@@ -980,12 +982,12 @@ classdef ProcStreamClass < handle
         % ----------------------------------------------------------------------------------
         function suffix = getDefaultProcStream()
             suffix = '';
-            defaultProcStream = ConfigFileClass().GetValue('Default Processing Stream');
+            defaultProcStream = ConfigFileClass().GetValue('Default Processing Stream Style');
             if includes(lower(defaultProcStream),'nirs')
                 suffix = '_Nirs';
             end
         end
-        
+            
     end
     
     

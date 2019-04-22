@@ -139,7 +139,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function objnew = CopyMutable(obj)
+        function objnew = CopyMutable(obj, options)
             % Generate new instance of NirsClass
             objnew = NirsClass();
             

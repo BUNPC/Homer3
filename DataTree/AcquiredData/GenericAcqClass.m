@@ -121,7 +121,7 @@ classdef GenericAcqClass < AcqDataClass
         
         
         % ----------------------------------------------------------------------------------
-        function objnew = CopyMutable(obj)
+        function objnew = CopyMutable(obj, options)
             objnew = obj.copy;
         end
         

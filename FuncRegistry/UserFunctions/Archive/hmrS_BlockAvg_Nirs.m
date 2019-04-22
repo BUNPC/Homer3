@@ -1,6 +1,6 @@
-function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondName2Run)
+function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
 % SYNTAX:
-% [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondName2Run)
+% [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
 %
 % UI NAME:
 % Block_Average_Subj
@@ -15,7 +15,6 @@ function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg_Nirs(yAvgRuns, yAvgStdRu
 % tHRFRuns: 
 % SDRuns:
 % nTrialsRuns:
-% CondName2Run: 
 % trange: defines the range for the block average
 % thresh: Threshold for excluding channels if it's data deviates too much
 %         from mean 
@@ -27,8 +26,8 @@ function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg_Nirs(yAvgRuns, yAvgStdRu
 % nTrials: the number of trials averaged for each condition across all runs
 %
 % USAGE OPTIONS:
-% Block_Average_on_Subject_Concentration_Data:  [dcAvg, dcAvgStd, tHRF, nTrials]    = hmrS_BlockAvg_Nirs(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondName2Run)
-% Block_Average_on_Subject_Delta_OD_Data:       [dodAvg, dodAvgStd, tHRF, nTrials]  = hmrS_BlockAvg_Nirs(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, tHRFRuns, SDRuns, nTrialsRuns, CondName2Run)
+% Block_Average_on_Subject_Concentration_Data:  [dcAvg, dcAvgStd, tHRF, nTrials]    = hmrS_BlockAvg_Nirs(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
+% Block_Average_on_Subject_Delta_OD_Data:       [dodAvg, dodAvgStd, tHRF, nTrials]  = hmrS_BlockAvg_Nirs(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
 %
 
 yAvg = [];
@@ -49,7 +48,7 @@ for iRun = 1:length(yAvgRuns)
         break;
     end
     
-    nCond = size(CondName2Run,2);
+    nCond = size(nTrials,2);
     
     if ndims(yAvg) == (3-(nCond<2))
         
@@ -62,22 +61,16 @@ for iRun = 1:length(yAvgRuns)
         
         lstChInc = find(SD.MeasListActAuto==1);
         for iC = 1:nCond
-            iS = CondName2Run(iRun,iC);
-            if(iS==0)
-                nT = 0;
-            else
-                nT = nTrials(iS);
-            end
-            
+            nT = nTrials(iC);            
             if nT>0
                 if iRun==1
-                    grp1(:,lstChInc,iC) = yAvg(:,lstChInc,iS) * nT;
-                    grp1Sum2(:,lstChInc,iC) = ySum2(:,lstChInc,iS);
+                    grp1(:,lstChInc,iC) = yAvg(:,lstChInc,iC) * nT;
+                    grp1Sum2(:,lstChInc,iC) = ySum2(:,lstChInc,iC);
                     nTrials_tot(lstChInc,iC) = nT;
                 else
                     for iCh=1:length(lstChInc) %size(yAvg,2)
-                        grp1(:,lstChInc(iCh),iC) = grp1(:,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,lstChInc(iCh),iS),tHRF(:)) * nT;
-                        grp1Sum2(:,lstChInc(iCh),iC) = grp1Sum2(:,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,lstChInc(iCh),iS),tHRF(:));
+                        grp1(:,lstChInc(iCh),iC) = grp1(:,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,lstChInc(iCh),iC),tHRF(:)) * nT;
+                        grp1Sum2(:,lstChInc(iCh),iC) = grp1Sum2(:,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,lstChInc(iCh),iC),tHRF(:));
                         nTrials_tot(lstChInc(iCh),iC) = nTrials_tot(lstChInc(iCh),iC) + nT;
                     end
                 end
@@ -115,23 +108,17 @@ for iRun = 1:length(yAvgRuns)
         lst1 = find(SD.MeasList(:,4)==1);
         lstChInc = find(SD.MeasListActAuto(lst1)==1);
         for iC = 1:1:nCond
-            iS = CondName2Run(iRun,iC);
-            if(iS==0)
-                nT = 0;
-            else
-                nT = nTrials(iS);
-            end
-            
+            nT = nTrials(iC);
             if nT>0
                 if iRun==1
-                    grp1(:,:,lstChInc,iC) = yAvg(:,:,lstChInc,iS) * nT;
-                    grp1Sum2(:,:,lstChInc,iC) = ySum2(:,:,lstChInc,iS);
+                    grp1(:,:,lstChInc,iC) = yAvg(:,:,lstChInc,iC) * nT;
+                    grp1Sum2(:,:,lstChInc,iC) = ySum2(:,:,lstChInc,iC);
                     nTrials_tot(lstChInc,iC) = nT;
                 else
                     for iCh=1:length(lstChInc) %size(yAvg,3)
                         for iHb=1:size(yAvg,2)
-                            grp1(:,iHb,lstChInc(iCh),iC) = grp1(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,iHb,lstChInc(iCh),iS),tHRF(:)) * nT;
-                            grp1Sum2(:,iHb,lstChInc(iCh),iC) = grp1Sum2(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,iHb,lstChInc(iCh),iS),tHRF(:));
+                            grp1(:,iHb,lstChInc(iCh),iC) = grp1(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,iHb,lstChInc(iCh),iC),tHRF(:)) * nT;
+                            grp1Sum2(:,iHb,lstChInc(iCh),iC) = grp1Sum2(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,iHb,lstChInc(iCh),iC),tHRF(:));
                         end
                         nTrials_tot(lstChInc(iCh),iC) = nTrials_tot(lstChInc(iCh),iC) + nT;
                     end

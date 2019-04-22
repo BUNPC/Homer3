@@ -1,6 +1,6 @@
-function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
+function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
 % SYNTAX:
-% [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
+% [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
 %
 % UI NAME:
 % Block_Average_Group
@@ -15,7 +15,6 @@ function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(yAvgSub
 % tHRFSubjs: 
 % SDSubjs:
 % nTrialsSubjs:
-% CondName2Subj: 
 % trange: Defines the range for the block average
 % thresh: Threshold for excluding channels if it's data deviates too much
 %         from mean 
@@ -29,8 +28,8 @@ function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(yAvgSub
 % grpAvgPass:
 %
 % USAGE OPTIONS:
-% Block_Average_on_Group_Concentration_Data: [dcAvg, dcAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(dcAvgSubjs, dcAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
-% Block_Average_on_Group_Delta_OD_Data:      [dodAvg, dodAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(dodAvgSubjs, dodAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, CondName2Subj, tRange, thresh)
+% Block_Average_on_Group_Concentration_Data: [dcAvg, dcAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(dcAvgSubjs, dcAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
+% Block_Average_on_Group_Delta_OD_Data:      [dodAvg, dodAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(dodAvgSubjs, dodAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
 %
 % PARAMETERS:
 % tRange: [5.0, 10.0]
@@ -66,7 +65,7 @@ for iSubj = 1:nSubj
     nTrials   = nTrialsSubjs{iSubj};
     SD        = SDSubjs{iSubj};
         
-    nCond = size(CondName2Subj,2);
+    nCond = size(nTrials,2);
     
     if ndims(yAvg) == (4-(nCond<2))
         
@@ -81,8 +80,7 @@ for iSubj = 1:nSubj
         end
         
         for iC = 1:nCond
-            iS = CondName2Subj(iSubj,iC);            
-            if iS==0
+            if nTrials(:,iC)==0
                 continue;
             end
             
@@ -90,15 +88,15 @@ for iSubj = 1:nSubj
             % based on the subjects' standard error and store result in lstPass
             % also need to consider if channel was manually or
             % automatically included
-            lstPass = find( (squeeze(mean(yAvgStd(lstT,1,:,iS),1))./sqrt(nTrials(:,iS)+eps)) <= thresh &...
-                            (squeeze(mean(yAvgStd(lstT,2,:,iS),1))./sqrt(nTrials(:,iS)+eps)) <= thresh &...
-                            nTrials(:,iS)>0 );
+            lstPass = find( (squeeze(mean(yAvgStd(lstT,1,:,iC),1))./sqrt(nTrials(:,iC)+eps)) <= thresh &...
+                            (squeeze(mean(yAvgStd(lstT,2,:,iC),1))./sqrt(nTrials(:,iC)+eps)) <= thresh &...
+                            nTrials(:,iC)>0 );
             
             if chkFlag==false | length(lstPass)==size(yAvg,3)
                 if iSubj==1 | iC>nStim
                     for iPass=1:length(lstPass)
                         for iHb=1:3
-                            grp1(:,iHb,lstPass(iPass),iC) = interp1(tHRF,yAvg(:,iHb,lstPass(iPass),iS),tHRF(:));
+                            grp1(:,iHb,lstPass(iPass),iC) = interp1(tHRF,yAvg(:,iHb,lstPass(iPass),iC),tHRF(:));
                         end
                     end
                     subjCh(size(yAvg,3),iC)=0;
@@ -106,7 +104,7 @@ for iSubj = 1:nSubj
                 else
                     for iPass=1:length(lstPass)
                         for iHb=1:3
-                            grp1(:,iHb,lstPass(iPass),iC) = grp1(:,iHb,lstPass(iPass),iC) + interp1(tHRF,yAvg(:,iHb,lstPass(iPass),iS),tHRF(:));
+                            grp1(:,iHb,lstPass(iPass),iC) = grp1(:,iHb,lstPass(iPass),iC) + interp1(tHRF,yAvg(:,iHb,lstPass(iPass),iC),tHRF(:));
                         end
                     end
                 end
@@ -138,8 +136,7 @@ for iSubj = 1:nSubj
             grpAvgPass = zeros(size(yAvg,2),nCond,nSubj);
         end
         for iC = 1:nCond
-            iS = CondName2Subj(iSubj,iC);
-            if iS==0
+            if nTrials(:,iC)==0
                 continue;
             end
             
@@ -147,20 +144,20 @@ for iSubj = 1:nSubj
                 % Calculate which channels to include and exclude from the group HRF avg,
                 % based on the subjects' standard error and store result in lstPass
                 lstWl = find(SD.MeasList(:,4)==iWl);
-                lstPass = find( ((squeeze(mean(yAvgStd(lstT,lstWl,iS),1))./sqrt(nTrials(lstWl,iS)'+eps)) <= thresh) &...
-                                 nTrials(lstWl,iS)'>0 );
+                lstPass = find( ((squeeze(mean(yAvgStd(lstT,lstWl,iC),1))./sqrt(nTrials(lstWl,iC)'+eps)) <= thresh) &...
+                                 nTrials(lstWl,iC)'>0 );
                 lstPass = lstWl(lstPass);
                 
                 if chkFlag==false | length(lstPass)==size(yAvg,2)
                     if iSubj==1 | iC>nStim
                         for iPass=1:length(lstPass)
-                            grp1(:,lstPass(iPass),iC) = interp1(tHRF,yAvg(:,lstPass(iPass),iS),tHRF(:));
+                            grp1(:,lstPass(iPass),iC) = interp1(tHRF,yAvg(:,lstPass(iPass),iC),tHRF(:));
                         end
                         subjCh(size(yAvg,2),iC)=0;
                         nStim = iC;
                     else
                         for iPass=1:length(lstPass)
-                            grp1(:,lstPass(iPass),iC) = grp1(:,lstPass(iPass),iC) + interp1(tHRF,yAvg(:,lstPass(iPass),iS),tHRF(:));
+                            grp1(:,lstPass(iPass),iC) = grp1(:,lstPass(iPass),iC) + interp1(tHRF,yAvg(:,lstPass(iPass),iC),tHRF(:));
                         end
                     end
                     subjCh(lstPass,iC) = subjCh(lstPass,iC) + 1;

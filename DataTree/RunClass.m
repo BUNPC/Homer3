@@ -40,7 +40,6 @@ classdef RunClass < TreeNodeClass
             end
             obj.Load();
             obj.procStream = ProcStreamClass([], obj.acquired);
-            obj.CondName2Group = [];
         end
 
         
@@ -181,8 +180,6 @@ classdef RunClass < TreeNodeClass
             end
             fprintf('%sRun %d:\n', blanks(indent), obj.iRun);
             fprintf('%sCondNames: %s\n', blanks(indent+4), cell2str(obj.CondNames));
-            fprintf('%sCondName2Group:\n', blanks(indent+4));
-            pretty_print_matrix(obj.CondName2Group, indent+4, sprintf('%%d'));            
             obj.procStream.input.Print(indent+4);
             obj.procStream.output.Print(indent+4);            
         end
@@ -323,15 +320,6 @@ classdef RunClass < TreeNodeClass
                 if ismember(abs(1), s(:,ii))
                     CondNames{ii} = ['-- ', CondNames{ii}];
                 end
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function SetCondName2Group(obj, CondNamesGroup)
-            obj.CondName2Group = zeros(1, length(obj.CondNames));
-            for ii=1:length(obj.CondNames)
-                obj.CondName2Group(ii) = find(strcmp(CondNamesGroup, obj.CondNames{ii}));
             end
         end
         

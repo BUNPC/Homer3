@@ -47,7 +47,7 @@ for ii=1:nStim
     end
     Lines(ii).handle = plot([1 1]*t(lstR(ii)), yy, linestyle, 'parent',handles.axes1);
     
-    iCond = stimEdit.dataTree.currElem.CondName2Group(lstC(ii));
+    iCond = lstC(ii);
     Lines(ii).color = CondColTbl(iCond,1:3);
     try
         set(Lines(ii).handle,'color',Lines(ii).color);

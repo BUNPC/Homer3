@@ -170,12 +170,22 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function objnew = CopyMutable(obj)
+        function objnew = CopyMutable(obj, options)
+            if nargin==1
+                options = '';
+            end
+            
             % Generate new instance of SnirfClass
             objnew = SnirfClass();
             
             % Copy mutable properties to new object instance;
             objnew.stim = CopyHandles(obj.stim);
+            
+            if strcmp(options, 'extended') 
+                t = obj.GetTimeCombined();
+                objnew.data = DataClass([],t,[]);
+            end
+            
         end
        
         
@@ -667,17 +677,15 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function s = Get_s(obj, t, iBlk)
+        function s = Get_s(obj, iBlk)
             s = [];
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            if ~exist('t','var') || isempty(t)
-                t = obj.data(iBlk).GetTime();
-            end
-            if isempty(t)
+            if isempty(obj.data)
                 return;
             end
+            t = obj.data(iBlk).GetTime();
             s = zeros(length(t), length(obj.stim));
             for ii=1:length(obj.stim)
                 [ts, v] = obj.stim(ii).GetStim();

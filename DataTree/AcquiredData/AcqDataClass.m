@@ -56,7 +56,7 @@ classdef AcqDataClass < matlab.mixin.Copyable
         [iDataBlks, ich] = GetDataBlocksIdxs(obj, ich);
         
         % ---------------------------------------------------------
-        objnew = CopyMutable(obj);
+        objnew = CopyMutable(obj, options);
 
     end
     
@@ -92,6 +92,21 @@ classdef AcqDataClass < matlab.mixin.Copyable
                 varval = eval( sprintf('obj.%s', varname) );
             else
                 varval = [];
+            end
+            
+            % If varval is a class object with an IsEmpty() method and length of varval is one or 
+            % less, then use it determine whether it's valid. If not, return empty as if it were 
+            % really empty. This is useful when we want to copy only part of an object to save on space. 
+            % For instance to reconstruct nirs style 's' variable from a SNIRF stim object we need the t 
+            % property from a SNIRF data container, but we only need that one property not the whole thing
+            % so we initilize only the t property. We don't want this partially initialized data object 
+            % to be found (by GetVar) and used directly in the proc stream processing, we only want to use 
+            % indirectly to retrieve s from stim. So we do this check to see if it's valid. It won't be 
+            % since it's only partially initialized.
+            if isa(varval, 'handle') && ismethod(varval,'IsEmpty')
+                if length(varval)==1 && varval(1).IsEmpty()
+                    varval = [];
+                end
             end
         end
         

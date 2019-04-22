@@ -1,5 +1,5 @@
 % SYNTAX:
-% [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg(yAvgRuns, yAvgStdRuns, ySum2Runs, mlActRuns, nTrialsRuns, CondName2Run)
+% [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg(yAvgRuns, yAvgStdRuns, ySum2Runs, mlActRuns, nTrialsRuns)
 %
 % UI NAME:
 % Block_Average_Subj
@@ -13,7 +13,6 @@
 % yAvgStdRuns:
 % mlActRuns:
 % nTrialsRuns:
-% CondName2Run: 
 % trange: defines the range for the block average
 % thresh: Threshold for excluding channels if it's data deviates too much
 %         from mean 
@@ -24,11 +23,11 @@
 % nTrials: the number of trials averaged for each condition across all runs
 %
 % USAGE OPTIONS:
-% Block_Average_on_Subject_Concentration_Data:  [dcAvg, dcAvgStd, nTrials]    = hmrS_BlockAvg(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, mlActRuns, nTrialsRuns, CondName2Run)
-% Block_Average_on_Subject_Delta_OD_Data:       [dodAvg, dodAvgStd, nTrials]  = hmrS_BlockAvg(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, mlActRuns, nTrialsRuns, CondName2Run)
+% Block_Average_on_Subject_Concentration_Data:  [dcAvg, dcAvgStd, nTrials]    = hmrS_BlockAvg(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, mlActRuns, nTrialsRuns)
+% Block_Average_on_Subject_Delta_OD_Data:       [dodAvg, dodAvgStd, nTrials]  = hmrS_BlockAvg(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, mlActRuns, nTrialsRuns)
 %
 
-function [yAvgOut, yAvgStdOut, nTrials] = hmrS_BlockAvg(yAvgRuns, yAvgStdRuns, ySum2Runs, mlActRuns, nTrialsRuns, CondName2Run)
+function [yAvgOut, yAvgStdOut, nTrials] = hmrS_BlockAvg(yAvgRuns, yAvgStdRuns, ySum2Runs, mlActRuns, nTrialsRuns)
 
 yAvgOut    = DataClass().empty();
 yAvgStdOut = DataClass().empty();
@@ -73,7 +72,7 @@ for iBlk = 1:nDataBlks
             continue;
         end
         
-        nCond = size(CondName2Run,2);
+        nCond = size(nTrials,2);
         yAvgOut(iBlk).SetT(tHRF);
         yAvgStdOut(iBlk).SetT(tHRF);
         
@@ -87,24 +86,18 @@ for iBlk = 1:nDataBlks
             
             lstChInc = find(mlAct==1);
             for iC = 1:nCond
-                iS = CondName2Run(iRun,iC);
-                if(iS==0)
-                    nT = 0;
-                else
-                    nT = nTrials(iS);
-                end
-                
+                nT = nTrials(iC);
                 if nT>0
                     if iRun==1
-                        grp1(:,lstChInc,iC) = yAvg(:,lstChInc,iS) * nT;
-                        grp1Sum2(:,lstChInc,iC) = ySum2(:,lstChInc,iS);
+                        grp1(:,lstChInc,iC) = yAvg(:,lstChInc,iC) * nT;
+                        grp1Sum2(:,lstChInc,iC) = ySum2(:,lstChInc,iC);
                         nTrials_tot{iBlk}(lstChInc,iC) = nT;
                     else
                         for iCh=1:length(lstChInc) %size(yAvg,2)
                             % Make sure 3rd arg to interp1 is column vector to guarauntee interp1 output is column vector
                             % which matches grp1 dimensions when adding the two.
-                            grp1(:,lstChInc(iCh),iC) = grp1(:,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,lstChInc(iCh),iS),tHRF(:)) * nT;
-                            grp1Sum2(:,lstChInc(iCh),iC) = grp1Sum2(:,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,lstChInc(iCh),iS),tHRF(:));
+                            grp1(:,lstChInc(iCh),iC) = grp1(:,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,lstChInc(iCh),iC),tHRF(:)) * nT;
+                            grp1Sum2(:,lstChInc(iCh),iC) = grp1Sum2(:,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,lstChInc(iCh),iC),tHRF(:));
                             nTrials_tot{iBlk}(lstChInc(iCh),iC) = nTrials_tot{iBlk}(lstChInc(iCh),iC) + nT;
                         end
                     end
@@ -153,25 +146,19 @@ for iBlk = 1:nDataBlks
             
             lstChInc = find(mlAct==1);
             for iC = 1:1:nCond
-                iS = CondName2Run(iRun,iC);
-                if(iS==0)
-                    nT = 0;
-                else
-                    nT = nTrials(iS);
-                end
-                
+                nT = nTrials(iC);
                 if nT>0
                     if iRun==1
-                        grp1(:,:,lstChInc,iC) = yAvg(:,:,lstChInc,iS) * nT;
-                        grp1Sum2(:,:,lstChInc,iC) = ySum2(:,:,lstChInc,iS);
+                        grp1(:,:,lstChInc,iC) = yAvg(:,:,lstChInc,iC) * nT;
+                        grp1Sum2(:,:,lstChInc,iC) = ySum2(:,:,lstChInc,iC);
                         nTrials_tot{iBlk}(lstChInc,iC) = nT;
                     else
                         for iCh=1:length(lstChInc) %size(yAvg,3)
                             for iHb=1:size(yAvg,2)
                                 % Make sure 3rd arg to interp1 is column vector to guarauntee interp1 output is column vector
                                 % which matches grp1 dimensions when adding the two.
-                                grp1(:,iHb,lstChInc(iCh),iC) = grp1(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,iHb,lstChInc(iCh),iS),tHRF(:)) * nT;
-                                grp1Sum2(:,iHb,lstChInc(iCh),iC) = grp1Sum2(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,iHb,lstChInc(iCh),iS),tHRF(:));
+                                grp1(:,iHb,lstChInc(iCh),iC) = grp1(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,iHb,lstChInc(iCh),iC),tHRF(:)) * nT;
+                                grp1Sum2(:,iHb,lstChInc(iCh),iC) = grp1Sum2(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,iHb,lstChInc(iCh),iC),tHRF(:));
                             end
                             nTrials_tot{iBlk}(lstChInc(iCh),iC) = nTrials_tot{iBlk}(lstChInc(iCh),iC) + nT;
                         end

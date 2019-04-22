@@ -4,8 +4,6 @@ classdef ProcInputClass < handle
     % of acquisition data or is derived from acquisition data but not stored there. 
     %
     properties
-        CondName2Subj;           % Used by group processing stream
-        CondName2Run;            % Used by subject processing stream      
         tIncMan;                 % Manually include/excluded time points
         mlActMan;                % Manually include/excluded time points
         acquiredEditable;        % Copy of acquisition parameters that are editable 
@@ -18,9 +16,10 @@ classdef ProcInputClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function obj = ProcInputClass(acquired)
-            obj.CondName2Subj = [];
-            obj.CondName2Run = [];
+        function obj = ProcInputClass(acquired, copyOptions)
+            if nargin==1
+                copyOptions = '';
+            end
             obj.tIncMan = {};
             obj.mlActMan = {};
             obj.misc = [];
@@ -32,7 +31,7 @@ classdef ProcInputClass < handle
             if isempty(acquired)
                 return;
             end
-            obj.acquiredEditable = acquired.CopyMutable();
+            obj.acquiredEditable = acquired.CopyMutable(copyOptions);
         end
         
                 
@@ -44,8 +43,6 @@ classdef ProcInputClass < handle
             if isempty(obj)
                 obj = ProcInputClass();
             end
-            obj.CondName2Subj = obj2.CondName2Subj;
-            obj.CondName2Run = obj2.CondName2Run;
             obj.tIncMan = obj2.tIncMan;
             
             fields = properties(obj.misc);
@@ -78,10 +75,6 @@ classdef ProcInputClass < handle
                 indent = 6;
             end
             fprintf('%sInput:\n', blanks(indent));
-            fprintf('%sCondName2Subj:\n', blanks(indent+4));
-            pretty_print_matrix(obj.CondName2Subj, indent+4, sprintf('%%d'))
-            fprintf('%sCondName2Run:\n', blanks(indent+4));
-            pretty_print_matrix(obj.CondName2Run, indent+4, sprintf('%%d'))
         end
                
         
@@ -95,9 +88,9 @@ classdef ProcInputClass < handle
                 eval(sprintf('varval = obj.%s;', varname));
             elseif isproperty(obj.misc, varname)
                 eval(sprintf('varval = obj.misc.%s;', varname));
-            elseif isproperty(obj.acquiredEditable, varname)
-                eval(sprintf('varval = obj.acquiredEditable.%s;', varname));
-            end            
+            else
+                varval = obj.acquiredEditable.GetVar(varname);
+            end
             if ~isempty(varval) && exist('iBlk','var')
                 if iscell(varval)
                     varval = varval{iBlk};

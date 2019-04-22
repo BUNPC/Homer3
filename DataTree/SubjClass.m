@@ -31,7 +31,6 @@ classdef SubjClass < TreeNodeClass
             obj.iGroup = 1;
             obj.type = 'subj';
             obj.iSubj = iSubj;
-            obj.CondName2Group = [];
             obj.runs = run;
         end
         
@@ -208,8 +207,6 @@ classdef SubjClass < TreeNodeClass
             end
             fprintf('%sSubject %d:\n', blanks(indent), obj.iSubj);
             fprintf('%sCondNames: %s\n', blanks(indent+4), cell2str(obj.CondNames));
-            fprintf('%sCondName2Group:\n', blanks(indent+4));
-            pretty_print_matrix(obj.CondName2Group, indent+4, sprintf('%%d'));
             obj.procStream.input.Print(indent+4);
             obj.procStream.output.Print(indent+4);
             for ii=1:length(obj.runs)
@@ -300,41 +297,6 @@ classdef SubjClass < TreeNodeClass
                 end                
             end
             obj.CondNames = unique(CondNames);
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function SetCondName2Group(obj, CondNamesGroup)
-            obj.CondName2Group = zeros(1, length(obj.CondNames));
-            for ii=1:length(obj.CondNames)
-                obj.CondName2Group(ii) = find(strcmp(CondNamesGroup, obj.CondNames{ii}));
-            end
-            for iRun=1:length(obj.runs)
-                obj.runs(iRun).SetCondName2Group(CondNamesGroup);
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function SetCondName2Run(obj)
-            % Generate the second output parameter - CondSubj2Run using the 1st
-            obj.procStream.input.CondName2Run = zeros(length(obj.runs), length(obj.CondNames));
-            for iC=1:length(obj.CondNames)
-                for iRun=1:length(obj.runs)
-                    k = find(strcmp(obj.CondNames{iC}, obj.runs(iRun).GetConditions()));
-                    if isempty(k)
-                        obj.procStream.input.CondName2Run(iRun,iC) = 0;
-                    else
-                        obj.procStream.input.CondName2Run(iRun,iC) = k(1);
-                    end
-                end
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function CondNameIdx = GetCondNameIdx(obj, CondNameIdx)
-            CondNameIdx = find(obj.CondName2Group == CondNameIdx);
         end
         
         

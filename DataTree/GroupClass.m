@@ -437,7 +437,10 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetConditions(obj)            
+        function SetConditions(obj)
+            
+            % First get global et of conditions across all runs and
+            % subjects
             CondNames = {};
             for ii=1:length(obj.subjs)
                 obj.subjs(ii).SetConditions();
@@ -450,38 +453,9 @@ classdef GroupClass < TreeNodeClass
             % the whole group to these
             for ii=1:length(obj.subjs)
                 obj.subjs(ii).SetConditions(obj.CondNames);
-            end
-            
-            % Generate mapping of group conditions to subject conditions
-            % used when averaging subject HRF to get group HRF
-            obj.SetCondName2Subj();
-            for iSubj=1:length(obj.subjs)
-                obj.subjs(iSubj).SetCondName2Run();
-                obj.subjs(iSubj).SetCondName2Group(obj.CondNames);
-            end
-            
-            % For group this is an identity table
-            obj.CondName2Group = 1:length(obj.CondNames);
+            end            
         end
         
-        
-        % ----------------------------------------------------------------------------------
-        % Generates mapping of group conditions to subject conditions
-        % used when averaging subject HRF to get group HRF
-        % ----------------------------------------------------------------------------------
-        function SetCondName2Subj(obj)
-            obj.procStream.input.CondName2Subj = zeros(length(obj.subjs),length(obj.CondNames));
-            for iC=1:length(obj.CondNames)
-                for iSubj=1:length(obj.subjs)
-                    k = find(strcmp(obj.CondNames{iC}, obj.subjs(iSubj).GetConditions()));
-                    if isempty(k)
-                        obj.procStream.input.CondName2Subj(iSubj,iC) = 0;
-                    else
-                        obj.procStream.input.CondName2Subj(iSubj,iC) = k(1);
-                    end
-                end
-            end
-        end
         
         
         % ----------------------------------------------------------------------------------

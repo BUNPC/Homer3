@@ -9,9 +9,7 @@ classdef TreeNodeClass < handle
         procStream;
         err;
         CondNames;        
-        CondName2Group;   % Global table used at subject and run levels to convert 
-                          % condition index to global (or group-level) condition index.
-    end
+     end
         
     methods
         
@@ -116,7 +114,6 @@ classdef TreeNodeClass < handle
             objnew.type = obj.type;
             objnew.err = obj.err;
             objnew.CondNames = obj.CondNames;
-            objnew.CondName2Group = obj.CondName2Group;
             objnew.procStream.Copy(obj.procStream);
         end
         

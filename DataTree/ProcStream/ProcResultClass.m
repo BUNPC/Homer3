@@ -244,6 +244,10 @@ classdef ProcResultClass < handle
             if isempty(yavg)
                 return;
             end
+            if max(condition)>size(yavg,3)
+                yavg = [];
+                return;
+            end
             if all(isnan(yavg(:,:,condition)))
                 yavg = [];
                 return;
@@ -284,6 +288,10 @@ classdef ProcResultClass < handle
                 yavg = [];
             end
             if isempty(yavg)
+                return;
+            end
+            if max(condition)>size(yavg,4)
+                yavg = [];
                 return;
             end
             if all(isnan(yavg(:,:,:,condition)))

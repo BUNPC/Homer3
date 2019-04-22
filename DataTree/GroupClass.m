@@ -447,20 +447,7 @@ classdef GroupClass < TreeNodeClass
             end
             obj.CondNames    = unique(CondNames);
             obj.CondNamesAll(obj.CondNames);
-
-            % If Condition were added then the proc stream output averages 
-            % no longer match the conditions so no longer valid. We should 
-            % delete the output 
-            if length(C0) < length(obj.CondNamesAll)
-                if obj.procStream.HaveAvgOutput()
-                    msg{1} = sprintf('Warning; Added conditions do not match previously calculated proc stream averages.\n');
-                    msg{2} = sprintf('Output will be deleted. Please recalculate to generate output matching the new conditions.\n');
-                    menu([msg{:}], 'OK');
-                    obj.Reset();
-                    obj.Save();
-                end
-            end
-            
+           
             % Generate mapping of group conditions to subject conditions
             % used when averaging subject HRF to get group HRF
             obj.SetCondName2Subj();

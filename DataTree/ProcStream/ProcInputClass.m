@@ -56,9 +56,9 @@ classdef ProcInputClass < handle
                 
                 % misc could contain fields that are handle objects. Use
                 % CopyHandles instead of plain old assignment statement 
-                eval( sprintf('obj.misc.%s = CopyHandles(obj.misc.%s, obj2.misc.%s);', fields{ii}, fields{ii}) );
+                eval( sprintf('obj.misc.%s = CopyHandles(obj2.misc.%s, obj.misc.%s);', fields{ii}, fields{ii}) );
             end
-            obj.acquiredEditable = CopyHandles(obj.acquiredEditable, obj2.acquiredEditable);
+            obj.acquiredEditable = CopyHandles(obj2.acquiredEditable, obj.acquiredEditable);
         end
         
         
@@ -123,20 +123,14 @@ classdef ProcInputClass < handle
         
     
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Methods for getting/setting derived parameters 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
         % ----------------------------------------------------------------------------------
         function vals = GetStimValSettings(obj)
             vals = obj.stimValSettings;
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function s = GetStims(obj, t)
-            if nargin==1
-                t = [];
-            end
-            s = obj.acquiredEditable.GetStims(t);
         end
         
         
@@ -169,6 +163,138 @@ classdef ProcInputClass < handle
         end
         
     end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Methods for getting/setting editable acquisition parameters such as
+    % stimulus and source/detector geometry
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+        
+        % ----------------------------------------------------------------------------------
+        function s = GetStims(obj, t)
+            if nargin==1
+                t = [];
+            end
+            s = obj.acquiredEditable.GetStims(t);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function AddStims(obj, tPts, condition)
+            if isempty(tPts)
+                return;
+            end
+            if isempty(condition)
+                return;
+            end
+            obj.acquiredEditable.AddStims(tPts, condition);
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function DeleteStims(obj, tPts, condition)
+            if ~exist('tPts','var') || isempty(tPts)
+                return;
+            end
+            if ~exist('condition','var')
+                condition = '';
+            end
+            obj.acquiredEditable.DeleteStims(tPts, condition);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function MoveStims(obj, tPts, condition)
+            if ~exist('tPts','var') || isempty(tPts)
+                return;
+            end
+            if ~exist('condition','var')
+                condition = '';
+            end
+            obj.acquiredEditable.MoveStims(tPts, condition);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function [tpts, duration, vals] = GetStimData(obj, icond)
+            tpts     = obj.GetStimTpts(icond);
+            duration = obj.GetStimDuration(icond);
+            vals     = obj.GetStimValues(icond);
+        end
+        
+    
+        % ----------------------------------------------------------------------------------
+        function SetStimTpts(obj, icond, tpts)
+            obj.acquiredEditable.SetStimTpts(icond, tpts);
+        end
+        
+    
+        % ----------------------------------------------------------------------------------
+        function tpts = GetStimTpts(obj, icond)
+            if ~exist('icond','var')
+                icond=1;
+            end
+            tpts = obj.acquiredEditable.GetStimTpts(icond);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetStimDuration(obj, icond, duration)
+            obj.acquiredEditable.SetStimDuration(icond, duration);
+        end
+        
+    
+        % ----------------------------------------------------------------------------------
+        function duration = GetStimDuration(obj, icond)
+            if ~exist('icond','var')
+                icond=1;
+            end
+            duration = obj.acquiredEditable.GetStimDuration(icond);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetStimValues(obj, icond, vals)
+            obj.acquiredEditable.SetStimValues(icond, vals);
+        end
+        
+    
+        % ----------------------------------------------------------------------------------
+        function vals = GetStimValues(obj, icond)
+            if ~exist('icond','var')
+                icond=1;
+            end
+            vals = obj.acquiredEditable.GetStimValues(icond);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function CondNames = GetConditions(obj)
+            CondNames = obj.acquiredEditable.GetConditions();
+        end
+               
+        % ----------------------------------------------------------------------------------
+        function RenameCondition(obj, oldname, newname)
+            % Function to rename a condition. Important to remeber that changing the
+            % condition involves 2 distinct well defined steps:
+            %   a) For the current element change the name of the specified (old)
+            %      condition for ONLY for ALL the acquired data elements under the
+            %      currElem, be it run, subj, or group. In this step we DO NOT TOUCH
+            %      the condition names of the run, subject or group.
+            %   b) Rebuild condition names and tables of all the tree nodes group, subjects
+            %      and runs same as if you were loading during Homer3 startup from the
+            %      acquired data.
+            %
+            if ~exist('oldname','var') || ~ischar(oldname)
+                return;
+            end
+            if ~exist('newname','var')  || ~ischar(newname)
+                return;
+            end
+            obj.acquiredEditable.RenameCondition(oldname, newname);
+        end
+    end   
     
 end
 

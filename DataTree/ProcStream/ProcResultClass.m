@@ -410,7 +410,7 @@ classdef ProcResultClass < handle
                 
                 % obj2 could contain properties that are handle objects. Use
                 % CopyHandles instead of plain old assignment statement 
-                eval( sprintf('obj.%s = CopyHandles(obj.%s, obj2.%s);', fields{ii}, fields{ii}, fields{ii}) );
+                eval( sprintf('obj.%s = CopyHandles(obj2.%s, obj.%s);', fields{ii}, fields{ii}, fields{ii}) );
             end
             
             fields = properties(obj.misc);
@@ -421,9 +421,26 @@ classdef ProcResultClass < handle
                 
                 % obj2.misc could contain properties that are handle objects. Use
                 % CopyHandles instead of plain old assignment statement 
-                eval( sprintf('obj.misc.%s = CopyHandles(obj.misc.%s, obj2.misc.%s);', fields{ii}, fields{ii}, fields{ii}) );
+                eval( sprintf('obj.misc.%s = CopyHandles(obj2.%s, obj.misc.%s);', fields{ii}, fields{ii}, fields{ii}) );
             end
         end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = HaveAvgOutput(obj)
+            b=0;
+            if isempty(obj)
+                return;
+            end
+            if ~isempty(obj.dcAvg)
+                b=1;
+            end
+            if ~isempty(obj.dodAvg)
+                b=1;
+            end
+        end
+        
         
         
     end

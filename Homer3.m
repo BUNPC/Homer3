@@ -875,7 +875,7 @@ for iCond = 1:size(s,2)
             linestyle = '-';
         end
         hl = plot(t(iS(ii))*[1 1], yrange, linestyle);
-        set(hl, 'linewidth',1);
+        set(hl, 'linewidth',1.5);
         set(hl, 'color',CondColTbl(iCondGroup,:));
     end
     

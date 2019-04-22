@@ -58,7 +58,7 @@ classdef RunClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function Save(obj, options)
             if ~exist('options','var')
-                options = 'acquired:derived';
+                options = 'derived';
             end
             options_s = obj.parseSaveOptions(options);
             
@@ -280,7 +280,7 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function SetStims_MatInput(obj,s,t,CondNames)
-            obj.acquired.SetStims_MatInput(s,t,CondNames);
+            obj.procStream.SetStims_MatInput(s,t,CondNames);
         end
         
         
@@ -301,13 +301,13 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function SetConditions(obj)
-            obj.CondNames = unique(obj.acquired.GetConditions());
+            obj.CondNames = unique(obj.procStream.GetConditions());
         end
         
         
         % ----------------------------------------------------------------------------------
         function CondNames = GetConditions(obj)
-            CondNames = obj.acquired.GetConditions();
+            CondNames = obj.procStream.GetConditions();
         end
         
         
@@ -387,7 +387,7 @@ classdef RunClass < TreeNodeClass
             if isempty(condition)
                 return;
             end
-            obj.acquired.AddStims(tPts, condition);
+            obj.procStream.AddStims(tPts, condition);
         end
 
         
@@ -399,7 +399,7 @@ classdef RunClass < TreeNodeClass
             if ~exist('condition','var')
                 condition = '';
             end
-            obj.acquired.DeleteStims(tPts, condition);
+            obj.procStream.DeleteStims(tPts, condition);
         end
         
         
@@ -411,7 +411,7 @@ classdef RunClass < TreeNodeClass
             if ~exist('condition','var')
                 condition = '';
             end
-            obj.acquired.MoveStims(tPts, condition);
+            obj.procStream.MoveStims(tPts, condition);
         end
         
         
@@ -425,7 +425,7 @@ classdef RunClass < TreeNodeClass
     
         % ----------------------------------------------------------------------------------
         function SetStimTpts(obj, icond, tpts)
-            obj.acquired.SetStimTpts(icond, tpts);
+            obj.procStream.SetStimTpts(icond, tpts);
         end
         
     
@@ -434,13 +434,13 @@ classdef RunClass < TreeNodeClass
             if ~exist('icond','var')
                 icond=1;
             end
-            tpts = obj.acquired.GetStimTpts(icond);
+            tpts = obj.procStream.GetStimTpts(icond);
         end
         
         
         % ----------------------------------------------------------------------------------
         function SetStimDuration(obj, icond, duration)
-            obj.acquired.SetStimDuration(icond, duration);
+            obj.procStream.SetStimDuration(icond, duration);
         end
         
     
@@ -449,13 +449,13 @@ classdef RunClass < TreeNodeClass
             if ~exist('icond','var')
                 icond=1;
             end
-            duration = obj.acquired.GetStimDuration(icond);
+            duration = obj.procStream.GetStimDuration(icond);
         end
         
         
         % ----------------------------------------------------------------------------------
         function SetStimValues(obj, icond, vals)
-            obj.acquired.SetStimValues(icond, vals);
+            obj.procStream.SetStimValues(icond, vals);
         end
         
     
@@ -464,7 +464,7 @@ classdef RunClass < TreeNodeClass
             if ~exist('icond','var')
                 icond=1;
             end
-            vals = obj.acquired.GetStimValues(icond);
+            vals = obj.procStream.GetStimValues(icond);
         end
         
         
@@ -490,7 +490,7 @@ classdef RunClass < TreeNodeClass
             if obj.err ~= 0
                 return;
             end
-            obj.acquired.RenameCondition(oldname, newname);
+            obj.procStream.RenameCondition(oldname, newname);
         end
         
         

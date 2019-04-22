@@ -76,51 +76,38 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function CopyProcStream(obj, procStream, type, reg)
-            if nargin<4
-                reg = RegistriesClass.empty();
+        function CopyFcalls(obj, varargin)
+            if isa(varargin{1},'TreeNodeClass')
+                procStream  = varargin{1}.procStream;
+                type        = varargin{1}.type;
+                if nargin>2
+                    reg     = varargin{2};
+                else
+                    reg     = RegistriesClass.empty();
+                end
+            elseif isa(varargin{1},'ProcStreamClass')
+                procStream  = varargin{1};
+                type        = varargin{2};
+                if nargin>3
+                    reg     = varargin{3};
+                else
+                    reg     = RegistriesClass.empty();
+                end
             end
             
-            % Copy default procStream to all nodes at a single level
-            switch(type)
-                case 'group'
-                    if obj.procStream.IsEmpty()
-                        obj.procStream.Copy(procStream, reg);
-                    end
-                case 'subj'
-                    for jj=1:length(obj.subjs)
-                        if obj.subjs(jj).procStream.IsEmpty()
-                            obj.subjs(jj).procStream.Copy(procStream, reg);
-                        end
-                    end
-                case 'run'
-                    for jj=1:length(obj.subjs)
-                        for kk=1:length(obj.subjs(jj).runs)
-                            if obj.subjs(jj).runs(kk).procStream.IsEmpty()
-                                obj.subjs(jj).runs(kk).procStream.Copy(procStream, reg);
-                            end
-                        end
-                    end
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function CopyFcalls(obj, procElem)
             % Copy default procStream function call chain to all uninitialized nodes 
             % in the group
-            procStream = procElem.procStream;
-            switch(procElem.type)
+            switch(type)
                 case 'group'
-                    obj.procStream.CopyFcalls(procStream);
+                    obj.procStream.CopyFcalls(procStream, reg);
                 case 'subj'
                     for jj=1:length(obj.subjs)
-                        obj.subjs(jj).procStream.CopyFcalls(procStream);
+                        obj.subjs(jj).procStream.CopyFcalls(procStream, reg);
                     end
                 case 'run'
                     for jj=1:length(obj.subjs)
                         for kk=1:length(obj.subjs(jj).runs)
-                            obj.subjs(jj).runs(kk).procStream.CopyFcalls(procStream);
+                            obj.subjs(jj).runs(kk).procStream.CopyFcalls(procStream, reg);
                         end
                     end
             end
@@ -189,28 +176,31 @@ classdef GroupClass < TreeNodeClass
                 % load a default proc stream input
                 if g.procStream.IsEmpty() || s.procStream.IsEmpty() || r.procStream.IsEmpty()
                     fprintf('Failed to load all function calls in proc stream config file. Loading default proc stream...\n');
-                    g.CopyProcStream(procStreamGroup, 'group', reg);
-                    g.CopyProcStream(procStreamSubj, 'subj', reg);
-                    g.CopyProcStream(procStreamRun, 'run', reg);
+                    g.CopyFcalls(procStreamGroup, 'group', reg);
+                    g.CopyFcalls(procStreamSubj, 'subj', reg);
+                    g.CopyFcalls(procStreamRun, 'run', reg);
                     
                     % If user asked default config file to be generated ...
-                    if autoGenDefaultFile                        
+                    if autoGenDefaultFile
                         fprintf('Generating default proc stream config file %s\n', fname);
-                            
-                    % Move exiting default config to same name with .bak extension
-                    if ~exist([fname, '.bak'], 'file')
-                        fprintf('Moving existing %s to %s.bak\n', fname, fname);
-                        movefile(fname, [fname, '.bak']);
-                    end
-                    procStreamGroup.SaveConfigFile(fname, 'group');
-                    procStreamSubj.SaveConfigFile(fname, 'subj');
-                    procStreamRun.SaveConfigFile(fname, 'run');
+                        
+                        % Move exiting default config to same name with .bak extension
+                        if ~exist([fname, '.bak'], 'file')
+                            fprintf('Moving existing %s to %s.bak\n', fname, fname);
+                            movefile(fname, [fname, '.bak']);
+                        end
+                        procStreamGroup.SaveConfigFile(fname, 'group');
+                        procStreamSubj.SaveConfigFile(fname, 'subj');
+                        procStreamRun.SaveConfigFile(fname, 'run');
                     end
                 else
                     fprintf('Loading proc stream from %s\n', fname);
-                    g.CopyProcStream(g.procStream, 'group', reg);
-                    g.CopyProcStream(s.procStream, 'subj', reg);
-                    g.CopyProcStream(r.procStream, 'run', reg);
+                    procStreamGroup.Copy(g.procStream);
+                    procStreamSubj.Copy(s.procStream);
+                    procStreamRun.Copy(r.procStream);
+                    g.CopyFcalls(procStreamGroup, 'group', reg);
+                    g.CopyFcalls(procStreamSubj, 'subj', reg);
+                    g.CopyFcalls(procStreamRun, 'run', reg);
                 end
             end
         end
@@ -339,7 +329,7 @@ classdef GroupClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function Save(obj, options)
             if ~exist('options','var')
-                options = 'acquired:derived';
+                options = 'derived';
             end
             options_s = obj.parseSaveOptions(options);
             
@@ -352,7 +342,7 @@ classdef GroupClass < TreeNodeClass
             % Save acquired data
             if options_s.acquired
                 for ii=1:length(obj.subjs)
-                    obj.subjs(ii).Save('acquired');
+                    obj.subjs(ii).Save('derived');
                 end
             end
         end
@@ -448,6 +438,8 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function SetConditions(obj)
+            C0 = obj.GetConditions();
+            
             CondNames = {};
             for ii=1:length(obj.subjs)
                 obj.subjs(ii).SetConditions();
@@ -455,7 +447,20 @@ classdef GroupClass < TreeNodeClass
             end
             obj.CondNames    = unique(CondNames);
             obj.CondNamesAll(obj.CondNames);
-	
+
+            % If Condition were added then the proc stream output averages 
+            % no longer match the conditions so no longer valid. We should 
+            % delete the output 
+            if length(C0) < length(obj.CondNamesAll)
+                if obj.procStream.HaveAvgOutput()
+                    msg{1} = sprintf('Warning; Added conditions do not match previously calculated proc stream averages.\n');
+                    msg{2} = sprintf('Output will be deleted. Please recalculate to generate output matching the new conditions.\n');
+                    menu([msg{:}], 'OK');
+                    obj.Reset();
+                    obj.Save();
+                end
+            end
+            
             % Generate mapping of group conditions to subject conditions
             % used when averaging subject HRF to get group HRF
             obj.SetCondName2Subj();

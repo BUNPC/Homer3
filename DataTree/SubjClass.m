@@ -102,7 +102,7 @@ classdef SubjClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function Save(obj, options)
             if ~exist('options','var')
-                options = 'acquired:derived';
+                options = 'derived';
             end
             options_s = obj.parseSaveOptions(options);
             
@@ -124,7 +124,7 @@ classdef SubjClass < TreeNodeClass
                 pause(1);
                 n = length(obj.runs);
                 for ii=1:n
-                    obj.runs(ii).Save('acquired');
+                    obj.runs(ii).Save('derived');
                     waitbar(ii/n, h, sprintf('Saving run %d of %d of subject %s', ii, n, strPrintable))
                 end
                 close(h);

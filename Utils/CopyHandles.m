@@ -1,9 +1,9 @@
 function objnew = CopyHandles(varargin)
 % Syntax:
 %       objnew = CopyHandles(obj)
-%       objnew = CopyHandles(objnew, obj)
+%       objnew = CopyHandles(obj, objnew)
 %
-% Generate copy of array of handle objects
+% Generate copy of array of handle objects from obj to objnew
 %
 %
 
@@ -11,7 +11,7 @@ if nargin==1
     obj = varargin{1};
 elseif nargin==2
     obj    = varargin{1};
-    objnew = varargin{2};   
+    objnew = varargin{1};
 end
 
 if isempty(obj)

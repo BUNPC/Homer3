@@ -88,4 +88,10 @@ Apr 16, 2019
 -- Check the at the channel dataTypeLabels that are being used conform to spec. 
 -- Instead of using hard coded numbers for dataTypeLabels to label channels, create a list of data type values in SnirfClass. 
 
+----------------
+Apr 21, 2019
+----------------
+
+-- Generate dc and dod timecourses on the fly using active proc stream function when starting Homer3 to avoid having to save this in groupResults.mat. In order to save costly memory usage. 
+
 

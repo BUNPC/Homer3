@@ -53,11 +53,18 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function CopyFcalls(obj, obj2)
+        function CopyFcalls(obj, obj2, reg)
+            if ~isa(obj, 'ProcStreamClass')
+                return;
+            end
+            if nargin<3
+                reg = RegistriesClass.empty();
+            end            
             delete(obj.fcalls);
             obj.fcalls = FuncCallClass().empty();
             for ii=1:length(obj2.fcalls)
-                obj.fcalls(ii) = FuncCallClass(obj2.fcalls(ii));
+                obj.fcalls(ii) = FuncCallClass();
+                obj.fcalls(ii).Copy(obj2.fcalls(ii), reg);
             end
         end
         
@@ -195,6 +202,21 @@ classdef ProcStreamClass < handle
                 end
             end
         end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = HaveAvgOutput(obj)
+            b=0;
+            if isempty(obj)
+                return;
+            end
+            if isempty(obj.output)
+                return;
+            end
+            b = obj.output.HaveAvgOutput();
+        end
+        
         
         
         % ----------------------------------------------------------------------------------
@@ -1056,6 +1078,9 @@ classdef ProcStreamClass < handle
     end
     
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Methods for getting/setting derived parameters 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
         % ----------------------------------------------------------------------------------
@@ -1119,6 +1144,131 @@ classdef ProcStreamClass < handle
         end
         
     end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Methods for getting/setting editable acquisition parameters such as
+    % stimulus and source/detector geometry
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+        
+        % ----------------------------------------------------------------------------------
+        function AddStims(obj, tPts, condition)
+            if isempty(tPts)
+                return;
+            end
+            if isempty(condition)
+                return;
+            end
+            obj.input.AddStims(tPts, condition);
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function DeleteStims(obj, tPts, condition)
+            if ~exist('tPts','var') || isempty(tPts)
+                return;
+            end
+            if ~exist('condition','var')
+                condition = '';
+            end
+            obj.input.DeleteStims(tPts, condition);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function MoveStims(obj, tPts, condition)
+            if ~exist('tPts','var') || isempty(tPts)
+                return;
+            end
+            if ~exist('condition','var')
+                condition = '';
+            end
+            obj.input.MoveStims(tPts, condition);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function [tpts, duration, vals] = GetStimData(obj, icond)
+            tpts     = obj.GetStimTpts(icond);
+            duration = obj.GetStimDuration(icond);
+            vals     = obj.GetStimValues(icond);
+        end
+        
+    
+        % ----------------------------------------------------------------------------------
+        function SetStimTpts(obj, icond, tpts)
+            obj.input.SetStimTpts(icond, tpts);
+        end
+        
+    
+        % ----------------------------------------------------------------------------------
+        function tpts = GetStimTpts(obj, icond)
+            if ~exist('icond','var')
+                icond=1;
+            end
+            tpts = obj.input.GetStimTpts(icond);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetStimDuration(obj, icond, duration)
+            obj.input.SetStimDuration(icond, duration);
+        end
+        
+    
+        % ----------------------------------------------------------------------------------
+        function duration = GetStimDuration(obj, icond)
+            if ~exist('icond','var')
+                icond=1;
+            end
+            duration = obj.input.GetStimDuration(icond);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetStimValues(obj, icond, vals)
+            obj.input.SetStimValues(icond, vals);
+        end
+        
+    
+        % ----------------------------------------------------------------------------------
+        function vals = GetStimValues(obj, icond)
+            if ~exist('icond','var')
+                icond=1;
+            end
+            vals = obj.input.GetStimValues(icond);
+        end
+                       
+        
+        % ---------------------------------------------------------
+        function CondNames = GetConditions(obj)
+            CondNames = obj.input.GetConditions();
+        end
+        
+
+        % ----------------------------------------------------------------------------------
+        function RenameCondition(obj, oldname, newname)
+            % Function to rename a condition. Important to remeber that changing the
+            % condition involves 2 distinct well defined steps:
+            %   a) For the current element change the name of the specified (old)
+            %      condition for ONLY for ALL the acquired data elements under the
+            %      currElem, be it run, subj, or group. In this step we DO NOT TOUCH
+            %      the condition names of the run, subject or group.
+            %   b) Rebuild condition names and tables of all the tree nodes group, subjects
+            %      and runs same as if you were loading during Homer3 startup from the
+            %      acquired data.
+            %
+            if ~exist('oldname','var') || ~ischar(oldname)
+                return;
+            end
+            if ~exist('newname','var')  || ~ischar(newname)
+                return;
+            end
+            obj.input.RenameCondition(oldname, newname);
+        end
+        
+    end    
     
 end
 

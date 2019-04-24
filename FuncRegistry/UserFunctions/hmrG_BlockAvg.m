@@ -1,4 +1,4 @@
-function [yAvgOut, yAvgStdOut] = hmrG_BlockAvg(yAvgSubjs, yAvgStdSubjs, nTrialsSubjs, tRange, thresh)
+function [yAvgOut, yAvgStdOut, nTrials] = hmrG_BlockAvg(yAvgSubjs, yAvgStdSubjs, nTrialsSubjs, tRange, thresh)
 % SYNTAX:
 % [yAvgOut, yAvgStdOut, nTrials] = hmrG_BlockAvg(yAvgSubjs, yAvgStdSubjs, nTrialsSubjs, tRange, thresh)
 %
@@ -20,10 +20,11 @@ function [yAvgOut, yAvgStdOut] = hmrG_BlockAvg(yAvgSubjs, yAvgStdSubjs, nTrialsS
 % OUTPUTS:
 % yAvgOut: the averaged results
 % yAvgStdOut: the standard deviation across trials
+% nTrials: 
 %
 % USAGE OPTIONS:
-% Block_Average_on_Group_Concentration_Data: [dcAvg, dcAvgStd] = hmrG_BlockAvg(dcAvgSubjs, dcAvgStdSubjs, nTrialsSubjs, tRange, thresh)
-% Block_Average_on_Group_Delta_OD_Data:      [dodAvg, dodAvgStd] = hmrG_BlockAvg(dodAvgSubjs, dodAvgStdSubjs, nTrialsSubjs, tRange, thresh)
+% Block_Average_on_Group_Concentration_Data: [dcAvg, dcAvgStd, nTrials] = hmrG_BlockAvg(dcAvgSubjs, dcAvgStdSubjs, nTrialsSubjs, tRange, thresh)
+% Block_Average_on_Group_Delta_OD_Data:      [dodAvg, dodAvgStd, nTrials] = hmrG_BlockAvg(dodAvgSubjs, dodAvgStdSubjs, nTrialsSubjs, tRange, thresh)
 %
 % PARAMETERS:
 % tRange: [5.0, 10.0]
@@ -41,7 +42,7 @@ thresh = thresh * 1e-6;
 % false unconditionally. In the future chkFlag should be a user-settable input parameter.
 chkFlag = false;
 
-for kk = 1:length(yAvgSubjs{1})
+for iBlk = 1:length(yAvgSubjs{1})
     
     subjCh = [];
     nStim = 0;
@@ -49,30 +50,30 @@ for kk = 1:length(yAvgSubjs{1})
     
     for iSubj = 1:nSubj
         
-        yAvgOut(kk) = DataClass();
-        yAvgStdOut(kk) = DataClass();
+        yAvgOut(iBlk) = DataClass();
+        yAvgStdOut(iBlk) = DataClass();
         
-        yAvg      = yAvgSubjs{iSubj}(kk).GetDataMatrix();
+        yAvg      = yAvgSubjs{iSubj}(iBlk).GetDataMatrix();
         if isempty(yAvg)
             continue;
         end
-        yAvgStd   = yAvgStdSubjs{iSubj}(kk).GetDataMatrix();
-        tHRF      = yAvgSubjs{iSubj}(kk).GetT();
-        nTrials   = nTrialsSubjs{iSubj}{kk};
-        datatype  = unique(yAvgSubjs{iSubj}(kk).GetDataTypeLabel());
+        yAvgStd   = yAvgStdSubjs{iSubj}(iBlk).GetDataMatrix();
+        tHRF      = yAvgSubjs{iSubj}(iBlk).GetT();
+        nT        = nTrialsSubjs{iSubj}{iBlk};
+        datatype  = unique(yAvgSubjs{iSubj}(iBlk).GetDataTypeLabel());
         if datatype(1)==6 || datatype(1)==7 || datatype(1)==8
-            ml    = yAvgSubjs{iSubj}(kk).GetMeasListSrcDetPairs();
+            ml    = yAvgSubjs{iSubj}(iBlk).GetMeasListSrcDetPairs();
         elseif datatype(1)==1
-            ml    = yAvgSubjs{iSubj}(kk).GetMeasList();
+            ml    = yAvgSubjs{iSubj}(iBlk).GetMeasList();
         end
         
         if isempty(yAvg)
             continue;
         end
         
-        nCond = size(nTrials,2);
-        yAvgOut(kk).SetT(tHRF);
-        yAvgStdOut(kk).SetT(tHRF);
+        nCond = size(nT,2);
+        yAvgOut(iBlk).SetT(tHRF);
+        yAvgStdOut(iBlk).SetT(tHRF);
         
         if datatype(1)==6 || datatype(1)==7 || datatype(1)==8
             
@@ -86,7 +87,7 @@ for kk = 1:length(yAvgSubjs{1})
             end
             
             for iC = 1:nCond
-                if sum(nTrials(:,iC))==0
+                if sum(nT(:,iC))==0
                     continue;
                 end
                 
@@ -94,9 +95,9 @@ for kk = 1:length(yAvgSubjs{1})
                 % based on the subjects' standard error and store result in lstPass
                 % also need to consider if channel was manually or
                 % automatically included
-                lstPass = find( (squeeze(mean(yAvgStd(lstT,1,:,iC),1))./sqrt(nTrials(:,iC)+eps)) <= thresh &...
-                                (squeeze(mean(yAvgStd(lstT,2,:,iC),1))./sqrt(nTrials(:,iC)+eps)) <= thresh &...
-                                 nTrials(:,iC)>0 );
+                lstPass = find( (squeeze(mean(yAvgStd(lstT,1,:,iC),1))./sqrt(nT(:,iC)+eps)) <= thresh &...
+                                (squeeze(mean(yAvgStd(lstT,2,:,iC),1))./sqrt(nT(:,iC)+eps)) <= thresh &...
+                                 nT(:,iC)>0 );
                 
                 if chkFlag==false | length(lstPass)==size(yAvg,3)
                     if iSubj==1 | iC>nStim
@@ -128,14 +129,14 @@ for kk = 1:length(yAvgSubjs{1})
                     for iCh = 1:size(grp1,3)
                         yAvg(:,:,iCh,iC) = grp1(:,:,iCh,iC) / subjCh(iCh,iC);
                         if iSubj == nSubj
-                            yAvgOut(kk).AddChannelDc(ml(iCh,1), ml(iCh,2), 6, iC);
-                            yAvgOut(kk).AddChannelDc(ml(iCh,1), ml(iCh,2), 7, iC);
-                            yAvgOut(kk).AddChannelDc(ml(iCh,1), ml(iCh,2), 8, iC);
+                            yAvgOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 6, iC);
+                            yAvgOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 7, iC);
+                            yAvgOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 8, iC);
                         end
                     end
                 end
                 if iSubj == nSubj                
-                    yAvgOut(kk).AppendD(yAvg);
+                    yAvgOut(iBlk).AppendD(yAvg);
                 end
             end
             
@@ -150,7 +151,7 @@ for kk = 1:length(yAvgSubjs{1})
                 subjCh = zeros(size(yAvg,2),nCond);
             end
             for iC = 1:nCond
-                if sum(nTrials(:,iC))==0
+                if sum(nT(:,iC))==0
                     continue;
                 end
                 
@@ -158,8 +159,8 @@ for kk = 1:length(yAvgSubjs{1})
                     % Calculate which channels to include and exclude from the group HRF avg,
                     % based on the subjects' standard error and store result in lstPass
                     lstWl = find(ml(:,4)==iWl);
-                    lstPass = find( ((squeeze(mean(yAvgStd(lstT,lstWl,iC),1))./sqrt(nTrials(lstWl,iC)'+eps)) <= thresh) &...
-                                      nTrials(lstWl,iC)'>0 );
+                    lstPass = find( ((squeeze(mean(yAvgStd(lstT,lstWl,iC),1))./sqrt(nT(lstWl,iC)'+eps)) <= thresh) &...
+                                      nT(lstWl,iC)'>0 );
                     lstPass = lstWl(lstPass);
                     
                     if chkFlag==false | length(lstPass)==size(yAvg,2)
@@ -187,17 +188,18 @@ for kk = 1:length(yAvgSubjs{1})
                     for iCh = 1:size(grp1,2)
                         yAvg(:,:,iC) = grp1(:,:,iC) / subjCh(iCh,iC);                        
                         if iSubj == nSubj
-                            yAvgOut(kk).AddChannelDod(ml(iCh,1), ml(iCh,2), ml(iCh,4), iC);
+                            yAvgOut(iBlk).AddChannelDod(ml(iCh,1), ml(iCh,2), ml(iCh,4), iC);
                         end
                     end
                 end
                 if iSubj == nSubj
-                    yAvgOut(kk).AppendD(yAvg);
+                    yAvgOut(iBlk).AppendD(yAvg);
                 end
             end
             
         end
     end
+    nTrials{iBlk} = nT;
 end
 
 % TBD: Calculate Standard deviation

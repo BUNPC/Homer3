@@ -45,7 +45,7 @@ yTrials   = [];
 snirf = SnirfClass(data, stim);
 t = snirf.GetTimeCombined();
 s = snirf.GetStims(t);
-nTrials = zeros(1, size(s,2));
+nTrials = cell(length(data),1);
 
 for kk=1:length(data)
     data_avg(kk) = DataClass();
@@ -54,6 +54,8 @@ for kk=1:length(data)
     yavg = [];
     ystd = [];
     ysum2 = [];
+    
+    nTrials{kk} = zeros(1, size(s,2));
     
     datatype = data(kk).GetDataTypeLabel();  % Get the input data type
     y = data(kk).GetD();    % Get the data vector 
@@ -97,7 +99,7 @@ for kk=1:length(data)
             yTrials(iC).yblk = yblk(:,:,:,1:nBlk);
             yavg(:,:,:,iC) = mean(yblk(:,:,:,1:nBlk),4);
             ystd(:,:,:,iC) = std(yblk(:,:,:,1:nBlk),[],4);
-            nTrials(iC) = nBlk;
+            nTrials{kk}(iC) = nBlk;
             
             % Loop over all channels
             for ii=1:size(yavg,3)
@@ -134,7 +136,7 @@ for kk=1:length(data)
             yTrials(iC).yblk = yblk(:,:,1:nBlk);
             yavg(:,:,iC) = mean(yblk(:,:,1:nBlk),3);
             ystd(:,:,iC) = std(yblk(:,:,1:nBlk),[],3);
-            nTrials(iC) = nBlk;
+            nTrials{kk}(iC) = nBlk;
 
             % Loop over all wavelengths
             for ii=1:size(yavg,2)

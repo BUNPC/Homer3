@@ -190,6 +190,9 @@ classdef StimClass < FileLoadSaveClass
         
         % ----------------------------------------------------------------------------------
         function EditValue(obj, tPts, val)
+            if isempty(obj.data)
+                return;
+            end
             if ~exist('val','var')
                 val = 1;
             end
@@ -232,6 +235,10 @@ classdef StimClass < FileLoadSaveClass
         
         % -------------------------------------------------------
         function tPts = GetTpts(obj, k)
+            tPts = [];
+            if isempty(obj.data)
+                return;
+            end
             if ~exist('k','var')
                 k = 1:size(obj.data,1);
             end
@@ -241,6 +248,9 @@ classdef StimClass < FileLoadSaveClass
         
         % ----------------------------------------------------------------------------------
         function SetDuration(obj, duration, tPts)
+            if isempty(obj.data)
+                return;
+            end
             if ~exist('duration','var')
                 duration = 5;
             end
@@ -260,6 +270,10 @@ classdef StimClass < FileLoadSaveClass
         
         % -------------------------------------------------------
         function duration = GetDuration(obj, tPts)
+            duration = [];
+            if isempty(obj.data)
+                return;
+            end
             if ~exist('tPts','var')
                 tPts = obj.data(:,1);
             end
@@ -267,16 +281,15 @@ classdef StimClass < FileLoadSaveClass
             for ii=1:length(tPts)
                 k(ii) = find( abs(obj.data(:,1)-tPts(ii)) < obj.errmargin );
             end            
-            if isempty(obj.data)
-                duration = [];
-            else
-                duration = obj.data(k,2);
-            end
+            duration = obj.data(k,2);
         end
         
         
         % ----------------------------------------------------------------------------------
         function SetValues(obj, vals, tPts)
+            if isempty(obj.data)
+                return;
+            end
             if ~exist('vals','var')
                 vals = 1;
             end
@@ -296,6 +309,10 @@ classdef StimClass < FileLoadSaveClass
         
         % -------------------------------------------------------
         function vals = GetValues(obj, tPts)
+            vals = [];
+            if isempty(obj.data)
+                return;
+            end
             if ~exist('tPts','var')
                 tPts = obj.data(:,1);
             end
@@ -303,16 +320,16 @@ classdef StimClass < FileLoadSaveClass
             for ii=1:length(tPts)
                 k(ii) = find( abs(obj.data(:,1)-tPts(ii)) < obj.errmargin );
             end
-            if isempty(obj.data)
-                vals = [];
-            else
-                vals = obj.data(k,3);
-            end
+            vals = obj.data(k,3);
         end
         
         
         % ----------------------------------------------------------------------------------
         function DeleteStims(obj, tPts)
+            if isempty(obj.data)
+                return;
+            end
+            
             % Find all stims for any conditions which match the time points and 
             % delete them from data. 
             k = [];

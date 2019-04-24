@@ -333,8 +333,15 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function nTrials = GetNtrials(obj)
-            nTrials = obj.nTrials;
+        function nTrials = GetNtrials(obj, iBlk)
+            nTrials = {};
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            if isempty(obj.nTrials)
+                return;
+            end
+            nTrials = obj.nTrials{iBlk};
         end
         
         
@@ -449,7 +456,12 @@ classdef ProcResultClass < handle
             end
         end
         
-        
+        % ----------------------------------------------------------------------------------
+        function RemoveTimeCourseData(obj)
+            obj.dc = [];
+            obj.dod = [];
+        end
+                
         
     end
     

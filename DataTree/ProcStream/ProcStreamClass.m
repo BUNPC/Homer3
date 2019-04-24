@@ -1279,6 +1279,13 @@ classdef ProcStreamClass < handle
             obj.input.RenameCondition(oldname, newname);
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function RemoveTimeCourseData(obj)
+            obj.output.RemoveTimeCourseData();
+        end
+        
+            
     end    
     
 end

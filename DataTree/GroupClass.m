@@ -18,9 +18,22 @@ classdef GroupClass < TreeNodeClass
             obj@TreeNodeClass(varargin);
 
             obj.version = Homer3_version('exclpath');
-            obj.type  = 'group';
+            obj.type    = 'group';
+            obj.subjs   = SubjClass().empty;
+            
             if nargin>0
                 if ischar(varargin{1}) && strcmp(varargin{1},'copy')
+                    return;
+                elseif isa(varargin{1}, 'GroupClass')
+                    obj2   = varargin{1};
+                    option = '';
+                    if nargin>1
+                        option = varargin{2};
+                    end
+                    obj.Copy(obj2);
+                    if strcmp(option, 'spacesaver')
+                        obj.RemoveTimeCourseData();
+                    end
                     return;
                 end
                 fname = varargin{1};
@@ -28,10 +41,8 @@ classdef GroupClass < TreeNodeClass
                 return;
             end
             
-            if isempty(fname)
-                subj = SubjClass().empty;
-            else
-                subj = SubjClass(fname, 1, 1, 1);
+            if ~isempty(fname)
+                obj.subjs = SubjClass(fname, 1, 1, 1);
             end
             
             % Derive obj name from the name of the root directory
@@ -44,7 +55,6 @@ classdef GroupClass < TreeNodeClass
             obj.type = 'group';
             obj.fileidx = 0;
             obj.nFiles = 0;
-            obj.subjs = subj;
         end
         
         
@@ -313,7 +323,7 @@ classdef GroupClass < TreeNodeClass
                 % copy procStream.output from previous group to current group for
                 % all nodes that still exist in the current group.
                 hwait = waitbar(0,'Loading group');
-                obj.Copy(group);
+                obj.Copy(group, 'conditional');
                 close(hwait);
             else
                 group = obj;
@@ -328,6 +338,8 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function Save(obj, options)
+            fprintf('Saving processed data in groupResults.mat\n');
+            tic
             if ~exist('options','var')
                 options = 'derived';
             end
@@ -335,7 +347,13 @@ classdef GroupClass < TreeNodeClass
             
             % Save derived data
             if options_s.derived
-                group = obj;
+                % This way of saving space by copying using GroupClass copy constructor is really 
+                % slow due to the use of the generic copy function CopyHandles in procStream
+                % We comment this out until we figure out how to speed this up. So for now we 
+                % just use the old method and save the whole thing
+                % 
+                % group = GroupClass(obj, 'spacesaver');
+                group = obj;                
                 save( './groupResults.mat','group' );
             end
             
@@ -345,9 +363,18 @@ classdef GroupClass < TreeNodeClass
                     obj.subjs(ii).Save('derived');
                 end
             end
+            fprintf('Completed saving groupResults.mat in %0.3f seconds.\n', toc);
         end
         
-               
+
+        % ----------------------------------------------------------------------------------
+        function RemoveTimeCourseData(obj)
+            for ii=1:length(obj.subjs)
+                obj.subjs(ii).RemoveTimeCourseData();
+            end
+        end
+        
+            
     end  % Public Save/Load methods
         
     
@@ -447,7 +474,6 @@ classdef GroupClass < TreeNodeClass
                 CondNames = [CondNames, obj.subjs(ii).GetConditions()];
             end
             obj.CondNames    = unique(CondNames);
-            obj.CondNamesAll(obj.CondNames);
            
             % Now that we have all conditions, set the conditions across 
             % the whole group to these
@@ -456,13 +482,6 @@ classdef GroupClass < TreeNodeClass
             end            
         end
         
-        
-        
-        % ----------------------------------------------------------------------------------
-        function CondNameIdx = GetCondNameIdx(obj, CondNameIdx)
-            ;
-        end
-             
         
         % ----------------------------------------------------------------------------------
         function CondNames = GetConditionsActive(obj)
@@ -485,26 +504,34 @@ classdef GroupClass < TreeNodeClass
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Private methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    methods  (Access = {})
+    methods
         
         
         % ----------------------------------------------------------------------------------
         % Copy processing params (procInut and procStream.output) from
         % N2 to obj if obj and N2 are equivalent nodes
         % ----------------------------------------------------------------------------------
-        function Copy(obj, G)
-            if strcmp(obj.name,G.name)
-                for i=1:length(obj.subjs)
-                    j = obj.existSubj(i,G);
-                    if (j>0)
-                        obj.subjs(i).Copy(G.subjs(j));
+        function Copy(obj, obj2, conditional)
+            if nargin==3 && strcmp(conditional, 'conditional')
+                if strcmp(obj.name,obj2.name)
+                    for i=1:length(obj.subjs)
+                        j = obj.existSubj(i,obj2);
+                        if (j>0)
+                            obj.subjs(i).Copy(obj2.subjs(j), 'conditional');
+                        end
+                    end
+                    if obj == obj2
+                        obj.Copy@TreeNodeClass(obj2, 'conditional');
                     end
                 end
-                if obj == G
-                    obj.copyProcParamsFieldByField(G);
+            else
+                for i=1:length(obj2.subjs)
+                    obj.subjs(i) = SubjClass(obj2.subjs(i));
                 end
-            end           
+                obj.Copy@TreeNodeClass(obj2);
+            end
         end
+
         
         
         % ----------------------------------------------------------------------------------

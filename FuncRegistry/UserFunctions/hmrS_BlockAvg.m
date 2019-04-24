@@ -51,7 +51,7 @@ for iBlk = 1:nDataBlks
         yAvgStd   = yAvgStdRuns{iRun}(iBlk).GetDataMatrix();
         ySum2     = ySum2Runs{iRun}(iBlk).GetDataMatrix();
         tHRF      = yAvgRuns{iRun}(iBlk).GetT();
-        nTrials   = nTrialsRuns{iRun};
+        nTrials   = nTrialsRuns{iRun}{iBlk};
         if isempty(mlActRuns{iRun})
             mlActRuns{iRun} = cell(length(nDataBlks),1);
         end

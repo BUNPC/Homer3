@@ -754,7 +754,7 @@ for iBlk = iDataBlks
         if showStdErr
             dStd = procElem.GetDodAvgStd(iBlk);
         end
-        nTrials = procElem.GetNtrials();
+        nTrials = procElem.GetNtrials(iBlk);
         if isempty(condition)
             return;
         end
@@ -764,7 +764,7 @@ for iBlk = iDataBlks
         if showStdErr
             dStd = procElem.GetDcAvgStd([], iBlk) * sclConc;
         end
-        nTrials = procElem.GetNtrials();
+        nTrials = procElem.GetNtrials(iBlk);
         if isempty(condition)
             return;
         end
@@ -907,9 +907,9 @@ if isempty(idxLg)
     return;    
 end
 [idxLg, k] = sort(idxLg);
-CondNamesAll = procElem.CondNamesAll;
+CondNames = procElem.CondNames;
 if ishandles(hLg)
-    legend(hLg(k), CondNamesAll(idxLg));
+    legend(hLg(k), CondNames(idxLg));
 end
 
 

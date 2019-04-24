@@ -42,7 +42,6 @@ classdef TreeNodeClass < handle
                 end
             end
             obj.CondColTbl('init');
-            obj.CondNamesAll('init');
         end
         
     end
@@ -122,9 +121,16 @@ classdef TreeNodeClass < handle
         % Copy processing params (procInut and procResult) from
         % obj2 to obj
         % ----------------------------------------------------------------------------------
-        function copyProcParamsFieldByField(obj, obj2)
+        function Copy(obj, obj2, conditional)
             if ~isempty(obj2.procStream)
                 obj.procStream.Copy(obj2.procStream);
+            end
+            if nargin==2 || strcmp(conditional, 'unconditional')
+                obj.name = obj2.name;
+                obj.type = obj2.type;
+                obj.iGroup = obj2.iGroup;
+                obj.iSubj = obj2.iSubj;
+                obj.iRun = obj2.iRun;
             end
         end
         
@@ -265,8 +271,11 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function nTrials = GetNtrials(obj)
-            nTrials = obj.procStream.output.GetNtrials();
+        function nTrials = GetNtrials(obj, iBlk)
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            nTrials = obj.procStream.output.GetNtrials(iBlk);
         end
         
         
@@ -468,23 +477,6 @@ classdef TreeNodeClass < handle
                 return
             end
             tbl = distinguishable_colors(20);
-        end
-        
-        
-        
-        % ----------------------------------------------------------------------------------
-        function out = CondNamesAll(arg)
-            persistent cond;
-            if nargin==0
-                out = cond;
-                return;
-            elseif nargin==1
-                if ischar(arg)
-                    cond = {};
-                else
-                    cond = arg;
-                end
-            end          
         end
         
         

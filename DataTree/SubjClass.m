@@ -11,7 +11,19 @@ classdef SubjClass < TreeNodeClass
             obj@TreeNodeClass(varargin);
             
             obj.type  = 'subj';
-            if nargin==4
+            obj.runs = RunClass().empty;
+            if nargin>0 && isa(varargin{1}, 'SubjClass')
+                obj2   = varargin{1};
+                option = '';
+                if nargin>1
+                    option = varargin{2};
+                end
+                obj.Copy(obj2);
+                if strcmp(option, 'spacesaver')
+                    obj.RemoveTimeCourseData();
+                end
+                return;
+            elseif nargin==4
                 fname = varargin{1};
                 iSubj = varargin{2};
                 iRun  = varargin{3};
@@ -21,17 +33,14 @@ classdef SubjClass < TreeNodeClass
             end
             
             sname = getSubjNameAndRun(fname, rnum);
-            if isempty(fname) || exist(fname,'file')~=2
-                run = RunClass().empty;
-            else
-                run = RunClass(fname, iSubj, iRun, rnum);
+            if ~isempty(fname) && exist(fname,'file')==2
+                obj.runs = RunClass(fname, iSubj, iRun, rnum);
             end
             
             obj.name = sname;
             obj.iGroup = 1;
             obj.type = 'subj';
             obj.iSubj = iSubj;
-            obj.runs = run;
         end
         
         
@@ -39,17 +48,24 @@ classdef SubjClass < TreeNodeClass
         % Copy processing params (procInut and procResult) from
         % S to obj if obj and S are equivalent nodes
         % ----------------------------------------------------------------------------------
-        function Copy(obj, S)
-            if strcmp(obj.name, S.name)
-                for i=1:length(obj.runs)
-                    j = obj.existRun(i,S);
-                    if (j>0)
-                        obj.runs(i).Copy(S.runs(j));
+        function Copy(obj, S, conditional)
+            if nargin==3 && strcmp(conditional, 'conditional')
+                if strcmp(obj.name, S.name)
+                    for i=1:length(obj.runs)
+                        j = obj.existRun(i,S);
+                        if (j>0)
+                            obj.runs(i).Copy(S.runs(j), 'conditional');
+                        end
+                    end
+                    if obj == S
+                        obj.Copy@TreeNodeClass(S, 'conditional');
                     end
                 end
-                if obj == S
-                    obj.copyProcParamsFieldByField(S);
+            else
+                for i=1:length(S.runs)
+                    obj.runs(i) = RunClass(S.runs(i), 'spacesaver');
                 end
+                obj.Copy@TreeNodeClass(S);
             end
         end
         
@@ -131,6 +147,14 @@ classdef SubjClass < TreeNodeClass
         end
         
         
+        % ----------------------------------------------------------------------------------
+        function RemoveTimeCourseData(obj)
+            for ii=1:length(obj.runs)
+                obj.runs(ii).RemoveTimeCourseData();
+            end
+        end
+        
+            
         % ----------------------------------------------------------------------------------
         % Deletes derived data in procResult
         % ----------------------------------------------------------------------------------

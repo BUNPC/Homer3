@@ -25,8 +25,19 @@ classdef RunClass < TreeNodeClass
                 obj.iSubj = varargin{2};
                 obj.iRun  = varargin{3};
                 obj.rnum  = varargin{4};
-            elseif nargin==1
-                if ischar(varargin{1}) && strcmp(varargin{1},'copy')
+            elseif nargin>0 
+                if isa(varargin{1}, 'RunClass')
+                    obj2   = varargin{1};
+                    option = '';
+                    if nargin>1
+                        option = varargin{2};
+                    end
+                    obj.Copy(obj2);
+                    if strcmp(option, 'spacesaver')
+                        obj.RemoveTimeCourseData();
+                    end
+                    return;
+                elseif ischar(varargin{1}) && strcmp(varargin{1},'copy')
                     return;
                 end
             elseif nargin==0
@@ -80,6 +91,12 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function RemoveTimeCourseData(obj)
+            obj.procStream.RemoveTimeCourseData();
+        end
+        
+            
+        % ----------------------------------------------------------------------------------
         % Deletes derived data in procResult
         % ----------------------------------------------------------------------------------
         function Reset(obj)
@@ -92,12 +109,15 @@ classdef RunClass < TreeNodeClass
         % Copy processing params (procInut and procResult) from
         % N2 to N1 if N1 and N2 are same nodes
         % ----------------------------------------------------------------------------------
-        function Copy(obj, R)
-            if obj == R
-                obj.copyProcParamsFieldByField(R);
+        function Copy(obj, R, conditional)
+            if nargin==3 && strcmp(conditional, 'conditional')
+                if obj == R
+                    obj.Copy@TreeNodeClass(R, 'conditional');
+                end
+            else
+                obj.Copy@TreeNodeClass(R);
             end
         end
-        
             
         % ----------------------------------------------------------------------------------
         % Subjects obj1 and obj2 are considered equivalent if their names

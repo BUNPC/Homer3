@@ -37,7 +37,7 @@ else
 end
 
 iCondGrp = get(handles.popupmenuConditions, 'value'); 
-CondName = hmr.dataTree.group.CondNamesAll{iCondGrp};
+CondName = hmr.dataTree.group.CondNames{iCondGrp};
 if ~isempty(hmr.dataTree.currElem.GetDodAvg(CondName)) || ~isempty(hmr.dataTree.currElem.GetDcAvg(CondName))
     set(handles.checkboxPlotHRF, 'enable','on');
     set(handles.checkboxPlotProbe, 'enable','on');

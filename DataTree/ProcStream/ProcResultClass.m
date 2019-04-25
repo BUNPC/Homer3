@@ -409,7 +409,6 @@ classdef ProcResultClass < handle
     end
     
     
-    
     methods
         
         % ----------------------------------------------------------------------------------
@@ -417,33 +416,29 @@ classdef ProcResultClass < handle
             if ~isa(obj, 'ProcResultClass')
                 return;
             end
-            fields = properties(obj);
-            for ii=1:length(fields)
-                if ~eval(sprintf('isproperty(obj2, ''%s'')', fields{ii}))
-                    continue;
-                end
-                
-                % obj2 could contain properties that are handle objects. Use
-                % CopyHandles instead of plain old assignment statement 
-                eval( sprintf('obj.%s = CopyHandles(obj2.%s, obj.%s);', fields{ii}, fields{ii}, fields{ii}) );
-            end
             
-            fields = properties(obj.misc);
-            for ii=1:length(fields)
-                if ~eval(sprintf('isproperty(obj2.misc, ''%s'')', fields{ii}))
-                    continue;
-                end
-                
-                % obj2.misc could contain properties that are handle objects. Use
-                % CopyHandles instead of plain old assignment statement 
-                eval( sprintf('obj.misc.%s = CopyHandles(obj2.%s, obj.misc.%s);', fields{ii}, fields{ii}, fields{ii}) );
-            end
+            % Ok to shallow copy since ProcResult objects are read only
+            % Also we don't want to transfer space hogging time course 
+            % data dc and dod
+            
+            %  obj.dod = obj2.dod;
+            %  obj.dc = obj2.dc;
+            obj.dodAvg = obj2.dodAvg;
+            obj.dcAvg = obj2.dcAvg;
+            obj.dodAvgStd = obj2.dodAvgStd;
+            obj.dcAvgStd = obj2.dcAvgStd;
+            obj.dodSum2 = obj2.dodSum2;
+            obj.dcSum2 = obj2.dcSum2;
+            obj.tHRF = obj2.tHRF;
+            obj.nTrials = obj2.nTrials;
+            obj.ch = obj2.ch;
+            obj.misc = obj2.misc;
         end
         
         
         
         % ----------------------------------------------------------------------------------
-        function b = HaveAvgOutput(obj)
+        function b = HaveBlockAvgOutput(obj)
             b=0;
             if isempty(obj)
                 return;
@@ -455,13 +450,6 @@ classdef ProcResultClass < handle
                 b=1;
             end
         end
-        
-        % ----------------------------------------------------------------------------------
-        function RemoveTimeCourseData(obj)
-            obj.dc = [];
-            obj.dod = [];
-        end
-                
         
     end
     

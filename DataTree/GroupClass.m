@@ -25,15 +25,7 @@ classdef GroupClass < TreeNodeClass
                 if ischar(varargin{1}) && strcmp(varargin{1},'copy')
                     return;
                 elseif isa(varargin{1}, 'GroupClass')
-                    obj2   = varargin{1};
-                    option = '';
-                    if nargin>1
-                        option = varargin{2};
-                    end
-                    obj.Copy(obj2);
-                    if strcmp(option, 'spacesaver')
-                        obj.RemoveTimeCourseData();
-                    end
+                    obj.Copy(varargin{1});
                     return;
                 end
                 fname = varargin{1};
@@ -213,14 +205,31 @@ classdef GroupClass < TreeNodeClass
                     g.CopyFcalls(procStreamRun, 'run', reg);
                 end
             end
+            
+            if obj.procStream.HaveBlockAvgOutput()
+                % If HRF output exists, recalculate time course data that was 
+                % used for generate it
+                fprintf('Block avg data has already been calculated. Generating time course data...\n');
+                obj.CalcRunLevelTimeCourse();
+                fprintf('Finished generating time course data...\n');
+            end
         end
             
         
                 
         % ----------------------------------------------------------------------------------
-        function Calc(obj)           
-            % Recalculating result means deleting old results
-            obj.procStream.output.Flush();
+        function Calc(obj, options)
+            if ~exist('options','var') || isempty(options)
+                options = 'overwrite';
+            end
+            
+            if strcmpi(options, 'overwrite')
+                % Recalculating result means deleting old results, if
+                % option == 'overwrite'
+                obj.procStream.output.Flush();
+            end
+            
+            fprintf('Calculating processing stream for group %d\n', obj.iGroup)
 
             % Calculate all subjs in this session
             s = obj.subjs;
@@ -267,9 +276,24 @@ classdef GroupClass < TreeNodeClass
 
             % Calculate processing stream
             obj.procStream.Calc();
+            
+            fprintf('Completed processing stream for group %d\n', obj.iGroup);
+            fprintf('\n');            
         end
         
         
+        
+        % ----------------------------------------------------------------------------------
+        function CalcRunLevelTimeCourse(obj)
+            % Calculate all subjs in this session
+            s = obj.subjs;
+            nSubj = length(s);
+            for iSubj = 1:nSubj
+                s(iSubj).CalcRunLevelTimeCourse();
+            end
+        end
+        
+
         % ----------------------------------------------------------------------------------
         function Print(obj, indent)
             if ~exist('indent', 'var')
@@ -347,13 +371,7 @@ classdef GroupClass < TreeNodeClass
             
             % Save derived data
             if options_s.derived
-                % This way of saving space by copying using GroupClass copy constructor is really 
-                % slow due to the use of the generic copy function CopyHandles in procStream
-                % We comment this out until we figure out how to speed this up. So for now we 
-                % just use the old method and save the whole thing
-                % 
-                % group = GroupClass(obj, 'spacesaver');
-                group = obj;                
+                group = GroupClass(obj);
                 save( './groupResults.mat','group' );
             end
             
@@ -367,14 +385,6 @@ classdef GroupClass < TreeNodeClass
         end
         
 
-        % ----------------------------------------------------------------------------------
-        function RemoveTimeCourseData(obj)
-            for ii=1:length(obj.subjs)
-                obj.subjs(ii).RemoveTimeCourseData();
-            end
-        end
-        
-            
     end  % Public Save/Load methods
         
     

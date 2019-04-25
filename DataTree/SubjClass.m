@@ -13,15 +13,7 @@ classdef SubjClass < TreeNodeClass
             obj.type  = 'subj';
             obj.runs = RunClass().empty;
             if nargin>0 && isa(varargin{1}, 'SubjClass')
-                obj2   = varargin{1};
-                option = '';
-                if nargin>1
-                    option = varargin{2};
-                end
-                obj.Copy(obj2);
-                if strcmp(option, 'spacesaver')
-                    obj.RemoveTimeCourseData();
-                end
+                obj.Copy(varargin{1});
                 return;
             elseif nargin==4
                 fname = varargin{1};
@@ -126,7 +118,7 @@ classdef SubjClass < TreeNodeClass
                 if exist('./groupResults.mat','file')
                     load( './groupResults.mat' );
                     if strcmp(class(group.subjs(obj.iSubj)), class(obj))
-                        group.subjs(obj.iSubj) = obj;
+                        group.subjs(obj.iSubj) = SubjClass(obj);
                     end
                     save( './groupResults.mat','group' );
                 end
@@ -148,14 +140,6 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function RemoveTimeCourseData(obj)
-            for ii=1:length(obj.runs)
-                obj.runs(ii).RemoveTimeCourseData();
-            end
-        end
-        
-            
-        % ----------------------------------------------------------------------------------
         % Deletes derived data in procResult
         % ----------------------------------------------------------------------------------
         function Reset(obj)
@@ -167,9 +151,18 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function Calc(obj)            
-            % Recalculating result means deleting old results
-            obj.procStream.output.Flush();
+        function Calc(obj, options)
+            if ~exist('options','var') || isempty(options)
+                options = 'overwrite';
+            end
+            
+            if strcmpi(options, 'overwrite')
+                % Recalculating result means deleting old results, if
+                % option == 'overwrite'
+                obj.procStream.output.Flush();
+            end
+                        
+            fprintf('Calculating processing stream for group %d, subject %d\n', obj.iGroup, obj.iSubj)
             
             % Calculate all runs in this session
             r = obj.runs;
@@ -218,9 +211,23 @@ classdef SubjClass < TreeNodeClass
 
             % Calculate processing stream
             obj.procStream.Calc();
+
+            fprintf('Completed processing stream for group %d, subject %d\n', obj.iGroup, obj.iSubj);
+            fprintf('\n');
         end
                 
         
+        % ----------------------------------------------------------------------------------
+        function CalcRunLevelTimeCourse(obj)
+            r = obj.runs;
+            nRun = length(r);
+            for iRun = 1:nRun
+                r(iRun).CalcTimeCourses();
+            end
+        end
+        
+        
+
         % ----------------------------------------------------------------------------------
         function Print(obj, indent)
             if ~exist('indent', 'var')

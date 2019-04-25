@@ -2,6 +2,7 @@ classdef ProcStreamClass < handle
     
     properties
         fcalls;                  % Array of FuncCallClass objects representing function call chain i.e. processing stream
+        fcallsIdxs;
         input;
         output;
         config;
@@ -15,7 +16,7 @@ classdef ProcStreamClass < handle
                 acquired=[];
             end
             obj.fcalls = FuncCallClass().empty();
-
+            obj.fcallsIdxs = [];
             obj.config = struct('procStreamCfgFile','', 'defaultProcStream','','suffix','');
             cfg = ConfigFileClass();
             obj.config.procStreamCfgFile = cfg.GetValue('Processing Stream Config File');
@@ -95,19 +96,29 @@ classdef ProcStreamClass < handle
             str = sprintf(obj.fcalls(iFcall).paramIn(iParam).format, val);
         end
 
-        
+
         % ----------------------------------------------------------------------------------
-        % Copy processing params (procInut and output) from
-        % obj2 to obj
+        function FcallsIdxs = GetFcallsIdxs(obj)
+            nFcall = obj.GetFuncCallNum();
+            if isempty(obj.fcallsIdxs)
+                FcallsIdxs = 1:nFcall;
+            else
+                FcallsIdxs = obj.fcallsIdxs;
+            end
+        end        
+        
+        
         % ----------------------------------------------------------------------------------
         function Calc(obj)
             DEBUG = 0;
             
-            % loop over functions
-            nFcall = obj.GetFuncCallNum();
+            % loop over functions            
+            FcallsIdxs = obj.GetFcallsIdxs();
+            nFcall = length(FcallsIdxs);
+            
             paramOut = {};
             hwait = waitbar(0, 'Processing...' );
-            for iFcall = 1:nFcall
+            for iFcall = FcallsIdxs
                 waitbar( iFcall/nFcall, hwait, sprintf('Processing... %s', obj.GetFcallNamePrettyPrint(iFcall)) );
                 
                 % Parse obj.input arguments
@@ -180,6 +191,33 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function FcallsIdxsTimeCourses(obj)
+            if ~obj.output.HaveBlockAvgOutput()
+                return;
+            end
+            idxs = zeros(1, length(obj.fcalls));
+            for ii=1:length(obj.fcalls)
+                sargout = ParseOutputArgs(obj, ii);
+                if strfind('dod', sargout)
+                    idxs(ii) = 1;
+                end
+                if strfind('dc', sargout)
+                    idxs(ii) = 1;
+                end
+            end
+            k = find(idxs==1);
+            obj.fcallsIdxs=1:k(end);
+        end
+                
+        
+        
+        % ----------------------------------------------------------------------------------
+        function FcallsIdxsReset(obj)
+            obj.fcallsIdxs=[];            
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function b = IsEmpty(obj)
             b=0;
             if isempty(obj)
@@ -212,7 +250,7 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function b = HaveAvgOutput(obj)
+        function b = HaveBlockAvgOutput(obj)
             b=0;
             if isempty(obj)
                 return;
@@ -220,7 +258,7 @@ classdef ProcStreamClass < handle
             if isempty(obj.output)
                 return;
             end
-            b = obj.output.HaveAvgOutput();
+            b = obj.output.HaveBlockAvgOutput();
         end
         
         
@@ -233,7 +271,7 @@ classdef ProcStreamClass < handle
                 return;
             end
             if ~exist('iFcall', 'var') || isempty(iFcall)
-                iFcall = 1:length(obj.fcalls);
+                iFcall = obj.GetFcallsIdxs();
             end
             nFcall = length(obj.fcalls);
 
@@ -1279,13 +1317,6 @@ classdef ProcStreamClass < handle
             obj.input.RenameCondition(oldname, newname);
         end
         
-        
-        % ----------------------------------------------------------------------------------
-        function RemoveTimeCourseData(obj)
-            obj.output.RemoveTimeCourseData();
-        end
-        
-            
     end    
     
 end

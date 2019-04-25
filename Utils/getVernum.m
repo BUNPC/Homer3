@@ -1,5 +1,5 @@
 function vrnnum = getVernum()
 
 vrnnum{1} = '1.10';  % Major version #
-vrnnum{2} = '1';   % Minor version #
+vrnnum{2} = '2';   % Minor version #
 vrnnum{3} = '0';   % Minor minor version # or patch #: 'p1', 'p2', etc

@@ -28,6 +28,9 @@ classdef DataTreeClass <  handle
             obj.files    = dataInit.files;
             obj.filesErr = dataInit.filesErr;
             obj.reg = RegistriesClass();
+            if ~isempty(obj.reg.GetSavedRegistryPath())
+                fprintf('Loaded saved registry %s\n', obj.reg.GetSavedRegistryPath());
+            end            
             obj.LoadData(procStreamCfgFile);
             
             % Initialize the current processing element within the group

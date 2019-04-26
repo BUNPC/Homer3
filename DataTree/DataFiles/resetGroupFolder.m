@@ -9,8 +9,11 @@ end
 if exist([dirname, 'groupResults.mat'],'file')
     delete([dirname, 'groupResults.mat']);
 end
-if exist([dirname, 'processOpt_default.cfg'],'file')
-    delete([dirname, 'processOpt_default.cfg']);
+
+cfg = ConfigFileClass();
+procStreamCfgFile = cfg.GetValue('Processing Stream Config File');
+if exist([dirname, procStreamCfgFile],'file')
+    delete([dirname, procStreamCfgFile]);
 end
 
 if strcmp(mode, 'registry_reset')

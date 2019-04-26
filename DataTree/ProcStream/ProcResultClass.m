@@ -34,7 +34,7 @@ classdef ProcResultClass < handle
             obj.dodSum2 = [];
             obj.dcSum2 = [];
             obj.tHRF = [];
-            obj.nTrials = [];
+            obj.nTrials = {};
             obj.grpAvgPass = [];
             obj.misc = [];
         end
@@ -430,8 +430,12 @@ classdef ProcResultClass < handle
             obj.dodSum2 = obj2.dodSum2;
             obj.dcSum2 = obj2.dcSum2;
             obj.tHRF = obj2.tHRF;
-            obj.nTrials = obj2.nTrials;
-            obj.ch = obj2.ch;
+            if iscell(obj2.nTrials)
+                obj.nTrials = obj2.nTrials;
+            else
+                obj.nTrials = {obj2.nTrials};
+            end
+             obj.ch = obj2.ch;
             obj.misc = obj2.misc;
         end
         
@@ -447,6 +451,21 @@ classdef ProcResultClass < handle
                 b=1;
             end
             if ~isempty(obj.dodAvg)
+                b=1;
+            end
+        end
+       
+        
+        % ----------------------------------------------------------------------------------
+        function b = HaveTimeCourseOutput(obj)
+            b=0;
+            if isempty(obj)
+                return;
+            end
+            if ~isempty(obj.dc)
+                b=1;
+            end
+            if ~isempty(obj.dod)
                 b=1;
             end
         end

@@ -11,7 +11,7 @@ if nargin==1
     obj = varargin{1};
 elseif nargin==2
     obj    = varargin{1};
-    objnew = varargin{1};
+    objnew = varargin{2};
 end
 
 if isempty(obj)
@@ -19,8 +19,9 @@ if isempty(obj)
 end
 
 if isa(obj, 'handle')
-    for ii=1:length(obj)
-        % Generate class instance with shallow copy
+    % Generate class instance with shallow copy
+    objnew = obj(1).copy;
+    for ii=2:length(obj)
         objnew(ii) = obj(ii).copy;
     end
 else

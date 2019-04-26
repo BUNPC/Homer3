@@ -264,6 +264,20 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function b = HaveTimeCourseOutput(obj)
+            b=0;
+            if isempty(obj)
+                return;
+            end
+            if isempty(obj.output)
+                return;
+            end
+            b = obj.output.HaveTimeCourseOutput();
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
         function [args, type] = GetInputArgs(obj, iFcall)
             args={};
             type={};
@@ -463,7 +477,11 @@ classdef ProcStreamClass < handle
             % If procStream config filename wasn't passed down as an argument, check the 
             % parent application AppSettings.cfg config file to see if it set there. 
             if isempty(procStreamCfgFile)
-                procStreamCfgFile = obj.config.procStreamCfgFile;
+                if ~isempty(obj.config.procStreamCfgFile)
+                    procStreamCfgFile = obj.config.procStreamCfgFile;
+                else
+                    procStreamCfgFile = 'processOpt_default.cfg';
+                end
             end
 
             % Check if file with name procStreamCfgFile exists
@@ -481,7 +499,7 @@ classdef ProcStreamClass < handle
             [fname, pname] = uigetfile('*.cfg', 'Load Process Options File' );
             if fname==0
                 MessageBox( sprintf('Loading default config file.'),'Creating default config');
-                fname = [pwd, '/processOpt_default.cfg'];
+                fname = [pwd, '/', procStreamCfgFile];
                 autoGenDefault = true;
             else
                 fname = [pname, fname];

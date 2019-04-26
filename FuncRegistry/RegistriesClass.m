@@ -7,6 +7,7 @@ classdef RegistriesClass < handle
         irun
         funcReg
         config        
+        filename;
     end
     
     methods
@@ -30,6 +31,7 @@ classdef RegistriesClass < handle
             obj.isubj = 2;
             obj.irun = 3;
             obj.funcReg = FuncRegClass().empty();
+            obj.filename = '';
 
             % Get the parameter items from config file relevant to this class
             obj.config = struct('InclArchivedFunctions','');
@@ -43,8 +45,8 @@ classdef RegistriesClass < handle
             
             % Check if saved registry exists. If so load that and exit
             if exist([obj.userfuncdir{1}, 'Registry.mat'], 'file')
-                fprintf('Loading saved registry %s\n', [obj.userfuncdir{1}, 'Registry.mat']);
-                r = load([obj.userfuncdir{1}, 'Registry.mat'], 'reg');
+                obj.filename = [obj.userfuncdir{1}, 'Registry.mat'];
+                r = load(obj.filename, 'reg');
                 if isa(r.reg, 'RegistriesClass') && ~isempty(r.reg)
                     obj.Copy(r.reg);
                     return;
@@ -221,6 +223,13 @@ classdef RegistriesClass < handle
             end
         end
        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function fname = GetSavedRegistryPath(obj)
+            fname = obj.filename;
+        end
+               
     end
 end
 

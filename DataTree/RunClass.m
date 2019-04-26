@@ -194,6 +194,9 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function CalcTimeCourses(obj)
+            if obj.procStream.HaveTimeCourseOutput()
+                return;
+            end
             obj.procStream.FcallsIdxsTimeCourses();
             obj.Calc('keepexisting');
             obj.procStream.FcallsIdxsReset();

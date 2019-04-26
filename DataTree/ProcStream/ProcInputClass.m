@@ -24,7 +24,6 @@ classdef ProcInputClass < handle
             obj.mlActMan = {};
             obj.misc = [];
             obj.stimValSettings = struct('none',0, 'incl',1, 'excl_manual',-1, 'excl_auto',-2);
-            obj.acquiredEditable = GenericAcqClass();
             if nargin==0
                 return;
             end

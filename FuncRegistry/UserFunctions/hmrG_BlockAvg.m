@@ -47,6 +47,7 @@ for iBlk = 1:length(yAvgSubjs{1})
     subjCh = [];
     nStim = 0;
     grp1 = [];
+    nT = [];
     
     for iSubj = 1:nSubj
         

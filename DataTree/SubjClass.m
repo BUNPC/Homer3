@@ -162,7 +162,9 @@ classdef SubjClass < TreeNodeClass
                 obj.procStream.output.Flush();
             end
                         
-            fprintf('Calculating processing stream for group %d, subject %d\n', obj.iGroup, obj.iSubj)
+            if obj.DEBUG
+                fprintf('Calculating processing stream for group %d, subject %d\n', obj.iGroup, obj.iSubj)
+            end
             
             % Calculate all runs in this session
             r = obj.runs;
@@ -212,8 +214,10 @@ classdef SubjClass < TreeNodeClass
             % Calculate processing stream
             obj.procStream.Calc();
 
-            fprintf('Completed processing stream for group %d, subject %d\n', obj.iGroup, obj.iSubj);
-            fprintf('\n');
+            if obj.DEBUG
+                fprintf('Completed processing stream for group %d, subject %d\n', obj.iGroup, obj.iSubj);
+                fprintf('\n');
+            end
         end
                 
         

@@ -9,13 +9,19 @@ classdef TreeNodeClass < handle
         procStream;
         err;
         CondNames;        
-     end
+    end
+     
+    properties
+        DEBUG
+    end
         
     methods
         
         
         % ---------------------------------------------------------------------------------
         function obj = TreeNodeClass(arg)
+            obj.DEBUG = 0;
+            
             obj.name = '';
             obj.iGroup = 0;
             obj.iSubj = 0;
@@ -50,8 +56,8 @@ classdef TreeNodeClass < handle
     methods
         
         % ---------------------------------------------------------------------------------
-        function LoadProcStreamConfigFile(obj, filename, reg)
-            obj.procStream.LoadConfigFile(filename, reg, class(obj));
+        function LoadProcStreamConfigFile(obj, filename)
+            obj.procStream.LoadConfigFile(filename, class(obj));
         end        
         
                 
@@ -62,17 +68,14 @@ classdef TreeNodeClass < handle
                 
         
         % ---------------------------------------------------------------------------------
-        function CreateProcStreamDefault(obj, reg)
-            obj.procStream.CreateDefault(reg)
+        function CreateProcStreamDefault(obj)
+            obj.procStream.CreateDefault()
         end
         
         
         % ---------------------------------------------------------------------------------
-        function procStream = GetProcStreamDefault(obj, reg)
-            if nargin<2
-                reg = RegistriesClass.empty();
-            end            
-            procStream = obj.procStream.GetDefault(class(obj), reg);
+        function procStream = GetProcStreamDefault(obj)
+            procStream = obj.procStream.GetDefault(class(obj));
         end 
        
     end

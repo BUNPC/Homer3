@@ -1,5 +1,5 @@
 % SYNTAX:
-% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] = hmrR_DeconvHRF_DriftSS(data, stim, sd, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] = hmrR_GLM(data, stim, sd, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 %
 % UI NAME:
 % GLM_HRF_Drift_SS
@@ -82,7 +82,7 @@
 %
 %
 % USAGE OPTIONS:
-% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R] = hmrR_DeconvHRF_DriftSS(dc, stim, sd, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R] = hmrR_GLM(dc, stim, sd, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 %
 %
 % PARAMETERS:
@@ -97,7 +97,7 @@
 %
 %
 function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks] = ...
-    hmrR_DeconvHRF_DriftSS(data_y, stim, sd, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+    hmrR_GLM(data_y, stim, sd, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 
 % Init output
 data_yavg     = DataClass().empty();
@@ -122,7 +122,7 @@ end
 snirf = SnirfClass(data_y, stim);
 t = snirf.GetTimeCombined();
 s = snirf.GetStims(t);
-nTrials = zeros(1, size(s,2));
+nTrials = repmat({zeros(1, size(s,2))}, length(data_y), 1);
 
 for iBlk=1:length(data_y)
     
@@ -219,12 +219,12 @@ for iBlk=1:length(data_y)
     lstCond = find(sum(s>0,1)>0);
     nCond = length(lstCond); %size(s,2);
     onset = zeros(nT,nCond);
-    nTrials = zeros(nCond,1);
+    nTrials{iBlk} = zeros(nCond,1);
     for iCond = 1:nCond
         lstT = find(s(:,lstCond(iCond))==1);
         lstp = find((lstT+nPre)>=1 & (lstT+nPost)<=nTpts);
         lst = lstT(lstp);
-        nTrials(iCond) = length(lst);
+        nTrials{iBlk}(iCond) = length(lst);
         onset(lst+nPre,iCond) = 1;
     end
     
@@ -478,9 +478,9 @@ for iBlk=1:length(data_y)
                     ynew = y;
                     yresid = zeros(size(y));
                     
-                    foo = nTrials;
-                    nTrials = zeros(1,size(s,2));
-                    nTrials(lstCond) = foo;
+                    foo = nTrials{iBlk};
+                    nTrials{iBlk} = zeros(1,size(s,2));
+                    nTrials{iBlk}(lstCond) = foo;
                     
                     foo = yavg;
                     yavg = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
@@ -557,7 +557,7 @@ for iBlk=1:length(data_y)
                             else
                                 yavgstd(:,lstML(iCh),conc,iCond) = diag(tbasis(:,:,conc)*diag(bvar([1:nB]+(iCond-1)*nB,lstML(iCh),conc))*tbasis(:,:,conc)').^0.5;
                             end
-                            ysum2(:,lstML(iCh),conc,iCond) = yavgstd(:,lstML(iCh),conc,iCond).^2 + nTrials(iCond)*yavg(:,lstML(iCh),conc,iCond).^2;
+                            ysum2(:,lstML(iCh),conc,iCond) = yavgstd(:,lstML(iCh),conc,iCond).^2 + nTrials{iBlk}(iCond)*yavg(:,lstML(iCh),conc,iCond).^2;
                         end
                     end
                     
@@ -571,7 +571,7 @@ for iBlk=1:length(data_y)
                             else
                                 yavgstd(:,lstML(iCh),conc,iCond) = diag(tbasis(:,:,conc)*diag(bvar([1:nB]+(iCond-1)*nB,lstML(iCh),conc))*tbasis(:,:,conc)').^0.5;
                             end
-                            ysum2(:,lstML(iCh),conc,iCond) = yavgstd(:,lstML(iCh),conc,iCond).^2 + nTrials(iCond)*yavg(:,lstML(iCh),conc,iCond).^2;
+                            ysum2(:,lstML(iCh),conc,iCond) = yavgstd(:,lstML(iCh),conc,iCond).^2 + nTrials{iBlk}(iCond)*yavg(:,lstML(iCh),conc,iCond).^2;
                         end
                     end
                     
@@ -607,9 +607,9 @@ for iBlk=1:length(data_y)
         end
     end
        
-    foo = nTrials;
-    nTrials = zeros(1,size(s,2));
-    nTrials(lstCond) = foo;
+    foo = nTrials{iBlk};
+    nTrials{iBlk} = zeros(1,size(s,2));
+    nTrials{iBlk}(lstCond) = foo;
     
     foo = yavg;
     yavg = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));

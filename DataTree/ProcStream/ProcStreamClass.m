@@ -3,6 +3,7 @@ classdef ProcStreamClass < handle
     properties
         fcalls;                  % Array of FuncCallClass objects representing function call chain i.e. processing stream
         fcallsIdxs;
+        reg; 
         input;
         output;
         config;
@@ -11,8 +12,8 @@ classdef ProcStreamClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function obj = ProcStreamClass(reg, acquired)
-            if nargin<2
+        function obj = ProcStreamClass(acquired)
+            if nargin<1
                 acquired=[];
             end
             obj.fcalls = FuncCallClass().empty();
@@ -25,23 +26,24 @@ classdef ProcStreamClass < handle
                 copyOptions = 'extended';
             end
             
+            % By the time this class constructor is called we should alreadey have a saved registry 
+            % to load. (Defintiely would not want to be generating the registry for each instance of this class!!)
+            obj.reg = RegistriesClass();
+            
             obj.input = ProcInputClass(acquired, copyOptions);
             obj.output = ProcResultClass();
             
             if nargin==0
                 return;
             end
-            obj.CreateDefault(reg)
+            obj.CreateDefault();
         end
         
         
         % ----------------------------------------------------------------------------------
-        function Copy(obj, obj2, reg)
+        function Copy(obj, obj2)
             if ~isa(obj, 'ProcStreamClass')
                 return;
-            end
-            if nargin<3
-                reg = RegistriesClass.empty();
             end
             
             if isempty(obj)
@@ -51,7 +53,7 @@ classdef ProcStreamClass < handle
                 if ii>length(obj.fcalls)
                     obj.fcalls(ii) = FuncCallClass();
                 end
-                obj.fcalls(ii).Copy(obj2.fcalls(ii), reg);
+                obj.fcalls(ii).Copy(obj2.fcalls(ii), obj.reg);
             end
             
             obj.input.Copy(obj2.input);
@@ -60,7 +62,7 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function CopyFcalls(obj, obj2, reg)
+        function CopyFcalls(obj, obj2)
             if ~isa(obj, 'ProcStreamClass')
                 return;
             end
@@ -71,7 +73,7 @@ classdef ProcStreamClass < handle
             obj.fcalls = FuncCallClass().empty();
             for ii=1:length(obj2.fcalls)
                 obj.fcalls(ii) = FuncCallClass();
-                obj.fcalls(ii).Copy(obj2.fcalls(ii), reg);
+                obj.fcalls(ii).Copy(obj2.fcalls(ii), obj.reg);
             end
         end
         
@@ -509,16 +511,14 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function err = LoadConfigFile(obj, fname, reg, type)
+        function err = LoadConfigFile(obj, fname, type)
             % Syntax:
             %   err = obj.LoadConfigFile(fname)
-            %   err = obj.LoadConfigFile(fname, reg)
-            %   err = obj.LoadConfigFile(fname, reg, type)
+            %   err = obj.LoadConfigFile(fname, type)
             %
             % Description:
             %   Load proc stream function call chain from config file with name fname
-            %   into ProcStreamClass object. If reg argument is not provided the class will 
-            %   generate its own local registry. If type argument isn't provided the class 
+            %   into ProcStreamClass object. If type argument isn't provided the class 
             %   defaults to run-level (type = 'run') and will load that section's call chain. 
             %
             % Example:
@@ -558,9 +558,6 @@ classdef ProcStreamClass < handle
             if ~exist('fname', 'var')
                 fname = '';
             end
-            if ~exist('reg', 'var') || isempty(reg)            
-                reg = RegistriesClass();
-            end
             if ~exist('type', 'var') || isempty(type)
                 type = 'run';
             end
@@ -571,7 +568,7 @@ classdef ProcStreamClass < handle
             
             % Reinitialize fcalls since we're going to overwrite them anyway
             obj.fcalls = FuncCallClass().empty();
-            obj.ParseFile(fid, type, reg);
+            obj.ParseFile(fid, type);
             fclose(fid);
             err=0;            
         end
@@ -601,16 +598,14 @@ classdef ProcStreamClass < handle
             %
             %   Create a processing config file for all processing levels. 
             %
-            %   reg = RegistriesClass();
+            %   pInputR = ProcStreamClass();
+            %   pInputR.LoadConfigFile('processOpt.cfg', 'run');
             %
-            %   pInputR = ProcStreamClass(reg);
-            %   pInputR.LoadConfigFile('processOpt.cfg', reg, 'run');
+            %   pInputS = ProcStreamClass();
+            %   pInputS.LoadConfigFile('processOpt.cfg', 'subj');
             %
-            %   pInputS = ProcStreamClass(reg);
-            %   pInputS.LoadConfigFile('processOpt.cfg', reg, 'subj');
-            %
-            %   pInputG = ProcStreamClass(reg);
-            %   pInputG.LoadConfigFile('processOpt.cfg', reg, 'group');
+            %   pInputG = ProcStreamClass();
+            %   pInputG.LoadConfigFile('processOpt.cfg', 'group');
             %
             %   pInputG.SaveConfigFile('./processOpt_new.cfg', 'group');
             %   pInputS.SaveConfigFile('./processOpt_new.cfg', 'subj');
@@ -773,9 +768,8 @@ classdef ProcStreamClass < handle
             % Example: 
             %
             %    % Load run section into p from processOpt_default.cfg
-            %    reg = RegistriesClass();
             %    p = ProcStreamClass();
-            %    p.LoadConfigFile('processOpt_default.cfg', reg)
+            %    p.LoadConfigFile('processOpt_default.cfg')
             %    R = obj.GenerateSection();
             %
             %    Here's the output:
@@ -797,7 +791,7 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function err = ParseFile(obj, fid, type, reg)
+        function err = ParseFile(obj, fid, type)
             %
             % Processing stream config file parser. This function handles
             % group, subj and run processing stream parameters
@@ -853,17 +847,14 @@ classdef ProcStreamClass < handle
             if ~exist('type','var')
                 return;
             end
-            if ~exist('reg','var')
-                reg = RegistriesClass().empty();
-            end
             [G, S, R] = obj.FindSections(fid);
             switch(lower(type))
                 case {'group', 'groupclass', 'grp'}
-                    obj.Decode(G, reg);
+                    obj.Decode(G);
                 case {'subj', 'session', 'subjclass'}
-                    obj.Decode(S, reg);
+                    obj.Decode(S);
                 case {'run', 'runclass'}
-                    obj.Decode(R, reg);
+                    obj.Decode(R);
                 otherwise
                     return;
             end
@@ -872,9 +863,9 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function Decode(obj, section, reg)
+        function Decode(obj, section)
             % Syntax:
-            %    obj.Decode(section, reg)
+            %    obj.Decode(section)
             %    
             % Description:
             %    Parse a cell array of strings, each string an encoded hmr*.m function call
@@ -918,9 +909,6 @@ classdef ProcStreamClass < handle
             if nargin<2
                 return
             end
-            if nargin<3
-                reg = RegistriesClass.empty();
-            end
             
             if ~iscell(section)
                 if ~ischar(section)
@@ -938,10 +926,10 @@ classdef ProcStreamClass < handle
                 if section{ii}(1)=='@'
                     temp = FuncCallClass(section{ii});
                     
-                    % If registry was not passed down to us, then add fcall entries unconditionally. 
+                    % If registry is empty, then add fcall entries unconditionally. 
                     % Otherwise only include those user function calls that exist in the registry. 
-                    if temp.GetErr()==0 && (isempty(reg) || ~isempty(reg.GetUsageName(temp)))
-                        obj.fcalls(kk) = FuncCallClass(temp, reg);                                                
+                    if temp.GetErr()==0 && ~isempty(obj.reg.GetUsageName(temp))
+                        obj.fcalls(kk) = FuncCallClass(temp, obj.reg);
                         kk=kk+1;
                     else
                         fprintf('Entry not found in registry: "%s"\n', section{ii})
@@ -953,12 +941,9 @@ classdef ProcStreamClass < handle
 
         
         % ----------------------------------------------------------------------------------
-        function Add(obj, new, reg)
-            if ~exist('reg','var')
-                reg = Registries.empty();
-            end
+        function Add(obj, new)
             idx = length(obj.fcalls)+1;
-            obj.fcalls(idx) = FuncCallClass(new, reg);
+            obj.fcalls(idx) = FuncCallClass(new, obj.reg);
         end
         
         
@@ -999,29 +984,23 @@ classdef ProcStreamClass < handle
     methods
 
         % ----------------------------------------------------------------------------------
-        function CreateDefault(obj, reg)
-            if ~isa(reg, 'RegistriesClass')
-                return;
-            end
-            obj.fcallStrEncodedGroup(reg);
-            obj.fcallStrEncodedSubj(reg);
-            obj.fcallStrEncodedRun(reg);
+        function CreateDefault(obj)
+            obj.fcallStrEncodedGroup('init');
+            obj.fcallStrEncodedSubj('init');
+            obj.fcallStrEncodedRun('init');
         end
         
         
         % ----------------------------------------------------------------------------------
-        function obj2 = GetDefault(obj, type, reg)
-            if nargin<3
-                reg = RegistriesClass.empty();
-            end
+        function obj2 = GetDefault(obj, type)
             obj2 = ProcStreamClass();
             switch(lower(type))
                 case {'group', 'groupclass'}
-                    obj2.Decode(obj.fcallStrEncodedGroup, reg);
+                    obj2.Decode(obj.fcallStrEncodedGroup);
                 case {'subj', 'session', 'subjclass'}
-                    obj2.Decode(obj.fcallStrEncodedSubj, reg);
+                    obj2.Decode(obj.fcallStrEncodedSubj);
                 case {'run', 'runclass'}
-                    obj2.Decode(obj.fcallStrEncodedRun, reg);
+                    obj2.Decode(obj.fcallStrEncodedRun);
                 otherwise
                     return;
             end
@@ -1057,13 +1036,13 @@ classdef ProcStreamClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function val = fcallStrEncodedGroup(obj, reg)
+        function val = fcallStrEncodedGroup(obj, init)
             persistent v;
-            if nargin>1
-                iG = reg.igroup;
+            if exist('init','var') && strcmp(init,'init')
+                iG = obj.reg.igroup;
                 suffix = obj.getDefaultProcStream();
                 tmp = {...
-                    reg.funcReg(iG).GetUsageStrDecorated(['hmrG_BlockAvg',suffix],'dcAvg'); ...
+                    obj.reg.funcReg(iG).GetUsageStrDecorated(['hmrG_BlockAvg',suffix],'dcAvg'); ...
                 };
                 k=[]; kk=1;
                 for ii=1:length(tmp)
@@ -1082,13 +1061,13 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function val = fcallStrEncodedSubj(obj, reg)
+        function val = fcallStrEncodedSubj(obj, init)
             persistent v;
-            if nargin>1
-                iS = reg.isubj;
+            if exist('init','var') && strcmp(init,'init')
+                iS = obj.reg.isubj;
                 suffix = obj.getDefaultProcStream();
                 tmp = {...
-                    reg.funcReg(iS).GetUsageStrDecorated(['hmrS_BlockAvg',suffix],'dcAvg'); ...
+                    obj.reg.funcReg(iS).GetUsageStrDecorated(['hmrS_BlockAvg',suffix],'dcAvg'); ...
                 };
                 k=[]; kk=1;
                 for ii=1:length(tmp)
@@ -1107,16 +1086,16 @@ classdef ProcStreamClass < handle
 
         
         % ----------------------------------------------------------------------------------
-        function val = fcallStrEncodedRun(obj, reg)
+        function val = fcallStrEncodedRun(obj, init)
             persistent v;
-            if nargin>1
-                iR = reg.irun;
+            if exist('init','var') && strcmp(init,'init')
+                iR = obj.reg.irun;
                 suffix = obj.getDefaultProcStream();
                 tmp = {...
-                    reg.funcReg(iR).GetUsageStrDecorated(['hmrR_Intensity2OD',suffix]); ...
-                    reg.funcReg(iR).GetUsageStrDecorated(['hmrR_BandpassFilt',suffix]); ...
-                    reg.funcReg(iR).GetUsageStrDecorated(['hmrR_OD2Conc',suffix]); ...
-                    reg.funcReg(iR).GetUsageStrDecorated(['hmrR_BlockAvg',suffix],'dcAvg'); ...
+                    obj.reg.funcReg(iR).GetUsageStrDecorated(['hmrR_Intensity2OD',suffix]); ...
+                    obj.reg.funcReg(iR).GetUsageStrDecorated(['hmrR_BandpassFilt',suffix]); ...
+                    obj.reg.funcReg(iR).GetUsageStrDecorated(['hmrR_OD2Conc',suffix]); ...
+                    obj.reg.funcReg(iR).GetUsageStrDecorated(['hmrR_BlockAvg',suffix],'dcAvg'); ...
                 };
                 k=[]; kk=1;
                 for ii=1:length(tmp)

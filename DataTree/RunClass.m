@@ -42,7 +42,7 @@ classdef RunClass < TreeNodeClass
                 return;
             end
             obj.Load();
-            obj.procStream = ProcStreamClass([], obj.acquired);
+            obj.procStream = ProcStreamClass(obj.acquired);
         end
 
         
@@ -164,7 +164,9 @@ classdef RunClass < TreeNodeClass
                 obj.procStream.output.Flush();
             end
             
-            fprintf('Calculating processing stream for group %d, subject %d, run %d\n', obj.iGroup, obj.iSubj, obj.iRun);
+            if obj.DEBUG
+                fprintf('Calculating processing stream for group %d, subject %d, run %d\n', obj.iGroup, obj.iSubj, obj.iRun);
+            end
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Find all variables needed by proc stream, find them in this 
@@ -186,8 +188,10 @@ classdef RunClass < TreeNodeClass
             % Calculate processing stream
             obj.procStream.Calc();
 
-            fprintf('Completed processing stream for group %d, subject %d, run %d\n', obj.iGroup, obj.iSubj, obj.iRun);
-            fprintf('\n')
+            if obj.DEBUG
+                fprintf('Completed processing stream for group %d, subject %d, run %d\n', obj.iGroup, obj.iSubj, obj.iRun);
+                fprintf('\n')
+            end
         end
 
 

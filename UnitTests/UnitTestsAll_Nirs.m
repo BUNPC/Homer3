@@ -3,7 +3,7 @@ global DEBUG1
 global procStreamStyle
 global testidx;
 
-tic;
+t_local = tic;
 DEBUG1=0;
 testidx=0;
 procStreamStyle = 'nirs';
@@ -64,9 +64,9 @@ end
 
 % If we are NOT standalone then we'll rely on the parent caller to cleanup 
 if standalone
-    ResetConfig();
     CleanUp();
+    ResetConfig();
 end
 
-toc
+toc(t_local)
 

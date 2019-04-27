@@ -450,7 +450,7 @@ for iPanel=1:length(procElem)
         funcname = strtrim(parts{1});
         usagename = strtrim(parts{2});
         fcall = funcReg(iPanel).GetFuncCallDecoded(funcname, usagename);
-        procElem{iPanel}.procStream.Add(fcall, funcReg(iPanel));
+        procElem{iPanel}.procStream.Add(fcall);
     end
 end
 

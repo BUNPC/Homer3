@@ -1,6 +1,6 @@
 function UnitTestsAll()
 
-tic;
+t_local = tic;
 
 CleanUp();
 
@@ -29,4 +29,4 @@ c.WriteFile();
 
 CleanUp();
 
-toc
+toc(t_local);

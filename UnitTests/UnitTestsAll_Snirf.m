@@ -3,7 +3,7 @@ global DEBUG1
 global procStreamStyle
 global testidx;
 
-tic;
+t_local = tic;
 DEBUG1=0;
 testidx=0;
 procStreamStyle = 'snirf';
@@ -65,4 +65,4 @@ if standalone
     ResetConfig();
 end
 
-toc
+toc(t_local);

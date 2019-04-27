@@ -1,5 +1,5 @@
 % SYNTAX:
-% [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg(yAvgRuns, yAvgStdRuns, ySum2Runs, mlActRuns, nTrialsRuns)
+% [yAvg, yAvgStd, nTrials] = hmrS_BlockAvg(yAvgRuns, yAvgStdRuns, ySum2Runs, mlActRuns, nTrialsRuns)
 %
 % UI NAME:
 % Block_Average_Subj

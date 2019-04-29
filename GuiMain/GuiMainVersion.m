@@ -1,14 +1,14 @@
-function [title, vernum] = Homer3_version(varargin)
+function [title, vernum] = GuiMainVersion(varargin)
 %
 % Syntax:
-%    [verstr, vernum, title] = Homer3_version()
-%    [verstr, vernum, title] = Homer3_version(hObject)
-%    [verstr, vernum, title] = Homer3_version(hObject, option)
-%    [verstr, vernum, title] = Homer3_version(option)
+%    [verstr, vernum, title] = GuiMainVersion()
+%    [verstr, vernum, title] = GuiMainVersion(hObject)
+%    [verstr, vernum, title] = GuiMainVersion(hObject, option)
+%    [verstr, vernum, title] = GuiMainVersion(option)
 % 
 % Example:
 %
-%    [verstr, vernum, title] = Homer3_version('exclpath')
+%    [verstr, vernum, title] = GuiMainVersion('exclpath')
 %
 
 if nargin==0
@@ -38,9 +38,9 @@ if isempty(option)
 end
 [verstr, vernum] = version2string();
 if strcmp(option, 'inclpath')
-    title = sprintf('Homer3  (%s) - %s', verstr, pwd);
+    title = sprintf('Homer3 (v%s) - %s', verstr, pwd);
 elseif strcmp(option, 'exclpath')
-    title = sprintf('Homer3 (%s)', verstr);
+    title = sprintf('Homer3 (v%s)', verstr);
 end
 if ishandle(hObject)
     set(hObject,'name', title);

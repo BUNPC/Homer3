@@ -618,7 +618,7 @@ classdef ProcStreamClass < handle
             if ~exist('type', 'var') || isempty(type)
                 type = 'run';
             end
-            versionstamp = sprintf('%% %s\n', Homer3_version('exclpath'));
+            versionstamp = sprintf('%% %s\n', GuiMainVersion('exclpath'));
 
             % First read in and parse existing file contents
             if ~exist(fname, 'file')

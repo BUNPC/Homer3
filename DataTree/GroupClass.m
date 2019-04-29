@@ -1,10 +1,11 @@
 classdef GroupClass < TreeNodeClass
     
     properties % (Access = private)
+        version;
+        versionStr;
         fileidx;
         nFiles;
         subjs;
-        version;
     end
     
     
@@ -16,8 +17,10 @@ classdef GroupClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function obj = GroupClass(varargin)
             obj@TreeNodeClass(varargin);
+            obj.InitVersion();
 
-            obj.version = Homer3_version('exclpath');
+            fprintf('Current GroupClass version %s\n', obj.GetVersionStr());
+            
             obj.type    = 'group';
             obj.subjs   = SubjClass().empty;
             
@@ -48,6 +51,114 @@ classdef GroupClass < TreeNodeClass
             obj.fileidx = 0;
             obj.nFiles = 0;
         end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function InitVersion(obj)
+            obj.SetVersion();
+            obj.InitVersionStrFull();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetVersion(obj, vernum)
+            if nargin==1
+                obj.version{1} = '1';   % Major version #
+                obj.version{2} = '0';   % Major sub-version #
+                obj.version{3} = '0';   % Minor version #
+                obj.version{4} = '0';   % Minor sub-version # or patch #: 'p1', 'p2', etc
+            elseif iscell(vernum)
+                if ~isnumber([vernum{:}])
+                    return;
+                end
+                for ii=1:length(vernum)
+                    obj.version{ii} = vernum{ii};
+                end
+            elseif ischar(vernum)
+                vernum = str2cell(vernum,'.');
+                if ~isnumber([vernum{:}])
+                    return;
+                end
+                obj.version = cell(length(vernum),1);
+                for ii=1:length(vernum)
+                    obj.version{ii} = vernum{ii};
+                end
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function vernum = GetVersion(obj)
+            vernum = obj.version;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function verstr = GetVersionStr(obj)
+            verstr = version2string(obj.version);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function InitVersionStrFull(obj)
+            if isempty(obj.version)
+                return;
+            end
+            verstr = version2string(obj.version);
+            obj.versionStr = sprintf('%s: GroupClass v%s',  GuiMainVersion('exclpath'), verstr);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function res = CompareVersions(obj, obj2)
+            res = 1;
+            if ~isproperty(obj, 'version')
+                return;
+            elseif ~ischar(obj2.version) && ~iscell(obj2.version) 
+                return;
+            elseif ischar(obj2.version)
+                if ~isnumber(obj2.version)
+                    return;                    
+                end
+                v2 = str2cell(obj2.version,'.');
+            elseif iscell(obj2.version)
+                if ~isnumber([obj2.version{:}])
+                    res = 1;
+                end
+                v2 = obj2.version;
+            end
+            v1 = obj.version;
+            
+            for ii=1:length(v1)
+                v1{ii} = str2num(v1{ii});
+            end
+            for ii=1:length(v2)
+                v2{ii} = str2num(v2{ii});
+            end
+            
+            % Now that we have the version numbers of both objects, we can
+            % do an actual numeric comparison
+            res = 0;
+            for ii=1:max(length(v1), length(v2))
+                if ii>length(v1)
+                    res = -1;
+                    break;
+                end
+                if ii>length(v2)
+                    res = 1;
+                    break;
+                end
+                if v1{ii}>v2{ii}
+                    res = 1;
+                    break;
+                end
+                if v1{ii}<v2{ii}
+                    res = -1;
+                    break;
+                end
+            end
+        end
+        
         
         
         % ----------------------------------------------------------------------------------
@@ -324,19 +435,23 @@ classdef GroupClass < TreeNodeClass
         function Load(obj)            
             group = [];
             if exist('./groupResults.mat','file')
-                procdata = load( './groupResults.mat' );
-
-                % Check compatibiliy with current version of Homer3
-                if isproperty(procdata, 'group')
-                    if isproperty(procdata.group, 'version')
-                        if ischar(procdata.group.version) && includes(procdata.group.version,'Homer3')
-                            group = procdata.group;
+                g = load( './groupResults.mat' );
+                
+                % Do some basic error checks on groupResults contents
+                if isproperty(g, 'group') && isa(g.group, 'GroupClass')
+                    if isproperty(g.group, 'version')
+                        if ismethod(g.group, 'GetVersion')
+                            fprintf('Saved group data, version %s exists\n', g.group.GetVersionStr());
+                            group = g.group;
                         end
                     end
                 end
             end
             
-            if ~isempty(group)               
+            % Copy saved group to current group if versions are compatible.
+            % obj.CompareVersions==0 means the versions of the saved group
+            % and current one are equal.
+            if ~isempty(group) && obj.CompareVersions(group)<=0
                 % copy procStream.output from previous group to current group for
                 % all nodes that still exist in the current group.
                 hwait = waitbar(0,'Loading group');
@@ -371,7 +486,7 @@ classdef GroupClass < TreeNodeClass
             % Save acquired data
             if options_s.acquired
                 for ii=1:length(obj.subjs)
-                    obj.subjs(ii).Save('derived');
+                    obj.subjs(ii).Save();
                 end
             end
             fprintf('Completed saving groupResults.mat in %0.3f seconds.\n', toc(t_local));

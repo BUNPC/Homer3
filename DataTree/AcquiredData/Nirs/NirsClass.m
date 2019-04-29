@@ -264,6 +264,16 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
     methods
 
         % ---------------------------------------------------------
+        function val = GetFormatVersion(obj)
+            val = obj.formatVersion;
+        end
+        
+        % ---------------------------------------------------------
+        function val = GetFormatVersionString(obj)
+            val = sprintf('NIRS v%s', obj.GetFormatVersion());
+        end
+        
+        % ---------------------------------------------------------
         function t = GetTime(obj, iBlk)
             t = obj.t;
         end

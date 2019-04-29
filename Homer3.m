@@ -116,8 +116,8 @@ hmr.dataTree = [];
 handles.output = hObject;
 guidata(hObject, handles);
 
-% Set the Homer3_version version number
-[~, V] = Homer3_version(hObject);
+% Set the main GUI version number
+[~, V] = GuiMainVersion(hObject);
 hmr.version = V;
 hmr.childguis = ChildGuiClass().empty();
 

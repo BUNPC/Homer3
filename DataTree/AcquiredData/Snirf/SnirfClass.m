@@ -49,7 +49,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %
              
             % Initialize properties from SNIRF spec 
-            obj.formatVersion = '1.0';
+            obj.formatVersion = '0.5';
             obj.timeOffset     = 0;
             obj.metaDataTags   = {
                 {'SubjectID','subj1'};
@@ -363,13 +363,13 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
     methods
 
         % ---------------------------------------------------------
-        function SetFormatVersion(obj, val)
-            obj.formatVersion = val;            
+        function val = GetFormatVersion(obj)
+            val = obj.formatVersion;
         end
         
         % ---------------------------------------------------------
-        function val = GetFormatVersion(obj)
-            val = obj.formatVersion;
+        function val = GetFormatVersionString(obj)
+            val = sprintf('SNIRF v%s', obj.formatVersion);
         end
         
         % ---------------------------------------------------------

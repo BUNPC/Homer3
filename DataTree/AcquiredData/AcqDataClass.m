@@ -6,6 +6,12 @@ classdef AcqDataClass < matlab.mixin.Copyable
     methods(Abstract)
         
         % ---------------------------------------------------------
+        objnew    = GetFormatVersion(obj, options);
+
+        % ---------------------------------------------------------
+        val       = GetFormatVersionString(obj);
+        
+        % ---------------------------------------------------------
         t         = GetTime(obj, iBlk)
         
         % ---------------------------------------------------------

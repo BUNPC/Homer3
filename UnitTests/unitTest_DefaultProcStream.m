@@ -40,7 +40,7 @@ if isempty(dataTree)
 end
 logger.Write(sprintf('Loaded processing stream from %s\n', procStreamConfigFile));
 dataTree.group.Calc();
-dataTree.group.Save('derived');
+dataTree.group.Save();
 
 groupFiles_h2 = mydir('./groupResults_homer2_lpf_*.mat');
 for iG=1:length(groupFiles_h2)   

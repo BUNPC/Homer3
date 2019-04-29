@@ -131,7 +131,7 @@ classdef SubjClass < TreeNodeClass
                 pause(1);
                 n = length(obj.runs);
                 for ii=1:n
-                    obj.runs(ii).Save('derived');
+                    obj.runs(ii).Save();
                     waitbar(ii/n, h, sprintf('Saving run %d of %d of subject %s', ii, n, strPrintable))
                 end
                 close(h);

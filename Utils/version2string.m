@@ -1,26 +1,34 @@
-function [verstr, V] = version2string()
+function [verstr, V] = version2string(V)
 
 verstr = '';
-
-V = getVernum();
-if length(V)<2
+if ~exist('V','var')
+    V = getVernum();
+end
+if length(V)==1
+    verstr = [V{:},'.0'];
     return;
 end
-
-if str2num(V{2})==0 || isempty(V{2})
-    verstr = sprintf('v%s', [V{1}]);
-else
-    verstr = sprintf('v%s', [V{1} '.' V{2}]);
-end
-
-if length(V)>2 && ~isempty(V{3})
-    if isnumber(V{3})
-        if V{3}=='0'
-            verstr = sprintf('%s', verstr);
-        else
-            verstr = sprintf('%s.%s', verstr, V{3});
-        end
-    else
-        verstr = sprintf('%s, %s', verstr, V{3});
+    
+for ii=length(V):-1:1
+    if ~ischar(V{ii})
+        return;
     end
-end    
+    if ~isnumber(V{ii})
+        return;
+    end
+    if ~strcmp(V{ii},'0') || ii<3
+        break;
+    end
+end
+verstr = '';
+for kk=1:length(V(1:ii))
+    if isempty(verstr)
+        verstr = sprintf('%s', V{kk});
+    else
+        if isnumber(V{3})
+            verstr = sprintf('%s.%s', verstr, V{kk});
+        else
+            verstr = sprintf('%s, %s', verstr, V{kk});
+        end
+    end
+end

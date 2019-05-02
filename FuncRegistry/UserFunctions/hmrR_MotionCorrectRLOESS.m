@@ -41,10 +41,10 @@ if turnon==0
 end
 
 for iBlk=1:length(data_dod)
-    dod = data_dod(iBlk).GetD();
-    t   = data_dod(iBlk).GetT();
+    dod = data_dod(iBlk).GetDataTimeSeries();
+    t   = data_dod(iBlk).GetTime();
     for i=1:size(dod,2)
         dod(:,i) = smooth(t, dod(:,i), span, 'rloess');
     end
-    data_dod(iBlk).SetD(dod);    
+    data_dod(iBlk).SetDataTimeSeries(dod);    
 end

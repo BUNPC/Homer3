@@ -196,22 +196,22 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
     methods
 
         % ---------------------------------------------------------
-        function SetD(obj, val)
+        function SetDataTimeSeries(obj, val)
             obj.d = val;            
         end
         
         % ---------------------------------------------------------
-        function val = GetD(obj)
+        function val = GetDataTimeSeries(obj)
             val = obj.d;
         end
         
         % ---------------------------------------------------------
-        function SetT(obj, val)
+        function SetTime(obj, val)
             obj.t = val;
         end
         
         % ---------------------------------------------------------
-        function val = GetT(obj)
+        function val = GetTime(obj)
             val = obj.t;
         end
         
@@ -272,12 +272,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         function val = GetFormatVersionString(obj)
             val = sprintf('NIRS v%s', obj.GetFormatVersion());
         end
-        
-        % ---------------------------------------------------------
-        function t = GetTime(obj, iBlk)
-            t = obj.t;
-        end
-        
+               
         
         % ---------------------------------------------------------
         function datamat = GetDataMatrix(obj, iBlk)

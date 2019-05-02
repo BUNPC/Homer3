@@ -42,8 +42,8 @@ linecolor = rand(20,3);
 % Plot SNIRF data directly. Plot channels with dataTypeLabel=HbO and condition=1 and 
 % for channels with sourceIndex==1
 figure; hold on
-d             = data_dcAvg.GetD();
-t             = data_dcAvg.GetT();
+d             = data_dcAvg.GetDataTimeSeries();
+t             = data_dcAvg.GetTime();
 dataTypeLabel = data_dcAvg.GetDataTypeLabel();
 condition     = data_dcAvg.GetCondition();
 srcdetpairs   = data_dcAvg.GetMeasList();
@@ -56,7 +56,7 @@ hold off
 
 
 % Test TreeNodeClass procElem methods for retrieving and plotting data from SNIRF data
-procElem.procStream.output.SetTHRF(data_dcAvg.GetT());
+procElem.procStream.output.SetTHRF(data_dcAvg.GetTime());
 procElem.procStream.output.SetNtrials(nTrials);
 procElem.procStream.output.SetDc(data_dc);
 procElem.procStream.output.SetDcAvg(data_dcAvg);

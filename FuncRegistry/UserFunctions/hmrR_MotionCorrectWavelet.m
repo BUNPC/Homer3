@@ -53,7 +53,7 @@ end
 
 for kk=1:length(data_dod)
 
-    dod         = data_dod(kk).GetD();
+    dod         = data_dod(kk).GetDataTimeSeries();
     dodWavelet  = dod;
     MeasList    = dod(kk).GetMeasList();
     MeasListAct = mlAct{kk};    
@@ -88,7 +88,7 @@ for kk=1:length(data_dod)
         
         dodWavelet(:,idx_ch) = ARSignal(1:length(dod));
     end
-    data_dod(kk).SetD(dodWavelet);
+    data_dod(kk).SetDataTimeSeries(dodWavelet);
     
 end
 

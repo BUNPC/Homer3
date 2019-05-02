@@ -38,7 +38,7 @@ for ii=1:length(dod)
     DetPos = sd.GetDetPos();
     nWav   = length(Lambda);
     ml     = dod(ii).GetMeasList();
-    y      = dod(ii).GetD();
+    y      = dod(ii).GetDataTimeSeries();
     
     if length(ppf)~=nWav
         errordlg('The length of PPF must match the number of wavelengths in SD.Lambda');
@@ -61,11 +61,11 @@ for ii=1:length(dod)
         rho = norm(SrcPos(ml(idx1,1),:)-DetPos(ml(idx1,2),:));
         y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,1)*rho*ppf))' )';
         y2(:,k+2) = y2(:,k) + y2(:,k+1);
-        dc(ii).AddChannelDc(ml(idx1,1), ml(idx1,2), 6);
-        dc(ii).AddChannelDc(ml(idx1,1), ml(idx1,2), 7);
-        dc(ii).AddChannelDc(ml(idx1,1), ml(idx1,2), 8);
+        dc(ii).AddChannelHbO(ml(idx1,1), ml(idx1,2));
+        dc(ii).AddChannelHbR(ml(idx1,1), ml(idx1,2));
+        dc(ii).AddChannelHbT(ml(idx1,1), ml(idx1,2));
     end   
-    dc(ii).SetD(y2);
-    dc(ii).SetT(dod(ii).GetT());
+    dc(ii).SetDataTimeSeries(y2);
+    dc(ii).SetTime(dod(ii).GetTime());
 end
 

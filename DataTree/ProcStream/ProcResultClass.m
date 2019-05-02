@@ -341,7 +341,11 @@ classdef ProcResultClass < handle
             if isempty(obj.nTrials)
                 return;
             end
-            nTrials = obj.nTrials{iBlk};
+            if iscell(obj.nTrials)
+                nTrials = obj.nTrials{iBlk};
+            else
+                nTrials = obj.nTrials;
+            end
         end
         
         

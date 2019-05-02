@@ -22,11 +22,11 @@ function dod = hmrR_Intensity2OD( intensity )
 dod = DataClass().empty();
 for ii=1:length(intensity)
     dod(ii) = DataClass();
-    d = intensity(ii).GetD();
+    d = intensity(ii).GetDataTimeSeries();
     dm = mean(abs(d),1);
     nTpts = size(d,1);
-    dod(ii).SetT(intensity(ii).GetT());
-    dod(ii).SetD(-log(abs(d)./(ones(nTpts,1)*dm)));
+    dod(ii).SetTime(intensity(ii).GetTime());
+    dod(ii).SetDataTimeSeries(-log(abs(d)./(ones(nTpts,1)*dm)));
     dod(ii).SetMl(intensity(ii).GetMl());
-    dod(ii).SetDataType(1000, 1);
+    dod(ii).SetDataTypeDod();
 end

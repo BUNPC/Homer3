@@ -64,7 +64,7 @@ for iBlk=1:length(data_y)
         
     % Get all the input data from the arguments
     y        = data_y(iBlk).GetDataMatrix();
-    t        = data_y(iBlk).GetT();
+    t        = data_y(iBlk).GetTime();
     MeasList = data_y(iBlk).GetMeasList();
     if isempty(mlActAuto{iBlk})
         mlActAuto{iBlk} = ones(size(MeasList,1),1);
@@ -187,7 +187,7 @@ for iBlk=1:length(data_y)
         nSV{iBlk} = 0;
     end
     
-    data_yc(iBlk).SetD(yc);
+    data_yc(iBlk).SetDataTimeSeries(yc);
     
     % use this if using s and v from baseline data
     % for ii=1:size(y,3)

@@ -1,4 +1,4 @@
-function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
+function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh0)
 % SYNTAX:
 % [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
 %
@@ -46,7 +46,6 @@ subjCh = [];
 nStim = 0;
 grp1=[];
 nSubj = length(yAvgSubjs);
-thresh = thresh * 1e-6;
 
 % chkFlag is a parameter that if true requires, for each channel, ALL corresponding 
 % subjects channels to pass before averaging that channel. TBD: Currently we set it to 
@@ -68,6 +67,7 @@ for iSubj = 1:nSubj
     nCond = size(nTrials,2);
     
     if ndims(yAvg) == (4-(nCond<2))
+        thresh = thresh0 * 1e-6;
         
         if iSubj==1
             lstT = find(tHRF>=tRange(1) & tHRF<=tRange(2));
@@ -125,6 +125,7 @@ for iSubj = 1:nSubj
         end
         
     elseif ndims(yAvg) == (3-(nCond<2))
+        thresh = thresh0;
         
         if iSubj==1
             lstT  = find(tHRF>=tRange(1) & tHRF<=tRange(2));

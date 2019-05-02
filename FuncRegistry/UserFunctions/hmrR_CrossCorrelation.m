@@ -22,7 +22,7 @@ function cc = hmrR_CrossCorrelation(data_dc, cc_thresh)
 
 cc = cell(length(data_dc),1);
 for iBlk=1:length(data_dc)
-    dc0 = data_dc(iBlk).GetD();    
+    dc0 = data_dc(iBlk).GetDataTimeSeries();    
     dc0 = reshape(dc0, size(dc0,1), 3, size(dc0,2)/3);    
     
     % HbO

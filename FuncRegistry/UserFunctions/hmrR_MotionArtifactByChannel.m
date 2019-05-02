@@ -80,8 +80,8 @@ end
 
 for iBlk=1:length(data)
     
-    d           = data(iBlk).GetD();
-    fs          = data(iBlk).GetT();
+    d           = data(iBlk).GetDataTimeSeries();
+    fs          = data(iBlk).GetTime();
     MeasList    = data(iBlk).GetMeasList();
     Lambda      = sd.GetWls();
     

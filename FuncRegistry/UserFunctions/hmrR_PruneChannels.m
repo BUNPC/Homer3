@@ -58,8 +58,8 @@ end
 
 for iBlk=1:length(data)
     
-    d        = data(iBlk).GetD();
-    t        = data(iBlk).GetT();
+    d        = data(iBlk).GetDataTimeSeries();
+    t        = data(iBlk).GetTime();
     MeasList = data(iBlk).GetMeasList();
     Lambda   = sd.GetWls();
     SrcPos   = sd.GetSrcPos();

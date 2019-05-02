@@ -46,7 +46,7 @@ end
 
 snirf = SnirfClass(data, stim);
 for iBlk=1:length(snirf.data)
-    t = snirf.data(iBlk).GetT();
+    t = snirf.data(iBlk).GetTime();
     s = snirf.GetStims(t);
     
     dt = (t(end)-t(1))/length(t);

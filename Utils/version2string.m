@@ -1,8 +1,12 @@
 function [verstr, V] = version2string(V)
 
 verstr = '';
-if ~exist('V','var')
+if ~exist('V','var') || isempty(V)
     V = getVernum();
+end
+if ischar(V)
+    verstr = V;
+    return
 end
 if length(V)==1
     verstr = [V{:},'.0'];

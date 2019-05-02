@@ -58,20 +58,20 @@ for kk=1:length(data)
     nTrials{kk} = zeros(1, size(s,2));
     
     datatype = data(kk).GetDataTypeLabel();  % Get the input data type
-    y = data(kk).GetD();    % Get the data vector 
-    if datatype(1)==6
+    y = data(kk).GetDataTimeSeries();    % Get the data vector 
+    if strncmp(datatype{1},'Hb',2)
         y = reshape(y, size(y,1), 3, size(y,2)/3);
     end
-    t = data(kk).GetT();    % Get the time vector 
+    t = data(kk).GetTime();    % Get the time vector 
     dt = t(2)-t(1);
     nPre = round(trange(1)/dt);
     nPost = round(trange(2)/dt);
     nTpts = size(y,1);
-    tHRF = [nPre*dt:dt:nPost*dt];
-    if datatype(1)==6
+    tHRF = nPre*dt:dt:nPost*dt;
+    if strncmp(datatype{1}, 'Hb', 2)
         ml = data(kk).GetMeasListSrcDetPairs();
         yblk = zeros(nPost-nPre+1,size(y,2),size(y,3),size(s,2));
-    elseif datatype(1)==1
+    elseif strcmp(datatype{1}, 'dOD')
         ml = data(kk).GetMeasList();
         yblk = zeros(nPost-nPre+1,size(y,2),size(s,2));
     else
@@ -83,10 +83,10 @@ for kk=1:length(data)
         nBlk = 0;
         for iT = 1:length(lstS)
             if (lstS(iT)+nPre)>=1 && (lstS(iT)+nPost)<=nTpts
-                if datatype(1)==6
+                if strncmp(datatype{1}, 'Hb', 2)
                     nBlk = nBlk + 1;
                     yblk(:,:,:,nBlk) = y(lstS(iT)+[nPre:nPost],:,:); %changed from yblk(:,:,:,end+1)
-                elseif datatype(1)==1
+                elseif strcmp(datatype{1}, 'dOD')
                     nBlk = nBlk + 1;
                     yblk(:,:,nBlk) = y(lstS(iT)+[nPre:nPost],:); % changd from yblk(:,:,end+1)
                 end
@@ -95,7 +95,7 @@ for kk=1:length(data)
             end
         end
         
-        if datatype(1)==6
+        if strncmp(datatype{1}, 'Hb', 2)
             yTrials(iC).yblk = yblk(:,:,:,1:nBlk);
             yavg(:,:,:,iC) = mean(yblk(:,:,:,1:nBlk),4);
             ystd(:,:,:,iC) = std(yblk(:,:,:,1:nBlk),[],4);
@@ -113,26 +113,26 @@ for kk=1:length(data)
                 
                 % Snirf stuff: set channel descriptors
                 % Concentration 
-                data_avg(kk).AddChannelDc(ml(ii,1), ml(ii,2), 6, iC);
-                data_avg(kk).AddChannelDc(ml(ii,1), ml(ii,2), 7, iC);
-                data_avg(kk).AddChannelDc(ml(ii,1), ml(ii,2), 8, iC);
+                data_avg(kk).AddChannelHbO(ml(ii,1), ml(ii,2), iC);
+                data_avg(kk).AddChannelHbR(ml(ii,1), ml(ii,2), iC);
+                data_avg(kk).AddChannelHbT(ml(ii,1), ml(ii,2), iC);
                 
                 % Standard deviation 
-                data_std(kk).AddChannelDc(ml(ii,1), ml(ii,2), 6, iC);
-                data_std(kk).AddChannelDc(ml(ii,1), ml(ii,2), 7, iC);
-                data_std(kk).AddChannelDc(ml(ii,1), ml(ii,2), 8, iC);
+                data_std(kk).AddChannelHbO(ml(ii,1), ml(ii,2), iC);
+                data_std(kk).AddChannelHbR(ml(ii,1), ml(ii,2), iC);
+                data_std(kk).AddChannelHbT(ml(ii,1), ml(ii,2), iC);
                 
                 % 
-                data_sum2(kk).AddChannelDc(ml(ii,1), ml(ii,2), 6, iC);
-                data_sum2(kk).AddChannelDc(ml(ii,1), ml(ii,2), 7, iC);
-                data_sum2(kk).AddChannelDc(ml(ii,1), ml(ii,2), 8, iC);
+                data_sum2(kk).AddChannelHbO(ml(ii,1), ml(ii,2), iC);
+                data_sum2(kk).AddChannelHbR(ml(ii,1), ml(ii,2), iC);
+                data_sum2(kk).AddChannelHbT(ml(ii,1), ml(ii,2), iC);
             end
             
             % Snirf stuff: set data vectors
             data_avg(kk).AppendD(yavg(:,:,:,iC));
             data_std(kk).AppendD(ystd(:,:,:,iC));
             data_sum2(kk).AppendD(ysum2(:,:,:,iC));
-        elseif datatype(1)==1
+        elseif strcmp(datatype{1}, 'dOD')
             yTrials(iC).yblk = yblk(:,:,1:nBlk);
             yavg(:,:,iC) = mean(yblk(:,:,1:nBlk),3);
             ystd(:,:,iC) = std(yblk(:,:,1:nBlk),[],3);
@@ -162,9 +162,9 @@ for kk=1:length(data)
     end
     
     % Snirf stuff: set time vectors
-    data_avg(kk).SetT(tHRF, true);
-    data_std(kk).SetT(tHRF, true);
-    data_sum2(kk).SetT(tHRF, true);
+    data_avg(kk).SetTime(tHRF, true);
+    data_std(kk).SetTime(tHRF, true);
+    data_sum2(kk).SetTime(tHRF, true);
 
 end
 

@@ -62,8 +62,8 @@ end
 
 for iBlk=1:length(data_dod)
     
-    dod         = data_dod(iBlk).GetD();
-    t           = data_dod(iBlk).GetT();
+    dod         = data_dod(iBlk).GetDataTimeSeries();
+    t           = data_dod(iBlk).GetTime();
     MeasList    = data_dod(iBlk).GetMeasList();
     if isempty(mlAct{iBlk})
         mlAct{iBlk} = ones(size(MeasList,1),1);
@@ -253,5 +253,5 @@ for iBlk=1:length(data_dod)
             %   dodSpline(:,i_ch) = dod;
         end
     end
-    data_dod(iBlk).SetD(dodSpline);
+    data_dod(iBlk).SetDataTimeSeries(dodSpline);
 end

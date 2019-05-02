@@ -51,7 +51,9 @@ groupFiles_h2 = mydir('./groupResults_homer2_*.mat');
 for iG=1:length(groupFiles_h2)   
     group_h2 = load(groupFiles_h2(iG).name);
     [~, groupFiles_h2(iG).pathfull] = fileparts(groupFiles_h2(iG).pathfull);
-    status = compareOutputs1(group_h2);
+    s(1) = compareDcAvg(group_h2, 'dcAvg');
+    % s(2) = compareDcAvg(group_h2, 'dcAvgStd');
+    status = ~all(s==0);
     if status==0        
         break;
     end

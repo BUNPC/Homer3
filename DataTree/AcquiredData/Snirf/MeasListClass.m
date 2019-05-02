@@ -7,16 +7,13 @@ classdef MeasListClass < FileLoadSaveClass
         wavelengthIndex
         dataType
         dataTypeLabel
-        dataTypeIndex
-        condition
+        dataTypeIndex   % Used for condition when dataType=99999 ("Processed") and dataTypeLabel='HRF...'
         sourcePower
-        sourcePowerUnit 
         detectorGain
+        moduleIndex
     end
     
-    properties
-    end
-    
+       
     methods
 
         function obj = MeasListClass(varargin)
@@ -30,35 +27,38 @@ classdef MeasListClass < FileLoadSaveClass
             %     obj = MeasListClass(sourceIndex, detectorIndex, dataType, dataTypeLabel, condition)
             %     
             %  Inputs:
-            %     ml            - When there's one argument, ml is the measurent list, which 
-            %                     can be either a nirs style matrix or a MeasListClass object.
-            %     sourceIndex   - When there are more than 2 arguments, ...
-            %     detectorIndex - When there are more than 2 arguments, ...
-            %     dataType      - When there are more than 2 arguments, ...
-            %     dataTypeLabel - When there are more than 2 arguments, ...
-            %     condition     - When there are more than 2 arguments, ...
+            %     ml             - When there's one argument, ml is the measurent list, which 
+            %                      can be either a nirs style matrix or a MeasListClass object.
+            %     sourceIndex    - When there are more than 2 arguments, ...
+            %     detectorIndex  - When there are more than 2 arguments, ...
+            %     dataType       - When there are more than 2 arguments, ...
+            %     dataTypeLabel  - When there are more than 2 arguments, ...
+            %     dataTypeIndex  - When there are more than 2 arguments, ...
             %
             %  Example:
             %
             
             % Fields which are part of the SNIRF spec which are loaded and saved 
             % from/to SNIRF files
-            obj.dataType         = 1;
-            obj.dataTypeLabel    = 0;
-            obj.dataTypeIndex    = 1;
-            obj.condition        = 0;
-            obj.sourcePower      = 0;
-            obj.sourcePowerUnit  = '';
-            obj.detectorGain     = 0;
             obj.sourceIndex      = 0;
             obj.detectorIndex    = 0;
             obj.wavelengthIndex  = 0;
+            obj.dataType         = 0;
+            obj.dataTypeLabel    = '';
+            obj.dataTypeIndex    = 0;
+            obj.sourcePower      = 0;
+            obj.detectorGain     = 0;
+            obj.moduleIndex      = 0;
+            
+            dataTypeValues = DataTypeValues();
+
             if nargin==1 && isa(varargin{1}, 'MeasListClass')
-                obj = varargin{1}.copy();                    % shallow copy ok because MeasListClass has no handle properties 
+                obj                  = varargin{1}.copy();                    % shallow copy ok because MeasListClass has no handle properties 
             elseif nargin==1 
                 obj.sourceIndex      = varargin{1}(1);
                 obj.detectorIndex    = varargin{1}(2);
                 obj.wavelengthIndex  = varargin{1}(4);
+                obj.dataType         = dataTypeValues.Raw.CW.Amplitude;
             elseif nargin==3
                 obj.sourceIndex      = varargin{1};
                 obj.detectorIndex    = varargin{2};
@@ -73,7 +73,7 @@ classdef MeasListClass < FileLoadSaveClass
                 obj.detectorIndex    = varargin{2};
                 obj.dataType         = varargin{3};
                 obj.dataTypeLabel    = varargin{4};
-                obj.condition        = varargin{5};
+                obj.dataTypeIndex    = varargin{5};
             end
             
             % These are fields helping to implement the MeasListClass
@@ -114,9 +114,11 @@ classdef MeasListClass < FileLoadSaveClass
             obj.detectorIndex = hdf5read(fname, [parent, '/detectorIndex']);
             obj.wavelengthIndex = hdf5read(fname, [parent, '/wavelengthIndex']);
             obj.dataType = hdf5read(fname, [parent, '/dataType']);
+            obj.dataTypeLabel = strtrim_improve(hdf5read_safe(fname, [parent, '/dataTypeLabel'], obj.dataTypeLabel));
             obj.dataTypeIndex = hdf5read(fname, [parent, '/dataTypeIndex']);
             obj.sourcePower = hdf5read(fname, [parent, '/sourcePower']);
             obj.detectorGain = hdf5read(fname, [parent, '/detectorGain']);
+            obj.moduleIndex = hdf5read(fname, [parent, '/moduleIndex']);
         end
 
         
@@ -131,9 +133,11 @@ classdef MeasListClass < FileLoadSaveClass
             hdf5write(fname, [parent, '/detectorIndex'], obj.detectorIndex, 'WriteMode','append');
             hdf5write(fname, [parent, '/wavelengthIndex'], obj.wavelengthIndex, 'WriteMode','append');
             hdf5write(fname, [parent, '/dataType'], obj.dataType, 'WriteMode','append');
+            hdf5write(fname, [parent, '/dataTypeLabel'], obj.dataTypeLabel, 'WriteMode','append');
             hdf5write(fname, [parent, '/dataTypeIndex'], obj.dataTypeIndex, 'WriteMode','append');
             hdf5write(fname, [parent, '/sourcePower'], obj.sourcePower, 'WriteMode','append');
             hdf5write(fname, [parent, '/detectorGain'], obj.detectorGain, 'WriteMode','append');
+            hdf5write(fname, [parent, '/moduleIndex'], obj.moduleIndex, 'WriteMode','append');
         end
 
                 
@@ -189,13 +193,13 @@ classdef MeasListClass < FileLoadSaveClass
         
         % ---------------------------------------------------------
         function SetCondition(obj, val)
-            obj.condition = val;
+            obj.dataTypeIndex = val;
         end
         
         
         % ---------------------------------------------------------
         function val = GetCondition(obj)
-            val = obj.condition;
+            val = obj.dataTypeIndex;
         end
         
         
@@ -206,7 +210,6 @@ classdef MeasListClass < FileLoadSaveClass
                 b = true;
             end
         end
-    
         
     end
     

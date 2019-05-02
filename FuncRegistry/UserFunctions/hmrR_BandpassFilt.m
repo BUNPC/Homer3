@@ -33,8 +33,8 @@ data2 = DataClass().empty();
 ylpf = [];
 for ii=1:length(data)
     data2(ii) = DataClass(data(ii));
-    y = data2(ii).GetD();
-    fs = data2(ii).GetT();
+    y = data2(ii).GetDataTimeSeries();
+    fs = data2(ii).GetTime();
     
     % convert t to fs
     % assume fs is a time vector if length>1
@@ -71,7 +71,7 @@ for ii=1:length(data)
     else
         y2 = ylpf;
     end
-    data2(ii).SetD(y2);
+    data2(ii).SetDataTimeSeries(y2);
     
 end
 

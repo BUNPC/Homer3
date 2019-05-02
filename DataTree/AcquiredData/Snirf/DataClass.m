@@ -1,11 +1,12 @@
 classdef DataClass < FileLoadSaveClass
     
     properties
-        d
-        t
-        ml
+        dataTimeSeries
+        time
+        measurementList
     end
     
+       
     methods
         
         % -------------------------------------------------------
@@ -26,17 +27,18 @@ classdef DataClass < FileLoadSaveClass
             %
             %  Example:
             %    
-            obj.ml = MeasListClass().empty();
+            obj.measurementList = MeasListClass().empty();
+            
             if nargin==0 
                 return;
             elseif nargin==1
                 if isa(varargin{1}, 'DataClass')
                     obj.Copy(varargin{1});
                 elseif isa(varargin{1}, 'NirsClass')
-                    obj.d = varargin{1}.d;
-                    obj.t = varargin{1}.t;
+                    obj.dataTimeSeries = varargin{1}.d;
+                    obj.time = varargin{1}.t;
                     for ii=1:size(varargin{1}.ml,1)
-                        obj.ml(end+1) = MeasListClass(varargin{1}.ml(ii,:));
+                        obj.measurementList(end+1) = MeasListClass(varargin{1}.ml(ii,:));
                     end
                 end
             elseif nargin==3                
@@ -50,21 +52,21 @@ classdef DataClass < FileLoadSaveClass
                     return;
                 end
                 if isa(varargin{3}, 'MeasListClass')
-                    obj.d = varargin{1};
-                    obj.t = varargin{2};
+                    obj.dataTimeSeries = varargin{1};
+                    obj.time = varargin{2};
                     for ii=1:length(varargin{3})
-                        obj.ml(end+1) = MeasListClass(varargin{3}(ii));
+                        obj.measurementList(end+1) = MeasListClass(varargin{3}(ii));
                     end
                 else
-                    obj.d = varargin{1};
-                    obj.t = varargin{2};
+                    obj.dataTimeSeries = varargin{1};
+                    obj.time = varargin{2};
                     for ii=1:size(varargin{3},1)
-                        obj.ml(end+1) = MeasListClass(varargin{3}(ii,:));
+                        obj.measurementList(end+1) = MeasListClass(varargin{3}(ii,:));
                     end
                 end
             else
-                obj.d = double([]);
-                obj.t = double([]);
+                obj.dataTimeSeries = double([]);
+                obj.time = double([]);
             end
         end
         
@@ -84,8 +86,8 @@ classdef DataClass < FileLoadSaveClass
                 return;
             end
             try
-                obj.d = h5read(fname, [parent, '/d']);
-                obj.t = h5read(fname, [parent, '/t']);
+                obj.dataTimeSeries = h5read(fname, [parent, '/dataTimeSeries']);
+                obj.time = h5read(fname, [parent, '/time']);
             catch
                 err = -1;
                 return;
@@ -93,11 +95,11 @@ classdef DataClass < FileLoadSaveClass
             
             ii=1;
             info = h5info(fname);
-            while h5exist(info, [parent, '/ml_', num2str(ii)])
-                if ii > length(obj.ml)
-                    obj.ml(ii) = MeasListClass;
+            while h5exist(info, [parent, '/measurementList_', num2str(ii)])
+                if ii > length(obj.measurementList)
+                    obj.measurementList(ii) = MeasListClass;
                 end
-                obj.ml(ii).LoadHdf5(fname, [parent, '/ml_', num2str(ii)]);
+                obj.measurementList(ii).LoadHdf5(fname, [parent, '/measurementList_', num2str(ii)]);
                 ii=ii+1;
             end
         end
@@ -110,11 +112,11 @@ classdef DataClass < FileLoadSaveClass
                 H5F.close(fid);
             end
             
-            hdf5write_safe(fname, [parent, '/d'], obj.d);
-            hdf5write_safe(fname, [parent, '/t'], obj.t);
+            hdf5write_safe(fname, [parent, '/dataTimeSeries'], obj.dataTimeSeries);
+            hdf5write_safe(fname, [parent, '/time'], obj.time);
             
-            for ii=1:length(obj.ml)
-                obj.ml(ii).SaveHdf5(fname, [parent, '/ml_', num2str(ii)]);
+            for ii=1:length(obj.measurementList)
+                obj.measurementList(ii).SaveHdf5(fname, [parent, '/measurementList_', num2str(ii)]);
             end
         end
         
@@ -132,38 +134,43 @@ classdef DataClass < FileLoadSaveClass
             if isempty(obj)
                 b = true;
             end
-            if isempty(obj.d) || isempty(obj.t) || isempty(obj.ml)
+            if isempty(obj.dataTimeSeries) || isempty(obj.time) || isempty(obj.measurementList)
                 b = true;
             end
-            if isempty(obj.ml)
+            if isempty(obj.measurementList)
                 return;
             end
         end
     
         
         % ---------------------------------------------------------
-        function val = GetD(obj)
-            val = obj.d;
+        function val = GetDataTimeSeries(obj)
+            val = obj.dataTimeSeries;
         end
         
         
         % ---------------------------------------------------------
         function val = GetT(obj)
-            val = obj.t;
+            val = obj.time;
         end
         
         
         % ---------------------------------------------------------
         function wls = GetWls(obj)
-            wls = obj.ml(1).GetWls();
+            wls = obj.measurementList(1).GetWls();
         end
         
         
         % ---------------------------------------------------------
         function ml = GetMeasList(obj)
-            ml = zeros(length(obj.ml), 4);
-            for ii=1:length(obj.ml)
-                ml(ii,:) = [obj.ml(ii).GetSourceIndex(), obj.ml(ii).GetDetectorIndex(), 1, obj.ml(ii).GetWavelengthIndex()];
+            ml = [];
+            for ii=1:length(obj.measurementList)
+                % If this data contains block average then only get the measurements for first condition. That will 
+                % contain all the measurement channels
+                if obj.measurementList(ii).GetCondition()>1
+                    break;
+                end
+                ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), 1, obj.measurementList(ii).GetWavelengthIndex()];
             end
         end
         
@@ -172,9 +179,9 @@ classdef DataClass < FileLoadSaveClass
         function ml = GetMeasListSrcDetPairs(obj)
             ml = zeros(0, 2);
             jj=1;
-            for ii=1:length(obj.ml)
-                if isempty(find(ml(:,1)==obj.ml(ii).GetSourceIndex() & ml(:,2)==obj.ml(ii).GetDetectorIndex()))
-                    ml(jj,:) = [obj.ml(ii).GetSourceIndex(), obj.ml(ii).GetDetectorIndex()];
+            for ii=1:length(obj.measurementList)
+                if isempty(find(ml(:,1)==obj.measurementList(ii).GetSourceIndex() & ml(:,2)==obj.measurementList(ii).GetDetectorIndex()))
+                    ml(jj,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex()];
                     jj=jj+1;
                 end
             end
@@ -183,10 +190,10 @@ classdef DataClass < FileLoadSaveClass
         
         % ---------------------------------------------------------
         function ml = GetMeasListDod(obj)
-            ml = zeros(length(obj.ml), 2);
-            for ii=1:length(obj.ml)
-                if  obj.ml(ii).GetWavelengthIndex()==1
-                    ml(ii,:) = [obj.ml(ii).GetSourceIndex(), obj.ml(ii).GetDetectorIndex()];
+            ml = zeros(length(obj.measurementList), 2);
+            for ii=1:length(obj.measurementList)
+                if  obj.measurementList(ii).GetWavelengthIndex()==1
+                    ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex()];
                 end
             end
         end
@@ -194,10 +201,10 @@ classdef DataClass < FileLoadSaveClass
         
         % ---------------------------------------------------------
         function ml = GetMeasListDc(obj)
-            ml = zeros(length(obj.ml), 2);
-            for ii=1:length(obj.ml)
-                if  obj.ml(ii).GetDataTypeLabel()==6
-                    ml(ii,:) = [obj.ml(ii).GetSourceIndex(), obj.ml(ii).GetDetectorIndex()];
+            ml = zeros(length(obj.measurementList), 2);
+            for ii=1:length(obj.measurementList)
+                if  obj.measurementList(ii).GetDataTypeLabel()==6
+                    ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex()];
                 end
             end
         end
@@ -205,42 +212,42 @@ classdef DataClass < FileLoadSaveClass
         
         % ---------------------------------------------------------
         function t = GetTime(obj)
-            t = obj.t;
+            t = obj.time;
         end
         
         
         % ---------------------------------------------------------
         function d = GetDataMatrix(obj)
             d = [];
-            if isempty(obj.d)
+            if isempty(obj.dataTimeSeries)
                 return;
             end
             
             % Get information for each ch in d matrix
-            dataTypeLabels = [];
+            dataTypeLabels = {};
             srcDetPairs = zeros(0,2);
             conditions = [];
             wavelengths = [];
             hh=1; jj=1; kk=1; ll=1;
-            for ii=1:length(obj.ml)
-                if ~ismember(obj.ml(ii).GetDataTypeLabel(), dataTypeLabels)
-                    dataTypeLabels(hh) = obj.ml(ii).GetDataTypeLabel(); 
+            for ii=1:length(obj.measurementList)
+                if ~ismember(obj.measurementList(ii).GetDataTypeLabel(), dataTypeLabels)
+                    dataTypeLabels{hh} = obj.measurementList(ii).GetDataTypeLabel(); 
                     hh=hh+1;
                 end
-                if isempty(find(srcDetPairs(:,1)==obj.ml(ii).GetSourceIndex() & srcDetPairs(:,2)==obj.ml(ii).GetDetectorIndex()))
-                    srcDetPairs(jj,:) = [obj.ml(ii).GetSourceIndex(), obj.ml(ii).GetDetectorIndex()];
+                if isempty(find(srcDetPairs(:,1)==obj.measurementList(ii).GetSourceIndex() & srcDetPairs(:,2)==obj.measurementList(ii).GetDetectorIndex()))
+                    srcDetPairs(jj,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex()];
                     jj=jj+1;
                 end
-                if ~ismember(obj.ml(ii).GetCondition(), conditions)
-                    conditions(kk) = obj.ml(ii).GetCondition();
+                if ~ismember(obj.measurementList(ii).GetCondition(), conditions)
+                    conditions(kk) = obj.measurementList(ii).GetCondition();
                     kk=kk+1;
                 end
-                if ~ismember(obj.ml(ii).GetWavelengthIndex(), wavelengths)
-                    wavelengths(ll) = obj.ml(ii).GetWavelengthIndex();
+                if ~ismember(obj.measurementList(ii).GetWavelengthIndex(), wavelengths)
+                    wavelengths(ll) = obj.measurementList(ii).GetWavelengthIndex();
                     ll=ll+1;
                 end
             end
-            dim1 = length(obj.d(:,1));
+            dim1 = length(obj.dataTimeSeries(:,1));
             if all(wavelengths(:)~=0) && all(conditions(:)==0)
                 dim2 = length(wavelengths(:)) * size(srcDetPairs,1);
                 dim3 = 1;
@@ -250,77 +257,87 @@ classdef DataClass < FileLoadSaveClass
                 dim3 = length(conditions(:));
                 dim4 = 1;
             elseif all(wavelengths(:)==0) && all(conditions(:)==0)
-                dim2 = length(dataTypeLabels(:));
+                dim2 = length(dataTypeLabels);
                 dim3 = size(srcDetPairs,1);
                 dim4 = 1;
             elseif all(wavelengths(:)==0) && all(conditions(:)~=0)
-                dim2 = length(dataTypeLabels(:));
+                dim2 = length(dataTypeLabels);
                 dim3 = size(srcDetPairs,1);
                 dim4 = length(conditions(:));
             end
-            d = reshape(obj.d, dim1, dim2, dim3, dim4);
+            d = reshape(obj.dataTimeSeries, dim1, dim2, dim3, dim4);
         end
         
         
         % ---------------------------------------------------------
-        function SetD(obj, val)
+        function SetDataTimeSeries(obj, val)
             if ~exist('val','var')
                 return;
             end
-            obj.d = val;
+            obj.dataTimeSeries = val;
         end
         
         
         % ---------------------------------------------------------
-        function SetT(obj, val, datacheck)
+        function SetTime(obj, val, datacheck)
             if ~exist('val','var')
                 return;
             end
             if ~exist('datacheck','var')
                 datacheck = false;
             end
-            if isempty(obj.d) && datacheck==true
-                obj.t = [];
+            if isempty(obj.dataTimeSeries) && datacheck==true
+                obj.time = [];
                 return;
             end
-            obj.t = val;
+            obj.time = val;
         end
         
         
         % ---------------------------------------------------------
-        function SetDataType(obj, type, subtype, chIdxs)
-            if ~exist('type','var') ||  isempty(type)
+        function SetDataType(obj, dataType, dataTypeLabel, chIdxs)
+            if ~exist('dataType','var') ||  isempty(dataType)
                 return;
             end
-            if ~exist('subtype','var') ||  isempty(subtype)
-                subtype = 1;
+            if ~exist('dataTypeLabel','var') ||  isempty(dataTypeLabel)
+                dataTypeLabel = '';
             end
             if ~exist('chIdxs','var') || isempty(chIdxs)
-                chIdxs = 1:length(obj.ml);
+                chIdxs = 1:length(obj.measurementList);
             end
             for ii=chIdxs
-                obj.ml(ii).SetDataType(type, subtype);
+                obj.measurementList(ii).SetDataType(dataType, dataTypeLabel);
             end
         end
+        
+        
+        % ---------------------------------------------------------
+        function SetDataTypeDod(obj)
+            vals = DataTypeValues();
+            for ii=1:length(obj.measurementList)
+                obj.measurementList(ii).SetDataType(vals.Processed, 'dOD');
+            end
+        end
+        
         
         
         % ---------------------------------------------------------
         function SetMl(obj, val)
-            obj.ml = val.copy();      % shallow copy ok because MeasListClass has no handle properties 
+            obj.measurementList = val.copy();      % shallow copy ok because MeasListClass has no handle properties 
         end
         
         
         % ---------------------------------------------------------
         function val = GetMl(obj)
-            val = obj.ml;
+            val = obj.measurementList;
         end
         
         
         % ---------------------------------------------------------
         function val = GetDataType(obj)
-            val = zeros(length(obj.ml),1);
-            for ii=1:length(obj.ml)
-                val(ii) = obj.ml(ii).GetDataType();
+            val = zeros(length(obj.measurementList),1);
+            for ii=1:length(obj.measurementList)
+                val(ii) = obj.measurementList(ii).GetDataType();
             end
         end
         
@@ -328,23 +345,24 @@ classdef DataClass < FileLoadSaveClass
         % ---------------------------------------------------------
         function val = GetDataTypeLabel(obj, ch_idx)
             if ~exist('ch_idx','var')
-                ch_idx = 1:length(obj.ml);
+                ch_idx = 1:length(obj.measurementList);
             end
-            val = zeros(length(ch_idx),1);
+            val = repmat({''}, length(ch_idx),1);
             for ii=ch_idx
-                val(ii) = obj.ml(ii).GetDataTypeLabel();
+                val{ii} = obj.measurementList(ii).GetDataTypeLabel();
             end
+            val = unique(val);
         end
 
         
         % ---------------------------------------------------------
         function val = GetCondition(obj, ch_idx)
             if ~exist('ch_idx','var')
-                ch_idx = 1:length(obj.ml);
+                ch_idx = 1:length(obj.measurementList);
             end
             val = zeros(length(ch_idx),1);
             for ii=ch_idx
-                val(ii) = obj.ml(ii).GetCondition();
+                val(ii) = obj.measurementList(ii).GetCondition();
             end
         end
         
@@ -357,26 +375,87 @@ classdef DataClass < FileLoadSaveClass
     methods
         
         % ---------------------------------------------------------
-        function AddChannelDc(obj, isrc, idet, dataTypeLabel, icond)
+        function AddChannelHb(obj, isrc, idet, iHb, icond)
             if ~exist('isrc','var') || isempty(isrc)
                 return;
             end
             if ~exist('idet','var') || isempty(idet)
                 return;
             end
-            if ~exist('dataType','var') || isempty(dataType)
-                dataType = 1;
-            end
-            if ~exist('dataTypeLabel','var') || isempty(dataTypeLabel)
-                dataTypeLabel = 0;
+            if ~exist('iHbType','var') || isempty(iHbType)
+                iHb = 1;
             end
             if ~exist('icond','var') || isempty(icond)
                 icond = 0;
             end
+            switch(iHb)
+                case 1
+                    AddChannelHbO(obj, isrc, idet, icond);
+                case 2
+                    AddChannelHbR(obj, isrc, idet, icond);
+                case 3
+                    AddChannelHbT(obj, isrc, idet, icond);
+            end
+            
+        end
+        
+        
+        % ---------------------------------------------------------
+        function AddChannelHbO(obj, isrc, idet, icond)
+            if ~exist('isrc','var') || isempty(isrc)
+                return;
+            end
+            if ~exist('idet','var') || isempty(idet)
+                return;
+            end
+            if ~exist('icond','var') || isempty(icond)
+                icond = 0;
+            end
+            vals = DataTypeValues();
             if icond==0
-                obj.ml(end+1) = MeasListClass(isrc, idet, 1000, dataTypeLabel);
+                obj.measurementList(end+1) = MeasListClass(isrc, idet, vals.Processed, 'HbO');
             else
-                obj.ml(end+1) = MeasListClass(isrc, idet, 1000, dataTypeLabel, icond);
+                obj.measurementList(end+1) = MeasListClass(isrc, idet, vals.Processed, 'HRF HbO', icond);
+            end
+        end
+        
+        
+        % ---------------------------------------------------------
+        function AddChannelHbR(obj, isrc, idet, icond)
+            if ~exist('isrc','var') || isempty(isrc)
+                return;
+            end
+            if ~exist('idet','var') || isempty(idet)
+                return;
+            end
+            if ~exist('icond','var') || isempty(icond)
+                icond = 0;
+            end
+            vals = DataTypeValues();
+            if icond==0
+                obj.measurementList(end+1) = MeasListClass(isrc, idet, vals.Processed, 'HbR');
+            else
+                obj.measurementList(end+1) = MeasListClass(isrc, idet, vals.Processed, 'HRF HbR', icond);
+            end
+        end
+        
+        
+        % ---------------------------------------------------------
+        function AddChannelHbT(obj, isrc, idet, icond)
+            if ~exist('isrc','var') || isempty(isrc)
+                return;
+            end
+            if ~exist('idet','var') || isempty(idet)
+                return;
+            end
+            if ~exist('icond','var') || isempty(icond)
+                icond = 0;
+            end
+            vals = DataTypeValues();
+            if icond==0
+                obj.measurementList(end+1) = MeasListClass(isrc, idet, vals.Processed, 'HbT');
+            else
+                obj.measurementList(end+1) = MeasListClass(isrc, idet, vals.Processed, 'HRF HbT', icond);
             end
         end
         
@@ -389,34 +468,29 @@ classdef DataClass < FileLoadSaveClass
             if ~exist('idet','var') || isempty(idet)
                 return;
             end
-            if ~exist('dataType','var') || isempty(dataType)
-                dataType = 1;
-            end
-            if ~exist('dataTypeLabel','var') || isempty(dataTypeLabel)
-                dataTypeLabel = 0;
-            end
             if ~exist('icond','var') || isempty(icond)
                 icond = 0;
             end
+            vals = DataTypeValues();
             if icond==0
-                obj.ml(end+1) = MeasListClass(isrc, idet, 1000, 1);
+                obj.measurementList(end+1) = MeasListClass(isrc, idet, vals.Processed, 'dOD');
             else
-                obj.ml(end+1) = MeasListClass(isrc, idet, 1000, 1, icond);
+                obj.measurementList(end+1) = MeasListClass(isrc, idet, vals.Processed, 'HRF dOD', icond);
             end
-            obj.ml(end).SetWavelengthIndex(wl);
+            obj.measurementList(end).SetWavelengthIndex(wl);
         end
         
         
         % ---------------------------------------------------------
         function AppendD(obj, y)
-            obj.d(:, end+1:end+size(y(:,:),2)) = y(:,:);
+            obj.dataTimeSeries(:, end+1:end+size(y(:,:),2)) = y(:,:);
         end
 
         
         % ---------------------------------------------------------
         function TruncateTpts(obj, n)
-            obj.d(end-n+1:end, :) = [];
-            obj.t(end-n+1:end) = [];
+            obj.dataTimeSeries(end-n+1:end, :) = [];
+            obj.time(end-n+1:end) = [];
         end
         
     end    
@@ -435,11 +509,11 @@ classdef DataClass < FileLoadSaveClass
             if ~isa(obj2, 'DataClass')
                 return;
             end
-            for ii=1:length(obj2.ml)
-                obj.ml(ii) = obj2.ml(ii).copy();      % shallow copy ok because MeasListClass has no handle properties 
+            for ii=1:length(obj2.measurementList)
+                obj.measurementList(ii) = obj2.measurementList(ii).copy();      % shallow copy ok because MeasListClass has no handle properties 
             end
-            obj.d = obj2.d;
-            obj.t = obj2.t;
+            obj.dataTimeSeries = obj2.dataTimeSeries;
+            obj.time = obj2.time;
         end
         
     end

@@ -49,7 +49,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %
              
             % Initialize properties from SNIRF spec 
-            obj.formatVersion = '0.5';
+            obj.formatVersion = '1.0';
             obj.timeOffset     = 0;
             obj.metaDataTags   = {
                 {'SubjectID','subj1'};
@@ -238,10 +238,24 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % Load metaDataTags
             ii=1;
             while 1
-                try
-                    obj.metaDataTags{ii}{1} = strtrim_improve(h5read(fname, [parent, '/metaDataTags_', num2str(ii), '/k']));
-                    obj.metaDataTags{ii}{2} = strtrim_improve(h5read(fname, [parent, '/metaDataTags_', num2str(ii), '/v']));
-                catch
+                if ii>size(obj.metaDataTags,1)
+                    obj.metaDataTags(ii) = cell(1,1);
+                    obj.metaDataTags{ii} = {'',''};
+                end
+                
+                % Read tag name 
+                tagname = strtrim_improve(h5read_safe(fname, [parent, '/metaDataTags_', num2str(ii), '/k'], obj.metaDataTags{ii}{1}));
+                if ~isempty(tagname)
+                    obj.metaDataTags{ii}{1} = tagname;
+                end
+                
+                % Read tag value
+                tagval = strtrim_improve(h5read_safe(fname, [parent, '/metaDataTags_', num2str(ii), '/v'], obj.metaDataTags{ii}{2}));
+                if ~isempty(tagval)
+                    obj.metaDataTags{ii}{2} = tagval;
+                end
+                
+                if isempty(tagname)
                     break;
                 end
                 ii=ii+1;

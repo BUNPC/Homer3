@@ -23,7 +23,7 @@ function dod = hmrR_FlowInput(intensity)
 dod = DataClass(intensity);
 
 for ii=1:length(intensity)
-    d = intensity(ii).GetD();
+    d = intensity(ii).GetDataTimeSeries();
     for i = 1:size(d,2);
         lst = find(isnan(d(:,i)));
         d(lst,i) = nanmean(d(:,i));
@@ -37,7 +37,7 @@ for ii=1:length(intensity)
     if ~isempty(find(d(:)<=0))
         warning( 'WARNING: Some data points in d are zero or negative.' );
     end
-    dod(ii).SetD((abs(d)./(ones(nTpts,1)*dm)));
-    dod(ii).SetDataType(1000, 1);
+    dod(ii).SetDataTimeSeries((abs(d)./(ones(nTpts,1)*dm)));
+    dod(ii).SetDataTypeDod();
 end
 

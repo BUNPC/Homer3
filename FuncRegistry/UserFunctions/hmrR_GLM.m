@@ -133,7 +133,7 @@ for iBlk=1:length(data_y)
     data_yresid(iBlk)  = DataClass(data_y(iBlk));
 
     y      = data_y(iBlk).GetDataMatrix();
-    t      = data_y(iBlk).GetT();
+    t      = data_y(iBlk).GetTime();
     ml     = data_y(iBlk).GetMeasListSrcDetPairs();
     SrcPos = sd.GetSrcPos();
     DetPos = sd.GetDetPos();
@@ -632,12 +632,12 @@ for iBlk=1:length(data_y)
     %%%%%%%%%%%%%%%%%%%%%%%%%
     
     % Add the channels describing the data
-    for iConc = 1:size(yavg,2)
+    for iHb = 1:size(yavg,2)
         for iCh = 1:size(yavg,3)
             for iCond = 1:size(yavg,4)                
-                data_yavg(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), iConc+6, iCond);
-                data_yavgstd(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), iConc+6, iCond);
-                data_ysum2(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), iConc+6, iCond);                
+                data_yavg(iBlk).AddChannelHb(ml(iCh,1), ml(iCh,2), iHb, iCond);
+                data_yavgstd(iBlk).AddChannelHb(ml(iCh,1), ml(iCh,2), iHb, iCond);
+                data_ysum2(iBlk).AddChannelHb(ml(iCh,1), ml(iCh,2), iHb, iCond);                
             end            
         end
     end
@@ -648,13 +648,13 @@ for iBlk=1:length(data_y)
     data_ysum2(iBlk).AppendD(ysum2);
     
     % Set tHRF time vectors
-    data_yavg(iBlk).SetT(tHRF, true);
-    data_yavgstd(iBlk).SetT(tHRF, true);
-    data_ysum2(iBlk).SetT(tHRF, true);
+    data_yavg(iBlk).SetTime(tHRF, true);
+    data_yavgstd(iBlk).SetTime(tHRF, true);
+    data_ysum2(iBlk).SetTime(tHRF, true);
 
     % Set data vectors for the dc-parallel data
-    data_ynew(iBlk).SetD(ynew);
-    data_yresid(iBlk).SetD(yresid);
+    data_ynew(iBlk).SetDataTimeSeries(ynew);
+    data_yresid(iBlk).SetDataTimeSeries(yresid);
           
     % Set other data blocks 
     beta_blks{iBlk} = beta;

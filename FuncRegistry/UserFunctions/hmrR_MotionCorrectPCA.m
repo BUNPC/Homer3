@@ -52,7 +52,7 @@ end
 for iBlk=1:length(data_d)
     data_dN(iBlk) = DataClass(data_d(iBlk));
 
-    d           = data_d(iBlk).GetD();
+    d           = data_d(iBlk).GetDataTimeSeries();
     MeasList    = data_d(iBlk).GetMeasList();
     if isempty(mlActMan{iBlk})
         mlActMan{iBlk} = ones(size(MeasList,1),1);
@@ -144,6 +144,6 @@ for iBlk=1:length(data_d)
         end
     end
     
-    data_dN(iBlk).SetD(dN);
+    data_dN(iBlk).SetDataTimeSeries(dN);
 end
 

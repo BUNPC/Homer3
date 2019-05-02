@@ -1,4 +1,4 @@
-function [yAvgOut, yAvgStdOut, nTrials] = hmrG_BlockAvg(yAvgSubjs, yAvgStdSubjs, nTrialsSubjs, tRange, thresh)
+function [yAvgOut, yAvgStdOut, nTrials] = hmrG_BlockAvg(yAvgSubjs, yAvgStdSubjs, nTrialsSubjs, tRange, thresh0)
 % SYNTAX:
 % [yAvgOut, yAvgStdOut, nTrials] = hmrG_BlockAvg(yAvgSubjs, yAvgStdSubjs, nTrialsSubjs, tRange, thresh)
 %
@@ -35,7 +35,6 @@ yAvgOut    = DataClass().empty();
 yAvgStdOut = DataClass().empty();
 
 nSubj = length(yAvgSubjs);
-thresh = thresh * 1e-6;
 
 % chkFlag is a parameter that if true requires, for each channel, ALL corresponding 
 % subjects channels to pass before averaging that channel. TBD: Currently we set it to 
@@ -59,12 +58,12 @@ for iBlk = 1:length(yAvgSubjs{1})
             continue;
         end
         yAvgStd   = yAvgStdSubjs{iSubj}(iBlk).GetDataMatrix();
-        tHRF      = yAvgSubjs{iSubj}(iBlk).GetT();
+        tHRF      = yAvgSubjs{iSubj}(iBlk).GetTime();
         nT        = nTrialsSubjs{iSubj}{iBlk};
-        datatype  = unique(yAvgSubjs{iSubj}(iBlk).GetDataTypeLabel());
-        if datatype(1)==6 || datatype(1)==7 || datatype(1)==8
+        datatype  = yAvgSubjs{iSubj}(iBlk).GetDataTypeLabel();
+        if strncmp(datatype{1}, 'HRF Hb', length('HRF Hb'))
             ml    = yAvgSubjs{iSubj}(iBlk).GetMeasListSrcDetPairs();
-        elseif datatype(1)==1
+        elseif strcmp(datatype{1}, 'HRF dOD')
             ml    = yAvgSubjs{iSubj}(iBlk).GetMeasList();
         end
         
@@ -73,10 +72,11 @@ for iBlk = 1:length(yAvgSubjs{1})
         end
         
         nCond = size(nT,2);
-        yAvgOut(iBlk).SetT(tHRF);
-        yAvgStdOut(iBlk).SetT(tHRF);
+        yAvgOut(iBlk).SetTime(tHRF);
+        yAvgStdOut(iBlk).SetTime(tHRF);
         
-        if datatype(1)==6 || datatype(1)==7 || datatype(1)==8
+        if strncmp(datatype{1}, 'HRF Hb', length('HRF Hb'))
+            thresh = thresh0 * 1e-6;
             
             if iSubj==1
                 lstT = find(tHRF>=tRange(1) & tHRF<=tRange(2));
@@ -130,9 +130,9 @@ for iBlk = 1:length(yAvgSubjs{1})
                     for iCh = 1:size(grp1,3)
                         yAvg(:,:,iCh,iC) = grp1(:,:,iCh,iC) / subjCh(iCh,iC);
                         if iSubj == nSubj
-                            yAvgOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 6, iC);
-                            yAvgOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 7, iC);
-                            yAvgOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 8, iC);
+                            yAvgOut(iBlk).AddChannelHbO(ml(iCh,1), ml(iCh,2), iC);
+                            yAvgOut(iBlk).AddChannelHbR(ml(iCh,1), ml(iCh,2), iC);
+                            yAvgOut(iBlk).AddChannelHbT(ml(iCh,1), ml(iCh,2), iC);
                         end
                     end
                 end
@@ -141,7 +141,8 @@ for iBlk = 1:length(yAvgSubjs{1})
                 end
             end
             
-        elseif datatype(1)==1
+        elseif strcmp(datatype{1}, 'HRF dOD')
+            thresh = thresh0;
             
             if iSubj==1
                 lstT  = find(tHRF>=tRange(1) & tHRF<=tRange(2));

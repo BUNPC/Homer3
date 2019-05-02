@@ -49,8 +49,8 @@ end
 
 for iBlk=1:length(data_d)
 
-    dod             = data_d(iBlk).GetD();
-    t               = data_d(iBlk).GetT();
+    dod             = data_d(iBlk).GetDataTimeSeries();
+    t               = data_d(iBlk).GetTime();
     SD.MeasList     = data_d(iBlk).GetMeasList();
     if isempty(mlActAuto{iBlk})
         mlActAuto{iBlk} = ones(size(SD.MeasList,1),1);
@@ -88,6 +88,6 @@ for iBlk=1:length(data_d)
     end
     dod = sgolayfilt(dod,K,FrameSize_sec);
 
-    data_d(iBlk).SetD(dod);
+    data_d(iBlk).SetDataTimeSeries(dod);
 end
 

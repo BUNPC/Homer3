@@ -45,7 +45,7 @@ if isempty(mlActAuto)
 end
 
 for iBlk=1:length(data_dc)
-    dc = data_dc(iBlk).GetD();
+    dc = data_dc(iBlk).GetDataTimeSeries();
     ml = data_dc(iBlk).GetMeasListSrcDetPairs();
     
     dc = reshape(dc, size(dc,1), 3, size(dc,2)/3);
@@ -74,6 +74,6 @@ for iBlk=1:length(data_dc)
         dcCbsi(:,3,idx_ch) = dcCbsi(:,1,idx_ch) + dcCbsi(:,2,idx_ch);
     end
     dcCbsi = reshape(dcCbsi, size(dcCbsi,1), size(dcCbsi,2)*size(dcCbsi,3));    
-    data_dc(iBlk).SetD(dcCbsi);
+    data_dc(iBlk).SetDataTimeSeries(dcCbsi);
 end
 

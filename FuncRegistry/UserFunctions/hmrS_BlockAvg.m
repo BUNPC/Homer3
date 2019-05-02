@@ -50,33 +50,33 @@ for iBlk = 1:nDataBlks
         end
         yAvgStd   = yAvgStdRuns{iRun}(iBlk).GetDataMatrix();
         ySum2     = ySum2Runs{iRun}(iBlk).GetDataMatrix();
-        tHRF      = yAvgRuns{iRun}(iBlk).GetT();
+        tHRF      = yAvgRuns{iRun}(iBlk).GetTime();
         nTrials   = nTrialsRuns{iRun}{iBlk};
         if isempty(mlActRuns{iRun})
             mlActRuns{iRun} = cell(length(nDataBlks),1);
         end
         
         % 
-        datatype  = unique(yAvgRuns{iRun}(iBlk).GetDataTypeLabel());
-        if datatype(1)==6 || datatype(1)==7 || datatype(1)==8
+        datatype  = yAvgRuns{iRun}(iBlk).GetDataTypeLabel();
+        if strncmp(datatype{1}, 'HRF Hb', length('HRF Hb'))
             ml    = yAvgRuns{iRun}(iBlk).GetMeasListSrcDetPairs();
-        elseif datatype(1)==1
+        elseif strcmp(datatype{1}, 'HRF dOD')
             ml    = yAvgRuns{iRun}(iBlk).GetMeasList();
         end
         if isempty(mlActRuns{iRun}{iBlk})
             mlActRuns{iRun}{iBlk} = ones(size(ml,1),1);
         end
         mlAct = mlActRuns{iRun}{iBlk}(1:size(ml,1));
-                
+        
         if isempty(yAvg)
             continue;
         end
         
         nCond = size(nTrials,2);
-        yAvgOut(iBlk).SetT(tHRF);
-        yAvgStdOut(iBlk).SetT(tHRF);
+        yAvgOut(iBlk).SetTime(tHRF);
+        yAvgStdOut(iBlk).SetTime(tHRF);
         
-        if datatype(1)==1
+        if strcmp(datatype{1}, 'HRF dOD')
             
             if isempty(grp1)
                 grp1 = zeros(size(yAvg,1), size(yAvg,2), nCond);
@@ -136,7 +136,7 @@ for iBlk = 1:nDataBlks
                 end
             end
             
-        elseif datatype(1)==6 || datatype(1)==7 || datatype(1)==8
+        elseif strncmp(datatype{1}, 'HRF Hb', length('HRF Hb'))
             
             if isempty(grp1)
                 grp1 = zeros(size(yAvg,1), size(yAvg,2), size(yAvg,3), nCond);
@@ -184,12 +184,12 @@ for iBlk = 1:nDataBlks
                         %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages. 
                         %%%% Now we can set channel descriptors for avg and standard deviation
                         if iRun == length(yAvgRuns)
-                            yAvgOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 6, iC);
-                            yAvgOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 7, iC);
-                            yAvgOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 8, iC);
-                            yAvgStdOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 6, iC);
-                            yAvgStdOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 7, iC);
-                            yAvgStdOut(iBlk).AddChannelDc(ml(iCh,1), ml(iCh,2), 8, iC);
+                            yAvgOut(iBlk).AddChannelHbO(ml(iCh,1), ml(iCh,2), iC);
+                            yAvgOut(iBlk).AddChannelHbR(ml(iCh,1), ml(iCh,2), iC);
+                            yAvgOut(iBlk).AddChannelHbT(ml(iCh,1), ml(iCh,2), iC);
+                            yAvgStdOut(iBlk).AddChannelHbO(ml(iCh,1), ml(iCh,2), iC);
+                            yAvgStdOut(iBlk).AddChannelHbR(ml(iCh,1), ml(iCh,2), iC);
+                            yAvgStdOut(iBlk).AddChannelHbT(ml(iCh,1), ml(iCh,2), iC);
                         end
                     end
                     

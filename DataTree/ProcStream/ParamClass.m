@@ -38,7 +38,7 @@ classdef ParamClass < matlab.mixin.Copyable
             % Equal in this definitions means same param name, same type, 
             % same number and same general format (although don't need to 
             % be same precision for floats).
-            B = false;
+            B = 0;            
             if ~strcmp(obj.name, obj2.name)
                 return;
             end
@@ -48,15 +48,19 @@ classdef ParamClass < matlab.mixin.Copyable
             if ndims(obj.value) ~= ndims(obj2.value)
                 return;
             end
-            % if ~all(obj.value==obj2.value)
-            %     return;
-            % end
-            if ~strcmp(obj.format, obj2.format)
-                if obj.format(end)~=obj2.format(end)
+            if isa(obj2, 'ParamClass')
+                if ~strcmp(obj.format, obj2.format)
+                    if obj.format(end)~=obj2.format(end)
+                        return;
+                    end
+                end
+            elseif isstruct(obj2)
+                if ~all(obj.value==obj2.value)
+                    B = -1;
                     return;
                 end
             end
-            B = true;
+            B = 1;
         end
 
         

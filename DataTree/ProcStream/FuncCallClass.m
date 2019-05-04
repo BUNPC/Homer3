@@ -352,25 +352,67 @@ classdef FuncCallClass < handle
         % Override == operator: 
         % ----------------------------------------------------------------------------------
         function B = eq(obj, obj2)
-            B = false;
-            if ~strcmp(obj.name, obj2.name)
-                return;
-            end
-            if ~strcmp(obj.argOut.str, obj2.argOut.str)
-                return;
-            end
-            if ~strcmp(obj.argIn.str, obj2.argIn.str)
-                return;
-            end
-            if length(obj.paramIn) ~= length(obj2.paramIn)
-                return;
-            end
-            for ii=1:length(obj.paramIn)
-                if obj.paramIn(ii) ~= obj2.paramIn(ii)
+            B = 0;            
+            if isa(obj2, 'FuncCallClass')
+                if ~strcmp(obj.name, obj2.name)
                     return;
                 end
+                if ~strcmp(obj.argOut.str, obj2.argOut.str)
+                    return;
+                end
+                if ~strcmp(obj.argIn.str, obj2.argIn.str)
+                    return;
+                end
+                if length(obj.paramIn) ~= length(obj2.paramIn)
+                    return;
+                end
+                for ii=1:length(obj.paramIn)
+                    if obj.paramIn(ii) ~= obj2.paramIn(ii)
+                        return;
+                    end
+                end
+            elseif isstruct(obj2)
+                % Name 
+                k = find(obj.name=='_');
+                s1 = obj.name;
+                s2 = obj2.funcName;
+                if length(k)==1
+                    s1 = obj.name(k(1)+1:end);
+                elseif length(k)>1
+                    s1 = obj.name(k(1)+1:k(end)-1);
+                end
+                if ~includes(s2,s1)
+                    % if func names differ check if the user friendly names
+                    % are similar...
+                    if ~includes(obj2.funcNameUI, obj.nameUI)
+                        if ~includes(obj.nameUI, obj2.funcNameUI)
+                            return;
+                        end
+                    end
+                end
+                               
+                % We don't necessarily have to have the same number of
+                % params to be equal as long as all the params in obj
+                % exist in obj2 in the same order. 
+                eq = 0;
+                for ii=1:length(obj.paramIn)
+                    for jj=1:length(obj2.funcParam)
+                        paramIn2.name = obj2.funcParam{jj};
+                        paramIn2.format = obj2.funcParamFormat{jj};
+                        paramIn2.value = obj2.funcParamVal{jj};
+                        eq = obj.paramIn(ii) == paramIn2;
+                        if eq==1
+                            break;
+                        end
+                        continue;
+                    end
+                    if eq~=1
+                        B = eq;
+                        return;
+                    end
+                end
             end
-            B = true;
+            B = 1;
         end
 
         
@@ -378,10 +420,11 @@ classdef FuncCallClass < handle
         % Override ~= operator: 
         % ----------------------------------------------------------------------------------
         function B = ne(obj, obj2)
-            if obj == obj2
-                B = false;
+            r = obj == obj2;
+            if r ~= 1
+                B = 1;
             else
-                B = true;
+                B = 0;
             end
         end
         

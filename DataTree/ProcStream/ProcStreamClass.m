@@ -80,6 +80,62 @@ classdef ProcStreamClass < handle
         
 
         % ----------------------------------------------------------------------------------
+        function B = eq(obj, obj2)
+            B = 0;
+            if isa(obj2, 'ProcStream')
+                for ii=1:length(obj.fcalls)
+                    if ii>length(obj2.fcalls)
+                        return
+                    end
+                    if obj.fcalls(ii) ~= obj2.fcalls(ii)
+                        return;
+                    end
+                end
+            elseif isstruct(obj2)
+                if ~isproperty(obj2, 'procFunc')
+                    return;
+                end
+                if ~isproperty(obj2.procFunc, 'funcName')
+                    return;
+                end
+                if ~isproperty(obj2.procFunc, 'funcArgOut')
+                    return;
+                end
+                if ~isproperty(obj2.procFunc, 'funcArgIn')
+                    return;
+                end
+                if ~isproperty(obj2.procFunc, 'funcParam')
+                    return;
+                end
+                if ~isproperty(obj2.procFunc, 'funcParamFormat')
+                    return;
+                end
+                if ~isproperty(obj2.procFunc, 'funcParamVal')
+                    return;
+                end
+                if length(obj.fcalls) ~= length(obj2.procFunc.funcName)
+                    return;
+                end
+                for ii=1:length(obj.fcalls)
+                    obj3.funcName        = obj2.procFunc.funcName{ii};
+                    obj3.funcNameUI      = obj2.procFunc.funcNameUI{ii};
+                    obj3.funcArgOut      = obj2.procFunc.funcArgOut{ii};
+                    obj3.funcArgIn       = obj2.procFunc.funcArgIn{ii};
+                    obj3.nFuncParam      = obj2.procFunc.nFuncParam(ii);
+                    obj3.funcParam       = obj2.procFunc.funcParam{ii};
+                    obj3.funcParamFormat = obj2.procFunc.funcParamFormat{ii};
+                    obj3.funcParamVal    = obj2.procFunc.funcParamVal{ii};
+                    B = obj.fcalls(ii) == obj3;
+                    if B ~= 1
+                        return;
+                    end
+                end
+            end
+            B = 1;
+        end
+
+        
+        % ----------------------------------------------------------------------------------
         function str = EditParam(obj, iFcall, iParam, val)
             str = '';
             if isempty(iFcall)

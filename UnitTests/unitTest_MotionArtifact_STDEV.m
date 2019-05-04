@@ -14,6 +14,11 @@ end
 testidx=testidx+1;
 
 status = -1;
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Inititialize and error check input argument 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ~exist('datafmt','var')
     datafmt = 'nirs';
 end
@@ -27,6 +32,10 @@ if ~exist('logger','var') || isempty(logger)
     logger = LogClass();
 end
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Set up logger and other administrative paramaters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 logger.Write('######################################\n');
 logger.Write(sprintf('Running test #%d - unitTest_MotionArtifact_STDEV(''%s'', ''%s'', %0.1f)\n', testidx, datafmt, dirname, newval));
 fprintf('\n');
@@ -37,50 +46,64 @@ currpath = pwd;
 cd([rootpath, '/', dirname]);
 resetGroupFolder('', 'registry_keep');
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Change processing stream param values to newval
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [dataTree, procStreamConfigFile] = changeProcStream(datafmt, 'processOpt_motionArtifact_homer3', 'hmrR_MotionArtifact', 'STDEVthresh', newval);
 if isempty(dataTree)
     status = exitEarly(sprintf('#%d - unitTest_MotionArtifact_STDEV(''%s'', ''%s'', %0.1f): SKIPPING - This test does not apply to %s.\n', ...
                                testidx, datafmt, dirname, newval, dirname), logger);
     return;
 end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Generate Homer3 output
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 logger.Write(sprintf('Loaded processing stream from %s\n', procStreamConfigFile));
 dataTree.group.Calc();
 dataTree.group.Save();
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Compare Homer3 output to the available Homer2 output
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 groupFiles_h2 = mydir('./groupResults_homer2_*.mat');
-for iG=1:length(groupFiles_h2)   
+s = zeros(length(groupFiles_h2), 2);
+for iG=1:length(groupFiles_h2)
     group_h2 = load(groupFiles_h2(iG).name);
     [~, groupFiles_h2(iG).pathfull] = fileparts(groupFiles_h2(iG).pathfull);
-    s(1) = compareDcAvg(group_h2, 'dcAvg');
-    % s(2) = compareDcAvg(group_h2, 'dcAvgStd');
-    status = ~all(s==0);
-    if status==0
-        break;
-    end
+    s(iG,1) = compareDcAvg(group_h2, 'dcAvg');
+    s(iG,2) = compareProcStreams(dataTree, groupFiles_h2(iG));
+    
+    groupPath = [groupFiles_h2(iG).pathfull, '/', groupFiles_h2(iG).name];
+    msgs = MatchMessages(sum(s(iG,:)));
+    logger.Write(sprintf('Comparing output to %s  ==>  Outputs: %s,   Proc Streams: %s\n', groupPath, msgs{1}, msgs{2}));
+end
+iMatch = find(s(:,1)==0 & s(:,2)==0);
+if ~isempty(iMatch)
+    status=0;
+else
+    status=1;
 end
 
-stdevs = getHomer2_paramValue('hmrMotionArtifact','STDEVthresh', groupFiles_h2);
-stdev  = getHomer3_paramValue('hmrR_MotionArtifact','STDEVthresh', dataTree);
 
-amps = getHomer2_paramValue('hmrMotionArtifact','AMPthresh', groupFiles_h2);
-amp  = getHomer3_paramValue('hmrR_MotionArtifact','AMPthresh', dataTree);
-
-if status==0 & (~isempty(stdevs{iG}) & stdevs{iG}==stdev) & (~isempty(amps{iG}) & amps{iG}==amp)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Report results of the comparison
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+logger.Write(newline);
+if status==0
     logger.Write(sprintf('#%d - unitTest_MotionArtifact_STDEV(''%s'', ''%s'', %0.1f): TEST PASSED - Homer3 output matches %s.\n', ...
              testidx, datafmt, dirname, newval, [groupFiles_h2(iG).pathfull, '/', groupFiles_h2(iG).name]));
-elseif status==0 & ~isempty(stdevs{iG}) & stdevs{iG}~=stdev
-    logger.Write(sprintf('#%d - unitTest_MotionArtifact_STDEV(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 output matches %s which has a different stdev value {%0.2f ~= %0.2f}.\n', ...
-             testidx, datafmt, dirname, newval, [groupFiles_h2(iG).pathfull, '/', groupFiles_h2(iG).name], stdevs{iG}, stdev));
-elseif status==0 & ~isempty(stdevs{iG}) & amps{iG}~=amp
-    logger.Write(sprintf('#%d - unitTest_MotionArtifact_STDEV(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 output matches %s which has a different amp value {%0.2f ~= %0.2f}.\n', ...
-             testidx, datafmt, dirname, newval, [groupFiles_h2(iG).pathfull, '/', groupFiles_h2(iG).name], amps{iG}, amp));
-elseif status>0
+else
     logger.Write(sprintf('#%d - unitTest_MotionArtifact_STDEV(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 output does NOT match ANY Homer2 groupResults.\n', testidx, datafmt, dirname, newval));
-elseif status<0
-    logger.Write(sprintf('#%d - unitTest_MotionArtifact_STDEV(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 did not generate any output\n', testidx, datafmt, dirname, newval));
 end
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Clean up before exiting
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 logger.Write('\n');
 if strcmp(logger.GetFilename(), 'History')
     logger.Close();

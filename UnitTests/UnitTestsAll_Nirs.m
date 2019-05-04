@@ -44,9 +44,7 @@ testidx = 0;
 for ii=1:size(status,2)
     for jj=1:size(status,1)
         testidx=testidx+1;
-        if status(jj,ii)==3
-            logger.Write(sprintf('#%d - Unit test %d,%d was skipped.\n', testidx, jj, ii));
-        elseif status(jj,ii)~=0
+        if status(jj,ii)~=0
             logger.Write(sprintf('#%d - Unit test %d,%d did NOT pass.\n', testidx, jj, ii));
         else
             logger.Write(sprintf('#%d - Unit test %d,%d passed.\n', testidx, jj, ii));

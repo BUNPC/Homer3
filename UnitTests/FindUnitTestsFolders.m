@@ -12,7 +12,7 @@ for ii=1:length(dirs)
         continue;
     end
     pathfull = [rootpath, '/UnitTests/', dirs(ii).name];
-    if ~exist([pathfull, '/processOpt_default_homer2.cfg'], 'file')
+    if ~exist([pathfull, '/groupResults_homer2_lpf_0_30.mat'], 'file')
         continue;
     end    
     [~, pathrel] = fileparts(pathfull);

@@ -11,6 +11,10 @@ end
 testidx=testidx+1;
 
 status = -1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Inititialize and error check input argument 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ~exist('datafmt','var')
     datafmt = 'nirs';
 end
@@ -21,6 +25,9 @@ if ~exist('logger','var') || isempty(logger)
     logger = LogClass();
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Set up logger and other administrative paramaters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 logger.Write('######################################\n');
 logger.Write(sprintf('Running test #%d - unitTest_DefaultProcStream(''%s'', ''%s'')\n', testidx, datafmt, dirname));
 fprintf('\n');
@@ -38,37 +45,53 @@ if isempty(dataTree)
                                testidx, datafmt, dirname, dirname), logger);
     return;
 end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Generate Homer3 output
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 logger.Write(sprintf('Loaded processing stream from %s\n', procStreamConfigFile));
 dataTree.group.Calc();
 dataTree.group.Save();
 
-groupFiles_h2 = mydir('./groupResults_homer2_lpf_*.mat');
-for iG=1:length(groupFiles_h2)   
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Compare Homer3 output to the available Homer2 output
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+groupFiles_h2 = mydir('./groupResults_homer2_*.mat');
+s = zeros(length(groupFiles_h2), 2);
+for iG=1:length(groupFiles_h2)
     group_h2 = load(groupFiles_h2(iG).name);
     [~, groupFiles_h2(iG).pathfull] = fileparts(groupFiles_h2(iG).pathfull);
-    s(1) = compareDcAvg(group_h2, 'dcAvg');
-    % s(2) = compareDcAvg(group_h2, 'dcAvgStd');
-    status = ~all(s==0);
-    if status==0
-        break;
-    end
+
+    s(iG,1) = compareDcAvg(group_h2, 'dcAvg');
+    s(iG,2) = compareProcStreams(dataTree, groupFiles_h2(iG));
+    
+    groupPath = [groupFiles_h2(iG).pathfull, '/', groupFiles_h2(iG).name];
+    msgs = MatchMessages(sum(s(iG,:)));
+    logger.Write(sprintf('Comparing output to %s  ==>  Outputs: %s,   Proc Streams: %s\n', groupPath, msgs{1}, msgs{2}));
+end
+iMatch = find(s(:,1)==0 & s(:,2)==0);
+if ~isempty(iMatch)
+    status=0;
+else
+    status=1;
 end
 
-lpfs = getHomer2_paramValue('hmrBandpassFilt','lpf', groupFiles_h2);
-lpf  = getHomer3_paramValue('hmrR_BandpassFilt','lpf', dataTree);
-
-if status==0 & ~isempty(lpfs{iG}) & lpfs{iG}==lpf
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Report results of the comparison
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+logger.Write(newline);
+if status==0
     logger.Write(sprintf('#%d - unitTest_DefaultProcStream(''%s'', ''%s''): TEST PASSED - Homer3 output matches %s.\n', ...
-             testidx, datafmt, dirname, [groupFiles_h2(iG).pathfull, '/', groupFiles_h2(iG).name]));
-elseif status==0 & ~isempty(lpfs{iG}) & lpfs{iG}~=lpf
-    logger.Write(sprintf('#%d - unitTest_DefaultProcStream(''%s'', ''%s''): TEST FAILED - Homer3 output matches %s which has a different lpf value {%0.2f ~= %0.2f}.\n', ...
-             testidx, datafmt, dirname, [groupFiles_h2(iG).pathfull, '/', groupFiles_h2(iG).name], lpfs(iG), lpf));
-elseif status>0
+             testidx, datafmt, dirname, [groupFiles_h2(iMatch).pathfull, '/', groupFiles_h2(iMatch).name]));
+else
     logger.Write(sprintf('#%d - unitTest_DefaultProcStream(''%s'', ''%s''): TEST FAILED - Homer3 output does NOT match ANY Homer2 groupResults.\n', testidx, datafmt, dirname));
-elseif status<0
-    logger.Write(sprintf('#%d - unitTest_DefaultProcStream(''%s'', ''%s''): TEST FAILED - Homer3 did not generate any output\n', testidx, datafmt, dirname));
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Clean up before exiting
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 logger.Write('\n');
 if strcmp(logger.GetFilename(), 'History')
     logger.Close();

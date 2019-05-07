@@ -95,7 +95,7 @@ end
 logger.Write(newline);
 if status==0
     logger.Write(sprintf('#%d - unitTest_MotionArtifact_STDEV(''%s'', ''%s'', %0.1f): TEST PASSED - Homer3 output matches %s.\n', ...
-             testidx, datafmt, dirname, newval, [groupFiles_h2(iG).pathfull, '/', groupFiles_h2(iG).name]));
+             testidx, datafmt, dirname, newval, [groupFiles_h2(iMatch).pathfull, '/', groupFiles_h2(iMatch).name]));
 else
     logger.Write(sprintf('#%d - unitTest_MotionArtifact_STDEV(''%s'', ''%s'', %0.1f): TEST FAILED - Homer3 output does NOT match ANY Homer2 groupResults.\n', testidx, datafmt, dirname, newval));
 end

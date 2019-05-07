@@ -65,7 +65,7 @@ listboxFilesErr_Callback([]);
 uipanelPlot_SelectionChangeFcn([]);
 menuItemProcStreamEdit_Callback([]);
 checkboxPlotProbe_Callback([]);
-pushbuttonSave_Callback([]);
+menuItemSave_Callback([]);
 menuItemViewHRFStdErr_Callback([]);
 menuItemLaunchStimGUI_Callback([]);
 pushbuttonProcStreamOptionsEdit_Callback([]);
@@ -146,6 +146,8 @@ hmr.childguis(4) = ChildGuiClass('ProcStreamOptionsGUI');
 
 hmr.handles = handles;
 hmr.Update = @Update;
+
+
 
 
 
@@ -432,6 +434,15 @@ end
 % Transfer the channels selection to guiControls
 SetAxesDataCh();
 
+if ~isempty(hmr.guiControls.plotViewOptions.ranges.X)
+    axes(handles.axesData)
+    xlim('auto')
+end
+if ~isempty(hmr.guiControls.plotViewOptions.ranges.Y)
+    axes(handles.axesData)
+    ylim('auto')
+end
+
 % Update the displays of the guiControls and axesSDG axes
 DisplayData(handles, hObject);
 
@@ -567,7 +578,7 @@ hmr.childguis(idx).Launch();
 
 
 % --------------------------------------------------------------------
-function [eventdata, handles] = pushbuttonSave_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = menuItemSave_Callback(hObject, eventdata, handles)
 global hmr
 if ~ishandles(hObject)
     return;
@@ -798,16 +809,40 @@ for iBlk = iDataBlks
                 d = d(:,:,condition);
             end
             d = procElem.reshape_y(d, ch.MeasList);
-            DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors, linestyle);
+            DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
         elseif datatype == hmr.buttonVals.CONC || datatype == hmr.buttonVals.CONC_HRF
             if  datatype == hmr.buttonVals.CONC_HRF
                 d = d(:,:,:,condition);
             end
             d = d * sclConc;
-            DisplayDataConc(t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors, linestyle);
+            DisplayDataConc(t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
         end
     end
     iColor = iColor+length(iChBlk);
+end
+
+% Set Zoom on/off
+if hmr.guiControls.plotViewOptions.zoom == true
+    h=zoom;
+    set(h,'ButtonDownFilter',@myZoom_callback);
+    set(h,'enable','on')
+else
+    zoom off;
+end
+
+% Set data window X and Y borders
+if ~isempty(hmr.guiControls.plotViewOptions.ranges.Y)
+    ylim(hmr.guiControls.plotViewOptions.ranges.Y);
+else
+    ylim('auto')
+end
+if ~isempty(hmr.guiControls.plotViewOptions.ranges.X)
+    xlim(hmr.guiControls.plotViewOptions.ranges.X);
+else
+    xlim('auto')
+    if ~isempty(t)
+        set(hAxes, 'xlim',[t(1), t(end)]);
+    end
 end
 
 DisplayAxesSDG();
@@ -816,6 +851,17 @@ DisplayStim(handles);
 UpdateCondPopupmenu(handles);
 UpdateDatatypePanel(handles);
 UpdateChildGuis(handles);
+
+
+
+
+% -------------------------------------------------------------------------
+function flag = myZoom_callback(obj, event_obj)
+if strcmpi( get(obj,'Tag'), 'axesData')
+    flag = 0;
+else
+    flag = 1;
+end
 
 
 
@@ -917,14 +963,105 @@ end
 % ----------------------------------------------------------------------------------
 function Update()
 global hmr
-
 DisplayData(hmr.handles, hmr.handles.axesData);
 
 
 
 % --------------------------------------------------------------------
 function menuItemResetGroupFolder_Callback(hObject, eventdata, handles)
-
 resetGroupFolder();
+
+
+
+% --------------------------------------------------------------------
+function pushbuttonPanLeft_Callback(hObject, eventdata, handles)
+global hmr
+procElem = hmr.dataTree.currElem;
+iCh0     = hmr.guiControls.ch;
+datatype = getDatatype(handles);
+
+iDataBlks = procElem.GetDataBlocksIdxs(iCh0);
+for iBlk = iDataBlks
+    % Get plot data from dataTree
+    if datatype == hmr.buttonVals.RAW
+        t = procElem.GetTime(iBlk);
+    elseif datatype == hmr.buttonVals.OD
+        t = procElem.GetTime(iBlk);
+    elseif datatype == hmr.buttonVals.CONC
+        t = procElem.GetTime(iBlk);
+    elseif datatype == hmr.buttonVals.OD_HRF
+        t = procElem.GetTHRF(iBlk);
+    elseif datatype == hmr.buttonVals.CONC_HRF
+        t = procElem.GetTHRF(iBlk);
+    end
+end
+axes(handles.axesData)
+xrange = xlim();
+xm = mean(xrange);
+xd = xrange(2)-xrange(1);
+if get(hObject,'string')=='<'
+    if xrange(1)-xd/5 >= 0
+        xlim( max(min(xm + [-xd xd]/2 - xd/5, t(end)),0) );
+    else
+        xlim( [0 xd] );
+    end
+elseif get(hObject,'string')=='>'
+    if xrange(2)+xd/5 <= t(end)
+        xlim( max(min(xm + [-xd xd]/2 + xd/5, t(end)),0) );
+    else
+        xlim( t(end) + [-xd 0] );
+    end
+end
+
+
+
+% --------------------------------------------------------------------
+function pushbuttonPanRight_Callback(hObject, eventdata, handles)
+pushbuttonPanLeft_Callback(hObject, eventdata, handles)
+
+
+
+% --------------------------------------------------------------------
+function pushbuttonResetView_Callback(hObject, eventdata, handles)
+global hmr
+set(handles.checkboxFixRangeX, 'value',0);
+set(handles.checkboxFixRangeY, 'value',0);
+hmr.guiControls.plotViewOptions.ranges.X = [];
+hmr.guiControls.plotViewOptions.ranges.Y = [];
+DisplayData(handles, hObject);
+
+
+
+% --------------------------------------------------------------------
+function checkboxFixRangeX_Callback(hObject, eventdata, handles)
+global hmr
+if get(hObject,'value')==1
+    hmr.guiControls.plotViewOptions.ranges.X = str2num(get(handles.editFixRangeX, 'string'));
+else
+    hmr.guiControls.plotViewOptions.ranges.X = [];    
+end
+DisplayData(handles, hObject);
+
+
+% --------------------------------------------------------------------
+function checkboxFixRangeY_Callback(hObject, eventdata, handles)
+global hmr
+if get(hObject,'value')==1
+    hmr.guiControls.plotViewOptions.ranges.Y = str2num(get(handles.editFixRangeY, 'string'));
+else
+    hmr.guiControls.plotViewOptions.ranges.Y = [];
+end
+DisplayData(handles, hObject);
+
+
+
+% --------------------------------------------------------------------
+function editFixRangeX_Callback(hObject, eventdata, handles)
+checkboxFixRangeX_Callback(handles.checkboxFixRangeX, eventdata, handles);
+
+
+% --------------------------------------------------------------------
+function editFixRangeY_Callback(hObject, eventdata, handles)
+checkboxFixRangeY_Callback(handles.checkboxFixRangeY, eventdata, handles);
 
 

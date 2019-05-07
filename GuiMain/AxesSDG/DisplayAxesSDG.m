@@ -168,6 +168,7 @@ for idx=1:nDets
     end
 end
 
+% Turn off zoom but only for SDG axes
 h=zoom;
 setAllowAxesZoom(h, hAxesSDG, 0);
 

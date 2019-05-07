@@ -31,7 +31,7 @@ end
 if ~exist('linestyle','var')
     linestyle = {'-','--',':'};
 end
-linewidth = [2,2,4];
+linewidth = [2,2,2.5];
 
 % Error check args
 if isempty(t) || isempty(d) || isempty(hbType) || isempty(ch) || isempty(chLst)

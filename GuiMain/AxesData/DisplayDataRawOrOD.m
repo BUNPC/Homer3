@@ -29,7 +29,7 @@ if ~exist('linecolor','var')
     linecolor = rand(length(chLst),3);
 end
 if ~exist('linestyle','var')
-    linestyle = {'-','--',':'};
+    linestyle = {'-',':','--'};
 end
 
 % Error check args
@@ -39,7 +39,7 @@ end
 if ~isempty(dStd) && (isempty(nTrials) || isempty(condition))
     return;
 end
-
+linewidth = [2,1.2,2,2,2,2];
 
 for iWl=1:length(wl)
     for ii=1:length(ch(chLst))
@@ -48,7 +48,7 @@ for iWl=1:length(wl)
         
         set(h, 'color',  linecolor(chLst(ii),:));
         set(h, 'linestyle', linestyle{wl(iWl)});
-        set(h, 'linewidth', 2);
+        set(h, 'linewidth', linewidth(wl(iWl)));
         
         if ~isempty(dStd)
             dWlMlStd    = squeeze(dStd( :, ch(chLst(ii)), wl(iWl)));

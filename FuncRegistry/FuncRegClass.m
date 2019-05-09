@@ -210,7 +210,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
                 addnewline = 0;
             end
             if addnewline
-                nl = newline();
+                nl = sprintf('\n');
             else
                 nl = '';
             end

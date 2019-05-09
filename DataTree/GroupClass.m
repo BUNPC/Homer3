@@ -50,6 +50,7 @@ classdef GroupClass < TreeNodeClass
             obj.type = 'group';
             obj.fileidx = 0;
             obj.nFiles = 0;
+                        
         end
         
         
@@ -186,6 +187,33 @@ classdef GroupClass < TreeNodeClass
                 end
             end
         end
+        
+        
+        % ----------------------------------------------------------------------------------
+        % Copy processing params (procInut and procStream.output) from
+        % N2 to obj if obj and N2 are equivalent nodes
+        % ----------------------------------------------------------------------------------
+        function Copy(obj, obj2, conditional)
+            if nargin==3 && strcmp(conditional, 'conditional')
+                if strcmp(obj.name,obj2.name)
+                    for i=1:length(obj.subjs)
+                        j = obj.existSubj(i,obj2);
+                        if (j>0)
+                            obj.subjs(i).Copy(obj2.subjs(j), 'conditional');
+                        end
+                    end
+                    if obj == obj2
+                        obj.Copy@TreeNodeClass(obj2, 'conditional');
+                    end
+                end
+            else
+                for i=1:length(obj2.subjs)
+                    obj.subjs(i) = SubjClass(obj2.subjs(i));
+                end
+                obj.Copy@TreeNodeClass(obj2);
+            end
+        end
+
         
         
         % ----------------------------------------------------------------------------------
@@ -383,6 +411,12 @@ classdef GroupClass < TreeNodeClass
                 fprintf('Completed processing stream for group %d\n', obj.iGroup);
                 fprintf('\n');
             end
+            
+            % Update call application GUI using it's generic Update function
+            if ~isempty(obj.updateParentGui)
+                obj.updateParentGui([obj.iGroup, obj.iSubj, obj.iRun]);
+            end
+            
         end
         
         
@@ -618,39 +652,10 @@ classdef GroupClass < TreeNodeClass
     end
     
     
-    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Private methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
-        
-        
-        % ----------------------------------------------------------------------------------
-        % Copy processing params (procInut and procStream.output) from
-        % N2 to obj if obj and N2 are equivalent nodes
-        % ----------------------------------------------------------------------------------
-        function Copy(obj, obj2, conditional)
-            if nargin==3 && strcmp(conditional, 'conditional')
-                if strcmp(obj.name,obj2.name)
-                    for i=1:length(obj.subjs)
-                        j = obj.existSubj(i,obj2);
-                        if (j>0)
-                            obj.subjs(i).Copy(obj2.subjs(j), 'conditional');
-                        end
-                    end
-                    if obj == obj2
-                        obj.Copy@TreeNodeClass(obj2, 'conditional');
-                    end
-                end
-            else
-                for i=1:length(obj2.subjs)
-                    obj.subjs(i) = SubjClass(obj2.subjs(i));
-                end
-                obj.Copy@TreeNodeClass(obj2);
-            end
-        end
-
-        
         
         % ----------------------------------------------------------------------------------
         % Check whether subject k'th subject from this group exists in group G and return

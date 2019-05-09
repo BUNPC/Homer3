@@ -158,6 +158,11 @@ classdef RunClass < TreeNodeClass
                 options = 'overwrite';
             end
             
+            % Update call application GUI using it's generic Update function 
+            if ~isempty(obj.updateParentGui)
+                obj.updateParentGui([obj.iGroup, obj.iSubj, obj.iRun]);
+            end
+            
             if strcmpi(options, 'overwrite')
                 % Recalculating result means deleting old results, if
                 % option == 'overwrite'
@@ -192,6 +197,7 @@ classdef RunClass < TreeNodeClass
                 fprintf('Completed processing stream for group %d, subject %d, run %d\n', obj.iGroup, obj.iSubj, obj.iRun);
                 fprintf('\n')
             end
+            
         end
 
 

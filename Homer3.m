@@ -111,6 +111,8 @@ hmr.sid = 2;
 hmr.rid = 3;
 
 hmr.dataTree = [];
+hmr.Update = @Update;
+hmr.handles = [];
 
 % Choose default command line output for Homer3
 handles.output = hObject;
@@ -145,7 +147,6 @@ hmr.childguis(3) = ChildGuiClass('PlotProbeGUI');
 hmr.childguis(4) = ChildGuiClass('ProcStreamOptionsGUI');
 
 hmr.handles = handles;
-hmr.Update = @Update;
 
 
 
@@ -334,10 +335,18 @@ global hmr
 if ~ishandles(hObject)
     return;
 end
+
+% Save original selection in listboxFiles because it'll change during auto processing 
+val0 = get(handles.listboxFiles, 'value');
+
 % Set the display status to pending. In order to avoid redisplaying 
 % in a single callback thread in functions called from here which 
 % also call DisplayData
 hmr.dataTree.CalcCurrElem();
+
+% Restore original selection listboxFiles
+set(handles.listboxFiles, 'value',val0);
+
 hmr.dataTree.SaveCurrElem();
 DisplayData(handles, hObject);
 
@@ -706,6 +715,10 @@ end
 if ~ishandles(hObject)
     return;
 end
+if isempty(handles)
+    return;
+end
+
 
 dataTree = hmr.dataTree;
 procElem = dataTree.currElem;
@@ -961,9 +974,20 @@ end
 
 
 % ----------------------------------------------------------------------------------
-function Update()
+function Update(varargin)
 global hmr
-DisplayData(hmr.handles, hmr.handles.axesData);
+if nargin==0
+    DisplayData(hmr.handles, hmr.handles.axesData);
+    set(hmr.handles.pushbuttonProcStreamOptionsEdit, 'value',0);
+end
+
+if nargin==1 && ~isempty(hmr.handles)
+    iGroup = varargin{1}(1);
+    iSubj = varargin{1}(2); 
+    iRun = varargin{1}(3);
+    fprintf('Processing iGroup=%d, iSubj=%d, iRun=%d\n', iGroup, iSubj, iRun);
+    listboxFiles_Callback([], [iGroup, iSubj, iRun], hmr.handles);
+end
 
 
 

@@ -37,7 +37,7 @@ if ~ishandles(h)
 end
 
 % Defaults for different graphics object types
-font_uicontrol = initFont(fs_def,'bold');
+font_uicontrol = initFont(fs_def,'bold',[]);
 if nargin==2
     font_uicontrol.size = varargin{1};
     font_uicontrol.weight = 'bold';
@@ -45,9 +45,12 @@ elseif nargin==3
     font_uicontrol.size = varargin{1};
     font_uicontrol.weight = varargin{2};
 end
-font_uipanel   = initFont(font_uicontrol.size+1,'bold');
-font_axes   = initFont(font_uicontrol.size+3,'normal');
 
+fc = [0.50, 0.21, 0.11];
+
+font_uipanel   = initFont(font_uicontrol.size-1,'bold',fc);
+font_uibttngrp = font_uipanel;
+font_axes   = initFont(font_uicontrol.size+3,'normal',[]);
 
 hc = get(h, 'children');
 for ii=1:length(hc)
@@ -87,13 +90,15 @@ for ii=1:length(hc)
         if userdata~=KEEP_FONTWEIGHT
             set(hc(ii), 'fontweight',font_uipanel.weight);
         end
+        set(hc(ii), 'foregroundcolor',font_uipanel.color);
     elseif strcmp(get(hc(ii), 'type'), 'uibuttongroup')
         if userdata~=KEEP_FONTSIZE
-            set(hc(ii), 'fontsize',font_uicontrol.size);
+            set(hc(ii), 'fontsize',font_uibttngrp.size);            
         end
         if userdata~=KEEP_FONTWEIGHT
-            set(hc(ii), 'fontweight',font_uicontrol.weight);
+            set(hc(ii), 'fontweight',font_uibttngrp.weight);
         end
+        set(hc(ii), 'foregroundcolor',font_uibttngrp.color);
     elseif strcmp(get(hc(ii), 'type'), 'uitable')
         if userdata~=KEEP_FONTSIZE
             set(hc(ii), 'fontsize',font_uicontrol.size);
@@ -108,8 +113,10 @@ end
 
 
 % --------------------------------------------------------
-function font = initFont(fs, fw)
-
-font = struct('size',fs,'weight',fw);
+function font = initFont(fs, fw, fc)
+if ~exist('fc','var') || isempty(fc)
+    fc = [0, 0, 0];
+end
+font = struct('size',fs,'weight',fw, 'color',fc);
 
 

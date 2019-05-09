@@ -9,6 +9,7 @@ classdef TreeNodeClass < handle
         procStream;
         err;
         CondNames;        
+        updateParentGui;
     end
      
     properties
@@ -30,6 +31,8 @@ classdef TreeNodeClass < handle
             obj.procStream = ProcStreamClass();
             obj.err = 0;
             obj.CondNames = {};
+
+            obj.InitParentAppFunc();
             
             % If this constructor is called from this class' copy method,
             % then we want to exit before we obliterate the persistent
@@ -47,7 +50,7 @@ classdef TreeNodeClass < handle
                     return;
                 end
             end
-            obj.CondColTbl('init');
+            obj.CondColTbl('init');            
         end
         
     end
@@ -149,6 +152,15 @@ classdef TreeNodeClass < handle
                 if isproperty(options_s, C{ii})
                     eval( sprintf('options_s.%s = true;', C{ii}) );
                 end
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function InitParentAppFunc(obj)
+            global hmr
+            if ~isempty(hmr)
+                obj.updateParentGui = hmr.Update;
             end
         end
         
@@ -487,7 +499,7 @@ classdef TreeNodeClass < handle
         function aux = GetAuxiliary(obj)
             aux = [];
         end
-        
+                
     end
     
 end

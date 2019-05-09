@@ -255,7 +255,7 @@ else
 end
 stims_select = GetStimsFromTpts(tPts_idxs_select);
 if isempty(stims_select) & ~(t1==t2)
-    menu( 'Drag a box around the stim to edit.','Okay');
+    MenuBox( 'Drag a box around the stim to edit.','Okay');
     return;
 end
 AddEditDelete(tPts_idxs_select, stims_select);
@@ -325,7 +325,7 @@ actionLst{end+1} = 'Cancel';
 nActions = length(actionLst);
 
 % Get user's responce to menu question
-menu_choice = menu(menuTitleStr, actionLst);
+menu_choice = MenuBox(menuTitleStr, actionLst);
 
 
 
@@ -372,6 +372,7 @@ end
 if menu_choice==nActions || menu_choice==0
     return;
 end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % New stim

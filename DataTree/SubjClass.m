@@ -218,6 +218,12 @@ classdef SubjClass < TreeNodeClass
                 fprintf('Completed processing stream for group %d, subject %d\n', obj.iGroup, obj.iSubj);
                 fprintf('\n');
             end
+            
+            % Update call application GUI using it's generic Update function 
+            if ~isempty(obj.updateParentGui)
+                obj.updateParentGui([obj.iGroup, obj.iSubj, obj.iRun]);
+            end
+            pause(.5);
         end
                 
         

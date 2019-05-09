@@ -69,7 +69,7 @@ classdef DataTreeClass <  handle
             obj.group.InitProcStream(procStreamCfgFile);
 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Copy input variables for group, subjects and runs
+            % Generate the stimulus conditions for the group tree
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.group.SetConditions();
         end

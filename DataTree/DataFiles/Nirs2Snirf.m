@@ -30,12 +30,15 @@ elseif isa(nirsfiles0, 'FileClass')
     nirsfiles = nirsfiles0;
 end
 
+h = waitbar_improved(0,'Converting .nirs files to .snirf ...');
 for ii=1:length(nirsfiles)
     if nirsfiles(ii).isdir
         continue;
     end
     [pname,fname,ext] = fileparts([nirsfiles(ii).pathfull, '/', nirsfiles(ii).filename]);
-    fprintf('Converting %s to %s\n', [pname,'/',fname,ext], [pname,'/',fname,'.snirf']);    
+    fprintf('Converting %s to %s\n', [pname,'/',fname,ext], [pname,'/',fname,'.snirf']);
+    waitbar_improved(ii/length(nirsfiles), h, sprintf('Converting %s to SNIRF: %d of %d', nirsfiles(ii).name, ii, length(nirsfiles)));
+
     nirs = load([pname,'/',fname,ext],'-mat');
     snirf(ii) = SnirfClass(nirs, tfactors);
     snirf(ii).Save([pname,'/',fname,'.snirf']);
@@ -43,4 +46,4 @@ for ii=1:length(nirsfiles)
         delete([pname,'/',fname,ext]);
     end
 end
-
+close(h);

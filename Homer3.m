@@ -347,7 +347,9 @@ hmr.dataTree.CalcCurrElem();
 % Restore original selection listboxFiles
 set(handles.listboxFiles, 'value',val0);
 
+h = waitbar(0,'Auto-saving group processing results. Please wait ...');
 hmr.dataTree.SaveCurrElem();
+close(h);
 DisplayData(handles, hObject);
 
 

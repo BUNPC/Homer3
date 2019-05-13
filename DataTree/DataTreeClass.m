@@ -87,13 +87,11 @@ classdef DataTreeClass <  handle
             rnum = 1;
             obj.group = GroupClass(obj.files(1).name);
             obj.files(1).MapFile2Group(1,1,1);
-            hwait = waitbar(0, sprintf('Loading proc elements') );
-            p = get(hwait,'position');
-            set(hwait, 'Position',[p(1), p(2), p(3)*1.5, p(4)]);
+            hwait = waitbar_improved(0, sprintf('Loading proc elements') );
             for ii=2:length(obj.files)
                 
-                waitbar(ii/length(obj.files), hwait, sprintf('Loading %s: %d of %d', ...
-                    sprintf_s(obj.files(ii).name), ii, length(obj.files)) );
+                waitbar_improved(ii/length(obj.files), hwait, sprintf('Loading %s: %d of %d', ...
+                    sprintf(obj.files(ii).name), ii, length(obj.files)) );
                 
                 fname = obj.files(ii).name;
                 if obj.files(ii).isdir

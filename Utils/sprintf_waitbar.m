@@ -1,6 +1,6 @@
 function s2 = sprintf_waitbar(s)
 % Syntax: 
-%    s2 = print_waitbar(s)
+%    s2 = sprintf_waitbar(s)
 % 
 % Description:
 %    Change character string with '_' character(s), to '\_', 

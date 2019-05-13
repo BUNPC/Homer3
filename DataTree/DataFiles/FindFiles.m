@@ -74,9 +74,9 @@ while files.isempty()
                     if files.config.RegressionTestActive
                         q = 1;
                     else                        
-                        msg{1} = sprintf('Homer3 did not find any .snirf files in the current folder but did find .nirs files.\n');
+                        msg{1} = sprintf('Homer3 did not find any .snirf files in the current folder but did find .nirs files. ');
                         msg{2} = sprintf('Do you want to convert .nirs files to .snirf format and load them?');
-                        q = menu([msg{:}],'YES','NO');
+                        q = MenuBox([msg{:}], {'YES','NO'}, 'center');
                     end
                     if q==2
                         files = DataFilesClass();
@@ -107,7 +107,7 @@ while files.isempty()
     if files.isempty()
         msg{1} = sprintf('Homer3 did not find any %s data files to load in the current group folder. ', fmt);        
         msg{2} = sprintf('Do you want to select another group folder?');
-        q = menu([msg{:}],'YES','NO');
+        q = MenuBox([msg{:}], {'YES','NO'});
         if q==2
             files = DataFilesClass();
             return;

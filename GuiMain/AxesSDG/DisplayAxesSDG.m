@@ -126,9 +126,8 @@ end
 if ~isempty(iSrcDet) && iSrcDet(1,1)~=0
     lst2 = [];
     lst3 = find(MeasList(:,4)==1);
-    for ii=1:length(iCh);
-        lst2(ii) = find(MeasList(lst3,1)==MeasList(iCh(ii),1) & ...
-            MeasList(lst3,2)==MeasList(iCh(ii),2) );
+    for ii=1:length(iCh)
+        lst2(ii) = find(MeasList(lst3,1)==MeasList(iCh(ii),1) & MeasList(lst3,2)==MeasList(iCh(ii),2) );
     end
     iCh2 = lst2;
     

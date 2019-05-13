@@ -10,12 +10,14 @@
 % INPUTS:
 % dod: SNIRF.data container with the Change in OD tim course 
 % sd:  SNIRF.sd container with the source/detector geometry
-% ppf: Partial pathlength factors for each wavelength. If there are 2
-%      wavelengths of data, then this is a vector ot 2 elements.
-%      Typical value is ~6 for each wavelength if the absorption change is 
-%      uniform over the volume of tissue measured. To approximate the
-%      partial volume effect of a small localized absorption change within
-%      an adult human head, this value could be as small as 0.1.
+% ppf: Partial path length factors for each wavelength. If there are 2 wavelengths 
+%      of data, then this is a vector of 2 elements.  Typical value is ~6 for each 
+%      wavelength if the absorption change is uniform over the volume of tissue measured. 
+%      To approximate the partial volume effect of a small localized absorption change 
+%      within an adult human head, this value could be as small as 0.1. It is recommended 
+%      to use default values of “1 1” which will result in concentration units of 
+%      “molar ppf” such that the user can then divide by an estimated ppf at any future 
+%      point to estimate what the molar concentration change would be.%
 %
 % OUTPUTS:
 % dc: SNIRF.data container with the concentration data 
@@ -24,7 +26,7 @@
 % Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, sd, ppf )
 %
 % PARAMETERS:
-% ppf: [6.0, 6.0]
+% ppf: [1.0, 1.0]
 %
 function dc = hmrR_OD2Conc( dod, sd, ppf )
 

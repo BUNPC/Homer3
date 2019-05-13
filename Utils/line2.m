@@ -64,8 +64,12 @@ if ~exist('k','var')
         percent_offset = 0;
     elseif len_edge/len_griddiag >= 0.95
         percent_offset = 2;
-    else
+    elseif len_edge/len_griddiag > 0.05 && len_edge/len_griddiag < 0.06
         percent_offset = len_griddiag/len_edge;
+    elseif len_edge/len_griddiag > 0.4
+        percent_offset = 3;
+    else
+        percent_offset = 5;
     end
 else
     percent_offset = k;

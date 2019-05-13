@@ -285,9 +285,9 @@ iUsage     = get(handles.listboxUsageOptions(iPanel),'value');
 usagenames = get(handles.listboxUsageOptions(iPanel),'string');
 
 if isempty(funcnames)
-    msg{1} = sprintf('There are no %s-level registry functions to choose from.\n', type);
+    msg{1} = sprintf('There are no %s-level registry functions to choose from. ', type);
     msg{2} = sprintf('Please add %s-level functions to registry', type);
-    MenuBox([msg{:}],'OK');
+    MessageBox([msg{:}]);
     return;
 end
 
@@ -296,7 +296,7 @@ fcallselect = sprintf('%s: %s', funcnames{iFunc}, usagenames{iUsage});
 iFcall = get(handles.listboxFuncProcStream(iPanel),'value');
 
 if listPsUsage(iPanel).IsMember(fcallselect, ':')
-    MenuBox2('This usage already exist in processing stream. Each usage entry in processing stream must be unique.','OK')
+    MessageBox('This usage already exist in processing stream. Each usage entry in processing stream must be unique.','OK')
     return;
 end
 listPsUsage(iPanel).Insert(fcallselect, iFcall, 'after');
@@ -313,7 +313,7 @@ iPanel = procStreamGui.iPanel;
 listPsUsage = procStreamGui.listPsUsage;
 
 if isempty(listPsUsage)
-    MenuBox2('Processing stream is empty. Please load or create a processing stream before using Delete button.', 'OK');
+    MessageBox('Processing stream is empty. Please load or create a processing stream before using Delete button.', 'OK');
     return;
 end
 
@@ -331,7 +331,7 @@ iPanel = procStreamGui.iPanel;
 listPsUsage = procStreamGui.listPsUsage;
 
 if isempty(listPsUsage)
-    MenuBox2('Processing stream is empty. Please load or create a processing stream before using Move Up button.', 'OK');
+    MessageBox('Processing stream is empty. Please load or create a processing stream before using Move Up button.');
     return;
 end
 
@@ -357,7 +357,7 @@ iPanel = procStreamGui.iPanel;
 listPsUsage = procStreamGui.listPsUsage;
 
 if isempty(listPsUsage)
-    MenuBox2('Processing stream is empty. Please load or create a processing stream before using Move Down button.', 'OK');
+    MessageBox('Processing stream is empty. Please load or create a processing stream before using Move Down button.');
     return;
 end
 
@@ -382,13 +382,13 @@ reg = procStreamGui.dataTree.reg;
 procElem = procStreamGui.procElem;
 
 if reg.IsEmpty()
-    msg{1} = sprintf('Cannot load processing stream because no user functions are registered.\n');
+    msg{1} = sprintf('Cannot load processing stream because no user functions are registered. ');
     msg{2} = sprintf('Please add user functions to registry before loading processing stream.');
-    MenuBox([msg{:}],'OK');
+    MessageBox([msg{:}],'OK');
     return;
 end
 
-q = MenuBox2('Load current processing stream or config file?','Current processing stream','Config file','Cancel');
+q = MenuBox('Load current processing stream or config file?',{'Current processing stream','Config file','Cancel'},'centerright');
 if q==3
     return;
 end
@@ -421,11 +421,11 @@ iSubjPanel  = procStreamGui.iSubjPanel;
 iRunPanel   = procStreamGui.iRunPanel;
 
 if isempty(listPsUsage)
-    MenuBox2('Processing stream is empty. Please load or create a processing stream before saving it.', 'OK');
+    MessageBox('Processing stream is empty. Please load or create a processing stream before saving it.');
     return;
 end
 
-q = MenuBox2('Save to current processing stream or config file?','Current processing stream','Config file','Cancel');
+q = MenuBox('Save to current processing stream or config file?',{'Current processing stream','Config file','Cancel'},'centerright');
 if q==3
     return;
 end

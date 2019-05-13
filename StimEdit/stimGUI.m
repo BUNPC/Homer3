@@ -255,7 +255,7 @@ else
 end
 stims_select = GetStimsFromTpts(tPts_idxs_select);
 if isempty(stims_select) & ~(t1==t2)
-    MenuBox( 'Drag a box around the stim to edit.','Okay');
+    MessageBox( 'Drag mouse around the stim to edit.');
     return;
 end
 AddEditDelete(tPts_idxs_select, stims_select);

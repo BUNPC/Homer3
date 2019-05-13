@@ -1,20 +1,18 @@
-function [selection, hf] = MenuBox(msg, varargin)
+function [selection, hf] = MenuBox(msg, bttns, relativePos)
 global bttnId
 bttnId = [];
 
 DEBUG=1;
+DEBUG2=0;
 
-if isempty(varargin)
+% Parse args 
+if ~exist('bttns','var') || isempty(bttns)
     bttns = {'OK'};
-elseif ischar(varargin{1})
-    bttns = varargin;
-elseif length(varargin)==1 && iscell(varargin{1})
-    bttns = cell(length(varargin{1}),1);
-    for ii=1:length(varargin{1})
-        bttns{ii} = varargin{1}{ii};
-    end
-else
-    return;
+elseif exist('bttns','var') && ischar(bttns)
+    bttns = {bttns};
+end
+if ~exist('relativePos','var') || isempty(relativePos)
+    relativePos = 'center';
 end
 
 title = 'MENU';
@@ -31,10 +29,10 @@ fs_min = 6;
 
 nchar     = length(msg);
 nbttns    = length(bttns);
-Wbttn     = bttnlenmax*(abs(fs_min-fs));
+Wbttn     = bttnlenmax*(abs(fs_min-fs))+2;
 Hbttn     = 3;
 
-Wtext = floor(nchar/80) + mod(nchar,80)*(fs-fs_min);
+Wtext = 70;                       % In char units
 Htext = round(nchar / Wtext)+4;
 
 % Position/dimensions in the X direction
@@ -59,16 +57,40 @@ set(hf, 'visible','off');
 set(hf, 'units','characters');
 
 % Determine optimal position of MenuBox relative to parent GUI
-pX = posParent(1)+0.8*posParent(3);
-pY = posParent(2)+0.3*posParent(4);
+switch(lower(relativePos))
+    case 'upperleft'
+        posrel = [.2, .6];
+    case 'centerleft'
+        posrel = [.2, .3];
+    case 'lowerleft'
+        posrel = [.2, .1];
+    case 'upperright'
+        posrel = [.8, .6];
+    case 'centerright'
+        posrel = [.8, .3];
+    case 'lowerright'
+        posrel = [.8, .1];
+    case 'center'
+        posrel = [.3, .3];
+    otherwise
+        posrel = [.3, .3];
+end
+pX = posParent(1)+posrel(1)*posParent(3);
+pY = posParent(2)+posrel(2)*posParent(4);
 posBox = [pX, pY, Wfig, Hfig];
+
+if DEBUG
+    fprintf('posBox = [%0.1f, %0.1f, %0.1f, %0.1f]\n', posBox(1), posBox(2), posBox(3), posBox(4));
+end 
+
 
 % Set GUI position/size
 set(hf, 'position', posBox);
 p = get(hf, 'position');
 
 % Display message
-ht = uicontrol('parent',hf, 'style','text', 'units','characters', 'string',msg, 'position',[a, p(4)-Htext-vertgap, Wtext, Htext]);
+ht = uicontrol('parent',hf, 'style','text', 'units','characters', 'string',msg, ...
+               'position',[a, p(4)-Htext-vertgap, Wtext, Htext], 'horizontalalignment','left');
 
 % Draw button options
 hb = zeros(nbttns,1); 
@@ -78,7 +100,7 @@ for k = 1:nbttns
     Ypfk = TextPos(2) - k*(Hbttn+vertgap/3);
     p(k,:) = [a, Ypfk, Wbttn, Hbttn];
     
-    if DEBUG
+    if DEBUG2
         fprintf('%d) %s:   p1 = [%0.1f, %0.1f, %0.1f, %0.1f]\n', k, bttns{k}, p(k,1), p(k,2), p(k,3), p(k,4));
     end
     
@@ -116,4 +138,17 @@ end
 function pushbuttonGroup_Callback(hObject, eventdata, handles)
 global bttnId
 bttnId = str2num(get(hObject, 'tag'));
+
+
+
+% -------------------------------------------------------------
+function maxlen = getMaxLineLength(msg)
+maxlen = 0;
+lines = str2cell(msg);
+for ii=1:length(lines)
+    if length(lines{ii})>maxlen
+        maxlen=length(lines{ii});
+    end
+end
+
 

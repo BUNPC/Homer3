@@ -98,7 +98,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
                     end
                     progressmsg = sprintf('Parsing %s', files{jj}(ii).name);
                     fprintf('%s\n', progressmsg);
-                    waitbar(kk/N, h, sprintf_waitbar(progressmsg));
+                    waitbar_improved(kk/N, h, sprintf(progressmsg));
                     obj.AddEntry(files{jj}(ii).name);
                     kk=kk+1;
                 end

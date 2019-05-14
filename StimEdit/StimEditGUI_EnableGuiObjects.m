@@ -1,4 +1,4 @@
-function stimGUI_EnableGuiObjects(onoff, handles)
+function StimEditGUI_EnableGuiObjects(onoff, handles)
 if ~exist('handles','var') || isempty(handles)
     return;
 end

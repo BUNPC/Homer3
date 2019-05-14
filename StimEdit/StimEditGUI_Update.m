@@ -1,4 +1,4 @@
-function stimGUI_Update(handles)
+function StimEditGUI_Update(handles)
 global stimEdit
 
 if ~exist('handles','var') || isempty(handles)
@@ -11,13 +11,13 @@ end
 conditions =  stimEdit.dataTree.currElem.GetConditions();
 filename = stimEdit.dataTree.currElem.GetName();
 [~, fname, ext] = fileparts(filename);
-stimGUI_SetTextFilename([fname, ext, ' :'], handles);
+StimEditGUI_SetTextFilename([fname, ext, ' :'], handles);
 
 % Try to keep the same condition as old run
-[icond, conditions] = stimGUI_GetConditionIdxFromPopupmenu(conditions, handles);
+[icond, conditions] = StimEditGUI_GetConditionIdxFromPopupmenu(conditions, handles);
 set(handles.popupmenuConditions, 'value',icond);
 set(handles.popupmenuConditions, 'string',conditions);
-stimGUI_SetUitableStimInfo(conditions{icond}, handles);
-stimGUI_Display(handles);
+StimEditGUI_SetUitableStimInfo(conditions{icond}, handles);
+StimEditGUI_Display(handles);
 figure(handles.figure);
 

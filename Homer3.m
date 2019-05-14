@@ -141,10 +141,10 @@ Homer3_EnableDisableGUI(handles,'on');
 DisplayFiles(handles);
 DisplayData(handles, hObject);
 
-hmr.childguis(1) = ChildGuiClass('procStreamGUI');
-hmr.childguis(2) = ChildGuiClass('stimGUI');
-hmr.childguis(3) = ChildGuiClass('PlotProbeGUI');
-hmr.childguis(4) = ChildGuiClass('ProcStreamOptionsGUI');
+hmr.childguis(1) = ChildGuiClass('ProcStreamEditGUI');
+hmr.childguis(2) = ChildGuiClass('ProcStreamOptionsGUI');
+hmr.childguis(3) = ChildGuiClass('StimEditGUI');
+hmr.childguis(4) = ChildGuiClass('PlotProbeGUI');
 
 hmr.handles = handles;
 
@@ -585,7 +585,7 @@ if ~ishandles(hObject)
     return;
 end
 
-idx = FindChildGuiIdx('stimGUI');
+idx = FindChildGuiIdx('StimEditGUI');
 hmr.childguis(idx).Launch();
 
 
@@ -645,7 +645,7 @@ if ~ishandles(hObject)
 end
 
 checked = get(hObject,'checked');
-idx = FindChildGuiIdx('procStreamGUI');
+idx = FindChildGuiIdx('ProcStreamEditGUI');
 if checked
     hmr.childguis(idx).Launch();
 else

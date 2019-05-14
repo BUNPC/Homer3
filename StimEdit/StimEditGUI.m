@@ -1,9 +1,9 @@
-function varargout = stimGUI(varargin)
+function varargout = StimEditGUI(varargin)
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @stimGUI_OpeningFcn, ...
-                   'gui_OutputFcn',  @stimGUI_OutputFcn, ...
+                   'gui_OpeningFcn', @StimEditGUI_OpeningFcn, ...
+                   'gui_OutputFcn',  @StimEditGUI_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1}) && ~strcmp(varargin{end},'userargs')
@@ -21,19 +21,19 @@ end
 
 
 % -------------------------------------------------------------
-function varargout = stimGUI_OutputFcn(hObject, eventdata, handles)
-handles.updateptr = @stimGUI_Update;
+function varargout = StimEditGUI_OutputFcn(hObject, eventdata, handles)
+handles.updateptr = @StimEditGUI_Update;
 handles.closeptr = [];
 varargout{1} = handles;
 
 
 
 % -------------------------------------------------------------------
-function stimGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+function StimEditGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global stimEdit
 global hmr
 
-% Choose default command line output for procStreamGUI
+% Choose default command line output for StimEditGUI
 handles.output = hObject;
 guidata(hObject, handles);
 
@@ -90,13 +90,13 @@ else
     setGuiFonts(hObject, 7);
 end
 if isempty(stimEdit.dataTree)
-    stimGUI_EnableGuiObjects('off', hObject);
+    StimEditGUI_EnableGuiObjects('off', hObject);
     return;
 end
 set(get(handles.axes1,'children'), 'ButtonDownFcn', @axes1_ButtonDownFcn);
 zoom(hObject,'off');
-stimGUI_Update(handles);
-stimGUI_EnableGuiObjects('on', handles);
+StimEditGUI_Update(handles);
+StimEditGUI_EnableGuiObjects('on', handles);
 
 stimEdit.status=0;
 
@@ -115,7 +115,7 @@ function popupmenuConditions_Callback(hObject, eventdata, handles)
 conditions = get(hObject, 'string');
 idx = get(hObject, 'value');
 condition = conditions{idx};
-stimGUI_SetUitableStimInfo(condition, handles);
+StimEditGUI_SetUitableStimInfo(condition, handles);
 
 
 
@@ -127,7 +127,7 @@ if isempty(tPts_select)
     return;
 end
 EditSelectTpts(tPts_select);
-stimGUI_Display(handles);
+StimEditGUI_Display(handles);
 stimEdit.updateParentGui();
 figure(handles.figure);
 
@@ -139,14 +139,14 @@ global stimEdit
 
 data = get(hObject,'data') ;
 conditions =  stimEdit.dataTree.currElem.GetConditions();
-icond = stimGUI_GetConditionIdxFromPopupmenu(conditions, handles);
+icond = StimEditGUI_GetConditionIdxFromPopupmenu(conditions, handles);
 SetStimData(icond, data);
 r=eventdata.Indices(1);
 c=eventdata.Indices(2);
 if c==2
     return;
 end
-stimGUI_Display(handles);
+StimEditGUI_Display(handles);
 stimEdit.updateParentGui();
 figure(handles.figure);
 
@@ -189,7 +189,7 @@ if stimEdit.status ~= 0
 end
 stimEdit.dataTree.group.SetConditions();
 set(handles.popupmenuConditions, 'string', stimEdit.dataTree.group.GetConditions());
-stimGUI_Display(handles);
+StimEditGUI_Display(handles);
 stimEdit.updateParentGui();
 figure(handles.figure);
 
@@ -206,7 +206,7 @@ p2 = max(point1,point2);
 t1 = p1(1);
 t2 = p2(1);
 EditSelectRange(t1, t2);
-stimGUI_Display(handles);
+StimEditGUI_Display(handles);
 stimEdit.updateParentGui();
 figure(handles.figure);
 
@@ -479,7 +479,7 @@ stimEdit.dataTree.currElem.SetStimValues(icond, data(:,3));
 
 
 % -------------------------------------------------------------------
-function stimGUI_DeleteFcn(hObject, eventdata, handles)
+function StimEditGUI_DeleteFcn(hObject, eventdata, handles)
 
 
 edit ProcStreamOptionsGUI.m
@@ -491,7 +491,7 @@ if pathname==0
     return;
 end
 cd(pathname);
-stimGUI();
+StimEditGUI();
 
 
 

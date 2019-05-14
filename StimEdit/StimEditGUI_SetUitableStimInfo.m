@@ -1,4 +1,4 @@
-function stimGUI_SetUitableStimInfo(condition, handles)
+function StimEditGUI_SetUitableStimInfo(condition, handles)
 global stimEdit
 
 if ~exist('condition','var')

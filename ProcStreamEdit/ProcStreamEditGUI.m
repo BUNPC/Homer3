@@ -1,9 +1,9 @@
-function varargout = procStreamGUI(varargin)
+function varargout = ProcStreamEditGUI(varargin)
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @procStreamGUI_OpeningFcn, ...
-                   'gui_OutputFcn',  @procStreamGUI_OutputFcn, ...
+                   'gui_OpeningFcn', @ProcStreamEditGUI_OpeningFcn, ...
+                   'gui_OutputFcn',  @ProcStreamEditGUI_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1}) && ~strcmp(varargin{end},'userargs')
@@ -22,32 +22,32 @@ end
 
 
 % -------------------------------------------------------------
-function varargout = procStreamGUI_OutputFcn(hObject, eventdata, handles)
-handles.updateptr = @procStreamGUI_Update;
+function varargout = ProcStreamEditGUI_OutputFcn(hObject, eventdata, handles)
+handles.updateptr = @ProcStreamEditGUI_Update;
 handles.closeptr = [];
 varargout{1} = handles;
 
 
 % -------------------------------------------------------------
-function procStreamGUI_OpeningFcn(hObject, eventdata, handles, varargin)
-global procStreamGui
+function ProcStreamEditGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+global procStreamEdit
 global hmr
 
-% Choose default command line output for procStreamGUI
+% Choose default command line output for ProcStreamEditGUI
 handles.output = hObject;
 guidata(hObject, handles);
 
-procStreamGui = [];
+procStreamEdit = [];
 
 %%%% Begin parse arguments 
 
-procStreamGui.format = '';
-procStreamGui.pos = [];
-procStreamGui.updateParentGui = [];
+procStreamEdit.format = '';
+procStreamEdit.pos = [];
+procStreamEdit.updateParentGui = [];
 
 if ~isempty(hmr)
-    procStreamGui.format = hmr.format;
-    procStreamGui.updateParentGui = hmr.Update;
+    procStreamEdit.format = hmr.format;
+    procStreamEdit.updateParentGui = hmr.Update;
 
     % If parent gui exists disable these menu options which only make sense when 
     % running this GUI standalone
@@ -56,20 +56,20 @@ if ~isempty(hmr)
 end
 
 % Format argument
-if isempty(procStreamGui.format)
+if isempty(procStreamEdit.format)
     if isempty(varargin)
-        procStreamGui.format = 'snirf';
+        procStreamEdit.format = 'snirf';
     elseif ischar(varargin{1})
-        procStreamGui.format = varargin{1};
+        procStreamEdit.format = varargin{1};
     end
 end
 
 % Position argument
-if isempty(procStreamGui.pos)
+if isempty(procStreamEdit.pos)
     if length(varargin)==1 && ~ischar(varargin{1})
-        procStreamGui.pos = varargin{1};
+        procStreamEdit.pos = varargin{1};
     elseif length(varargin)==2 && ~ischar(varargin{2})
-        procStreamGui.pos = varargin{2};
+        procStreamEdit.pos = varargin{2};
     end
 end
 
@@ -77,26 +77,26 @@ end
 
 
 % See if we can set the position
-p = procStreamGui.pos;
+p = procStreamEdit.pos;
 if ~isempty(p)
     set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
 end
-procStreamGui.version = get(hObject, 'name');
+procStreamEdit.version = get(hObject, 'name');
 
-procStreamGui.iRunPanel = 2;
-procStreamGui.iSubjPanel = 3;
-procStreamGui.iGroupPanel = 1;
-procStreamGui.iPanel = 1;
+procStreamEdit.iRunPanel = 2;
+procStreamEdit.iSubjPanel = 3;
+procStreamEdit.iGroupPanel = 1;
+procStreamEdit.iPanel = 1;
 
-iRunPanel   = procStreamGui.iRunPanel;
-iSubjPanel  = procStreamGui.iSubjPanel;
-iGroupPanel = procStreamGui.iGroupPanel;
+iRunPanel   = procStreamEdit.iRunPanel;
+iSubjPanel  = procStreamEdit.iSubjPanel;
+iGroupPanel = procStreamEdit.iGroupPanel;
 
-procStreamGui.dataTree = LoadDataTree(procStreamGui.format, '', hmr);
-procStreamGui.funcReg = [];
+procStreamEdit.dataTree = LoadDataTree(procStreamEdit.format, '', hmr);
+procStreamEdit.funcReg = [];
 
 % Current proc stream listbox strings for the 3 panels
-procStreamGui.listPsUsage = StringsClass().empty();
+procStreamEdit.listPsUsage = StringsClass().empty();
 
 % Create tabs for run, subject, and group and move the panels to corresponding tabs. 
 htabgroup = uitabgroup('parent',hObject, 'units','normalized', 'position',[.04, .04, .95, .95]);
@@ -111,22 +111,22 @@ set(handles.uipanelGroup, 'parent',htabG, 'position',[0, 0, 1, 1]);
 
 setGuiFonts(hObject);
 
-if procStreamGui.dataTree.IsEmpty()
+if procStreamEdit.dataTree.IsEmpty()
     return;
 end
-procStreamGui.procElem{iRunPanel} = procStreamGui.dataTree.group(1).subjs(1).runs(1).copy;
-procStreamGui.procElem{iSubjPanel} = procStreamGui.dataTree.group(1).subjs(1).copy;
-procStreamGui.procElem{iGroupPanel} = procStreamGui.dataTree.group(1).copy;
-switch(class(procStreamGui.dataTree.currElem))
+procStreamEdit.procElem{iRunPanel} = procStreamEdit.dataTree.group(1).subjs(1).runs(1).copy;
+procStreamEdit.procElem{iSubjPanel} = procStreamEdit.dataTree.group(1).subjs(1).copy;
+procStreamEdit.procElem{iGroupPanel} = procStreamEdit.dataTree.group(1).copy;
+switch(class(procStreamEdit.dataTree.currElem))
     case 'RunClass'
         htab = htabR;
-        procStreamGui.iPanel = iRunPanel;
+        procStreamEdit.iPanel = iRunPanel;
     case 'SubjClass'
         htab = htabS;
-        procStreamGui.iPanel = iSubjPanel;
+        procStreamEdit.iPanel = iSubjPanel;
     case 'GroupClass'
         htab = htabG;
-        procStreamGui.iPanel = iGroupPanel;
+        procStreamEdit.iPanel = iGroupPanel;
 end
 set(htabgroup,'SelectedTab',htab);
 
@@ -141,12 +141,12 @@ LoadProcStream(handles);
 
 % -------------------------------------------------------------
 function LoadRegistry(handles)
-global procStreamGui
+global procStreamEdit
 
-iGroupPanel = procStreamGui.iGroupPanel;
-iSubjPanel  = procStreamGui.iSubjPanel;
-iRunPanel   = procStreamGui.iRunPanel;
-reg         = procStreamGui.dataTree.reg;
+iGroupPanel = procStreamEdit.iGroupPanel;
+iSubjPanel  = procStreamEdit.iSubjPanel;
+iRunPanel   = procStreamEdit.iRunPanel;
+reg         = procStreamEdit.dataTree.reg;
 if reg.IsEmpty()
     return;
 end
@@ -154,10 +154,10 @@ end
 funcReg(iGroupPanel) = reg.funcReg(reg.IdxGroup);
 funcReg(iSubjPanel) = reg.funcReg(reg.IdxSubj);
 funcReg(iRunPanel) = reg.funcReg(reg.IdxRun);
-procStreamGui.funcReg = funcReg;
+procStreamEdit.funcReg = funcReg;
 
-funcReg = procStreamGui.funcReg;
-for iPanel=1:length(procStreamGui.procElem)
+funcReg = procStreamEdit.funcReg;
+for iPanel=1:length(procStreamEdit.procElem)
     set(handles.listboxFuncReg(iPanel),'string',funcReg(iPanel).GetFuncNames());
     iFunc = get(handles.listboxFuncReg(iPanel),'value');
     funcname = funcReg(iPanel).GetFuncName(iFunc);
@@ -170,13 +170,13 @@ end
 
 % --------------------------------------------------------------------
 function LoadProcStream(handles, reload)
-global procStreamGui
+global procStreamEdit
 
-iGroupPanel = procStreamGui.iGroupPanel;
-iSubjPanel  = procStreamGui.iSubjPanel;
-iRunPanel   = procStreamGui.iRunPanel;
-listPsUsage = procStreamGui.listPsUsage;
-funcReg     = procStreamGui.funcReg;
+iGroupPanel = procStreamEdit.iGroupPanel;
+iSubjPanel  = procStreamEdit.iSubjPanel;
+iRunPanel   = procStreamEdit.iRunPanel;
+listPsUsage = procStreamEdit.listPsUsage;
+funcReg     = procStreamEdit.funcReg;
 
 if isempty(funcReg)
     return;
@@ -186,19 +186,19 @@ if ~exist('reload','var')
     reload=false;
 end
 if reload
-    procStreamGui.procElem{iRunPanel} = procStreamGui.dataTree.group(1).subjs(1).runs(1).copy;
-    procStreamGui.procElem{iSubjPanel} = procStreamGui.dataTree.group(1).subjs(1).copy;
-    procStreamGui.procElem{iGroupPanel} = procStreamGui.dataTree.group(1).copy;
+    procStreamEdit.procElem{iRunPanel} = procStreamEdit.dataTree.group(1).subjs(1).runs(1).copy;
+    procStreamEdit.procElem{iSubjPanel} = procStreamEdit.dataTree.group(1).subjs(1).copy;
+    procStreamEdit.procElem{iGroupPanel} = procStreamEdit.dataTree.group(1).copy;
 end
 
 % Create 3 strings objects for run , subject and group: this is
 % what will be the current proc stream listbox strings for the 3 panels
 if isempty(listPsUsage)
-    listPsUsage(length(procStreamGui.procElem)) = StringsClass();
+    listPsUsage(length(procStreamEdit.procElem)) = StringsClass();
 end
-for iPanel=1:length(procStreamGui.procElem)
+for iPanel=1:length(procStreamEdit.procElem)
     listPsUsage(iPanel).Initialize();
-    procStream = procStreamGui.procElem{iPanel}.procStream;
+    procStream = procStreamEdit.procElem{iPanel}.procStream;
     for iFcall=1:procStream.GetFuncCallNum()
         fname     = procStream.fcalls(iFcall).GetName();
         fcallname = funcReg(iPanel).GetUsageName(procStream.fcalls(iFcall));
@@ -209,15 +209,15 @@ for iPanel=1:length(procStreamGui.procElem)
     listPsUsage(iPanel).Tabularize();
     set(handles.listboxFuncProcStream(iPanel),'string',listPsUsage(iPanel).Get());
 end
-procStreamGui.listPsUsage = listPsUsage;
+procStreamEdit.listPsUsage = listPsUsage;
 
 
 
 % -------------------------------------------------------------
 function listboxFuncReg_Callback(hObject, eventdata, handles)
-global procStreamGui
-iPanel = procStreamGui.iPanel;
-funcReg = procStreamGui.funcReg;
+global procStreamEdit
+iPanel = procStreamEdit.iPanel;
+funcReg = procStreamEdit.funcReg;
 
 if ~isempty(eventdata) && ~isobject(eventdata)
     set(hObject, 'value',eventdata);
@@ -244,9 +244,9 @@ LookupHelp(iPanel, ii, handles);
 
 % -------------------------------------------------------------
 function listboxFuncProcStream_Callback(hObject, eventdata, handles)
-global procStreamGui
-iPanel = procStreamGui.iPanel;
-listPsUsage = procStreamGui.listPsUsage;
+global procStreamEdit
+iPanel = procStreamEdit.iPanel;
+listPsUsage = procStreamEdit.listPsUsage;
 
 ii = get(hObject,'value');
 if isempty(ii)
@@ -262,8 +262,8 @@ LookupHelpFuncCall(iPanel, usagename, handles);
 
 % -------------------------------------------------------------
 function listboxUsageOptions_Callback(hObject, eventdata, handles)
-global procStreamGui
-iPanel = procStreamGui.iPanel;
+global procStreamEdit
+iPanel = procStreamEdit.iPanel;
 
 usagenames = get(hObject,'string');
 iUsage = get(hObject,'value');
@@ -280,10 +280,10 @@ LookupHelpFuncCall(iPanel, usagename, handles);
 
 % -------------------------------------------------------------
 function pushbuttonAddFunc_Callback(hObject, eventdata, handles)
-global procStreamGui
-iPanel = procStreamGui.iPanel;
-listPsUsage = procStreamGui.listPsUsage;
-procElem = procStreamGui.procElem;
+global procStreamEdit
+iPanel = procStreamEdit.iPanel;
+listPsUsage = procStreamEdit.listPsUsage;
+procElem = procStreamEdit.procElem;
 type = procElem{iPanel}.type;
 
 iFunc      = get(handles.listboxFuncReg(iPanel),'value');
@@ -315,9 +315,9 @@ uicontrol(handles.listboxFuncProcStream(iPanel));
 
 % -------------------------------------------------------------
 function pushbuttonDeleteFunc_Callback(hObject, eventdata, handles)
-global procStreamGui
-iPanel = procStreamGui.iPanel;
-listPsUsage = procStreamGui.listPsUsage;
+global procStreamEdit
+iPanel = procStreamEdit.iPanel;
+listPsUsage = procStreamEdit.listPsUsage;
 
 if isempty(listPsUsage)
     MessageBox('Processing stream is empty. Please load or create a processing stream before using Delete button.', 'OK');
@@ -333,9 +333,9 @@ uicontrol(handles.listboxFuncProcStream(iPanel));
 
 % -------------------------------------------------------------
 function pushbuttonMoveUp_Callback(hObject, eventdata, handles)
-global procStreamGui
-iPanel = procStreamGui.iPanel;
-listPsUsage = procStreamGui.listPsUsage;
+global procStreamEdit
+iPanel = procStreamEdit.iPanel;
+listPsUsage = procStreamEdit.listPsUsage;
 
 if isempty(listPsUsage)
     MessageBox('Processing stream is empty. Please load or create a processing stream before using Move Up button.');
@@ -359,9 +359,9 @@ uicontrol(handles.listboxFuncProcStream(iPanel));
 
 % -------------------------------------------------------------
 function pushbuttonMoveDown_Callback(hObject, eventdata, handles)
-global procStreamGui
-iPanel = procStreamGui.iPanel;
-listPsUsage = procStreamGui.listPsUsage;
+global procStreamEdit
+iPanel = procStreamEdit.iPanel;
+listPsUsage = procStreamEdit.listPsUsage;
 
 if isempty(listPsUsage)
     MessageBox('Processing stream is empty. Please load or create a processing stream before using Move Down button.');
@@ -384,9 +384,9 @@ uicontrol(handles.listboxFuncProcStream(iPanel));
 
 % -------------------------------------------------------------
 function pushbuttonLoad_Callback(hObject, eventdata, handles)
-global procStreamGui
-reg = procStreamGui.dataTree.reg;
-procElem = procStreamGui.procElem;
+global procStreamEdit
+reg = procStreamEdit.dataTree.reg;
+procElem = procStreamEdit.procElem;
 
 if reg.IsEmpty()
     msg{1} = sprintf('Cannot load processing stream because no user functions are registered. ');
@@ -418,14 +418,14 @@ LoadProcStream(handles, reload);
 
 % -------------------------------------------------------------
 function pushbuttonSave_Callback(hObject, eventdata, handles)
-global procStreamGui
-procElem    = procStreamGui.procElem;
-group       = procStreamGui.dataTree.group;
-listPsUsage = procStreamGui.listPsUsage;
-funcReg     = procStreamGui.funcReg;
-iGroupPanel = procStreamGui.iGroupPanel;
-iSubjPanel  = procStreamGui.iSubjPanel;
-iRunPanel   = procStreamGui.iRunPanel;
+global procStreamEdit
+procElem    = procStreamEdit.procElem;
+group       = procStreamEdit.dataTree.group;
+listPsUsage = procStreamEdit.listPsUsage;
+funcReg     = procStreamEdit.funcReg;
+iGroupPanel = procStreamEdit.iGroupPanel;
+iSubjPanel  = procStreamEdit.iSubjPanel;
+iRunPanel   = procStreamEdit.iRunPanel;
 
 if isempty(listPsUsage)
     MessageBox('Processing stream is empty. Please load or create a processing stream before saving it.');
@@ -468,7 +468,7 @@ if q==1
     group.CopyFcalls(procElem{iGroupPanel});
     group.CopyFcalls(procElem{iSubjPanel});
     group.CopyFcalls(procElem{iRunPanel});
-    procStreamGui.updateParentGui();
+    procStreamEdit.updateParentGui();
 elseif q==2
     % load cfg file
     [filename,pathname] = uiputfile( '*.cfg', 'Process Options Config File to Save To?');
@@ -484,8 +484,8 @@ end
 
 % -------------------------------------------------
 function helptxt = LookupHelp(iPanel, name, handles)
-global procStreamGui
-funcReg = procStreamGui.funcReg;
+global procStreamEdit
+funcReg = procStreamEdit.funcReg;
 
 helptxt = '';
 if isempty(funcReg)
@@ -504,8 +504,8 @@ set(handles.textHelp(iPanel), 'value',1);
 
 % -------------------------------------------------
 function helptxt = LookupHelpFuncCall(iPanel, usagename, handles)
-global procStreamGui
-funcReg = procStreamGui.funcReg;
+global procStreamEdit
+funcReg = procStreamEdit.funcReg;
 
 helptxt = '';
 foo = str2cell(usagename, ':');
@@ -530,9 +530,9 @@ setListboxValueToLast(handles.textHelp(iPanel));
 
 % --------------------------------------------------------------------
 function uitabRun_ButtonDownFcn(hObject, eventdata, handles)
-global procStreamGui
-procStreamGui.iPanel = procStreamGui.iRunPanel;
-iPanel = procStreamGui.iPanel;
+global procStreamEdit
+procStreamEdit.iPanel = procStreamEdit.iRunPanel;
+iPanel = procStreamEdit.iPanel;
 
 helptxt = get(handles.textHelp(iPanel),'string');
 if isempty(helptxt)
@@ -543,9 +543,9 @@ end
 
 % --------------------------------------------------------------------
 function uitabSubj_ButtonDownFcn(hObject, eventdata, handles)
-global procStreamGui
-procStreamGui.iPanel = procStreamGui.iSubjPanel;
-iPanel = procStreamGui.iPanel;
+global procStreamEdit
+procStreamEdit.iPanel = procStreamEdit.iSubjPanel;
+iPanel = procStreamEdit.iPanel;
 
 helptxt = get(handles.textHelp(iPanel),'string');
 if isempty(helptxt)
@@ -556,9 +556,9 @@ end
 
 % --------------------------------------------------------------------
 function uitabGroup_ButtonDownFcn(hObject, eventdata, handles)
-global procStreamGui
-procStreamGui.iPanel = procStreamGui.iGroupPanel;
-iPanel = procStreamGui.iPanel;
+global procStreamEdit
+procStreamEdit.iPanel = procStreamEdit.iGroupPanel;
+iPanel = procStreamEdit.iPanel;
 
 helptxt = get(handles.textHelp(iPanel),'string');
 if isempty(helptxt)
@@ -570,11 +570,11 @@ end
 
 % --------------------------------------------------------------------
 function updateProcStreamListbox(handles, iPanel)
-global procStreamGui
-listPsUsage = procStreamGui.listPsUsage;
+global procStreamEdit
+listPsUsage = procStreamEdit.listPsUsage;
 
 if ~exist('iPanel','var')
-    iPanel=1:length(procStreamGui.procElem);
+    iPanel=1:length(procStreamEdit.procElem);
 end
 for ii=iPanel
     iFcall = get(handles.listboxFuncProcStream(ii),'value');
@@ -591,18 +591,18 @@ end
 
 % --------------------------------------------------------------------
 function pushbuttonClearProcStream_Callback(hObject, eventdata, handles)
-global procStreamGui
+global procStreamEdit
 
-for iPanel=1:length(procStreamGui.listPsUsage)
-    procStreamGui.listPsUsage(iPanel).Initialize();
+for iPanel=1:length(procStreamEdit.listPsUsage)
+    procStreamEdit.listPsUsage(iPanel).Initialize();
     updateProcStreamListbox(handles, iPanel);
 end
 
 
 
 % --------------------------------------------------------------------
-function procStreamGUI_Update(handles)
-global procStreamGui
+function ProcStreamEditGUI_Update(handles)
+global procStreamEdit
 
 
 
@@ -615,8 +615,8 @@ end
 
 % --------------------------------------------------------------------
 function menuItemAddFunction_Callback(hObject, eventdata, handles)
-global procStreamGui
-reg = procStreamGui.dataTree.reg;
+global procStreamEdit
+reg = procStreamEdit.dataTree.reg;
 
 files = dir([reg.userfuncdir{1}, 'hmr*.m']);
 filenames = cell(length(files),1);
@@ -648,8 +648,8 @@ reg.Save();
 
 % -------------------------------------------------------------------------------
 function menuItemReloadFunction_Callback(hObject, eventdata, handles)
-global procStreamGui
-reg = procStreamGui.dataTree.reg;
+global procStreamEdit
+reg = procStreamEdit.dataTree.reg;
 
 funcnames = {};
 for ii=1:length(reg.funcReg)
@@ -682,15 +682,15 @@ if pathname==0
     return;
 end
 cd(pathname);
-procStreamGUI();
+ProcStreamEditGUI();
 
 
 
 % --------------------------------------------------------------------
 function menuItemSaveGroup_Callback(hObject, eventdata, handles)
-global procStreamGui
+global procStreamEdit
 if ~ishandles(hObject)
     return;
 end
-procStreamGui.dataTree.currElem.Save();
+procStreamEdit.dataTree.currElem.Save();
 

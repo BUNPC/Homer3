@@ -1,4 +1,4 @@
-function stimGUI_Display(handles)
+function StimEditGUI_Display(handles)
 global stimEdit
 
 if isempty(stimEdit.dataTree)
@@ -77,7 +77,7 @@ set(handles.popupmenuConditions, 'string', sort(stimEdit.dataTree.currElem.GetCo
 conditions = get(handles.popupmenuConditions, 'string');
 idx = get(handles.popupmenuConditions, 'value');
 condition = conditions{idx};
-stimGUI_SetUitableStimInfo(condition, handles);
+StimEditGUI_SetUitableStimInfo(condition, handles);
 
 
 % -----------------------------------------------------------

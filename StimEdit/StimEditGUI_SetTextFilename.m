@@ -1,4 +1,4 @@
-function stimGUI_SetTextFilename(name, handles)
+function StimEditGUI_SetTextFilename(name, handles)
 
 if isempty(handles)
     return;

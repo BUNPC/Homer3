@@ -1,4 +1,4 @@
-function [icond, conditions] = stimGUI_GetConditionIdxFromPopupmenu(conditions, handles)
+function [icond, conditions] = StimEditGUI_GetConditionIdxFromPopupmenu(conditions, handles)
 
 conditions_menu = get(handles.popupmenuConditions, 'string');
 idx = get(handles.popupmenuConditions, 'value');

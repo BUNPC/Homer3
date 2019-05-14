@@ -41,8 +41,8 @@ classdef ChildGuiClass < handle
             %          last argument
             %      
             % Examples:
-            %   gui = ChildGuiClass('procStreamGUI', true, '.nirs');
-            %   gui = ChildGuiClass('procStreamGUI', true, '.snirf');
+            %   gui = ChildGuiClass('ProcStreamEditGUI', true, '.nirs');
+            %   gui = ChildGuiClass('ProcStreamEditGUI', true, '.snirf');
             %
             
             obj.name = '';

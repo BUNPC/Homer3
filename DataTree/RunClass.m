@@ -325,15 +325,17 @@ classdef RunClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function s = GetStims(obj, t)            
             % Proc stream output 
-            s = obj.procStream.output.GetStims(t);
-            if isempty(s)
-                % Proc stream input
-                s = obj.procStream.input.GetStims(t);
-                if isempty(s)
-                    % Acquired data
-                    s = obj.acquired.GetStims(t);
-                end
-            end
+            s_inp = obj.procStream.input.GetStims(t);
+            s_out = obj.procStream.output.GetStims(t);
+            
+            k_inp_all  = find(s_inp~=0);
+            k_out_edit = find(s_out~=0 & s_out~=1);
+            
+            % Select only those output stims which exist in the input
+            b = ismember(k_out_edit, k_inp_all);
+            
+            s = s_inp;
+            s(k_out_edit(b)) = s_out(k_out_edit(b));
         end
         
         

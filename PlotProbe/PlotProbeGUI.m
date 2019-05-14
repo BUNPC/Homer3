@@ -199,7 +199,7 @@ function PlotProbeGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global plotprobe
 global hmr
 
-% Choose default command line output for procStreamGUI
+% Choose default command line output for PlotProbeGUI
 handles.output = hObject;
 guidata(hObject, handles);
 

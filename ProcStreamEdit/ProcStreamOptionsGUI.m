@@ -155,6 +155,12 @@ procStreamOptions.err=0;
 
 if ~isempty(hmr)
     procStreamOptions.updateParentGui = hmr.Update;
+
+    % If parent gui exists disable these menu options which only make sense when
+    % running this GUI standalone
+    set(handles.menuFile,'visible','off');
+    set(handles.menuItemChangeGroup,'visible','off');
+    set(handles.menuItemSaveGroup,'visible','off');    
 end
 
 % See if we can recover previous position
@@ -378,9 +384,16 @@ function ResetDisplay(handles)
 
 hc = get(handles.figure, 'children');
 for ii=1:length(hc)
-    if ishandles(hc(ii)) && hc(ii)~=handles.pushbuttonExit
-        delete(hc(ii));
+    if ~ishandles(hc(ii))
+        continue;
     end
+    if strcmp(get(hc(ii), 'type'), 'uimenu')
+        continue;
+    end
+    if hc(ii)==handles.pushbuttonExit
+        continue;
+    end
+    delete(hc(ii));
 end
 
 
@@ -397,4 +410,26 @@ Xp = pf(3)/2-pB(3)/2;
 Yb = Ys*factor;
 Ypb = pB(2)+(pB(4)-Ys*factor);
 set(handles.pushbuttonExit, 'position', [Xp, Ypb, pB(3), Yb]);
+
+
+
+% --------------------------------------------------------------------
+function menuItemChangeGroup_Callback(hObject, eventdata, handles)
+pathname = uigetdir(pwd, 'Select a NIRS data group folder');
+if pathname==0
+    return;
+end
+cd(pathname);
+ProcStreamOptionsGUI();
+
+
+
+
+% --------------------------------------------------------------------
+function menuItemSaveGroup_Callback(hObject, eventdata, handles)
+global procStreamOptions
+if ~ishandles(hObject)
+    return;
+end
+procStreamOptions.dataTree.currElem.Save();
 

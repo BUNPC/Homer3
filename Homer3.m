@@ -65,7 +65,7 @@ listboxFilesErr_Callback([]);
 uipanelPlot_SelectionChangeFcn([]);
 menuItemProcStreamEdit_Callback([]);
 checkboxPlotProbe_Callback([]);
-menuItemSave_Callback([]);
+menuItemSaveGroup_Callback([]);
 menuItemViewHRFStdErr_Callback([]);
 menuItemLaunchStimGUI_Callback([]);
 pushbuttonProcStreamOptionsEdit_Callback([]);
@@ -74,7 +74,7 @@ axesSDG_ButtonDownFcn([]);
 popupmenuConditions_Callback([]);
 listboxPlotWavelength_Callback([]);
 listboxPlotConc_Callback([]);
-menuChangeGroupFolder_Callback([]);
+menuItemChangeGroup_Callback([]);
 menuItemExit_Callback([]);
 menuItemReset_Callback([]);
 menuCopyCurrentPlot_Callback([]);
@@ -171,10 +171,12 @@ end
 if isempty(hmr.dataTree)
     return;
 end
-delete(hmr.dataTree);
+
+% Delete Child GUIs before deleted the dataTree that all GUIs use.
 for ii=1:length(hmr.childguis)
     hmr.childguis(ii).Close();
 end
+delete(hmr.dataTree);
 hmr = [];
 clear hmr;
 
@@ -490,7 +492,7 @@ DisplayData(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function [eventdata, handles] = menuChangeGroupFolder_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = menuItemChangeGroup_Callback(hObject, eventdata, handles)
 global hmr
 if ~ishandles(hObject)
     return;
@@ -589,7 +591,7 @@ hmr.childguis(idx).Launch();
 
 
 % --------------------------------------------------------------------
-function [eventdata, handles] = menuItemSave_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = menuItemSaveGroup_Callback(hObject, eventdata, handles)
 global hmr
 if ~ishandles(hObject)
     return;

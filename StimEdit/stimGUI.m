@@ -49,6 +49,12 @@ stimEdit.updateParentGui = [];
 if ~isempty(hmr)
     stimEdit.format = hmr.format;
     stimEdit.updateParentGui = hmr.Update;
+    
+    % If parent gui exists disable these menu options which only make sense when
+    % running this GUI standalone
+    set(handles.menuFile,'visible','off');
+    set(handles.menuItemChangeGroup,'visible','off');
+    set(handles.menuItemSaveGroup,'visible','off');
 end
 
 % Format argument
@@ -93,19 +99,6 @@ stimGUI_Update(handles);
 stimGUI_EnableGuiObjects('on', handles);
 
 stimEdit.status=0;
-
-
-
-% --------------------------------------------------------------------
-function menuItemOpen_Callback(hObject, eventdata, handles)
-global stimEdit
-
-[filename, pathname] = uigetfile({'*.nirs','*.snirf'}, 'Select a NIRS data file');
-if filename==0
-    return;
-end
-stimEdit.Load([pathname, filename]);
-stimGUI_Display(handles);
 
 
 
@@ -487,4 +480,26 @@ stimEdit.dataTree.currElem.SetStimValues(icond, data(:,3));
 
 % -------------------------------------------------------------------
 function stimGUI_DeleteFcn(hObject, eventdata, handles)
+
+
+edit ProcStreamOptionsGUI.m
+
+% --------------------------------------------------------------------
+function menuItemChangeGroup_Callback(hObject, eventdata, handles)
+pathname = uigetdir(pwd, 'Select a NIRS data group folder');
+if pathname==0
+    return;
+end
+cd(pathname);
+stimGUI();
+
+
+
+% --------------------------------------------------------------------
+function menuItemSaveGroup_Callback(hObject, eventdata, handles)
+global stimEdit
+if ~ishandles(hObject)
+    return;
+end
+stimEdit.dataTree.currElem.Save();
 

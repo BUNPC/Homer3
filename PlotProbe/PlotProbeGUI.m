@@ -231,6 +231,14 @@ if length(plotprobe.y)>1
     MessageBox([msg{:}], 'Feature Not Yet Fully Implemented');
     return;
 end
+ 
+% If parent gui exists disable these menu options which only make sense when 
+% running this GUI standalone
+if ~isempty(hmr)
+    set(handles.menuFile,'visible','off');
+    set(handles.menuItemChangeGroup,'visible','off');
+    set(handles.menuItemSaveGroup,'visible','off');
+end
 
 
 % ----------------------------------------------------------------------
@@ -580,4 +588,17 @@ if ishandles(plotprobe.handles.data)
     delete(plotprobe.handles.data);
     plotprobe.handles.data = [];
 end
+
+
+
+% --------------------------------------------------------------------
+function menuItemChangeGroup_Callback(hObject, eventdata, handles)
+pathname = uigetdir(pwd, 'Select a NIRS data group folder');
+if pathname==0
+    return;
+end
+cd(pathname);
+PlotProbeGUI();
+
+
 

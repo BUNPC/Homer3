@@ -43,9 +43,16 @@ procStreamGui = [];
 
 procStreamGui.format = '';
 procStreamGui.pos = [];
+procStreamGui.updateParentGui = [];
+
 if ~isempty(hmr)
     procStreamGui.format = hmr.format;
     procStreamGui.updateParentGui = hmr.Update;
+
+    % If parent gui exists disable these menu options which only make sense when 
+    % running this GUI standalone
+    set(handles.menuItemChangeGroup,'visible','off');
+    set(handles.menuItemSaveGroup,'visible','off');
 end
 
 % Format argument
@@ -388,7 +395,7 @@ if reg.IsEmpty()
     return;
 end
 
-q = MenuBox('Load current processing stream or config file?',{'Current processing stream','Config file','Cancel'},'centerright');
+q = MenuBox('Load current processing stream or config file?',{'Current processing stream','Config file','Cancel'});
 if q==3
     return;
 end
@@ -425,7 +432,7 @@ if isempty(listPsUsage)
     return;
 end
 
-q = MenuBox('Save to current processing stream or config file?',{'Current processing stream','Config file','Cancel'},'centerright');
+q = MenuBox('Save to current processing stream or config file?',{'Current processing stream','Config file','Cancel'});
 if q==3
     return;
 end
@@ -664,3 +671,26 @@ if err
 end
 LoadRegistry(handles);
 reg.Save();
+
+
+
+
+% --------------------------------------------------------------------
+function menuItemChangeGroup_Callback(hObject, eventdata, handles)
+pathname = uigetdir(pwd, 'Select a NIRS data group folder');
+if pathname==0
+    return;
+end
+cd(pathname);
+procStreamGUI();
+
+
+
+% --------------------------------------------------------------------
+function menuItemSaveGroup_Callback(hObject, eventdata, handles)
+global procStreamGui
+if ~ishandles(hObject)
+    return;
+end
+procStreamGui.dataTree.currElem.Save();
+

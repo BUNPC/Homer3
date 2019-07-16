@@ -980,17 +980,29 @@ end
 % ----------------------------------------------------------------------------------
 function Update(varargin)
 global hmr
-if nargin==0
-    DisplayData(hmr.handles, hmr.handles.axesData);
-    set(hmr.handles.pushbuttonProcStreamOptionsEdit, 'value',0);
+
+% Which application called us? 
+guiname = '';
+if nargin>0
+    guiname = varargin{1};
 end
 
-if nargin==1 && ~isempty(hmr.handles)
-    iGroup = varargin{1}(1);
-    iSubj = varargin{1}(2); 
-    iRun = varargin{1}(3);
-    fprintf('Processing iGroup=%d, iSubj=%d, iRun=%d\n', iGroup, iSubj, iRun);
-    listboxFiles_Callback([], [iGroup, iSubj, iRun], hmr.handles);
+% Redisplay main GUI based on what was done in the calling app
+switch(guiname)
+    case 'PlotProbeGUI'
+        set(hmr.handles.checkboxPlotProbe, 'value',0); 
+    case 'StimEditGUI'
+        DisplayData(hmr.handles, hmr.handles.axesData);  % Redisplay data axes since stims might have edited
+    case 'ProcStreamOptionsGUI'
+        set(hmr.handles.pushbuttonProcStreamOptionsEdit, 'value',0);  % Redisplay enable/disable toggle button 
+    case 'DataTreeClass'
+        if ~isempty(hmr.handles)
+            iGroup = varargin{2}(1);
+            iSubj = varargin{2}(2);
+            iRun = varargin{2}(3);
+            fprintf('Processing iGroup=%d, iSubj=%d, iRun=%d\n', iGroup, iSubj, iRun);
+            listboxFiles_Callback([], [iGroup, iSubj, iRun], hmr.handles);
+        end
 end
 
 

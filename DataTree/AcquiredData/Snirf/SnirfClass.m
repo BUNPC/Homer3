@@ -4,7 +4,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         formatVersion
         data
         stim
-        sd
+        probe
         aux
         timeOffset
         metaDataTags
@@ -24,8 +24,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %   obj = SnirfClass(filename);
             %   obj = SnirfClass(nirs);
             %   obj = SnirfClass(data, stim);
-            %   obj = SnirfClass(data, stim, sd);
-            %   obj = SnirfClass(data, stim, sd, aux);
+            %   obj = SnirfClass(data, stim, probe);
+            %   obj = SnirfClass(data, stim, probe, aux);
             %   obj = SnirfClass(d, t, SD, aux, s);
             %   obj = SnirfClass(d, t, SD, aux, s, CondNames);
             %   
@@ -43,23 +43,18 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % 
             %       DataClass with properties:
             %
-            %           d: [1200x8 double]
-            %           t: [1200x1 double]
-            %           ml: [1x8 MeasListClass]
+            %           data: [1200x8 double]
+            %           time: [1200x1 double]
+            %           measurementList: [1x8 MeasListClass]
             %
              
             % Initialize properties from SNIRF spec 
             obj.formatVersion = '1.0';
             obj.timeOffset     = 0;
-            obj.metaDataTags   = {
-                {'SubjectID','subj1'};
-                {'MeasurementDate','yyyyddmo'};
-                {'MeasurementTime','hhmmss.ms'};
-                {'SpatialUnit','mm'};
-                };
+            obj.metaDataTags   = MetaDataTagsClass().empty();
             obj.data           = DataClass().empty();
             obj.stim           = StimClass().empty();
-            obj.sd             = SdClass().empty();
+            obj.probe          = ProbeClass().empty();
             obj.aux            = AuxClass().empty();
             
             % Set base class properties not part of the SNIRF format
@@ -108,7 +103,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                             obj.stim(ii) = StimClass(nirs.s(:,ii), nirs.t, num2str(ii));
                         end
                     end
-                    obj.sd      = SdClass(nirs.SD);
+                    obj.probe      = ProbeClass(nirs.SD);
                     for ii=1:size(nirs.aux,2)
                         obj.aux(ii) = AuxClass(nirs.aux(:,ii), nirs.t, sprintf('aux%d',ii));
                     end
@@ -132,7 +127,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 for ii=1:size(s,2)
                     obj.stim(ii) = StimClass(s(:,ii),t,num2str(ii));
                 end
-                obj.sd      = SdClass(SD);
+                obj.probe      = ProbeClass(SD);
                 for ii=1:size(aux,2)
                     obj.aux(ii) = AuxClass(aux, t, sprintf('aux%d',ii));
                 end
@@ -142,7 +137,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 for ii=1:size(s,2)
                     obj.stim(ii) = StimClass(s(:,ii),t,CondNames{ii});
                 end
-                obj.sd      = SdClass(SD);
+                obj.probe      = ProbeClass(SD);
                 for ii=1:size(aux,2)
                     obj.aux(ii) = AuxClass(aux, t, sprintf('aux%d',ii));
                 end
@@ -162,10 +157,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             obj.formatVersion = obj2.formatVersion;
             obj.data          = CopyHandles(obj2.data);
             obj.stim          = CopyHandles(obj2.stim);
-            obj.sd            = CopyHandles(obj2.sd);
+            obj.probe         = CopyHandles(obj2.probe);
             obj.aux           = CopyHandles(obj2.aux);
             obj.timeOffset    = obj2.timeOffset;
-            obj.metaDataTags  = obj2.metaDataTags;
+            obj.metaDataTags  = CopyHandles(obj2.metaDataTags);
         end
         
         
@@ -192,6 +187,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % -------------------------------------------------------
         function SortStims(obj)
+            if isempty(obj.stim)
+                return;
+            end
             temp = CopyHandles(obj.stim);
             delete(obj.stim);
             names = cell(length(temp),1);
@@ -214,7 +212,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Arg 2
             if ~exist('parent', 'var')
-                parent = '/snirf';
+                parent = '/nirs';
             elseif parent(1)~='/'
                 parent = ['/',parent];
             end
@@ -232,33 +230,32 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             %%%%%%%%%%%% Ready to load from file
             
-            obj.formatVersion = strtrim_improve(h5read(fname, [parent, '/formatVersion']));
-            obj.timeOffset = hdf5read(fname, [parent, '/timeOffset']);
+            foo = convertH5StrToStr(h5read(fname, '/formatVersion'));
+            if iscell(foo)
+                obj.formatVersion = foo{1};
+            else
+                obj.formatVersion = foo;
+            end
+            obj.timeOffset = hdf5read_safe(fname, [parent, '/timeOffset'], obj.timeOffset);
             
             % Load metaDataTags
             ii=1;
             while 1
-                if ii>size(obj.metaDataTags,1)
-                    obj.metaDataTags(ii) = cell(1,1);
-                    obj.metaDataTags{ii} = {'',''};
+                if ii > length(obj.data)
+                    obj.metaDataTags(ii) = MetaDataTagsClass;
                 end
-                
-                % Read tag name 
-                tagname = strtrim_improve(h5read_safe(fname, [parent, '/metaDataTags_', num2str(ii), '/k'], obj.metaDataTags{ii}{1}));
-                if ~isempty(tagname)
-                    obj.metaDataTags{ii}{1} = tagname;
-                end
-                
-                % Read tag value
-                tagval = strtrim_improve(h5read_safe(fname, [parent, '/metaDataTags_', num2str(ii), '/v'], obj.metaDataTags{ii}{2}));
-                if ~isempty(tagval)
-                    obj.metaDataTags{ii}{2} = tagval;
-                end
-                
-                if isempty(tagname)
+                if obj.metaDataTags(ii).LoadHdf5(fname, [parent, '/metaDataTags', num2str(ii)]) < 0
+                    obj.metaDataTags(ii).delete();
+                    obj.metaDataTags(ii) = [];
                     break;
                 end
                 ii=ii+1;
+                
+                % This is debug code and should not be committed to any
+                % revision
+                if ii>10
+                    break;
+                end
             end
             
             % Load data
@@ -267,7 +264,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 if ii > length(obj.data)
                     obj.data(ii) = DataClass;
                 end
-                if obj.data(ii).LoadHdf5(fname, [parent, '/data_', num2str(ii)]) < 0
+                if obj.data(ii).LoadHdf5(fname, [parent, '/data', num2str(ii)]) < 0
                     obj.data(ii).delete();
                     obj.data(ii) = [];
                     break;
@@ -284,7 +281,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 if ii > length(obj.stim)
                     obj.stim(ii) = StimClass;
                 end
-                if obj.stim(ii).LoadHdf5(fname, [parent, '/stim_', num2str(ii)]) < 0
+                if obj.stim(ii).LoadHdf5(fname, [parent, '/stim', num2str(ii)]) < 0
                     obj.stim(ii).delete();
                     obj.stim(ii) = [];
                     break;
@@ -294,8 +291,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             obj.SortStims();
             
             % Load sd
-            obj.sd = SdClass();
-            obj.sd.LoadHdf5(fname, [parent, '/sd']);
+            obj.probe = ProbeClass();
+            obj.probe.LoadHdf5(fname, [parent, '/probe']);
             
             % Load aux
             ii=1;
@@ -303,7 +300,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 if ii > length(obj.aux)
                     obj.aux(ii) = AuxClass;
                 end
-                if obj.aux(ii).LoadHdf5(fname, [parent, '/aux_', num2str(ii)]) < 0
+                if obj.aux(ii).LoadHdf5(fname, [parent, '/aux', num2str(ii)]) < 0
                     obj.aux(ii).delete();
                     obj.aux(ii) = [];
                     break;
@@ -328,7 +325,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             H5F.close(fid);
             
             if ~exist('parent', 'var')
-                parent = '/snirf';
+                parent = '/nirs';
             elseif parent(1)~='/'
                 parent = ['/',parent];
             end
@@ -336,35 +333,32 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %%%%% Save this object's properties
             
             % Save formatVersion
-            hdf5write(fname, [parent, '/formatVersion'], obj.formatVersion, 'WriteMode','append');
+            hdf5write(fname, '/formatVersion', obj.formatVersion, 'WriteMode','append');
             
             % Save timeOffset
             hdf5write(fname, [parent, '/timeOffset'], obj.timeOffset, 'WriteMode','append');
             
             % Save metaDataTags
             for ii=1:length(obj.metaDataTags)
-                key = sprintf('%s/metaDataTags_%d/k', parent, ii);
-                val = sprintf('%s/metaDataTags_%d/v', parent, ii);
-                hdf5write_safe(fname, key, obj.metaDataTags{ii}{1});
-                hdf5write_safe(fname, val, obj.metaDataTags{ii}{2});
-            end
+                obj.metaDataTags(ii).SaveHdf5(fname, [parent, '/metaDataTags', num2str(ii)]);
+            end            
             
             % Save data
             for ii=1:length(obj.data)
-                obj.data(ii).SaveHdf5(fname, [parent, '/data_', num2str(ii)]);
+                obj.data(ii).SaveHdf5(fname, [parent, '/data', num2str(ii)]);
             end
             
             % Save stim
             for ii=1:length(obj.stim)
-                obj.stim(ii).SaveHdf5(fname, [parent, '/stim_', num2str(ii)]);
+                obj.stim(ii).SaveHdf5(fname, [parent, '/stim', num2str(ii)]);
             end
             
             % Save sd
-            obj.sd.SaveHdf5(fname, [parent, '/sd']);
+            obj.probe.SaveHdf5(fname, [parent, '/probe']);
             
             % Save aux
             for ii=1:length(obj.aux)
-                obj.aux(ii).SaveHdf5(fname, [parent, '/aux_', num2str(ii)]);
+                obj.aux(ii).SaveHdf5(fname, [parent, '/aux', num2str(ii)]);
             end
         end
                 
@@ -408,12 +402,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function SetSd(obj, val)
-            obj.sd = CopyHandles(val);            
+            obj.probe = CopyHandles(val);            
         end
         
         % ---------------------------------------------------------
         function val = GetSd(obj)
-            val = obj.sd;
+            val = obj.probe;
         end
         
         % ---------------------------------------------------------
@@ -483,7 +477,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function wls = GetWls(obj)
-            wls = obj.sd.GetWls();
+            wls = obj.probe.GetWls();
         end
         
         
@@ -553,20 +547,20 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function SD = GetSDG(obj)
-            SD.SrcPos = obj.sd.GetSrcPos();
-            SD.DetPos = obj.sd.GetDetPos();
+            SD.SrcPos = obj.probe.GetSrcPos();
+            SD.DetPos = obj.probe.GetDetPos();
         end
                 
         
         % ---------------------------------------------------------
         function srcpos = GetSrcPos(obj)
-            srcpos = obj.sd.GetSrcPos();
+            srcpos = obj.probe.GetSrcPos();
         end
         
         
         % ---------------------------------------------------------
         function detpos = GetDetPos(obj)
-            detpos = obj.sd.GetDetPos();
+            detpos = obj.probe.GetDetPos();
         end
         
         
@@ -664,7 +658,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % ----------------------------------------------------------------------------------
         function SD = Get_SD(obj, iBlk)
             SD = [];
-            if isempty(obj.sd)
+            if isempty(obj.probe)
                 return;
             end
             if isempty(obj.data)
@@ -673,9 +667,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            SD.Lambda   = obj.sd.GetWls();
-            SD.SrcPos   = obj.sd.GetSrcPos();
-            SD.DetPos   = obj.sd.GetDetPos();
+            SD.Lambda   = obj.probe.GetWls();
+            SD.SrcPos   = obj.probe.GetSrcPos();
+            SD.DetPos   = obj.probe.GetDetPos();
             SD.MeasList = obj.data(iBlk).GetMeasList();
             SD.MeasListAct = ones(size(SD.MeasList,1),1);
         end
@@ -889,7 +883,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if isempty(obj.data)
                 return;
             end
-            if isempty(obj.sd)
+            if isempty(obj.probe)
                 return;
             end
             b = false;

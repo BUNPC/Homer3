@@ -128,7 +128,7 @@ if isempty(tPts_select)
 end
 EditSelectTpts(tPts_select);
 StimEditGUI_Display(handles);
-stimEdit.updateParentGui();
+stimEdit.updateParentGui('StimEditGUI');
 figure(handles.figure);
 
 
@@ -147,7 +147,7 @@ if c==2
     return;
 end
 StimEditGUI_Display(handles);
-stimEdit.updateParentGui();
+stimEdit.updateParentGui('StimEditGUI');
 figure(handles.figure);
 
 
@@ -190,7 +190,7 @@ end
 stimEdit.dataTree.group.SetConditions();
 set(handles.popupmenuConditions, 'string', stimEdit.dataTree.group.GetConditions());
 StimEditGUI_Display(handles);
-stimEdit.updateParentGui();
+stimEdit.updateParentGui('StimEditGUI');
 figure(handles.figure);
 
 
@@ -207,7 +207,7 @@ t1 = p1(1);
 t2 = p2(1);
 EditSelectRange(t1, t2);
 StimEditGUI_Display(handles);
-stimEdit.updateParentGui();
+stimEdit.updateParentGui('StimEditGUI');
 figure(handles.figure);
 
 

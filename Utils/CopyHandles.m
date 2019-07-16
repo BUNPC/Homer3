@@ -15,6 +15,7 @@ elseif nargin==2
 end
 
 if isempty(obj)
+    objnew = obj;
     return
 end
 

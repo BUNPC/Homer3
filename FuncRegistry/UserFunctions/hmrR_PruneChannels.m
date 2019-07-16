@@ -1,5 +1,5 @@
 % SYNTAX:
-% mlAct = hmrR_PruneChannels(data, sd, mlActMan, tInc, dRange, SNRthresh, SDrange, reset)
+% mlAct = hmrR_PruneChannels(data, probe, mlActMan, tInc, dRange, SNRthresh, SDrange, reset)
 %
 % UI NAME:
 % Prune_Channels
@@ -12,7 +12,7 @@
 %
 % INPUTS:
 % d - SNIRF object containing time course data (nTpts x nChannels )
-% sd - SNIRF object describing the probe - optode positions and wavelengths.
+% probe - SNIRF object describing the probe - optode positions and wavelengths.
 % mlActMan - 
 % dRange - if mean(d) < dRange(1) or > dRange(2) then it is excluded as an
 %      active channel
@@ -28,7 +28,7 @@
 %         specifying active/inactive status. (# of data blocks x # of Channels)
 %
 % USAGE OPTIONS:
-% Prune_Channels: mlActAuto = hmrR_PruneChannels(data, sd, mlActMan, tIncMan, dRange, SNRthresh, SDrange, reset)
+% Prune_Channels: mlActAuto = hmrR_PruneChannels(data, probe, mlActMan, tIncMan, dRange, SNRthresh, SDrange, reset)
 %
 % PARAMETERS:
 % dRange: [1e4, 1e7]
@@ -39,14 +39,14 @@
 % TO DO:
 % consider Conc as well as wavelength data
 %
-function mlAct = hmrR_PruneChannels(data, sd, mlActMan, tIncMan, dRange, SNRthresh, SDrange, resetFlag)
+function mlAct = hmrR_PruneChannels(data, probe, mlActMan, tIncMan, dRange, SNRthresh, SDrange, resetFlag)
 
 % Init output 
 mlAct = cell(length(data),1);
 
 % Check input args
 if nargin<7
-    disp( 'USAGE: hmrR_PruneChannels(data, sd, mlActMan, tIncMan, dRange, SNRthresh, SDrange, resetFlag)' )
+    disp( 'USAGE: hmrR_PruneChannels(data, probe, mlActMan, tIncMan, dRange, SNRthresh, SDrange, resetFlag)' )
     return
 end
 if isempty(tIncMan)
@@ -61,9 +61,9 @@ for iBlk=1:length(data)
     d        = data(iBlk).GetDataTimeSeries();
     t        = data(iBlk).GetTime();
     MeasList = data(iBlk).GetMeasList();
-    Lambda   = sd.GetWls();
-    SrcPos   = sd.GetSrcPos();
-    DetPos   = sd.GetDetPos();    
+    Lambda   = probe.GetWls();
+    SrcPos   = probe.GetSrcPos();
+    DetPos   = probe.GetDetPos();    
     if isempty(mlActMan{iBlk})
         mlActMan{iBlk} = ones(size(MeasList,1),1);
     end    

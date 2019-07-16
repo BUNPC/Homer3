@@ -40,7 +40,7 @@ classdef AuxClass < FileLoadSaveClass
             
             % Arg 2
             if ~exist('parent', 'var')
-                parent = '/snirf/aux_1';
+                parent = '/nirs/aux1';
             elseif parent(1)~='/'
                 parent = ['/',parent];
             end
@@ -57,10 +57,13 @@ classdef AuxClass < FileLoadSaveClass
             end
             
             %%%%%%%%%%%% Ready to load from file
-
             try
-                nm = strtrim_improve(h5read(fname, [parent, '/name']));
-                obj.name = nm{1};
+                nm = convertH5StrToStr(h5read(fname, [parent, '/name']));
+                if iscell(nm)
+                    obj.name = nm{1};
+                else
+                    obj.name = nm;
+                end
                 obj.d    = h5read(fname, [parent, '/d']);
                 obj.t    = h5read(fname, [parent, '/t']);
             catch

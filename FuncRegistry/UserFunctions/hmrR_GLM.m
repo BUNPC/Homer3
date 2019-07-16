@@ -1,5 +1,5 @@
 % SYNTAX:
-% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] = hmrR_GLM(data, stim, sd, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] = hmrR_GLM(data, stim, probe, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 %
 % UI NAME:
 % GLM_HRF_Drift_SS
@@ -15,7 +15,7 @@
 % INPUTS:
 % data - this is the concentration data with dimensions #time points x [HbO/HbR/HbT] x #channels
 % stim - stimulation vector (# time points x #conditions)=1 at stim onset otherwise =0
-% sd - source detector stucture (units should be consistent with rhoSD_ssThresh)
+% probe - source detector stucture (units should be consistent with rhoSD_ssThresh)
 % mlActAuto -
 % Aaux - A matrix of auxilliary regressors (#time points x #Aux channels)
 % tIncAuto - a vector (#time points x 1) indicating which data time points
@@ -82,7 +82,7 @@
 %
 %
 % USAGE OPTIONS:
-% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R] = hmrR_GLM(dc, stim, sd, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 %
 %
 % PARAMETERS:
@@ -97,7 +97,7 @@
 %
 %
 function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks] = ...
-    hmrR_GLM(data_y, stim, sd, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+    hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
 
 % Init output
 data_yavg     = DataClass().empty();
@@ -135,8 +135,8 @@ for iBlk=1:length(data_y)
     y      = data_y(iBlk).GetDataMatrix();
     t      = data_y(iBlk).GetTime();
     ml     = data_y(iBlk).GetMeasListSrcDetPairs();
-    SrcPos = sd.GetSrcPos();
-    DetPos = sd.GetDetPos();
+    SrcPos = probe.GetSrcPos();
+    DetPos = probe.GetDetPos();
     if isempty(mlActAuto{iBlk})
         mlActAuto{iBlk} = ones(size(ml,1),1);
     end

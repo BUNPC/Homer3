@@ -1,32 +1,32 @@
-classdef SdClass < FileLoadSaveClass
+classdef ProbeClass < FileLoadSaveClass
     
     properties
-        lambda
-        lambdaEmission
-        srcPos
-        detPos
+        wavelengths
+        wavelengthsEmission
+        sourcePos
+        detectorPos
         frequency
         timeDelay
         timeDelayWidth
         momentOrder
         correlationTimeDelay
         correlationTimeDelayWidth
-        srcLabels
-        detLabels
+        sourceLabels
+        detectorLabels
     end
     
     
     methods
         
         % -------------------------------------------------------
-        function obj = SdClass(varargin)
+        function obj = ProbeClass(varargin)
             if nargin>0
                 if isstruct(varargin{1})
                     SD = varargin{1};
-                    obj.lambda = SD.Lambda;
-                    obj.lambdaEmission  = [];
-                    obj.srcPos  = SD.SrcPos;
-                    obj.detPos  = SD.DetPos;
+                    obj.wavelengths = SD.Lambda;
+                    obj.wavelengthsEmission  = [];
+                    obj.sourcePos  = SD.SrcPos;
+                    obj.detectorPos  = SD.DetPos;
                     obj.frequency  = 1;
                     obj.timeDelay  = 0;
                     obj.timeDelayWidth  = 0;
@@ -34,28 +34,28 @@ classdef SdClass < FileLoadSaveClass
                     obj.correlationTimeDelay = 0;
                     obj.correlationTimeDelayWidth = 0;
                     for ii=1:size(SD.SrcPos)
-                        obj.srcLabels{ii} = ['S',num2str(ii)];
+                        obj.sourceLabels{ii} = ['S',num2str(ii)];
                     end
                     for ii=1:size(SD.DetPos)
-                        obj.detLabels{ii} = ['D',num2str(ii)];
+                        obj.detectorLabels{ii} = ['D',num2str(ii)];
                     end
                 elseif ischar(varargin{1})
                     obj.filename = varargin{1};
                     obj.Load(varargin{1});
                 end
             else
-                obj.lambda          = [];
-                obj.lambdaEmission  = [];
-                obj.srcPos  = [];
-                obj.detPos  = [];
+                obj.wavelengths          = [];
+                obj.wavelengthsEmission  = [];
+                obj.sourcePos  = [];
+                obj.detectorPos  = [];
                 obj.frequency  = 1;
                 obj.timeDelay  = 0;
                 obj.timeDelayWidth  = 0;
                 obj.momentOrder = [];
                 obj.correlationTimeDelay = 0;
                 obj.correlationTimeDelayWidth = 0;
-                obj.srcLabels = {};
-                obj.detLabels = {};
+                obj.sourceLabels = {};
+                obj.detectorLabels = {};
             end
         end
 
@@ -78,23 +78,24 @@ classdef SdClass < FileLoadSaveClass
             
             % Arg 2
             if ~exist('parent', 'var')
-                parent = '/snirf/sd';
+                parent = '/nirs/probe';
             elseif parent(1)~='/'
                 parent = ['/',parent];
             end
               
-            obj.lambda                    = hdf5read_safe(fname, [parent, '/lambda'], obj.lambda);
-            obj.lambdaEmission            = hdf5read_safe(fname, [parent, '/lambdaEmission'], obj.lambdaEmission);
-            obj.srcPos                    = hdf5read_safe(fname, [parent, '/srcPos'], obj.srcPos);
-            obj.detPos                    = hdf5read_safe(fname, [parent, '/detPos'], obj.detPos);
-            obj.frequency                 = hdf5read(fname, [parent, '/frequency']);
-            obj.timeDelay                 = hdf5read(fname, [parent, '/timeDelay']);
-            obj.timeDelayWidth            = hdf5read(fname, [parent, '/timeDelayWidth']);
+            obj.wavelengths               = hdf5read_safe(fname, [parent, '/wavelengths'], obj.wavelengths);
+            obj.wavelengthsEmission       = hdf5read_safe(fname, [parent, '/wavelengthsEmission'], obj.wavelengthsEmission);
+            obj.sourcePos                 = hdf5read_safe(fname, [parent, '/sourcePos'], obj.sourcePos);
+            obj.detectorPos               = hdf5read_safe(fname, [parent, '/detectorPos'], obj.detectorPos);
+            obj.frequency                 = hdf5read_safe(fname, [parent, '/frequency'], obj.frequency);
+            obj.timeDelay                 = hdf5read_safe(fname, [parent, '/timeDelay'], obj.timeDelay);
+            obj.timeDelayWidth            = hdf5read_safe(fname, [parent, '/timeDelayWidth'], obj.timeDelayWidth);
             obj.momentOrder               = hdf5read_safe(fname, [parent, '/momentOrder'], obj.momentOrder);
-            obj.correlationTimeDelay      = hdf5read(fname, [parent, '/correlationTimeDelay']);
-            obj.correlationTimeDelayWidth = hdf5read(fname, [parent, '/correlationTimeDelayWidth']);
-            obj.srcLabels                 = strtrim_improve(h5read_safe(fname, [parent, '/srcLabels'], obj.srcLabels));
-            obj.detLabels                 = strtrim_improve(h5read_safe(fname, [parent, '/detLabels'], obj.detLabels));
+            obj.correlationTimeDelay      = hdf5read_safe(fname, [parent, '/correlationTimeDelay'], obj.correlationTimeDelay);
+            obj.correlationTimeDelayWidth = hdf5read_safe(fname, [parent, '/correlationTimeDelayWidth'], obj.correlationTimeDelayWidth);
+            obj.sourceLabels              = convertH5StrToStr(h5read_safe(fname, [parent, '/sourceLabels'], obj.sourceLabels));
+            obj.detectorLabels            = convertH5StrToStr(h5read_safe(fname, [parent, '/detectorLabels'], obj.detectorLabels));
+            
         end
 
         
@@ -104,38 +105,38 @@ classdef SdClass < FileLoadSaveClass
                 fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end     
-            hdf5write_safe(fname, [parent, '/lambda'], obj.lambda);
-            hdf5write_safe(fname, [parent, '/lambdaEmission'], obj.lambdaEmission);
-            h5write_safe(fname, [parent, '/srcPos'], obj.srcPos);
-            h5write_safe(fname, [parent, '/detPos'], obj.detPos);
+            hdf5write_safe(fname, [parent, '/wavelengths'], obj.wavelengths);
+            hdf5write_safe(fname, [parent, '/wavelengthsEmission'], obj.wavelengthsEmission);
+            h5write_safe(fname, [parent, '/sourcePos'], obj.sourcePos);
+            h5write_safe(fname, [parent, '/detectorPos'], obj.detectorPos);
             hdf5write(fname, [parent, '/frequency'], obj.frequency, 'WriteMode','append');
             hdf5write(fname, [parent, '/timeDelay'], obj.timeDelay, 'WriteMode','append');
             hdf5write(fname, [parent, '/timeDelayWidth'], obj.timeDelayWidth, 'WriteMode','append');
             hdf5write_safe(fname, [parent, '/momentOrder'], obj.momentOrder);
             hdf5write(fname, [parent, '/correlationTimeDelay'], obj.correlationTimeDelay, 'WriteMode','append');
             hdf5write(fname, [parent, '/correlationTimeDelayWidth'], obj.correlationTimeDelayWidth, 'WriteMode','append');
-            hdf5write_safe(fname, [parent, '/srcLabels'], obj.srcLabels);
-            hdf5write_safe(fname, [parent, '/detLabels'], obj.detLabels);
+            hdf5write_safe(fname, [parent, '/sourceLabels'], obj.sourceLabels);
+            hdf5write_safe(fname, [parent, '/detectorLabels'], obj.detectorLabels);
         end
         
         
         
         % ---------------------------------------------------------
         function wls = GetWls(obj)
-            wls = obj.lambda;
+            wls = obj.wavelengths;
         end
         
         
         
         % ---------------------------------------------------------
         function srcpos = GetSrcPos(obj)
-            srcpos = obj.srcPos;
+            srcpos = obj.sourcePos;
         end
         
         
         % ---------------------------------------------------------
         function detpos = GetDetPos(obj)
-            detpos = obj.detPos;
+            detpos = obj.detectorPos;
         end
         
     end

@@ -1,5 +1,5 @@
 % SYNTAX:
-% [data_dN, tInc, svs, nSV, tInc0] = hmrR_MotionCorrectPCArecurse(data_d, sd, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh, nSV, maxIter, turnon)
+% [data_dN, tInc, svs, nSV, tInc0] = hmrR_MotionCorrectPCArecurse(data_d, probe, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh, nSV, maxIter, turnon)
 %
 %
 % UI NAME:
@@ -52,7 +52,7 @@
 %       artifacts
 %
 % USAGE OPTIONS:
-% Motion_Correct_PCA_Recurse:  [dod, tInc, svs, nSV, tInc0] = hmrR_MotionCorrectPCArecurse(dod, sd, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh, nSV, maxIter, turnon)
+% Motion_Correct_PCA_Recurse:  [dod, tInc, svs, nSV, tInc0] = hmrR_MotionCorrectPCArecurse(dod, probe, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh, nSV, maxIter, turnon)
 %
 % PARAMETERS:
 % tMotion: 0.5
@@ -63,7 +63,7 @@
 % maxIter: 5 
 % turnon: 1
 %
-function [data_dN, tInc, svs, nSV, tInc0] = hmrR_MotionCorrectPCArecurse(data_d, sd, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh, nSV, maxIter, turnon)
+function [data_dN, tInc, svs, nSV, tInc0] = hmrR_MotionCorrectPCArecurse(data_d, probe, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh, nSV, maxIter, turnon)
 
 nBlks = length(data_d);
 for iBlk=1:nBlks
@@ -94,7 +94,7 @@ tIncMerged = cell(1,1);
 for iBlk=1:nBlks
     data_dN(iBlk) = DataClass(data_d(iBlk));
     
-    tInc(iBlk) = hmrR_MotionArtifact(data_d(iBlk), sd, mlActMan(iBlk), tIncMan(iBlk), tMotion, tMask, STDEVthresh, AMPthresh);
+    tInc(iBlk) = hmrR_MotionArtifact(data_d(iBlk), probe, mlActMan(iBlk), tIncMan(iBlk), tMotion, tMask, STDEVthresh, AMPthresh);
     tInc0{iBlk} = tInc{iBlk};
     
     ii=0;
@@ -102,7 +102,7 @@ for iBlk=1:nBlks
         ii=ii+1;
         tIncMerged{1} = min([tInc{iBlk}, tIncMan{iBlk}], [], 2);
         [data_dN(iBlk), svs_ii, nSV(iBlk)] = hmrR_MotionCorrectPCA(data_d(iBlk), mlActMan(iBlk), tIncMerged, nSV(iBlk));
-        tInc(iBlk) = hmrR_MotionArtifact(data_dN(iBlk), sd, mlActMan(iBlk), tIncMan(iBlk), tMotion, tMask, STDEVthresh, AMPthresh);
+        tInc(iBlk) = hmrR_MotionArtifact(data_dN(iBlk), probe, mlActMan(iBlk), tIncMan(iBlk), tMotion, tMask, STDEVthresh, AMPthresh);
         data_d(iBlk).Copy(data_dN(iBlk));
         svs{iBlk}(:,ii) = svs_ii{1};
     end

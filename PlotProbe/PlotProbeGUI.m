@@ -220,8 +220,6 @@ if ispc()
 else
     setGuiFonts(hObject);
 end
-MapCondition();
-DisplayData(handles, hObject);
 
 if length(plotprobe.y)>1
     msg{1} = sprintf('Warning: Data in this plot probe uses different Y scales for different data blocks ');
@@ -238,7 +236,15 @@ if ~isempty(hmr)
     set(handles.menuFile,'visible','off');
     set(handles.menuItemChangeGroup,'visible','off');
     set(handles.menuItemSaveGroup,'visible','off');
+    plotprobe.updateParentGui = hmr.Update;
 end
+if ispc()
+    setGuiFonts(hObject);
+else
+    setGuiFonts(hObject, 7);
+end
+DisplayData(handles, hObject);
+
 
 
 % ----------------------------------------------------------------------
@@ -521,13 +527,15 @@ end
 
 
 
-
 % ----------------------------------------------------------------------
 function PlotProbeGUI_Close(hObject, eventdata, handles)
 global plotprobe
+plotprobe.updateParentGui('PlotProbeGUI');
 if ishandles(plotprobe.handles.figureDup)
     delete(plotprobe.handles.figureDup);
 end
+
+
 
 
 % ----------------------------------------------------------------------
@@ -539,7 +547,6 @@ if isempty(plotprobe)
 end
 
 ParseArgs(varargin);
-MapCondition();
 axes(handles.axes1);
 
 condition = plotprobe.condition;
@@ -566,21 +573,6 @@ for iBlk=1:nDataBlks
 end
 
 
-
-% ----------------------------------------------------------------------
-function MapCondition()
-global plotprobe
-
-if isempty(plotprobe)
-    return
-end
-if isempty(plotprobe.dataTree)
-    return
-end
-currElem  = plotprobe.dataTree.currElem;
-
-
-
 % ----------------------------------------------------------------------
 function ClearAxesData()
 global plotprobe
@@ -600,5 +592,12 @@ end
 cd(pathname);
 PlotProbeGUI();
 
+
+
+% --------------------------------------------------------------------
+function pushbuttonExit_Callback(hObject, eventdata, handles)
+if ishandles(handles.figure)
+    delete(handles.figure);
+end
 
 

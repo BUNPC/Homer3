@@ -1,5 +1,5 @@
 % SYNTAX:
-% dc = hmrR_OD2Conc( dod, sd, ppf )
+% dc = hmrR_OD2Conc( dod, probe, ppf )
 %
 % UI NAME:
 % OD_to_Conc
@@ -9,7 +9,7 @@
 %
 % INPUTS:
 % dod: SNIRF.data container with the Change in OD tim course 
-% sd:  SNIRF.sd container with the source/detector geometry
+% probe: SNIRF.probe container with the source/detector geometry
 % ppf: Partial path length factors for each wavelength. If there are 2 wavelengths 
 %      of data, then this is a vector of 2 elements.  Typical value is ~6 for each 
 %      wavelength if the absorption change is uniform over the volume of tissue measured. 
@@ -23,21 +23,21 @@
 % dc: SNIRF.data container with the concentration data 
 %
 % USAGE OPTIONS:
-% Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, sd, ppf )
+% Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, probe, ppf )
 %
 % PARAMETERS:
 % ppf: [1.0, 1.0]
 %
-function dc = hmrR_OD2Conc( dod, sd, ppf )
+function dc = hmrR_OD2Conc( dod, probe, ppf )
 
 dc = DataClass().empty();
 
 for ii=1:length(dod)
     dc(ii) = DataClass();
     
-    Lambda = sd.GetWls();
-    SrcPos = sd.GetSrcPos();
-    DetPos = sd.GetDetPos();
+    Lambda = probe.GetWls();
+    SrcPos = probe.GetSrcPos();
+    DetPos = probe.GetDetPos();
     nWav   = length(Lambda);
     ml     = dod(ii).GetMeasList();
     y      = dod(ii).GetDataTimeSeries();

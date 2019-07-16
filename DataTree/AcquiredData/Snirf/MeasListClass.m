@@ -93,7 +93,7 @@ classdef MeasListClass < FileLoadSaveClass
             
             % Arg 2
             if ~exist('parent', 'var')
-                parent = '/snirf/ml_1';
+                parent = '/nirs/data1/measurementList1';
             elseif parent(1)~='/'
                 parent = ['/',parent];
             end
@@ -114,11 +114,16 @@ classdef MeasListClass < FileLoadSaveClass
             obj.detectorIndex = hdf5read(fname, [parent, '/detectorIndex']);
             obj.wavelengthIndex = hdf5read(fname, [parent, '/wavelengthIndex']);
             obj.dataType = hdf5read(fname, [parent, '/dataType']);
-            obj.dataTypeLabel = strtrim_improve(hdf5read_safe(fname, [parent, '/dataTypeLabel'], obj.dataTypeLabel));
+            lb = convertH5StrToStr(hdf5read_safe(fname, [parent, '/dataTypeLabel'], obj.dataTypeLabel));
+            if iscell(lb)
+                obj.dataTypeLabel = lb{1};
+            else
+                obj.dataTypeLabel = lb;
+            end
             obj.dataTypeIndex = hdf5read(fname, [parent, '/dataTypeIndex']);
-            obj.sourcePower = hdf5read(fname, [parent, '/sourcePower']);
-            obj.detectorGain = hdf5read(fname, [parent, '/detectorGain']);
-            obj.moduleIndex = hdf5read(fname, [parent, '/moduleIndex']);
+            obj.sourcePower = hdf5read_safe(fname, [parent, '/sourcePower'], obj.sourcePower);
+            obj.detectorGain = hdf5read_safe(fname, [parent, '/detectorGain'], obj.detectorGain);
+            obj.moduleIndex = hdf5read_safe(fname, [parent, '/moduleIndex'], obj.moduleIndex);
         end
 
         

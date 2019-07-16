@@ -33,7 +33,7 @@ end
 % Process data through SNIRF-style procStream
 data_dod = hmrR_Intensity2OD(snirf.data);
 data_dod = hmrR_BandpassFilt(data_dod, .01, .5);
-data_dc = hmrR_OD2Conc(data_dod, snirf.sd, [6,6]);
+data_dc = hmrR_OD2Conc(data_dod, snirf.probe, [6,6]);
 [data_dcAvg, data_dcAvgStd, nTrials, data_dcSum2] = hmrR_BlockAvg(data_dc, snirf.stim, [-2.0, 20.0]);
 
 

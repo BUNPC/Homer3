@@ -148,11 +148,3 @@ dstd1 = std(d(lst,:),[],1);
 end
 
 
-
-
-
-% Function to find the sd pair with the largest spikes
-function sd_pair=find_sd(diff_d)
-[max_diff, max_ind]=max(max(diff_d));
-sd_pair=max_ind;
-end

@@ -85,6 +85,14 @@ classdef DataClass < FileLoadSaveClass
                 err = -1;
                 return;
             end
+            
+            % Arg 2
+            if ~exist('parent', 'var')
+                parent = '/nirs/data1';
+            elseif parent(1)~='/'
+                parent = ['/',parent];
+            end
+            
             try
                 obj.dataTimeSeries = h5read(fname, [parent, '/dataTimeSeries']);
                 obj.time = h5read(fname, [parent, '/time']);
@@ -95,11 +103,11 @@ classdef DataClass < FileLoadSaveClass
             
             ii=1;
             info = h5info(fname);
-            while h5exist(info, [parent, '/measurementList_', num2str(ii)])
+            while h5exist(info, [parent, '/measurementList', num2str(ii)])
                 if ii > length(obj.measurementList)
                     obj.measurementList(ii) = MeasListClass;
                 end
-                obj.measurementList(ii).LoadHdf5(fname, [parent, '/measurementList_', num2str(ii)]);
+                obj.measurementList(ii).LoadHdf5(fname, [parent, '/measurementList', num2str(ii)]);
                 ii=ii+1;
             end
         end
@@ -116,7 +124,7 @@ classdef DataClass < FileLoadSaveClass
             hdf5write_safe(fname, [parent, '/time'], obj.time);
             
             for ii=1:length(obj.measurementList)
-                obj.measurementList(ii).SaveHdf5(fname, [parent, '/measurementList_', num2str(ii)]);
+                obj.measurementList(ii).SaveHdf5(fname, [parent, '/measurementList', num2str(ii)]);
             end
         end
         

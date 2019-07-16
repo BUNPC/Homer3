@@ -468,7 +468,7 @@ if q==1
     group.CopyFcalls(procElem{iGroupPanel});
     group.CopyFcalls(procElem{iSubjPanel});
     group.CopyFcalls(procElem{iRunPanel});
-    procStreamEdit.updateParentGui();
+    procStreamEdit.updateParentGui('ProcStreamEditGUI');
 elseif q==2
     % load cfg file
     [filename,pathname] = uiputfile( '*.cfg', 'Process Options Config File to Save To?');

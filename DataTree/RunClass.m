@@ -160,7 +160,7 @@ classdef RunClass < TreeNodeClass
             
             % Update call application GUI using it's generic Update function 
             if ~isempty(obj.updateParentGui)
-                obj.updateParentGui([obj.iGroup, obj.iSubj, obj.iRun]);
+                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
             end
             
             if strcmpi(options, 'overwrite')

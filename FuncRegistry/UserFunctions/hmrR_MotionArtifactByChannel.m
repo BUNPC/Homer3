@@ -1,4 +1,4 @@
-% [tInc,tIncCh] = hmrR_MotionArtifactByChannel(data, sd, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+% [tInc,tIncCh] = hmrR_MotionArtifactByChannel(data, probe, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % UI NAME:   
 % Motion_Artifacts_By_Channel
@@ -14,7 +14,7 @@
 %
 % INPUTS:
 % data: SNIRF data structure data, containing time course data
-% sd:   SNIRF data structure sd, containing probe source/detector geometry
+% probe:   SNIRF data structure probe, containing probe source/detector geometry
 % tIncMan: Cell array of vectors corresponding to the number of time bases in data. 
 %          tIncMan has been manually excluded. 0-excluded. 1-included. Vector same length as d.
 % mlActMan: Cell array of vectors, one for each time base in data, specifying 
@@ -40,7 +40,7 @@
 %       channel basis
 %
 % USAGE OPTIONS:
-% Motion_Artifacts_By_Channel:  [tIncAuto, tIncAutoCh] = hmrR_MotionArtifactByChannel(dod, sd, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+% Motion_Artifacts_By_Channel:  [tIncAuto, tIncAutoCh] = hmrR_MotionArtifactByChannel(dod, probe, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % PARAMETERS:
 % tMotion: 0.5
@@ -59,17 +59,17 @@
 % TO DO:
 % Consider tIncMan
 
-function [tInc, tIncCh] = hmrR_MotionArtifactByChannel(data, sd, mlActMan, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
+function [tInc, tIncCh] = hmrR_MotionArtifactByChannel(data, probe, mlActMan, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
 
 % Input processing.  Check required inputs, throw errors if necessary.
 if nargin<3
-    error('First and second inputs must be data and sd SNIRF objects of type DataClass and SdClass.')
+    error('First and second inputs must be data and probe SNIRF objects of type DataClass and ProbeClass.')
 end
 if ~isa(data, 'DataClass')
     error('First input must be data SNIRF objects of type DataClass.')
 end
-if ~isa(sd, 'SdClass')
-    error('Second input must be sd SNIRF objects of type SdClass.')
+if ~isa(probe, 'ProbeClass')
+    error('Second input must be probe SNIRF objects of type ProbeClass.')
 end
 if isempty(tIncMan)
     tIncMan = cell(length(data,1),1);
@@ -83,7 +83,7 @@ for iBlk=1:length(data)
     d           = data(iBlk).GetDataTimeSeries();
     fs          = data(iBlk).GetTime();
     MeasList    = data(iBlk).GetMeasList();
-    Lambda      = sd.GetWls();
+    Lambda      = probe.GetWls();
     
     if length(fs)~=1
         fs = 1/(fs(2)-fs(1));
@@ -171,11 +171,3 @@ for iBlk=1:length(data)
     
 end
 
-
-
-% --------------------------------------------------------------------------
-% Function to find the sd pair with the largest spikes
-function sd_pair = find_sd(diff_d)
-
-[max_diff, max_ind] = max(max(diff_d));
-sd_pair = max_ind;

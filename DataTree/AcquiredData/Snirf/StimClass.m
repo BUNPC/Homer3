@@ -54,7 +54,7 @@ classdef StimClass < FileLoadSaveClass
             
             % Arg 2
             if ~exist('parent', 'var')
-                parent = '/snirf/stim_1';
+                parent = '/nirs/stim1';
             elseif parent(1)~='/'
                 parent = ['/',parent];
             end
@@ -73,8 +73,12 @@ classdef StimClass < FileLoadSaveClass
             %%%%%%%%%%%% Ready to load from file
 
             try
-                name = strtrim_improve(h5read(fname, [parent, '/name']));
-                obj.name = name{1};
+                nm = convertH5StrToStr(h5read(fname, [parent, '/name']));
+                if iscell(nm)
+                    obj.name = nm{1};
+                else
+                    obj.name = nm;
+                end
                 obj.data = h5read(fname, [parent, '/data']);
             catch
                 err = -1;

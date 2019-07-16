@@ -35,7 +35,7 @@ Display(handles);
 % -------------------------------------------------------------
 function ProcStreamOptionsGUI_Close()
 global procStreamOptions
-procStreamOptions.updateParentGui();
+procStreamOptions.updateParentGui('ProcStreamOptionsGUI');
 
 
 

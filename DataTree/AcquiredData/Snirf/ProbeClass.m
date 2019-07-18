@@ -139,6 +139,59 @@ classdef ProbeClass < FileLoadSaveClass
             detpos = obj.detectorPos;
         end
         
+        
+        % -------------------------------------------------------
+        function B = eq(obj, obj2)
+            B = false;
+            if ~all(obj.wavelengths(:)==obj2.wavelengths(:))
+                return;
+            end
+            if ~all(obj.wavelengthsEmission(:)==obj2.wavelengthsEmission(:))
+                return;
+            end
+            if ~all(obj.sourcePos(:)==obj2.sourcePos(:))
+                return;
+            end
+            if ~all(obj.detectorPos(:)==obj2.detectorPos(:))
+                return;
+            end
+            if ~all(obj.frequency(:)==obj2.frequency(:))
+                return;
+            end
+            if ~all(obj.timeDelay(:)==obj2.timeDelay(:))
+                return;
+            end
+            if ~all(obj.timeDelayWidth(:)==obj2.timeDelayWidth(:))
+                return;
+            end
+            if ~all(obj.momentOrder(:)==obj2.momentOrder(:))
+                return;
+            end
+            if ~all(obj.correlationTimeDelay(:)==obj2.correlationTimeDelay(:))
+                return;
+            end
+            if ~all(obj.correlationTimeDelayWidth(:)==obj2.correlationTimeDelayWidth(:))
+                return;
+            end
+            if length(obj.sourceLabels)~=length(obj2.sourceLabels)
+                return;
+            end
+            for ii=1:length(obj.sourceLabels)
+                if ~strcmp(obj.sourceLabels{ii}, obj2.sourceLabels{ii})
+                    return;
+                end
+            end
+            if length(obj.detectorLabels)~=length(obj2.detectorLabels)
+                return;
+            end
+            for ii=1:length(obj.detectorLabels)
+                if ~strcmp(obj.detectorLabels{ii}, obj2.detectorLabels{ii})
+                    return;
+                end
+            end
+            B = true;
+        end
+        
     end
     
 end

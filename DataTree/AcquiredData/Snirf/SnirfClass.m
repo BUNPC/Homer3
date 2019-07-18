@@ -241,7 +241,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % Load metaDataTags
             ii=1;
             while 1
-                if ii > length(obj.data)
+                if ii > length(obj.metaDataTags)
                     obj.metaDataTags(ii) = MetaDataTagsClass;
                 end
                 if obj.metaDataTags(ii).LoadHdf5(fname, [parent, '/metaDataTags', num2str(ii)]) < 0
@@ -249,13 +249,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     obj.metaDataTags(ii) = [];
                     break;
                 end
-                ii=ii+1;
-                
-                % This is debug code and should not be committed to any
-                % revision
-                if ii>10
-                    break;
-                end
+                ii=ii+1;                
             end
             
             % Load data
@@ -361,7 +355,62 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 obj.aux(ii).SaveHdf5(fname, [parent, '/aux', num2str(ii)]);
             end
         end
-                
+       
+        
+        % -------------------------------------------------------
+        function B = eq(obj, obj2)
+            B = false;            
+            if ~strcmp(obj.formatVersion, obj2.formatVersion)
+                return;
+            end
+            if length(obj.data)~=length(obj2.data)
+                return;
+            end
+            for ii=1:length(obj.data)
+                if obj.data(ii)~=obj2.data(ii)
+                    return;
+                end
+            end
+            if length(obj.stim)~=length(obj2.stim)
+                return;
+            end
+            for ii=1:length(obj.stim)
+                flag = false;
+                for jj=1:length(obj2.stim)
+                    if obj.stim(ii)==obj2.stim(jj)
+                        flag = true;
+                        break;
+                    end
+                end
+                if flag==false
+                    return;
+                end
+            end
+            if obj.probe~=obj2.probe
+                return;
+            end
+            if length(obj.aux)~=length(obj2.aux)
+                return;
+            end
+            for ii=1:length(obj.aux)
+                if obj.aux(ii)~=obj2.aux(ii)
+                    return;
+                end
+            end
+            if length(obj.metaDataTags)~=length(obj2.metaDataTags)
+                return;
+            end
+            for ii=1:length(obj.metaDataTags)
+                if obj.metaDataTags(ii)~=obj2.metaDataTags(ii)
+                    return;
+                end
+            end
+            B = true;
+        end
+        
+        
+        
+        
     end
     
     

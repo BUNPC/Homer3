@@ -524,6 +524,28 @@ classdef DataClass < FileLoadSaveClass
             obj.time = obj2.time;
         end
         
+        
+        % -------------------------------------------------------
+        function B = eq(obj, obj2)
+            B = false;
+            if ~all(obj.dataTimeSeries(:)==obj2.dataTimeSeries(:))
+                return;
+            end
+            if ~all(obj.time(:)==obj2.time(:))
+                return;
+            end
+            if length(obj.measurementList)~=length(obj2.measurementList)
+                return;
+            end
+            for ii=1:length(obj.measurementList)
+                if obj.measurementList(ii)~=obj2.measurementList(ii)
+                    return;
+                end
+            end
+            B = true;
+        end
+        
+        
     end
 end
 

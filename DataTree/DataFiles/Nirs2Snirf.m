@@ -1,12 +1,18 @@
-function snirf = Nirs2Snirf(nirsfiles0, replace, tfactors)
+function snirf = Nirs2Snirf(nirsfiles0, replace, ntimebases)
 %
 % Syntax:
 %   snirf = Nirs2Snirf(nirsfiles)
 %   snirf = Nirs2Snirf(nirsfiles, replace)
-%   snirf = Nirs2Snirf(nirsfiles, replace, tfactors)
+%   snirf = Nirs2Snirf(nirsfiles, replace, ntimebases)
+%
+% Description:
+%   Convert all .nirs files in the current folder to .snirf
 %
 % 
 %
+
+DEBUG=false;
+
 snirf = SnirfClass().empty();
 
 if ~exist('nirsfiles0','var') || isempty(nirsfiles0)
@@ -15,8 +21,8 @@ end
 if ~exist('replace','var') || isempty(replace)
     replace = false;
 end
-if ~exist('tfactors','var') || isempty(tfactors)
-    tfactors = 1;
+if ~exist('ntimebases','var') || isempty(ntimebases)
+    ntimebases = 1;
 end
 
 nirsfiles = mydir('');
@@ -40,7 +46,13 @@ for ii=1:length(nirsfiles)
     waitbar_improved(ii/length(nirsfiles), h, sprintf('Converting %s to SNIRF: %d of %d', nirsfiles(ii).name, ii, length(nirsfiles)));
 
     nirs = load([pname,'/',fname,ext],'-mat');
-    snirf(ii) = SnirfClass(nirs, tfactors);
+    
+    if DEBUG==false
+        snirf(ii) = SnirfClass(nirs);
+    else
+        snirf(ii) = SnirfClass(nirs, ntimebases);
+    end
+    
     snirf(ii).Save([pname,'/',fname,'.snirf']);
     if replace
         delete([pname,'/',fname,ext]);

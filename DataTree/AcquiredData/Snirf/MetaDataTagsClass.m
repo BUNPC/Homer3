@@ -44,10 +44,14 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
 
             % Read tag name
             obj.name = convertH5StrToStr(h5read_safe(fname, [parent, '/name'], obj.name));
+            if isempty(obj.name)
+               err=-1;
+               return;
+            end
             
             % Read tag value
             obj.value = convertH5StrToStr(h5read_safe(fname, [parent, '/value'], obj.value));
-
+            
         end
         
         
@@ -61,7 +65,20 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             hdf5write_safe(fname, [parent, '/value'], obj.value);
         end
         
-
+        
+        % -------------------------------------------------------
+        function B = eq(obj, obj2)
+            B = false;
+            if ~strcmp(obj.name, obj2.name)
+                return;
+            end
+            if ~strcmp(obj.value, obj2.value)
+                return;
+            end
+            B = true;
+        end
+        
+        
     end
     
 end

@@ -122,8 +122,21 @@ classdef StimClass < FileLoadSaveClass
         function Copy(obj, obj2)
             obj.name = obj2.name;
             obj.data = obj2.data;
-        end        
+        end
         
+        
+        % -------------------------------------------------------
+        function B = eq(obj, obj2)
+            B = false;
+            if ~strcmp(obj.name, obj2.name)
+                return;
+            end
+            if ~all(obj.data(:)==obj2.data(:))
+                return;
+            end
+            B = true;
+        end
+                      
     end
     
     

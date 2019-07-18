@@ -2,8 +2,9 @@ classdef AuxClass < FileLoadSaveClass
     
     properties
         name
-        d
-        t
+        dataTimeSeries
+        time
+        timeOffset
     end
     
     methods
@@ -11,17 +12,18 @@ classdef AuxClass < FileLoadSaveClass
         % -------------------------------------------------------
         function obj = AuxClass(varargin)
             
+            obj.timeOffset = 0;
             if nargin==1
                 obj.filename = varargin{1};
                 obj.Load();
             elseif nargin==3
-                obj.d    = varargin{1};
-                obj.t    = varargin{2};
+                obj.dataTimeSeries    = varargin{1};
+                obj.time = varargin{2};
                 obj.name = varargin{3};
             else
                 obj.name = '';
-                obj.d = [];
-                obj.t = [];
+                obj.dataTimeSeries = [];
+                obj.time = [];
             end
             
             % Set base class properties not part of the SNIRF format
@@ -64,8 +66,9 @@ classdef AuxClass < FileLoadSaveClass
                 else
                     obj.name = nm;
                 end
-                obj.d    = h5read(fname, [parent, '/d']);
-                obj.t    = h5read(fname, [parent, '/t']);
+                obj.dataTimeSeries    = h5read(fname, [parent, '/dataTimeSeries']);
+                obj.time    = h5read(fname, [parent, '/time']);
+                obj.timeOffset    = h5read(fname, [parent, '/timeOffset']);
             catch
                 err = -1;
                 return;
@@ -81,16 +84,37 @@ classdef AuxClass < FileLoadSaveClass
             end     
             
             hdf5write(fname, [parent, '/name'], obj.name, 'WriteMode','append');
-            hdf5write_safe(fname, [parent, '/d'], obj.d);
-            hdf5write_safe(fname, [parent, '/t'], obj.t);
+            hdf5write_safe(fname, [parent, '/dataTimeSeries'], obj.dataTimeSeries);
+            hdf5write_safe(fname, [parent, '/time'], obj.time);
+            hdf5write_safe(fname, [parent, '/timeOffset'], obj.timeOffset);
         end
         
         
         % -------------------------------------------------------
         function d = GetData(obj)
-            d = obj.d;
+            d = obj.dataTimeSeries;
+        end
+        
+        
+        % -------------------------------------------------------
+        function B = eq(obj, obj2)
+            B = false;
+            if ~strcmp(obj.name, obj2.name)
+                return;
+            end
+            if ~all(obj.dataTimeSeries(:)==obj2.dataTimeSeries(:))
+                return;
+            end
+            if ~all(obj.time(:)==obj2.time(:))
+                return;
+            end
+            if obj.timeOffset(:)~=obj2.timeOffset
+                return;
+            end
+            B = true;
         end
         
     end
     
 end
+

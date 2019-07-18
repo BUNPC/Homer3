@@ -216,6 +216,39 @@ classdef MeasListClass < FileLoadSaveClass
             end
         end
         
+        % -------------------------------------------------------
+        function B = eq(obj, obj2)
+            B = false;       
+            if obj.sourceIndex~=obj2.sourceIndex
+                return;
+            end
+            if obj.detectorIndex~=obj2.detectorIndex
+                return;
+            end
+            if obj.wavelengthIndex~=obj2.wavelengthIndex
+                return;
+            end
+            if obj.dataType~=obj2.dataType
+                return;
+            end
+            if ~strcmp(obj.dataTypeLabel, obj2.dataTypeLabel)
+                return;
+            end
+            if obj.dataTypeIndex~=obj2.dataTypeIndex
+                return;
+            end
+            if obj.sourcePower~=obj2.sourcePower
+                return;
+            end
+            if obj.detectorGain~=obj2.detectorGain
+                return;
+            end
+            if obj.moduleIndex~=obj2.moduleIndex
+                return;
+            end
+            B = true;
+        end
+        
     end
     
 end

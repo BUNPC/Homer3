@@ -6,7 +6,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         stim
         probe
         aux
-        timeOffset
         metaDataTags
     end
 
@@ -49,8 +48,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %
              
             % Initialize properties from SNIRF spec 
-            obj.formatVersion = '1.0';
-            obj.timeOffset     = 0;
+            obj.formatVersion = '1.10';
             obj.metaDataTags   = MetaDataTagsClass().empty();
             obj.data           = DataClass().empty();
             obj.stim           = StimClass().empty();
@@ -159,7 +157,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             obj.stim          = CopyHandles(obj2.stim);
             obj.probe         = CopyHandles(obj2.probe);
             obj.aux           = CopyHandles(obj2.aux);
-            obj.timeOffset    = obj2.timeOffset;
             obj.metaDataTags  = CopyHandles(obj2.metaDataTags);
         end
         
@@ -217,7 +214,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 parent = ['/',parent];
             end
             
-            % Do some error checking            
+            % Do some error checking
             if ~isempty(fname)
                 obj.filename = fname;
             else
@@ -236,7 +233,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             else
                 obj.formatVersion = foo;
             end
-            obj.timeOffset = hdf5read_safe(fname, [parent, '/timeOffset'], obj.timeOffset);
             
             % Load metaDataTags
             ii=1;
@@ -327,10 +323,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %%%%% Save this object's properties
             
             % Save formatVersion
+            if isempty(obj.formatVersion)
+                obj.formatVersion = '1.10';
+            end
             hdf5write(fname, '/formatVersion', obj.formatVersion, 'WriteMode','append');
-            
-            % Save timeOffset
-            hdf5write(fname, [parent, '/timeOffset'], obj.timeOffset, 'WriteMode','append');
             
             % Save metaDataTags
             for ii=1:length(obj.metaDataTags)
@@ -467,16 +463,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % ---------------------------------------------------------
         function val = GetAux(obj)
             val = obj.aux;
-        end
-        
-        % ---------------------------------------------------------
-        function SetTimeOffset(obj, val)
-            obj.timeOffset = val;        
-        end
-        
-        % ---------------------------------------------------------
-        function val = GetTimeOffset(obj)
-            val = obj.timeOffset;
         end
         
         % ---------------------------------------------------------

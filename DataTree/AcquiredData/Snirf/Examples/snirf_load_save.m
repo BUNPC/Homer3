@@ -30,15 +30,26 @@ end
 [pname, fname] = fileparts(infile);
 outfile = [pname, fname, '.snirf'];
 
-% Load .nirs, and convert it to SnirfClass object then save it in HDF5 file
+% Load .nirs file
 nirs = load(infile,'-mat');
-snirf_saved = SnirfClass(nirs);
+
+% Save SNIRF: Convert .nirs format data to SnirfClass object, save it to .snirf file (HDF5)
 fprintf('Saving %s ...\n', outfile);
+snirf_saved = SnirfClass(nirs);
 tic; snirf_saved.Save(outfile); toc
 
-% Create another SnirfClass object and load SNIRF data from the saved HDF5
-% file. 
+% Load SNIRF: Create another SnirfClass object, load SNIRF data from the .snirf file (HDF5)
 fprintf('Loading %s ...\n', outfile);
 tic; snirf_loaded = SnirfClass(outfile); toc
 
-
+% NOTE: the SnirfClass constructor uses the Load() method which complements the Save() 
+% method. If one wanted to be consistent with the Save operation above you could do  
+% the loading this way:
+%   
+%   fprintf('Loading %s ...\n', outfile);
+%   snirf_loaded = SnirfClass();
+%   tic; snirf_loaded.Load(outfile); toc
+%
+% However in the actual code that loads .snirf files, it is much clearer and more concise 
+% to use the constructor the way it's done in this function. 
+%

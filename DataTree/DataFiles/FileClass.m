@@ -18,12 +18,13 @@ classdef FileClass < matlab.mixin.Copyable
         filename
         map2group
         pathfull
+        err
     end
     
     methods
 
-        function obj = FileClass(file_struct)
-
+        function obj = FileClass(varargin)
+            
             obj.name       = '';
             obj.date       = '';
             obj.bytes      = 0;
@@ -36,11 +37,19 @@ classdef FileClass < matlab.mixin.Copyable
             obj.filename   = '';
             obj.map2group  = struct('iSubj',0,'iRun',0);
             obj.pathfull   = '';
+            obj.err        = -1;          % Assume file is not loadable
 
-            if ~exist('file_struct','var') || isempty(file_struct)
+            if nargin==0
                 return;
             end
-
+            if isstruct(varargin{1})
+                file_struct = varargin{1};
+            elseif ischar(varargin{1})
+                file_struct = obj.Dirname2Struct(varargin{1});
+            else
+                return;
+            end
+            
             % Copy all fields of file_struct that exist in this class to this object. 
             fields = propnames(file_struct);
             for ii=1:length(fields)
@@ -60,7 +69,6 @@ classdef FileClass < matlab.mixin.Copyable
             else
                 obj.pathfull = fileparts(fullpath(obj.name));
             end
-
         end
 
 
@@ -74,6 +82,21 @@ classdef FileClass < matlab.mixin.Copyable
                 obj.map2group.iRun  = 0;
             end
         end
+        
+        
+        % -----------------------------------------------------------
+        function file_struct = Dirname2Struct(obj, dirnameFull)
+            file_struct = [];
+            [~, dirname] = fileparts(dirnameFull);
+            dirs = dir([dirnameFull, '/..']);
+            for ii=1:length(dirs)
+                if strcmpi(dirname, dirs(ii).name)
+                    file_struct = dirs(ii);
+                    break;
+                end
+            end
+        end
+        
         
         
         % -----------------------------------------------------------
@@ -95,10 +118,73 @@ classdef FileClass < matlab.mixin.Copyable
         
         
         % -----------------------------------------------------------
+        function [groupName, subjName, runName] = ExtractNames(obj)
+            [~, groupName] = fileparts(pwd);
+            subjName = '';
+            runName = '';
+
+            %%%% obj is a group folder
+            if obj.isdir && strcmp(groupName, obj.name)
+                return;
+            end
+            
+            %%%% obj is a subject folder
+            if obj.isdir
+                subjName = obj.name;
+                return;
+            end
+
+            %%%% obj is a data file
+            runName = obj.name;
+            
+            % Determine subject name from filename
+            [pname, fname] = fileparts(obj.name);
+            if ~isempty(pname)
+                subjName = pname;
+            else
+                k1=strfind(fname,'_run');
+                if(~isempty(k1))
+                    % Subject name is part of the file name
+                    subjName = fname(1:k1-1);
+                else
+                    % Subject name is the file name minus extension
+                    subjName = fname;
+                end
+            end
+        end
+        
+        
+        % -----------------------------------------------------------
         function p = GetFilesPath(obj)
             p = obj.pathfull;            
         end
+                
         
+        % -----------------------------------------------------------
+        function b = Loadable(obj)
+            if obj.err==0
+                b = true;
+            else
+                b = false;
+            end
+        end
+
+        
+        % -----------------------------------------------------------
+        function Loaded(obj)
+            obj.err = 0;
+        end
+        
+        
+        % -----------------------------------------------------------
+        function b = IsFile(obj)
+            if obj.isdir
+                b = false;
+            else
+                b = true;
+            end
+        end
+                
     end
     
 end

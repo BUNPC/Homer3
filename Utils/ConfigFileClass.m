@@ -3,7 +3,6 @@ classdef ConfigFileClass < FileClass
     properties
         linestr;
         sections;
-        err;
     end
     
     methods

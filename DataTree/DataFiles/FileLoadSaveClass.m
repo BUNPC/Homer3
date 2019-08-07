@@ -18,6 +18,7 @@ classdef FileLoadSaveClass < matlab.mixin.Copyable
                 'matlab', {{'.mat','matlab','mat'}}, ...
                 'hdf5', {{'hdf','.hdf','hdf5','.hdf5','hf5','.hf5','h5','.h5'}} ...
                 );
+            obj.err=0;
         end
         
         
@@ -81,6 +82,7 @@ classdef FileLoadSaveClass < matlab.mixin.Copyable
             b = false;
         end
         
+
         % -------------------------------------------------------
         function B = ne(obj, obj2)
             if obj==obj2

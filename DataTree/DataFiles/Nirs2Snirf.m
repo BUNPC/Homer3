@@ -1,4 +1,4 @@
-function snirf = Nirs2Snirf(nirsfiles0, replace, ntimebases)
+function [snirf, nirsfiles] = Nirs2Snirf(nirsfiles0, replace, ntimebases)
 %
 % Syntax:
 %   snirf = Nirs2Snirf(nirsfiles)
@@ -16,7 +16,7 @@ DEBUG=false;
 snirf = SnirfClass().empty();
 
 if ~exist('nirsfiles0','var') || isempty(nirsfiles0)
-    nirsfiles0 = NirsFilesClass().files;
+    nirsfiles0 = DataFilesClass('nirs').files;
 end
 if ~exist('replace','var') || isempty(replace)
     replace = false;

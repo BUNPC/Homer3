@@ -18,6 +18,32 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function obj = NirsClass(arg)
+            %
+            % Syntax:
+            %   obj = NirsClass()
+            %   obj = NirsClass(filename);
+            %   
+            %
+            % Example 1:
+            %   nirs = NirsClass('./s1/neuro_run01.nirs')
+            %    
+            %   Here's some of the output:
+            %
+            %       nirs ==>
+            % 
+            %           NirsClass with properties:
+            % 
+            %                      SD: [1×1 struct]
+            %                       t: [12698×1 double]
+            %                       s: [12698×2 double]
+            %                       d: [12698×18 double]
+            %                     aux: [12698×1 double]
+            %               CondNames: {'1'  '2'}
+            %                filename: './s1/neuro_run01.nirs'
+            %              fileformat: 'mat'
+            %         supportedFomats: [1×1 struct]
+            %                     err: 0
+            %
             
             % Initialize Nirs public properties
             obj.SD        = struct([]);
@@ -42,6 +68,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             end
             filename = arg;
             if ~exist('filename','var') || ~exist(filename,'file')
+                obj = NirsClass.empty();
                 return;
             end
             obj.Load(filename);
@@ -187,6 +214,34 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             nTrials = sum(obj.s,1);
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsEmpty(obj)
+            b = true;
+            if isempty(obj)
+                return;
+            end
+            if isempty(obj.SD)
+                return;
+            end
+            if isempty(obj.SD.SrcPos)
+                return;
+            end
+            if isempty(obj.SD.DetPos)
+                return;
+            end
+            if isempty(obj.SD.MeasList)
+                return;
+            end
+            if isempty(obj.t)
+                return;
+            end
+            if isempty(obj.d)
+                return;
+            end
+            b = false;
+        end
+        
     end
     
     
@@ -211,7 +266,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         end
         
         % ---------------------------------------------------------
-        function val = GetTime(obj)
+        function val = GetTime(obj, iBlk)
             val = obj.t;
         end
         

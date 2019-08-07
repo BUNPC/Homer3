@@ -76,14 +76,14 @@ classdef MeasListClass < FileLoadSaveClass
                 obj.dataTypeIndex    = varargin{5};
             end
             
-            % These are fields helping to implement the MeasListClass
-            % which are NOT part of the SNIRF spec and are not loaded or saved from/to
-            % SNIRF files
+            % Set base class properties not part of the SNIRF format
+            obj.fileformat = 'hdf5';
+
         end
         
         
         % -------------------------------------------------------
-        function obj = LoadHdf5(obj, fname, parent)
+        function err = LoadHdf5(obj, fname, parent)
             err = 0;
             
             % Arg 1
@@ -106,24 +106,29 @@ classdef MeasListClass < FileLoadSaveClass
             end
             if isempty(fname)
                err=-1;
-               return;
-            end
-            
+            else                
             %%%%%%%%%%%% Ready to load from file
-            obj.sourceIndex = hdf5read(fname, [parent, '/sourceIndex']);
-            obj.detectorIndex = hdf5read(fname, [parent, '/detectorIndex']);
-            obj.wavelengthIndex = hdf5read(fname, [parent, '/wavelengthIndex']);
-            obj.dataType = hdf5read(fname, [parent, '/dataType']);
-            lb = convertH5StrToStr(hdf5read_safe(fname, [parent, '/dataTypeLabel'], obj.dataTypeLabel));
-            if iscell(lb)
-                obj.dataTypeLabel = lb{1};
-            else
-                obj.dataTypeLabel = lb;
+                try
+		            obj.sourceIndex = hdf5read(fname, [parent, '/sourceIndex']);
+		            obj.detectorIndex = hdf5read(fname, [parent, '/detectorIndex']);
+		            obj.wavelengthIndex = hdf5read(fname, [parent, '/wavelengthIndex']);
+		            obj.dataType = hdf5read(fname, [parent, '/dataType']);
+		            lb = convertH5StrToStr(hdf5read_safe(fname, [parent, '/dataTypeLabel'], obj.dataTypeLabel));
+		            if iscell(lb)
+		                obj.dataTypeLabel = lb{1};
+		            else
+		                obj.dataTypeLabel = lb;
+		            end
+		            obj.dataTypeIndex = hdf5read(fname, [parent, '/dataTypeIndex']);
+		            obj.sourcePower = hdf5read_safe(fname, [parent, '/sourcePower'], obj.sourcePower);
+		            obj.detectorGain = hdf5read_safe(fname, [parent, '/detectorGain'], obj.detectorGain);
+		            obj.moduleIndex = hdf5read_safe(fname, [parent, '/moduleIndex'], obj.moduleIndex);
+                catch
+                    err=-1;
+                end
             end
-            obj.dataTypeIndex = hdf5read(fname, [parent, '/dataTypeIndex']);
-            obj.sourcePower = hdf5read_safe(fname, [parent, '/sourcePower'], obj.sourcePower);
-            obj.detectorGain = hdf5read_safe(fname, [parent, '/detectorGain'], obj.detectorGain);
-            obj.moduleIndex = hdf5read_safe(fname, [parent, '/moduleIndex'], obj.moduleIndex);
+            obj.err = err;
+            
         end
 
         

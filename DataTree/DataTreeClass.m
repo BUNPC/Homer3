@@ -13,6 +13,11 @@ classdef DataTreeClass <  handle
         
         % ---------------------------------------------------------------
         function obj = DataTreeClass(fmt, procStreamCfgFile)
+            obj.group         = GroupClass().empty();
+            obj.currElem      = TreeNodeClass().empty();
+            obj.reg           = RegistriesClass().empty();
+            obj.config        = ConfigFileClass().empty();
+            
             if ~exist('fmt','var')
                 fmt = '';
             end
@@ -20,18 +25,39 @@ classdef DataTreeClass <  handle
                 procStreamCfgFile = '';
             end
                        
-            % Get file names
-            dataInit = FindFiles(fmt);
-            if isempty(dataInit) || dataInit.isempty()
-                return;
+            dirnameGroup = '';
+                       
+            % Get file names and load them into DataTree
+            while obj.IsEmpty()
+                obj.files    = FileClass().empty();
+                obj.filesErr = FileClass().empty();
+                
+                dataInit = FindFiles(fmt, dirnameGroup);
+                if isempty(dataInit) || dataInit.isempty()
+                    return;
+                end
+                obj.files = dataInit.files;
+
+                obj.LoadData(procStreamCfgFile);
+                if obj.IsEmpty()                    
+                    msg{1} = sprintf('Could not load any of the requested files in the current group folder. ');
+                    msg{2} = sprintf('Do you want to select another group folder?');
+                    q = MenuBox([msg{:}], {'YES','NO'});
+                    if q==2
+                        return;
+                    end
+                    dirnameGroup = uigetdir(pwd, 'Please select another group folder ...');
+                    if dirnameGroup==0
+                        return;
+                    end
+                end
             end
-            obj.files    = dataInit.files;
-            obj.filesErr = dataInit.filesErr;
+            
+            % Load user function registry
             obj.reg = RegistriesClass();
             if ~isempty(obj.reg.GetSavedRegistryPath())
                 fprintf('Loaded saved registry %s\n', obj.reg.GetSavedRegistryPath());
             end            
-            obj.LoadData(procStreamCfgFile);
             
             % Initialize the current processing element within the group
             obj.SetCurrElem(1,1,1);
@@ -56,7 +82,13 @@ classdef DataTreeClass <  handle
             % Load acquisition data from the data files
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.AcqData2Group();
-            
+                
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Remove file entries from files array for data files 
+            % which didn't load correctly because of format incompatibility
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            obj.ErrorCheckLoadedFiles();
+
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Load derived or post-acquisition data from a file if it 
             % exists
@@ -77,83 +109,97 @@ classdef DataTreeClass <  handle
         
         % ----------------------------------------------------------
         function AcqData2Group(obj)
-            obj.group = GroupClass().empty();
-            
             if isempty(obj.files)
                 return;
-            end
+            end            
+            groupCurr = GroupClass().empty();
+            subjCurr = SubjClass().empty();
+            runCurr = RunClass().empty();
             
-            % Create new group based only on acquisition data
-            rnum = 1;
-            obj.group = GroupClass(obj.files(1).name);
-            obj.files(1).MapFile2Group(1,1,1);
-            hwait = waitbar_improved(0, sprintf('Loading proc elements') );
-            for ii=2:length(obj.files)
-                
-                waitbar_improved(ii/length(obj.files), hwait, sprintf('Loading %s: %d of %d', ...
-                    sprintf(obj.files(ii).name), ii, length(obj.files)) );
-                
-                fname = obj.files(ii).name;
-                if obj.files(ii).isdir
-                    jj = length(obj.group.subjs)+1;
-                    obj.group.subjs(jj) = SubjClass(fname, jj, 0, rnum);
-                    obj.files(ii).MapFile2Group(1,jj,rnum);
-                else
-                    [sname, rnum_tmp, iExt] = getSubjNameAndRun(fname, rnum);
-                    if rnum_tmp ~= rnum
-                        rnum = rnum_tmp;
-                    end
-                    
-                    jj=1;
-                    while jj<=length(obj.group.subjs)
-                        if(strcmp(sname, obj.group.subjs(jj).name))
-                            nRuns = length(obj.group.subjs(jj).runs);
-                            
-                            % If this run already exists under this subject, the user probably
-                            % made a mistake in naming the file (e.g., having two files named
-                            % <subjname>_run01.nirs and <subjname>_run01_<descriptor>.nirs)
-                            % We handle it anyways by continuing through all existing subjects
-                            % until we are forced to create a new subject with one run.
-                            flag=0;
-                            for kk=1:nRuns
-                                if rnum == obj.group.subjs(jj).runs(kk).rnum
-                                    sname = fname(1:iExt-1);
-                                    jj=jj+1;
-                                    flag = 1;
-                                    break;
-                                end
-                            end
-                            if flag==1
-                                flag = 0;
-                                continue
-                            end
-                            
-                            % Create new run in existing subject
-                            obj.group.subjs(jj).runs(nRuns+1) = RunClass(fname, jj, nRuns+1, rnum);
-                            obj.group.nFiles = obj.group.nFiles+1;
-                            obj.files(ii).MapFile2Group(1,jj,nRuns+1);
-                            rnum=rnum+1;
-                            break;
-                        end
-                        jj=jj+1;
-                    end
-                    
-                    % Create new subject with one run
-                    if(jj>length(obj.group.subjs))
-                        obj.group.subjs(jj) = SubjClass(fname, jj, 1, rnum);
-                        obj.group.nFiles = obj.group.nFiles+1;
-                        obj.files(ii).MapFile2Group(1,jj,1);
-                        rnum=rnum+1;
-                    end
+            fprintf('\n');
+            iG = 1;
+            for iF=1:length(obj.files)
+                % Extract group, subj, and run names from file struct
+                [groupName, subjName, runName] = obj.files(iF).ExtractNames();
+
+                % Create current TreeNode objects corresponding to the current files entry
+                if ~isempty(groupName) && ~strcmp(groupName, groupCurr.GetName)
+                    groupCurr = GroupClass(obj.files(iF), iG, 'noprint');
                 end
-            end
-            close(hwait);
+                if ~isempty(subjName) && ~strcmp(subjName, subjCurr.GetName)
+                    subjCurr = SubjClass(obj.files(iF));
+                end
+                if ~isempty(runName) && ~strcmp(runName, runCurr.GetName)
+                    runCurr = RunClass(obj.files(iF));                    
+                end
+
+                % If current run has successfully loaded acquired data from data file, then add 
+                % current group, subject and run to dataTree. Then reset current run to empty. 
+                % (We do not reset current subject or group because they can contain multiple 
+                % nodes and they cannot be empty once they've been initialized once whereas run 
+                % can be if it fails to load a data file. 
+                if ~runCurr.IsEmpty()
+                    obj.Add(groupCurr, subjCurr, runCurr);
+                    runCurr = RunClass().empty();
+                end
+            end            
+            fprintf('\n');            
         end
 
 
        
         % ----------------------------------------------------------
+        function Add(obj, group, subj, run)
+            if nargin<2
+                return;
+            end
+                        
+            % Add group to this dataTree
+            jj=0;
+            for ii=1:length(obj.group)
+                if strcmp(obj.group(ii).GetName, group.GetName())
+                    jj=ii;
+                    break;
+                end
+            end
+            if jj==0
+                jj = length(obj.group)+1;
+                group.SetIndexID(jj);
+                obj.group(jj) = group;
+                fprintf('Added group %s to dataTree.\n', obj.group(jj).GetName);
+            end
+
+            %v Add subj and run to group
+            obj.group.Add(subj, run);            
+        end
+
+        
+        % ----------------------------------------------------------
+        function ErrorCheckLoadedFiles(obj)
+            for iF=length(obj.files):-1:1
+                if ~obj.files(iF).Loadable() && obj.files(iF).IsFile()
+                    obj.filesErr(end+1) = obj.files(iF).copy;
+                    obj.files(iF) = [];
+                end                    
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function list = DepthFirstTraversalList(obj)
+            list = {};
+            for ii=1:length(obj.group)
+                list = [list; obj.group(ii).DepthFirstTraversalList()];
+            end
+        end        
+        
+        
+        % ----------------------------------------------------------
         function SetCurrElem(obj, iGroup, iSubj, iRun)
+            if obj.group.IsEmpty()
+                return;
+            end
+            
             if nargin==1
                 iGroup = 0;
                 iSubj = 0;
@@ -182,7 +228,7 @@ classdef DataTreeClass <  handle
 
 
         % ----------------------------------------------------------
-        function [iGroup, iSubj, iRun] = GetCurrElemIdx(obj)
+        function [iGroup, iSubj, iRun] = GetCurrElemIndexID(obj)
             iGroup = obj.currElem.iGroup;
             iSubj = obj.currElem.iSubj;
             iRun = obj.currElem.iRun;
@@ -202,28 +248,6 @@ classdef DataTreeClass <  handle
 
         
         % ----------------------------------------------------------
-        function iFile = MapGroup2File(obj, iGroup, iSubj, iRun)
-            iFile = 0;
-            for ii=1:length(obj.files)
-                if obj.files(ii).map2group.iGroup==iGroup && ...
-                   obj.files(ii).map2group.iSubj==iSubj && ...
-                   obj.files(ii).map2group.iRun==iRun
-                    iFile = ii;
-                    break;
-                end
-            end 
-        end
-
-        
-        % ----------------------------------------------------------
-        function [iGroup, iSubj, iRun] = MapFile2Group(obj, iFile)
-            iGroup = obj.files(iFile).map2group.iGroup;
-            iSubj = obj.files(iFile).map2group.iSubj;
-            iRun = obj.files(iFile).map2group.iRun;
-        end
-
-
-        % ----------------------------------------------------------
         function b = IsEmpty(obj)
             b = true;
             if isempty(obj)
@@ -232,10 +256,7 @@ classdef DataTreeClass <  handle
             if isempty(obj.files)
                 return;
             end
-            if isempty(obj.group)
-                return;
-            end
-            if isempty(obj.currElem)
+            if obj.group.IsEmpty()
                 return;
             end
             b = false;

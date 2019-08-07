@@ -2,11 +2,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
     properties
         formatVersion
+        metaDataTags
         data
         stim
         probe
         aux
-        metaDataTags
     end
 
     properties (Access = private)
@@ -105,6 +105,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     for ii=1:size(nirs.aux,2)
                         obj.aux(ii) = AuxClass(nirs.aux(:,ii), nirs.t, sprintf('aux%d',ii));
                     end
+                    
+                    % Add metadatatags
+                    obj.AddTags();
+                    
                 end                
             elseif nargin>1 && nargin<5
                 data = varargin{1};
@@ -112,13 +116,14 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 stim = varargin{2};
                 obj.SetStim(stim);
                 if nargin>2
-                    sd = varargin{3};
-                    obj.SetSd(sd);
+                    probe = varargin{3};
+                    obj.SetSd(probe);
                 end
                 if nargin>3
                     aux = varargin{4};
                     obj.SetAux(aux);
                 end
+                                
             % The basic 5 of a .nirs format as separate args
             elseif nargin==5
                 obj.data(1) = DataClass(d,t,SD.MeasList);
@@ -129,6 +134,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 for ii=1:size(aux,2)
                     obj.aux(ii) = AuxClass(aux, t, sprintf('aux%d',ii));
                 end
+                
+                % Add metadatatags
+                obj.AddTags();
+                
             % The basic 5 of a .nirs format plus condition names
             elseif nargin==6
                 obj.data(1) = DataClass(d,t,SD.MeasList);
@@ -139,6 +148,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 for ii=1:size(aux,2)
                     obj.aux(ii) = AuxClass(aux, t, sprintf('aux%d',ii));
                 end
+                
+                % Add metadatatags
+                obj.AddTags();
             end
             
         end
@@ -153,11 +165,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 return;
             end
             obj.formatVersion = obj2.formatVersion;
+            obj.metaDataTags  = CopyHandles(obj2.metaDataTags);
             obj.data          = CopyHandles(obj2.data);
             obj.stim          = CopyHandles(obj2.stim);
             obj.probe         = CopyHandles(obj2.probe);
             obj.aux           = CopyHandles(obj2.aux);
-            obj.metaDataTags  = CopyHandles(obj2.metaDataTags);
         end
         
         
@@ -227,76 +239,96 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             %%%%%%%%%%%% Ready to load from file
             
-            foo = convertH5StrToStr(h5read(fname, '/formatVersion'));
-            if iscell(foo)
-                obj.formatVersion = foo{1};
-            else
-                obj.formatVersion = foo;
+            try 
+                
+                %%%% Load formatVersion
+                foo = convertH5StrToStr(h5read(fname, '/formatVersion'));
+                if iscell(foo)
+                    obj.formatVersion = foo{1};
+                else
+                    obj.formatVersion = foo;
+                end
+            
+                %%%% Load metaDataTags
+                ii=1;
+                while 1
+                    if ii > length(obj.metaDataTags)
+                        obj.metaDataTags(ii) = MetaDataTagsClass;
+                    end
+                    if obj.metaDataTags(ii).LoadHdf5(fname, [parent, '/metaDataTags', num2str(ii)]) < 0
+                        obj.metaDataTags(ii).delete();
+                        obj.metaDataTags(ii) = [];
+                        if ii==1
+                            err=-1;
+                        end
+                        break;
+                    end
+                    ii=ii+1;
+                end
+                
+                %%%% Load data
+                ii=1;
+                while 1
+                    if ii > length(obj.data)
+                        obj.data(ii) = DataClass;
+                    end
+                    if obj.data(ii).LoadHdf5(fname, [parent, '/data', num2str(ii)]) < 0
+                        obj.data(ii).delete();
+                        obj.data(ii) = [];
+                        if ii==1
+                            err=-1;
+                        end
+                        break;
+                    end
+                    ii=ii+1;
+                end
+                
+                %%%% Load stim
+                
+                % Since we want to load stims in sorted order (i.e., according to alphabetical order
+                % of condition names), first load to temporary variable.
+                ii=1;
+                while 1
+                    if ii > length(obj.stim)
+                        obj.stim(ii) = StimClass;
+                    end
+                    if obj.stim(ii).LoadHdf5(fname, [parent, '/stim', num2str(ii)]) < 0
+                        obj.stim(ii).delete();
+                        obj.stim(ii) = [];
+                        if ii==1
+                            err=-1;
+                        end
+                        break;
+                    end
+                    ii=ii+1;
+                end
+                obj.SortStims();
+                
+                %%%% Load probe
+                obj.probe = ProbeClass();
+                obj.probe.LoadHdf5(fname, [parent, '/probe']);
+                
+                %%%% Load aux
+                ii=1;
+                while 1
+                    if ii > length(obj.aux)
+                        obj.aux(ii) = AuxClass;
+                    end
+                    if obj.aux(ii).LoadHdf5(fname, [parent, '/aux', num2str(ii)]) < 0
+                        obj.aux(ii).delete();
+                        obj.aux(ii) = [];
+                        if ii==1
+                            err=-1;
+                        end
+                        break;
+                    end
+                    ii=ii+1;
+                end
+            catch
+                err=-1;
             end
-            
-            % Load metaDataTags
-            ii=1;
-            while 1
-                if ii > length(obj.metaDataTags)
-                    obj.metaDataTags(ii) = MetaDataTagsClass;
-                end
-                if obj.metaDataTags(ii).LoadHdf5(fname, [parent, '/metaDataTags', num2str(ii)]) < 0
-                    obj.metaDataTags(ii).delete();
-                    obj.metaDataTags(ii) = [];
-                    break;
-                end
-                ii=ii+1;                
-            end
-            
-            % Load data
-            ii=1;
-            while 1
-                if ii > length(obj.data)
-                    obj.data(ii) = DataClass;
-                end
-                if obj.data(ii).LoadHdf5(fname, [parent, '/data', num2str(ii)]) < 0
-                    obj.data(ii).delete();
-                    obj.data(ii) = [];
-                    break;
-                end
-                ii=ii+1;
-            end
-            
-            % Load stim
-            
-            % Since we want to load stims in sorted order (i.e., according to alphabetical order 
-            % of condition names), first load to temporary variable.
-            ii=1;
-            while 1
-                if ii > length(obj.stim)
-                    obj.stim(ii) = StimClass;
-                end
-                if obj.stim(ii).LoadHdf5(fname, [parent, '/stim', num2str(ii)]) < 0
-                    obj.stim(ii).delete();
-                    obj.stim(ii) = [];
-                    break;
-                end                
-                ii=ii+1;
-            end
-            obj.SortStims();
-            
-            % Load sd
-            obj.probe = ProbeClass();
-            obj.probe.LoadHdf5(fname, [parent, '/probe']);
-            
-            % Load aux
-            ii=1;
-            while 1
-                if ii > length(obj.aux)
-                    obj.aux(ii) = AuxClass;
-                end
-                if obj.aux(ii).LoadHdf5(fname, [parent, '/aux', num2str(ii)]) < 0
-                    obj.aux(ii).delete();
-                    obj.aux(ii) = [];
-                    break;
-                end
-                ii=ii+1;
-            end
+            obj.err = err;
+
         end
         
         
@@ -405,7 +437,15 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         end
         
         
-        
+        % ----------------------------------------------------------------------
+        function AddTags(obj)
+            if isempty(obj.metaDataTags)
+                obj.metaDataTags(1) = MetaDataTagsClass('SubjectID','none');
+                obj.metaDataTags(2) = MetaDataTagsClass('MeasurementDate','none');
+                obj.metaDataTags(3) = MetaDataTagsClass('MeasurementTime','none');
+                obj.metaDataTags(4) = MetaDataTagsClass('LengthUnit','mm');
+            end
+        end
         
     end
     
@@ -915,6 +955,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % ----------------------------------------------------------------------------------
         function b = IsEmpty(obj)
             b = true;
+            if isempty(obj)
+                return;
+            end
             if isempty(obj.data)
                 return;
             end

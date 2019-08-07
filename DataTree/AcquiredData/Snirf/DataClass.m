@@ -27,6 +27,10 @@ classdef DataClass < FileLoadSaveClass
             %
             %  Example:
             %    
+            % Set class properties not part of the SNIRF format
+            obj.fileformat = 'hdf5';
+            
+            % Set SNIRF fomat properties
             obj.measurementList = MeasListClass().empty();
             
             if nargin==0 
@@ -40,6 +44,8 @@ classdef DataClass < FileLoadSaveClass
                     for ii=1:size(varargin{1}.ml,1)
                         obj.measurementList(end+1) = MeasListClass(varargin{1}.ml(ii,:));
                     end
+                elseif isa(varargin{1}, 'char')
+                    obj.Load(varargin{1});
                 end
             elseif nargin==3                
                 if ~all(isreal(varargin{1}(:)))
@@ -96,20 +102,25 @@ classdef DataClass < FileLoadSaveClass
             try
                 obj.dataTimeSeries = h5read(fname, [parent, '/dataTimeSeries']);
                 obj.time = h5read(fname, [parent, '/time']);
-            catch
-                err = -1;
-                return;
-            end
-            
-            ii=1;
-            info = h5info(fname);
-            while h5exist(info, [parent, '/measurementList', num2str(ii)])
+            	ii=1;
+                while 1
                 if ii > length(obj.measurementList)
                     obj.measurementList(ii) = MeasListClass;
                 end
-                obj.measurementList(ii).LoadHdf5(fname, [parent, '/measurementList', num2str(ii)]);
+                    if obj.measurementList(ii).LoadHdf5(fname, [parent, '/measurementList', num2str(ii)]) < 0
+                        obj.measurementList(ii).delete();
+                        obj.measurementList(ii) = [];
+                        if ii==1
+                            err=-1;
+                        end
+                        break;
+                    end
                 ii=ii+1;
             end
+            catch
+                err = -1;
+            end
+            obj.err = err;
         end
         
         

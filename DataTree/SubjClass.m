@@ -12,27 +12,26 @@ classdef SubjClass < TreeNodeClass
             
             obj.type  = 'subj';
             obj.runs = RunClass().empty;
-            if nargin>0 && isa(varargin{1}, 'SubjClass')
-                obj.Copy(varargin{1});
-                return;
-            elseif nargin==4
-                fname = varargin{1};
-                iSubj = varargin{2};
-                iRun  = varargin{3};
-                rnum  = varargin{4};
+            if nargin==1
+                if isa(varargin{1}, 'SubjClass')
+                    obj.Copy(varargin{1});
+                    return;
+                elseif isa(varargin{1}, 'FileClass')
+                    [~, obj.name] = varargin{1}.ExtractNames();
+                else
+                    obj.name = varargin{1};
+                end
+            elseif nargin==3
+                if ~isa(varargin{1}, 'FileClass')
+                    [~, obj.name] = varargin{1}.ExtractNames();
+                else
+                    obj.name = varargin{1};
+                end
+                obj.iGroup = varargin{2};
+                obj.iSubj = varargin{3};
             else
                 return;
             end
-            
-            sname = getSubjNameAndRun(fname, rnum);
-            if ~isempty(fname) && exist(fname,'file')==2
-                obj.runs = RunClass(fname, iSubj, iRun, rnum);
-            end
-            
-            obj.name = sname;
-            obj.iGroup = 1;
-            obj.type = 'subj';
-            obj.iSubj = iSubj;
         end
         
         
@@ -137,6 +136,36 @@ classdef SubjClass < TreeNodeClass
                 close(h);
             end
         end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Add(obj, run)
+            % Add run to this subject
+            jj=0;
+            for ii=1:length(obj.runs)
+                if strcmp(obj.runs(ii).GetName, run.GetName())
+                    jj=ii;
+                    break;
+                end
+            end
+            if jj==0
+                jj = length(obj.runs)+1;
+                run.SetIndexID(obj.iGroup, obj.iSubj, jj);
+                obj.runs(jj) = run;
+                fprintf('     Added run %s to subject %s.\n', obj.runs(jj).GetName, obj.GetName);
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function list = DepthFirstTraversalList(obj)
+            list{1} = obj;
+            for ii=1:length(obj.runs)
+                list{ii+1,1} = obj.runs(ii);
+            end
+        end
+        
         
         
         % ----------------------------------------------------------------------------------
@@ -255,6 +284,22 @@ classdef SubjClass < TreeNodeClass
             end
         end
         
+
+        % ----------------------------------------------------------------------------------
+        function b = IsEmpty(obj)
+            b = true;
+            if isempty(obj)
+                return;
+            end
+            for ii=1:length(obj.runs)
+                if ~obj.runs(ii).IsEmpty()
+                    b = false;
+                    break;
+                end
+            end
+        end
+
+
     end
     
     

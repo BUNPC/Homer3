@@ -39,6 +39,9 @@ classdef StimClass < FileLoadSaveClass
                 obj.name = '';
                 obj.data = [];
             end
+            
+            % Set class properties not part of the SNIRF format
+            obj.fileformat = 'hdf5';
             obj.errmargin = 1e-3;
         end
         
@@ -84,7 +87,7 @@ classdef StimClass < FileLoadSaveClass
                 err = -1;
                 return;
             end
-                        
+            obj.err = err;
         end
         
         

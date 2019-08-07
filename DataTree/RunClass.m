@@ -1,7 +1,6 @@
 classdef RunClass < TreeNodeClass
     
     properties % (Access = private)
-        rnum;
         acquired;
     end
     
@@ -12,48 +11,66 @@ classdef RunClass < TreeNodeClass
             %
             % Syntax:
             %   obj = RunClass()
-            %   obj = RunClass(filename, iSubj, iRun, rnum);
+            %   obj = RunClass(filename);
+            %   obj = RunClass(filename, iGroup, iSubj, iRun);
+            %   obj = RunClass(run);
             %
             % Example 1:
-            %   r = RunClass('./s1/neuro_run01.nirs',1,1,1);
+            %   run1     = RunClass('./s1/neuro_run01.nirs',1,1,1);
+            %   run1copy = RunClass(run1);
             %
             obj@TreeNodeClass(varargin);
             obj.type  = 'run';
-            obj.iGroup = 1;
-            if nargin==4
-                obj.name  = varargin{1};
-                obj.iSubj = varargin{2};
-                obj.iRun  = varargin{3};
-                obj.rnum  = varargin{4};
-            elseif nargin>0 
-                if isa(varargin{1}, 'RunClass')
-                    obj.Copy(varargin{1});
-                    return;
-                elseif ischar(varargin{1}) && strcmp(varargin{1},'copy')
-                    return;
-                end
-            elseif nargin==0
+            if nargin==0
                 obj.name  = '';
-                obj.iSubj = 0;
-                obj.iRun  = 0;
-                obj.rnum  = 0;
                 return;
-            else
+            end    
+                        
+            if isa(varargin{1}, 'RunClass')
+                obj.Copy(varargin{1});
+                return;
+            elseif isa(varargin{1}, 'FileClass')
+                [~, ~, obj.name] = varargin{1}.ExtractNames();
+            elseif ischar(varargin{1}) && strcmp(varargin{1},'copy')
+                return;
+            elseif ischar(varargin{1}) 
+                obj.name = varargin{1};
+            end
+            if nargin==4
+                obj.iGroup = varargin{2};
+                obj.iSubj  = varargin{3};
+                obj.iRun   = varargin{4};
+            end
+            
+            obj.Load();
+            if obj.acquired.IsEmpty()
+                obj = RunClass.empty();
                 return;
             end
-            obj.Load();
             obj.procStream = ProcStreamClass(obj.acquired);
+
+            if isa(varargin{1}, 'FileClass')
+                varargin{1}.Loaded();
+            end
         end
 
         
             
         % ----------------------------------------------------------------------------------
         function Load(obj)
+            if isempty(obj)
+                return;
+            end
             if obj.IsNirs()
                 obj.acquired = NirsClass(obj.name);
             else
                 obj.acquired = SnirfClass(obj.name);
             end            
+            if obj.acquired.IsEmpty()
+                fprintf('     **** Warning: %s failed to load.\n', obj.name);
+            else
+                %fprintf('    Loaded file %s to run.\n', obj.name);                
+            end
         end
         
         
@@ -119,6 +136,19 @@ classdef RunClass < TreeNodeClass
             end
         end
         
+
+        % ----------------------------------------------------------------------------------
+        function b = IsEmpty(obj)
+            b = true;
+            if isempty(obj)
+                return;
+            end
+            if obj.acquired.IsEmpty()
+                return;
+            end
+            b = false;
+        end
+               
     end
     
     

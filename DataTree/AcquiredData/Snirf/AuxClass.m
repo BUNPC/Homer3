@@ -71,8 +71,8 @@ classdef AuxClass < FileLoadSaveClass
                 obj.timeOffset    = h5read(fname, [parent, '/timeOffset']);
             catch
                 err = -1;
-                return;
             end
+            obj.err = err;            
         end
 
         

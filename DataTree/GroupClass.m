@@ -3,8 +3,6 @@ classdef GroupClass < TreeNodeClass
     properties % (Access = private)
         version;
         versionStr;
-        fileidx;
-        nFiles;
         subjs;
     end
     
@@ -19,11 +17,16 @@ classdef GroupClass < TreeNodeClass
             obj@TreeNodeClass(varargin);
             obj.InitVersion();
 
-            fprintf('Current GroupClass version %s\n', obj.GetVersionStr());
+            if nargin<3 || ~strcmp(varargin{3}, 'noprint')
+                fprintf('Current GroupClass version %s\n', obj.GetVersionStr());
+            end
             
             obj.type    = 'group';
             obj.subjs   = SubjClass().empty;
             
+            if nargin==0
+                return;
+            end
             if nargin>0
                 if ischar(varargin{1}) && strcmp(varargin{1},'copy')
                     return;
@@ -31,26 +34,22 @@ classdef GroupClass < TreeNodeClass
                     obj.Copy(varargin{1});
                     return;
                 end
-                fname = varargin{1};
-            else
-                return;
+                if isa(varargin{1}, 'FileClass')
+                    obj.name = varargin{1}.ExtractNames();
+                else
+                    obj.name = varargin{1};
+                end
             end
-            
-            if ~isempty(fname)
-                obj.subjs = SubjClass(fname, 1, 1, 1);
+            if nargin>1
+                obj.iGroup = varargin{2};
             end
-            
-            % Derive obj name from the name of the root directory
-            curr_dir = pwd;
-            k = sort([findstr(curr_dir,'/') findstr(curr_dir,'\')]);
-            name = curr_dir(k(end)+1:end);
-            
-            obj.name = name;
-            obj.iGroup = 1;
-            obj.type = 'group';
-            obj.fileidx = 0;
-            obj.nFiles = 0;
                         
+            if isempty(obj.name)
+                % Derive obj name from the name of the root directory
+                curr_dir = pwd;
+                k = sort([findstr(curr_dir,'/') findstr(curr_dir,'\')]);
+                obj.name = curr_dir(k(end)+1:end);
+            end
         end
         
         
@@ -247,7 +246,44 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function Add(obj, subj, run)                        
+            % Add subject to this group
+            jj=0;
+            for ii=1:length(obj.subjs)
+                if strcmp(obj.subjs(ii).GetName(), subj.GetName())
+                    jj=ii;
+                    break;
+                end
+            end
+            if jj==0
+                jj = length(obj.subjs)+1;
+                subj.SetIndexID(obj.iGroup, jj);
+                obj.subjs(jj) = subj;
+                fprintf('   Added subject %s to group %s.\n', obj.subjs(jj).GetName, obj.GetName);
+            end
+            
+            % Add run to subj
+            obj.subjs(jj).Add(run);
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function list = DepthFirstTraversalList(obj)
+            list{1} = obj;
+            for ii=1:length(obj.subjs)
+                list = [list; obj.subjs(ii).DepthFirstTraversalList()];
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
         function InitProcStream(obj, procStreamCfgFile)
+            if isempty(obj)
+                return;
+            end
+            
             if ~exist('procStreamCfgFile','var')
                 procStreamCfgFile = '';
             end
@@ -457,6 +493,21 @@ classdef GroupClass < TreeNodeClass
         end
         
         
+        % ----------------------------------------------------------------------------------
+        function b = IsEmpty(obj)
+            b = true;
+            if isempty(obj)
+                return;
+            end
+            for ii=1:length(obj.subjs)
+                if ~obj.subjs(ii).IsEmpty()
+                    b = false;
+                    break;
+                end
+            end
+        end
+
+
     end   % Public methods
         
         
@@ -466,7 +517,10 @@ classdef GroupClass < TreeNodeClass
     methods
         
         % ----------------------------------------------------------------------------------
-        function Load(obj)            
+        function Load(obj)
+            if isempty(obj)
+                return;
+            end
             group = [];
             if exist('./groupResults.mat','file')
                 g = load( './groupResults.mat' );
@@ -617,6 +671,9 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function SetConditions(obj)
+            if isempty(obj)
+                return;
+            end
             
             % First get global et of conditions across all runs and
             % subjects

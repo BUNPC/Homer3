@@ -20,6 +20,10 @@ classdef ProbeClass < FileLoadSaveClass
         
         % -------------------------------------------------------
         function obj = ProbeClass(varargin)
+            % Set class properties not part of the SNIRF format
+            obj.fileformat = 'hdf5';
+            
+            % Set SNIRF fomat properties
             if nargin>0
                 if isstruct(varargin{1})
                     SD = varargin{1};
@@ -62,7 +66,9 @@ classdef ProbeClass < FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function obj = LoadHdf5(obj, fname, parent)
+        function err = LoadHdf5(obj, fname, parent)
+            err = 0;
+            
             % Overwrite 1st argument if the property filename is NOT empty
             if ~isempty(obj.filename)
                 fname = obj.filename;
@@ -83,19 +89,24 @@ classdef ProbeClass < FileLoadSaveClass
                 parent = ['/',parent];
             end
               
-            obj.wavelengths               = hdf5read_safe(fname, [parent, '/wavelengths'], obj.wavelengths);
-            obj.wavelengthsEmission       = hdf5read_safe(fname, [parent, '/wavelengthsEmission'], obj.wavelengthsEmission);
-            obj.sourcePos                 = hdf5read_safe(fname, [parent, '/sourcePos'], obj.sourcePos);
-            obj.detectorPos               = hdf5read_safe(fname, [parent, '/detectorPos'], obj.detectorPos);
-            obj.frequency                 = hdf5read_safe(fname, [parent, '/frequency'], obj.frequency);
-            obj.timeDelay                 = hdf5read_safe(fname, [parent, '/timeDelay'], obj.timeDelay);
-            obj.timeDelayWidth            = hdf5read_safe(fname, [parent, '/timeDelayWidth'], obj.timeDelayWidth);
-            obj.momentOrder               = hdf5read_safe(fname, [parent, '/momentOrder'], obj.momentOrder);
-            obj.correlationTimeDelay      = hdf5read_safe(fname, [parent, '/correlationTimeDelay'], obj.correlationTimeDelay);
-            obj.correlationTimeDelayWidth = hdf5read_safe(fname, [parent, '/correlationTimeDelayWidth'], obj.correlationTimeDelayWidth);
-            obj.sourceLabels              = convertH5StrToStr(h5read_safe(fname, [parent, '/sourceLabels'], obj.sourceLabels));
-            obj.detectorLabels            = convertH5StrToStr(h5read_safe(fname, [parent, '/detectorLabels'], obj.detectorLabels));
-            
+            try
+                obj.wavelengths               = hdf5read_safe(fname, [parent, '/wavelengths'], obj.wavelengths);
+                obj.wavelengthsEmission       = hdf5read_safe(fname, [parent, '/wavelengthsEmission'], obj.wavelengthsEmission);
+                obj.sourcePos                 = hdf5read_safe(fname, [parent, '/sourcePos'], obj.sourcePos);
+                obj.detectorPos               = hdf5read_safe(fname, [parent, '/detectorPos'], obj.detectorPos);
+                obj.frequency                 = hdf5read_safe(fname, [parent, '/frequency'], obj.frequency);
+                obj.timeDelay                 = hdf5read_safe(fname, [parent, '/timeDelay'], obj.timeDelay);
+                obj.timeDelayWidth            = hdf5read_safe(fname, [parent, '/timeDelayWidth'], obj.timeDelayWidth);
+                obj.momentOrder               = hdf5read_safe(fname, [parent, '/momentOrder'], obj.momentOrder);
+                obj.correlationTimeDelay      = hdf5read_safe(fname, [parent, '/correlationTimeDelay'], obj.correlationTimeDelay);
+                obj.correlationTimeDelayWidth = hdf5read_safe(fname, [parent, '/correlationTimeDelayWidth'], obj.correlationTimeDelayWidth);
+                obj.sourceLabels              = convertH5StrToStr(h5read_safe(fname, [parent, '/sourceLabels'], obj.sourceLabels));
+                obj.detectorLabels            = convertH5StrToStr(h5read_safe(fname, [parent, '/detectorLabels'], obj.detectorLabels));
+            catch 
+                err=-1;
+                return;
+            end
+            obj.err = err;            
         end
 
         

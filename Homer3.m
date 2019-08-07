@@ -84,7 +84,7 @@ uipanelProcessingType_SelectionChangeFcn([]);
 % ---------------------------------------------------------------------
 function Homer3_EnableDisableGUI(handles, val)
 
-set(handles.listboxFiles, 'enable', val);
+set(handles.listboxGroupTree, 'enable', val);
 set(handles.radiobuttonProcTypeGroup, 'enable', val);
 set(handles.radiobuttonProcTypeSubj, 'enable', val);
 set(handles.radiobuttonProcTypeRun, 'enable', val);
@@ -138,7 +138,7 @@ hmr.guiControls = InitGuiControls(handles);
 Homer3_EnableDisableGUI(handles,'on');
 
 % Display data from currently selected processing element
-DisplayFiles(handles);
+DisplayGroupTree(handles);
 DisplayData(handles, hObject);
 
 hmr.childguis(1) = ChildGuiClass('ProcStreamEditGUI');
@@ -181,45 +181,55 @@ hmr = [];
 clear hmr;
 
 
-
 % --------------------------------------------------------------------------------------------
-function DisplayFiles(handles)
+function DisplayGroupTree(handles)
 global hmr;
 
-files    = hmr.dataTree.files;
-filesErr = hmr.dataTree.filesErr;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Initialize listboxGroupTree params struct
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+hmr.listboxGroupTreeParams = struct('listMaps',struct('names',{{}}, 'idxs', []), ...
+                                    'views', struct('ALL',1, 'SUBJS',2, 'RUNS',3), ...
+                                    'viewSetting',0);
+                      
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Generate linear lists from group tree nodes for the 3 group views
+% in listboxGroupTree
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[nSubjs, nRuns] = GenerateGroupDisplayLists();
 
-% Set listbox for valid .nirs files
-listboxFiles = cell(length(files),1);
-nFiles=0;
-for ii=1:length(files)
-    if files(ii).isdir
-        listboxFiles{ii} = files(ii).name;
-    elseif ~isempty(files(ii).subjdir)
-        listboxFiles{ii} = ['    ', files(ii).filename];
-        nFiles=nFiles+1;
-    else
-        listboxFiles{ii} = files(ii).name;
-        nFiles=nFiles+1;
-    end
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Determine the best view for the data files 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[viewSetting, views] = SetView(handles, nSubjs, nRuns);
 
-% Set listbox for invalid .nirs files
-listboxFiles2 = cell(length(filesErr),1);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Set listbox used for displaying valid data
+% Get the GUI listboxGroupTree setting 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+listboxGroup = hmr.listboxGroupTreeParams.listMaps(viewSetting).names;
+nFiles = length(hmr.listboxGroupTreeParams.listMaps(views.RUNS).names);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Set listbox used for displaying files that did not load correctly
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+listboxFilesErr = cell(length(hmr.dataTree.filesErr),1);
 nFilesErr=0;
-for ii=1:length(filesErr)
-    if filesErr(ii).isdir
-        listboxFiles2{ii} = filesErr(ii).name;
-    elseif ~isempty(filesErr(ii).subjdir)
-        listboxFiles2{ii} = ['    ', filesErr(ii).filename];
+for ii=1:length(hmr.dataTree.filesErr)
+    if hmr.dataTree.filesErr(ii).isdir
+        listboxFilesErr{ii} = hmr.dataTree.filesErr(ii).name;
+    elseif ~isempty(hmr.dataTree.filesErr(ii).subjdir)
+        listboxFilesErr{ii} = ['    ', hmr.dataTree.filesErr(ii).filename];
         nFilesErr=nFilesErr+1;
     else
-        listboxFiles2{ii} = filesErr(ii).name;
+        listboxFilesErr{ii} = hmr.dataTree.filesErr(ii).name;
         nFilesErr=nFilesErr+1;
     end
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set graphics objects: text and listboxes if handles exist
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ~isempty(handles)
     % Report status in the status text object
     set( handles.textStatus, 'string', { ...
@@ -227,23 +237,23 @@ if ~isempty(handles)
         sprintf('%d files failed to load',nFilesErr) ...
         } );
     
-    if ~isempty(files)
-        set(handles.listboxFiles, 'value',1)
-        set(handles.listboxFiles, 'string',listboxFiles)
+    if ~isempty(listboxGroup)
+        set(handles.listboxGroupTree, 'value',1)
+        set(handles.listboxGroupTree, 'string',listboxGroup)
     end
     
-    if ~isempty(filesErr)
+    if ~isempty(listboxFilesErr)
         set(handles.listboxFilesErr, 'visible','on');
         set(handles.listboxFilesErr, 'value',1);
-        set(handles.listboxFilesErr, 'string',listboxFiles2)
+        set(handles.listboxFilesErr, 'string',listboxFilesErr)
     else
         set(handles.listboxFilesErr, 'visible','off');
-        pos1 = get(handles.listboxFiles, 'position');
+        pos1 = get(handles.listboxGroupTree, 'position');
         pos2 = get(handles.listboxFilesErr, 'position');
-        set(handles.listboxFiles, 'position', [pos1(1) pos2(2) pos1(3) .98-pos2(2)]);
+        set(handles.listboxGroupTree, 'position', [pos1(1) pos2(2) pos1(3) .98-pos2(2)]);
     end
 end
-listboxFiles_Callback([], [1,1,1], handles)
+listboxGroupTree_Callback([], [1,1,1], handles)
 
 
 
@@ -255,8 +265,8 @@ if isempty(hObject)
     return;
 end
 proclevel = getProclevel(handles);
-iFile = get(handles.listboxFiles,'value');
-[iGroup,iSubj,iRun] = hmr.dataTree.MapFile2Group(iFile);
+iList = get(handles.listboxGroupTree,'value');
+[iGroup,iSubj,iRun] = MapList2GroupTree(iList);
 switch(proclevel)
 	case hmr.gid
         if iGroup==0
@@ -283,23 +293,23 @@ switch(proclevel)
         end
         hmr.dataTree.SetCurrElem(iGroup, iSubj, iRun);
 end
-listboxFiles_Callback([], [iGroup,iSubj,iRun], handles)
+[iGroup, iSubj, iRun] = hmr.dataTree.GetCurrElemIndexID();
+listboxGroupTree_Callback([], [iGroup,iSubj,iRun], handles)
 DisplayData(handles, hObject);
 
 
 
 % --------------------------------------------------------------------
-function listboxFiles_Callback(hObject0, eventdata, handles)
-global hmr
+function listboxGroupTree_Callback(hObject0, eventdata, handles)
 
 if isempty(hObject0)    
-    hObject = handles.listboxFiles;
+    hObject = handles.listboxGroupTree;
 else
     hObject = hObject0;
 end
 
-iFile = get(hObject,'value');
-if isempty(iFile==0)
+iList = get(hObject,'value');
+if isempty(iList==0)
     return;
 end
 
@@ -307,12 +317,12 @@ end
 if isa(eventdata, 'matlab.ui.eventdata.ActionData')
     
     % Get the [iGroup,iSubj,iRun] mapping of the clicked lisboxFiles entry
-    [iGroup,iSubj,iRun] = hmr.dataTree.MapFile2Group(iFile);
+    [iGroup, iSubj, iRun] = MapList2GroupTree(iList);
     
     % Get the current processing level radio buttons setting
     proclevel = getProclevel(handles);
         
-    % Set new gui state based on current gui selections of listboxFiles
+    % Set new gui state based on current gui selections of listboxGroupTree
     % (iGroup, iSubj, iRun) and proc level radio buttons (proclevel)
     SetGuiProcLevel(handles, iGroup, iSubj, iRun, proclevel);
     
@@ -321,11 +331,11 @@ elseif ~isempty(eventdata)
     iGroup = eventdata(1);
     iSubj = eventdata(2);
     iRun = eventdata(3);
-    iFile = hmr.dataTree.MapGroup2File(iGroup, iSubj, iRun);
-    if iFile==0
+    iList = MapGroupTree2List(iGroup, iSubj, iRun);
+    if iList==0
         return;
     end
-    set(hObject,'value', iFile);
+    set(hObject,'value', iList);
     
 end
 DisplayData(handles, hObject0);
@@ -338,16 +348,16 @@ if ~ishandles(hObject)
     return;
 end
 
-% Save original selection in listboxFiles because it'll change during auto processing 
-val0 = get(handles.listboxFiles, 'value');
+% Save original selection in listboxGroupTree because it'll change during auto processing 
+val0 = get(handles.listboxGroupTree, 'value');
 
 % Set the display status to pending. In order to avoid redisplaying 
 % in a single callback thread in functions called from here which 
 % also call DisplayData
 hmr.dataTree.CalcCurrElem();
 
-% Restore original selection listboxFiles
-set(handles.listboxFiles, 'value',val0);
+% Restore original selection listboxGroupTree
+set(handles.listboxGroupTree, 'value',val0);
 
 h = waitbar(0,'Auto-saving group processing results. Please wait ...');
 hmr.dataTree.SaveCurrElem();
@@ -1001,7 +1011,7 @@ switch(guiname)
             iSubj = varargin{2}(2);
             iRun = varargin{2}(3);
             fprintf('Processing iGroup=%d, iSubj=%d, iRun=%d\n', iGroup, iSubj, iRun);
-            listboxFiles_Callback([], [iGroup, iSubj, iRun], hmr.handles);
+            listboxGroupTree_Callback([], [iGroup, iSubj, iRun], hmr.handles);
         end
 end
 
@@ -1104,4 +1114,70 @@ checkboxFixRangeX_Callback(handles.checkboxFixRangeX, eventdata, handles);
 function editFixRangeY_Callback(hObject, eventdata, handles)
 checkboxFixRangeY_Callback(handles.checkboxFixRangeY, eventdata, handles);
 
+
+
+% --------------------------------------------------------------------
+function menuItemGroupViewSettingAll_Callback(hObject, eventdata, handles)
+global hmr
+
+if strcmp(get(hObject, 'checked'), 'off')
+    set(hObject, 'checked','on');
+else
+    return;
+end
+
+views = hmr.listboxGroupTreeParams.views;
+if strcmp(get(hObject, 'checked'), 'on')
+    set(handles.listboxGroupTree, 'string', hmr.listboxGroupTreeParams.listMaps(views.ALL).names)
+    hmr.listboxGroupTreeParams.viewSetting = views.ALL;    
+    set(handles.menuItemGroupViewSettingSubjects,'checked','off');
+    set(handles.menuItemGroupViewSettingRuns,'checked','off');
+    listboxGroupTree_Callback([], [1,1,1], handles)
+    hmr.dataTree.SetCurrElem(1,1,1);
+    DisplayData(handles, hObject);
+end
+
+
+% --------------------------------------------------------------------
+function menuItemGroupViewSettingSubjects_Callback(hObject, eventdata, handles)
+global hmr
+
+if strcmp(get(hObject, 'checked'), 'off')
+    set(hObject, 'checked','on');
+else
+    return;
+end
+
+views = hmr.listboxGroupTreeParams.views;
+if strcmp(get(hObject, 'checked'), 'on')
+    set(handles.listboxGroupTree, 'string', hmr.listboxGroupTreeParams.listMaps(views.SUBJS).names)
+    hmr.listboxGroupTreeParams.viewSetting = views.SUBJS;
+    set(handles.menuItemGroupViewSettingAll,'checked','off');
+    set(handles.menuItemGroupViewSettingRuns,'checked','off');
+    listboxGroupTree_Callback([], [1,1,1], handles)
+    hmr.dataTree.SetCurrElem(1,1,1);
+    DisplayData(handles, hObject);
+end
+
+
+% --------------------------------------------------------------------
+function menuItemGroupViewSettingRuns_Callback(hObject, eventdata, handles)
+global hmr
+
+if strcmp(get(hObject, 'checked'), 'off')
+    set(hObject, 'checked','on');
+else
+    return;
+end
+
+views = hmr.listboxGroupTreeParams.views;
+if strcmp(get(hObject, 'checked'), 'on')
+    set(handles.listboxGroupTree, 'string', hmr.listboxGroupTreeParams.listMaps(views.RUNS).names)
+    hmr.listboxGroupTreeParams.viewSetting = views.RUNS;
+    set(handles.menuItemGroupViewSettingAll,'checked','off');
+    set(handles.menuItemGroupViewSettingSubjects,'checked','off');
+    listboxGroupTree_Callback([], [1,1,1], handles)
+    hmr.dataTree.SetCurrElem(1,1,1);
+    DisplayData(handles, hObject);
+end
 

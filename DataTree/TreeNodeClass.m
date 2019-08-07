@@ -6,6 +6,7 @@ classdef TreeNodeClass < handle
         iGroup;
         iSubj;
         iRun;
+        iFile;
         procStream;
         err;
         CondNames;        
@@ -50,7 +51,7 @@ classdef TreeNodeClass < handle
                     return;
                 end
             end
-            obj.CondColTbl('init');            
+            obj.CondColTbl('init');
         end
         
     end
@@ -164,6 +165,57 @@ classdef TreeNodeClass < handle
             end
         end
         
+        % ----------------------------------------------------------------------------------
+        function SetIndexID(obj, iG, iS, iR)
+            if nargin>1
+                obj.iGroup = iG;
+            end            
+            if nargin>2
+                obj.iSubj = iS;
+            end
+            if nargin>3
+                obj.iRun = iR;
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function idx = GetIndexID(obj)
+            idx = [obj.iGroup, obj.iSubj, obj.iRun];
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsGroup(obj)
+            if strcmp('group', obj.type)
+                b = true;
+            else
+                b = false;
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsSubj(obj)
+            if strcmp('subj', obj.type)
+                b = true;
+            else
+                b = false;
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsRun(obj)
+            if strcmp('run', obj.type)
+                b = true;
+            else
+                b = false;
+            end
+        end
+                
     end
         
     
@@ -439,7 +491,22 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function name = GetName(obj)
+            name = '';
+            if isempty(obj)
+                return;
+            end
             name = obj.name;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function name = GetFileName(obj)
+            name = '';
+            if isempty(obj)
+                return;
+            end
+            [~, fname, ext] = fileparts(obj.name);
+            name = [fname, ext];
         end
         
         

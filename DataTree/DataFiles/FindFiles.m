@@ -58,8 +58,6 @@ if ~exist('dirnameGroup','var') || isempty(dirnameGroup)
     dirnameGroup = pwd;
 end
 
-
-
 % Check files data set for errors. If there are no valid
 % nirs files don't attempt to load them.
 files = DataFilesClass();
@@ -67,9 +65,9 @@ while files.isempty()
     cd(dirnameGroup)
     switch fmt
         case {'snirf','.snirf'}
-            files = SnirfFilesClass();
+            files = DataFilesClass('snirf');
             if files.isempty()
-                files = NirsFilesClass();
+                files = DataFilesClass('nirs');
                 if ~files.isempty()
                     if files.config.RegressionTestActive
                         q = 1;
@@ -84,10 +82,10 @@ while files.isempty()
                     end
                 end
                 Nirs2Snirf();
-                files = SnirfFilesClass();
+                files = DataFilesClass('snirf');
             end
         case {'nirs','.nirs'}
-            files = NirsFilesClass();
+            files = DataFilesClass('nirs');
         otherwise
             q = menu(sprintf('Homer3 only supports file formats: {%s}. Please choose one.', cell2str(supportedFormats(:,1))), ...
                     'OK','CANCEL');

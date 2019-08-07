@@ -1,50 +1,25 @@
-
 classdef DataFilesClass < handle
     
     properties
         files;
-        filesErr;
+        type;
         err;
         errmsg;
-        sd_common;
         pathnm;
-        loadData;        
         config;
+        
     end
     
     methods
         
         % ----------------------------------------------------
         function obj = DataFilesClass(varargin)
-            if ~isempty(varargin)
-                args = varargin{1};
-            else
-                args = [];
+            obj.type = '';
+            obj.pathnm = pwd;
+            if nargin==1
+                obj.type = varargin{1};
             end
-            nargs = length(args);
-            if nargs==0
-                obj.pathnm = pwd;
-            elseif nargs==1
-                if isstruct(args{1})
-                    obj.pathnm = pwd;
-                elseif ischar(args{1})
-                    obj.pathnm = args{1};
-                else
-                    obj.pathnm = pwd;                    
-                end
-            elseif nargs==1
-                obj.pathnm = args{2};
-            else
-                if ischar(args)
-                    obj.pathnm = args;
-                else
-	                obj.pathnm = pwd;
-	            end
-            end
-            obj.filesErr = struct([]);
             obj.errmsg = {};
-            obj.sd_common = {};
-            obj.loadData = -1;
             
             obj.config = struct('RegressionTestActive','');
             cfg = ConfigFileClass();
@@ -59,8 +34,22 @@ classdef DataFilesClass < handle
             if ~isempty(foo) && ~foo(1).isdir
                 obj.files = foo;
             end
+            if nargin==0
+                return;
+            end
+            GetDataSet(obj);
         end
         
+        
+        % -----------------------------------------------------------------------------------
+        function GetDataSet(obj)
+            if exist(obj.pathnm, 'dir')~=7
+                error(sprintf('Invalid subject folder: ''%s''', obj.pathnm));
+            end
+            cd(obj.pathnm);
+            obj.findDataSet(obj.type);                        
+        end
+
         
         % ----------------------------------------------------
         function findDataSet(obj, type)
@@ -111,121 +100,6 @@ classdef DataFilesClass < handle
         
         
         
-        % --------------------------------------------------------------------------------------------
-        function dispErrmsgs(obj)
-            if ~isempty(obj.errmsg)
-                hFig = figure('numbertitle','off','menubar','none','name','Errors Found','units','pixels',...
-                    'position',[200 500 350 450],'resize','on');
-                uicontrol('parent',hFig,'style','listbox','string',obj.errmsg,...
-                    'units','normalized','position',[.1 .25 .8 .7],'value',1);
-                uicontrol('parent',hFig,'style','pushbutton','tag','pushbuttonOk',...
-                    'string','Ok','units','normalized','position',[.2 .1 .25 .1],...
-                    'callback',@obj.pushbuttonOk_Callback);
-                set(hFig,'units','normalized', 'resize','on');
-                p = get(hFig, 'position');
-                if p(2)+p(4)>.95
-                    d = (p(2)+p(4)) - .95;
-                    set(hFig, 'position', [p(1), p(2)-d, p(3), p(4)]);
-                end
-                
-                % Block execution thread until user presses the Ok button
-                while ishandle(hFig)
-                    pause(1);
-                end
-                
-                obj.fixOrUpgrade();
-                
-                % Remove any files from data set that have fatal errors
-                obj.filesErr = mydir('');
-                jj=1;
-                kk=1;
-                cc=[];
-                for ii=1:length(obj.flags)
-                    if obj.flags(ii).errCount>0
-                        obj.filesErr(kk)=obj.files(ii);
-                        kk=kk+1;
-                        if ~obj.files(ii).isdir
-                            cc(jj)=ii;
-                            jj=jj+1;
-                        end
-                    end
-                end
-                obj.files(cc)=[];
-                
-                % remove any directories from 'files' struct if they have no files
-                jj=1;
-                cc=[];
-                for ii=1:length(obj.files)
-                    if ii<length(obj.files)
-                        if obj.files(ii).isdir && obj.files(ii+1).isdir
-                            cc(jj)=ii;
-                            jj=jj+1;
-                        end
-                    elseif ii==length(obj.files)
-                        if obj.files(ii).isdir
-                            cc(jj)=ii;
-                            jj=jj+1;
-                        end
-                    end
-                end
-                obj.files(cc)=[];
-            end
-        end
-        
-        
-        % --------------------------------------------------------------------------------------------
-        function pushbuttonOk_Callback(obj, hObject, eventdata)
-            delete(get(hObject,'parent'));
-        end
-
-        
-        % --------------------------------------------------------------------------------------------
-        function reportGroupErrors(obj)
-            nSD = length(obj.sd_common);
-            if nSD > 1
-                
-                count = 1;
-                for ii=1:nSD
-                    obj.errmsg{count} = sprintf('SD%d',ii);
-                    kk = find(uniqueSD==ii);
-                    for jj=1:length(kk)
-                        obj.errmsg{count+jj} = sprintf('  %s', obj.files(kk(jj)).name);
-                    end
-                    count = count+jj+1;
-                end
-                
-                hFig = figure('numbertitle','off','menubar','none','name','File Group Error Report','units','normalized',...
-                    'position',[.20, .20, .25, .60], 'resize','on');
-                
-                uicontrol('parent',hFig,'style','listbox','string',obj.errmsg,...
-                    'units','normalized','position',[.1 .25 .8 .7],'value',1);
-                hErrText = uicontrol('parent',hFig,'style','text','string','WARNING: More than one SD geometry found. Might cause errors.',...
-                    'units','normalized',    'position',[.1 .15 .7 .055],'horizontalalignment','left');
-                hErrText2 = uicontrol('parent',hFig,'style','text','string','Do you still want to load this data set or select a different one?',...
-                    'units','normalized',   'position',[.1 .095 .7 .055],'horizontalalignment','left');
-                hButtnLoad = uicontrol('parent',hFig,'style','pushbutton','tag','pushbuttonLoad',...
-                    'string','Load','units','normalized','position',[.2 .03 .20 .05],...
-                    'callback',@obj.pushbuttonLoadDataset_Callback);
-                hButtnSelectAnother = uicontrol('parent',hFig,'style','pushbutton','tag','pushbuttonSelectAnother',...
-                    'string','Select Another','units','normalized','position',[.4 .03 .30 .05],...
-                    'callback',@obj.pushbuttonLoadDataset_Callback);
-                
-                set(hErrText,'units','pixels');
-                set(hErrText2,'units','pixels');
-                set(hButtnLoad,'units','pixels');
-                set(hButtnSelectAnother,'units','pixels');
-                
-                % Block execution thread until user presses the Ok button
-                while obj.loadData==-1
-                    pause(1);
-                end
-                
-            else
-                obj.loadData = 1;
-            end
-        end
-        
-        
         % -------------------------------------------------------
         function pushbuttonLoadDataset_Callback(obj, hObject)
             hp = get(hObject,'parent');
@@ -242,10 +116,8 @@ classdef DataFilesClass < handle
             
             if hObject==hButtnLoad
                 delete(hButtnSelectAnother);
-                obj.loadData = 1;
             elseif hObject==hButtnSelectAnother
                 delete(hButtnLoad);
-                obj.loadData = 0;
             end
             delete(hp);
         end

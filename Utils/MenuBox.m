@@ -44,9 +44,17 @@ vertgap = 2;
 Hfig    = Htext + nbttns*(Hbttn+vertgap);
 
 % Get position of parent GUI in character units
-hParent = gcf;
+hParent = get(groot,'CurrentFigure');
+if ~isempty(hParent)
+    hParent = 0;
+end
 set(hParent, 'units','characters');
-posParent = get(hParent, 'position');
+if hParent==0
+    posParent = get(hParent,'MonitorPositions');
+else    
+    posParent = get(hParent, 'position');
+end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Calculate GUI objects position/dimensions in the Y and Y 

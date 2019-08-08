@@ -45,7 +45,7 @@ Hfig    = Htext + nbttns*(Hbttn+vertgap);
 
 % Get position of parent GUI in character units
 hParent = get(groot,'CurrentFigure');
-if ~isempty(hParent)
+if isempty(hParent)
     hParent = 0;
 end
 set(hParent, 'units','characters');

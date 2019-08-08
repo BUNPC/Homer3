@@ -132,7 +132,7 @@ hmr.dataTree  = LoadDataTree(hmr.format);
 if hmr.dataTree.IsEmpty()
     return;
 end
-hmr.guiControls = InitGuiControls(handles);
+InitGuiControls(handles);
 
 % If data set has no errors enable window gui objects
 Homer3_EnableDisableGUI(handles,'on');
@@ -264,7 +264,7 @@ global hmr
 if isempty(hObject)
     return;
 end
-proclevel = getProclevel(handles);
+proclevel = GetProclevel(handles);
 iList = get(handles.listboxGroupTree,'value');
 [iGroup,iSubj,iRun] = MapList2GroupTree(iList);
 switch(proclevel)
@@ -320,7 +320,7 @@ if isa(eventdata, 'matlab.ui.eventdata.ActionData')
     [iGroup, iSubj, iRun] = MapList2GroupTree(iList);
     
     % Get the current processing level radio buttons setting
-    proclevel = getProclevel(handles);
+    proclevel = GetProclevel(handles);
         
     % Set new gui state based on current gui selections of listboxGroupTree
     % (iGroup, iSubj, iRun) and proc level radio buttons (proclevel)
@@ -401,7 +401,7 @@ DisplayData(handles, hObject);
 % --------------------------------------------------------------------
 function UpdateDatatypePanel(handles)
 global hmr
-datatype   = getDatatype(handles);
+datatype   = GetDatatype(handles);
 if datatype == hmr.buttonVals.RAW || datatype == hmr.buttonVals.RAW_HRF
     set(handles.listboxPlotWavelength, 'visible','on');
     set(handles.listboxPlotConc, 'visible','off');
@@ -454,19 +454,19 @@ if dataTree.IsEmpty()
     return;
 end
 
-% Transfer the channels selection to guiControls
+% Set channels selection 
 SetAxesDataCh();
 
-if ~isempty(hmr.guiControls.plotViewOptions.ranges.X)
+if ~isempty(hmr.plotViewOptions.ranges.X)
     axes(handles.axesData)
     xlim('auto')
 end
-if ~isempty(hmr.guiControls.plotViewOptions.ranges.Y)
+if ~isempty(hmr.plotViewOptions.ranges.Y)
     axes(handles.axesData)
     ylim('auto')
 end
 
-% Update the displays of the guiControls and axesSDG axes
+% Update the data axes
 DisplayData(handles, hObject);
 
 
@@ -476,7 +476,6 @@ function [eventdata, handles] = popupmenuConditions_Callback(hObject, eventdata,
 if ~ishandles(hObject)
     return;
 end
-GetAxesDataCondition();
 DisplayData(handles, hObject);
 
 
@@ -486,7 +485,6 @@ function [eventdata, handles] = listboxPlotWavelength_Callback(hObject, eventdat
 if ~ishandles(hObject)
     return;
 end
-GetAxesDataWl();
 DisplayData(handles, hObject);
 
 
@@ -496,7 +494,6 @@ function [eventdata, handles] = listboxPlotConc_Callback(hObject, eventdata, han
 if ~ishandles(hObject)
     return;
 end
-GetAxesDataHbType();
 DisplayData(handles, hObject);
 
 
@@ -557,15 +554,15 @@ currElem = hmr.dataTree.currElem;
 hf = figure;
 set(hf, 'color', [1 1 1]);
 fields = fieldnames(hmr.buttonVals);
-plotname = sprintf('%s_%s', currElem.name, fields{getDatatype(handles)});
+plotname = sprintf('%s_%s', currElem.name, fields{GetDatatype(handles)});
 set(hf,'name', plotname);
 
 
 % DISPLAY DATA
-guiControls.axesData.handles.axes = axes('position',[0.05 0.05 0.6 0.9]);
+hmr.axesData.handles.axes = axes('position',[0.05 0.05 0.6 0.9]);
 
 % DISPLAY SDG
-guiControls.axesSDG.handles.axes = axes('position',[0.65 0.05 0.3 0.9]);
+hmr.axesSDG.handles.axes = axes('position',[0.65 0.05 0.3 0.9]);
 axis off
 
 % TBD: Display current element without help from dataTree
@@ -581,7 +578,7 @@ end
 
 idx = FindChildGuiIdx('ProcStreamOptionsGUI');
 if get(hObject, 'value')
-    hmr.childguis(idx).Launch(hmr.guiControls.applyEditCurrNodeOnly);
+    hmr.childguis(idx).Launch(hmr.applyEditCurrNodeOnly);
 else
     hmr.childguis(idx).Close();
 end
@@ -622,11 +619,6 @@ if strcmp(get(hObject, 'checked'), 'on')
 elseif strcmp(get(hObject, 'checked'), 'off')
     set(hObject, 'checked', 'on')
 end
-if strcmp(get(hObject, 'checked'), 'on')
-    hmr.guiControls.showStdErr = true;
-elseif strcmp(get(hObject, 'checked'), 'off')
-    hmr.guiControls.showStdErr = false;
-end
 DisplayData(handles, hObject);
 
 
@@ -640,7 +632,7 @@ end
 
 idx = FindChildGuiIdx('PlotProbeGUI');
 if get(hObject, 'value')
-    hmr.childguis(idx).Launch(getDatatype(handles), hmr.guiControls.condition);
+    hmr.childguis(idx).Launch(GetDatatype(handles), GetCondition(handles));
 else
     hmr.childguis(idx).Close();
 end
@@ -671,9 +663,9 @@ if ~ishandles(hObject)
 end
 
 if get(hObject, 'value')
-    hmr.guiControls.applyEditCurrNodeOnly = false;
+    hmr.applyEditCurrNodeOnly = false;
 else
-    hmr.guiControls.applyEditCurrNodeOnly = true;
+    hmr.applyEditCurrNodeOnly = true;
 end
 UpdateArgsChildGuis(handles);
 
@@ -698,8 +690,8 @@ if isempty(hmr.childguis)
     return;
 end
 
-hmr.childguis(FindChildGuiIdx('PlotProbeGUI')).UpdateArgs(getDatatype(handles), hmr.guiControls.condition);
-hmr.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(hmr.guiControls.applyEditCurrNodeOnly);
+hmr.childguis(FindChildGuiIdx('PlotProbeGUI')).UpdateArgs(GetDatatype(handles), GetCondition(handles));
+hmr.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(hmr.applyEditCurrNodeOnly);
 
 
 % --------------------------------------------------------------------
@@ -733,12 +725,11 @@ if isempty(handles)
     return;
 end
 
-
 dataTree = hmr.dataTree;
 procElem = dataTree.currElem;
 EnableDisableGuiPlotBttns(handles);
 
-hAxes = hmr.guiControls.axesData.handles.axes;
+hAxes = hmr.axesData.handles.axes;
 if ~ishandles(hAxes)
     return;
 end
@@ -748,15 +739,15 @@ cla;
 legend off
 set(hAxes,'ygrid','on');
 
-linecolor  = hmr.guiControls.axesData.linecolor;
-linestyle  = hmr.guiControls.axesData.linestyle;
-datatype   = getDatatype(handles);
-condition  = hmr.guiControls.condition;
-iCh0       = hmr.guiControls.ch;
-iWl        = hmr.guiControls.wl;
-hbType     = hmr.guiControls.hbType;
-sclConc    = hmr.guiControls.sclConc;        % convert Conc from Molar to uMolar
-showStdErr = hmr.guiControls.showStdErr;
+linecolor  = hmr.axesData.linecolor;
+linestyle  = hmr.axesData.linestyle;
+datatype   = GetDatatype(handles);
+condition  = GetCondition(handles);
+iCh0       = hmr.axesSDG.iCh;
+iWl        = GetWl(handles);
+hbType     = GetHbType(handles);
+sclConc    = hmr.sclConc;        % convert Conc from Molar to uMolar
+showStdErr = GetShowStdErrEnabled(handles);
 
 [iDataBlks, iCh] = procElem.GetDataBlocksIdxs(iCh0);
 fprintf('Displaying channels [%s] in data blocks [%s]\n', num2str(iCh0(:)'), num2str(iDataBlks(:)'))
@@ -849,7 +840,7 @@ for iBlk = iDataBlks
 end
 
 % Set Zoom on/off
-if hmr.guiControls.plotViewOptions.zoom == true
+if hmr.plotViewOptions.zoom == true
     h=zoom;
     set(h,'ButtonDownFilter',@myZoom_callback);
     set(h,'enable','on')
@@ -858,13 +849,13 @@ else
 end
 
 % Set data window X and Y borders
-if ~isempty(hmr.guiControls.plotViewOptions.ranges.Y)
-    ylim(hmr.guiControls.plotViewOptions.ranges.Y);
+if ~isempty(hmr.plotViewOptions.ranges.Y)
+    ylim(hmr.plotViewOptions.ranges.Y);
 else
     ylim('auto')
 end
-if ~isempty(hmr.guiControls.plotViewOptions.ranges.X)
-    xlim(hmr.guiControls.plotViewOptions.ranges.X);
+if ~isempty(hmr.plotViewOptions.ranges.X)
+    xlim(hmr.plotViewOptions.ranges.X);
 else
     xlim('auto')
     if ~isempty(t)
@@ -896,21 +887,20 @@ end
 function DisplayStim(handles)
 global hmr
 dataTree = hmr.dataTree;
-guiControls = hmr.guiControls;
 procElem = dataTree.currElem;
 
 if ~strcmp(procElem.type, 'run')
     return;
 end
 
-hAxes = guiControls.axesData.handles.axes;
+hAxes = hmr.axesData.handles.axes;
 if ~ishandles(hAxes)
     return;
 end
 axes(hAxes);
 hold on;
 
-datatype = getDatatype(handles);
+datatype = GetDatatype(handles);
 if datatype == hmr.buttonVals.RAW_HRF
     return;
 end
@@ -1027,8 +1017,8 @@ resetGroupFolder();
 function pushbuttonPanLeft_Callback(hObject, eventdata, handles)
 global hmr
 procElem = hmr.dataTree.currElem;
-iCh0     = hmr.guiControls.ch;
-datatype = getDatatype(handles);
+iCh0     = hmr.axesSDG.iCh;
+datatype = GetDatatype(handles);
 
 iDataBlks = procElem.GetDataBlocksIdxs(iCh0);
 for iBlk = iDataBlks
@@ -1076,8 +1066,8 @@ function pushbuttonResetView_Callback(hObject, eventdata, handles)
 global hmr
 set(handles.checkboxFixRangeX, 'value',0);
 set(handles.checkboxFixRangeY, 'value',0);
-hmr.guiControls.plotViewOptions.ranges.X = [];
-hmr.guiControls.plotViewOptions.ranges.Y = [];
+hmr.plotViewOptions.ranges.X = [];
+hmr.plotViewOptions.ranges.Y = [];
 DisplayData(handles, hObject);
 
 
@@ -1086,9 +1076,9 @@ DisplayData(handles, hObject);
 function checkboxFixRangeX_Callback(hObject, eventdata, handles)
 global hmr
 if get(hObject,'value')==1
-    hmr.guiControls.plotViewOptions.ranges.X = str2num(get(handles.editFixRangeX, 'string'));
+    hmr.plotViewOptions.ranges.X = str2num(get(handles.editFixRangeX, 'string'));
 else
-    hmr.guiControls.plotViewOptions.ranges.X = [];    
+    hmr.plotViewOptions.ranges.X = [];    
 end
 DisplayData(handles, hObject);
 
@@ -1097,9 +1087,9 @@ DisplayData(handles, hObject);
 function checkboxFixRangeY_Callback(hObject, eventdata, handles)
 global hmr
 if get(hObject,'value')==1
-    hmr.guiControls.plotViewOptions.ranges.Y = str2num(get(handles.editFixRangeY, 'string'));
+    hmr.plotViewOptions.ranges.Y = str2num(get(handles.editFixRangeY, 'string'));
 else
-    hmr.guiControls.plotViewOptions.ranges.Y = [];
+    hmr.plotViewOptions.ranges.Y = [];
 end
 DisplayData(handles, hObject);
 

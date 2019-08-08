@@ -188,12 +188,20 @@ function PlotProbeGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 %     PlotProbeGUI(datatype, pos)
 %     PlotProbeGUI(datatype, condition)
 %     PlotProbeGUI(datatype, condition, pos)
+%  
+%  Description:
+%     GUI for displaying HRF plots for all probe channels. 
+%     
+%     NOTE: This GUIs input parameters are passed to it either as formal arguments 
+%     or through the calling parent GUIs global variable. If it's the latter, this GUI 
+%     follows the rule that it accesses the parent GUIs global variable ONLY at 
+%     startup time, that is, in the function <GUI Name>_OpeningFcn(). 
 %
 %  Input:
-%    format:    Which acquisition type of files to load to dataTree: e.g., nirs, snirf, etc
-%    pos:       Size and position of last figure session
-%    datatype:  Takes 2 integer values {8 = OD HRF, 32 = concentration HRF}. Any other values will be ignored and nothing will be pl 
-%    condition: Integer index telling which condition 
+%     format:    Which acquisition type of files to load to dataTree: e.g., nirs, snirf, etc
+%     pos:       Size and position of last figure session
+%     datatype:  Takes 2 integer values {8 = OD HRF, 32 = concentration HRF}. Any other values will be ignored and nothing will be pl 
+%     condition: Integer index telling which condition 
 %
 
 global plotprobe

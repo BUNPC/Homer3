@@ -18,6 +18,9 @@ classdef DataFilesClass < handle
             obj.pathnm = pwd;
             if nargin==1
                 obj.type = varargin{1};
+                if obj.type(1)=='.'
+                    obj.type(1)='';
+                end                
             end
             obj.errmsg = {};
             

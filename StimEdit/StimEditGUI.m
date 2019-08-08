@@ -30,6 +30,25 @@ varargout{1} = handles;
 
 % -------------------------------------------------------------------
 function StimEditGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+%
+%  Syntax:
+%
+%     StimEditGUI()
+%     StimEditGUI(format)
+%     StimEditGUI(format, pos)
+%  
+%  Description:
+%     GUI used for editing/adding/deleting stimulus conditions and related parameters. 
+%     
+%     NOTE: This GUIs input parameters are passed to it either as formal arguments 
+%     or through the calling parent GUIs global variable. If it's the latter, this GUI 
+%     follows the rule that it accesses the parent GUIs global variable ONLY at 
+%     startup time, that is, in the function <GUI Name>_OpeningFcn(). 
+%
+%  Inputs:
+%     format:    Which acquisition type of files to load to dataTree: e.g., nirs, snirf, etc
+%     pos:       Size and position of last figure session
+%
 global stimEdit
 global hmr
 

@@ -87,17 +87,6 @@ varargin = args;
 % procStreamOptions.pos
 %
 
-%  Syntax:
-%
-%     ProcStreamOptionsGUI()
-%     ProcStreamOptionsGUI(format)
-%     ProcStreamOptionsGUI(format, pos)
-%     ProcStreamOptionsGUI(format, applyEditCurrNodeOnly)
-%     ProcStreamOptionsGUI(format, applyEditCurrNodeOnly, pos)
-%     ProcStreamOptionsGUI(pos)
-%     ProcStreamOptionsGUI(applyEditCurrNodeOnly)
-%     ProcStreamOptionsGUI(applyEditCurrNodeOnly, pos)
-
 % Arguments take precedence over parent gui parameters
 if length(varargin)==0
     return;                                                        % ProcStreamOptionsGUI()
@@ -134,12 +123,40 @@ if isempty(hmr)
     end
 else
     procStreamOptions.format = hmr.format;
-    procStreamOptions.applyEditCurrNodeOnly = hmr.guiControls.applyEditCurrNodeOnly;
+    procStreamOptions.applyEditCurrNodeOnly = hmr.applyEditCurrNodeOnly;
 end
 
 
 % ----------------------------------------------------------
 function ProcStreamOptionsGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+%
+%  Syntax:
+%
+%  Syntax:
+%
+%     ProcStreamOptionsGUI()
+%     ProcStreamOptionsGUI(format)
+%     ProcStreamOptionsGUI(format, pos)
+%     ProcStreamOptionsGUI(format, applyEditCurrNodeOnly)
+%     ProcStreamOptionsGUI(format, applyEditCurrNodeOnly, pos)
+%     ProcStreamOptionsGUI(pos)
+%     ProcStreamOptionsGUI(applyEditCurrNodeOnly)
+%     ProcStreamOptionsGUI(applyEditCurrNodeOnly, pos)
+%  
+%  Description:
+%     GUI used for editing the processing stream user-editable parameters. 
+%     
+%     NOTE: This GUIs input parameters are passed to it either as formal arguments 
+%     or through the calling parent GUIs global variable. If it's the latter, this GUI 
+%     follows the rule that it accesses the parent GUIs global variable ONLY at 
+%     startup time, that is, in the function <GUI Name>_OpeningFcn(). 
+%
+%  Inputs:
+%     format:                 Which acquisition type of files to load to dataTree: e.g., nirs, snirf, etc
+%     applyEditCurrNodeOnly:  True/false whether to apply current processing element's parameter edits to all 
+%                             processing elements at that level (level's being: run, subject, or group)
+%     pos:                    Size and position of last figure session
+%
 global procStreamOptions
 global hmr
 

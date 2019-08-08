@@ -1,14 +1,14 @@
-function [title, vernum] = GuiMainVersion(varargin)
+function [title, vernum] = MainGUIVersion(varargin)
 %
 % Syntax:
-%    [verstr, vernum, title] = GuiMainVersion()
-%    [verstr, vernum, title] = GuiMainVersion(hObject)
-%    [verstr, vernum, title] = GuiMainVersion(hObject, option)
-%    [verstr, vernum, title] = GuiMainVersion(option)
+%    [verstr, vernum, title] = MainGUIVersion()
+%    [verstr, vernum, title] = MainGUIVersion(hObject)
+%    [verstr, vernum, title] = MainGUIVersion(hObject, option)
+%    [verstr, vernum, title] = MainGUIVersion(option)
 % 
 % Example:
 %
-%    [verstr, vernum, title] = GuiMainVersion('exclpath')
+%    [verstr, vernum, title] = MainGUIVersion('exclpath')
 %
 
 if nargin==0

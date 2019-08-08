@@ -9,19 +9,19 @@ Jan 31, 2019:
 
 -- DONE: Add default traversal behavior for files in the Homer3 listbox so that user doesn't have to contantly click on the group, run, subj radiobuttons - include in this default behavior for datatype radiobuttons buttons. 
 
--- Add ability to fix x and y ranges in the homer3 data display. 
+-- DONE: Add ability to fix x and y ranges in the homer3 data display. 
 
 -- DONE: Rework stimGUI change name to StimEditGUI, get rid of associated class and add it to the ChildGuiClass object hmr.childguis. Do same for PlotProbeGUI and ProcStreamOptionsGUI. These all should just be 
 front-end client applications of DataTreeClass and FuncRegClass obects. 
 
--- Revisit the idea of making a uniform sizes condition sets between Subj, Group and Run to allow getting rid of the need for CondNames2* tables. It would really, really simplify things with conditions and make the group and subject level proc stream averaging much easier. 
+-- DONE: Revisit the idea of making a uniform sizes condition sets between Subj, Group and Run to allow getting rid of the need for CondNames2* tables. It would really, really simplify things with conditions and make the group and subject level proc stream averaging much easier. 
 
 -- Fix the procStream fixing code that doesn't work. Also really need to simplify it and make it part of a class. 
 
 -- Improve performance of various components of Homer3 
 a) starting with the facts that it keeps all the data in memory and doesn't need to 
 b) variable preallocation in for loops 
-c) ProcStreamEditGUI takes a long time to start and it's responce time is slow.
+c) DONE: ProcStreamEditGUI takes a long time to start and it's responce time is slow.
 d) Snirf HDF5 saving/loading 
 
 
@@ -47,23 +47,23 @@ Feb 2, 2019
 
 -- DONE: Insert Homer3 version numbers into groupResults (I think groupResults might already have it, check to make sure) and any proc stream config file, processOpt_*.cfg. 
 
--- DataFilesClass should use the same (acquisition-level) classes as the DataTreeClass to load and vet the data files. Also Homer3 should load the files ONLY ONCE not twice like it's done now. This will not only speed up the launching process but also make it much more coherent where the data files use the same mechanism to check their validity as the DataTreeClass object. 
+-- DONE: DataFilesClass should use the same (acquisition-level) classes as the DataTreeClass to load and vet the data files. Also Homer3 should load the files ONLY ONCE not twice like it's done now. This will not only speed up the launching process but also make it much more coherent where the data files use the same mechanism to check their validity as the DataTreeClass object. 
 
 ----------------
 Mar 1, 2019
 ----------------
 
--- Come up with a modular object oriented way to update Homer3 display after changes in stimGUI. Right now it does not update unless you do it manually - that is after changing stimGUI you have to click on a control in Homer3 to see the stim changes in Homer3 display.
+-- DONE: Come up with a modular object oriented way to update Homer3 display after changes in stimGUI. Right now it does not update unless you do it manually - that is after changing stimGUI you have to click on a control in Homer3 to see the stim changes in Homer3 display.
 
--- Come up with a modular object oriented way to update Homer3 listboxFiles control when calculating proc stream. Right now it does not update. 
+-- DONE: Come up with a modular object oriented way to update Homer3 listboxFiles control when calculating proc stream. Right now it does not update. 
 
 ----------------
 Mar 12, 2019
 ----------------
 
--- Display the group folder as a directory tree in listbox files same as subject folders are displyed for consistency and coherence when determining default behavior of processing level and plot data type button selections.
+-- DONE: Display the group folder as a directory tree in listbox files same as subject folders are displyed for consistency and coherence when determining default behavior of processing level and plot data type button selections.
 
--- Use usage names + function names instead of just function names in the ProcStreamOptionsGUI to let user see the proc stream as sequence of function calls (which is what it is) rather than sequence of function names.
+-- DONE: Use usage names + function names instead of just function names in the ProcStreamOptionsGUI to let user see the proc stream as sequence of function calls (which is what it is) rather than sequence of function names.
 
 -- Add standard deviation calculation to GroupClass.Calc() method.
 
@@ -77,15 +77,16 @@ Apr 10, 2019
 
 -- Fix extended channels selection (i.e. waterfall display) not working for multiple data blocks. That is, the colors of the data curves plots in the data axes do not match the selected channel colors. 
 
--- When editing and saving current processing stream it's nice to have the ProcStreamOptionsEditGUI updating automatically if it is active at the time of the proc stream update. 
+-- DONE: When editing and saving current processing stream it's nice to have the ProcStreamOptionsEditGUI updating automatically if it is active at the time of the proc stream update. 
 
--- Add to data axes Fix y-range and Fix x-range features that are in Homer2_UI. These are very useful. 
+-- DONE: Add to data axes Fix y-range and Fix x-range features that are in Homer2_UI. These are very useful. 
 
 ----------------
 Apr 16, 2019
 ----------------
 
 -- Check the at the channel dataTypeLabels that are being used conform to spec. 
+
 -- Instead of using hard coded numbers for dataTypeLabels to label channels, create a list of data type values in SnirfClass. 
 
 ----------------

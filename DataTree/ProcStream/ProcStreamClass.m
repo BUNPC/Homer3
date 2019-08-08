@@ -674,7 +674,7 @@ classdef ProcStreamClass < handle
             if ~exist('type', 'var') || isempty(type)
                 type = 'run';
             end
-            versionstamp = sprintf('%% %s\n', GuiMainVersion('exclpath'));
+            versionstamp = sprintf('%% %s\n', MainGUIVersion('exclpath'));
 
             % First read in and parse existing file contents
             if ~exist(fname, 'file')

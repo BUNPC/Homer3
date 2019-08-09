@@ -1,5 +1,5 @@
 function [viewSetting, views] = SetView(handles, nSubjs, nRuns)
-global hmr
+global maingui
 
 if nSubjs==nRuns
     set(handles.menuItemGroupViewSettingAll,'checked','off');
@@ -12,14 +12,14 @@ else
 end
 
 if strcmp(get(handles.menuItemGroupViewSettingAll,'checked'),'on')
-    hmr.listboxGroupTreeParams.viewSetting = hmr.listboxGroupTreeParams.views.ALL;
+    maingui.listboxGroupTreeParams.viewSetting = maingui.listboxGroupTreeParams.views.ALL;
 elseif strcmp(get(handles.menuItemGroupViewSettingSubjects,'checked'),'on')
-    hmr.listboxGroupTreeParams.viewSetting = hmr.listboxGroupTreeParams.views.SUBJS;
+    maingui.listboxGroupTreeParams.viewSetting = maingui.listboxGroupTreeParams.views.SUBJS;
 elseif strcmp(get(handles.menuItemGroupViewSettingRuns,'checked'),'on')
-    hmr.listboxGroupTreeParams.viewSetting = hmr.listboxGroupTreeParams.views.RUNS;
+    maingui.listboxGroupTreeParams.viewSetting = maingui.listboxGroupTreeParams.views.RUNS;
 else
-    hmr.listboxGroupTreeParams.viewSetting = hmr.listboxGroupTreeParams.views.ALL;
+    maingui.listboxGroupTreeParams.viewSetting = maingui.listboxGroupTreeParams.views.ALL;
 end
 
-viewSetting = hmr.listboxGroupTreeParams.viewSetting;
-views = hmr.listboxGroupTreeParams.views;
+viewSetting = maingui.listboxGroupTreeParams.viewSetting;
+views = maingui.listboxGroupTreeParams.views;

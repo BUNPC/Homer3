@@ -3,10 +3,10 @@ function toggleLinesAxesSDG_ButtonDownFcn(hObject, eventdata, handles)
 % This function is called when the user clicks on one of the meausrement
 % lines in the SDG window
 
-global hmr;
+global maingui;
 
-hAxesSDG = hmr.axesSDG.handles.axes;
-iSrcDet  = hmr.axesSDG.iSrcDet;
+hAxesSDG = maingui.axesSDG.handles.axes;
+iSrcDet  = maingui.axesSDG.iSrcDet;
 
 SD       = currElem.GetSDG();
 ch       = currElem.GetMeasList();

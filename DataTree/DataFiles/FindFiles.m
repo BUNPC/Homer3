@@ -24,7 +24,7 @@ function [files, dirnameGroup] = FindFiles(varargin)
 %      files = FindFiles('.snirf');
 
 
-global hmr
+global maingui
 global supportedFormats
 
 supportedFormats = {
@@ -47,8 +47,8 @@ elseif nargin==3
 end
 
 if ~exist('fmt','var') || isempty(fmt)
-    if ~isempty(hmr) && isstruct(hmr) && isfield(hmr,'format')
-        fmt = hmr.format;
+    if ~isempty(maingui) && isstruct(maingui) && isfield(maingui,'format')
+        fmt = maingui.format;
     else
         fmt = supportedFormats{1};
     end

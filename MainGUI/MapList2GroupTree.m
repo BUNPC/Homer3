@@ -1,8 +1,8 @@
 function [iGroup, iSubj, iRun] = MapList2GroupTree(iList)
-global hmr
+global maingui
 
-viewSetting = hmr.listboxGroupTreeParams.viewSetting;
+viewSetting = maingui.listboxGroupTreeParams.viewSetting;
 
-iGroup = hmr.listboxGroupTreeParams.listMaps(viewSetting).idxs(iList,1);
-iSubj  = hmr.listboxGroupTreeParams.listMaps(viewSetting).idxs(iList,2);
-iRun   = hmr.listboxGroupTreeParams.listMaps(viewSetting).idxs(iList,3);
+iGroup = maingui.listboxGroupTreeParams.listMaps(viewSetting).idxs(iList,1);
+iSubj  = maingui.listboxGroupTreeParams.listMaps(viewSetting).idxs(iList,2);
+iRun   = maingui.listboxGroupTreeParams.listMaps(viewSetting).idxs(iList,3);

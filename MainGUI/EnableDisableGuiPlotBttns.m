@@ -1,17 +1,17 @@
 function EnableDisableGuiPlotBttns(handles)
-global hmr
+global maingui
 
-if ~isempty(hmr.dataTree.currElem.GetRawData())   
+if ~isempty(maingui.dataTree.currElem.GetRawData())   
     set(handles.radiobuttonPlotRaw, 'enable','on')
 else
     set(handles.radiobuttonPlotRaw, 'enable','off')
 end
-if ~isempty(hmr.dataTree.currElem.GetDod()) || ~isempty(hmr.dataTree.currElem.GetDodAvg())
+if ~isempty(maingui.dataTree.currElem.GetDod()) || ~isempty(maingui.dataTree.currElem.GetDodAvg())
     set(handles.radiobuttonPlotOD, 'enable','on')
 else
     set(handles.radiobuttonPlotOD, 'enable','off')
 end
-if ~isempty(hmr.dataTree.currElem.GetDc()) || ~isempty(hmr.dataTree.currElem.GetDcAvg())
+if ~isempty(maingui.dataTree.currElem.GetDc()) || ~isempty(maingui.dataTree.currElem.GetDcAvg())
     set(handles.radiobuttonPlotConc, 'enable','on')
 else
     set(handles.radiobuttonPlotConc, 'enable','off')
@@ -37,15 +37,15 @@ else
 end
 
 iCondGrp = get(handles.popupmenuConditions, 'value'); 
-CondName = hmr.dataTree.group.CondNames{iCondGrp};
-if ~isempty(hmr.dataTree.currElem.GetDodAvg(CondName)) || ~isempty(hmr.dataTree.currElem.GetDcAvg(CondName))
+CondName = maingui.dataTree.group.CondNames{iCondGrp};
+if ~isempty(maingui.dataTree.currElem.GetDodAvg(CondName)) || ~isempty(maingui.dataTree.currElem.GetDcAvg(CondName))
     set(handles.checkboxPlotHRF, 'enable','on');
     set(handles.checkboxPlotProbe, 'enable','on');
-    if ~isa(hmr.dataTree.currElem, 'RunClass')
+    if ~isa(maingui.dataTree.currElem, 'RunClass')
         set(handles.checkboxPlotHRF, 'value',1);
-        if ~isempty(hmr.dataTree.currElem.GetDcAvg())
+        if ~isempty(maingui.dataTree.currElem.GetDcAvg())
             set(handles.radiobuttonPlotConc, 'value',1);
-        elseif ~isempty(hmr.dataTree.currElem.GetDodAvg())
+        elseif ~isempty(maingui.dataTree.currElem.GetDodAvg())
             set(handles.radiobuttonPlotOD, 'value',1);
         end
     end
@@ -63,7 +63,7 @@ else
     set(handles.checkboxPlotHRF, 'value',0);    
 end
 
-if isa(hmr.dataTree.currElem, 'RunClass')
+if isa(maingui.dataTree.currElem, 'RunClass')
     if ~OD_enable && ~Conc_enable
         set(handles.radiobuttonPlotRaw, 'value',1)        
     end

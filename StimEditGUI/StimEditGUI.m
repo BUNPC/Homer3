@@ -41,16 +41,16 @@ function StimEditGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 %     GUI used for editing/adding/deleting stimulus conditions and related parameters. 
 %     
 %     NOTE: This GUIs input parameters are passed to it either as formal arguments 
-%     or through the calling parent GUIs global variable. If it's the latter, this GUI 
-%     follows the rule that it accesses the parent GUIs global variable ONLY at 
-%     startup time, that is, in the function <GUI Name>_OpeningFcn(). 
+%     or through the calling parent GUIs generic global variable, 'maingui'. If it's 
+%     the latter, this GUI follows the rule that it accesses the parent GUIs global 
+% 	  variable ONLY at startup time, that is, in the function <GUI Name>_OpeningFcn(). 
 %
 %  Inputs:
 %     format:    Which acquisition type of files to load to dataTree: e.g., nirs, snirf, etc
 %     pos:       Size and position of last figure session
 %
 global stimEdit
-global hmr
+global maingui
 
 % Choose default command line output for StimEditGUI
 handles.output = hObject;
@@ -65,9 +65,9 @@ stimEdit.format = '';
 stimEdit.pos = [];
 stimEdit.updateParentGui = [];
 
-if ~isempty(hmr)
-    stimEdit.format = hmr.format;
-    stimEdit.updateParentGui = hmr.Update;
+if ~isempty(maingui)
+    stimEdit.format = maingui.format;
+    stimEdit.updateParentGui = maingui.Update;
     
     % If parent gui exists disable these menu options which only make sense when
     % running this GUI standalone
@@ -102,7 +102,7 @@ if ~isempty(p)
     set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
 end
 stimEdit.version = get(hObject, 'name');
-stimEdit.dataTree = LoadDataTree(stimEdit.format, '', hmr);
+stimEdit.dataTree = LoadDataTree(stimEdit.format, '', maingui);
 if ispc()
     setGuiFonts(hObject);
 else

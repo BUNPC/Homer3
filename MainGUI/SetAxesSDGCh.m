@@ -1,20 +1,20 @@
 function SetAxesSDGCh(handles)
-global hmr
+global maingui
 
-hAxesSDG = hmr.axesSDG.handles.axes;
-iCh      = hmr.axesSDG.iCh;
-iSrcDet  = hmr.axesSDG.iSrcDet;
-SD       = hmr.dataTree.currElem.GetSDG();
+hAxesSDG = maingui.axesSDG.handles.axes;
+iCh      = maingui.axesSDG.iCh;
+iSrcDet  = maingui.axesSDG.iSrcDet;
+SD       = maingui.dataTree.currElem.GetSDG();
 
-nDataBlks = hmr.dataTree.currElem.GetDataBlocksNum();
+nDataBlks = maingui.dataTree.currElem.GetDataBlocksNum();
 ml = [];
 for iBlk = 1:nDataBlks
-    ch = hmr.dataTree.currElem.GetMeasList(iBlk);
+    ch = maingui.dataTree.currElem.GetMeasList(iBlk);
     ml = [ml; ch.MeasList];
 end
 
 % Maximum number of channels that can be selected simultaneously
-maxCh    = size(hmr.axesSDG.linecolor,1);
+maxCh    = size(maingui.axesSDG.linecolor,1);
 
 h = hAxesSDG;
 while ~strcmpi(get(h,'type'),'figure')
@@ -50,7 +50,7 @@ for idx=1:size(SD.DetPos,1)
 end
 
 % Copied from cw6_plotLst
-idxLambda = 1;  %hmr.displayLambda;
+idxLambda = 1;  %maingui.displayLambda;
 if SrcMin
     lst = find( ml(:,1)==idxMin & ml(:,4)==idxLambda );
 else
@@ -83,6 +83,6 @@ if length(iCh) > maxCh
     return;
 end
 
-hmr.axesSDG.iCh     = iCh;
-hmr.axesSDG.iSrcDet = iSrcDet;
+maingui.axesSDG.iCh     = iCh;
+maingui.axesSDG.iSrcDet = iSrcDet;
 

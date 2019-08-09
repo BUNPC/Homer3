@@ -71,7 +71,7 @@ procStreamOptions.handles = [];
 % ----------------------------------------------------------------------
 function ParseArgs(args)
 global procStreamOptions
-global hmr
+global maingui
 
 if ~exist('args','var')
     return;
@@ -114,7 +114,7 @@ end
 
 % Now whichever of the above parameters weren't assigned values
 % obtain values either from parent gui or assign default value
-if isempty(hmr)
+if isempty(maingui)
     if isempty(procStreamOptions.format)
         procStreamOptions.format = 'snirf';
     end
@@ -122,8 +122,8 @@ if isempty(hmr)
         procStreamOptions.applyEditCurrNodeOnly = false;
     end
 else
-    procStreamOptions.format = hmr.format;
-    procStreamOptions.applyEditCurrNodeOnly = hmr.applyEditCurrNodeOnly;
+    procStreamOptions.format = maingui.format;
+    procStreamOptions.applyEditCurrNodeOnly = maingui.applyEditCurrNodeOnly;
 end
 
 
@@ -147,9 +147,9 @@ function ProcStreamOptionsGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 %     GUI used for editing the processing stream user-editable parameters. 
 %     
 %     NOTE: This GUIs input parameters are passed to it either as formal arguments 
-%     or through the calling parent GUIs global variable. If it's the latter, this GUI 
-%     follows the rule that it accesses the parent GUIs global variable ONLY at 
-%     startup time, that is, in the function <GUI Name>_OpeningFcn(). 
+%     or through the calling parent GUIs generic global variable, 'maingui'. If it's 
+%     the latter, this GUI follows the rule that it accesses the parent GUIs global 
+% 	  variable ONLY at startup time, that is, in the function <GUI Name>_OpeningFcn(). 
 %
 %  Inputs:
 %     format:                 Which acquisition type of files to load to dataTree: e.g., nirs, snirf, etc
@@ -158,7 +158,7 @@ function ProcStreamOptionsGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 %     pos:                    Size and position of last figure session
 %
 global procStreamOptions
-global hmr
+global maingui
 
 % Choose default command line output for ProcStreamOptionsGUI
 handles.output = hObject;
@@ -170,8 +170,8 @@ ParseArgs(varargin);
 
 procStreamOptions.err=0;
 
-if ~isempty(hmr)
-    procStreamOptions.updateParentGui = hmr.Update;
+if ~isempty(maingui)
+    procStreamOptions.updateParentGui = maingui.Update;
 
     % If parent gui exists disable these menu options which only make sense when
     % running this GUI standalone
@@ -186,7 +186,7 @@ if ~isempty(p)
     set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
 end
 procStreamOptions.version  = get(hObject, 'name');
-procStreamOptions.dataTree = LoadDataTree(procStreamOptions.format, '', hmr);
+procStreamOptions.dataTree = LoadDataTree(procStreamOptions.format, '', maingui);
 if ispc()
     setGuiFonts(hObject, 7);
 else

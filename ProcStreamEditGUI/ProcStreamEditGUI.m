@@ -41,16 +41,16 @@ function ProcStreamEditGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 %     GUI used for editing the processing stream chain of function calls. 
 %     
 %     NOTE: This GUIs input parameters are passed to it either as formal arguments 
-%     or through the calling parent GUIs global variable. If it's the latter, this GUI 
-%     follows the rule that it accesses the parent GUIs global variable ONLY at 
-%     startup time, that is, in the function <GUI Name>_OpeningFcn(). 
+%     or through the calling parent GUIs generic global variable, 'maingui'. If it's 
+%     the latter, this GUI follows the rule that it accesses the parent GUIs global 
+% 	  variable ONLY at startup time, that is, in the function <GUI Name>_OpeningFcn(). 
 %
 %  Inputs:
 %     format:    Which acquisition type of files to load to dataTree: e.g., nirs, snirf, etc
 %     pos:       Size and position of last figure session
 %
 global procStreamEdit
-global hmr
+global maingui
 
 % Choose default command line output for ProcStreamEditGUI
 handles.output = hObject;
@@ -64,9 +64,9 @@ procStreamEdit.format = '';
 procStreamEdit.pos = [];
 procStreamEdit.updateParentGui = [];
 
-if ~isempty(hmr)
-    procStreamEdit.format = hmr.format;
-    procStreamEdit.updateParentGui = hmr.Update;
+if ~isempty(maingui)
+    procStreamEdit.format = maingui.format;
+    procStreamEdit.updateParentGui = maingui.Update;
 
     % If parent gui exists disable these menu options which only make sense when 
     % running this GUI standalone
@@ -111,7 +111,7 @@ iRunPanel   = procStreamEdit.iRunPanel;
 iSubjPanel  = procStreamEdit.iSubjPanel;
 iGroupPanel = procStreamEdit.iGroupPanel;
 
-procStreamEdit.dataTree = LoadDataTree(procStreamEdit.format, '', hmr);
+procStreamEdit.dataTree = LoadDataTree(procStreamEdit.format, '', maingui);
 procStreamEdit.funcReg = [];
 
 % Current proc stream listbox strings for the 3 panels

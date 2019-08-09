@@ -97,22 +97,22 @@ set(handles.textStatus, 'enable', val);
 
 % --------------------------------------------------------------------
 function eventdata = MainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
-global hmr
+global maingui
 
-hmr = [];
+maingui = [];
 
 if isempty(varargin)    
-    hmr.format = 'snirf';
+    maingui.format = 'snirf';
 else
-    hmr.format = varargin{1};
+    maingui.format = varargin{1};
 end
-hmr.gid = 1;
-hmr.sid = 2;
-hmr.rid = 3;
+maingui.gid = 1;
+maingui.sid = 2;
+maingui.rid = 3;
 
-hmr.dataTree = [];
-hmr.Update = @Update;
-hmr.handles = [];
+maingui.dataTree = [];
+maingui.Update = @Update;
+maingui.handles = [];
 
 % Choose default command line output for MainGUI
 handles.output = hObject;
@@ -120,16 +120,16 @@ guidata(hObject, handles);
 
 % Set the main GUI version number
 [~, V] = MainGUIVersion(hObject);
-hmr.version = V;
-hmr.childguis = ChildGuiClass().empty();
+maingui.version = V;
+maingui.childguis = ChildGuiClass().empty();
 
 % Disable and reset all window gui objects
 MainGUI_EnableDisableGUI(handles,'off');
 MainGUI_Init(handles, {'zbuffer'});
 
 % Load date files into group tree object
-hmr.dataTree  = LoadDataTree(hmr.format);
-if hmr.dataTree.IsEmpty()
+maingui.dataTree  = LoadDataTree(maingui.format);
+if maingui.dataTree.IsEmpty()
     return;
 end
 InitGuiControls(handles);
@@ -141,12 +141,12 @@ MainGUI_EnableDisableGUI(handles,'on');
 DisplayGroupTree(handles);
 DisplayData(handles, hObject);
 
-hmr.childguis(1) = ChildGuiClass('ProcStreamEditGUI');
-hmr.childguis(2) = ChildGuiClass('ProcStreamOptionsGUI');
-hmr.childguis(3) = ChildGuiClass('StimEditGUI');
-hmr.childguis(4) = ChildGuiClass('PlotProbeGUI');
+maingui.childguis(1) = ChildGuiClass('ProcStreamEditGUI');
+maingui.childguis(2) = ChildGuiClass('ProcStreamOptionsGUI');
+maingui.childguis(3) = ChildGuiClass('StimEditGUI');
+maingui.childguis(4) = ChildGuiClass('PlotProbeGUI');
 
-hmr.handles = handles;
+maingui.handles = handles;
 
 
 
@@ -160,35 +160,35 @@ varargout{1} = handles.output;
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = MainGUI_DeleteFcn(hObject, eventdata, handles)
-global hmr;
+global maingui;
 
 if ishandles(hObject)
     delete(hObject)
 end
-if isempty(hmr)
+if isempty(maingui)
     return;
 end
-if isempty(hmr.dataTree)
+if isempty(maingui.dataTree)
     return;
 end
 
 % Delete Child GUIs before deleted the dataTree that all GUIs use.
-for ii=1:length(hmr.childguis)
-    hmr.childguis(ii).Close();
+for ii=1:length(maingui.childguis)
+    maingui.childguis(ii).Close();
 end
-delete(hmr.dataTree);
-hmr = [];
-clear hmr;
+delete(maingui.dataTree);
+maingui = [];
+clear maingui;
 
 
 % --------------------------------------------------------------------------------------------
 function DisplayGroupTree(handles)
-global hmr;
+global maingui;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initialize listboxGroupTree params struct
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-hmr.listboxGroupTreeParams = struct('listMaps',struct('names',{{}}, 'idxs', []), ...
+maingui.listboxGroupTreeParams = struct('listMaps',struct('names',{{}}, 'idxs', []), ...
                                     'views', struct('ALL',1, 'SUBJS',2, 'RUNS',3), ...
                                     'viewSetting',0);
                       
@@ -207,22 +207,22 @@ hmr.listboxGroupTreeParams = struct('listMaps',struct('names',{{}}, 'idxs', []),
 % Set listbox used for displaying valid data
 % Get the GUI listboxGroupTree setting 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-listboxGroup = hmr.listboxGroupTreeParams.listMaps(viewSetting).names;
-nFiles = length(hmr.listboxGroupTreeParams.listMaps(views.RUNS).names);
+listboxGroup = maingui.listboxGroupTreeParams.listMaps(viewSetting).names;
+nFiles = length(maingui.listboxGroupTreeParams.listMaps(views.RUNS).names);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set listbox used for displaying files that did not load correctly
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-listboxFilesErr = cell(length(hmr.dataTree.filesErr),1);
+listboxFilesErr = cell(length(maingui.dataTree.filesErr),1);
 nFilesErr=0;
-for ii=1:length(hmr.dataTree.filesErr)
-    if hmr.dataTree.filesErr(ii).isdir
-        listboxFilesErr{ii} = hmr.dataTree.filesErr(ii).name;
-    elseif ~isempty(hmr.dataTree.filesErr(ii).subjdir)
-        listboxFilesErr{ii} = ['    ', hmr.dataTree.filesErr(ii).filename];
+for ii=1:length(maingui.dataTree.filesErr)
+    if maingui.dataTree.filesErr(ii).isdir
+        listboxFilesErr{ii} = maingui.dataTree.filesErr(ii).name;
+    elseif ~isempty(maingui.dataTree.filesErr(ii).subjdir)
+        listboxFilesErr{ii} = ['    ', maingui.dataTree.filesErr(ii).filename];
         nFilesErr=nFilesErr+1;
     else
-        listboxFilesErr{ii} = hmr.dataTree.filesErr(ii).name;
+        listboxFilesErr{ii} = maingui.dataTree.filesErr(ii).name;
         nFilesErr=nFilesErr+1;
     end
 end
@@ -259,7 +259,7 @@ listboxGroupTree_Callback([], [1,1,1], handles)
 
 % --------------------------------------------------------------------
 function eventdata = uipanelProcessingType_SelectionChangeFcn(hObject, eventdata, handles)
-global hmr
+global maingui
 
 if isempty(hObject)
     return;
@@ -268,20 +268,20 @@ proclevel = GetProclevel(handles);
 iList = get(handles.listboxGroupTree,'value');
 [iGroup,iSubj,iRun] = MapList2GroupTree(iList);
 switch(proclevel)
-	case hmr.gid
+	case maingui.gid
         if iGroup==0
             iGroup=1;
         end
-        hmr.dataTree.SetCurrElem(iGroup);
-    case hmr.sid
+        maingui.dataTree.SetCurrElem(iGroup);
+    case maingui.sid
         if iGroup==0
             iGroup=1;
         end
         if iSubj==0
             iSubj=1;
         end
-        hmr.dataTree.SetCurrElem(iGroup, iSubj);
-    case hmr.rid
+        maingui.dataTree.SetCurrElem(iGroup, iSubj);
+    case maingui.rid
         if iGroup==0
             iGroup=1;
         end
@@ -291,9 +291,9 @@ switch(proclevel)
         if iRun==0
             iRun=1;
         end
-        hmr.dataTree.SetCurrElem(iGroup, iSubj, iRun);
+        maingui.dataTree.SetCurrElem(iGroup, iSubj, iRun);
 end
-[iGroup, iSubj, iRun] = hmr.dataTree.GetCurrElemIndexID();
+[iGroup, iSubj, iRun] = maingui.dataTree.GetCurrElemIndexID();
 listboxGroupTree_Callback([], [iGroup,iSubj,iRun], handles)
 DisplayData(handles, hObject);
 
@@ -343,7 +343,7 @@ DisplayData(handles, hObject0);
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = pushbuttonCalcProcStream_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 if ~ishandles(hObject)
     return;
 end
@@ -354,13 +354,13 @@ val0 = get(handles.listboxGroupTree, 'value');
 % Set the display status to pending. In order to avoid redisplaying 
 % in a single callback thread in functions called from here which 
 % also call DisplayData
-hmr.dataTree.CalcCurrElem();
+maingui.dataTree.CalcCurrElem();
 
 % Restore original selection listboxGroupTree
 set(handles.listboxGroupTree, 'value',val0);
 
 h = waitbar(0,'Auto-saving group processing results. Please wait ...');
-hmr.dataTree.SaveCurrElem();
+maingui.dataTree.SaveCurrElem();
 close(h);
 DisplayData(handles, hObject);
 
@@ -378,19 +378,19 @@ end
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = uipanelPlot_SelectionChangeFcn(hObject, eventdata, handles)
-global hmr
+global maingui
 if ~ishandles(hObject)
     return;
 end
 
 if strcmp(get(hObject, 'tag'), 'radiobuttonPlotRaw')
     set(handles.checkboxPlotHRF, 'value',0);
-elseif strcmp(get(hObject, 'tag'), 'radiobuttonPlotOD') && isempty(hmr.dataTree.currElem.GetDodAvg())
-    if isa(hmr.dataTree.currElem, 'RunClass')
+elseif strcmp(get(hObject, 'tag'), 'radiobuttonPlotOD') && isempty(maingui.dataTree.currElem.GetDodAvg())
+    if isa(maingui.dataTree.currElem, 'RunClass')
         set(handles.checkboxPlotHRF, 'value',0);
     end
-elseif strcmp(get(hObject, 'tag'), 'radiobuttonPlotConc') && isempty(hmr.dataTree.currElem.GetDcAvg())
-    if isa(hmr.dataTree.currElem, 'RunClass')
+elseif strcmp(get(hObject, 'tag'), 'radiobuttonPlotConc') && isempty(maingui.dataTree.currElem.GetDcAvg())
+    if isa(maingui.dataTree.currElem, 'RunClass')
         set(handles.checkboxPlotHRF, 'value',0);
     end
 end
@@ -400,15 +400,15 @@ DisplayData(handles, hObject);
 
 % --------------------------------------------------------------------
 function UpdateDatatypePanel(handles)
-global hmr
+global maingui
 datatype   = GetDatatype(handles);
-if datatype == hmr.buttonVals.RAW || datatype == hmr.buttonVals.RAW_HRF
+if datatype == maingui.buttonVals.RAW || datatype == maingui.buttonVals.RAW_HRF
     set(handles.listboxPlotWavelength, 'visible','on');
     set(handles.listboxPlotConc, 'visible','off');
-elseif datatype == hmr.buttonVals.OD || datatype == hmr.buttonVals.OD_HRF
+elseif datatype == maingui.buttonVals.OD || datatype == maingui.buttonVals.OD_HRF
     set(handles.listboxPlotWavelength, 'visible','on');
     set(handles.listboxPlotConc, 'visible','off');
-elseif datatype == hmr.buttonVals.CONC || datatype == hmr.buttonVals.CONC_HRF
+elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
     set(handles.listboxPlotWavelength, 'visible','off');
     set(handles.listboxPlotConc, 'visible','on');
 end
@@ -417,15 +417,15 @@ end
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = checkboxPlotHRF_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 if ~ishandles(hObject)
     return;
 end
 if get(hObject, 'value')==1
-    if ~isempty(hmr.dataTree.currElem.GetDcAvg())
+    if ~isempty(maingui.dataTree.currElem.GetDcAvg())
         set(handles.radiobuttonPlotConc, 'enable', 'on');
         set(handles.radiobuttonPlotConc, 'value', 1);
-    elseif ~isempty(hmr.dataTree.currElem.GetDodAvg())
+    elseif ~isempty(maingui.dataTree.currElem.GetDodAvg())
         set(handles.radiobuttonPlotOD, 'enable', 'on');
         set(handles.radiobuttonPlotOD, 'value', 1);
     end
@@ -445,11 +445,11 @@ end
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = axesSDG_ButtonDownFcn(hObject, eventdata, handles)
-global hmr
+global maingui
 if ~ishandles(hObject)
     return;
 end
-dataTree = hmr.dataTree;
+dataTree = maingui.dataTree;
 if dataTree.IsEmpty()
     return;
 end
@@ -457,11 +457,11 @@ end
 % Set channels selection 
 SetAxesDataCh();
 
-if ~isempty(hmr.plotViewOptions.ranges.X)
+if ~isempty(maingui.plotViewOptions.ranges.X)
     axes(handles.axesData)
     xlim('auto')
 end
-if ~isempty(hmr.plotViewOptions.ranges.Y)
+if ~isempty(maingui.plotViewOptions.ranges.Y)
     axes(handles.axesData)
     ylim('auto')
 end
@@ -500,12 +500,12 @@ DisplayData(handles, hObject);
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = menuItemChangeGroup_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 if ~ishandles(hObject)
     return;
 end
 
-fmt = hmr.format;
+fmt = maingui.format;
 
 % Change directory
 pathnm = uigetdir( cd, 'Pick the new directory' );
@@ -533,11 +533,11 @@ MainGUI_DeleteFcn(hGui,eventdata,handles);
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = menuItemReset_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 if ~ishandles(hObject)
     return;
 end
-dataTree = hmr.dataTree;
+dataTree = maingui.dataTree;
 dataTree.currElem.Reset();
 dataTree.currElem.Save();
 DisplayData(handles, hObject);
@@ -545,24 +545,24 @@ DisplayData(handles, hObject);
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = menuCopyCurrentPlot_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 if ~ishandles(hObject)
     return;
 end
 
-currElem = hmr.dataTree.currElem;
+currElem = maingui.dataTree.currElem;
 hf = figure;
 set(hf, 'color', [1 1 1]);
-fields = fieldnames(hmr.buttonVals);
+fields = fieldnames(maingui.buttonVals);
 plotname = sprintf('%s_%s', currElem.name, fields{GetDatatype(handles)});
 set(hf,'name', plotname);
 
 
 % DISPLAY DATA
-hmr.axesData.handles.axes = axes('position',[0.05 0.05 0.6 0.9]);
+maingui.axesData.handles.axes = axes('position',[0.05 0.05 0.6 0.9]);
 
 % DISPLAY SDG
-hmr.axesSDG.handles.axes = axes('position',[0.65 0.05 0.3 0.9]);
+maingui.axesSDG.handles.axes = axes('position',[0.65 0.05 0.3 0.9]);
 axis off
 
 % TBD: Display current element without help from dataTree
@@ -571,45 +571,45 @@ axis off
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = pushbuttonProcStreamOptionsEdit_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 if ~ishandles(hObject)
     return;
 end
 
 idx = FindChildGuiIdx('ProcStreamOptionsGUI');
 if get(hObject, 'value')
-    hmr.childguis(idx).Launch(hmr.applyEditCurrNodeOnly);
+    maingui.childguis(idx).Launch(maingui.applyEditCurrNodeOnly);
 else
-    hmr.childguis(idx).Close();
+    maingui.childguis(idx).Close();
 end
 
 
 
 % -------------------------------------------------------------------
 function [eventdata, handles] = menuItemLaunchStimGUI_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 if ~ishandles(hObject)
     return;
 end
 
 idx = FindChildGuiIdx('StimEditGUI');
-hmr.childguis(idx).Launch();
+maingui.childguis(idx).Launch();
 
 
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = menuItemSaveGroup_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 if ~ishandles(hObject)
     return;
 end
-hmr.dataTree.currElem.Save();
+maingui.dataTree.currElem.Save();
 
 
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = menuItemViewHRFStdErr_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 if ~ishandles(hObject)
     return;
 end
@@ -625,23 +625,23 @@ DisplayData(handles, hObject);
 
 % ---------------------------------------------------------------------------
 function [eventdata, handles] = checkboxPlotProbe_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 if ~ishandles(hObject)
     return;
 end
 
 idx = FindChildGuiIdx('PlotProbeGUI');
 if get(hObject, 'value')
-    hmr.childguis(idx).Launch(GetDatatype(handles), GetCondition(handles));
+    maingui.childguis(idx).Launch(GetDatatype(handles), GetCondition(handles));
 else
-    hmr.childguis(idx).Close();
+    maingui.childguis(idx).Close();
 end
 
 
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = menuItemProcStreamEdit_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 if ~ishandles(hObject)
     return;
 end
@@ -649,23 +649,23 @@ end
 checked = get(hObject,'checked');
 idx = FindChildGuiIdx('ProcStreamEditGUI');
 if checked
-    hmr.childguis(idx).Launch();
+    maingui.childguis(idx).Launch();
 else
-    hmr.childguis(idx).Close();
+    maingui.childguis(idx).Close();
 end
 
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = checkboxApplyProcStreamEditToAll_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 if ~ishandles(hObject)
     return;
 end
 
 if get(hObject, 'value')
-    hmr.applyEditCurrNodeOnly = false;
+    maingui.applyEditCurrNodeOnly = false;
 else
-    hmr.applyEditCurrNodeOnly = true;
+    maingui.applyEditCurrNodeOnly = true;
 end
 UpdateArgsChildGuis(handles);
 
@@ -673,10 +673,10 @@ UpdateArgsChildGuis(handles);
 
 % --------------------------------------------------------------------
 function idx = FindChildGuiIdx(name)
-global hmr
+global maingui
 
-for ii=1:length(hmr.childguis)
-    if strcmp(hmr.childguis(ii).GetName, name)
+for ii=1:length(maingui.childguis)
+    if strcmp(maingui.childguis(ii).GetName, name)
         break;
     end
 end
@@ -685,30 +685,30 @@ idx = ii;
 
 % --------------------------------------------------------------------
 function UpdateArgsChildGuis(handles)
-global hmr
-if isempty(hmr.childguis)
+global maingui
+if isempty(maingui.childguis)
     return;
 end
 
-hmr.childguis(FindChildGuiIdx('PlotProbeGUI')).UpdateArgs(GetDatatype(handles), GetCondition(handles));
-hmr.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(hmr.applyEditCurrNodeOnly);
+maingui.childguis(FindChildGuiIdx('PlotProbeGUI')).UpdateArgs(GetDatatype(handles), GetCondition(handles));
+maingui.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(maingui.applyEditCurrNodeOnly);
 
 
 % --------------------------------------------------------------------
 function UpdateChildGuis(handles)
-global hmr
-if isempty(hmr.childguis)
+global maingui
+if isempty(maingui.childguis)
     return;
 end
 UpdateArgsChildGuis(handles)
-for ii=1:length(hmr.childguis)
-    hmr.childguis(ii).Update();
+for ii=1:length(maingui.childguis)
+    maingui.childguis(ii).Update();
 end
 
 
 % ----------------------------------------------------------------------------------
 function hObject = DisplayData(handles, hObject)
-global hmr
+global maingui
 
 
 % Some callbacks which call DisplayData serve double duty as called functions 
@@ -725,11 +725,11 @@ if isempty(handles)
     return;
 end
 
-dataTree = hmr.dataTree;
+dataTree = maingui.dataTree;
 procElem = dataTree.currElem;
 EnableDisableGuiPlotBttns(handles);
 
-hAxes = hmr.axesData.handles.axes;
+hAxes = maingui.axesData.handles.axes;
 if ~ishandles(hAxes)
     return;
 end
@@ -739,14 +739,14 @@ cla;
 legend off
 set(hAxes,'ygrid','on');
 
-linecolor  = hmr.axesData.linecolor;
-linestyle  = hmr.axesData.linestyle;
+linecolor  = maingui.axesData.linecolor;
+linestyle  = maingui.axesData.linestyle;
 datatype   = GetDatatype(handles);
 condition  = GetCondition(handles);
-iCh0       = hmr.axesSDG.iCh;
+iCh0       = maingui.axesSDG.iCh;
 iWl        = GetWl(handles);
 hbType     = GetHbType(handles);
-sclConc    = hmr.sclConc;        % convert Conc from Molar to uMolar
+sclConc    = maingui.sclConc;        % convert Conc from Molar to uMolar
 showStdErr = GetShowStdErrEnabled(handles);
 
 [iDataBlks, iCh] = procElem.GetDataBlocksIdxs(iCh0);
@@ -768,16 +768,16 @@ for iBlk = iDataBlks
     nTrials = [];    
     
     % Get plot data from dataTree
-    if datatype == hmr.buttonVals.RAW
+    if datatype == maingui.buttonVals.RAW
         d = procElem.GetDataMatrix(iBlk);
         t = procElem.GetTime(iBlk);
-    elseif datatype == hmr.buttonVals.OD
+    elseif datatype == maingui.buttonVals.OD
         d = procElem.GetDod(iBlk);
         t = procElem.GetTime(iBlk);
-    elseif datatype == hmr.buttonVals.CONC
+    elseif datatype == maingui.buttonVals.CONC
         d = procElem.GetDc(iBlk);
         t = procElem.GetTime(iBlk);
-    elseif datatype == hmr.buttonVals.OD_HRF
+    elseif datatype == maingui.buttonVals.OD_HRF
         d = procElem.GetDodAvg([], iBlk);
         t = procElem.GetTHRF(iBlk);
         if showStdErr
@@ -787,7 +787,7 @@ for iBlk = iDataBlks
         if isempty(condition)
             return;
         end
-    elseif datatype == hmr.buttonVals.CONC_HRF
+    elseif datatype == maingui.buttonVals.CONC_HRF
         d = procElem.GetDcAvg([], iBlk);
         t = procElem.GetTHRF(iBlk);
         if showStdErr
@@ -822,14 +822,14 @@ for iBlk = iDataBlks
         linecolors = linecolor(iColor:iColor+length(iChBlk)-1,:);
         
         % Plot data
-        if datatype == hmr.buttonVals.RAW || datatype == hmr.buttonVals.OD || datatype == hmr.buttonVals.OD_HRF
-            if  datatype == hmr.buttonVals.OD_HRF
+        if datatype == maingui.buttonVals.RAW || datatype == maingui.buttonVals.OD || datatype == maingui.buttonVals.OD_HRF
+            if  datatype == maingui.buttonVals.OD_HRF
                 d = d(:,:,condition);
             end
             d = procElem.reshape_y(d, ch.MeasList);
             DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
-        elseif datatype == hmr.buttonVals.CONC || datatype == hmr.buttonVals.CONC_HRF
-            if  datatype == hmr.buttonVals.CONC_HRF
+        elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
+            if  datatype == maingui.buttonVals.CONC_HRF
                 d = d(:,:,:,condition);
             end
             d = d * sclConc;
@@ -840,7 +840,7 @@ for iBlk = iDataBlks
 end
 
 % Set Zoom on/off
-if hmr.plotViewOptions.zoom == true
+if maingui.plotViewOptions.zoom == true
     h=zoom;
     set(h,'ButtonDownFilter',@myZoom_callback);
     set(h,'enable','on')
@@ -849,13 +849,13 @@ else
 end
 
 % Set data window X and Y borders
-if ~isempty(hmr.plotViewOptions.ranges.Y)
-    ylim(hmr.plotViewOptions.ranges.Y);
+if ~isempty(maingui.plotViewOptions.ranges.Y)
+    ylim(maingui.plotViewOptions.ranges.Y);
 else
     ylim('auto')
 end
-if ~isempty(hmr.plotViewOptions.ranges.X)
-    xlim(hmr.plotViewOptions.ranges.X);
+if ~isempty(maingui.plotViewOptions.ranges.X)
+    xlim(maingui.plotViewOptions.ranges.X);
 else
     xlim('auto')
     if ~isempty(t)
@@ -885,15 +885,15 @@ end
 
 % ----------------------------------------------------------------------------------
 function DisplayStim(handles)
-global hmr
-dataTree = hmr.dataTree;
+global maingui
+dataTree = maingui.dataTree;
 procElem = dataTree.currElem;
 
 if ~strcmp(procElem.type, 'run')
     return;
 end
 
-hAxes = hmr.axesData.handles.axes;
+hAxes = maingui.axesData.handles.axes;
 if ~ishandles(hAxes)
     return;
 end
@@ -901,13 +901,13 @@ axes(hAxes);
 hold on;
 
 datatype = GetDatatype(handles);
-if datatype == hmr.buttonVals.RAW_HRF
+if datatype == maingui.buttonVals.RAW_HRF
     return;
 end
-if datatype == hmr.buttonVals.OD_HRF
+if datatype == maingui.buttonVals.OD_HRF
     return;
 end
-if datatype == hmr.buttonVals.CONC_HRF
+if datatype == maingui.buttonVals.CONC_HRF
     return;
 end
 
@@ -959,8 +959,8 @@ set(hAxes,'ygrid','on');
                 
 % ----------------------------------------------------------------------------------
 function DisplayCondLegend(hLg, idxLg)
-global hmr
-dataTree = hmr.dataTree;
+global maingui
+dataTree = maingui.dataTree;
 procElem = dataTree.currElem;
 
 if isempty(hLg)
@@ -979,7 +979,7 @@ end
 
 % ----------------------------------------------------------------------------------
 function Update(varargin)
-global hmr
+global maingui
 
 % Which application called us? 
 guiname = '';
@@ -990,18 +990,18 @@ end
 % Redisplay main GUI based on what was done in the calling app
 switch(guiname)
     case 'PlotProbeGUI'
-        set(hmr.handles.checkboxPlotProbe, 'value',0); 
+        set(maingui.handles.checkboxPlotProbe, 'value',0); 
     case 'StimEditGUI'
-        DisplayData(hmr.handles, hmr.handles.axesData);  % Redisplay data axes since stims might have edited
+        DisplayData(maingui.handles, maingui.handles.axesData);  % Redisplay data axes since stims might have edited
     case 'ProcStreamOptionsGUI'
-        set(hmr.handles.pushbuttonProcStreamOptionsEdit, 'value',0);  % Redisplay enable/disable toggle button 
+        set(maingui.handles.pushbuttonProcStreamOptionsEdit, 'value',0);  % Redisplay enable/disable toggle button 
     case 'DataTreeClass'
-        if ~isempty(hmr.handles)
+        if ~isempty(maingui.handles)
             iGroup = varargin{2}(1);
             iSubj = varargin{2}(2);
             iRun = varargin{2}(3);
             fprintf('Processing iGroup=%d, iSubj=%d, iRun=%d\n', iGroup, iSubj, iRun);
-            listboxGroupTree_Callback([], [iGroup, iSubj, iRun], hmr.handles);
+            listboxGroupTree_Callback([], [iGroup, iSubj, iRun], maingui.handles);
         end
 end
 
@@ -1015,23 +1015,23 @@ resetGroupFolder();
 
 % --------------------------------------------------------------------
 function pushbuttonPanLeft_Callback(hObject, eventdata, handles)
-global hmr
-procElem = hmr.dataTree.currElem;
-iCh0     = hmr.axesSDG.iCh;
+global maingui
+procElem = maingui.dataTree.currElem;
+iCh0     = maingui.axesSDG.iCh;
 datatype = GetDatatype(handles);
 
 iDataBlks = procElem.GetDataBlocksIdxs(iCh0);
 for iBlk = iDataBlks
     % Get plot data from dataTree
-    if datatype == hmr.buttonVals.RAW
+    if datatype == maingui.buttonVals.RAW
         t = procElem.GetTime(iBlk);
-    elseif datatype == hmr.buttonVals.OD
+    elseif datatype == maingui.buttonVals.OD
         t = procElem.GetTime(iBlk);
-    elseif datatype == hmr.buttonVals.CONC
+    elseif datatype == maingui.buttonVals.CONC
         t = procElem.GetTime(iBlk);
-    elseif datatype == hmr.buttonVals.OD_HRF
+    elseif datatype == maingui.buttonVals.OD_HRF
         t = procElem.GetTHRF(iBlk);
-    elseif datatype == hmr.buttonVals.CONC_HRF
+    elseif datatype == maingui.buttonVals.CONC_HRF
         t = procElem.GetTHRF(iBlk);
     end
 end
@@ -1063,33 +1063,33 @@ pushbuttonPanLeft_Callback(hObject, eventdata, handles)
 
 % --------------------------------------------------------------------
 function pushbuttonResetView_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 set(handles.checkboxFixRangeX, 'value',0);
 set(handles.checkboxFixRangeY, 'value',0);
-hmr.plotViewOptions.ranges.X = [];
-hmr.plotViewOptions.ranges.Y = [];
+maingui.plotViewOptions.ranges.X = [];
+maingui.plotViewOptions.ranges.Y = [];
 DisplayData(handles, hObject);
 
 
 
 % --------------------------------------------------------------------
 function checkboxFixRangeX_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 if get(hObject,'value')==1
-    hmr.plotViewOptions.ranges.X = str2num(get(handles.editFixRangeX, 'string'));
+    maingui.plotViewOptions.ranges.X = str2num(get(handles.editFixRangeX, 'string'));
 else
-    hmr.plotViewOptions.ranges.X = [];    
+    maingui.plotViewOptions.ranges.X = [];    
 end
 DisplayData(handles, hObject);
 
 
 % --------------------------------------------------------------------
 function checkboxFixRangeY_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 if get(hObject,'value')==1
-    hmr.plotViewOptions.ranges.Y = str2num(get(handles.editFixRangeY, 'string'));
+    maingui.plotViewOptions.ranges.Y = str2num(get(handles.editFixRangeY, 'string'));
 else
-    hmr.plotViewOptions.ranges.Y = [];
+    maingui.plotViewOptions.ranges.Y = [];
 end
 DisplayData(handles, hObject);
 
@@ -1108,7 +1108,7 @@ checkboxFixRangeY_Callback(handles.checkboxFixRangeY, eventdata, handles);
 
 % --------------------------------------------------------------------
 function menuItemGroupViewSettingAll_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 
 if strcmp(get(hObject, 'checked'), 'off')
     set(hObject, 'checked','on');
@@ -1116,21 +1116,21 @@ else
     return;
 end
 
-views = hmr.listboxGroupTreeParams.views;
+views = maingui.listboxGroupTreeParams.views;
 if strcmp(get(hObject, 'checked'), 'on')
-    set(handles.listboxGroupTree, 'string', hmr.listboxGroupTreeParams.listMaps(views.ALL).names)
-    hmr.listboxGroupTreeParams.viewSetting = views.ALL;    
+    set(handles.listboxGroupTree, 'string', maingui.listboxGroupTreeParams.listMaps(views.ALL).names)
+    maingui.listboxGroupTreeParams.viewSetting = views.ALL;    
     set(handles.menuItemGroupViewSettingSubjects,'checked','off');
     set(handles.menuItemGroupViewSettingRuns,'checked','off');
     listboxGroupTree_Callback([], [1,1,1], handles)
-    hmr.dataTree.SetCurrElem(1,1,1);
+    maingui.dataTree.SetCurrElem(1,1,1);
     DisplayData(handles, hObject);
 end
 
 
 % --------------------------------------------------------------------
 function menuItemGroupViewSettingSubjects_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 
 if strcmp(get(hObject, 'checked'), 'off')
     set(hObject, 'checked','on');
@@ -1138,21 +1138,21 @@ else
     return;
 end
 
-views = hmr.listboxGroupTreeParams.views;
+views = maingui.listboxGroupTreeParams.views;
 if strcmp(get(hObject, 'checked'), 'on')
-    set(handles.listboxGroupTree, 'string', hmr.listboxGroupTreeParams.listMaps(views.SUBJS).names)
-    hmr.listboxGroupTreeParams.viewSetting = views.SUBJS;
+    set(handles.listboxGroupTree, 'string', maingui.listboxGroupTreeParams.listMaps(views.SUBJS).names)
+    maingui.listboxGroupTreeParams.viewSetting = views.SUBJS;
     set(handles.menuItemGroupViewSettingAll,'checked','off');
     set(handles.menuItemGroupViewSettingRuns,'checked','off');
     listboxGroupTree_Callback([], [1,1,1], handles)
-    hmr.dataTree.SetCurrElem(1,1,1);
+    maingui.dataTree.SetCurrElem(1,1,1);
     DisplayData(handles, hObject);
 end
 
 
 % --------------------------------------------------------------------
 function menuItemGroupViewSettingRuns_Callback(hObject, eventdata, handles)
-global hmr
+global maingui
 
 if strcmp(get(hObject, 'checked'), 'off')
     set(hObject, 'checked','on');
@@ -1160,14 +1160,14 @@ else
     return;
 end
 
-views = hmr.listboxGroupTreeParams.views;
+views = maingui.listboxGroupTreeParams.views;
 if strcmp(get(hObject, 'checked'), 'on')
-    set(handles.listboxGroupTree, 'string', hmr.listboxGroupTreeParams.listMaps(views.RUNS).names)
-    hmr.listboxGroupTreeParams.viewSetting = views.RUNS;
+    set(handles.listboxGroupTree, 'string', maingui.listboxGroupTreeParams.listMaps(views.RUNS).names)
+    maingui.listboxGroupTreeParams.viewSetting = views.RUNS;
     set(handles.menuItemGroupViewSettingAll,'checked','off');
     set(handles.menuItemGroupViewSettingSubjects,'checked','off');
     listboxGroupTree_Callback([], [1,1,1], handles)
-    hmr.dataTree.SetCurrElem(1,1,1);
+    maingui.dataTree.SetCurrElem(1,1,1);
     DisplayData(handles, hObject);
 end
 

@@ -32,7 +32,7 @@ classdef TreeNodeClass < handle
             obj.procStream = ProcStreamClass();
             obj.err = 0;
             obj.CondNames = {};
-
+                        
             obj.InitParentAppFunc();
             
             % If this constructor is called from this class' copy method,
@@ -159,12 +159,13 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function InitParentAppFunc(obj)
-            global hmr
-            if ~isempty(hmr)
-                obj.updateParentGui = hmr.Update;
+            global maingui
+            if ~isempty(maingui)
+                obj.updateParentGui = maingui.Update;
             end
         end
         
+
         % ----------------------------------------------------------------------------------
         function SetIndexID(obj, iG, iS, iR)
             if nargin>1

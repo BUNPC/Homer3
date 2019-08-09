@@ -119,6 +119,7 @@ classdef AcqDataClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function t = GetTimeCombined(obj)
+            % Function combines the time vectors for all data blocks into one time vectors. 
             t = obj.GetTime(1);
             tStart = t(1);
             tEnd   = t(end);

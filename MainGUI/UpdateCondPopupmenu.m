@@ -1,18 +1,18 @@
 function UpdateCondPopupmenu(handles)
-global hmr
+global maingui
 
 if isempty(handles)
     return;
 end
-if isempty(hmr)
+if isempty(maingui)
     return;
 end
-if hmr.dataTree.IsEmpty()
+if maingui.dataTree.IsEmpty()
     return;
 end
 
-CondNames = hmr.dataTree.group.GetConditions();
-CondNamesCurrElem = hmr.dataTree.currElem.GetConditionsActive();
+CondNames = maingui.dataTree.group.GetConditions();
+CondNamesCurrElem = maingui.dataTree.currElem.GetConditionsActive();
 for jj=1:length(CondNames)
     k = find(strcmp(['-- ', CondNames{jj}], CondNamesCurrElem));
     if ~isempty(k)
@@ -20,6 +20,6 @@ for jj=1:length(CondNames)
     end
 end
 set(handles.popupmenuConditions, 'string', CondNames);
-hmr.condition = get(handles.popupmenuConditions, 'value');
+maingui.condition = get(handles.popupmenuConditions, 'value');
 
 

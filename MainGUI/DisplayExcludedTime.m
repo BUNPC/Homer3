@@ -1,7 +1,7 @@
 function DisplayExcludedTime(handles, datatype, mode, col)
-global hmr
+global maingui
 
-if  datatype == hmr.buttonVals.OD_HRF || datatype == hmr.buttonVals.CONC_HRF
+if  datatype == maingui.buttonVals.OD_HRF || datatype == maingui.buttonVals.CONC_HRF
     return;
 end
 
@@ -19,12 +19,12 @@ renderer = get(gcf, 'renderer');
 axes(handles.axesData);
 hold on
 
-iCh       = hmr.axesSDG.iCh;
-iDataBlks = hmr.dataTree.currElem.GetDataBlocksIdxs(iCh);
+iCh       = maingui.axesSDG.iCh;
+iDataBlks = maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
 tPtsExclTot = [];
 for iBlk = iDataBlks
-    tIncAuto = hmr.dataTree.currElem.GetTincAuto(iBlk);
-    t        = hmr.dataTree.currElem.GetTime(iBlk);
+    tIncAuto = maingui.dataTree.currElem.GetTincAuto(iBlk);
+    t        = maingui.dataTree.currElem.GetTime(iBlk);
     
     if isempty(tIncAuto)
         continue;

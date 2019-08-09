@@ -1,5 +1,5 @@
 function datatype = GetDatatype(handles)
-global hmr
+global maingui
 
 datatype=0;
 
@@ -8,7 +8,7 @@ plotODVal   = get(handles.radiobuttonPlotOD, 'value');
 plotConcVal = get(handles.radiobuttonPlotConc, 'value');
 plotHRFVal  = get(handles.checkboxPlotHRF, 'value');
 
-c = hmr.buttonVals;
+c = maingui.buttonVals;
 
 if plotRawVal && ~plotHRFVal
     datatype      = c.RAW;

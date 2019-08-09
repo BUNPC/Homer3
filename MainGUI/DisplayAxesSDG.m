@@ -37,20 +37,20 @@
 
 % --------------------------------------------------------------------
 function DisplayAxesSDG()
-global hmr
+global maingui
 
 % This function plots the prove geometry
 % Command line call:
 % plotAxes_SDG(guidata(gcbo),bool);
 %
-hAxesSDG    = hmr.axesSDG.handles.axes;
-iCh         = hmr.axesSDG.iCh;
-iSrcDet     = hmr.axesSDG.iSrcDet;
-color       = hmr.axesSDG.linecolor;
+hAxesSDG    = maingui.axesSDG.handles.axes;
+iCh         = maingui.axesSDG.iCh;
+iSrcDet     = maingui.axesSDG.iSrcDet;
+color       = maingui.axesSDG.linecolor;
 
-SD          = hmr.dataTree.currElem.GetSDG();
-bbox        = hmr.dataTree.currElem.GetSdgBbox();
-procResult  = hmr.dataTree.currElem.procStream.output;
+SD          = maingui.dataTree.currElem.GetSDG();
+bbox        = maingui.dataTree.currElem.GetSdgBbox();
+procResult  = maingui.dataTree.currElem.procStream.output;
 
 % Set axes handle properties and parameters 
 if ~ishandles(hAxesSDG)
@@ -75,14 +75,14 @@ nSrcs       = size(SD.SrcPos,1);
 nDets       = size(SD.DetPos,1);
 
 % get mlActAuto from procResult if it exists and replace ch.MeasListActMan 
-% [iDataBlks, iCh] = hmr.dataTree.currElem.GetDataBlocksIdxs(iCh);
+% [iDataBlks, iCh] = maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
 MeasList = [];
 MeasListActMan = [];
 MeasListActAuto = [];
 MeasListVis = [];
-nDataBlks = hmr.dataTree.currElem.GetDataBlocksNum();
+nDataBlks = maingui.dataTree.currElem.GetDataBlocksNum();
 for iBlk = 1:nDataBlks   
-    ch = hmr.dataTree.currElem.GetMeasList(iBlk);
+    ch = maingui.dataTree.currElem.GetMeasList(iBlk);
     MeasList        = [MeasList; ch.MeasList];
     MeasListActMan  = [MeasListActMan; ch.MeasListActMan];
     MeasListActAuto = [MeasListActAuto; ch.MeasListActAuto];

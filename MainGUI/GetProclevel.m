@@ -1,5 +1,5 @@
 function proclevel = GetProclevel(handles)
-global hmr
+global maingui
 
 proclevel = 0;
 bttnG = get(handles.radiobuttonProcTypeGroup, 'value');
@@ -16,10 +16,10 @@ elseif bttnR
 end
 
 if strcmp(bttn, 'radiobuttonProcTypeGroup')
-    proclevel = hmr.gid;
+    proclevel = maingui.gid;
 elseif strcmp(bttn, 'radiobuttonProcTypeSubj')
-    proclevel = hmr.sid;
+    proclevel = maingui.sid;
 elseif strcmp(bttn, 'radiobuttonProcTypeRun')
-    proclevel = hmr.rid;
+    proclevel = maingui.rid;
 end
 

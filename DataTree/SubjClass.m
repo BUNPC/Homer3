@@ -225,6 +225,8 @@ classdef SubjClass < TreeNodeClass
             % procStream.Calc() to calculate proc stream for this subject
             vars = [];
             for iRun = 1:nRun
+                vars.dcRuns{iRun}        = r(iRun).procStream.output.GetVar('dc');
+                vars.dodRuns{iRun}       = r(iRun).procStream.output.GetVar('dod');
                 vars.dodAvgRuns{iRun}    = r(iRun).procStream.output.GetVar('dodAvg');
                 vars.dodAvgStdRuns{iRun} = r(iRun).procStream.output.GetVar('dodAvgStd');
                 vars.dodSum2Runs{iRun}   = r(iRun).procStream.output.GetVar('dodSum2');
@@ -235,6 +237,7 @@ classdef SubjClass < TreeNodeClass
                 vars.nTrialsRuns{iRun}   = r(iRun).procStream.output.GetVar('nTrials');
                 vars.mlActRuns{iRun}     = r(iRun).procStream.output.GetVar('mlActAuto');
                 vars.SDRuns{iRun}        = r(iRun).GetMeasList();
+                vars.stimRuns{iRun}      = r(iRun).GetVar('stim');
             end
             
             % Make variables in this subject available to processing stream input

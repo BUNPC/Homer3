@@ -71,7 +71,7 @@ plotprobe.hidMeasShow = get(handles.radiobuttonShowHiddenMeas, 'value');
 % ----------------------------------------------------------------------
 function ParseArgs(args)
 global plotprobe
-global hmr
+global maingui
 
 if ~exist('args','var')
     return;
@@ -150,7 +150,7 @@ end
 
 % Now whichever of the above parameters weren't assigned values
 % obtain values either from parent gui or assign default value
-if isempty(hmr)
+if isempty(maingui)
     if isempty(plotprobe.format)
         plotprobe.format = 'snirf';
     end
@@ -162,13 +162,13 @@ if isempty(hmr)
     end
 else
     if isempty(plotprobe.format)
-        plotprobe.format = hmr.format;
+        plotprobe.format = maingui.format;
     end
     if isempty(plotprobe.datatype)
-        plotprobe.datatype = hmr.guiControls.datatype;
+        plotprobe.datatype = maingui.guiControls.datatype;
     end
     if isempty(plotprobe.condition)
-        plotprobe.condition = hmr.guiControls.condition;
+        plotprobe.condition = maingui.guiControls.condition;
     end
 end
 
@@ -193,9 +193,9 @@ function PlotProbeGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 %     GUI for displaying HRF plots for all probe channels. 
 %     
 %     NOTE: This GUIs input parameters are passed to it either as formal arguments 
-%     or through the calling parent GUIs global variable. If it's the latter, this GUI 
-%     follows the rule that it accesses the parent GUIs global variable ONLY at 
-%     startup time, that is, in the function <GUI Name>_OpeningFcn(). 
+%     or through the calling parent GUIs generic global variable, 'maingui'. If it's 
+%     the latter, this GUI follows the rule that it accesses the parent GUIs global 
+% 	  variable ONLY at startup time, that is, in the function <GUI Name>_OpeningFcn(). 
 %
 %  Input:
 %     format:    Which acquisition type of files to load to dataTree: e.g., nirs, snirf, etc
@@ -205,7 +205,7 @@ function PlotProbeGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 %
 
 global plotprobe
-global hmr
+global maingui
 
 % Choose default command line output for PlotProbeGUI
 handles.output = hObject;
@@ -222,7 +222,7 @@ if ~isempty(p)
     set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
 end
 plotprobe.version  = get(hObject, 'name');
-plotprobe.dataTree = LoadDataTree(plotprobe.format, '', hmr);
+plotprobe.dataTree = LoadDataTree(plotprobe.format, '', maingui);
 if ispc()
     setGuiFonts(hObject, 7);
 else
@@ -240,11 +240,11 @@ end
  
 % If parent gui exists disable these menu options which only make sense when 
 % running this GUI standalone
-if ~isempty(hmr)
+if ~isempty(maingui)
     set(handles.menuFile,'visible','off');
     set(handles.menuItemChangeGroup,'visible','off');
     set(handles.menuItemSaveGroup,'visible','off');
-    plotprobe.updateParentGui = hmr.Update;
+    plotprobe.updateParentGui = maingui.Update;
 end
 if ispc()
     setGuiFonts(hObject);

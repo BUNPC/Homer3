@@ -1,6 +1,6 @@
 function iWl = GetWl(handles)
-global hmr
-Lambda =  hmr.dataTree.currElem.GetWls();
+global maingui
+Lambda =  maingui.dataTree.currElem.GetWls();
 
 iWl=[];
 val = get(handles.listboxPlotWavelength, 'value');

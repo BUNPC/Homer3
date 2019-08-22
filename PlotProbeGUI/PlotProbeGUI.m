@@ -223,11 +223,6 @@ if ~isempty(p)
 end
 plotprobe.version  = get(hObject, 'name');
 plotprobe.dataTree = LoadDataTree(plotprobe.format, '', maingui);
-if ispc()
-    setGuiFonts(hObject, 7);
-else
-    setGuiFonts(hObject);
-end
 
 if length(plotprobe.y)>1
     msg{1} = sprintf('Warning: Data in this plot probe uses different Y scales for different data blocks ');

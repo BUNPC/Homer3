@@ -38,7 +38,8 @@ for iRun = 1:length(yRuns)
     for iBlk = 1:length(yRuns{iRun})
         y = yRuns{iRun}(iBlk).GetDataMatrix();  % data matrix for run iRun, data block iBlk 
         if isempty(pValues{iBlk})
-            pValues{iBlk} = zeros(size(y,3), size(s,2));    % p-value matrix size = # of channels X # of condition
+%             pValues{iBlk} = zeros(size(y,3), size(s,2));    % p-value matrix size = # of channels X # of condition
+            pValues{iBlk} = rand(size(y,3), size(s,2));    % p-value matrix size = # of channels X # of condition
         end
 
         % Processing for each run 

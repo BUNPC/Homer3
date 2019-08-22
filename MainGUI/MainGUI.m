@@ -145,6 +145,7 @@ maingui.childguis(1) = ChildGuiClass('ProcStreamEditGUI');
 maingui.childguis(2) = ChildGuiClass('ProcStreamOptionsGUI');
 maingui.childguis(3) = ChildGuiClass('StimEditGUI');
 maingui.childguis(4) = ChildGuiClass('PlotProbeGUI');
+maingui.childguis(5) = ChildGuiClass('PvaluesDisplayGUI');
 
 maingui.handles = handles;
 maingui.handles.pValuesFig = [];
@@ -591,7 +592,6 @@ global maingui
 if ~ishandles(hObject)
     return;
 end
-
 idx = FindChildGuiIdx('StimEditGUI');
 maingui.childguis(idx).Launch();
 
@@ -868,7 +868,7 @@ DisplayStim(handles);
 UpdateCondPopupmenu(handles);
 UpdateDatatypePanel(handles);
 UpdateChildGuis(handles);
-DisplayPvalues();
+% DisplayPvalues();
 
 
 
@@ -1199,4 +1199,16 @@ if strcmp(get(hObject, 'checked'), 'on')
     maingui.dataTree.SetCurrElem(1,1,1);
     DisplayData(handles, hObject);
 end
+
+
+
+% --------------------------------------------------------------------
+function menuItemDisplayPvalues_Callback(hObject, eventdata, handles)
+global maingui
+if ~ishandles(hObject)
+    return;
+end
+
+idx = FindChildGuiIdx('PvaluesDisplayGUI');
+maingui.childguis(idx).Launch();
 

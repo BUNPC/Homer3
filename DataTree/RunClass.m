@@ -73,31 +73,7 @@ classdef RunClass < TreeNodeClass
             end
         end
         
-        
-        % ----------------------------------------------------------------------------------
-        function Save(obj, options)
-            if ~exist('options','var')
-                options = 'derived';
-            end
-            options_s = obj.parseSaveOptions(options);
-            
-            % Save derived data
-            if options_s.derived
-                if exist('./groupResults.mat','file')
-                    load( './groupResults.mat' );
-                    if strcmp(class(group.subjs(obj.iSubj).runs(obj.iRun)), class(obj))
-                        group.subjs(obj.iSubj).runs(obj.iRun) = RunClass(obj);
-                    end
-                    save( './groupResults.mat','group' );
-                end
-            end
-            
-            % Save acquired data
-            if options_s.acquired
-                obj.acquired.Save();
-            end
-        end
-        
+                
         
         % ----------------------------------------------------------------------------------
         % Deletes derived data in procResult

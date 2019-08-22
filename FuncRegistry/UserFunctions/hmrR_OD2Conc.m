@@ -69,9 +69,8 @@ for ii=1:length(dod)
         if ppf(1)~=1
             y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,1)*rho*ppf))' )';
         else
-            y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,1)))' )';
+            y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,2)))' )';
         end
-        y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,1)*rho*ppf))' )';
         y2(:,k+2) = y2(:,k) + y2(:,k+1);
         dc(ii).AddChannelHbO(ml(idx1,1), ml(idx1,2));
         dc(ii).AddChannelHbR(ml(idx1,1), ml(idx1,2));

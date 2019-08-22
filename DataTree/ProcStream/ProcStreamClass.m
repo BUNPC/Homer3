@@ -1235,6 +1235,15 @@ classdef ProcStreamClass < handle
             end
             mlVis = obj.input.GetVar('mlVis',iBlk);
         end
+
+        
+        % ----------------------------------------------------------------------------------
+        function pValues = GetPvalues(obj, iBlk)
+            if ~exist('iBlk','var')
+                iBlk = [];
+            end
+            pValues = obj.output.GetVar('pValues',iBlk);
+        end
         
     end
     

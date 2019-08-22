@@ -347,7 +347,16 @@ classdef TreeNodeClass < handle
         end
         
         
-        
+        % ----------------------------------------------------------------------------------
+        function pValues = GetPvalues(obj, iBlk)
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = [];
+            end
+            pValues = obj.procStream.output.GetVar('pValues');
+            if ~isempty(iBlk) && iBlk<=length(pValues)
+                pValues = pValues{iBlk};
+            end
+        end
         
     end
     

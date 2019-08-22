@@ -557,28 +557,14 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function Save(obj, options)
+        function Save(obj)
             fprintf('Saving processed data in groupResults.mat\n');
             t_local = tic;
-            if ~exist('options','var')
-                options = 'derived';
-            end
-            options_s = obj.parseSaveOptions(options);
-            
-            % Save derived data
-            if options_s.derived
-                group = GroupClass(obj);
-                save( './groupResults.mat','group' );
-            end
-            
-            % Save acquired data
-            if options_s.acquired
-                for ii=1:length(obj.subjs)
-                    obj.subjs(ii).Save();
-                end
-            end
+            group = GroupClass(obj);
+            save( './groupResults.mat','group' );
             fprintf('Completed saving groupResults.mat in %0.3f seconds.\n', toc(t_local));
         end
+        
         
 
     end  % Public Save/Load methods

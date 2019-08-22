@@ -106,39 +106,6 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function Save(obj, options)
-            if ~exist('options','var')
-                options = 'derived';
-            end
-            options_s = obj.parseSaveOptions(options);
-            
-            % Save derived data
-            if options_s.derived
-                if exist('./groupResults.mat','file')
-                    load( './groupResults.mat' );
-                    if strcmp(class(group.subjs(obj.iSubj)), class(obj))
-                        group.subjs(obj.iSubj) = SubjClass(obj);
-                    end
-                    save( './groupResults.mat','group' );
-                end
-            end
-            
-            % Save acquired data
-            if options_s.acquired
-                strPrintable = sprintf_s(obj.name);
-                h = waitbar(0, sprintf('Saving subject %s', strPrintable));
-                pause(1);
-                n = length(obj.runs);
-                for ii=1:n
-                    obj.runs(ii).Save();
-                    waitbar(ii/n, h, sprintf('Saving run %d of %d of subject %s', ii, n, strPrintable))
-                end
-                close(h);
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
         function Add(obj, run)
             % Add run to this subject
             jj=0;

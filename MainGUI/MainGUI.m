@@ -147,7 +147,7 @@ maingui.childguis(3) = ChildGuiClass('StimEditGUI');
 maingui.childguis(4) = ChildGuiClass('PlotProbeGUI');
 
 maingui.handles = handles;
-
+maingui.handles.pValuesFig = [];
 
 
 
@@ -360,7 +360,7 @@ maingui.dataTree.CalcCurrElem();
 set(handles.listboxGroupTree, 'value',val0);
 
 h = waitbar(0,'Auto-saving group processing results. Please wait ...');
-maingui.dataTree.SaveCurrElem();
+maingui.dataTree.Save();
 close(h);
 DisplayData(handles, hObject);
 
@@ -670,7 +670,6 @@ end
 UpdateArgsChildGuis(handles);
 
 
-
 % --------------------------------------------------------------------
 function idx = FindChildGuiIdx(name)
 global maingui
@@ -869,7 +868,7 @@ DisplayStim(handles);
 UpdateCondPopupmenu(handles);
 UpdateDatatypePanel(handles);
 UpdateChildGuis(handles);
-
+DisplayPvalues();
 
 
 
@@ -957,6 +956,7 @@ set(hAxes,'ygrid','on');
                 
                 
                 
+                
 % ----------------------------------------------------------------------------------
 function DisplayCondLegend(hLg, idxLg)
 global maingui
@@ -974,6 +974,32 @@ CondNames = procElem.CondNames;
 if ishandles(hLg)
     legend(hLg(k), CondNames(idxLg));
 end
+
+
+% ----------------------------------------------------------------------------------
+function DisplayPvalues()
+global maingui
+
+pValues = maingui.dataTree.currElem.GetPvalues();
+if isempty(pValues)
+    return;
+end
+
+for iBlk=1:length(pValues)
+    fprintf('P-Values for %s, data block %d:\n', maingui.dataTree.currElem.GetName(), iBlk);
+    pretty_print_matrix(pValues{iBlk});
+end
+
+% guiname = sprintf('%s P-Values', maingui.dataTree.currElem.GetName());
+% 
+% if ishandles(maingui.handles.pValuesFig)
+%     clf(maingui.handles.pValuesFig);
+% else
+%     maingui.handles.pValuesFig = figure('toolbar','none', 'menubar','none', 'name',guiname, 'numbertitle','off');
+% end
+% ht = uitable('parent',maingui.handles.pValuesFig, 'units','normalized', 'position',[.2,.2,.5,.5]);
+% set(ht, 'data', pValues{iBlk})
+% 
 
 
 
@@ -995,6 +1021,9 @@ switch(guiname)
         DisplayData(maingui.handles, maingui.handles.axesData);  % Redisplay data axes since stims might have edited
     case 'ProcStreamOptionsGUI'
         set(maingui.handles.pushbuttonProcStreamOptionsEdit, 'value',0);  % Redisplay enable/disable toggle button 
+    case 'ProcStreamEditGUI'
+        idx = FindChildGuiIdx('ProcStreamOptionsGUI');
+        maingui.childguis(idx).Update();
     case 'DataTreeClass'
         if ~isempty(maingui.handles)
             iGroup = varargin{2}(1);

@@ -236,8 +236,8 @@ classdef DataTreeClass <  handle
 
 
         % ----------------------------------------------------------
-        function SaveCurrElem(obj)
-            obj.currElem.Save();
+        function Save(obj)
+            obj.group.Save();
         end
 
 

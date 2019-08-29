@@ -49,12 +49,16 @@ classdef ProcStreamClass < handle
             if isempty(obj)
                 obj = ProcStreamClass();
             end
+            
             for ii=1:length(obj2.fcalls)
                 if ii>length(obj.fcalls)
                     obj.fcalls(ii) = FuncCallClass();
                 end
                 obj.fcalls(ii).Copy(obj2.fcalls(ii), obj.reg);
             end
+            
+            % Delete any fcalls entries not ovewritten by the copy process
+            obj.fcalls(ii+1:end) = [];
             
             obj.input.Copy(obj2.input);
             obj.output.Copy(obj2.output);

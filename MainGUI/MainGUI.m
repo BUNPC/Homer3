@@ -190,8 +190,8 @@ global maingui;
 % Initialize listboxGroupTree params struct
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 maingui.listboxGroupTreeParams = struct('listMaps',struct('names',{{}}, 'idxs', []), ...
-                                    'views', struct('ALL',1, 'SUBJS',2, 'RUNS',3), ...
-                                    'viewSetting',0);
+                                        'views', struct('GROUP',1, 'SUBJS',2, 'RUNS',3), ...
+                                        'viewSetting',0);
                       
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Generate linear lists from group tree nodes for the 3 group views
@@ -220,7 +220,7 @@ for ii=1:length(maingui.dataTree.filesErr)
     if maingui.dataTree.filesErr(ii).isdir
         listboxFilesErr{ii} = maingui.dataTree.filesErr(ii).name;
     elseif ~isempty(maingui.dataTree.filesErr(ii).subjdir)
-        listboxFilesErr{ii} = ['    ', maingui.dataTree.filesErr(ii).filename];
+        listboxFilesErr{ii} = ['    ', maingui.dataTree.filesErr(ii).name];
         nFilesErr=nFilesErr+1;
     else
         listboxFilesErr{ii} = maingui.dataTree.filesErr(ii).name;
@@ -1135,8 +1135,9 @@ checkboxFixRangeY_Callback(handles.checkboxFixRangeY, eventdata, handles);
 
 
 
+
 % --------------------------------------------------------------------
-function menuItemGroupViewSettingAll_Callback(hObject, eventdata, handles)
+function menuItemGroupViewSettingGroup_Callback(hObject, eventdata, handles)
 global maingui
 
 if strcmp(get(hObject, 'checked'), 'off')
@@ -1144,17 +1145,17 @@ if strcmp(get(hObject, 'checked'), 'off')
 else
     return;
 end
-
 views = maingui.listboxGroupTreeParams.views;
 if strcmp(get(hObject, 'checked'), 'on')
-    set(handles.listboxGroupTree, 'string', maingui.listboxGroupTreeParams.listMaps(views.ALL).names)
-    maingui.listboxGroupTreeParams.viewSetting = views.ALL;    
+    iListNew = FindGroupDisplayListMatch(views.GROUP);    
+    set(handles.listboxGroupTree, 'value',iListNew, 'string',maingui.listboxGroupTreeParams.listMaps(views.GROUP).names);
+
+    maingui.listboxGroupTreeParams.viewSetting = views.GROUP;    
     set(handles.menuItemGroupViewSettingSubjects,'checked','off');
     set(handles.menuItemGroupViewSettingRuns,'checked','off');
-    listboxGroupTree_Callback([], [1,1,1], handles)
-    maingui.dataTree.SetCurrElem(1,1,1);
-    DisplayData(handles, hObject);
 end
+
+
 
 
 % --------------------------------------------------------------------
@@ -1166,17 +1167,17 @@ if strcmp(get(hObject, 'checked'), 'off')
 else
     return;
 end
-
 views = maingui.listboxGroupTreeParams.views;
 if strcmp(get(hObject, 'checked'), 'on')
-    set(handles.listboxGroupTree, 'string', maingui.listboxGroupTreeParams.listMaps(views.SUBJS).names)
+    iListNew = FindGroupDisplayListMatch(views.SUBJS);    
+    set(handles.listboxGroupTree, 'value',iListNew, 'string',maingui.listboxGroupTreeParams.listMaps(views.SUBJS).names);
+
     maingui.listboxGroupTreeParams.viewSetting = views.SUBJS;
-    set(handles.menuItemGroupViewSettingAll,'checked','off');
+    set(handles.menuItemGroupViewSettingGroup,'checked','off');
     set(handles.menuItemGroupViewSettingRuns,'checked','off');
-    listboxGroupTree_Callback([], [1,1,1], handles)
-    maingui.dataTree.SetCurrElem(1,1,1);
-    DisplayData(handles, hObject);
 end
+
+
 
 
 % --------------------------------------------------------------------
@@ -1188,16 +1189,14 @@ if strcmp(get(hObject, 'checked'), 'off')
 else
     return;
 end
-
 views = maingui.listboxGroupTreeParams.views;
 if strcmp(get(hObject, 'checked'), 'on')
-    set(handles.listboxGroupTree, 'string', maingui.listboxGroupTreeParams.listMaps(views.RUNS).names)
+    iListNew = FindGroupDisplayListMatch(views.RUNS);
+    set(handles.listboxGroupTree, 'value',iListNew, 'string', maingui.listboxGroupTreeParams.listMaps(views.RUNS).names);
+
     maingui.listboxGroupTreeParams.viewSetting = views.RUNS;
-    set(handles.menuItemGroupViewSettingAll,'checked','off');
+    set(handles.menuItemGroupViewSettingGroup,'checked','off');
     set(handles.menuItemGroupViewSettingSubjects,'checked','off');
-    listboxGroupTree_Callback([], [1,1,1], handles)
-    maingui.dataTree.SetCurrElem(1,1,1);
-    DisplayData(handles, hObject);
 end
 
 

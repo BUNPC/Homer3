@@ -61,7 +61,7 @@ else
             set(handles.radiobuttonProcTypeRun, 'value',1);                 %         Output - Proc level setting: Run;    currElem: group(iGroup)
             maingui.dataTree.SetCurrElem(iGroup, iSubj, iRun);
         end
-    elseif viewSetting == views.ALL
+    elseif viewSetting == views.GROUP
         if listboxGroupTreeMap == maingui.rid && procLevelSelect==maingui.sid       % Case 4: Input  - List Entry maps to run(iGroup, iSubj, iRun); Proc level setting: Subj
             set(handles.radiobuttonProcTypeRun, 'value',1);                 %         Output - Proc level setting: Run;     currElem: subj(iGroup, iSubj)
             maingui.dataTree.SetCurrElem(iGroup, iSubj, iRun);

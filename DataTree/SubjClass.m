@@ -119,7 +119,7 @@ classdef SubjClass < TreeNodeClass
                 jj = length(obj.runs)+1;
                 run.SetIndexID(obj.iGroup, obj.iSubj, jj);
                 obj.runs(jj) = run;
-                fprintf('     Added run %s to subject %s.\n', obj.runs(jj).GetName, obj.GetName);
+                fprintf('     Added run %s to subject %s.\n', obj.runs(jj).GetFileName, obj.GetName);
             end
         end
         

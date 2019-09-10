@@ -1,7 +1,7 @@
 classdef MetaDataTagsClass  < FileLoadSaveClass
 
     properties
-        name
+        key
         value
     end
 
@@ -9,7 +9,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
         
         % -------------------------------------------------------
         function obj = MetaDataTagsClass(varargin)
-            obj.name = '';
+            obj.key = '';
             obj.value = '';
             
             % Set class properties not part of the SNIRF format
@@ -20,11 +20,11 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
                 return;
 	        end
             if nargin==1
-                obj.name = varargin{1};
+                obj.key = varargin{1};
                 obj.value = 'none';
                 return;
             end            
-            obj.name = varargin{1};
+            obj.key = varargin{1};
             obj.value = varargin{2};            
         end
     
@@ -60,8 +60,8 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
 
             try
             % Read tag name
-            obj.name = convertH5StrToStr(h5read_safe(fname, [parent, '/name'], obj.name));
-            if isempty(obj.name)
+            obj.key = convertH5StrToStr(h5read_safe(fname, [parent, '/name'], obj.key));
+            if isempty(obj.key)
                err=-1;
             end
             
@@ -81,7 +81,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
                 fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end
-            hdf5write_safe(fname, [parent, '/name'], obj.name);
+            hdf5write_safe(fname, [parent, '/name'], obj.key);
             hdf5write_safe(fname, [parent, '/value'], obj.value);
         end
         
@@ -89,7 +89,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
         % -------------------------------------------------------
         function B = eq(obj, obj2)
             B = false;
-            if ~strcmp(obj.name, obj2.name)
+            if ~strcmp(obj.key, obj2.key)
                 return;
             end
             if ~strcmp(obj.value, obj2.value)
@@ -102,7 +102,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
         
         % -------------------------------------------------------
         function Add(obj, name, value)
-            obj.name = name;
+            obj.key = name;
             obj.value = value;
         end
         

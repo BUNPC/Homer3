@@ -321,13 +321,21 @@ fcallselect = sprintf('%s: %s', funcnames{iFunc}, usagenames{iUsage});
 
 iFcall = get(handles.listboxFuncProcStream(iPanel),'value');
 
-if listPsUsage(iPanel).IsMember(fcallselect, ':')
-    MessageBox('This usage already exist in processing stream. Each usage entry in processing stream must be unique.','OK')
+% fNIRS course exercies suggest that it's ok to have the same function or
+% even function call (i.e., usage) in one proc stream, so we comment out next 4 lines.
+% to allow this. 
+%
+% if listPsUsage(iPanel).IsMember(fcallselect, ':')
+%     MessageBox('This usage already exist in processing stream. Each usage entry in processing stream must be unique.','OK')
+%     return;
+% end
+
+iFcall = listPsUsage(iPanel).Insert(fcallselect, iFcall, 'after');
+if isempty(iFcall)
     return;
 end
-listPsUsage(iPanel).Insert(fcallselect, iFcall, 'after');
 listPsUsage(iPanel).Tabularize();
-updateProcStreamListbox(handles,iPanel);
+updateProcStreamListbox(handles, iPanel, iFcall);
 uicontrol(handles.listboxFuncProcStream(iPanel));
 
 
@@ -345,6 +353,7 @@ end
 
 iFcall = get(handles.listboxFuncProcStream(iPanel), 'value');
 listPsUsage(iPanel).Delete(iFcall);
+listPsUsage(iPanel).Tabularize();
 updateProcStreamListbox(handles,iPanel);
 uicontrol(handles.listboxFuncProcStream(iPanel));
 
@@ -360,8 +369,6 @@ if isempty(listPsUsage)
     MessageBox('Processing stream is empty. Please load or create a processing stream before using Move Up button.');
     return;
 end
-
-
 iFcall = get(handles.listboxFuncProcStream(iPanel),'value');
 if iFcall == 0
     return
@@ -588,7 +595,7 @@ end
 
 
 % --------------------------------------------------------------------
-function updateProcStreamListbox(handles, iPanel)
+function updateProcStreamListbox(handles, iPanel, iFcall)
 global procStreamEdit
 listPsUsage = procStreamEdit.listPsUsage;
 
@@ -596,7 +603,9 @@ if ~exist('iPanel','var')
     iPanel=1:length(procStreamEdit.procElem);
 end
 for ii=iPanel
-    iFcall = get(handles.listboxFuncProcStream(ii),'value');
+    if ~exist('iFcall','var')
+        iFcall = get(handles.listboxFuncProcStream(ii),'value');
+    end
     if iFcall>listPsUsage(ii).GetSize()
         iFcall = listPsUsage(ii).GetSize();
     end

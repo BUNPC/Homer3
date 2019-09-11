@@ -33,18 +33,21 @@ classdef StringsClass < handle
         
         
         % ------------------------------------------------------
-        function Insert(obj, s, key, before_after)
+        function idx = Insert(obj, s, key, before_after)
             % 
             % Insert either a char string or a cell array of char strings
-            % into StringClass object
+            % into StringClass object. It returns the index of the inserted
+            % entry or empty array if insertion is unsuccessful.
             %
+            idx = [];
+            
             if ~exist('s','var') || (~ischar(s) && ~iscell(s))
                 return;
             end
             if iscell(s)
                 for ii=1:length(s)
                     if ~ischar(s{ii})
-                        return;                        
+                        return;
                     end
                 end
             else
@@ -59,6 +62,7 @@ classdef StringsClass < handle
             end
             if isempty(obj.c)
                 obj.c(1:length(s)) = s;
+                idx = 1;
                 return;
             end
             
@@ -97,10 +101,13 @@ classdef StringsClass < handle
                         obj.c = [obj.c(1:idx), s, obj.c(idx+1:end)];
                     end
                 end
+                
+                % Update idx to the inserted entry
+                idx = idx+1;
             end
             
         end
-               
+
         
         % ------------------------------------------------------
         function Delete(obj, key)
@@ -226,8 +233,9 @@ classdef StringsClass < handle
             if isempty(obj.c)
                 return;
             end
-            maxlen = zeros(1,length(find(obj.c{1}==':'))+1 );
+            maxlen = zeros( 1, length(find(obj.c{1}==':'))+1 );
             for ii=1:length(obj.c)
+                obj.c{ii}(obj.c{ii}==' ') = '';
                 k = [1, find(obj.c{ii}==':'), length(obj.c{ii})];
                 len = diff(k);
                 for jj=1:length(len)
@@ -245,7 +253,7 @@ classdef StringsClass < handle
         
         % ------------------------------------------------------
         function Tabularize(obj)
-            if length(obj.c)<2
+            if length(obj.c)<1
                 return;
             end            
             c0 = obj.c;
@@ -258,7 +266,7 @@ classdef StringsClass < handle
                     obj.c = c0;
                     return;
                 end
-                obj.c{ii} = '';                
+                obj.c{ii} = '';
                 for jj=1:length(maxlen)
                     colvals{jj} = strtrim(colvals{jj});
                     nspaces = maxlen(jj) - length(colvals{jj});

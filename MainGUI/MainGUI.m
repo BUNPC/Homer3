@@ -127,6 +127,12 @@ maingui.childguis = ChildGuiClass().empty();
 MainGUI_EnableDisableGUI(handles,'off');
 MainGUI_Init(handles, {'zbuffer'});
 
+maingui.childguis(1) = ChildGuiClass('ProcStreamEditGUI');
+maingui.childguis(2) = ChildGuiClass('ProcStreamOptionsGUI');
+maingui.childguis(3) = ChildGuiClass('StimEditGUI');
+maingui.childguis(4) = ChildGuiClass('PlotProbeGUI');
+maingui.childguis(5) = ChildGuiClass('PvaluesDisplayGUI');
+
 % Load date files into group tree object
 maingui.dataTree  = LoadDataTree(maingui.format);
 if maingui.dataTree.IsEmpty()
@@ -140,12 +146,6 @@ MainGUI_EnableDisableGUI(handles,'on');
 % Display data from currently selected processing element
 DisplayGroupTree(handles);
 DisplayData(handles, hObject);
-
-maingui.childguis(1) = ChildGuiClass('ProcStreamEditGUI');
-maingui.childguis(2) = ChildGuiClass('ProcStreamOptionsGUI');
-maingui.childguis(3) = ChildGuiClass('StimEditGUI');
-maingui.childguis(4) = ChildGuiClass('PlotProbeGUI');
-maingui.childguis(5) = ChildGuiClass('PvaluesDisplayGUI');
 
 maingui.handles = handles;
 maingui.handles.pValuesFig = [];

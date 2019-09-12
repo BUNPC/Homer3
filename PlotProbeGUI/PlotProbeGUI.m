@@ -53,6 +53,13 @@ plotprobe.handles.data = [];
 plotprobe.handles.figureDup = [];
 SetGuiControls(handles)
 
+if ispc()
+    setGuiFonts(handles.figure, 7);
+else
+    setGuiFonts(handles.figure);
+end
+
+
 
 
 % ----------------------------------------------------------------------
@@ -223,6 +230,9 @@ if ~isempty(p)
 end
 plotprobe.version  = get(hObject, 'name');
 plotprobe.dataTree = LoadDataTree(plotprobe.format, '', maingui);
+if plotprobe.dataTree.IsEmpty()
+    return;
+end
 
 if length(plotprobe.y)>1
     msg{1} = sprintf('Warning: Data in this plot probe uses different Y scales for different data blocks ');
@@ -240,11 +250,6 @@ if ~isempty(maingui)
     set(handles.menuItemChangeGroup,'visible','off');
     set(handles.menuItemSaveGroup,'visible','off');
     plotprobe.updateParentGui = maingui.Update;
-end
-if ispc()
-    setGuiFonts(hObject);
-else
-    setGuiFonts(hObject, 7);
 end
 DisplayData(handles, hObject);
 

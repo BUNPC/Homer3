@@ -65,6 +65,11 @@ procStreamOptions.format = '';
 procStreamOptions.applyEditCurrNodeOnly = [];
 procStreamOptions.pos = [];
 procStreamOptions.handles = [];
+if ispc()
+    setGuiFonts(handles.figure, 7);
+else
+    setGuiFonts(handles.figure);
+end
 
 
 
@@ -185,12 +190,11 @@ p = procStreamOptions.pos;
 if ~isempty(p)
     set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
 end
+
 procStreamOptions.version  = get(hObject, 'name');
 procStreamOptions.dataTree = LoadDataTree(procStreamOptions.format, '', maingui);
-if ispc()
-    setGuiFonts(hObject, 7);
-else
-    setGuiFonts(hObject);
+if procStreamOptions.dataTree.IsEmpty()
+    return;
 end
 Display(handles);
 

@@ -94,7 +94,9 @@ if ~isempty(p)
 end
 pvaluesgui.version  = get(hObject, 'name');
 pvaluesgui.dataTree = LoadDataTree(pvaluesgui.format, '', maingui);
-
+if pvaluesgui.dataTree.IsEmpty()
+    return;
+end
 Display(handles);
 
 

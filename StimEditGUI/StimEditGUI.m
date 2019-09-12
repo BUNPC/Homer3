@@ -94,6 +94,12 @@ if isempty(stimEdit.pos)
     end
 end
 
+if ispc()
+    setGuiFonts(hObject);
+else
+    setGuiFonts(hObject, 7);
+end
+
 %%%% End parse arguments 
 
 % See if we can set the position
@@ -101,12 +107,11 @@ p = stimEdit.pos;
 if ~isempty(p)
     set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
 end
+
 stimEdit.version = get(hObject, 'name');
 stimEdit.dataTree = LoadDataTree(stimEdit.format, '', maingui);
-if ispc()
-    setGuiFonts(hObject);
-else
-    setGuiFonts(hObject, 7);
+if stimEdit.dataTree.IsEmpty()
+    return;
 end
 if isempty(stimEdit.dataTree)
     StimEditGUI_EnableGuiObjects('off', hObject);

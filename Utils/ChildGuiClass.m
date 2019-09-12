@@ -94,6 +94,10 @@ classdef ChildGuiClass < handle
         
         % -------------------------------------------------------------------
         function Launch(obj, varargin)
+            if isempty(obj)
+                return;
+            end
+            
             if isempty(obj.name)
                 return;
             end

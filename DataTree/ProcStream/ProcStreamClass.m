@@ -607,8 +607,8 @@ classdef ProcStreamClass < handle
             %
             %       FuncCallClass with properties:
             %
-            %              name: 'hmrS_BlockAvg'
-            %            nameUI: 'hmrS_BlockAvg'
+            %              name: 'hmrS_RunAvg'
+            %            nameUI: 'hmrS_RunAvg'
             %            argOut: '[dcAvg,dcAvgStd,tHRF,nTrials]'
             %             argIn: '(dcAvgRuns,dcAvgStdRuns,dcSum2Runs,tHRFRuns,SDRuns,nTrialsRuns'
             %           paramIn: [0x0 ParamClass]
@@ -747,10 +747,10 @@ classdef ProcStreamClass < handle
             %    Here's the output:
             %
             %     G = {
-            %          '@ hmrG_BlockAvg [dcAvg,dcAvgStd,nTrials,grpAvgPass] (dcAvgSubjs,dcAvgStdSubjs,SDSubjs,nTrialsSubjs tRange %0.1f…'
+            %          '@ hmrG_SubjAvg [dcAvg,dcAvgStd,nTrials,grpAvgPass] (dcAvgSubjs,dcAvgStdSubjs,SDSubjs,nTrialsSubjs tRange %0.1f…'
             %         }
             %     S = {
-            %          '@ hmrS_BlockAvg [dcAvg,dcAvgStd,nTrials] (dcAvgRuns,dcAvgStdRuns,dcSum2Runs,SDRuns,nTrialsRuns'
+            %          '@ hmrS_RunAvg [dcAvg,dcAvgStd,nTrials] (dcAvgRuns,dcAvgStdRuns,dcSum2Runs,SDRuns,nTrialsRuns'
             %         }
             %     R = {
             %         '@ hmrR_Intensity2OD dod (d'
@@ -1102,7 +1102,7 @@ classdef ProcStreamClass < handle
                 iG = obj.reg.igroup;
                 suffix = obj.getDefaultProcStream();
                 tmp = {...
-                    obj.reg.funcReg(iG).GetUsageStrDecorated(['hmrG_BlockAvg',suffix],'dcAvg'); ...
+                    obj.reg.funcReg(iG).GetUsageStrDecorated(['hmrG_SubjAvg',suffix],'dcAvg'); ...
                 };
                 k=[]; kk=1;
                 for ii=1:length(tmp)
@@ -1127,7 +1127,7 @@ classdef ProcStreamClass < handle
                 iS = obj.reg.isubj;
                 suffix = obj.getDefaultProcStream();
                 tmp = {...
-                    obj.reg.funcReg(iS).GetUsageStrDecorated(['hmrS_BlockAvg',suffix],'dcAvg'); ...
+                    obj.reg.funcReg(iS).GetUsageStrDecorated(['hmrS_RunAvg',suffix],'dcAvg'); ...
                 };
                 k=[]; kk=1;
                 for ii=1:length(tmp)

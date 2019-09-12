@@ -1,6 +1,6 @@
-function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
+function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_RunAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
 % SYNTAX:
-% [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
+% [yAvg, yAvgStd, tHRF, nTrials] = hmrS_RunAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
 %
 % UI NAME:
 % Block_Average_Subj
@@ -26,8 +26,8 @@ function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_BlockAvg_Nirs(yAvgRuns, yAvgStdRu
 % nTrials: the number of trials averaged for each condition across all runs
 %
 % USAGE OPTIONS:
-% Block_Average_on_Subject_Concentration_Data:  [dcAvg, dcAvgStd, tHRF, nTrials]    = hmrS_BlockAvg_Nirs(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
-% Block_Average_on_Subject_Delta_OD_Data:       [dodAvg, dodAvgStd, tHRF, nTrials]  = hmrS_BlockAvg_Nirs(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
+% Block_Average_on_Subject_Concentration_Data:  [dcAvg, dcAvgStd, tHRF, nTrials]    = hmrS_RunAvg_Nirs(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
+% Block_Average_on_Subject_Delta_OD_Data:       [dodAvg, dodAvgStd, tHRF, nTrials]  = hmrS_RunAvg_Nirs(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
 %
 
 yAvg = [];

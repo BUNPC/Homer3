@@ -1,6 +1,6 @@
-function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh0)
+function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_SubjAvg_Nirs(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh0)
 % SYNTAX:
-% [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
+% [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_SubjAvg_Nirs(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
 %
 % UI NAME:
 % Block_Average_Group
@@ -28,8 +28,8 @@ function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(yAvgSub
 % grpAvgPass:
 %
 % USAGE OPTIONS:
-% Block_Average_on_Group_Concentration_Data: [dcAvg, dcAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(dcAvgSubjs, dcAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
-% Block_Average_on_Group_Delta_OD_Data:      [dodAvg, dodAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_BlockAvg_Nirs(dodAvgSubjs, dodAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
+% Block_Average_on_Group_Concentration_Data: [dcAvg, dcAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_SubjAvg_Nirs(dcAvgSubjs, dcAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
+% Block_Average_on_Group_Delta_OD_Data:      [dodAvg, dodAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_SubjAvg_Nirs(dodAvgSubjs, dodAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
 %
 % PARAMETERS:
 % tRange: [5.0, 10.0]

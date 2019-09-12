@@ -17,8 +17,8 @@
 % pValues: 
 %
 % USAGE OPTIONS:
-% Pvalues_on_Session_Concentration_Data: pValues = hmrG_BlockAvg(dcRuns, stimRuns, baselineRange, hrfTimeWindow)
-% Pvalues_on_Session_Delta_OD_Data:      pValues = hmrG_BlockAvg(dodRuns, stimRuns, baselineRange, hrfTimeWindow)
+% Pvalues_on_Session_Concentration_Data: pValues = hmrS_CalcPvalue(dcRuns, stimRuns, baselineRange, hrfTimeWindow)
+% Pvalues_on_Session_Delta_OD_Data:      pValues = hmrS_CalcPvalue(dodRuns, stimRuns, baselineRange, hrfTimeWindow)
 %
 % PARAMETERS:
 % baselineRange: [-2.0, 0.0]

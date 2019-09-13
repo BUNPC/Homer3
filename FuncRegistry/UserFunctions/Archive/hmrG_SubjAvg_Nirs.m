@@ -3,7 +3,7 @@ function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_SubjAvg_Nirs(yAvgSubj
 % [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_SubjAvg_Nirs(yAvgSubjs, yAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
 %
 % UI NAME:
-% Block_Average_Group
+% Subj_Average
 %
 % DESCRIPTION:
 % Calculate the block average for all subjects, for all common stimuli accross subjects
@@ -28,8 +28,8 @@ function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_SubjAvg_Nirs(yAvgSubj
 % grpAvgPass:
 %
 % USAGE OPTIONS:
-% Block_Average_on_Group_Concentration_Data: [dcAvg, dcAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_SubjAvg_Nirs(dcAvgSubjs, dcAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
-% Block_Average_on_Group_Delta_OD_Data:      [dodAvg, dodAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_SubjAvg_Nirs(dodAvgSubjs, dodAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
+% Subj_Average_on_Concentration_Data: [dcAvg, dcAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_SubjAvg_Nirs(dcAvgSubjs, dcAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
+% Subj_Average_on_Delta_OD_Data:      [dodAvg, dodAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_SubjAvg_Nirs(dodAvgSubjs, dodAvgStdSubjs, tHRFSubjs, SDSubjs, nTrialsSubjs, tRange, thresh)
 %
 % PARAMETERS:
 % tRange: [5.0, 10.0]

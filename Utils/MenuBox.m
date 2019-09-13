@@ -17,20 +17,22 @@ end
 
 title = 'MENU';
 
-bttnlenmax = 0;
+bttnstrlenmax = 0;
 for ii=1:length(bttns)
-    if length(bttns{ii})>bttnlenmax
-        bttnlenmax = length(bttns{ii});
+    if length(bttns{ii})>bttnstrlenmax
+        bttnstrlenmax = length(bttns{ii});
     end
 end
-
-fs = 8;
-fs_min = 6;
+bttnstrlenmin = 7;
 
 nchar     = length(msg);
 nbttns    = length(bttns);
-Wbttn     = bttnlenmax*(abs(fs_min-fs))+2;
-Hbttn     = 3;
+if bttnstrlenmax<bttnstrlenmin
+    Wbttn = 2*bttnstrlenmin;
+else
+    Wbttn = 2*bttnstrlenmax;
+end
+Hbttn = 2.7;
 
 Wtext = 70;                       % In char units
 Htext = round(nchar / Wtext)+4;
@@ -40,8 +42,8 @@ a    = 5;
 Wfig = Wtext+0.1*Wtext;                % GUI width
 
 % Position/dimensions in the Y direction
-vertgap = 2;
-Hfig    = Htext + nbttns*(Hbttn+vertgap);
+vertgap = 1.2;
+Hfig    = (Htext+vertgap+1) + nbttns*(Hbttn+vertgap) + vertgap*1.5;
 
 % Get position of parent GUI in character units
 hParent = get(groot,'CurrentFigure');
@@ -97,16 +99,23 @@ set(hf, 'position', posBox);
 p = get(hf, 'position');
 
 % Display message
-ht = uicontrol('parent',hf, 'style','text', 'units','characters', 'string',msg, ...
-               'position',[a, p(4)-Htext-vertgap, Wtext, Htext], 'horizontalalignment','left');
+if DEBUG2
+    fprintf('message position:   [%0.1f, %0.1f, %0.1f, %0.1f]\n', a, p(4)-Htext-vertgap, Wtext, Htext);
+    ht = uicontrol('parent',hf, 'style','text', 'units','characters', 'string',msg, ...
+                   'position',[a, p(4)-(Htext+vertgap+1), Wtext, Htext], 'horizontalalignment','left', ...
+                   'backgroundcolor',[.2,.2,.2], 'foregroundcolor',[.9,.9,.9]);
+else
+    ht = uicontrol('parent',hf, 'style','text', 'units','characters', 'string',msg, ...
+                   'position',[a, p(4)-(Htext+vertgap+1), Wtext, Htext], 'horizontalalignment','left');
+end
 
 % Draw button options
 hb = zeros(nbttns,1); 
 p  = zeros(nbttns,4);
 TextPos = get(ht, 'position');
 for k = 1:nbttns
-    Ypfk = TextPos(2) - k*(Hbttn+vertgap/3);
-    p(k,:) = [a, Ypfk, Wbttn, Hbttn];
+    Ypfk = TextPos(2) - k*(Hbttn+vertgap);
+    p(k,:) = [2*a, Ypfk, Wbttn, Hbttn];
     
     if DEBUG2
         fprintf('%d) %s:   p1 = [%0.1f, %0.1f, %0.1f, %0.1f]\n', k, bttns{k}, p(k,1), p(k,2), p(k,3), p(k,4));

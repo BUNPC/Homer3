@@ -52,10 +52,8 @@ classdef RegistriesClass < handle
                     return;
                 end
             end
-            
-            obj.funcReg(obj.igroup) = FuncRegClass('group');
-            obj.funcReg(obj.isubj) = FuncRegClass('subj');
-            obj.funcReg(obj.irun) = FuncRegClass('run');
+
+            obj.Load();
             
             % Save registry for next time
             obj.Save();
@@ -64,9 +62,45 @@ classdef RegistriesClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function Load(obj, type)
+            if nargin==1
+                type = 'all';
+            end
+            
+            switch(type)
+                case 'all'
+                    obj.funcReg(obj.igroup) = FuncRegClass('group');
+                    obj.funcReg(obj.isubj) = FuncRegClass('subj');
+                    obj.funcReg(obj.irun) = FuncRegClass('run');
+                case 'group'
+                    obj.funcReg(obj.igroup) = FuncRegClass('group');
+                case 'subj'
+                    obj.funcReg(obj.isubj) = FuncRegClass('subj');
+                case 'run'
+                    obj.funcReg(obj.irun) = FuncRegClass('run');
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function Save(obj)
             reg = obj;
             save([obj.userfuncdir{1}, 'Registry.mat'], 'reg');
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Reload(obj, type)
+            if nargin==1
+                type = 'all';
+            end
+            
+            % Delete saved resistry file
+            obj.DeleteSaved();
+            
+            % Reload and resave the registry
+            obj.Load(type);
+            obj.Save();
         end
         
         
@@ -229,7 +263,31 @@ classdef RegistriesClass < handle
         function fname = GetSavedRegistryPath(obj)
             fname = obj.filename;
         end
-               
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Import(obj, funcpath)
+            [~, fname, ext] = fileparts(funcpath);            
+            if exist([obj.userfuncdir{1}, fname, ext], 'file') == 2
+                q = MenuBox('Function already exists in Registry folder. Do you want to replece it',{'Yes','No'});
+                if q==2
+                    return;
+                end
+            end
+            copyfile(funcpath, obj.userfuncdir{1});
+            if strncmp(fname, 'hmrG_', 5)
+                type = 'group';
+            elseif strncmp(fname, 'hmrS_', 5)
+                type = 'subj';
+            elseif strncmp(fname, 'hmrR_', 5)
+                type = 'run';
+            else
+                type = 'all';
+            end
+            obj.Reload(type);
+        end
+        
     end
 end
 

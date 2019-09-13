@@ -14,7 +14,7 @@
 % dod - SNIRF data structure with delta OD data (intensity divided by the mean)
 %
 % USAGE OPTIONS:
-% Intensity_to_Delta_OD: dod = hmrR_Intensity2OD(data)
+% Relative Flow Change: dod = hmrR_FlowInput(data)
 %
 function dod = hmrR_FlowInput(intensity)
 

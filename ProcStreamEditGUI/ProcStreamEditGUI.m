@@ -148,11 +148,11 @@ end
 % Select current tab
 set(htabgroup,'SelectedTab',htab);
 
-% Before we exit display current proc stream by default
-LoadProcStream(handles);
-
 % Load and display registry
 LoadRegistry(handles);
+
+% Before we exit display current proc stream by default
+LoadProcStream(handles);
 
 
 
@@ -196,9 +196,16 @@ global procStreamEdit
 iGroupPanel = procStreamEdit.iGroupPanel;
 iSubjPanel  = procStreamEdit.iSubjPanel;
 iRunPanel   = procStreamEdit.iRunPanel;
-listPsUsage = procStreamEdit.listPsUsage;
 funcReg     = procStreamEdit.funcReg;
 
+% Create 3 strings objects for run , subject and group: this is
+% what will be the current proc stream listbox strings for the 3 panels
+if isempty(procStreamEdit.listPsUsage)
+    procStreamEdit.listPsUsage(length(procStreamEdit.procElem)) = StringsClass();
+end
+
+% If registry is not yet loaded, can't fill in the listboxFuncProcStream
+% YET. However it doesn't mean data Tree if not loaded. 
 if isempty(funcReg)
     return;
 end
@@ -212,11 +219,7 @@ if reload
     procStreamEdit.procElem{iGroupPanel} = procStreamEdit.dataTree.group(1).copy;
 end
 
-% Create 3 strings objects for run , subject and group: this is
-% what will be the current proc stream listbox strings for the 3 panels
-if isempty(listPsUsage)
-    listPsUsage(length(procStreamEdit.procElem)) = StringsClass();
-end
+listPsUsage = procStreamEdit.listPsUsage;
 for iPanel=1:length(procStreamEdit.procElem)
     listPsUsage(iPanel).Initialize();
     procStream = procStreamEdit.procElem{iPanel}.procStream;
@@ -308,8 +311,8 @@ listPsUsage = procStreamEdit.listPsUsage;
 if isempty(iPanel) || iPanel<1
     return;
 end
-if isempty(listPsUsage)
-    MenuBox('Can''t add functions to processing stream because the data tree is empty','OK')
+if isempty(procStreamEdit.dataTree)
+    MenuBox('Can''t add functions to processing stream because the data tree is empty',{'OK'})
     return;
 end
 
@@ -650,68 +653,6 @@ end
 
 
 % --------------------------------------------------------------------
-function menuItemAddFunction_Callback(hObject, eventdata, handles)
-global procStreamEdit
-reg = procStreamEdit.dataTree.reg;
-
-files = dir([reg.userfuncdir{1}, 'hmr*.m']);
-filenames = cell(length(files),1);
-for ii=1:length(files)
-    [~,filenames{ii}] = fileparts(files(ii).name);
-end
-
-funcnames = {};
-for ii=1:length(reg.funcReg)
-    funcnames = [funcnames; {reg.funcReg(ii).entries.name}'];
-end
-k = ~ismember(filenames, funcnames);
-flst = filenames(k);
-idx = listdlg('PromptString','Select Function File to Add to Registry:',...
-              'SelectionMode','single',...
-              'ListString',flst);
-if isempty(idx)
-    return;
-end         
-err = reg.AddEntry(flst{idx});
-if err
-    MessageBox(sprintf('ERROR: Could not add %s. Function is not valid', flst{idx}), 'ERROR');
-    return;
-end
-LoadRegistry(handles);
-reg.Save();
-
-
-
-% -------------------------------------------------------------------------------
-function menuItemReloadFunction_Callback(hObject, eventdata, handles)
-global procStreamEdit
-reg = procStreamEdit.dataTree.reg;
-
-funcnames = {};
-for ii=1:length(reg.funcReg)
-    funcnames = [funcnames; {reg.funcReg(ii).entries.name}'];
-end
-if isempty(funcnames)
-    return;
-end
-idx = listdlg('PromptString','Select Function File to Reload to Registry:',...
-                'SelectionMode','single',...
-                'ListString',funcnames);
-if isempty(idx)
-    return;
-end
-err = reg.ReloadEntry(funcnames{idx});
-if err
-    MessageBox(sprintf('ERROR: Could not reload %s. Function no longer valid', funcnames{idx}), 'ERROR');
-    return;
-end
-LoadRegistry(handles);
-reg.Save();
-
-
-
-
-% --------------------------------------------------------------------
 function menuItemChangeGroup_Callback(hObject, eventdata, handles)
 pathname = uigetdir(pwd, 'Select a NIRS data group folder');
 if pathname==0
@@ -729,4 +670,40 @@ if ~ishandles(hObject)
     return;
 end
 procStreamEdit.dataTree.currElem.Save();
+
+
+
+% --------------------------------------------------------------------
+function menuItemImportUserFunction_Callback(hObject, eventdata, handles)
+global procStreamEdit
+if ~ishandles(hObject)
+    return;
+end
+[fname, pname] = uigetfile('*.m', 'Select user-defined function to import to Function Registry');
+if fname == 0 
+    return;
+end
+fullpath = [pname, fname];
+fullpath(fullpath=='\') = '/';
+
+% Update registry
+procStreamEdit.dataTree.reg.Import(fullpath);
+
+% Reload the registry display in this GUI
+LoadRegistry(handles);
+
+
+
+% --------------------------------------------------------------------
+function menuItemReloadRegistry_Callback(hObject, eventdata, handles)
+global procStreamEdit
+if ~ishandles(hObject)
+    return;
+end
+
+% Update registry
+procStreamEdit.dataTree.reg.Reload();
+
+% Reload the registry display in this GUI
+LoadRegistry(handles);
 

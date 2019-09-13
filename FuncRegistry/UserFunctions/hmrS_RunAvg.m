@@ -2,7 +2,7 @@
 % [yAvg, yAvgStd, nTrials] = hmrS_RunAvg(yAvgRuns, yAvgStdRuns, ySum2Runs, mlActRuns, nTrialsRuns)
 %
 % UI NAME:
-% Block_Average_Subj
+% Run_Average
 %
 % DESCRIPTION:
 % Calculate the block average for all subjects, for all common stimuli
@@ -23,8 +23,8 @@
 % nTrials: the number of trials averaged for each condition across all runs
 %
 % USAGE OPTIONS:
-% Block_Average_on_Subject_Concentration_Data:  [dcAvg, dcAvgStd, nTrials]    = hmrS_RunAvg(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, mlActRuns, nTrialsRuns)
-% Block_Average_on_Subject_Delta_OD_Data:       [dodAvg, dodAvgStd, nTrials]  = hmrS_RunAvg(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, mlActRuns, nTrialsRuns)
+% Run_Average_on_Concentration_Data:  [dcAvg, dcAvgStd, nTrials]    = hmrS_RunAvg(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, mlActRuns, nTrialsRuns)
+% Run_Average_on_Delta_OD_Data:       [dodAvg, dodAvgStd, nTrials]  = hmrS_RunAvg(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, mlActRuns, nTrialsRuns)
 %
 
 function [yAvgOut, yAvgStdOut, nTrials] = hmrS_RunAvg(yAvgRuns, yAvgStdRuns, ySum2Runs, mlActRuns, nTrialsRuns)

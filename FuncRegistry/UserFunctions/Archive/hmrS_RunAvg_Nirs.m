@@ -3,7 +3,7 @@ function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_RunAvg_Nirs(yAvgRuns, yAvgStdRuns
 % [yAvg, yAvgStd, tHRF, nTrials] = hmrS_RunAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
 %
 % UI NAME:
-% Block_Average_Subj
+% Run_Average
 %
 % DESCRIPTION:
 % Calculate the block average for all subjects, for all common stimuli
@@ -26,8 +26,8 @@ function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_RunAvg_Nirs(yAvgRuns, yAvgStdRuns
 % nTrials: the number of trials averaged for each condition across all runs
 %
 % USAGE OPTIONS:
-% Block_Average_on_Subject_Concentration_Data:  [dcAvg, dcAvgStd, tHRF, nTrials]    = hmrS_RunAvg_Nirs(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
-% Block_Average_on_Subject_Delta_OD_Data:       [dodAvg, dodAvgStd, tHRF, nTrials]  = hmrS_RunAvg_Nirs(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
+% Run_Average_on_Concentration_Data:  [dcAvg, dcAvgStd, tHRF, nTrials]    = hmrS_RunAvg_Nirs(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
+% Run_Average_on_Delta_OD_Data:       [dodAvg, dodAvgStd, tHRF, nTrials]  = hmrS_RunAvg_Nirs(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
 %
 
 yAvg = [];

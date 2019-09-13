@@ -5,7 +5,7 @@
 % Bandpass_Filter
 %
 % DESCRIPTION:
-% Perform a bandpass filter
+% Perform a bandpass filter on time course data.
 %
 % INPUT:
 % data - SNIRF data type containing data time course to filter, time 

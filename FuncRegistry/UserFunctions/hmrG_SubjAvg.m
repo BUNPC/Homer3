@@ -3,7 +3,7 @@ function [yAvgOut, yAvgStdOut, nTrials] = hmrG_SubjAvg(yAvgSubjs, yAvgStdSubjs, 
 % [yAvgOut, yAvgStdOut, nTrials] = hmrG_SubjAvg(yAvgSubjs, yAvgStdSubjs, nTrialsSubjs, tRange, thresh)
 %
 % UI NAME:
-% Block_Average_Group
+% Subj_Average
 %
 % DESCRIPTION:
 % Calculate the block average for all subjects, for all common stimuli accross subjects
@@ -23,8 +23,8 @@ function [yAvgOut, yAvgStdOut, nTrials] = hmrG_SubjAvg(yAvgSubjs, yAvgStdSubjs, 
 % nTrials: 
 %
 % USAGE OPTIONS:
-% Block_Average_on_Group_Concentration_Data: [dcAvg, dcAvgStd, nTrials] = hmrG_SubjAvg(dcAvgSubjs, dcAvgStdSubjs, nTrialsSubjs, tRange, thresh)
-% Block_Average_on_Group_Delta_OD_Data:      [dodAvg, dodAvgStd, nTrials] = hmrG_SubjAvg(dodAvgSubjs, dodAvgStdSubjs, nTrialsSubjs, tRange, thresh)
+% Subj_Average_on_Concentration_Data: [dcAvg, dcAvgStd, nTrials] = hmrG_SubjAvg(dcAvgSubjs, dcAvgStdSubjs, nTrialsSubjs, tRange, thresh)
+% Subj_Average_on_Delta_OD_Data:      [dodAvg, dodAvgStd, nTrials] = hmrG_SubjAvg(dodAvgSubjs, dodAvgStdSubjs, nTrialsSubjs, tRange, thresh)
 %
 % PARAMETERS:
 % tRange: [5.0, 10.0]

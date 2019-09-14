@@ -6,8 +6,7 @@ function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_SubjAvg_Nirs(yAvgSubj
 % Subj_Average
 %
 % DESCRIPTION:
-% Calculate the block average for all subjects, for all common stimuli accross subjects
-% over the time range trange. 
+% Calculate avearge HRF of all subjects in a group. 
 %
 % INPUTS:
 % yAvgSubjs:

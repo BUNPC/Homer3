@@ -1,6 +1,5 @@
-function [yAvgOut, yAvgStdOut, nTrials] = hmrG_SubjAvg(yAvgSubjs, yAvgStdSubjs, nTrialsSubjs, tRange, thresh0)
 % SYNTAX:
-% [yAvgOut, yAvgStdOut, nTrials] = hmrG_SubjAvg(yAvgSubjs, yAvgStdSubjs, nTrialsSubjs, tRange, thresh)
+% [yAvgOut, nTrials] = hmrG_SubjAvg(yAvgSubjs, yAvgStdSubjs, nTrialsSubjs, tRange, thresh)
 %
 % UI NAME:
 % Subj_Average
@@ -19,20 +18,19 @@ function [yAvgOut, yAvgStdOut, nTrials] = hmrG_SubjAvg(yAvgSubjs, yAvgStdSubjs, 
 %
 % OUTPUTS:
 % yAvgOut: the averaged results
-% yAvgStdOut: the standard deviation across trials
 % nTrials: 
 %
 % USAGE OPTIONS:
-% Subj_Average_on_Concentration_Data: [dcAvg, dcAvgStd, nTrials] = hmrG_SubjAvg(dcAvgSubjs, dcAvgStdSubjs, nTrialsSubjs, tRange, thresh)
-% Subj_Average_on_Delta_OD_Data:      [dodAvg, dodAvgStd, nTrials] = hmrG_SubjAvg(dodAvgSubjs, dodAvgStdSubjs, nTrialsSubjs, tRange, thresh)
+% Subj_Average_on_Concentration_Data: [dcAvg, nTrials] = hmrG_SubjAvg(dcAvgSubjs, dcAvgStdSubjs, nTrialsSubjs, tRange, thresh)
+% Subj_Average_on_Delta_OD_Data:      [dodAvg, nTrials] = hmrG_SubjAvg(dodAvgSubjs, dodAvgStdSubjs, nTrialsSubjs, tRange, thresh)
 %
 % PARAMETERS:
 % tRange: [5.0, 10.0]
 % thresh: [5.0]
 %
+function [yAvgOut, nTrials] = hmrG_SubjAvg(yAvgSubjs, yAvgStdSubjs, nTrialsSubjs, tRange, thresh0)
 
 yAvgOut    = DataClass().empty();
-yAvgStdOut = DataClass().empty();
 
 nSubj = length(yAvgSubjs);
 
@@ -51,7 +49,6 @@ for iBlk = 1:length(yAvgSubjs{1})
     for iSubj = 1:nSubj
         
         yAvgOut(iBlk) = DataClass();
-        yAvgStdOut(iBlk) = DataClass();
         
         yAvg      = yAvgSubjs{iSubj}(iBlk).GetDataMatrix();
         if isempty(yAvg)
@@ -73,7 +70,6 @@ for iBlk = 1:length(yAvgSubjs{1})
         
         nCond = size(nT,2);
         yAvgOut(iBlk).SetTime(tHRF);
-        yAvgStdOut(iBlk).SetTime(tHRF);
         
         if strncmp(datatype{1}, 'HRF Hb', length('HRF Hb'))
             thresh = thresh0 * 1e-6;
@@ -203,7 +199,3 @@ for iBlk = 1:length(yAvgSubjs{1})
     end
     nTrials{iBlk} = nT;
 end
-
-% TBD: Calculate Standard deviation
-yAvgStd = [];
-

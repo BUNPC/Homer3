@@ -6,8 +6,7 @@ function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_RunAvg_Nirs(yAvgRuns, yAvgStdRuns
 % Run_Average
 %
 % DESCRIPTION:
-% Calculate the block average for all subjects, for all common stimuli
-% accross runs over the time range trange. 
+% Calculate avearge HRF of all runs for one subject. 
 %
 % INPUTS:
 % yAvgRuns:

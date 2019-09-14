@@ -229,9 +229,12 @@ classdef ProcResultClass < handle
             
             % Get data matrix
             if isa(eval(sprintf('obj.%s', type)), 'DataClass')
-                yavg       = eval(sprintf('obj.%s(iBlk).GetDataMatrix()', type));
+                if isempty(eval(sprintf('obj.%s', type)))
+                    return;
+                end
+                yavg = eval(sprintf('obj.%s(iBlk).GetDataMatrix()', type));
             else
-                yavg       = eval(sprintf('obj.%s', type));
+                yavg = eval(sprintf('obj.%s', type));
             end
             
             % Get condition
@@ -275,7 +278,10 @@ classdef ProcResultClass < handle
             
             % Get data matrix
             if isa(eval(sprintf('obj.%s', type)), 'DataClass')
-                yavg  = eval(sprintf('obj.%s(iBlk).GetDataMatrix()', type));
+                if isempty(eval(sprintf('obj.%s', type)))
+                    return;
+                end
+                yavg = eval(sprintf('obj.%s(iBlk).GetDataMatrix()', type));
             else
                 yavg = eval(sprintf('obj.%s', type));
             end
@@ -319,6 +325,9 @@ classdef ProcResultClass < handle
             end
             
             if isa(eval(sprintf('obj.%s', type)), 'DataClass')
+                if isempty(eval(sprintf('obj.%s', type)))
+                    return;
+                end
                 y = eval(sprintf('obj.%s(iBlk).GetDataMatrix()', type));
             else
                 y = eval(sprintf('obj.%s', type));

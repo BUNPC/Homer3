@@ -93,10 +93,6 @@ end
 
 %%%% End parse arguments 
 
-% Initialize other fields
-procStreamEdit.funcReg = [];
-
-
 % See if we can set the position
 p = procStreamEdit.pos;
 if ~isempty(p)
@@ -155,16 +151,25 @@ LoadRegistry(handles);
 LoadProcStream(handles);
 
 
+% -------------------------------------------------------------
+function idx = MapRegIdx(iPanel)
+global procStreamEdit
+
+idx = [];
+if iPanel==procStreamEdit.iGroupPanel
+    idx = procStreamEdit.dataTree.reg.IdxGroup();
+elseif iPanel==procStreamEdit.iSubjPanel
+    idx = procStreamEdit.dataTree.reg.IdxSubj();    
+elseif iPanel==procStreamEdit.iRunPanel
+    idx = procStreamEdit.dataTree.reg.IdxRun();
+end
 
 
 % -------------------------------------------------------------
 function LoadRegistry(handles)
 global procStreamEdit
 
-iGroupPanel = procStreamEdit.iGroupPanel;
-iSubjPanel  = procStreamEdit.iSubjPanel;
-iRunPanel   = procStreamEdit.iRunPanel;
-reg         = procStreamEdit.dataTree.reg;
+reg = procStreamEdit.dataTree.reg;
 if reg.IsEmpty()
     reg = RegistriesClass();
     if ~isempty(reg.GetSavedRegistryPath())
@@ -172,17 +177,11 @@ if reg.IsEmpty()
     end
 end
 
-funcReg(iGroupPanel) = reg.funcReg(reg.IdxGroup);
-funcReg(iSubjPanel) = reg.funcReg(reg.IdxSubj);
-funcReg(iRunPanel) = reg.funcReg(reg.IdxRun);
-procStreamEdit.funcReg = funcReg;
-
-funcReg = procStreamEdit.funcReg;
-for iPanel=1:length(funcReg)
-    set(handles.listboxFuncReg(iPanel),'string',funcReg(iPanel).GetFuncNames());
+for iPanel=1:length(reg.funcReg)
+    set(handles.listboxFuncReg(iPanel),'string',reg.funcReg(MapRegIdx(iPanel)).GetFuncNames());
     iFunc = get(handles.listboxFuncReg(iPanel),'value');
-    funcname = funcReg(iPanel).GetFuncName(iFunc);
-    set(handles.listboxUsageOptions(iPanel),'string',funcReg(iPanel).GetUsageNames(funcname));
+    funcname = reg.funcReg(MapRegIdx(iPanel)).GetFuncName(iFunc);
+    set(handles.listboxUsageOptions(iPanel),'string',reg.funcReg(MapRegIdx(iPanel)).GetUsageNames(funcname));
     set(handles.listboxUsageOptions(iPanel), 'value',1);
     LookupHelp(iPanel, iFunc, handles);
 end
@@ -196,7 +195,7 @@ global procStreamEdit
 iGroupPanel = procStreamEdit.iGroupPanel;
 iSubjPanel  = procStreamEdit.iSubjPanel;
 iRunPanel   = procStreamEdit.iRunPanel;
-funcReg     = procStreamEdit.funcReg;
+reg         = procStreamEdit.dataTree.reg;
 
 % Create 3 strings objects for run , subject and group: this is
 % what will be the current proc stream listbox strings for the 3 panels
@@ -206,7 +205,7 @@ end
 
 % If registry is not yet loaded, can't fill in the listboxFuncProcStream
 % YET. However it doesn't mean data Tree if not loaded. 
-if isempty(funcReg)
+if isempty(reg)
     return;
 end
 
@@ -225,7 +224,7 @@ for iPanel=1:length(procStreamEdit.procElem)
     procStream = procStreamEdit.procElem{iPanel}.procStream;
     for iFcall=1:procStream.GetFuncCallNum()
         fname     = procStream.fcalls(iFcall).GetName();
-        fcallname = funcReg(iPanel).GetUsageName(procStream.fcalls(iFcall));
+        fcallname = reg.funcReg(MapRegIdx(iPanel)).GetUsageName(procStream.fcalls(iFcall));
         
         % Line up the procStream entries into 2 columns: func name and func call name, so it's cleares
         listPsUsage(iPanel).Insert(sprintf('%s: %s', fname, fcallname));
@@ -241,7 +240,7 @@ procStreamEdit.listPsUsage = listPsUsage;
 function listboxFuncReg_Callback(hObject, eventdata, handles)
 global procStreamEdit
 iPanel = procStreamEdit.iPanel;
-funcReg = procStreamEdit.funcReg;
+reg    = procStreamEdit.dataTree.reg;
 
 if ~isempty(eventdata) && ~isobject(eventdata)
     set(hObject, 'value',eventdata);
@@ -255,7 +254,7 @@ funcnames = get(hObject,'string');
 if isempty(funcnames)
     return
 end
-usagenames = funcReg(iPanel).GetUsageNames(funcnames{ii});
+usagenames = reg.funcReg(MapRegIdx(iPanel)).GetUsageNames(funcnames{ii});
 iUsage = get(handles.listboxUsageOptions(iPanel), 'value');
 if iUsage>length(usagenames)
     iUsage = length(usagenames);
@@ -459,7 +458,7 @@ global procStreamEdit
 procElem    = procStreamEdit.procElem;
 group       = procStreamEdit.dataTree.group;
 listPsUsage = procStreamEdit.listPsUsage;
-funcReg     = procStreamEdit.funcReg;
+reg         = procStreamEdit.dataTree.reg;
 iGroupPanel = procStreamEdit.iGroupPanel;
 iSubjPanel  = procStreamEdit.iSubjPanel;
 iRunPanel   = procStreamEdit.iRunPanel;
@@ -493,7 +492,7 @@ for iPanel=1:length(procElem)
         end
         funcname = strtrim(parts{1});
         usagename = strtrim(parts{2});
-        fcall = funcReg(iPanel).GetFuncCallDecoded(funcname, usagename);
+        fcall = reg.funcReg(MapRegIdx(iPanel)).GetFuncCallDecoded(funcname, usagename);
         procElem{iPanel}.procStream.Add(fcall);
     end
 end
@@ -522,18 +521,18 @@ end
 % -------------------------------------------------
 function helptxt = LookupHelp(iPanel, name, handles)
 global procStreamEdit
-funcReg = procStreamEdit.funcReg;
+reg = procStreamEdit.dataTree.reg;
 
 helptxt = '';
-if isempty(funcReg)
+if isempty(reg)
     return;
 end
 if ischar(name)
-    [~,idx] = funcReg(iPanel).GetFuncName(strtrim(name));
+    [~,idx] = reg.funcReg(MapRegIdx(iPanel)).GetFuncName(strtrim(name));
 elseif iswholenum(name)&& name>0
     idx = name;
 end
-helptxt = sprintf('%s\n', funcReg(iPanel).GetFuncHelp(idx));
+helptxt = sprintf('%s\n', reg.funcReg(MapRegIdx(iPanel)).GetFuncHelp(idx));
 set(handles.textHelp(iPanel), 'string',helptxt);
 set(handles.textHelp(iPanel), 'value',1);
 
@@ -542,7 +541,7 @@ set(handles.textHelp(iPanel), 'value',1);
 % -------------------------------------------------
 function helptxt = LookupHelpFuncCall(iPanel, usagename, handles)
 global procStreamEdit
-funcReg = procStreamEdit.funcReg;
+reg = procStreamEdit.dataTree.reg;
 
 helptxt = '';
 foo = str2cell(usagename, ':');
@@ -557,8 +556,8 @@ end
 funcname  = strtrim(foo{1});
 fcallname = strtrim(foo{2});
 
-fcallstr = funcReg(iPanel).GetFuncCallStrDecoded(funcname, fcallname);
-paramtxt = funcReg(iPanel).GetParamText(funcname);
+fcallstr = reg.funcReg(MapRegIdx(iPanel)).GetFuncCallStrDecoded(funcname, fcallname);
+paramtxt = reg.funcReg(MapRegIdx(iPanel)).GetParamText(funcname);
 helptxt = sprintf('%s\n\n%s\n', fcallstr, paramtxt);
 set(handles.textHelp(iPanel), 'string',helptxt);
 setListboxValueToLast(handles.textHelp(iPanel));

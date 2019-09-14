@@ -54,12 +54,10 @@ plotprobe.handles.figureDup = [];
 SetGuiControls(handles)
 
 if ispc()
-    setGuiFonts(handles.figure, 7);
+    setGuiFonts(hObject);
 else
-    setGuiFonts(handles.figure);
+    setGuiFonts(hObject, 7);
 end
-
-
 
 
 % ----------------------------------------------------------------------

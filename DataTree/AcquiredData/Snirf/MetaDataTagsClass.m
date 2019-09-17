@@ -59,14 +59,24 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             %%%%%%%%%%%% Ready to load from file
 
             try
-            % Read tag name
-            obj.key = convertH5StrToStr(h5read_safe(fname, [parent, '/name'], obj.key));
-            if isempty(obj.key)
-               err=-1;
-            end
-            
-            % Read tag value
-            obj.value = convertH5StrToStr(h5read_safe(fname, [parent, '/value'], obj.value));
+                % Read tag name
+                foo = convertH5StrToStr(h5read_safe(fname, [parent, '/key'], obj.key));
+                if iscell(foo)
+                    obj.key = foo{1};
+                else
+                    obj.key = foo;
+                end
+                if isempty(obj.key)
+                    err=-1;
+                end
+                
+                % Read tag value
+                foo = convertH5StrToStr(h5read_safe(fname, [parent, '/value'], obj.value));
+                if iscell(foo)
+                    obj.value = foo{1};
+                else
+                    obj.value = foo;
+                end
             catch
                 err = -1;
             end
@@ -81,7 +91,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
                 fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end
-            hdf5write_safe(fname, [parent, '/name'], obj.key);
+            hdf5write_safe(fname, [parent, '/key'], obj.key);
             hdf5write_safe(fname, [parent, '/value'], obj.value);
         end
         
@@ -101,8 +111,8 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function Add(obj, name, value)
-            obj.key = name;
+        function Add(obj, key, value)
+            obj.key = Key;
             obj.value = value;
         end
         

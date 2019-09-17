@@ -2,7 +2,7 @@ function [selection, hf] = MenuBox(msg, bttns, relativePos)
 global bttnId
 bttnId = [];
 
-DEBUG=1;
+DEBUG=0;
 DEBUG2=0;
 
 % Parse args 

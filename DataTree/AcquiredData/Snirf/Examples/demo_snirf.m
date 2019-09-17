@@ -10,10 +10,7 @@ function demo_snirf()
 %
 
 % Find the Homer3 Examples folder and cd to it
-rootdir = fileparts(which('Homer3.m'));
-rootdirexamples = [rootdir, '/DataTree/AcquiredData/Snirf/Examples/'];
-currdir = pwd;
-cd(rootdirexamples);
+[~, currdir] = findexamplesdir(); 
 
 % Delete any previously generated .snirf files to make sure to start from scratch
 DeleteSnirfFiles();

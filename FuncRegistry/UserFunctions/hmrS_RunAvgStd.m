@@ -11,7 +11,7 @@
 % yAvgRuns:
 %
 % OUTPUTS:
-% yAvgStdOut: the standard deviation across trials
+% yAvgStdOut: the standard deviation across runs
 %
 % USAGE OPTIONS:
 % Run_Average_Standard_Deviation_on_Concentration_Data:  dcAvgStd  = hmrS_RunAvgStd(dcAvgRuns)
@@ -31,6 +31,6 @@ for iBlk = 1:length(yAvgRuns{1})
     for iRun = 1:length(yAvgRuns)
         dts(:,:,iRun) = yAvgRuns{iRun}(iBlk).GetDataTimeSeries();
     end
-    yAvgStdOut(iBlk).SetDataTimeSeries(std(dts,0,3));
+    yAvgStdOut(iBlk).SetDataTimeSeries(std(dts,1,3));
 end
     

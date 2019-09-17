@@ -26,7 +26,7 @@ classdef ProcStreamClass < handle
                 copyOptions = 'extended';
             end
             
-            % By the time this class constructor is called we should alreadey have a saved registry 
+            % By the time this class constructor is called we should already have a saved registry 
             % to load. (Defintiely would not want to be generating the registry for each instance of this class!!)
             obj.reg = RegistriesClass();
             
@@ -1129,7 +1129,7 @@ classdef ProcStreamClass < handle
                 suffix = obj.getDefaultProcStream();
                 tmp = {...
                     obj.reg.funcReg(iS).GetUsageStrDecorated(['hmrS_RunAvg',suffix],'dcAvg'); ...
-                    obj.reg.funcReg(iS).GetUsageStrDecorated(['hmrS_RunAvgStd',suffix],'dcAvg'); ...
+                    obj.reg.funcReg(iS).GetUsageStrDecorated(['hmrS_RunAvgStd2',suffix],'dcAvg'); ...
                 };
                 k=[]; kk=1;
                 for ii=1:length(tmp)

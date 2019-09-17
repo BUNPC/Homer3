@@ -11,7 +11,7 @@
 % ySubjAvg:
 %
 % OUTPUTS:
-% yAvgStdOut: the standard deviation across trials
+% yAvgStdOut: the standard deviation across subjects.
 %
 % USAGE OPTIONS:
 % Subj_Average_Standard_Deviation_on_Concentration_Data:  dcAvgStd  = hmrG_SubjAvgStd(dcAvgSubjs)

@@ -703,6 +703,13 @@ end
 % Update registry
 procStreamEdit.dataTree.reg.Reload();
 
+% This needs to change to point to the actual dataTree.currElem instead of a copy. 
+% For now though because procElem is a copy we need reload the registry for local copy 
+% of procElem. It will ofcourse load the save registry. 
+for ii=1:length(procStreamEdit.procElem)
+    procStreamEdit.procElem{ii}.procStream.reg = RegistriesClass();
+end
+
 % Reload the registry display in this GUI
 LoadRegistry(handles);
 

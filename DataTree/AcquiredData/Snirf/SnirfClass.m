@@ -49,7 +49,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
              
             % Initialize properties from SNIRF spec 
             obj.formatVersion = '1.10';
-            obj.metaDataTags   = MetaDataTagsClass().empty();
+            obj.metaDataTags   = MetaDataTagsClass();
             obj.data           = DataClass().empty();
             obj.stim           = StimClass().empty();
             obj.probe          = ProbeClass().empty();
@@ -250,20 +250,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 end
             
                 %%%% Load metaDataTags
-                ii=1;
-                while 1
-                    if ii > length(obj.metaDataTags)
-                        obj.metaDataTags(ii) = MetaDataTagsClass;
-                    end
-                    if obj.metaDataTags(ii).LoadHdf5(fname, [parent, '/metaDataTags', num2str(ii)]) < 0
-                        obj.metaDataTags(ii).delete();
-                        obj.metaDataTags(ii) = [];
-                        if ii==1
-                            err=-1;
-                        end
-                        break;
-                    end
-                    ii=ii+1;
+                if obj.metaDataTags.LoadHdf5(fname, [parent, '/metaDataTags']) < 0
+                    obj.metaDataTags.delete();
+                    obj.metaDataTags = [];
+                    err=-1;
+                    return;
                 end
                 
                 %%%% Load data
@@ -361,9 +352,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             hdf5write(fname, '/formatVersion', obj.formatVersion, 'WriteMode','append');
             
             % Save metaDataTags
-            for ii=1:length(obj.metaDataTags)
-                obj.metaDataTags(ii).SaveHdf5(fname, [parent, '/metaDataTags', num2str(ii)]);
-            end            
+            obj.metaDataTags.SaveHdf5(fname, [parent, '/metaDataTags']);
             
             % Save data
             for ii=1:length(obj.data)
@@ -428,10 +417,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if length(obj.metaDataTags)~=length(obj2.metaDataTags)
                 return;
             end
-            for ii=1:length(obj.metaDataTags)
-                if obj.metaDataTags(ii)~=obj2.metaDataTags(ii)
-                    return;
-                end
+            if(obj.metaDataTags~=obj2.metaDataTags)
+                return;
             end
             B = true;
         end
@@ -439,11 +426,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ----------------------------------------------------------------------
         function AddTags(obj)
-            if isempty(obj.metaDataTags)
-                obj.metaDataTags(1) = MetaDataTagsClass('SubjectID','none');
-                obj.metaDataTags(2) = MetaDataTagsClass('MeasurementDate','none');
-                obj.metaDataTags(3) = MetaDataTagsClass('MeasurementTime','none');
-                obj.metaDataTags(4) = MetaDataTagsClass('LengthUnit','mm');
+            if isempty(fieldnames(obj.metaDataTags.metadata))
+                obj.metaDataTags.Add('SubjectID','default');
+                obj.metaDataTags.Add('MeasurementDate','unknown');
+                obj.metaDataTags.Add('MeasurementTime','unknown');
+                obj.metaDataTags.Add('LengthUnit','mm');
             end
         end
         

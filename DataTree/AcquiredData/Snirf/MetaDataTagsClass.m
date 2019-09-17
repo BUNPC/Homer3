@@ -1,16 +1,14 @@
 classdef MetaDataTagsClass  < FileLoadSaveClass
 
     properties
-        key
-        value
+        metadata
     end
 
     methods
         
         % -------------------------------------------------------
         function obj = MetaDataTagsClass(varargin)
-            obj.key = '';
-            obj.value = '';
+            obj.metadata=struct();
             
             % Set class properties not part of the SNIRF format
             obj.fileformat = 'hdf5';
@@ -20,12 +18,10 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
                 return;
 	        end
             if nargin==1
-                obj.key = varargin{1};
-                obj.value = 'none';
+                obj.metadata.(varargin{1})='';
                 return;
             end            
-            obj.key = varargin{1};
-            obj.value = varargin{2};            
+            obj.metadata.(varargin{1})=varargin{2};
         end
     
     
@@ -40,7 +36,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             
             % Arg 2
             if ~exist('parent', 'var')
-                parent = '/nirs/metaDataTags1';
+                parent = '/nirs/metaDataTags';
             elseif parent(1)~='/'
                 parent = ['/',parent];
             end
@@ -57,53 +53,97 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             end
             
             %%%%%%%%%%%% Ready to load from file
+            pd = 'H5P_DEFAULT';
 
             try
-            % Read tag name
-            obj.key = convertH5StrToStr(h5read_safe(fname, [parent, '/name'], obj.key));
-            if isempty(obj.key)
-               err=-1;
-            end
-            
-            % Read tag value
-            obj.value = convertH5StrToStr(h5read_safe(fname, [parent, '/value'], obj.value));
-            catch
+                % Read metadata
+                fid = H5F.open(fname, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
+                gid = H5G.open(fid,parent);
+                num = H5G.get_num_objs(gid);
+                for i=num-1:-1:0
+                   key=H5G.get_objname_by_idx(gid,i);
+                   mv1=H5D.open(gid,key);
+                   obj.metadata.(key)=H5D.read(mv1,'H5ML_DEFAULT','H5S_ALL','H5S_ALL',pd);
+                   H5D.close(mv1);
+                end
+                H5G.close(gid);
+                H5F.close(fid);
+
+                if isempty(fieldnames(obj.metadata))
+                   err=-1;
+                end
+            catch ME
+                disp(ME.message);
                 err = -1;
             end
+
             obj.err = err;
             
         end
-        
-        
+
         % -------------------------------------------------------
         function SaveHdf5(obj, fname, parent)
-            if ~exist(fname, 'file')
-                fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
-                H5F.close(fid);
+            obj.filename=fname;
+            typemap.char='H5T_C_S1';
+            typemap.double='H5T_IEEE_F64LE';
+            typemap.single='H5T_IEEE_F32LE';
+
+            pd = 'H5P_DEFAULT';
+
+            fid = H5F.open(fname, 'H5F_ACC_RDWR', 'H5P_DEFAULT');
+            pos=split(parent,'/');
+            level=1;
+            mid{1}=fid;
+            for i=1:length(pos)
+                if(isempty(pos{i}))
+                    continue;
+                end
+                level=level+1;
+                try 
+                    mid{level} = H5G.open(mid{level-1},pos{i},pd);
+                catch
+                    mid{level} = H5G.create(mid{level-1},pos{i},pd,pd,pd);
+                end
             end
-            hdf5write_safe(fname, [parent, '/name'], obj.key);
-            hdf5write_safe(fname, [parent, '/value'], obj.value);
+            metakeys=fieldnames(obj.metadata);
+            for i=1:length(metakeys)
+               val=obj.metadata.(metakeys{i});
+               mv1= H5D.create(mid{end},metakeys{i},H5T.copy(typemap.(class(val))),H5S.create_simple(ndims(val), fliplr(size(val)),fliplr(size(val))),pd);
+               H5D.write(mv1,'H5ML_DEFAULT','H5S_ALL','H5S_ALL',pd,val);
+               H5D.close(mv1);
+            end
+            for i=length(mid):-1:2
+                H5G.close(mid{i});
+            end
+            H5F.close(fid);
         end
         
         
         % -------------------------------------------------------
         function B = eq(obj, obj2)
-            B = false;
-            if ~strcmp(obj.key, obj2.key)
-                return;
-            end
-            if ~strcmp(obj.value, obj2.value)
-                return;
-            end
-            B = true;
+            B=isequaln(obj, obj2);
         end
         
         
         
         % -------------------------------------------------------
         function Add(obj, name, value)
-            obj.key = name;
-            obj.value = value;
+            obj.metadata.(name) = value;
+        end
+        
+        % -------------------------------------------------------
+        function Set(obj, name, value)
+            obj.metadata.(name) = value;
+        end
+        
+        % -------------------------------------------------------
+        function val=Get(obj, name)
+            val=[];
+            if(nargin==1)
+                val=obj.metadata;
+            elseif(isfield(obj.metadata,name))
+                val=obj.metadata.(name);
+            end
         end
         
     end

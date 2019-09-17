@@ -52,7 +52,9 @@ classdef FileLoadSaveClass < matlab.mixin.Copyable
             if ~exist('filename','var')
                 filename = obj.filename;
             end
-            
+            if(isempty(obj.filename))
+                obj.filename=filename;
+            end
             if ~exist('format','var')
                 format = obj.fileformat;
             end

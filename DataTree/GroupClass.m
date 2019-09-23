@@ -617,6 +617,11 @@ classdef GroupClass < TreeNodeClass
             n = obj.subjs(1).GetDataBlocksNum();
         end
         
+        % ----------------------------------------------------------------------------------
+        function aux = GetAuxiliary(obj)
+            aux = [];
+        end
+                
     end      % Public Set/Get methods
 
         

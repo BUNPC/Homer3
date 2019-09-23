@@ -64,7 +64,7 @@ pushbuttonCalcProcStream_Callback([]);
 listboxFilesErr_Callback([]);
 uipanelPlot_SelectionChangeFcn([]);
 menuItemProcStreamEdit_Callback([]);
-checkboxPlotProbe_Callback([]);
+menuItemPlotProbe_Callback([]);
 menuItemSaveGroup_Callback([]);
 menuItemViewHRFStdErr_Callback([]);
 menuItemLaunchStimGUI_Callback([]);
@@ -623,22 +623,6 @@ DisplayData(handles, hObject);
 
 
 
-% ---------------------------------------------------------------------------
-function [eventdata, handles] = checkboxPlotProbe_Callback(hObject, eventdata, handles)
-global maingui
-if ~ishandles(hObject)
-    return;
-end
-
-idx = FindChildGuiIdx('PlotProbeGUI');
-if get(hObject, 'value')
-    maingui.childguis(idx).Launch(GetDatatype(handles), GetCondition(handles));
-else
-    maingui.childguis(idx).Close();
-end
-
-
-
 % --------------------------------------------------------------------
 function [eventdata, handles] = menuItemProcStreamEdit_Callback(hObject, eventdata, handles)
 global maingui
@@ -865,6 +849,8 @@ end
 DisplayAxesSDG();
 DisplayExcludedTime(handles, datatype);
 DisplayStim(handles);
+DisplayAux(handles);
+
 UpdateCondPopupmenu(handles);
 UpdateDatatypePanel(handles);
 UpdateChildGuis(handles);
@@ -977,6 +963,41 @@ end
 
 
 % ----------------------------------------------------------------------------------
+function DisplayAux(handles)
+global maingui
+
+aux = maingui.dataTree.currElem.GetAuxiliary();
+t = maingui.dataTree.currElem.GetTime();
+
+% Check if there's any aux 
+if isempty(aux) || isempty(t)
+    set(handles.checkboxPlotAux, 'enable','off');
+    set(handles.popupmenuAux, 'enable','off');
+    return;
+end
+
+% Enable aux gui objects and set their values based on the aux values
+onoff = get(handles.checkboxPlotAux, 'value');
+if onoff==0
+    return;
+end
+iAux = get(handles.popupmenuAux, 'value');
+set(handles.checkboxPlotAux, 'enable','on');
+set(handles.popupmenuAux, 'enable','on');
+if iAux==0
+    set(handles.popupmenuAux, 'value',1);
+end
+set(handles.popupmenuAux, 'string',aux.names);
+
+hold on
+data = aux.data(:,iAux)-min(aux.data(:,iAux));
+yrange = ylim();
+h = plot(t, yrange(1)+(yrange(2)-yrange(1)) * ((.5*data)/(max(data)-min(data))), 'k');
+set(h,'linewidth',1);
+hold off
+
+
+% ----------------------------------------------------------------------------------
 function DisplayPvalues()
 global maingui
 
@@ -1016,7 +1037,7 @@ end
 % Redisplay main GUI based on what was done in the calling app
 switch(guiname)
     case 'PlotProbeGUI'
-        set(maingui.handles.checkboxPlotProbe, 'value',0); 
+        set(maingui.handles.menuItemPlotProbe, 'checked','off'); 
     case 'StimEditGUI'
         DisplayData(maingui.handles, maingui.handles.axesData);  % Redisplay data axes since stims might have edited
     case 'ProcStreamOptionsGUI'
@@ -1210,4 +1231,34 @@ end
 
 idx = FindChildGuiIdx('PvaluesDisplayGUI');
 maingui.childguis(idx).Launch();
+
+
+
+% --------------------------------------------------------------------
+function checkboxPlotAux_Callback(hObject, eventdata, handles)
+DisplayData(handles, hObject);
+
+
+
+% --------------------------------------------------------------------
+function popupmenuAux_Callback(hObject, eventdata, handles)
+DisplayData(handles, hObject);
+
+
+
+% --------------------------------------------------------------------
+function menuItemPlotProbe_Callback(hObject, eventdata, handles)
+global maingui
+if ~ishandles(hObject)
+    return;
+end
+
+idx = FindChildGuiIdx('PlotProbeGUI');
+if strcmp(get(hObject, 'checked'), 'off')
+    set(hObject, 'checked', 'on');
+    maingui.childguis(idx).Launch(GetDatatype(handles), GetCondition(handles));
+else
+    set(hObject, 'checked', 'off');
+    maingui.childguis(idx).Close();
+end
 

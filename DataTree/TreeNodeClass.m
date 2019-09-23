@@ -571,12 +571,6 @@ classdef TreeNodeClass < handle
             tbl = distinguishable_colors(20);
         end
         
-        
-        % ----------------------------------------------------------------------------------
-        function aux = GetAuxiliary(obj)
-            aux = [];
-        end
-                
     end
     
 end

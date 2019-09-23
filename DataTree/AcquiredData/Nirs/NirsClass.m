@@ -408,7 +408,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         % ----------------------------------------------------------------------------------
         function aux = GetAuxiliary(obj)
-            aux = struct('data', obj.aux, 'names',{{}});
+            aux = struct('names',{{}}, 'data', obj.aux);
             for ii=1:size(obj.aux, 2)
                 if isproperty(obj.SD,'auxChannels')
                     aux.names{end+1} = obj.SD.auxChannels{ii};

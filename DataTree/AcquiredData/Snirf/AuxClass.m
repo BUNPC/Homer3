@@ -97,6 +97,12 @@ classdef AuxClass < FileLoadSaveClass
         
         
         % -------------------------------------------------------
+        function name = GetName(obj)
+            name = obj.name;
+        end
+        
+        
+        % -------------------------------------------------------
         function B = eq(obj, obj2)
             B = false;
             if ~strcmp(obj.name, obj2.name)

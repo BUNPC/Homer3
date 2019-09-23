@@ -392,6 +392,12 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function aux = GetAuxiliary(obj)
+            aux = obj.acquired.GetAuxiliary();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function tIncAuto = GetTincAuto(obj, iBlk)
             if nargin<2
                 iBlk = 1;

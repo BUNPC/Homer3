@@ -54,7 +54,11 @@ for iBlk = 1:length(yAvgSubjs{1})
         if isempty(yAvg)
             continue;
         end
-        yAvgStd   = yAvgStdSubjs{iSubj}(iBlk).GetDataMatrix();
+        if isempty(yAvgStdSubjs{iSubj})
+            yAvgStd = [];
+        else
+            yAvgStd   = yAvgStdSubjs{iSubj}(iBlk).GetDataMatrix();
+        end
         tHRF      = yAvgSubjs{iSubj}(iBlk).GetTime();
         nT        = nTrialsSubjs{iSubj}{iBlk};
         datatype  = yAvgSubjs{iSubj}(iBlk).GetDataTypeLabel();
@@ -92,10 +96,13 @@ for iBlk = 1:length(yAvgSubjs{1})
                 % based on the subjects' standard error and store result in lstPass
                 % also need to consider if channel was manually or
                 % automatically included
-                lstPass = find( (squeeze(mean(yAvgStd(lstT,1,:,iC),1))./sqrt(nT(:,iC)+eps)) <= thresh &...
-                                (squeeze(mean(yAvgStd(lstT,2,:,iC),1))./sqrt(nT(:,iC)+eps)) <= thresh &...
-                                 nT(:,iC)>0 );
-                
+                if isempty(yAvgStd)
+                    lstPass = 1:size(yAvg,3);
+                else
+                    lstPass = find( (squeeze(mean(yAvgStd(lstT,1,:,iC),1))./sqrt(nT(:,iC)+eps)) <= thresh &...
+                                    (squeeze(mean(yAvgStd(lstT,2,:,iC),1))./sqrt(nT(:,iC)+eps)) <= thresh &...
+                                    nT(:,iC)>0 );
+                end
                 if chkFlag==false | length(lstPass)==size(yAvg,3)
                     if iSubj==1 | iC>nStim
                         for iPass=1:length(lstPass)
@@ -157,8 +164,12 @@ for iBlk = 1:length(yAvgSubjs{1})
                     % Calculate which channels to include and exclude from the group HRF avg,
                     % based on the subjects' standard error and store result in lstPass
                     lstWl = find(ml(:,4)==iWl);
-                    lstPass = find( ((squeeze(mean(yAvgStd(lstT,lstWl,iC),1))./sqrt(nT(lstWl,iC)'+eps)) <= thresh) &...
-                                      nT(lstWl,iC)'>0 );
+                    if isempty(yAvgStd)
+                        lstPass = 1:size(yAvg,2);
+                    else
+                        lstPass = find( ((squeeze(mean(yAvgStd(lstT,lstWl,iC),1))./sqrt(nT(lstWl,iC)'+eps)) <= thresh) &...
+                                         nT(lstWl,iC)'>0 );
+                    end
                     lstPass = lstWl(lstPass);
                     
                     if chkFlag==false | length(lstPass)==size(yAvg,2)

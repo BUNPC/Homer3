@@ -1,6 +1,6 @@
 
 Homer3 Software License Agreement 
-Copyright © 2019, David Boas, Jay Dubb
+Copyright © 2015, David Boas, Jay Dubb, Ted Huppert
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

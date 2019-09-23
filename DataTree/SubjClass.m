@@ -398,6 +398,13 @@ classdef SubjClass < TreeNodeClass
             end
         end
         
+        
+        
+        % ----------------------------------------------------------------------------------
+        function aux = GetAuxiliary(obj)
+            aux = [];
+        end
+                
     end
         
 end

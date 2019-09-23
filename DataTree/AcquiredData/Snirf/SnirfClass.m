@@ -610,6 +610,35 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
+        function datamat = GetAuxDataMatrix(obj)
+            datamat = [];
+            if isempty(obj.aux)
+                return;
+            end
+            for ii=1:length(obj.aux)
+                datamat(:,ii) = obj.aux(ii).GetData();
+            end
+        end
+        
+        
+        % ---------------------------------------------------------
+        function names = GetAuxNames(obj)
+            names = {};
+            for ii=1:length(obj.aux)
+                names{ii} = obj.aux(ii).GetName();
+            end
+        end
+        
+        
+        % ---------------------------------------------------------
+        function aux = GetAuxiliary(obj)
+            aux = struct('names',{{}}, 'data', obj.aux);
+            aux.names = obj.GetAuxNames();
+            aux.data = obj.GetAuxDataMatrix();
+        end
+        
+        
+        % ---------------------------------------------------------
         function ml = GetMeasList(obj, iBlk)
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk=1;
@@ -704,16 +733,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % ---------------------------------------------------------
         function detpos = GetDetPos(obj)
             detpos = obj.probe.GetDetPos();
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function aux = GetAuxiliary(obj)
-            aux = struct('data',[], 'names',{{}});            
-            for ii=1:size(obj.aux,2)
-                aux.data(:,ii) = obj.aux(ii).GetData();
-                aux.names{ii} = obj.aux(ii).GetName();
-            end
         end
         
         

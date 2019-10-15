@@ -144,7 +144,7 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                 if ~isempty(obj.params)
                     k = strfind(argin, obj.params{1,1});
                     argin = argin(1:k-1);
-                    if ~isempty(argin) && ~isalpha_num(argin(end))
+                    if ~isempty(argin) && ~isalnum(argin(end))
                         argin(end)='';
                     end
                 end

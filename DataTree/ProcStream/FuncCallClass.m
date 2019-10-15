@@ -298,7 +298,7 @@ classdef FuncCallClass < handle
                         % user-settable params, since params follow input
                         % arguments
                         pname = textstr{ii};
-                        if ~isalpha_num(pname(1))
+                        if ~isalnum(pname(1))
                             obj.err=-1;
                             return;
                         end

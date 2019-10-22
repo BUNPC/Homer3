@@ -58,7 +58,7 @@
 % tMotion: 0.5
 % tMask: 1.0
 % STDEVthresh: 20.0
-% AMPthresh: 5.0
+% AMPthresh: 5.00
 % nSV: 0.97 
 % maxIter: 5 
 % turnon: 1

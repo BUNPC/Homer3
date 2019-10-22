@@ -50,16 +50,19 @@ end
 if turnon==0
     return;
 end
+if isempty(mlAct)
+    mlAct = cell(length(data_dod),1);
+end
 
 for kk=1:length(data_dod)
 
     dod         = data_dod(kk).GetDataTimeSeries();
     dodWavelet  = dod;
-    MeasList    = dod(kk).GetMeasList();
-    MeasListAct = mlAct{kk};    
-    if isempty(MeasListAct)
-        MeasListAct = ones(size(MeasList,1),1);
+    MeasList    = data_dod(kk).GetMeasList();   
+    if isempty(mlAct{kk})
+        mlAct{kk} = ones(size(MeasList,1),1);
     end
+    MeasListAct = mlAct{kk};
     
     lstAct = find(MeasListAct==1);
     SignalLength = size(dod,1); % #time points of original signal

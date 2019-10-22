@@ -46,7 +46,7 @@
 % tMotion: 0.5
 % tMask: 1.0
 % STDEVthresh: 50.0
-% AMPthresh: 5.0
+% AMPthresh: 5.00
 %
 % LOG:
 % K. Perdue
@@ -72,10 +72,10 @@ if ~isa(probe, 'ProbeClass')
     error('Second input must be probe SNIRF objects of type ProbeClass.')
 end
 if isempty(tIncMan)
-    tIncMan = cell(length(data,1),1);
+    tIncMan = cell(length(data),1);
 end
 if isempty(mlActMan)
-    mlActMan = cell(size(data,1),1);
+    mlActMan = cell(length(data),1);
 end
 
 for iBlk=1:length(data)

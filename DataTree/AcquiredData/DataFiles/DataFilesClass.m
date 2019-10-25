@@ -16,23 +16,31 @@ classdef DataFilesClass < handle
         function obj = DataFilesClass(varargin)
             obj.type = '';
             obj.pathnm = pwd;
+            skipconfigfile = false;
             if nargin==1
-                obj.type = varargin{1};
-                if obj.type(1)=='.'
-                    obj.type(1)='';
-                end                
+                if ischar(varargin{1}) && strcmp(varargin{1}, 'standalone')
+                    skipconfigfile = true;
+                else
+                    obj.type = varargin{1};
+                    if obj.type(1)=='.'
+                        obj.type(1)='';
+                    end
+                end
             end
             obj.errmsg = {};
             
             obj.config = struct('RegressionTestActive','');
-            cfg = ConfigFileClass();
-            str = cfg.GetValue('Regression Test Active');
-            if strcmp(str,'true')
-                obj.config.RegressionTestActive=true;
+            if skipconfigfile==false
+                cfg = ConfigFileClass();
+                str = cfg.GetValue('Regression Test Active');
+                if strcmp(str,'true')
+                    obj.config.RegressionTestActive=true;
+                else
+                    obj.config.RegressionTestActive=false;
+                end
             else
                 obj.config.RegressionTestActive=false;
             end
-
             foo = mydir(obj.pathnm);
             if ~isempty(foo) && ~foo(1).isdir
                 obj.files = foo;

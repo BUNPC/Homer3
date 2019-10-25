@@ -13,7 +13,7 @@ function demo_snirf()
 [~, currdir] = findexamplesdir(); 
 
 % Delete any previously generated .snirf files to make sure to start from scratch
-DeleteSnirfFiles();
+DeleteSnirfFiles('standalone');
 
 % Start with .nirs files
 nirsfiles = mydir('./*.nirs');

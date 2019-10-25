@@ -373,6 +373,12 @@ classdef StimClass < FileLoadSaveClass
             b = false;
         end
         
+                
+        % ----------------------------------------------------------------------------------
+        function nbytes = MemoryRequired(obj)
+            nbytes = sizeof(obj.name) + sizeof(obj.data);
+        end
+        
     end
     
 end

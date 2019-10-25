@@ -1,5 +1,5 @@
 % SYNTAX:
-% dc = hmrR_OD2Conc( dod, probe, ppf )
+% dc = hmrR_OD2Conc_new( dod, probe, ppf )
 %
 % UI NAME:
 % OD_to_Conc
@@ -14,21 +14,22 @@
 %      of data, then this is a vector of 2 elements.  Typical value is ~6 for each 
 %      wavelength if the absorption change is uniform over the volume of tissue measured. 
 %      To approximate the partial volume effect of a small localized absorption change 
-%      within an adult human head, this value could be as small as 0.1. It is recommended 
-%      to use default values of “1 1” which will result in concentration units of 
-%      “molar ppf” such that the user can then divide by an estimated ppf at any future 
-%      point to estimate what the molar concentration change would be.%
+%      within an adult human head, this value could be as small as 0.1. Convention is 
+%      becoming to set ppf=1 and to not divide by the source-detector separation such that 
+%      the resultant "concentration" is in units of Molar mm (or Molar cm if those are the 
+%      spatial units). This is becoming wide spread in the literature but there is no 
+%      fixed citation. Use a value of 1 to choose this option.
 %
 % OUTPUTS:
 % dc: SNIRF.data container with the concentration data 
 %
 % USAGE OPTIONS:
-% Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, probe, ppf )
+% Delta_OD_to_Conc: dc = hmrR_OD2Conc_new( dod, probe, ppf )
 %
 % PARAMETERS:
 % ppf: [1.0, 1.0]
 %
-function dc = hmrR_OD2Conc( dod, probe, ppf )
+function dc = hmrR_OD2Conc_new( dod, probe, ppf )
 
 dc = DataClass().empty();
 
@@ -48,6 +49,10 @@ for ii=1:length(dod)
         return
     end
     
+    if ~isempty(find(ppf==1))
+        ppf = ones(size(ppf));
+    end
+    
     nTpts = size(y,1);
     
     e = GetExtinctions(Lambda);
@@ -61,7 +66,11 @@ for ii=1:length(dod)
         idx1 = lst(idx);
         idx2 = find( ml(:,4)>1 & ml(:,1)==ml(idx1,1) & ml(:,2)==ml(idx1,2) );
         rho = norm(SrcPos(ml(idx1,1),:)-DetPos(ml(idx1,2),:));
-        y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,1)*rho*ppf))' )';
+        if ppf(1)~=1
+            y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,1)*rho*ppf))' )';
+        else
+            y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,2)))' )';
+        end
         y2(:,k+2) = y2(:,k) + y2(:,k+1);
         dc(ii).AddChannelHbO(ml(idx1,1), ml(idx1,2));
         dc(ii).AddChannelHbR(ml(idx1,1), ml(idx1,2));

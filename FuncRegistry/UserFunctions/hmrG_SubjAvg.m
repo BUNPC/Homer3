@@ -30,7 +30,8 @@
 %
 function [yAvgOut, nTrials] = hmrG_SubjAvg(yAvgSubjs, yAvgStdSubjs, nTrialsSubjs, tRange, thresh0)
 
-yAvgOut    = DataClass().empty();
+yAvgOut = DataClass().empty();
+nTrials = [];
 
 nSubj = length(yAvgSubjs);
 

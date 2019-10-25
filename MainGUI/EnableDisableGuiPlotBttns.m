@@ -6,12 +6,12 @@ if ~isempty(maingui.dataTree.currElem.GetRawData())
 else
     set(handles.radiobuttonPlotRaw, 'enable','off')
 end
-if ~isempty(maingui.dataTree.currElem.GetDod()) || ~isempty(maingui.dataTree.currElem.GetDodAvg())
+if ~isempty(maingui.dataTree.currElem.GetDod())
     set(handles.radiobuttonPlotOD, 'enable','on')
 else
     set(handles.radiobuttonPlotOD, 'enable','off')
 end
-if ~isempty(maingui.dataTree.currElem.GetDc()) || ~isempty(maingui.dataTree.currElem.GetDcAvg())
+if ~isempty(maingui.dataTree.currElem.GetDc())
     set(handles.radiobuttonPlotConc, 'enable','on')
 else
     set(handles.radiobuttonPlotConc, 'enable','off')

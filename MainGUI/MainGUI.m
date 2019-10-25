@@ -991,8 +991,9 @@ set(handles.popupmenuAux, 'string',aux.names);
 
 hold on
 data = aux.data(:,iAux)-min(aux.data(:,iAux));
-yrange = ylim();
-h = plot(t, yrange(1)+(yrange(2)-yrange(1)) * ((.5*data)/(max(data)-min(data))), 'k');
+r = ylim();
+yrange = [r(1)-r(2), r(1)];
+h = plot(t, yrange(1)+(yrange(2)-yrange(1)) * (data/(max(data)-min(data))), 'k');
 set(h,'linewidth',1);
 hold off
 

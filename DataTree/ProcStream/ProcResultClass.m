@@ -425,17 +425,22 @@ classdef ProcResultClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function Copy(obj, obj2)
+        function Copy(obj, obj2, option)
             if ~isa(obj, 'ProcResultClass')
                 return;
+            end
+            if nargin==2
+                option = '';
             end
             
             % Ok to shallow copy since ProcResult objects are read only
             % Also we don't want to transfer space hogging time course 
             % data dc and dod
             
-            %  obj.dod = obj2.dod;
-            %  obj.dc = obj2.dc;
+            if ~strcmp(option, 'spacesaver')
+                obj.dod = obj2.dod;
+                obj.dc = obj2.dc;
+            end
             obj.dodAvg = obj2.dodAvg;
             obj.dcAvg = obj2.dcAvg;
             obj.dodAvgStd = obj2.dodAvgStd;

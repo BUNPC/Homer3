@@ -1,5 +1,5 @@
 % SYNTAX:
-% [data_yc, svs, nSV] = hmrR_PCAFilter( data_y, tInc, nSV )
+% [data_yc, svs, nSV] = hmrR_PCAFilter( data_y, mlAct, tInc, nSV )
 %
 % UI NAME:
 % PCA_Filter
@@ -12,6 +12,7 @@
 %    data, then the columns are channels as described in ml. If
 %    y is concentration data, then the third dimension is channels and the
 %    second dimension indicates HbO and HbR.
+% mlAct: 
 % tInc: This is a vector of length number of time points and is 1 to
 %    indicate that a time point is included in the analysis and 0 if it is to
 %    be excluded. This is useful for ignoring periods of time with strong
@@ -38,7 +39,7 @@
 % PARAMETERS:
 % nSV: 0.0
 %
-function [data_yc, svs, nSV] = hmrR_PCAFilter( data_y, mlActAuto, tIncAuto, nSV )
+function [data_yc, svs, nSV] = hmrR_PCAFilter( data_y, mlAct, tInc, nSV )
 
 data_yc = DataClass().empty();
 svs     = cell(length(data_y),1);
@@ -46,11 +47,11 @@ nSV     = repmat({nSV}, length(data_y),1);
 
 % Error check arguments
 % Check input args
-if isempty(tIncAuto)
-    tIncAuto = cell(length(data_y),1);
+if isempty(tInc)
+    tInc = cell(length(data_y),1);
 end
-if isempty(mlActAuto)
-    mlActAuto = cell(length(data_y),1);
+if isempty(mlAct)
+    mlAct = cell(length(data_y),1);
 end
 if ~exist('nSV','var')
     disp('USAGE: [yc,svs,nSV] = hmrR_PCAFilter( y, SD, tInc, nSV )');
@@ -66,14 +67,14 @@ for iBlk=1:length(data_y)
     y        = data_y(iBlk).GetDataMatrix();
     t        = data_y(iBlk).GetTime();
     MeasList = data_y(iBlk).GetMeasList();
-    if isempty(mlActAuto{iBlk})
-        mlActAuto{iBlk} = ones(size(MeasList,1),1);
+    if isempty(mlAct{iBlk})
+        mlAct{iBlk} = ones(size(MeasList,1),1);
     end
-    MeasListAct = mlActAuto{iBlk};
-    if isempty(tIncAuto{iBlk})
-        tIncAuto{iBlk} = ones(length(t),1);
+    MeasListAct = mlAct{iBlk};
+    if isempty(tInc{iBlk})
+        tInc{iBlk} = ones(length(t),1);
     end
-    tInc = tIncAuto{iBlk};
+    tInc = tInc{iBlk};
     
     lstInc   = find(tInc==1);    
     ml       = MeasList;

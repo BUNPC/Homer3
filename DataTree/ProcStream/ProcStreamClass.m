@@ -41,7 +41,11 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function Copy(obj, obj2)
+        function Copy(obj, obj2, option)
+            if nargin==2
+                option = '';
+            end
+            
             if ~isa(obj, 'ProcStreamClass')
                 return;
             end
@@ -51,9 +55,7 @@ classdef ProcStreamClass < handle
             end
             
             for ii=1:length(obj2.fcalls)
-                if ii>length(obj.fcalls)
-                    obj.fcalls(ii) = FuncCallClass();
-                end
+                obj.fcalls(ii) = FuncCallClass();
                 obj.fcalls(ii).Copy(obj2.fcalls(ii), obj.reg);
             end
             
@@ -61,7 +63,7 @@ classdef ProcStreamClass < handle
             obj.fcalls(ii+1:end) = [];
             
             obj.input.Copy(obj2.input);
-            obj.output.Copy(obj2.output);
+            obj.output.Copy(obj2.output, option);
         end
         
         
@@ -1156,7 +1158,7 @@ classdef ProcStreamClass < handle
                 tmp = {...
                     obj.reg.funcReg(iR).GetUsageStrDecorated(['hmrR_Intensity2OD',suffix]); ...
                     obj.reg.funcReg(iR).GetUsageStrDecorated(['hmrR_BandpassFilt',suffix]); ...
-                    obj.reg.funcReg(iR).GetUsageStrDecorated(['hmrR_OD2Conc',suffix]); ...
+                    obj.reg.funcReg(iR).GetUsageStrDecorated(['hmrR_OD2Conc_new',suffix]); ...
                     obj.reg.funcReg(iR).GetUsageStrDecorated(['hmrR_BlockAvg',suffix],'dcAvg'); ...
                 };
                 k=[]; kk=1;

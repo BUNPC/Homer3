@@ -4,6 +4,7 @@ classdef GroupClass < TreeNodeClass
         version;
         versionStr;
         subjs;
+        spacesaver;
     end
     
     
@@ -23,6 +24,7 @@ classdef GroupClass < TreeNodeClass
             
             obj.type    = 'group';
             obj.subjs   = SubjClass().empty;
+            obj.spacesaver = false;
             
             if nargin==0
                 return;
@@ -206,8 +208,13 @@ classdef GroupClass < TreeNodeClass
                     end
                 end
             else
+                if obj.spacesaver
+                    option = 'spacesaver';
+                else
+                    option = 'saveall';
+                end
                 for i=1:length(obj2.subjs)
-                    obj.subjs(i) = SubjClass(obj2.subjs(i));
+                    obj.subjs(i) = SubjClass(obj2.subjs(i), option);
                 end
                 obj.Copy@TreeNodeClass(obj2);
             end
@@ -245,6 +252,19 @@ classdef GroupClass < TreeNodeClass
 
         
         
+        % ----------------------------------------------------------------------------------
+        function nbytes = MemoryRequired(obj)
+            nbytes = 0;
+            for ii=1:length(obj.subjs)
+                nbytes = nbytes + obj.subjs(ii).MemoryRequired();
+            end
+            if nbytes > 5e8
+                obj.spacesaver = true;
+            end
+        end
+
+
+
         % ----------------------------------------------------------------------------------
         function Add(obj, subj, run)                        
             % Add subject to this group
@@ -328,7 +348,7 @@ classdef GroupClass < TreeNodeClass
                     procStreamRun.SaveConfigFile(fname, 'run');
                 end
                 
-                fprintf('Loading proc stream from %s\n', fname);
+                fprintf('Attempting to load proc stream from %s\n', fname);
                 
                 % Load file to the first empty procStream in the dataTree at each processing level
                 g.LoadProcStreamConfigFile(fname);
@@ -369,14 +389,6 @@ classdef GroupClass < TreeNodeClass
                     g.CopyFcalls(procStreamSubj, 'subj');
                     g.CopyFcalls(procStreamRun, 'run');
                 end
-            end
-            
-            if obj.procStream.HaveBlockAvgOutput()
-                % If HRF output exists, recalculate time course data that was 
-                % used for generate it
-                fprintf('Block avg data has already been calculated. Generating time course data...\n');
-                obj.CalcRunLevelTimeCourse();
-                fprintf('Finished generating time course data...\n');
             end
         end
             
@@ -703,7 +715,7 @@ classdef GroupClass < TreeNodeClass
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Private methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    methods
+    methods (Access = private)
         
         % ----------------------------------------------------------------------------------
         % Check whether subject k'th subject from this group exists in group G and return

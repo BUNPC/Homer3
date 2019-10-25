@@ -104,6 +104,16 @@ classdef DataTreeClass <  handle
             % Generate the stimulus conditions for the group tree
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.group.SetConditions();
+                        
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Find the amount of memory the whole group tree requires 
+            % at the run level. If group runs take up more than half a 
+            % GB then do not save dc and dod time courses and recalculate 
+            % dc and dod for each new current element (currElem) on the 
+            % fly. This should be a menu option in future releases
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                        
+            fprintf('Memory required for acquisition data %0.1f MB\n', obj.group.MemoryRequired() / 1e6);
+            
         end
         
         

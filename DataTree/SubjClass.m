@@ -12,9 +12,18 @@ classdef SubjClass < TreeNodeClass
             
             obj.type  = 'subj';
             obj.runs = RunClass().empty;
-            if nargin==1
+            if nargin==0
+                obj.name  = '';
+                return;
+            end
+            
+            if nargin<3
                 if isa(varargin{1}, 'SubjClass')
-                    obj.Copy(varargin{1});
+                    if nargin==1
+                        obj.Copy(varargin{1});
+                    elseif nargin==2
+                        obj.Copy(varargin{1}, varargin{2});
+                    end
                     return;
                 elseif isa(varargin{1}, 'FileClass')
                     [~, obj.name] = varargin{1}.ExtractNames();
@@ -29,8 +38,6 @@ classdef SubjClass < TreeNodeClass
                 end
                 obj.iGroup = varargin{2};
                 obj.iSubj = varargin{3};
-            else
-                return;
             end
         end
         
@@ -53,8 +60,11 @@ classdef SubjClass < TreeNodeClass
                     end
                 end
             else
+                if nargin<3
+                    conditional = '';
+                end
                 for i=1:length(S.runs)
-                    obj.runs(i) = RunClass(S.runs(i), 'spacesaver');
+                    obj.runs(i) = RunClass(S.runs(i), conditional);
                 end
                 obj.Copy@TreeNodeClass(S);
             end
@@ -405,6 +415,23 @@ classdef SubjClass < TreeNodeClass
             aux = [];
         end
                 
+
+        % ----------------------------------------------------------------------------------        
+        function nbytes = MemoryRequired(obj)
+            nbytes = 0;
+            for ii=1:length(obj.runs)
+                nbytes = nbytes + obj.runs(ii).MemoryRequired();
+            end
+        end
+
     end
         
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Private methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods (Access = public)
+                        
+    end  % Private methods
+    
 end

@@ -141,7 +141,24 @@ classdef TreeNodeClass < handle
             end
         end
         
-                
+        % ----------------------------------------------------------------------------------
+        % Copy processing params (procInut and procResult) from
+        % obj2 to obj
+        % ----------------------------------------------------------------------------------
+        function CopySpaceSave(obj, obj2, conditional)
+            if ~isempty(obj2.procStream)
+                obj.procStream.Copy(obj2.procStream, 'spacesaver');
+            end
+            if nargin==2 || strcmp(conditional, 'unconditional')
+                obj.name = obj2.name;
+                obj.type = obj2.type;
+                obj.iGroup = obj2.iGroup;
+                obj.iSubj = obj2.iSubj;
+                obj.iRun = obj2.iRun;
+            end
+        end
+        
+
         % ----------------------------------------------------------------------------------
         % 
         % ----------------------------------------------------------------------------------

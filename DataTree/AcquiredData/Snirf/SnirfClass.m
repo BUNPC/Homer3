@@ -1054,6 +1054,27 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             b = false;
         end
         
+
+        % ----------------------------------------------------------------------------------        
+        function nbytes = MemoryRequired(obj)
+            nbytes = 0;
+            nbytes = nbytes + sizeof(obj.formatVersion);
+            for ii=1:length(obj.metaDataTags)
+                nbytes = nbytes + obj.metaDataTags(ii).MemoryRequired();
+            end
+            for ii=1:length(obj.data)
+                nbytes = nbytes + obj.data(ii).MemoryRequired();
+            end
+            for ii=1:length(obj.stim)
+                nbytes = nbytes + obj.stim(ii).MemoryRequired();
+            end
+            nbytes = nbytes + obj.probe.MemoryRequired();
+            for ii=1:length(obj.aux)
+                nbytes = nbytes + obj.aux(ii).MemoryRequired();
+            end
+        end
+
+        
     end
  
     

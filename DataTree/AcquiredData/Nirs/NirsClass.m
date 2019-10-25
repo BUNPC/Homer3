@@ -106,19 +106,19 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             warning('off', 'MATLAB:load:variableNotFound');
             fdata = load(fname,'-mat', 'SD','t','d','s','aux','CondNames');
             if isproperty(fdata,'d')
-                obj.d = fdata.d;
+                obj.d = single(fdata.d);
             end
             if isproperty(fdata,'t')
-                obj.t = fdata.t;
+                obj.t = single(fdata.t);
             end
             if isproperty(fdata,'SD')
                 obj.SetSD(fdata.SD);
             end
             if isproperty(fdata,'s')
-                obj.s = fdata.s;
+                obj.s = single(fdata.s);
             end
             if isproperty(fdata,'aux')
-                obj.aux = fdata.aux;
+                obj.aux = single(fdata.aux);
             end
             if isproperty(fdata,'CondNames')
                 obj.CondNames = fdata.CondNames;
@@ -610,8 +610,25 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             obj.SortStims();
         end
 
+        % ----------------------------------------------------------------------------------        
+        function nbytes = MemoryRequired(obj)
+            nbytes = 0;
+            nbytes = nbytes + sizeof(obj.t);
+            nbytes = nbytes + sizeof(obj.d);
+            nbytes = nbytes + sizeof(obj.SD);
+            nbytes = nbytes + sizeof(obj.s);
+            nbytes = nbytes + sizeof(obj.aux);
+            nbytes = nbytes + sizeof(obj.CondNames);
+        end
+        
     end
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Private methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods (Access = private)
+                
+    end  % Private methods
    
 end
 

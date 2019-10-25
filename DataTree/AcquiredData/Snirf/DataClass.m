@@ -557,6 +557,15 @@ classdef DataClass < FileLoadSaveClass
         end
         
         
+        % ----------------------------------------------------------------------------------        
+        function nbytes = MemoryRequired(obj)
+            nbytes = sizeof(obj.dataTimeSeries) + sizeof(obj.time);
+            for ii=1:length(obj.measurementList)
+                nbytes = nbytes + obj.measurementList(ii).MemoryRequired();
+            end
+        end
+        
+        
     end
 end
 

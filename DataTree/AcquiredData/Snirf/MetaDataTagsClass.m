@@ -59,7 +59,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             %%%%%%%%%%%% Ready to load from file
 
             try
-                % Read tag name
+                % Read tag key
                 foo = convertH5StrToStr(h5read_safe(fname, [parent, '/key'], obj.key));
                 if iscell(foo)
                     obj.key = foo{1};
@@ -112,9 +112,16 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
         
         % -------------------------------------------------------
         function Add(obj, key, value)
-            obj.key = Key;
+            obj.key = key;
             obj.value = value;
         end
+        
+        
+        % ----------------------------------------------------------------------------------        
+        function nbytes = MemoryRequired(obj)
+            nbytes = sizeof(obj.key) + sizeof(obj.value);
+        end
+        
         
     end
     

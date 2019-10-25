@@ -203,6 +203,16 @@ classdef ProbeClass < FileLoadSaveClass
             B = true;
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function nbytes = MemoryRequired(obj)
+            nbytes = 0;
+            fields = properties(obj);
+            for ii=1:length(fields)
+                nbytes = nbytes + eval(sprintf('sizeof(obj.%s)', fields{ii}));
+            end
+        end        
+        
     end
     
 end

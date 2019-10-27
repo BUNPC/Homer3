@@ -23,7 +23,7 @@ classdef FuncHelpClass < matlab.mixin.Copyable
                 return;
             end
             obj.funcname = funcname;
-            obj.helpstr = str2cell(help(funcname), [], 'keepblanks');
+            obj.Help();
             obj.ParseSections();
         end
         
@@ -519,6 +519,29 @@ classdef FuncHelpClass < matlab.mixin.Copyable
             end
         end
         
+        
+        % ---------------------------------------------------------------------------------
+        function Help(obj)
+            
+            if ~isdeployed()
+                func = obj.funcname;
+            else
+                func = [getAppDir(), 'FuncRegistry/UserFunctions/', obj.funcname];
+            end
+            if isempty(func)
+                return
+            end
+            [~,~,ext] = fileparts(func);            
+            if ~strcmp(ext,'.m')
+                func = [func, '.m'];
+            end
+            if ~isdeployed()
+                s = help(func);
+            else
+                s = help_local(func);
+            end
+            obj.helpstr = str2cell(s, [], 'keepblanks');
+        end
         
     end
 end

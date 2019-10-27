@@ -255,6 +255,9 @@ classdef GroupClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
             nbytes = 0;
+            if isempty(obj)
+                return;
+            end
             for ii=1:length(obj.subjs)
                 nbytes = nbytes + obj.subjs(ii).MemoryRequired();
             end

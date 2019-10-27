@@ -145,11 +145,10 @@ MainGUI_EnableDisableGUI(handles,'on');
 
 % Display data from currently selected processing element
 DisplayGroupTree(handles);
-DisplayData(handles, hObject);
+Display(handles, hObject)
 
 maingui.handles = handles;
 maingui.handles.pValuesFig = [];
-
 
 
 
@@ -296,7 +295,7 @@ switch(proclevel)
 end
 [iGroup, iSubj, iRun] = maingui.dataTree.GetCurrElemIndexID();
 listboxGroupTree_Callback([], [iGroup,iSubj,iRun], handles)
-DisplayData(handles, hObject);
+Display(handles, hObject)
 
 
 
@@ -342,6 +341,7 @@ end
 DisplayData(handles, hObject0);
 
 
+
 % --------------------------------------------------------------------
 function [eventdata, handles] = pushbuttonCalcProcStream_Callback(hObject, eventdata, handles)
 global maingui
@@ -363,7 +363,7 @@ set(handles.listboxGroupTree, 'value',val0);
 h = waitbar(0,'Auto-saving group processing results. Please wait ...');
 maingui.dataTree.Save();
 close(h);
-DisplayData(handles, hObject);
+Display(handles, hObject);
 
 
 
@@ -395,7 +395,7 @@ elseif strcmp(get(hObject, 'tag'), 'radiobuttonPlotConc') && isempty(maingui.dat
         set(handles.checkboxPlotHRF, 'value',0);
     end
 end
-DisplayData(handles, hObject);
+Display(handles, hObject)
 
 
 
@@ -431,7 +431,8 @@ if get(hObject, 'value')==1
         set(handles.radiobuttonPlotOD, 'value', 1);
     end
 end
-DisplayData(handles, hObject);
+Display(handles, hObject)
+
 
 
 % --------------------------------------------------------------------
@@ -468,7 +469,7 @@ if ~isempty(maingui.plotViewOptions.ranges.Y)
 end
 
 % Update the data axes
-DisplayData(handles, hObject);
+Display(handles, hObject)
 
 
 
@@ -477,7 +478,7 @@ function [eventdata, handles] = popupmenuConditions_Callback(hObject, eventdata,
 if ~ishandles(hObject)
     return;
 end
-DisplayData(handles, hObject);
+Display(handles, hObject)
 
 
 
@@ -486,7 +487,7 @@ function [eventdata, handles] = listboxPlotWavelength_Callback(hObject, eventdat
 if ~ishandles(hObject)
     return;
 end
-DisplayData(handles, hObject);
+Display(handles, hObject)
 
 
 
@@ -495,7 +496,7 @@ function [eventdata, handles] = listboxPlotConc_Callback(hObject, eventdata, han
 if ~ishandles(hObject)
     return;
 end
-DisplayData(handles, hObject);
+Display(handles, hObject)
 
 
 
@@ -541,7 +542,8 @@ end
 dataTree = maingui.dataTree;
 dataTree.currElem.Reset();
 dataTree.currElem.Save();
-DisplayData(handles, hObject);
+Display(handles, hObject)
+
 
 
 % --------------------------------------------------------------------
@@ -619,7 +621,8 @@ if strcmp(get(hObject, 'checked'), 'on')
 elseif strcmp(get(hObject, 'checked'), 'off')
     set(hObject, 'checked', 'on')
 end
-DisplayData(handles, hObject);
+Display(handles, hObject)
+
 
 
 
@@ -690,9 +693,24 @@ end
 
 
 % ----------------------------------------------------------------------------------
-function hObject = DisplayData(handles, hObject)
+function hObject = Display(handles, hObject)
+
+hObject = DisplayData(handles, hObject);
+DisplayAxesSDG();
+
+
+
+
+% ----------------------------------------------------------------------------------
+function hObject = DisplayData(handles, hObject, hAxes)
 global maingui
 
+if nargin<3
+    hAxes = maingui.axesData.handles.axes;
+end
+if ~ishandles(hAxes)
+    return;
+end
 
 % Some callbacks which call DisplayData serve double duty as called functions 
 % from other callbacks which in turn call DisplayData. To avoid double or
@@ -701,7 +719,7 @@ global maingui
 if ~exist('hObject','var')
     hObject=[];
 end
-if ~ishandles(hObject)
+if ~ishandles(hObject) && nargin<3
     return;
 end
 if isempty(handles)
@@ -711,11 +729,6 @@ end
 dataTree = maingui.dataTree;
 procElem = dataTree.currElem;
 EnableDisableGuiPlotBttns(handles);
-
-hAxes = maingui.axesData.handles.axes;
-if ~ishandles(hAxes)
-    return;
-end
 
 axes(hAxes)
 cla;
@@ -846,10 +859,9 @@ else
     end
 end
 
-DisplayAxesSDG();
-DisplayExcludedTime(handles, datatype);
-DisplayStim(handles);
-DisplayAux(handles);
+DisplayAux(handles, hAxes);
+DisplayExcludedTime(handles, datatype, [], [], hAxes);
+DisplayStim(handles, hAxes);
 
 UpdateCondPopupmenu(handles);
 UpdateDatatypePanel(handles);
@@ -869,7 +881,7 @@ end
 
 
 % ----------------------------------------------------------------------------------
-function DisplayStim(handles)
+function DisplayStim(handles, hAxes)
 global maingui
 dataTree = maingui.dataTree;
 procElem = dataTree.currElem;
@@ -878,7 +890,9 @@ if ~strcmp(procElem.type, 'run')
     return;
 end
 
-hAxes = maingui.axesData.handles.axes;
+if nargin<2
+    hAxes = maingui.axesData.handles.axes;
+end
 if ~ishandles(hAxes)
     return;
 end
@@ -944,10 +958,19 @@ set(hAxes,'ygrid','on');
                 
                 
 % ----------------------------------------------------------------------------------
-function DisplayCondLegend(hLg, idxLg)
+function DisplayCondLegend(hLg, idxLg, hAxes)
 global maingui
 dataTree = maingui.dataTree;
 procElem = dataTree.currElem;
+
+if nargin<3
+    hAxes = maingui.axesData.handles.axes;
+end
+if ~ishandles(hAxes)
+    return;
+end
+axes(hAxes);
+hold on;
 
 if isempty(hLg)
     return;    
@@ -963,8 +986,17 @@ end
 
 
 % ----------------------------------------------------------------------------------
-function DisplayAux(handles)
+function DisplayAux(handles, hAxes)
 global maingui
+
+if nargin<2
+    hAxes = maingui.axesData.handles.axes;
+end
+if ~ishandles(hAxes)
+    return;
+end
+axes(hAxes);
+hold on;
 
 aux = maingui.dataTree.currElem.GetAuxiliary();
 t = maingui.dataTree.currElem.GetTime();
@@ -1119,7 +1151,9 @@ set(handles.checkboxFixRangeX, 'value',0);
 set(handles.checkboxFixRangeY, 'value',0);
 maingui.plotViewOptions.ranges.X = [];
 maingui.plotViewOptions.ranges.Y = [];
-DisplayData(handles, hObject);
+Display(handles, hObject)
+
+
 
 
 
@@ -1131,7 +1165,8 @@ if get(hObject,'value')==1
 else
     maingui.plotViewOptions.ranges.X = [];    
 end
-DisplayData(handles, hObject);
+Display(handles, hObject)
+
 
 
 % --------------------------------------------------------------------
@@ -1142,7 +1177,8 @@ if get(hObject,'value')==1
 else
     maingui.plotViewOptions.ranges.Y = [];
 end
-DisplayData(handles, hObject);
+Display(handles, hObject)
+
 
 
 
@@ -1237,13 +1273,14 @@ maingui.childguis(idx).Launch();
 
 % --------------------------------------------------------------------
 function checkboxPlotAux_Callback(hObject, eventdata, handles)
-DisplayData(handles, hObject);
+Display(handles, hObject)
+
 
 
 
 % --------------------------------------------------------------------
 function popupmenuAux_Callback(hObject, eventdata, handles)
-DisplayData(handles, hObject);
+Display(handles, hObject)
 
 
 
@@ -1262,4 +1299,32 @@ else
     set(hObject, 'checked', 'off');
     maingui.childguis(idx).Close();
 end
+
+
+
+% --------------------------------------------------------------------
+function menuItemCopyPlots_Callback(hObject, eventdata, handles)
+
+xf = 1.5;
+yf = 1.5;
+hf = figure();
+set(hf, 'units','characters');
+p = get(hf, 'position');
+set(hf,'position',[p(1), p(2), xf*p(3), yf*p(4)]);
+p = GuiOutsideScreenBorders(hf);
+set(hf, 'position', [p(1), p(2)-5, p(3), p(4)]);
+
+figure(hf);
+
+% DISPLAY DATA
+hAxesData = axes('units','normalized', 'position',[0.05 0.30 0.60 0.50]);
+DisplayData(handles, [], hAxesData);
+
+figure(hf);
+
+% DISPLAY SDG
+hAxesSDG = axes('units','normalized', 'position',[0.67 0.30 0.30 0.50]);
+DisplayAxesSDG(hAxesSDG);
+
+
 

@@ -2,6 +2,14 @@ function proclevel = GetProclevel(handles)
 global maingui
 
 proclevel = 0;
+
+if nargin==0
+    return
+end
+if isempty(handles)
+    return
+end
+
 bttnG = get(handles.radiobuttonProcTypeGroup, 'value');
 bttnS = get(handles.radiobuttonProcTypeSubj, 'value');
 bttnR = get(handles.radiobuttonProcTypeRun, 'value');

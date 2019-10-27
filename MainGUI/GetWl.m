@@ -1,8 +1,16 @@
 function iWl = GetWl(handles)
 global maingui
-Lambda =  maingui.dataTree.currElem.GetWls();
 
 iWl=[];
+if nargin==0
+    return
+end
+if isempty(handles)
+    return
+end
+
+Lambda =  maingui.dataTree.currElem.GetWls();
+
 val = get(handles.listboxPlotWavelength, 'value');
 strs = get(handles.listboxPlotWavelength, 'string');
 if isempty(strs)

@@ -1,5 +1,8 @@
 function EnableDisableGuiPlotBttns(handles)
 global maingui
+if isempty(handles)
+    return
+end
 
 if ~isempty(maingui.dataTree.currElem.GetRawData())   
     set(handles.radiobuttonPlotRaw, 'enable','on')

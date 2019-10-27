@@ -3,6 +3,13 @@ global maingui
 
 datatype=0;
 
+if nargin==0
+    return
+end
+if isempty(handles)
+    return
+end
+
 plotRawVal  = get(handles.radiobuttonPlotRaw, 'value');
 plotODVal   = get(handles.radiobuttonPlotOD, 'value');
 plotConcVal = get(handles.radiobuttonPlotConc, 'value');

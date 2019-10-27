@@ -36,14 +36,16 @@
 
 
 % --------------------------------------------------------------------
-function DisplayAxesSDG()
+function DisplayAxesSDG(hAxes)
 global maingui
 
 % This function plots the prove geometry
 % Command line call:
 % plotAxes_SDG(guidata(gcbo),bool);
 %
-hAxesSDG    = maingui.axesSDG.handles.axes;
+if nargin<1
+    hAxes   = maingui.axesSDG.handles.axes;
+end
 iCh         = maingui.axesSDG.iCh;
 iSrcDet     = maingui.axesSDG.iSrcDet;
 color       = maingui.axesSDG.linecolor;
@@ -53,12 +55,12 @@ bbox        = maingui.dataTree.currElem.GetSdgBbox();
 procResult  = maingui.dataTree.currElem.procStream.output;
 
 % Set axes handle properties and parameters 
-if ~ishandles(hAxesSDG)
+if ~ishandles(hAxes)
     return;
 end
-axes(hAxesSDG);
+axes(hAxes);
 cla
-axis(hAxesSDG, [bbox(1), bbox(2), bbox(3), bbox(4)]);
+axis(hAxes, [bbox(1), bbox(2), bbox(3), bbox(4)]);
 set(gca, 'xticklabel','')
 set(gca, 'yticklabel','')
 set(gca, 'ygrid','off')
@@ -98,7 +100,7 @@ for ii=1:length(lst2)
     h = line2(SD.SrcPos(ml(lstML(lst2(ii)),1),:), SD.DetPos(ml(lstML(lst2(ii)),2),:));
     set(h, 'color',[1 .85 .85]*1);
     set(h, 'linewidth',6);
-    set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
+    set(h, 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'));
 end
 
 lst2 = find(MeasListActMan(1:length(lstML))==1);
@@ -106,7 +108,7 @@ for ii=1:length(lst2)
     h = line2(SD.SrcPos(ml(lstML(lst2(ii)),1),:), SD.DetPos(ml(lstML(lst2(ii)),2),:));
     set(h, 'color',[1 1 1]*.85);
     set(h, 'linewidth',4);
-    set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
+    set(h, 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'));
 end
 
 lst2 = find(MeasListActAuto(1:length(lstML))==0);
@@ -114,7 +116,7 @@ for ii=1:length(lst2)
     h = line2(SD.SrcPos(ml(lstML(lst2(ii)),1),:), SD.DetPos(ml(lstML(lst2(ii)),2),:));
     set(h, 'color',[1 1 .85]*1);
     set(h, 'linewidth',6);
-    set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'));
+    set(h, 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'));
 end
 
 
@@ -157,18 +159,18 @@ end
 for idx=1:nSrcs
     if ~isempty(find(MeasList(:,1)==idx))
         h = text( SD.SrcPos(idx,1), SD.SrcPos(idx,2), sprintf('%d', idx), 'fontsize',fs, 'fontweight','bold', 'color','r' );
-        set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
+        set(h, 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
     end
 end
 for idx=1:nDets
     if ~isempty(find(MeasList(:,2)==idx))
         h = text( SD.DetPos(idx,1), SD.DetPos(idx,2), sprintf('%d', idx), 'fontsize',fs, 'fontweight','bold', 'color','b' );
-        set(h, 'ButtonDownFcn',get(hAxesSDG,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
+        set(h, 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
     end
 end
 
 % Turn off zoom but only for SDG axes
 h=zoom;
-setAllowAxesZoom(h, hAxesSDG, 0);
+setAllowAxesZoom(h, hAxes, 0);
 
 

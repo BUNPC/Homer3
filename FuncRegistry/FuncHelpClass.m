@@ -535,12 +535,7 @@ classdef FuncHelpClass < matlab.mixin.Copyable
             if ~strcmp(ext,'.m')
                 func = [func, '.m'];
             end
-            if ~isdeployed()
-                s = help(func);
-            else
-                s = help_local(func);
-            end
-            obj.helpstr = str2cell(s, [], 'keepblanks');
+            obj.helpstr = str2cell(help_local(func), [], 'keepblanks');
         end
         
     end

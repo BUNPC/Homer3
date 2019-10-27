@@ -1,4 +1,4 @@
-function DisplayExcludedTime(handles, datatype, mode, col)
+function DisplayExcludedTime(handles, datatype, mode, col, hAxes)
 global maingui
 
 if  datatype == maingui.buttonVals.OD_HRF || datatype == maingui.buttonVals.CONC_HRF
@@ -8,7 +8,7 @@ end
 if ~exist('mode','var') || isempty(mode)
     mode = 'auto';
 end
-if strcmp(mode,'manual') || ~exist('col')
+if strcmp(mode,'manual') || (~exist('col','var') || isempty(col))
     col = setColor(mode);
 end
 
@@ -16,7 +16,10 @@ end
 % renderer property. Therefore we save current renderer before patch to
 % restore it to what it was to pre-patch time. 
 renderer = get(gcf, 'renderer');
-axes(handles.axesData);
+if nargin<5
+    hAxes = handles.axesData;
+end 
+axes(hAxes);
 hold on
 
 iCh       = maingui.axesSDG.iCh;
@@ -42,7 +45,7 @@ for iBlk = iDataBlks
     yy = GetAxesYRangeForStimPlot(handles.axesData);
     for ii=1:size(p,1)
         h = patch([p(ii,1) p(ii,2) p(ii,2) p(ii,1) p(ii,1)], [yy(1) yy(1) yy(2) yy(2) yy(1)], col, ...
-            'facealpha',0.3, 'edgecolor','none' );
+                  'facealpha',0.3, 'edgecolor','none' );
     end
     tPtsExclTot = [tPtsExclTot(:)', tPtsExcl(:)'];
 end

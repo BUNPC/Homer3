@@ -48,7 +48,7 @@ print hOutput "    cp -r \$script_dir ~/Downloads/homer3_install;\n";
 print hOutput "fi\n";
 
 print hOutput "rm -rf ~/libs; mkdir ~/libs\n";
-print hOutput "if [ ! -L \"~/libs/mcr\" ]; then ln -s /Applications/MATLAB/MATLAB_Runtime/v901 ~/libs/mcr; fi\n";
+print hOutput "if [ ! -L \"~/libs/mcr\" ]; then ln -s /Applications/MATLAB/MATLAB_Runtime/v93 ~/libs/mcr; fi\n";
 # print hOutput "if [ ! -L \"~/libs/mcr\" ]; then ln -s /Applications/MATLAB/MATLAB_Compiler_Runtime/v84 ~/libs/mcr; fi\n";
 print hOutput "libsdir=~/libs/mcr\n";
 

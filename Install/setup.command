@@ -31,7 +31,7 @@ if [ $err = 1 ]; then
     cp -r $script_dir ~/Downloads/homer3_install;
 fi
 rm -rf ~/libs; mkdir ~/libs
-if [ ! -L "~/libs/mcr" ]; then ln -s /Applications/MATLAB/MATLAB_Runtime/v901 ~/libs/mcr; fi
+if [ ! -L "~/libs/mcr" ]; then ln -s /Applications/MATLAB/MATLAB_Runtime/v93 ~/libs/mcr; fi
 libsdir=~/libs/mcr
 exe_dir=~/Downloads/homer3_install
 echo "------------------------------------------"

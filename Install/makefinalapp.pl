@@ -32,7 +32,7 @@ while(my $line = <hInput>)
 
     if (index($linenew, "exe_dir=") != -1) 
     {
-    	$linenew = "exe_dir=~/homer2\n";
+    	$linenew = "exe_dir=~/homer3\n";
     } 
     elsif (index($linenew, "exit") != -1) 
     {

@@ -44,6 +44,8 @@ if exist([dirnameInstall, 'homer3_install.zip'],'file')
     delete([dirnameInstall, 'homer3_install.zip']);
 end
 mkdir([dirnameInstall, 'homer3_install']);
+mkdir([dirnameInstall, 'homer3_install/FuncRegistry']);
+mkdir([dirnameInstall, 'homer3_install/FuncRegistry/UserFunctions']);
 
 % Generate executables
 if ~strcmp(options, 'nobuild')

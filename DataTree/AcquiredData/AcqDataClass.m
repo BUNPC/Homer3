@@ -73,13 +73,21 @@ classdef AcqDataClass < matlab.mixin.Copyable
         function bbox = GetSdgBbox(obj)
             optpos = [obj.GetSrcPos(); obj.GetDetPos()];
             
-            xmin = min(optpos(:,1));
             xmax = max(optpos(:,1));
-            ymin = min(optpos(:,2));
             ymax = max(optpos(:,2));
+
+            xmin = min(optpos(:,1));
+            ymin = min(optpos(:,2));
             
             width = xmax-xmin;
             height = ymax-ymin;
+            
+            if width==0
+                width = 1;
+            end
+            if height==0
+                height = 1;
+            end
             
             px = width * 0.10; 
             py = height * 0.10; 

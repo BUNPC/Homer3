@@ -46,6 +46,7 @@ end
 mkdir([dirnameInstall, 'homer3_install']);
 mkdir([dirnameInstall, 'homer3_install/FuncRegistry']);
 mkdir([dirnameInstall, 'homer3_install/FuncRegistry/UserFunctions']);
+mkdir([dirnameInstall, 'homer3_install/SubjDataSample']);
 
 % Generate executables
 if ~strcmp(options, 'nobuild')
@@ -82,8 +83,8 @@ for ii=1:length(platform.setup_exe)
 	end
 end
 
-if exist([dirnameApp, 'Test'],'dir')
-    copyfile([dirnameApp, 'Test'], [dirnameInstall, 'homer3_install/Test']);
+if exist([dirnameApp, 'SubjDataSample'],'dir')
+    copyfile([dirnameApp, 'SubjDataSample'], [dirnameInstall, 'homer3_install/SubjDataSample']);
 end
 
 for ii=1:length(platform.createshort_script)

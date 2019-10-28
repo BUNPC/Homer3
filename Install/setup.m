@@ -90,27 +90,34 @@ dirnameDst = fullpath(dirnameDst);
 for ii=1:length(platform.homer3_exe)
     copyFileToInstallation([dirnameSrc, platform.homer3_exe{ii}], [dirnameDst, platform.homer3_exe{ii}]);
 end
-copyFileToInstallation([dirnameSrc, 'db2.mat'],         dirnameDst);
-copyFileToInstallation([dirnameSrc, 'AppSettings.cfg'], dirnameDst);
-copyFileToInstallation([dirnameSrc, 'FuncRegistry'],    [dirnameDst, 'FuncRegistry']);
+copyFileToInstallation([dirnameSrc, 'db2.mat'],           dirnameDst);
+copyFileToInstallation([dirnameSrc, 'AppSettings.cfg'],   dirnameDst);
+copyFileToInstallation([dirnameSrc, 'FuncRegistry'],      [dirnameDst, 'FuncRegistry']);
+copyFileToInstallation([dirnameSrc, 'SubjDataSample'], [dirnameDst, 'SubjDataSample']);
 
 % Create desktop shortcuts to Homer3
 try
     if ispc()
+        
         k = dirnameDst=='/';
         dirnameDst(k)='\';
         
         cmd = sprintf('call "%s\\createShortcut.bat" "%s" Homer3.exe', dirnameSrc(1:end-1), dirnameDst);
         system(cmd);
         
-        cmd = sprintf('call "%s\\createShortcut.bat" "%s" Test', dirnameSrc(1:end-1), dirnameDst(1:end-1));
-        system(cmd);        
-    elseif islinux()
-        cmd = sprintf('sh %s/createShortcut.sh sh', dirnameSrc(1:end-1));
+        cmd = sprintf('call "%s\\createShortcut.bat" "%s" SubjDataSample', dirnameSrc(1:end-1), dirnameDst(1:end-1));
         system(cmd);
+        
+    elseif islinux()
+        
+        cmd = sprintf('sh %s/createShortcut.sh sh', dirnameSrc(1:end-1));        
+        system(cmd);
+        
     elseif ismac()
+        
         cmd = sprintf('sh %s/createShortcut.sh command', dirnameSrc(1:end-1));
         system(cmd);
+        
     end
 catch
     msg{1} = sprintf('Error: Could not create Homer3 shortcuts on Desktop. Exiting installation.');

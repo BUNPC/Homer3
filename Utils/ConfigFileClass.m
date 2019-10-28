@@ -15,7 +15,11 @@ classdef ConfigFileClass < FileClass
             
             % Error checks
             if nargin==0
-                filename0 = which('AppSettings.cfg');
+                if isdeployed()
+                    filename0 = [getAppDir(), 'AppSettings.cfg'];
+                else
+                    filename0 = which('AppSettings.cfg');
+                end
             elseif nargin>1
                 obj.params = params;
             end

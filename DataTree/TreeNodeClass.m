@@ -567,6 +567,12 @@ classdef TreeNodeClass < handle
         end
 
         
+        % ----------------------------------------------------------------------------------
+        function SetTincMan(obj, idxs, iBlk, excl_incl)
+            ;
+        end
+        
+        
     end
     
     

@@ -1,15 +1,20 @@
-function DisplayExcludedTime(handles, datatype, mode, col, hAxes)
+function DisplayExcludedTime(handles, mode, hAxes)
 global maingui
 
-if  datatype == maingui.buttonVals.OD_HRF || datatype == maingui.buttonVals.CONC_HRF
+% Check to make sure data type is timecourse data
+if GetDatatype(handles) == maingui.buttonVals.OD_HRF
     return;
 end
+if GetDatatype(handles) == maingui.buttonVals.CONC_HRF
+    return;
+end
+
 
 if ~exist('mode','var') || isempty(mode)
     mode = 'auto';
 end
-if strcmp(mode,'manual') || (~exist('col','var') || isempty(col))
-    col = setColor(mode);
+if get(handles.checkboxShowExcludedTime, 'value')==0
+    return;
 end
 
 % Patch in some versions of matlab messes up the renderer, that is it changes the 
@@ -25,29 +30,29 @@ hold on
 iCh       = maingui.axesSDG.iCh;
 iDataBlks = maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
 tPtsExclTot = [];
+tInc = [];
 for iBlk = iDataBlks
-    tIncAuto = maingui.dataTree.currElem.GetTincAuto(iBlk);
-    t        = maingui.dataTree.currElem.GetTime(iBlk);
-    
-    if isempty(tIncAuto)
+    if strcmp(mode,'manual')
+        tInc = maingui.dataTree.currElem.GetTincMan(iBlk);
+    elseif strcmp(mode,'auto')
+        tInc = maingui.dataTree.currElem.GetTincAuto(iBlk);
+    else
+        continue
+    end
+    if isempty(tInc)
         continue;
     end
     
-    % Find time points that've already been excluded from previous blocks
-    % and set them to 1 in order not to redundantly exclude. 
-    tPtsExcl = t(tIncAuto==0);
-    j = find(ismember(tPtsExcl, tPtsExclTot));
-    k = find(ismember(t, tPtsExcl(j)));
-    tIncAuto(k) = 1;
+    col = setColor(mode);
+    t = maingui.dataTree.currElem.GetTime(iBlk);
+    [h, tPtsExclTot] = drawPatches(t, tInc, tPtsExclTot, col, handles);
     
-    % Display exclusion patches
-    p = TimeExcludeRanges(tIncAuto,t);
-    yy = GetAxesYRangeForStimPlot(handles.axesData);
-    for ii=1:size(p,1)
-        h = patch([p(ii,1) p(ii,2) p(ii,2) p(ii,1) p(ii,1)], [yy(1) yy(1) yy(2) yy(2) yy(1)], col, ...
-                  'facealpha',0.3, 'edgecolor','none' );
+    if strcmp(mode,'manual')   
+        for ii=1:length(h)
+            set(h(ii), 'ButtonDownFcn', sprintf('PatchCallback(%d)',ii));
+        end
     end
-    tPtsExclTot = [tPtsExclTot(:)', tPtsExcl(:)'];
+    
 end
 
 % Restore previous renderer
@@ -57,7 +62,32 @@ set(gcf, 'renderer', renderer);
 
 
 % -------------------------------------------------------------------------
-function col = setColor(mode)
+function  [h, tPtsExclTot] = drawPatches(t, tInc, tPtsExclTot, col, handles)
+h = [];
+if ~isempty(tInc)
+    % Find time points that've already been excluded from previous blocks
+    % and set them to 1 in order not to redundantly exclude.
+    tPtsExcl = t(tInc==0);
+    j = find(ismember(tPtsExcl, tPtsExclTot));
+    k = find(ismember(t, tPtsExcl(j)));
+    tInc(k) = 1;
+    
+    % Display exclusion patches
+    p = TimeExcludeRanges(tInc,t);
+    yy = GetAxesYRangeForStimPlot(handles.axesData);
+    for ii=1:size(p,1)
+        h(ii) = patch([p(ii,1) p(ii,2) p(ii,2) p(ii,1) p(ii,1)], [yy(1) yy(1) yy(2) yy(2) yy(1)], col, ...
+                      'facealpha',0.3, 'edgecolor','none');
+    end
+    tPtsExclTot = [tPtsExclTot(:)', tPtsExcl(:)'];
+end
+
+
+
+
+
+% -------------------------------------------------------------------------
+function col = setColor(mode, col)
 
 % Set patches color based on figure renderer
 

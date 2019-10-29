@@ -42,7 +42,9 @@ classdef ProcInputClass < handle
             if isempty(obj)
                 obj = ProcInputClass();
             end
-            obj.tIncMan = obj2.tIncMan;
+            if ~isempty(obj2.tIncMan)
+                obj.tIncMan = obj2.tIncMan;
+            end
             
             fields = properties(obj.misc);
             for ii=1:length(fields)
@@ -127,22 +129,25 @@ classdef ProcInputClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function SetTincMan(obj, val)
-            obj.tIncMan = val;
+        function SetTincMan(obj, val, iBlk)
+            if ~exist('iBlk','var')
+                iBlk=1;
+            end
+            obj.tIncMan{iBlk} = val;
         end
         
         
         % ----------------------------------------------------------------------------------
-        function tIncMan = GetTincMan(obj, iBlk)
-            if ~exist('iBlk','var')
-                iBlk=1;
+        function val = GetTincMan(obj, iBlk)
+            val = {};
+            if ~exist('iBlk','var') || isempty(iBlk)
+                val = obj.tIncMan;
+            elseif ~isempty(obj.tIncMan)
+                val = obj.tIncMan{iBlk};
             end
-            
-            % TBD: need to implement this
-            tIncMan = obj.tIncMan;
         end
+       
         
-                
         % ----------------------------------------------------------------------------------
         function mlActMan = GetMeasListActMan(obj, iBlk)
             mlActMan = {};            
@@ -273,6 +278,51 @@ classdef ProcInputClass < handle
                 return;
             end
             obj.acquiredEditable.SetConditions(CondNames);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetStims_MatInput(obj, s, t, CondNames)
+            obj.acquiredEditable.SetStims_MatInput(s, t);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function StimReject(obj, t, iBlk)
+            tRange = [-2, 10];
+            
+            s = obj.acquiredEditable.GetStims(t);
+            dt = (t(end)-t(1))/length(t);
+            tRangeIdx = floor(tRange(1)/dt):ceil(tRange(2)/dt);
+            smax = max(s,[],2);
+            lstS = find(smax==1);
+            for iS = 1:size(lstS,1)
+                lst = round(min(max(lstS(iS) + tRangeIdx,1),length(t)));
+                if ~isempty(obj.tIncMan{iBlk}) && min(obj.tIncMan{iBlk}(lst))==0
+                    s(lstS(iS),:) = -1*abs(s(lstS(iS),:));
+                end
+            end
+            obj.acquiredEditable.SetStims_MatInput(s, t);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function StimInclude(obj, t, iBlk)
+            tRange = [-2, 10];
+            
+            s = obj.acquiredEditable.GetStims(t);
+            dt = (t(end)-t(1))/length(t);
+            tRangeIdx = floor(tRange(1)/dt):ceil(tRange(2)/dt);
+            for iC = 1:size(s,2)
+                lstS = find(s(:,iC)<0);
+                for iS = 1:size(lstS,1)
+                    lst = round(min(max(lstS(iS) + tRangeIdx,1),length(t)));
+                    if ~isempty(obj.tIncMan{iBlk}) && min(obj.tIncMan{iBlk}(lst))==1
+                        s(lstS(iS),iC) = 1;
+                    end
+                end
+            end
+            obj.acquiredEditable.SetStims_MatInput(s, t);
         end
         
         

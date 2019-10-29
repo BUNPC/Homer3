@@ -593,8 +593,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
 
         % ---------------------------------------------------------
         function t = GetTime(obj, iBlk)
+            t = [];
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk=1;
+            end
+            if iBlk>length(obj.data)
+                return;
             end
             t = obj.data(iBlk).GetTime();
         end
@@ -602,8 +606,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function datamat = GetDataMatrix(obj, iBlk)
+            datamat = [];
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk=1;
+            end
+            if iBlk>length(obj.data)
+                return;
             end
             datamat = obj.data(iBlk).GetDataMatrix();
         end
@@ -640,8 +648,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function ml = GetMeasList(obj, iBlk)
+            ml = [];
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk=1;
+            end
+            if iBlk>length(obj.data)
+                return;
             end
             ml = obj.data(iBlk).GetMeasList();
         end
@@ -794,11 +806,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % ----------------------------------------------------------------------------------
         function d = Get_d(obj, iBlk)
             d = [];
-            if isempty(obj.data)
-                return;
-            end
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
+            end
+            if iBlk>length(obj.data)
+                return;
             end
             d = obj.data(iBlk).GetDataMatrix();
         end
@@ -807,11 +819,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % ----------------------------------------------------------------------------------
         function t = Get_t(obj, iBlk)
             t = [];
-            if isempty(obj.data)
-                return;
-            end
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
+            end
+            if iBlk>length(obj.data)
+                return;
             end
             t = obj.data(iBlk).GetTime();
         end
@@ -823,11 +835,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if isempty(obj.probe)
                 return;
             end
-            if isempty(obj.data)
-                return;
-            end
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
+            end
+            if iBlk>length(obj.data)
+                return;
             end
             SD.Lambda   = obj.probe.GetWls();
             SD.SrcPos   = obj.probe.GetSrcPos();
@@ -852,7 +864,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            if isempty(obj.data)
+            if iBlk>length(obj.data)
                 return;
             end
             t = obj.data(iBlk).GetTime();

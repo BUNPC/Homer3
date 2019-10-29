@@ -54,7 +54,7 @@ if ~isempty(args)
         
     end
 end
-positionGUI(hFig, 0.20, 0.10, 0.70, 0.85)
+positionGUI(hFig, 0.15, 0.05, 0.80, 0.90)
 setGuiFonts(hFig);
 
 % Get rid of the useless "might be unsused" warnings for GUI callbacks
@@ -338,7 +338,7 @@ elseif ~isempty(eventdata)
     set(hObject,'value', iList);
     
 end
-DisplayData(handles, hObject0);
+Display(handles, hObject0);
 
 
 
@@ -698,6 +698,12 @@ function hObject = Display(handles, hObject)
 hObject = DisplayData(handles, hObject);
 DisplayAxesSDG();
 
+if get(handles.checkboxExcludeTime, 'value')==1
+    zoom off
+else
+    zoom on
+end
+
 
 
 
@@ -860,7 +866,8 @@ else
 end
 
 DisplayAux(handles, hAxes);
-DisplayExcludedTime(handles, datatype, [], [], hAxes);
+DisplayExcludedTime(handles, 'auto', hAxes);
+DisplayExcludedTime(handles, 'manual', hAxes);
 DisplayStim(handles, hAxes);
 
 UpdateCondPopupmenu(handles);
@@ -985,9 +992,18 @@ if ishandles(hLg)
 end
 
 
+
 % ----------------------------------------------------------------------------------
 function DisplayAux(handles, hAxes)
 global maingui
+
+% Check to make sure data type is timecourse data
+if GetDatatype(handles) == maingui.buttonVals.OD_HRF
+    return;
+end
+if GetDatatype(handles) == maingui.buttonVals.CONC_HRF
+    return;
+end
 
 if nargin<2
     hAxes = maingui.axesData.handles.axes;
@@ -1072,7 +1088,7 @@ switch(guiname)
     case 'PlotProbeGUI'
         set(maingui.handles.menuItemPlotProbe, 'checked','off'); 
     case 'StimEditGUI'
-        DisplayData(maingui.handles, maingui.handles.axesData);  % Redisplay data axes since stims might have edited
+        Display(maingui.handles, maingui.handles.axesData);  % Redisplay data axes since stims might have edited
     case 'ProcStreamOptionsGUI'
         set(maingui.handles.pushbuttonProcStreamOptionsEdit, 'value',0);  % Redisplay enable/disable toggle button 
     case 'ProcStreamEditGUI'
@@ -1086,6 +1102,9 @@ switch(guiname)
             fprintf('Processing iGroup=%d, iSubj=%d, iRun=%d\n', iGroup, iSubj, iRun);
             listboxGroupTree_Callback([], [iGroup, iSubj, iRun], maingui.handles);
         end
+    case 'PatchCallback'
+        Display(maingui.handles, maingui.handles.axesData);  % Redisplay data axes since stims might have edited
+        
 end
 
 
@@ -1327,4 +1346,69 @@ hAxesSDG = axes('units','normalized', 'position',[0.67 0.30 0.30 0.50]);
 DisplayAxesSDG(hAxesSDG);
 
 
+
+% --------------------------------------------------------------------
+function checkboxExcludeTime_Callback(hObject, eventdata, handles)
+global maingui
+
+hAxesData = maingui.axesData.handles.axes;
+
+if get(hObject, 'value')==1
+    zoom off
+    set(hAxesData,'ButtonDownFcn', 'MainGUI(''ExcludeTime_ButtonDownFcn'',gcbo,[],guidata(gcbo))');
+    set(get(hAxesData,'children'), 'ButtonDownFcn', 'MainGUI(''ExcludeTime_ButtonDownFcn'',gcbo,[],guidata(gcbo))');
+else
+    zoom on
+end
+Display(handles, hObject);
+
+
+
+% --------------------------------------------------------------------
+function checkboxShowExcludedTime_Callback(hObject, eventdata, handles)
+
+Display(handles, hObject);
+
+
+
+% --------------------------------------------------------------------
+function checkboxMotionByChannel_Callback(hObject, eventdata, handles)
+
+
+
+% --------------------------------------------------------------------
+function ExcludeTime_ButtonDownFcn(hObject, eventdata, handles)
+global maingui
+
+% Make sure the user clicked on the axes and not 
+% some other object on top of the axes
+if ~strcmp(get(hObject,'type'),'axes')
+    return;
+end
+
+point1 = get(hObject,'CurrentPoint');    % button down detected
+finalRect = rbbox;                   % return figure units
+point2 = get(hObject,'CurrentPoint');    % button up detected
+point1 = point1(1,1:2);                  % extract x and y
+point2 = point2(1,1:2);
+p1 = min(point1,point2);
+p2 = max(point1,point2);
+
+iCh = maingui.axesSDG.iCh;
+iDataBlks =  maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
+for iBlk=1:iDataBlks
+    
+    % Get and set the excuded time points in tIncMan
+    t = maingui.dataTree.currElem.GetTime(iBlk);
+    lst = find(t>=p1(1) & t<=p2(1));
+    maingui.dataTree.currElem.SetTincMan(lst, iBlk);
+    
+    % Reject all stims that fall within the excluded time
+    maingui.dataTree.currElem.StimReject(t, iBlk);
+
+end
+
+
+% Display excluded time and rejected stims
+Display(handles, hObject);
 

@@ -7,17 +7,17 @@ end
 formaldeclfound = false;
 while 1
     line = strtrim(fgetl(fd));
-    if isempty(line)
+    if isempty(line) && ~formaldeclfound
         continue
     end
     if line==-1
         break;
     end
-    if line(1) == '%'
+    if ~isempty(line) && line(1) == '%'
         s = sprintf('%s %s\n', s, line(2:end));
     elseif ~formaldeclfound && strncmp(line, 'function', 8)
         formaldeclfound = true;
-    else 
+    else
         break
     end
 end

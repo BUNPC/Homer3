@@ -48,7 +48,7 @@ classdef RunClass < TreeNodeClass
                 return;
             end
             obj.procStream = ProcStreamClass(obj.acquired);
-
+            obj.InitTincMan();
             if isa(varargin{1}, 'FileClass')
                 varargin{1}.Loaded();
             end
@@ -338,8 +338,8 @@ classdef RunClass < TreeNodeClass
 
         
         % ----------------------------------------------------------------------------------
-        function SetStims_MatInput(obj,s,t,CondNames)
-            obj.procStream.SetStims_MatInput(s,t,CondNames);
+        function SetStims_MatInput(obj, s, t, CondNames)
+            obj.procStream.SetStims_MatInput(s, t, CondNames);
         end
         
         
@@ -430,6 +430,38 @@ classdef RunClass < TreeNodeClass
         end
         
         
+        % ----------------------------------------------------------------------------------
+        function SetTincMan(obj, idxs, iBlk, excl_incl)
+            if nargin<2
+                return
+            end
+            if nargin<4
+                excl_incl = 'exclude';
+            end
+            tIncMan = obj.procStream.GetTincMan(iBlk);
+            if strcmp(excl_incl, 'exclude')
+                tIncMan(idxs) = 0; 
+            elseif strcmp(excl_incl, 'include')
+                tIncMan(idxs) = 1; 
+            end
+            obj.procStream.SetTincMan(tIncMan, iBlk);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function InitTincMan(obj)
+            iBlk = 1;
+            while 1
+                t = obj.acquired.GetTime(iBlk);
+                if isempty(t)
+                    break
+                end
+                tIncMan = ones(length(t),1);
+                obj.procStream.SetTincMan(tIncMan, iBlk);
+                iBlk = iBlk+1;
+            end
+        end
+                
     end        % Public Set/Get methods
     
     
@@ -555,6 +587,19 @@ classdef RunClass < TreeNodeClass
         end
         
         
+        
+        % ----------------------------------------------------------------------------------
+        function StimReject(obj, t, iBlk)
+            obj.procStream.StimReject(t, iBlk);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function StimInclude(obj, t, iBlk)
+            obj.procStream.StimInclude(t, iBlk);
+        end
+        
+        
         % ----------------------------------------------------------------------------------
         function vals = GetStimValSettings(obj)
             vals = obj.procStream.input.GetStimValSettings();
@@ -564,9 +609,9 @@ classdef RunClass < TreeNodeClass
         % ----------------------------------------------------------------------------------        
         function nbytes = MemoryRequired(obj)
             nbytes = obj.acquired.MemoryRequired();
-    	end
-
-	end
+        end
+               
+    end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Private methods

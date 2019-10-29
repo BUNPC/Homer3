@@ -1201,6 +1201,15 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function SetTincMan(obj, val, iBlk)
+            if ~exist('iBlk','var')
+                iBlk = [];
+            end
+            obj.input.SetTincMan(val, iBlk);
+        end
+        
+
+        % ----------------------------------------------------------------------------------
         function tIncMan = GetTincMan(obj, iBlk)
             if ~exist('iBlk','var')
                 iBlk = [];
@@ -1363,6 +1372,24 @@ classdef ProcStreamClass < handle
                 return;
             end
             obj.input.SetConditions(CondNames);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetStims_MatInput(obj, s, t, CondNames)
+            obj.input.SetStims_MatInput(s, t, CondNames);
+        end
+        
+        
+        % ---------------------------------------------------------------------------------
+        function StimReject(obj, t, iBlk)
+            obj.input.StimReject(t, iBlk)
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function StimInclude(obj, t, iBlk)
+            obj.input.StimInclude(t, iBlk);
         end
         
         

@@ -9,8 +9,8 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
         % -------------------------------------------------------
         function obj = MetaDataTagsClass(varargin)
             obj.tags.SubjectID = 'default';
-            obj.tags.MeasurementDate = 'unknown';
-            obj.tags.MeasurementTime = 'unknown';
+            obj.tags.MeasurementDate = datestr(now,29);
+            obj.tags.MeasurementTime = datestr(now,'hh:mm:ss');
             obj.tags.LengthUnit = 'mm';
             obj.tags.TimeUnit = 'unknown';
             

@@ -8,10 +8,10 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
         
         % -------------------------------------------------------
         function obj = MetaDataTagsClass(varargin)
-            obj.tags.SubjectID = 'unknown';
+            obj.tags.SubjectID = 'default';
             obj.tags.MeasurementDate = 'unknown';
             obj.tags.MeasurementTime = 'unknown';
-            obj.tags.LengthUnit = 'unknown';
+            obj.tags.LengthUnit = 'mm';
             obj.tags.TimeUnit = 'unknown';
             
             % Set class properties not part of the SNIRF format

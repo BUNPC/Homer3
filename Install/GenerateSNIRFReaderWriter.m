@@ -2,29 +2,29 @@ function GenerateSNIRFReaderWriter()
 
 dirnameApp = [getAppDir(), 'DataTree/AcquiredData/'];
 dirnameUtils = [getAppDir(), 'Utils/'];
-dirnameInstall = fileparts(which('GenerateSNIRFReaderWriter.m'));
+dirnameInstall = fileparts(which('GenerateSNIRF_ReaderWriter.m'));
 dirnameInstall(dirnameInstall=='\') = '/';
 dirnameInstall(end+1)='/';
 
-if exist([dirnameInstall, '/SNIRFReaderWriter'], 'dir')
-    rmdir([dirnameInstall, '/SNIRFReaderWriter'], 's');
+if exist([dirnameInstall, '/SNIRF_ReaderWriter'], 'dir')
+    rmdir([dirnameInstall, '/SNIRF_ReaderWriter'], 's');
 end
-mkdir([dirnameInstall, '/SNIRFReaderWriter']);
-mkdir([dirnameInstall, '/SNIRFReaderWriter/Utils']);
+mkdir([dirnameInstall, '/SNIRF_ReaderWriter']);
+mkdir([dirnameInstall, '/SNIRF_ReaderWriter/Utils']);
 
-copyFiles([dirnameApp, 'DataFiles'],           [dirnameInstall, 'SNIRFReaderWriter/DataFiles']);
-copyFiles([dirnameApp, 'Nirs'],                [dirnameInstall, 'SNIRFReaderWriter/Nirs']);
-copyFiles([dirnameApp, 'Snirf'],               [dirnameInstall, 'SNIRFReaderWriter/Snirf']);
-copyFiles([dirnameUtils, 'isproperty.m'],      [dirnameInstall, 'SNIRFReaderWriter/Utils']);
-copyFiles([dirnameUtils, 'iswholenum.m'],      [dirnameInstall, 'SNIRFReaderWriter/Utils']);
-copyFiles([dirnameUtils, 'propnames.m'],       [dirnameInstall, 'SNIRFReaderWriter/Utils']);
-copyFiles([dirnameUtils, 'CopyHandles.m'],     [dirnameInstall, 'SNIRFReaderWriter/Utils']);
-copyFiles([dirnameUtils, 'strtrim_improve.m'], [dirnameInstall, 'SNIRFReaderWriter/Utils']);
-copyFiles([dirnameApp, 'AcqDataClass.m'],      [dirnameInstall, 'SNIRFReaderWriter']);
-copyFiles([getAppDir(), 'cd_safe.m'],          [dirnameInstall, 'SNIRFReaderWriter']);
-copyFiles([dirnameUtils, 'fullpath.m'],        [dirnameInstall, 'SNIRFReaderWriter']);
-copyFiles([dirnameApp, 'setpaths.m'],          [dirnameInstall, 'SNIRFReaderWriter']);
-copyFiles([dirnameApp, 'README.md'],           [dirnameInstall, 'SNIRFReaderWriter']);
+copyFiles([dirnameApp, 'DataFiles'],           [dirnameInstall, 'SNIRF_ReaderWriter/DataFiles']);
+copyFiles([dirnameApp, 'Nirs'],                [dirnameInstall, 'SNIRF_ReaderWriter/Nirs']);
+copyFiles([dirnameApp, 'Snirf'],               [dirnameInstall, 'SNIRF_ReaderWriter/Snirf']);
+copyFiles([dirnameUtils, 'isproperty.m'],      [dirnameInstall, 'SNIRF_ReaderWriter/Utils']);
+copyFiles([dirnameUtils, 'iswholenum.m'],      [dirnameInstall, 'SNIRF_ReaderWriter/Utils']);
+copyFiles([dirnameUtils, 'propnames.m'],       [dirnameInstall, 'SNIRF_ReaderWriter/Utils']);
+copyFiles([dirnameUtils, 'CopyHandles.m'],     [dirnameInstall, 'SNIRF_ReaderWriter/Utils']);
+copyFiles([dirnameUtils, 'strtrim_improve.m'], [dirnameInstall, 'SNIRF_ReaderWriter/Utils']);
+copyFiles([dirnameUtils, 'fullpath.m'],        [dirnameInstall, 'SNIRF_ReaderWriter']);
+copyFiles([dirnameUtils, 'setpaths.m'],        [dirnameInstall, 'SNIRF_ReaderWriter']);
+copyFiles([dirnameApp, 'AcqDataClass.m'],      [dirnameInstall, 'SNIRF_ReaderWriter']);
+copyFiles([dirnameApp, 'README.md'],           [dirnameInstall, 'SNIRF_ReaderWriter']);
+copyFiles([getAppDir(), 'cd_safe.m'],          [dirnameInstall, 'SNIRF_ReaderWriter']);
 
 
 

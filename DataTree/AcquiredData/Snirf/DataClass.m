@@ -401,7 +401,7 @@ classdef DataClass < FileLoadSaveClass
             if ~exist('idet','var') || isempty(idet)
                 return;
             end
-            if ~exist('iHbType','var') || isempty(iHbType)
+            if ~exist('iHb','var') || isempty(iHb)
                 iHb = 1;
             end
             if ~exist('icond','var') || isempty(icond)

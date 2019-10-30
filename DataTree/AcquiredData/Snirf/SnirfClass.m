@@ -48,7 +48,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %
              
             % Initialize properties from SNIRF spec 
-            obj.formatVersion = '1.10';
+            obj.formatVersion = '1.0';
             obj.metaDataTags   = MetaDataTagsClass().empty();
             obj.data           = DataClass().empty();
             obj.stim           = StimClass().empty();
@@ -328,12 +328,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             try 
                 
                 %%%% Load formatVersion
-                foo = convertH5StrToStr(h5read(fname, '/formatVersion'));
-                if iscell(foo)
-                    obj.formatVersion = foo{1};
-                else
-                    obj.formatVersion = foo;
-                end
+                obj.formatVersion = convertH5StrToStr(h5read(fname, '/formatVersion'));
             
                 %%%% Load metaDataTags
                 obj.LoadMetaDataTags(fname, parent);

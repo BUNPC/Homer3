@@ -76,12 +76,7 @@ classdef StimClass < FileLoadSaveClass
             %%%%%%%%%%%% Ready to load from file
 
             try
-                nm = convertH5StrToStr(h5read(fname, [parent, '/name']));
-                if iscell(nm)
-                    obj.name = nm{1};
-                else
-                    obj.name = nm;
-                end
+                obj.name = convertH5StrToStr(h5read(fname, [parent, '/name']));
                 obj.data = h5read(fname, [parent, '/data']);
             catch
                 err = -1;

@@ -100,8 +100,14 @@ classdef ProbeClass < FileLoadSaveClass
                 obj.momentOrder               = hdf5read_safe(fname, [parent, '/momentOrder'], obj.momentOrder);
                 obj.correlationTimeDelay      = hdf5read_safe(fname, [parent, '/correlationTimeDelay'], obj.correlationTimeDelay);
                 obj.correlationTimeDelayWidth = hdf5read_safe(fname, [parent, '/correlationTimeDelayWidth'], obj.correlationTimeDelayWidth);
-                obj.sourceLabels              = convertH5StrToStr(h5read_safe(fname, [parent, '/sourceLabels'], obj.sourceLabels));
-                obj.detectorLabels            = convertH5StrToStr(h5read_safe(fname, [parent, '/detectorLabels'], obj.detectorLabels));
+                obj.sourceLabels              = h5read_safe(fname, [parent, '/sourceLabels'], obj.sourceLabels);
+                for ii=1:length(obj.sourceLabels)
+                    obj.sourceLabels{ii} = convertH5StrToStr(obj.sourceLabels{ii}); 
+                end
+                obj.detectorLabels            = h5read_safe(fname, [parent, '/detectorLabels'], obj.detectorLabels);
+                for ii=1:length(obj.detectorLabels)
+                    obj.detectorLabels{ii} = convertH5StrToStr(obj.detectorLabels{ii}); 
+                end
             catch 
                 err=-1;
                 return;

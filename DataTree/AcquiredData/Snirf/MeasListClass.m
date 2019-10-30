@@ -113,12 +113,7 @@ classdef MeasListClass < FileLoadSaveClass
 		            obj.detectorIndex = hdf5read(fname, [parent, '/detectorIndex']);
 		            obj.wavelengthIndex = hdf5read(fname, [parent, '/wavelengthIndex']);
 		            obj.dataType = hdf5read(fname, [parent, '/dataType']);
-		            lb = convertH5StrToStr(hdf5read_safe(fname, [parent, '/dataTypeLabel'], obj.dataTypeLabel));
-		            if iscell(lb)
-		                obj.dataTypeLabel = lb{1};
-		            else
-		                obj.dataTypeLabel = lb;
-		            end
+		            obj.dataTypeLabel = convertH5StrToStr(hdf5read_safe(fname, [parent, '/dataTypeLabel'], obj.dataTypeLabel));
 		            obj.dataTypeIndex = hdf5read(fname, [parent, '/dataTypeIndex']);
 		            obj.sourcePower = hdf5read_safe(fname, [parent, '/sourcePower'], obj.sourcePower);
 		            obj.detectorGain = hdf5read_safe(fname, [parent, '/detectorGain'], obj.detectorGain);

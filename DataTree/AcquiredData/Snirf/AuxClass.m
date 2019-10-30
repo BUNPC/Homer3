@@ -60,12 +60,7 @@ classdef AuxClass < FileLoadSaveClass
             
             %%%%%%%%%%%% Ready to load from file
             try
-                nm = convertH5StrToStr(h5read(fname, [parent, '/name']));
-                if iscell(nm)
-                    obj.name = nm{1};
-                else
-                    obj.name = nm;
-                end
+                obj.name = convertH5StrToStr(h5read(fname, [parent, '/name']));
                 obj.dataTimeSeries    = h5read(fname, [parent, '/dataTimeSeries']);
                 obj.time    = h5read(fname, [parent, '/time']);
                 obj.timeOffset    = h5read(fname, [parent, '/timeOffset']);

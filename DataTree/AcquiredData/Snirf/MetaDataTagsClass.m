@@ -52,12 +52,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
                 info = h5info(fname, parent);
                 tags = info.Datasets;
                 for ii=1:length(tags)
-                    foo = convertH5StrToStr(h5read_safe(fname, [parent, '/', tags(ii).Name], []));
-                    if iscell(foo)
-                        value = foo{1};
-                    else
-                        value = foo;
-                    end
+                    value = convertH5StrToStr(h5read_safe(fname, [parent, '/', tags(ii).Name], []));
                     
                     % Read tag value
                     eval(sprintf('obj.tags.%s = value;', tags(ii).Name));

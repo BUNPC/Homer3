@@ -2,7 +2,7 @@ function GenerateSNIRFReaderWriter()
 
 dirnameApp = [getAppDir(), 'DataTree/AcquiredData/'];
 dirnameUtils = [getAppDir(), 'Utils/'];
-dirnameInstall = fileparts(which('GenerateSNIRF_ReaderWriter.m'));
+dirnameInstall = fileparts(which('GenerateSNIRFReaderWriter.m'));
 dirnameInstall(dirnameInstall=='\') = '/';
 dirnameInstall(end+1)='/';
 

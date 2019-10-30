@@ -17,17 +17,20 @@ classdef DataFilesClass < handle
             obj.type = '';
             obj.pathnm = pwd;
             skipconfigfile = false;
-            if nargin==1
-                if ischar(varargin{1}) && strcmp(varargin{1}, 'standalone')
-                    skipconfigfile = true;
-                else
-                    obj.type = varargin{1};
-                    if obj.type(1)=='.'
-                        obj.type(1)='';
-                    end
+            
+            if nargin>0
+                obj.type = varargin{1};
+                if obj.type(1)=='.'
+                    obj.type(1)='';
                 end
             end
             obj.errmsg = {};
+            
+            if nargin>1
+                if strcmp(varargin{2}, 'standalone')
+                    skipconfigfile = true;
+                end
+            end
             
             obj.config = struct('RegressionTestActive','');
             if skipconfigfile==false

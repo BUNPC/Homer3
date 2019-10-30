@@ -83,11 +83,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 
                 if ischar(varargin{1})
                     obj.Load(varargin{1});
-                elseif isstruct(varargin{1})
+                elseif isstruct(varargin{1}) || isa(varargin{1}, 'NirsClass')
                     tfactors = 1;    % Debug simulation parameter
                     if nargin==2
                         tfactors = varargin{2};
-                    end                    
+                    end
                     nirs = varargin{1};
                     obj.GenSimulatedTimeBases(nirs, tfactors);
                     for ii=1:length(tfactors)                        
@@ -105,10 +105,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     for ii=1:size(nirs.aux,2)
                         obj.aux(ii) = AuxClass(nirs.aux(:,ii), nirs.t, sprintf('aux%d',ii));
                     end
-                    
+                                       
                     % Add metadatatags
-                    obj.AddTags();
-                    
+                    obj.metaDataTags   = MetaDataTagsClass();
+                
                 end                
             elseif nargin>1 && nargin<5
                 data = varargin{1};
@@ -136,7 +136,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 end
                 
                 % Add metadatatags
-                obj.AddTags();
+                obj.metaDataTags   = MetaDataTagsClass();
                 
             % The basic 5 of a .nirs format plus condition names
             elseif nargin==6
@@ -150,7 +150,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 end
                 
                 % Add metadatatags
-                obj.AddTags();
+                obj.metaDataTags   = MetaDataTagsClass();
+                
             end
             
         end
@@ -213,20 +214,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % -------------------------------------------------------
         function err = LoadMetaDataTags(obj, fname, parent)
             err = 0;
-            ii=1;
-            while 1
-                if ii > length(obj.metaDataTags)
-                    obj.metaDataTags(ii) = MetaDataTagsClass;
-                end
-                if obj.metaDataTags(ii).LoadHdf5(fname, [parent, '/metaDataTags', num2str(ii)]) < 0
-                    obj.metaDataTags(ii).delete();
-                    obj.metaDataTags(ii) = [];
-                    if ii==1
-                        err=-1;
-                    end
-                    break;
-                end
-                ii=ii+1;
+            obj.metaDataTags = MetaDataTagsClass();
+            if obj.metaDataTags.LoadHdf5(fname, [parent, '/metaDataTags']) < 0
+                err=-1;
             end
         end
         
@@ -370,9 +360,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % -------------------------------------------------------
         function SaveMetaDataTags(obj, fname, parent)
-            for ii=1:length(obj.metaDataTags)
-                obj.metaDataTags(ii).SaveHdf5(fname, [parent, '/metaDataTags', num2str(ii)]);
-            end
+            obj.metaDataTags.SaveHdf5(fname, [parent, '/metaDataTags']);
         end
         
         
@@ -502,17 +490,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 end
             end
             B = true;
-        end
-        
-        
-        % ----------------------------------------------------------------------
-        function AddTags(obj)
-            if isempty(obj.metaDataTags)
-                obj.metaDataTags(1) = MetaDataTagsClass('SubjectID','none');
-                obj.metaDataTags(2) = MetaDataTagsClass('MeasurementDate','none');
-                obj.metaDataTags(3) = MetaDataTagsClass('MeasurementTime','none');
-                obj.metaDataTags(4) = MetaDataTagsClass('LengthUnit','mm');
-            end
         end
         
     end

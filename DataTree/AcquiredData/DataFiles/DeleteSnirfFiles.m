@@ -1,7 +1,7 @@
 function DeleteSnirfFiles(snirffiles0)
 
 if ~exist('snirffiles0','var')
-    snirffiles0 = DataFilesClass('.snirf').files;
+    snirffiles0 = DataFilesClass('.snirf','standalone').files;
 end
 
 snirffiles = mydir('');

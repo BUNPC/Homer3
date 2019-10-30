@@ -1,31 +1,21 @@
 classdef MetaDataTagsClass  < FileLoadSaveClass
 
     properties
-        key
-        value
+        tags
     end
 
     methods
         
         % -------------------------------------------------------
         function obj = MetaDataTagsClass(varargin)
-            obj.key = '';
-            obj.value = '';
+            obj.tags.SubjectID = 'unknown';
+            obj.tags.MeasurementDate = 'unknown';
+            obj.tags.MeasurementTime = 'unknown';
+            obj.tags.LengthUnit = 'unknown';
+            obj.tags.TimeUnit = 'unknown';
             
             % Set class properties not part of the SNIRF format
-            obj.fileformat = 'hdf5';
-            
-            % Set SNIRF fomat properties
-            if nargin==0
-                return;
-	        end
-            if nargin==1
-                obj.key = varargin{1};
-                obj.value = 'none';
-                return;
-            end            
-            obj.key = varargin{1};
-            obj.value = varargin{2};            
+            obj.fileformat = 'hdf5';            
         end
     
     
@@ -40,7 +30,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             
             % Arg 2
             if ~exist('parent', 'var')
-                parent = '/nirs/metaDataTags1';
+                parent = '/nirs/metaDataTags';
             elseif parent(1)~='/'
                 parent = ['/',parent];
             end
@@ -59,23 +49,19 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             %%%%%%%%%%%% Ready to load from file
 
             try
-                % Read tag key
-                foo = convertH5StrToStr(h5read_safe(fname, [parent, '/key'], obj.key));
-                if iscell(foo)
-                    obj.key = foo{1};
-                else
-                    obj.key = foo;
-                end
-                if isempty(obj.key)
-                    err=-1;
-                end
-                
-                % Read tag value
-                foo = convertH5StrToStr(h5read_safe(fname, [parent, '/value'], obj.value));
-                if iscell(foo)
-                    obj.value = foo{1};
-                else
-                    obj.value = foo;
+                info = h5info(fname, parent);
+                tags = info.Datasets;
+                for ii=1:length(tags)
+                    foo = convertH5StrToStr(h5read_safe(fname, [parent, '/', tags(ii).Name], []));
+                    if iscell(foo)
+                        value = foo{1};
+                    else
+                        value = foo;
+                    end
+                    
+                    % Read tag value
+                    eval(sprintf('obj.tags.%s = value;', tags(ii).Name));
+                    
                 end
             catch
                 err = -1;
@@ -91,19 +77,33 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
                 fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end
-            hdf5write_safe(fname, [parent, '/key'], obj.key);
-            hdf5write_safe(fname, [parent, '/value'], obj.value);
+            props = propnames(obj.tags);
+            for ii=1:length(props)
+                eval(sprintf('hdf5write_safe(fname, [parent, ''/%s''], obj.tags.%s)', props{ii}, props{ii}));
+            end
         end
         
         
         % -------------------------------------------------------
         function B = eq(obj, obj2)
             B = false;
-            if ~strcmp(obj.key, obj2.key)
-                return;
+            props1 = propnames(obj.tags);
+            props2 = propnames(obj2.tags);
+            for ii=1:length(props1)
+                if ~isproperty(obj2.tags, props1{ii})
+                    return;
+                end
+                if eval(sprintf('~strcmp(obj.tags.%s, obj2.tags.%s)', props1{ii}, props1{ii}))
+                    return;
+                end
             end
-            if ~strcmp(obj.value, obj2.value)
-                return;
+            for ii=1:length(props2)
+                if ~isproperty(obj.tags, props2{ii})
+                    return;
+                end
+                if eval(sprintf('~strcmp(obj.tags.%s, obj2.tags.%s)', props2{ii}, props2{ii}))
+                    return;
+                end
             end
             B = true;
         end
@@ -112,17 +112,20 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
         
         % -------------------------------------------------------
         function Add(obj, key, value)
-            obj.key = key;
-            obj.value = value;
+            key(key==' ') = '';
+            eval(sprintf('obj.tags.%s = value', key));
         end
         
         
-        % ----------------------------------------------------------------------------------        
+        % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
-            nbytes = sizeof(obj.key) + sizeof(obj.value);
+            nbytes = 0;
+            fields = properties(obj.tags);
+            for ii=1:length(fields)
+                nbytes = nbytes + eval(sprintf('sizeof(obj.tags.%s)', fields{ii}));
+            end
         end
         
-        
-    end
-    
+    end    
 end
+

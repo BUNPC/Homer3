@@ -6,25 +6,25 @@ dirnameInstall = fileparts(which('GenerateSNIRFReaderWriter.m'));
 dirnameInstall(dirnameInstall=='\') = '/';
 dirnameInstall(end+1)='/';
 
-if exist([dirnameInstall, '/SNIRF_ReaderWriter'], 'dir')
-    rmdir([dirnameInstall, '/SNIRF_ReaderWriter'], 's');
+if exist([dirnameInstall, '/snirf_homer3'], 'dir')
+    rmdir([dirnameInstall, '/snirf_homer3'], 's');
 end
-mkdir([dirnameInstall, '/SNIRF_ReaderWriter']);
-mkdir([dirnameInstall, '/SNIRF_ReaderWriter/Utils']);
+mkdir([dirnameInstall, '/snirf_homer3']);
+mkdir([dirnameInstall, '/snirf_homer3/Utils']);
 
-copyFiles([dirnameApp, 'DataFiles'],           [dirnameInstall, 'SNIRF_ReaderWriter/DataFiles']);
-copyFiles([dirnameApp, 'Nirs'],                [dirnameInstall, 'SNIRF_ReaderWriter/Nirs']);
-copyFiles([dirnameApp, 'Snirf'],               [dirnameInstall, 'SNIRF_ReaderWriter/Snirf']);
-copyFiles([dirnameUtils, 'isproperty.m'],      [dirnameInstall, 'SNIRF_ReaderWriter/Utils']);
-copyFiles([dirnameUtils, 'iswholenum.m'],      [dirnameInstall, 'SNIRF_ReaderWriter/Utils']);
-copyFiles([dirnameUtils, 'propnames.m'],       [dirnameInstall, 'SNIRF_ReaderWriter/Utils']);
-copyFiles([dirnameUtils, 'CopyHandles.m'],     [dirnameInstall, 'SNIRF_ReaderWriter/Utils']);
-copyFiles([dirnameUtils, 'strtrim_improve.m'], [dirnameInstall, 'SNIRF_ReaderWriter/Utils']);
-copyFiles([dirnameUtils, 'fullpath.m'],        [dirnameInstall, 'SNIRF_ReaderWriter']);
-copyFiles([dirnameUtils, 'setpaths.m'],        [dirnameInstall, 'SNIRF_ReaderWriter']);
-copyFiles([dirnameApp, 'AcqDataClass.m'],      [dirnameInstall, 'SNIRF_ReaderWriter']);
-copyFiles([dirnameApp, 'README.md'],           [dirnameInstall, 'SNIRF_ReaderWriter']);
-copyFiles([getAppDir(), 'cd_safe.m'],          [dirnameInstall, 'SNIRF_ReaderWriter']);
+copyFiles([dirnameApp, 'DataFiles'],           [dirnameInstall, 'snirf_homer3/DataFiles']);
+copyFiles([dirnameApp, 'Nirs'],                [dirnameInstall, 'snirf_homer3/Nirs']);
+copyFiles([dirnameApp, 'Snirf'],               [dirnameInstall, 'snirf_homer3/Snirf']);
+copyFiles([dirnameUtils, 'isproperty.m'],      [dirnameInstall, 'snirf_homer3/Utils']);
+copyFiles([dirnameUtils, 'iswholenum.m'],      [dirnameInstall, 'snirf_homer3/Utils']);
+copyFiles([dirnameUtils, 'propnames.m'],       [dirnameInstall, 'snirf_homer3/Utils']);
+copyFiles([dirnameUtils, 'CopyHandles.m'],     [dirnameInstall, 'snirf_homer3/Utils']);
+copyFiles([dirnameUtils, 'strtrim_improve.m'], [dirnameInstall, 'snirf_homer3/Utils']);
+copyFiles([dirnameUtils, 'fullpath.m'],        [dirnameInstall, 'snirf_homer3']);
+copyFiles([dirnameUtils, 'setpaths.m'],        [dirnameInstall, 'snirf_homer3']);
+copyFiles([dirnameApp, 'AcqDataClass.m'],      [dirnameInstall, 'snirf_homer3']);
+copyFiles([dirnameApp, 'README.md'],           [dirnameInstall, 'snirf_homer3']);
+copyFiles([getAppDir(), 'cd_safe.m'],          [dirnameInstall, 'snirf_homer3']);
 
 
 

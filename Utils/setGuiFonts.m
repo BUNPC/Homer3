@@ -23,9 +23,9 @@ FONT_BIGGER     = 8;
 if ismac()
     fs_def = 11.0;
 elseif ispc()
-    fs_def = 9.0;
-else
     fs_def = 10.0;
+else
+    fs_def = 11.0;
 end
 
 if nargin==0

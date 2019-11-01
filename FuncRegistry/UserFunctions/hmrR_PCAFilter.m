@@ -37,7 +37,7 @@
 % PCA_Filter_Concentration_Data: [dc, svs, nSV]  = hmrR_PCAFilter( dc, mlActAuto, tIncAuto, nSV )
 %
 % PARAMETERS:
-% nSV: 0.0
+% nSV: 0.00
 %
 function [data_yc, svs, nSV] = hmrR_PCAFilter( data_y, mlAct, tInc, nSV )
 

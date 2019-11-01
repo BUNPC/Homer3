@@ -31,7 +31,7 @@
 % Wavelet_Motion_Correction:  dod = hmrR_MotionCorrectWavelet(dod, mlAct, iqr, turnon)
 %
 % PARAMETERS:
-% iqr: 1.5
+% iqr: 1.50
 % turnon: 1
 %
 % LOG:

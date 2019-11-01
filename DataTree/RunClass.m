@@ -422,6 +422,15 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function tIncAutoCh = GetTincAutoCh(obj, iBlk)
+            if nargin<2
+                iBlk = 1;
+            end
+            tIncAutoCh = obj.procStream.output.GetTincAutoCh(iBlk);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function tIncMan = GetTincMan(obj, iBlk)
             if nargin<2
                 iBlk = 1;

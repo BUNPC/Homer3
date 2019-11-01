@@ -1228,6 +1228,15 @@ classdef ProcStreamClass < handle
         
 
         % ----------------------------------------------------------------------------------
+        function tIncAutoCh = GetTincAutoCh(obj, iBlk)
+            if ~exist('iBlk','var')
+                iBlk = [];
+            end
+            tIncAutoCh = obj.output.GetVar('tIncAutoCh', iBlk);
+        end
+        
+
+        % ----------------------------------------------------------------------------------
         function mlActMan = GetMeasListActMan(obj, iBlk)
             if ~exist('iBlk','var')
                 iBlk = [];

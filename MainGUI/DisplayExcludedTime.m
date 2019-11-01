@@ -10,13 +10,6 @@ if GetDatatype(handles) == maingui.buttonVals.CONC_HRF
 end
 
 
-if ~exist('mode','var') || isempty(mode)
-    mode = 'auto';
-end
-if get(handles.checkboxShowExcludedTime, 'value')==0
-    return;
-end
-
 % Patch in some versions of matlab messes up the renderer, that is it changes the 
 % renderer property. Therefore we save current renderer before patch to
 % restore it to what it was to pre-patch time. 
@@ -30,29 +23,38 @@ hold on
 iCh       = maingui.axesSDG.iCh;
 iDataBlks = maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
 tPtsExclTot = [];
-tInc = [];
 for iBlk = iDataBlks
     if strcmp(mode,'manual')
         tInc = maingui.dataTree.currElem.GetTincMan(iBlk);
     elseif strcmp(mode,'auto')
         tInc = maingui.dataTree.currElem.GetTincAuto(iBlk);
+    elseif strcmp(mode,'autoch')
+        tInc = maingui.dataTree.currElem.GetTincAutoCh(iBlk);        
     else
         continue
     end
     if isempty(tInc)
         continue;
     end
-    
-    col = setColor(mode);
-    t = maingui.dataTree.currElem.GetTime(iBlk);
-    [h, tPtsExclTot] = drawPatches(t, tInc, tPtsExclTot, col, handles);
-    
-    if strcmp(mode,'manual')   
-        for ii=1:length(h)
-            set(h(ii), 'ButtonDownFcn', sprintf('PatchCallback(%d)',ii));
+        
+    for ii=1:length(iCh)
+        if iCh(ii)>size(tInc,2)
+            kk = 1;
+        else
+            kk = iCh(ii);
+        end
+        if ii>size(tInc,2)
+            break
+        end
+        col = setColor(mode, ii);
+        t = maingui.dataTree.currElem.GetTime(iBlk);
+        [h, tPtsExclTot] = drawPatches(t, tInc(:,kk), tPtsExclTot, col, handles);        
+        if strcmp(mode,'manual')
+            for jj=1:length(h)
+                set(h(jj), 'ButtonDownFcn', sprintf('PatchCallback(%d)',jj));
+            end
         end
     end
-    
 end
 
 % Restore previous renderer
@@ -84,23 +86,34 @@ end
 
 
 
-
-
 % -------------------------------------------------------------------------
-function col = setColor(mode, col)
+function col = setColor(mode, iCh)
+global maingui
 
 % Set patches color based on figure renderer
 
 if strcmp(get(gcf,'renderer'),'zbuffer')
     if strcmp(mode,'auto')
         col=[1.0 0.1 0.1];
+    elseif strcmp(mode,'autoch')
+        col=maingui.axesSDG.linecolor(iCh,:);
+        for ii=1:length(col)
+            if col(ii)<.5
+                col(ii) = col(ii)+.1;
+            else
+                col(ii) = col(ii)-.1;
+            end
+        end
     else
         col=[1.0 0.3 0.8];
     end
 else
     if strcmp(mode,'auto')
         col=[1.0 0.0 0.0];
+    elseif strcmp(mode,'autoch')
+        col=maingui.axesSDG.linecolor(iCh,:);
     else
         col=[1.0 0.0 1.0];
     end
 end
+

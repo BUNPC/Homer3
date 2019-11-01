@@ -395,6 +395,22 @@ classdef ProcResultClass < handle
        
         
         % ----------------------------------------------------------------------------------
+        function val = GetTincAutoCh(obj, iBlk)
+            val = {};
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk=1;
+            end
+            if isproperty(obj.misc, 'tIncAutoCh')
+                if iscell(obj.misc.tIncAutoCh)
+                    val = obj.misc.tIncAutoCh{iBlk};
+                else
+                    val = obj.misc.tIncAutoCh;
+                end
+            end
+        end
+       
+        
+        % ----------------------------------------------------------------------------------
         function mlActAuto = GetMeasListActAuto(obj, iBlk)
             mlActAuto = {};
             if ~exist('iBlk','var') || isempty(iBlk)

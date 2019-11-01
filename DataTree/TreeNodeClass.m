@@ -562,6 +562,12 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function t = GetTincAutoCh(obj, iBlk)
+            t = [];
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function t = GetTincMan(obj, iBlk)
             t = [];
         end

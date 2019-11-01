@@ -866,10 +866,16 @@ else
 end
 
 DisplayAux(handles, hAxes);
-DisplayExcludedTime(handles, 'auto', hAxes);
-DisplayExcludedTime(handles, 'manual', hAxes);
+if get(handles.checkboxShowExcludedTimeManual, 'value')
+    DisplayExcludedTime(handles, 'manual', hAxes);
+end
+if get(handles.checkboxShowExcludedTimeAuto, 'value')
+    DisplayExcludedTime(handles, 'auto', hAxes);
+end
+if get(handles.checkboxShowExcludedTimeAutoByChannel, 'value')
+    DisplayExcludedTime(handles, 'autoch', hAxes);
+end
 DisplayStim(handles, hAxes);
-
 UpdateCondPopupmenu(handles);
 UpdateDatatypePanel(handles);
 UpdateChildGuis(handles);
@@ -1365,15 +1371,33 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function checkboxShowExcludedTime_Callback(hObject, eventdata, handles)
+function checkboxShowExcludedTimeManual_Callback(hObject, eventdata, handles)
 
+if get(hObject, 'value')==1
+    set(handles.checkboxShowExcludedTimeAuto, 'value',0) 
+    set(handles.checkboxShowExcludedTimeAutoByChannel, 'value',0) 
+end
 Display(handles, hObject);
 
 
+% --------------------------------------------------------------------
+function checkboxShowExcludedTimeAuto_Callback(hObject, eventdata, handles)
+
+if get(hObject, 'value')==1
+    set(handles.checkboxShowExcludedTimeManual, 'value',0) 
+    set(handles.checkboxShowExcludedTimeAutoByChannel, 'value',0) 
+end
+Display(handles, hObject);
+
 
 % --------------------------------------------------------------------
-function checkboxMotionByChannel_Callback(hObject, eventdata, handles)
+function checkboxShowExcludedTimeAutoByChannel_Callback(hObject, eventdata, handles)
 
+if get(hObject, 'value')==1
+    set(handles.checkboxShowExcludedTimeManual, 'value',0) 
+    set(handles.checkboxShowExcludedTimeAuto, 'value',0) 
+end
+Display(handles, hObject);
 
 
 % --------------------------------------------------------------------

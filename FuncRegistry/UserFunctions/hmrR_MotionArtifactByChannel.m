@@ -61,6 +61,9 @@
 
 function [tInc, tIncCh] = hmrR_MotionArtifactByChannel(data, probe, mlActMan, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
 
+tInc   = cell(length(data), 1);
+tIncCh = cell(length(data), 1);
+
 % Input processing.  Check required inputs, throw errors if necessary.
 if nargin<3
     error('First and second inputs must be data and probe SNIRF objects of type DataClass and ProbeClass.')

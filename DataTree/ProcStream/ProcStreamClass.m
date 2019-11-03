@@ -1305,6 +1305,18 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function ToggleStims(obj, tPts, condition)
+            if ~exist('tPts','var') || isempty(tPts)
+                return;
+            end
+            if ~exist('condition','var')
+                condition = '';
+            end
+            obj.input.ToggleStims(tPts, condition);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function MoveStims(obj, tPts, condition)
             if ~exist('tPts','var') || isempty(tPts)
                 return;

@@ -106,19 +106,19 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             warning('off', 'MATLAB:load:variableNotFound');
             fdata = load(fname,'-mat', 'SD','t','d','s','aux','CondNames');
             if isproperty(fdata,'d')
-                obj.d = single(fdata.d);
+                obj.d = fdata.d;
             end
             if isproperty(fdata,'t')
-                obj.t = single(fdata.t);
+                obj.t = fdata.t;
             end
             if isproperty(fdata,'SD')
                 obj.SetSD(fdata.SD);
             end
             if isproperty(fdata,'s')
-                obj.s = single(fdata.s);
+                obj.s = fdata.s;
             end
             if isproperty(fdata,'aux')
-                obj.aux = single(fdata.aux);
+                obj.aux = fdata.aux;
             end
             if isproperty(fdata,'CondNames')
                 obj.CondNames = fdata.CondNames;

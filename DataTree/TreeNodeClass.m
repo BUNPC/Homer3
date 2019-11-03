@@ -427,6 +427,12 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function ToggleStims(obj, tPts)
+            return;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function SetStimDuration(obj, icond, duration)
             return;
         end

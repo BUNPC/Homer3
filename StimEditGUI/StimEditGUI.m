@@ -432,7 +432,7 @@ else
     %%%% Toggle active/inactive stim
     elseif menu_choice==nActions-2 & nActions==nCond+4
 
-        ;
+        stimEdit.dataTree.currElem.ToggleStims(tc(tPts_idxs_select));
     
     %%%% Edit stim
     elseif menu_choice<=nCond+1

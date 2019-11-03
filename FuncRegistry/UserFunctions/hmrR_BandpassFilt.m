@@ -53,7 +53,7 @@ for ii=1:length(data)
     else
         %    [fb,fa] = MakeFilter(FilterType,FilterOrder,fs,lpf,'low',Filter_Rp);
     end
-    ylpf=filtfilt(fb,fa,y);
+    ylpf = filtfilt(fb,fa,double(y));
     
     % high pass filter
     FilterType = 1;

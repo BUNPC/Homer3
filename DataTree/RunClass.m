@@ -506,6 +506,18 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function ToggleStims(obj, tPts, condition)
+            if ~exist('tPts','var') || isempty(tPts)
+                return;
+            end
+            if ~exist('condition','var')
+                condition = '';
+            end
+            obj.procStream.ToggleStims(tPts, condition);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function MoveStims(obj, tPts, condition)
             if ~exist('tPts','var') || isempty(tPts)
                 return;

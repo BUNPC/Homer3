@@ -357,6 +357,23 @@ classdef StimClass < FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
+        function ToggleStims(obj, tPts)
+            if isempty(obj.data)
+                return;
+            end
+            
+            % Find all stims for any conditions which match the time points and 
+            % flip it's value.
+            k = [];
+            for ii=1:length(tPts)
+                k = [k, find( abs(obj.data(:,1)-tPts(ii)) < obj.errmargin )];
+            end
+            obj.data(k,3) = -1*obj.data(k,3);
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
         function b = IsEmpty(obj)
             b = true;
             if isempty(obj)

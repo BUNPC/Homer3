@@ -885,6 +885,15 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
+        function ToggleStims(obj, tPts, condition)
+            % Find all stims for any conditions which match the time points. 
+            for ii=1:length(obj.stim)
+                obj.stim(ii).ToggleStims(tPts);
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function MoveStims(obj, tPts, condition)
             if ~exist('tPts','var') || isempty(tPts)
                 return;

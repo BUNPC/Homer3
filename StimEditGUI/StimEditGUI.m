@@ -123,8 +123,6 @@ set(get(handles.axes1,'children'), 'ButtonDownFcn', @axes1_ButtonDownFcn);
 zoom(hObject,'off');
 StimEditGUI_Update(handles);
 StimEditGUI_EnableGuiObjects('on', handles);
-
-
 stimEdit.status=0;
 
 
@@ -161,7 +159,8 @@ StimEditGUI_Display(handles);
 stimEdit.updateParentGui('StimEditGUI');
 figure(handles.figure);
 
-% Reset status
+% Reset status only should be set/reset in top-level gui functions (ie
+% callbacks)
 stimEdit.status=0;
 
 
@@ -323,6 +322,10 @@ end
 function EditSelectTpts(tPts_select)
 global stimEdit
 t = stimEdit.dataTree.currElem.GetTime();
+if isempty(t)
+    MessageBox('Current processing element has no time course data for stim editing. In MainGUI, change current processing element to Run to edit stim marks.');
+    return;
+end
 tPts_idxs_select = [];
 for ii=1:length(tPts_select)
     tPts_idxs_select(ii) = binaraysearchnearest(t, tPts_select(ii));
@@ -340,9 +343,6 @@ end
 if stimEdit.status==0
     return;
 end
-
-% Reset status
-stimEdit.status=0;
 
 
 
@@ -536,11 +536,12 @@ stimEdit.dataTree.currElem.SetStimDuration(icond, data(:,2));
 stimEdit.dataTree.currElem.SetStimValues(icond, data(:,3));
 
 
+
 % -------------------------------------------------------------------
 function StimEditGUI_DeleteFcn(hObject, eventdata, handles)
-
-
 edit ProcStreamOptionsGUI.m
+
+
 
 % --------------------------------------------------------------------
 function menuItemChangeGroup_Callback(hObject, eventdata, handles)

@@ -27,7 +27,7 @@ end
 
 % Decide which of the data type listboxes (Hb vs wavlength) is visible 
 datatype = GetDatatype(handles);
-if datatype == maingui.buttonVals.RAW || maingui.datatype == maingui.buttonVals.RAW_HRF
+if datatype == maingui.buttonVals.RAW || datatype == maingui.buttonVals.RAW_HRF
     set(handles.listboxPlotWavelength, 'visible','on');
     set(handles.listboxPlotConc, 'visible','off');
 elseif datatype == maingui.buttonVals.OD || maingui.datatype == maingui.buttonVals.OD_HRF

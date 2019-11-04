@@ -42,7 +42,7 @@ Windows:
 1. In File Browser (or Windows Explorer in older Windows versions) navigate to the homer3 root folder you have just downloaded and unzipped. 
 1. Go into the Install folder and find and unzip the file homer3_install_win.zip. 
 1. Go into the newly created homer3_install folder and double click on the file setup.bat. This should start the installation process. When it finishes you should see a Homer3 icon on your Desktop.
-1. You can now execute Homer3 by double clicking the Homer3.command icon.
+1. You can now execute Homer3 by double clicking the Homer3 icon on the desktop.
 
 
 Mac:
@@ -51,7 +51,7 @@ Mac:
 1. In Finder navigate to the homer3 root folder you have just downloaded and unzipped. 
 1. Go into the Install folder and find and unzip the file homer3_install_mac.zip. 
 1. Go into the newly created homer3_install folder and double click on the file setup.command. This should start the installation process. When it finishes you should see a Homer3.command icon on your Desktop along with a link to a sample data folder called 'SubjDataSample'.
-1. You can now execute Homer3 by double clicking the Homer3.command icon.
+1. You can now execute Homer3 by double clicking the Homer3.command icon on the desktop.
 
 For either Mac or Windows Homer3 it will open by default in the sample subject folder that came with the installation. You will be asked to choose a processing options config file. Select the only one available, test_process.cfg. Once selected Homer3 should open the test.snirf data file. You are now ready to use Homer3 to work with this data. 
 

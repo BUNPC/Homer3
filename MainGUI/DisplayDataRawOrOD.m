@@ -39,7 +39,7 @@ end
 if ~isempty(dStd) && (isempty(nTrials) || isempty(condition))
     return;
 end
-linewidth = [2,1.2,2,2,2,2];
+linewidth = [2,2,2,2,2,2];
 
 for iWl=1:length(wl)
     for ii=1:length(ch(chLst))

@@ -103,9 +103,11 @@ end
 %%%% End parse arguments 
 
 % See if we can set the position
-p = stimEdit.pos;
-if ~isempty(p)
-    set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
+if ~isempty(stimEdit.pos)
+    p = stimEdit.pos;
+    set(hObject, 'units','characters', 'position', [p(1), p(2), p(3), p(4)]);
+else
+    set(hObject, 'units','characters');
 end
 
 stimEdit.version = get(hObject, 'name');
@@ -121,6 +123,7 @@ set(get(handles.axes1,'children'), 'ButtonDownFcn', @axes1_ButtonDownFcn);
 zoom(hObject,'off');
 StimEditGUI_Update(handles);
 StimEditGUI_EnableGuiObjects('on', handles);
+
 
 stimEdit.status=0;
 
@@ -151,9 +154,15 @@ if isempty(tPts_select)
     return;
 end
 EditSelectTpts(tPts_select);
+if stimEdit.status==0
+    return;
+end
 StimEditGUI_Display(handles);
 stimEdit.updateParentGui('StimEditGUI');
 figure(handles.figure);
+
+% Reset status
+stimEdit.status=0;
 
 
 
@@ -229,10 +238,16 @@ p1 = min(point1,point2);
 p2 = max(point1,point2);
 t1 = p1(1);
 t2 = p2(1);
-EditSelectRange(t1, t2);
+EditSelectRange(t1, t2, handles);
+if stimEdit.status==0
+    return;
+end
 StimEditGUI_Display(handles);
 stimEdit.updateParentGui('StimEditGUI');
 figure(handles.figure);
+
+% Reset status
+stimEdit.status=0;
 
 
 
@@ -261,7 +276,27 @@ stims_select = find(s2>=1);
 
 
 % ------------------------------------------------
-function EditSelectRange(t1, t2)
+function h = HighlightStims(t, t_select, s, handles)
+h = [];
+if isempty(t)
+    return
+end
+if isempty(t_select)
+    return
+end
+axes(handles.axes1)
+r = ylim();
+hold on
+for ii=1:length(s)
+    h(ii) = line([t(t_select(s(ii))), t(t_select(s(ii)))], [r(1), r(2)], 'color',[0,0,0], 'linewidth',2.5);
+end
+hold off
+drawnow
+
+
+
+% ------------------------------------------------
+function EditSelectRange(t1, t2, handles)
 global stimEdit
 t = stimEdit.dataTree.currElem.GetTime();
 if ~all(t1==t2)
@@ -271,18 +306,17 @@ else
     tPts_idxs_select = min(find(abs(t-t1)<tVals));
 end
 stims_select = GetStimsFromTpts(tPts_idxs_select);
-if isempty(stims_select) & ~(t1==t2)
+if isempty(stims_select) & ~all(t1==t2)
     MessageBox( 'Drag mouse around the stim to edit.');
     return;
 end
+
+% Highlight stims user wants to edit
+h = HighlightStims(t, tPts_idxs_select, stims_select, handles);
 AddEditDelete(tPts_idxs_select, stims_select);
-if stimEdit.status==0
-    return;
+if ~isempty(h)
+    delete(h);
 end
-
-% Reset status
-stimEdit.status=0;
-
 
 
 % ------------------------------------------------

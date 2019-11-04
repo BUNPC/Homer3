@@ -289,6 +289,9 @@ classdef FuncCallClass < handle
                         if isempty(obj.argIn)
                             obj.argIn = ArgClass();
                         end
+                        if length(textstr)<(ii+3)
+                            continue
+                        end
                         obj.argOut.str = textstr{ii+2};
                         obj.argIn.str = textstr{ii+3};
                         obj.DecodeArgIn();

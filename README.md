@@ -41,16 +41,17 @@ Windows:
 1. Download and install the 64-bit MATLAB Runtime R2017b (9.3) for Windows from the Mathworks website (https://www.mathworks.com/products/compiler/matlab-runtime.html)
 1. In File Browser (or Windows Explorer in older Windows versions) navigate to the homer3 root folder you have just downloaded and unzipped. 
 1. Go into the Install folder and find and unzip the file homer3_install_win.zip. 
-1. Go into the newly created homer3_install folder and double click on the file setup.bat. This should start the installation process. When it finishes you should see a Homer3 icon on your Desktop
+1. Go into the newly created homer3_install folder and double click on the file setup.bat. This should start the installation process. When it finishes you should see a Homer3 icon on your Desktop.
+1. You can now execute Homer3 by double clicking the Homer3.command icon.
 
 
 Mac:
 
-1. Download and install the 64-bit MATLAB Runtime R2017b (9.3) for Mac from the Mathworks website (https://www.mathworks.com/products/compiler/matlab-runtime.html)
-Important!!! Please NOTE: If using a MAC and downloading homer3_install_<version>_mac_<date>.zip please rename any previous version of homer3_install folder (for example homer3_install_old) that exists in the folder where you are downloading the new zip file.  
+1. Download and install the 64-bit MATLAB Runtime R2017b (9.3) for Mac from the Mathworks website (https://www.mathworks.com/products/compiler/matlab-runtime.html)  
 1. In Finder navigate to the homer3 root folder you have just downloaded and unzipped. 
 1. Go into the Install folder and find and unzip the file homer3_install_mac.zip. 
-1. Go into the newly created homer3_install folder and double click on the file setup.command. This should start the installation process. When it finishes you should see a Homer3.command icon on your Desktop. 
+1. Go into the newly created homer3_install folder and double click on the file setup.command. This should start the installation process. When it finishes you should see a Homer3.command icon on your Desktop along with a link to a sample data folder called 'SubjDataSample'.
+1. You can now execute Homer3 by double clicking the Homer3.command icon.
 
 For either Mac or Windows Homer3 it will open by default in the sample subject folder that came with the installation. You will be asked to choose a processing options config file. Select the only one available, test_process.cfg. Once selected Homer3 should open the test.snirf data file. You are now ready to use Homer3 to work with this data. 
 

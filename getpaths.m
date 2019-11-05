@@ -33,7 +33,7 @@ paths_excl_str = {};
 if options.conflcheck
         
     % Get all workspace paths that have similar functions sets with current applications
-    appmainfunc = {'Homer2_UI.m','Homer3.m','brainScape.m'};
+    appmainfunc = {'AtlasViewerGUI.m','Homer2_UI.m','Homer3.m','brainScape.m','AcqDataClass.m'};
     
     kk=1;
     wsidx = [];

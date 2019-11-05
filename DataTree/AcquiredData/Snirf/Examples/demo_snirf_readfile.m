@@ -28,8 +28,9 @@ snirf = SnirfClass();
 % Read meta data tags from file
 fprintf('Read metaDataTags from %s.\n', fnamefullpath);
 snirf.LoadMetaDataTags(fnamefullpath,'/nirs');      % Use the SnirfClass LoadYYYY method to load whichever field you want 
+tags = snirf.GetMetaDataTags();      % Use the SnirfClass LoadYYYY method to load whichever field you want 
 for ii=1:length(snirf.metaDataTags)
-    fprintf('metaDataTag(%d): {key = ''%s'', value = ''%s''}\n', ii, snirf.metaDataTags(ii).key, snirf.metaDataTags(ii).value);
+    fprintf('metaDataTag(%d): {key = ''%s'', value = ''%s''}\n', ii, tags(ii).key, tags(ii).value);
 end
 fprintf('\n');
 

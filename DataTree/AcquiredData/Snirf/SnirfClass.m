@@ -552,7 +552,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function val = GetMetaDataTags(obj)
-            val = obj.metaDataTags;
+            val = obj.metaDataTags.Get();
         end
         
     end

@@ -1,16 +1,16 @@
-function demo_snirf_readfile(fname)
+function snirf = demo_snirf_readfile(fname)
 
 % Syntax: 
-%    demo_snirf_readfile() 
+%    snirf = demo_snirf_readfile() 
 %
 % Description:
 %    Demo of how to read individual SNIRF fields using SnirfClass methods.
 %  
 % Examples:
-%    demo_snirf_readfile();
-%    demo_snirf_readfile('Simple_Probe.snirf');
-%    demo_snirf_readfile('FingerTapping_run3_tdmlproc.snirf');
-%    demo_snirf_readfile('neuro_run01.snirf');
+%    snirf = demo_snirf_readfile();
+%    snirf = demo_snirf_readfile('Simple_Probe.snirf');
+%    snirf = demo_snirf_readfile('FingerTapping_run3_tdmlproc.snirf');
+%    snirf = demo_snirf_readfile('neuro_run01.snirf');
 %
 
 if nargin==0
@@ -29,7 +29,7 @@ snirf = SnirfClass();
 fprintf('Read metaDataTags from %s.\n', fnamefullpath);
 snirf.LoadMetaDataTags(fnamefullpath,'/nirs');      % Use the SnirfClass LoadYYYY method to load whichever field you want 
 tags = snirf.GetMetaDataTags();      % Use the SnirfClass LoadYYYY method to load whichever field you want 
-for ii=1:length(snirf.metaDataTags)
+for ii=1:length(tags)
     fprintf('metaDataTag(%d): {key = ''%s'', value = ''%s''}\n', ii, tags(ii).key, tags(ii).value);
 end
 fprintf('\n');

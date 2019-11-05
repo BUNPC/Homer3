@@ -19,12 +19,12 @@ end
 
 
 % ---------------------------------------------------------------------------
-function msgFailure()
+function msgFailure(errnum)
 global stats
 
 handles = stats.handles;
 
-stats.err = stats.err+1;
+stats.err = errnum;
 
 msgFail{1}    = sprintf('Homer3 failed to install properly. Error code %d', stats.err);
 msgFail{2}    = 'Contact jdubb@bu.edu for help with installation.';
@@ -51,11 +51,11 @@ handles = stats.handles;
 
 msgSuccess{1} = 'Installation Completed Successfully!';
 if ispc()
-    msgSuccess{2} = 'To run: Click on Homer3 icon on your Desktop to launch one of these applications';
+    msgSuccess{2} = 'To run: Click on the Homer3 icon on your Desktop to launch one of these applications';
 elseif islinux()
-    msgSuccess{2} = 'To run: Click on Homer3.sh icon on your Desktop to launch one of these applications';
+    msgSuccess{2} = 'To run: Click on the Homer3.sh icon on your Desktop to launch one of these applications';
 elseif ismac()
-    msgSuccess{2} = 'To run: Click on Homer3.command icon on your Desktop to launch one of these applications';
+    msgSuccess{2} = 'To run: Click on the Homer3.command icon on your Desktop to launch one of these applications';
 end
 
 hGui         = handles.this;
@@ -85,45 +85,40 @@ stats.handles.msgMoreInfo = handles.textMoreInfo;
 stats.dirnameApp = getAppDir('isdeployed');
 stats.pushbuttonOKPress = false;
 stats.Homer3_exe_flag = false;
-stats.AtlasViewer_exe_flag = false;
+
+fprintf('FinishInstallGUI_OpeningFcn: dirnameApp = %s\n', stats.dirnameApp);
 
 % Error checks
 if stats.dirnameApp==0
-    msgFailure();
-    return;
+    msgFailure(1);
 end
 
 if isempty(stats.dirnameApp)
-    msgFailure();
-    return;
+    msgFailure(2);
 end
 
 files = dir([stats.dirnameApp, '/*']);
 if isempty(files)
-    msgFailure();
-    return;
+    msgFailure(3);
 end
 
 for ii=1:length(files)
-    if files(ii).isdir
-        continue;
-    end
     [~, fname] = fileparts(files(ii).name);
     if strcmp(fname, 'Homer3')
         stats.Homer3_exe_flag = true;
+        break;
     end
 end
 
 if stats.Homer3_exe_flag==false
-    msgFailure();
-    return;
-end
-if stats.AtlasViewer_exe_flag==false
-    msgFailure();
-    return;
+    msgFailure(4);
 end
 
+if stats.err==0
 msgSuccess();
+end
+
+
 
 
 

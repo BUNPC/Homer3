@@ -129,7 +129,7 @@ waitbar(iStep/nSteps, h); iStep = iStep+1;
 pause(2);
 
 % Check that everything was installed properly
-% r = finishInstallGUI();
+r = finishInstallGUI();
 
 waitbar(nSteps/nSteps, h);
 close(h);

@@ -40,7 +40,7 @@ Windows:
 
 1. Download and install the 64-bit MATLAB Runtime R2017b (9.3) for Windows from the Mathworks website (https://www.mathworks.com/products/compiler/matlab-runtime.html)
 1. In File Browser (or Windows Explorer in older Windows versions) navigate to the homer3 root folder you have just downloaded and unzipped. 
-1. Go into the Install folder and find and unzip the file homer3_install_win.zip. 
+1. Go into the Install folder and find and unzip the file homer3_install_win.zip. Please make sure that the unzipped folder is called “homer3_install”. If this folder already existed because of an older version, then you must rename that folder before unzipping this new install file.
 1. Go into the newly created homer3_install folder and double click on the file setup.bat. This should start the installation process. When it finishes you should see a Homer3 icon on your Desktop.
 1. You can now execute Homer3 by double clicking the Homer3 icon on the desktop.
 
@@ -49,7 +49,7 @@ Mac:
 
 1. Download and install the 64-bit MATLAB Runtime R2017b (9.3) for Mac from the Mathworks website (https://www.mathworks.com/products/compiler/matlab-runtime.html)  
 1. In Finder navigate to the homer3 root folder you have just downloaded and unzipped. 
-1. Go into the Install folder and find and unzip the file homer3_install_mac.zip. 
+1. Go into the Install folder and find and unzip the file homer3_install_mac.zip. Please make sure that the unzipped folder is called “homer3_install”. If this folder already existed because of an older version, then you must rename that folder before unzipping this new install file.
 1. Go into the newly created homer3_install folder and double click on the file setup.command. This should start the installation process. When it finishes you should see a Homer3.command icon on your Desktop along with a link to a sample data folder called 'SubjDataSample'.
 1. You can now execute Homer3 by double clicking the Homer3.command icon on the desktop.
 

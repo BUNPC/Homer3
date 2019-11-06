@@ -8,9 +8,9 @@ global maingui;
 hAxesSDG = maingui.axesSDG.handles.axes;
 iSrcDet  = maingui.axesSDG.iSrcDet;
 
-SD       = currElem.GetSDG();
-ch       = currElem.GetMeasList();
-Lambda   = currElem.GetWls();
+SD       = maingui.dataTree.currElem.GetSDG();
+ch       = maingui.dataTree.currElem.GetMeasList();
+Lambda   = maingui.dataTree.currElem.GetWls();
 
 idx = eventdata;
 

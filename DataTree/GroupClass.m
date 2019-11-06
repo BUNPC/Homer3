@@ -576,7 +576,15 @@ classdef GroupClass < TreeNodeClass
             fprintf('Saving processed data in groupResults.mat\n');
             t_local = tic;
             group = GroupClass(obj);
-            save( './groupResults.mat','group' );
+            try 
+                save( './groupResults.mat','group' );
+            catch
+                msg{1} = sprintf('WARNING: Could not save computation output to groupResults.mat file in the subject folder\n\n');
+                msg{2} = sprintf('%s\n\n', pwd);
+                msg{3} = sprintf('This could be because the file or the subject folder itself is read-only.');
+                msg{4} = sprintf('To fix this change groupResults.mat file write permissions to read/write.');
+                MessageBox([msg{:}]);
+            end            
             fprintf('Completed saving groupResults.mat in %0.3f seconds.\n', toc(t_local));
         end
         

@@ -490,7 +490,7 @@ classdef ProcStreamClass < handle
         function maxnamelen = GetMaxCallNameLength(obj)
             maxnamelen = 0;
             for iFcall = 1:length(obj.fcalls)
-                if length(obj.fcalls(iFcall).GetNameUserFriendly()) > maxnamelen
+                if length(obj.fcalls(iFcall).GetUsageName()) > maxnamelen
                     maxnamelen = length(obj.fcalls(iFcall).nameUI)+1;
                 end
             end

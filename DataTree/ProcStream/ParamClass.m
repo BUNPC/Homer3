@@ -81,6 +81,37 @@ classdef ParamClass < matlab.mixin.Copyable
             val = obj.name;
         end
         
+        % ----------------------------------------------------------------------------------
+        function val = GetValue(obj)
+            val = obj.value;
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function val = GetFormat(obj)
+            val = obj.format;
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function str = Encode(obj)
+            str = '';
+            formatarr =  str2cell(obj.format,' ');
+            if length(obj.value) ~= length(formatarr)
+                return
+            end
+            formatstr =  '';
+            valuestr = '';
+            for ii=1:length(obj.value)
+                if ii<2
+                    formatstr = formatarr{ii};
+                    valuestr = num2str(obj.value(ii));
+                else
+                    formatstr = sprintf('%s_%s', formatstr, formatarr{ii});
+                    valuestr = sprintf('%s_%s', valuestr, num2str(obj.value(ii)));                    
+                end
+            end
+            str = sprintf('%s %s %s', obj.name, formatstr, valuestr);
+        end
+        
     end
 end
 

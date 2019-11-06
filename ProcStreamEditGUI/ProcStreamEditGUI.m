@@ -451,6 +451,16 @@ end
 LoadProcStream(handles, reload);
 
 
+% -------------------------------------------------------------
+function CopyParamValues(fcall, fcalls)
+
+% Look for the function call fcall in fcalls
+for ii=1:length(fcalls)
+    if strcmp(fcalls(ii).GetUsageName(), fcall.GetUsageName())
+        fcall.Copy(fcalls(ii));
+    end
+end
+
 
 % -------------------------------------------------------------
 function pushbuttonSave_Callback(hObject, eventdata, handles)
@@ -477,7 +487,12 @@ end
 % First get the user selection of proc stream function calls from the proc stream listbox 
 % (listboxFuncProcStream) and load them into the procElem for all panels.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-for iPanel=1:length(procElem)
+for iPanel=1:length(procElem)    
+    % Save current proc stream in a temp variable - we will copy the aram
+    % values for any func call which reappears in the new proc stream
+    procStreamPrev = ProcStreamClass();
+    procStreamPrev.CopyFcalls(procElem{iPanel}.procStream);
+    
     % First clear the existing func call chain for this procElem
     procElem{iPanel}.procStream.ClearFcalls();
     
@@ -493,6 +508,7 @@ for iPanel=1:length(procElem)
         funcname = strtrim(parts{1});
         usagename = strtrim(parts{2});
         fcall = reg.funcReg(MapRegIdx(iPanel)).GetFuncCallDecoded(funcname, usagename);
+        CopyParamValues(fcall, procStreamPrev.fcalls);
         procElem{iPanel}.procStream.Add(fcall);
     end
 end

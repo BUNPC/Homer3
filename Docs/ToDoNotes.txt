@@ -96,3 +96,15 @@ Apr 21, 2019
 -- Generate dc and dod timecourses on the fly using active proc stream function when starting Homer3 to avoid having to save this in groupResults.mat. In order to save costly memory usage. 
 
 
+==========================
+Nov 6, 2019
+
+Notes from fnirs course 2019
+
+-- Homer3 gets matlab exception in folder which has no write permissions. Need to have a workaround for this. 
+-- Label units in MainGUI data axes window
+-- Add units to SDG axes 
+-- Generate SD file from Homer3
+
+
+

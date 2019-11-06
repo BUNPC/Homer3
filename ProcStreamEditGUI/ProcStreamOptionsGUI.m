@@ -295,7 +295,7 @@ for k = 1:nFcalls
     Ypfk = Yst - (yoffset + k*b + Sigma(k, Ys, m));
     
     if DEBUG
-        fprintf('%d) %s:   p1 = [%0.1f, %0.1f, %0.1f, %0.1f]\n', k, fcalls(k).GetNameUserFriendly(), a, Ypfk, Xsf, Ys);
+        fprintf('%d) %s:   p1 = [%0.1f, %0.1f, %0.1f, %0.1f]\n', k, fcalls(k).GetUsageName(), a, Ypfk, Xsf, Ys);
     end
     
     % Draw function call divider for clarity
@@ -305,7 +305,7 @@ for k = 1:nFcalls
     % Draw function call
     p(end+1,:) = [a, Ypfk, Xsf, Ys];
     h(end+1,:) = uicontrol(hObject, 'style','text', 'units','characters', 'horizontalalignment','left', ...
-                                    'units','characters', 'position',p(end,:), 'string',fcalls(k).GetNameUserFriendly(), ...
+                                    'units','characters', 'position',p(end,:), 'string',fcalls(k).GetUsageName(), ...
                                     'BackgroundColor',bgc, 'ForegroundColor',fgc, ...
                                     'tooltipstring',fcalls(k).GetHelp());
     

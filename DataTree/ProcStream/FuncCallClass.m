@@ -100,7 +100,7 @@ classdef FuncCallClass < handle
         
         
         % ------------------------------------------------------------
-        function name = GetNameUserFriendly(obj)
+        function name = GetUsageName(obj)
             name = obj.nameUI;
         end
                
@@ -289,10 +289,13 @@ classdef FuncCallClass < handle
                         if isempty(obj.argIn)
                             obj.argIn = ArgClass();
                         end
-                        if length(textstr)<(ii+3)
+                        if length(textstr)<(ii+2)
                             continue
                         end
                         obj.argOut.str = textstr{ii+2};
+                        if length(textstr)<(ii+3)
+                            continue
+                        end
                         obj.argIn.str = textstr{ii+3};
                         obj.DecodeArgIn();
                         flag = 3;
@@ -313,6 +316,9 @@ classdef FuncCallClass < handle
                             if textstr{ii+1}(jj)=='_'
                                 textstr{ii+1}(jj) = ' ';
                             end
+                        end
+                        if length(textstr)<(ii+2)
+                            continue
                         end
                         pformat = textstr{ii+1};
                         for jj = 1:length(textstr{ii+2})
@@ -347,6 +353,24 @@ classdef FuncCallClass < handle
             %   
             %         '@ hmrBandpassFilt dod (dod,t hpf %0.3f 0.01 lpf %0.2f 0.5'
             %
+                                    
+            % Encode params str
+            paramInStr = '';
+            for ii=1:length(obj.paramIn)
+                if ii<length(obj.paramIn)
+                    space = ' ';
+                else
+                    space = '';
+                end
+                if isempty(paramInStr)
+                    paramInStr = sprintf('%s%s', obj.paramIn(ii).Encode(), space);
+                else
+                    paramInStr = sprintf('%s%s%s', paramInStr, obj.paramIn(ii).Encode(), space);
+                end
+            end
+                        
+            obj.encodedStr = sprintf('@ %s %s %s %s', obj.name, obj.argOut.Encode(), obj.argIn.Encode(), paramInStr);
+                
             fcallStrEncoded = obj.encodedStr;
         end
         

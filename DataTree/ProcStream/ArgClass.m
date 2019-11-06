@@ -21,5 +21,11 @@ classdef ArgClass < matlab.mixin.Copyable
             end
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function str = Encode(obj)
+            str = obj.str;
+        end
+ 
     end
 end

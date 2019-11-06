@@ -302,12 +302,17 @@ try
     
     % Plot the optodes on the axes
     if ~isProbeDrawn(SD)
+        if ismac() || islinux()
+            fs = 14;
+        else
+            fs = 11;
+        end        
         for idx2=1:size(sPos,1)
             xa = sPos(idx2,1) - axXoff;
             ya = sPos(idx2,2) - axYoff;
             
             ht=text(xa,ya,sprintf('S%d',idx2));
-            set(ht,'fontweight','bold')
+            set(ht,'fontweight','bold','fontsize',fs)
             set(ht,'color',[1 0 0])
             
         end
@@ -316,7 +321,7 @@ try
             ya = dPos(idx2,2) - axYoff;
             
             ht=text(xa,ya,sprintf('D%d',idx2));
-            set(ht,'fontweight','bold')
+            set(ht,'fontweight','bold','fontsize',fs)
             set(ht,'color',[0 0 1])            
         end
     end

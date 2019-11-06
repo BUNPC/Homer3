@@ -66,9 +66,9 @@ set(gca, 'yticklabel','')
 set(gca, 'ygrid','off')
 edgecol = 'none';
 if ismac() || islinux()
-	fs = 12;
+	fs = 18;
 else
-	fs = 10;
+	fs = 11;
 end
 hold on;
 

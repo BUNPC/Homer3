@@ -21,7 +21,7 @@ KEEP_FONTWEIGHT = 4;
 FONT_BIGGER     = 8;
 
 if ismac()
-    fs_def = 11.0;
+    fs_def = 14.0;
 elseif ispc()
     fs_def = 10.0;
 else
@@ -50,7 +50,9 @@ fc = [0.50, 0.21, 0.11];
 
 font_uipanel   = initFont(font_uicontrol.size-1,'bold',fc);
 font_uibttngrp = font_uipanel;
-font_axes   = initFont(font_uicontrol.size+3,'normal',[]);
+font_axes      = initFont(font_uicontrol.size+5,'normal',[]);
+font_listbox   = initFont(font_uicontrol.size+2,'normal',[]);
+
 
 hc = get(h, 'children');
 for ii=1:length(hc)
@@ -69,11 +71,16 @@ for ii=1:length(hc)
         set(hc(ii), 'fontsize',font_uipanel.size);
         set(hc(ii), 'fontweight',font_uipanel.weight);
     elseif strcmp(get(hc(ii), 'type'), 'uicontrol')
-        if userdata~=KEEP_FONTSIZE
-            set(hc(ii), 'fontsize',font_uicontrol.size);
-        end
-        if userdata~=KEEP_FONTWEIGHT
-            set(hc(ii), 'fontweight',font_uicontrol.weight);
+        if strcmp(get(hc(ii), 'style'), 'listbox')
+            set(hc(ii), 'fontsize',font_listbox.size);
+            set(hc(ii), 'fontweight','normal');        
+        else
+            if userdata~=KEEP_FONTSIZE
+                set(hc(ii), 'fontsize',font_uicontrol.size);
+            end
+            if userdata~=KEEP_FONTWEIGHT
+                set(hc(ii), 'fontweight',font_uicontrol.weight);
+            end
         end
     elseif strcmp(get(hc(ii), 'type'), 'axes')
         set(hc(ii), 'fontunits','points');
@@ -106,6 +113,11 @@ for ii=1:length(hc)
         if userdata~=KEEP_FONTWEIGHT
             set(hc(ii), 'fontweight',font_uicontrol.weight);
         end
+    elseif strcmp(get(hc(ii), 'type'), 'uilistbox')
+        if userdata~=KEEP_FONTSIZE
+            set(hc(ii), 'fontsize',font_listbox.size);
+        end
+        set(hc(ii), 'fontweight','normal');
     end
     setGuiFonts(hc(ii), font_uicontrol.size, font_uicontrol.weight);
 end

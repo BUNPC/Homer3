@@ -94,11 +94,7 @@ if isempty(stimEdit.pos)
     end
 end
 
-if ispc()
-    setGuiFonts(hObject);
-else
-    setGuiFonts(hObject, 7);
-end
+setGuiFonts(hObject);
 
 %%%% End parse arguments 
 

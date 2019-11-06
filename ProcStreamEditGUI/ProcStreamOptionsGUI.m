@@ -65,11 +65,7 @@ procStreamOptions.format = '';
 procStreamOptions.applyEditCurrNodeOnly = [];
 procStreamOptions.pos = [];
 procStreamOptions.handles = [];
-if ispc()
-    setGuiFonts(handles.figure, 7);
-else
-    setGuiFonts(handles.figure);
-end
+setGuiFonts(handles.figure, 7);
 
 
 

@@ -50,8 +50,12 @@ fc = [0.50, 0.21, 0.11];
 
 font_uipanel   = initFont(font_uicontrol.size-1,'bold',fc);
 font_uibttngrp = font_uipanel;
-font_axes      = initFont(font_uicontrol.size+5,'normal',[]);
-font_listbox   = initFont(font_uicontrol.size+2,'normal',[]);
+font_axes      = initFont(font_uicontrol.size+4,'normal',[]);
+if ispc()
+    font_listbox   = initFont(font_uicontrol.size,'normal',[]);
+elseif ismac()
+    font_listbox   = initFont(font_uicontrol.size+2,'normal',[]);
+end
 
 
 hc = get(h, 'children');

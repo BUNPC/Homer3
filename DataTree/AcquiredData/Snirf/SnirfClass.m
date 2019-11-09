@@ -61,7 +61,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % See if we're loading .nirs data format
             if nargin>4
                 d         = varargin{1};
-                t         = varargin{2};
+                t         = varargin{2}(:);
                 SD        = varargin{3};
                 aux       = varargin{4};
                 s         = varargin{5};
@@ -91,19 +91,19 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     nirs = varargin{1};
                     obj.GenSimulatedTimeBases(nirs, tfactors);
                     for ii=1:length(tfactors)                        
-                        obj.data(ii) = DataClass(obj.nirs_tb(ii).d, obj.nirs_tb(ii).t, obj.nirs_tb(ii).SD.MeasList);
+                        obj.data(ii) = DataClass(obj.nirs_tb(ii).d, obj.nirs_tb(ii).t(:), obj.nirs_tb(ii).SD.MeasList);
                     end
                     
                     for ii=1:size(nirs.s,2)
                         if isfield(nirs, 'CondNames')
-                            obj.stim(ii) = StimClass(nirs.s(:,ii), nirs.t, nirs.CondNames{ii});
+                            obj.stim(ii) = StimClass(nirs.s(:,ii), nirs.t(:), nirs.CondNames{ii});
                         else
-                            obj.stim(ii) = StimClass(nirs.s(:,ii), nirs.t, num2str(ii));
+                            obj.stim(ii) = StimClass(nirs.s(:,ii), nirs.t(:), num2str(ii));
                         end
                     end
                     obj.probe      = ProbeClass(nirs.SD);
                     for ii=1:size(nirs.aux,2)
-                        obj.aux(ii) = AuxClass(nirs.aux(:,ii), nirs.t, sprintf('aux%d',ii));
+                        obj.aux(ii) = AuxClass(nirs.aux(:,ii), nirs.t(:), sprintf('aux%d',ii));
                     end
                                        
                     % Add metadatatags
@@ -126,13 +126,13 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                                 
             % The basic 5 of a .nirs format as separate args
             elseif nargin==5
-                obj.data(1) = DataClass(d,t,SD.MeasList);
+                obj.data(1) = DataClass(d, t(:), SD.MeasList);
                 for ii=1:size(s,2)
-                    obj.stim(ii) = StimClass(s(:,ii),t,num2str(ii));
+                    obj.stim(ii) = StimClass(s(:,ii), t(:), num2str(ii));
                 end
                 obj.probe      = ProbeClass(SD);
                 for ii=1:size(aux,2)
-                    obj.aux(ii) = AuxClass(aux, t, sprintf('aux%d',ii));
+                    obj.aux(ii) = AuxClass(aux, t(:), sprintf('aux%d',ii));
                 end
                 
                 % Add metadatatags
@@ -140,13 +140,13 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 
             % The basic 5 of a .nirs format plus condition names
             elseif nargin==6
-                obj.data(1) = DataClass(d,t,SD.MeasList);
+                obj.data(1) = DataClass(d, t(:), SD.MeasList);
                 for ii=1:size(s,2)
-                    obj.stim(ii) = StimClass(s(:,ii),t,CondNames{ii});
+                    obj.stim(ii) = StimClass(s(:,ii), t(:), CondNames{ii});
                 end
                 obj.probe      = ProbeClass(SD);
                 for ii=1:size(aux,2)
-                    obj.aux(ii) = AuxClass(aux, t, sprintf('aux%d',ii));
+                    obj.aux(ii) = AuxClass(aux, t(:), sprintf('aux%d',ii));
                 end
                 
                 % Add metadatatags

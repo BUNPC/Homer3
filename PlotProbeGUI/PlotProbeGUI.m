@@ -39,6 +39,7 @@ plotprobe.status = -1;
 
 % These are the parameters that are assigned from external sources,
 % either from GUI arguments or parent GUI. 
+plotprobe.groupDirs = {};
 plotprobe.format = '';
 plotprobe.datatype = [];
 plotprobe.condition = [];
@@ -83,6 +84,7 @@ varargin = args;
 %%%% These are the parameters that are assigned from external soutrces,
 %%%% either from GUI arguments or parent GUI. 
 %
+% plotprobe.groupDirs
 % plotprobe.format
 % plotprobe.datatype
 % plotprobe.condition
@@ -92,12 +94,13 @@ varargin = args;
 %  Syntax:
 %
 %     PlotProbeGUI()
-%     PlotProbeGUI(format)
-%     PlotProbeGUI(format, pos)
-%     PlotProbeGUI(format, datatype)
-%     PlotProbeGUI(format, datatype, pos)
-%     PlotProbeGUI(format, datatype, condition)
-%     PlotProbeGUI(format, datatype, condition, pos)
+%     PlotProbeGUI(groupDirs)
+%     PlotProbeGUI(groupDirs, format)
+%     PlotProbeGUI(groupDirs, format, pos)
+%     PlotProbeGUI(groupDirs, format, datatype)
+%     PlotProbeGUI(groupDirs, format, datatype, pos)
+%     PlotProbeGUI(groupDirs, format, datatype, condition)
+%     PlotProbeGUI(groupDirs, format, datatype, condition, pos)
 %     PlotProbeGUI(datatype)
 %     PlotProbeGUI(datatype, pos)
 %     PlotProbeGUI(datatype, condition)
@@ -105,72 +108,78 @@ varargin = args;
 
 % Arguments take precedence over parent gui parameters
 if length(varargin)==0
-    return;                                                  % PlotProbeGUI()
+    return;                                                 % PlotProbeGUI()
 elseif length(varargin)==1
-    if ischar(varargin{1})                 
-        plotprobe.format = varargin{1};                      % PlotProbeGUI(format)
-    elseif iswholenum(varargin{1}) & length(varargin{1})==1
-        plotprobe.datatype = varargin{1};                    % PlotProbeGUI(datatype)
+    if iswholenum(varargin{1}) & length(varargin{1})==1
+        plotprobe.datatype = varargin{1};                   % PlotProbeGUI(datatype)
+    else
+        plotprobe.groupDirs = varargin{1};                  % PlotProbeGUI(groupDirs)
     end
 elseif length(varargin)==2
-    if ischar(varargin{1})
-        plotprobe.format = varargin{1};
+    if iswholenum(varargin{1}) & length(varargin{1})==1
+        plotprobe.datatype = varargin{1};                   % PlotProbeGUI(datatype)
         if isreal(varargin{2}) & length(varargin{2})==4     
-            plotprobe.pos = varargin{2};                    % PlotProbeGUI(format, pos)
-        elseif iswholenum(varargin{2}) & length(varargin{2})==1
-            plotprobe.datatype = varargin{2};               % PlotProbeGUI(format, datatype)
+            plotprobe.pos = varargin{2};                        % PlotProbeGUI(datatype, pos)
+        elseif iswholenum(varargin{2})
+            plotprobe.condition = varargin{2};                  % PlotProbeGUI(datatype, condition)
         end
-    elseif isreal(varargin{2}) & length(varargin{2})==4
-        plotprobe.datatype = varargin{1};                   % PlotProbeGUI(datatype, pos)
-        plotprobe.pos = varargin{2};
-    elseif iswholenum(varargin{2}) & length(varargin{2})==1
-        plotprobe.datatype = varargin{1};                   % PlotProbeGUI(datatype, condition)
-        plotprobe.condition = varargin{2};
-    end
+    else
+        plotprobe.groupDirs = varargin{1};                  % PlotProbeGUI(groupDirs)
+        plotprobe.format = varargin{2};
+    end    
 elseif length(varargin)==3
-    if ischar(varargin{1})
-        plotprobe.format = varargin{1};
-        if isreal(varargin{3}) & length(varargin{3})==4
-            plotprobe.datatype = varargin{2};
-            plotprobe.pos = varargin{3};                    % PlotProbeGUI(format, datatype, pos)
-        elseif iswholenum(varargin{3}) & length(varargin{3})==1
-            plotprobe.datatype = varargin{2};               
-            plotprobe.condition = varargin{3};              % PlotProbeGUI(format, datatype, condition)
-        end
-    elseif iswholenum(varargin{1})
+    if iswholenum(varargin{1}) & length(varargin{1})==1
         plotprobe.datatype = varargin{1};
-        plotprobe.condition = varargin{2};                  % PlotProbeGUI(datatype, condition, pos)
-        plotprobe.pos = varargin{3};
+        plotprobe.condition = varargin{2};
+        plotprobe.pos = varargin{3};                        % PlotProbeGUI(datatype, condition, pos)
+    elseif ischar(varargin{2})
+        plotprobe.groupDirs = varargin{1};
+        plotprobe.format = varargin{2};
+        if isreal(varargin{3}) & length(varargin{3})==4     
+            plotprobe.pos = varargin{3};                    % PlotProbeGUI(groupDirs, format, pos)
+        elseif iswholenum(varargin{3}) & length(varargin{3})==1
+            plotprobe.datatype = varargin{3};               % PlotProbeGUI(groupDirs, format, datatype)
+        end
     end
 elseif length(varargin)==4
-    plotprobe.format    = varargin{1};
-    plotprobe.datatype  = varargin{2};
-    plotprobe.condition = varargin{3};
-    plotprobe.pos       = varargin{4};                      % PlotProbeGUI(format, datatype, condition, pos)
+    plotprobe.groupDirs = varargin{1};
+    plotprobe.format    = varargin{2};
+    plotprobe.datatype  = varargin{3};
+    if isreal(varargin{4}) & length(varargin{2})==4     
+        plotprobe.pos = varargin{4};                        % PlotProbeGUI(groupDirs, format, datatype, pos)
+    elseif iswholenum(varargin{4})
+        plotprobe.condition = varargin{4};                  % PlotProbeGUI(groupDirs, format, datatype, condition)
+    end
+elseif length(varargin)==5
+    plotprobe.groupDirs = varargin{1};
+    plotprobe.format    = varargin{2};
+    plotprobe.datatype  = varargin{3};
+    plotprobe.condition = varargin{4};
+    plotprobe.pos       = varargin{5};                      % PlotProbeGUI(groupDirs, format, datatype, condition, pos)
 end
 
 % Now whichever of the above parameters weren't assigned values
 % obtain values either from parent gui or assign default value
 if isempty(maingui)
+    if isempty(plotprobe.groupDirs)
+        plotprobe.groupDirs = convertToStandardPath({pwd});
+    end
     if isempty(plotprobe.format)
         plotprobe.format = 'snirf';
     end
-    if isempty(plotprobe.datatype)
-        plotprobe.datatype = plotprobe.datatypeVals.CONC_HRF;
-    end
-    if isempty(plotprobe.condition)
-        plotprobe.condition = 1;
-    end
 else
+    if isempty(plotprobe.groupDirs)
+        plotprobe.groupDirs = maingui.groupDirs;
+    end
     if isempty(plotprobe.format)
         plotprobe.format = maingui.format;
     end
-    if isempty(plotprobe.datatype)
-        plotprobe.datatype = maingui.guiControls.datatype;
-    end
-    if isempty(plotprobe.condition)
-        plotprobe.condition = maingui.guiControls.condition;
-    end
+end
+if isempty(plotprobe.datatype)
+    plotprobe.datatype = plotprobe.datatypeVals.CONC_HRF;
+end
+if isempty(plotprobe.condition)
+    plotprobe.condition = 1;
 end
 
 
@@ -181,14 +190,15 @@ function PlotProbeGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 %  Syntax:
 %
 %     PlotProbeGUI()
-%     PlotProbeGUI(format)
-%     PlotProbeGUI(format, pos)
-%     PlotProbeGUI(format, datatype, pos)
-%     PlotProbeGUI(format, datatype, condition)
-%     PlotProbeGUI(format, datatype, condition, pos)
-%     PlotProbeGUI(datatype, pos)
-%     PlotProbeGUI(datatype, condition)
-%     PlotProbeGUI(datatype, condition, pos)
+%     PlotProbeGUI(groupDirs)
+%     PlotProbeGUI(groupDirs, format)
+%     PlotProbeGUI(groupDirs, format, pos)
+%     PlotProbeGUI(groupDirs, format, datatype, pos)
+%     PlotProbeGUI(groupDirs, format, datatype, condition)
+%     PlotProbeGUI(groupDirs, format, datatype, condition, pos)
+%     PlotProbeGUI(groupDirs, datatype, pos)
+%     PlotProbeGUI(groupDirs, datatype, condition)
+%     PlotProbeGUI(groupDirs, datatype, condition, pos)
 %  
 %  Description:
 %     GUI for displaying HRF plots for all probe channels. 
@@ -223,7 +233,7 @@ if ~isempty(p)
     set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
 end
 plotprobe.version  = get(hObject, 'name');
-plotprobe.dataTree = LoadDataTree(plotprobe.format, '', maingui);
+plotprobe.dataTree = LoadDataTree(plotprobe.groupDirs, plotprobe.format, '', maingui);
 if plotprobe.dataTree.IsEmpty()
     return;
 end

@@ -90,27 +90,32 @@ varargin = args;
 
 % Arguments take precedence over parent gui parameters
 if length(varargin)==0
-    return;                                                        % ProcStreamOptionsGUI()
+    return;                                                         % ProcStreamOptionsGUI()
 elseif length(varargin)==1
-    if ischar(varargin{1})                
-        procStreamOptions.format = varargin{1};                    % ProcStreamOptionsGUI(format)
-    end
+    procStreamOptions.groupDirs = varargin{1};                      % ProcStreamOptionsGUI(groupDirs)
 elseif length(varargin)==2
-    if ischar(varargin{1})
-        procStreamOptions.format = varargin{1};
-        if isreal(varargin{2}) & length(varargin{2})==4     
-            procStreamOptions.pos = varargin{2};                    % PlotProbeGUI(format, pos)
-        elseif iswholenum(varargin{2}) & length(varargin{2})==1
-            procStreamOptions.applyEditCurrNodeOnly = varargin{2};  % PlotProbeGUI(format, applyEditCurrNodeOnly)
-        end
-    else
-        procStreamOptions.applyEditCurrNodeOnly = varargin{1};      % PlotProbeGUI(applyEditCurrNodeOnly, pos)
-        procStreamOptions.pos = varargin{2};
+    procStreamOptions.groupDirs = varargin{1};                      
+    if ischar(varargin{1})                
+        procStreamOptions.format = varargin{2};                     % ProcStreamOptionsGUI(groupDirs, format)
     end
 elseif length(varargin)==3
-    procStreamOptions.format                 = varargin{1};
-    procStreamOptions.applyEditCurrNodeOnly  = varargin{2};
-    procStreamOptions.pos                    = varargin{3};         % PlotProbeGUI(format, datatype, condition, pos)
+    procStreamOptions.groupDirs = varargin{1};
+    if ischar(varargin{2})
+        procStreamOptions.format = varargin{2};
+        if isreal(varargin{3}) & length(varargin{3})==4     
+            procStreamOptions.pos = varargin{3};                    % PlotProbeGUI(groupDirs, format, pos)
+        elseif iswholenum(varargin{3}) & length(varargin{3})==1
+            procStreamOptions.applyEditCurrNodeOnly = varargin{3};  % PlotProbeGUI(groupDirs, format, applyEditCurrNodeOnly)
+        end
+    else
+        procStreamOptions.applyEditCurrNodeOnly = varargin{2};      % PlotProbeGUI(groupDirs, applyEditCurrNodeOnly, pos)
+        procStreamOptions.pos = varargin{3};
+    end
+elseif length(varargin)==4
+    procStreamOptions.groupDirs              = varargin{1};
+    procStreamOptions.format                 = varargin{2};
+    procStreamOptions.applyEditCurrNodeOnly  = varargin{3};
+    procStreamOptions.pos                    = varargin{4};         % PlotProbeGUI(groupDirs, format, datatype, condition, pos)
 end
 
 % Now whichever of the above parameters weren't assigned values
@@ -136,13 +141,14 @@ function ProcStreamOptionsGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 %  Syntax:
 %
 %     ProcStreamOptionsGUI()
-%     ProcStreamOptionsGUI(format)
-%     ProcStreamOptionsGUI(format, pos)
-%     ProcStreamOptionsGUI(format, applyEditCurrNodeOnly)
-%     ProcStreamOptionsGUI(format, applyEditCurrNodeOnly, pos)
-%     ProcStreamOptionsGUI(pos)
-%     ProcStreamOptionsGUI(applyEditCurrNodeOnly)
-%     ProcStreamOptionsGUI(applyEditCurrNodeOnly, pos)
+%     ProcStreamOptionsGUI(groupDirs)
+%     ProcStreamOptionsGUI(groupDirs, format)
+%     ProcStreamOptionsGUI(groupDirs, format, pos)
+%     ProcStreamOptionsGUI(groupDirs, format, applyEditCurrNodeOnly)
+%     ProcStreamOptionsGUI(groupDirs, format, applyEditCurrNodeOnly, pos)
+%     ProcStreamOptionsGUI(groupDirs, pos)
+%     ProcStreamOptionsGUI(groupDirs, applyEditCurrNodeOnly)
+%     ProcStreamOptionsGUI(groupDirs, applyEditCurrNodeOnly, pos)
 %  
 %  Description:
 %     GUI used for editing the processing stream user-editable parameters. 
@@ -188,7 +194,7 @@ if ~isempty(p)
 end
 
 procStreamOptions.version  = get(hObject, 'name');
-procStreamOptions.dataTree = LoadDataTree(procStreamOptions.format, '', maingui);
+procStreamOptions.dataTree = LoadDataTree(pwd, procStreamOptions.format, '', maingui);
 if procStreamOptions.dataTree.IsEmpty()
     return;
 end
@@ -350,6 +356,7 @@ function edit_Callback(hObject, eventdata, handles)
 global procStreamOptions
 
 dataTree = procStreamOptions.dataTree;
+iG = dataTree.GetCurrElemIndexID();
 
 iFcall  = eventdata(1);
 iParam = eventdata(2);
@@ -365,13 +372,13 @@ set( hObject, 'string', str);
 % level
 if ~procStreamOptions.applyEditCurrNodeOnly
     if dataTree.currElem.iSubj>0 && dataTree.currElem.iRun==0
-        for ii=1:length(dataTree.group.subjs)
-            dataTree.group.subjs(ii).procStream.EditParam(iFcall, iParam, val);
+        for ii=1:length(dataTree.group(iG).subjs)
+            dataTree.group(iG).subjs(ii).procStream.EditParam(iFcall, iParam, val);
         end
     elseif dataTree.currElem.iSubj>0 && dataTree.currElem.iRun>0
-        for ii=1:length(dataTree.group.subjs)
-            for jj=1:length(dataTree.group.subjs(ii).runs)
-                dataTree.group.subjs(ii).runs(jj).procStream.EditParam(iFcall, iParam, val);
+        for ii=1:length(dataTree.group(iG).subjs)
+            for jj=1:length(dataTree.group(iG).subjs(ii).runs)
+                dataTree.group(iG).subjs(ii).runs(jj).procStream.EditParam(iFcall, iParam, val);
             end
         end
     end

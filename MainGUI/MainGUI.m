@@ -101,11 +101,25 @@ global maingui
 
 maingui = [];
 
-if isempty(varargin)    
+if length(varargin)==0
+    maingui.groupDirs = convertToStandardPath({pwd});
+else
+    maingui.groupDirs = varargin{1};
+end
+if length(varargin)<2
     maingui.format = 'snirf';
 else
-    maingui.format = varargin{1};
+    maingui.format = varargin{2};
 end
+
+if ~iscell(maingui.groupDirs)
+    maingui.groupDirs = {maingui.groupDirs};
+end
+
+for ii=1:length(maingui.groupDirs)
+    fprintf('MainGUI: Will load group folder #%d - %s\n', ii, maingui.groupDirs{ii})
+end
+
 maingui.gid = 1;
 maingui.sid = 2;
 maingui.rid = 3;
@@ -134,7 +148,7 @@ maingui.childguis(4) = ChildGuiClass('PlotProbeGUI');
 maingui.childguis(5) = ChildGuiClass('PvaluesDisplayGUI');
 
 % Load date files into group tree object
-maingui.dataTree  = LoadDataTree(maingui.format);
+maingui.dataTree  = LoadDataTree(maingui.groupDirs, maingui.format);
 if maingui.dataTree.IsEmpty()
     return;
 end

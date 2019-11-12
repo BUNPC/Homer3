@@ -72,7 +72,7 @@ classdef ChildGuiClass < handle
                     obj.args = varargin;
                     a = obj.args;
 
-                    % Allow passing of up to 5 arguments.
+                    % Allow passing of up to 6 arguments.
                     switch(length(a))
                         case 0
                             obj.Launch();
@@ -86,6 +86,8 @@ classdef ChildGuiClass < handle
                             obj.Launch(a{1}, a{2}, a{3}, a{4});
                         case 5
                             obj.Launch(a{1}, a{2}, a{3}, a{4}, a{5});
+                        case 5
+                            obj.Launch(a{1}, a{2}, a{3}, a{4}, a{5}, a{6});
                     end
                 end
             end
@@ -111,7 +113,7 @@ classdef ChildGuiClass < handle
                 obj.args = varargin;
             end
             
-            % Allow up to 5 arguments to be passed to GUI
+            % Allow up to 6 arguments to be passed to GUI
             a = obj.args;
             switch(length(a))
                 % Note that in addition to the guis known args we add as the last arg the last gui position. 
@@ -131,6 +133,8 @@ classdef ChildGuiClass < handle
                     eval( sprintf('obj.handles = %s(a{1}, a{2}, a{3}, a{4}, obj.lastpos);', obj.name) );
                 case 5
                     eval( sprintf('obj.handles = %s(a{1}, a{2}, a{3}, a{4}, a{5}, obj.lastpos);', obj.name) );
+                case 6
+                    eval( sprintf('obj.handles = %s(a{1}, a{2}, a{3}, a{4}, a{5}, a{6}, obj.lastpos);', obj.name) );
             end
             if ishandle(obj.handles.figure)
                 set(obj.handles.figure, 'visible',obj.visible, 'CloseRequestFcn',@obj.Close);
@@ -201,6 +205,8 @@ classdef ChildGuiClass < handle
                     eval( sprintf('obj.handles.updateptr(obj.handles, a{1}, a{2}, a{3}, a{4});') );
                 case 5
                     eval( sprintf('obj.handles.updateptr(obj.handles, a{1}, a{2}, a{3}, a{4}, a{5});') );
+                case 6
+                    eval( sprintf('obj.handles.updateptr(obj.handles, a{1}, a{2}, a{3}, a{4}, a{5}, a{6});') );
             end
         end
         

@@ -7,6 +7,10 @@ classdef GroupClass < TreeNodeClass
         spacesaver;
     end
     
+    properties % (Access = private)
+        path
+    end
+    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Public methods
@@ -267,7 +271,12 @@ classdef GroupClass < TreeNodeClass
         end
 
 
-
+        % ----------------------------------------------------------------------------------
+        function SetPath(obj, dirname)
+            obj.path = dirname;
+        end
+        
+        
         % ----------------------------------------------------------------------------------
         function Add(obj, subj, run)                        
             % Add subject to this group
@@ -341,7 +350,7 @@ classdef GroupClass < TreeNodeClass
             % If any of the tree nodes still have unintialized procStream input, ask 
             % user for a config file to load it from 
             if g.procStream.IsEmpty() || s.procStream.IsEmpty() || r.procStream.IsEmpty()
-                [fname, autoGenDefaultFile] = g.procStream.GetConfigFileName(procStreamCfgFile);                                
+                [fname, autoGenDefaultFile] = g.procStream.GetConfigFileName(procStreamCfgFile, obj.path);                                
                 
                 % If user did not provide procStream config filename and file does not exist
                 % then create a config file with the default contents
@@ -537,8 +546,8 @@ classdef GroupClass < TreeNodeClass
                 return;
             end
             group = [];
-            if exist('./groupResults.mat','file')
-                g = load( './groupResults.mat' );
+            if exist([obj.path, 'groupResults.mat'],'file')
+                g = load([obj.path, 'groupResults.mat']);
                 
                 % Do some basic error checks on groupResults contents
                 if isproperty(g, 'group') && isa(g.group, 'GroupClass')
@@ -556,28 +565,28 @@ classdef GroupClass < TreeNodeClass
             % and current one are equal.
             if ~isempty(group) && obj.CompareVersions(group)<=0
                 % copy procStream.output from previous group to current group for
-                % all nodes that still exist in the current group.
+                % all nodes that still exist in the current group .
                 hwait = waitbar(0,'Loading group');
                 obj.Copy(group, 'conditional');
                 close(hwait);
             else
                 group = obj;
-                if exist('./groupResults.mat','file')
+                if exist([obj.path, 'groupResults.mat'],'file')
                     fprintf('Warning: This folder contains old version of groupResults.mat. Will move it to groupResults_old.mat\n');
-                    movefile('./groupResults.mat', './groupResults_old.mat')
+                    movefile([obj.path, 'groupResults.mat'], './groupResults_old.mat')
                 end
-                save( './groupResults.mat','group' );
+                save([obj.path, 'groupResults.mat'],'group' );
             end
         end
         
         
         % ----------------------------------------------------------------------------------
         function Save(obj)
-            fprintf('Saving processed data in groupResults.mat\n');
+            fprintf('Saving processed data in %s\n', [obj.path, 'groupResults.mat']);
             t_local = tic;
             group = GroupClass(obj);
             try 
-                save( './groupResults.mat','group' );
+                save([obj.path, 'groupResults.mat'],'group' );
             catch
                 msg{1} = sprintf('WARNING: Could not save computation output to groupResults.mat file in the subject folder\n\n');
                 msg{2} = sprintf('%s\n\n', pwd);
@@ -587,8 +596,6 @@ classdef GroupClass < TreeNodeClass
             end            
             fprintf('Completed saving groupResults.mat in %0.3f seconds.\n', toc(t_local));
         end
-        
-        
 
     end  % Public Save/Load methods
         
@@ -660,8 +667,8 @@ classdef GroupClass < TreeNodeClass
             % condition involves 2 distinct well defined steps:
             %   a) For the current element change the name of the specified (old)
             %      condition for ONLY for ALL the acquired data elements under the
-            %      currElem, be it run, subj, or group. In this step we DO NOT TOUCH
-            %      the condition names of the run, subject or group.
+            %      currElem, be it run, subj, or group . In this step we DO NOT TOUCH
+            %      the condition names of the run, subject or group .
             %   b) Rebuild condition names and tables of all the tree nodes group, subjects
             %      and runs same as if you were loading during Homer3 startup from the
             %      acquired data.

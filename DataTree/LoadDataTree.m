@@ -3,9 +3,10 @@ function dataTree = LoadDataTree(varargin)
 % Syntax:
 %
 %       dataTree = LoadDataTree()
-%       dataTree = LoadDataTree(fmt)
-%       dataTree = LoadDataTree(fmt, procStreamCfgFile)
-%       dataTree = LoadDataTree(fmt, procStreamCfgFile, parent)
+%       dataTree = LoadDataTree(groupDirs)
+%       dataTree = LoadDataTree(groupDirs, fmt)
+%       dataTree = LoadDataTree(groupDirs, fmt, procStreamCfgFile)
+%       dataTree = LoadDataTree(groupDirs, fmt, procStreamCfgFile, parent)
 %
 % Description:
 %       
@@ -16,28 +17,37 @@ function dataTree = LoadDataTree(varargin)
 %       
 
 
-% First get all the argument there are to get using the 7 possible syntax
+% First get all the argument there are to get using the 5 possible syntax
 % calls 
-if nargin==0
-    fmt          = '';
-    procStreamCfgFile  = '';
-    parent       = [];
+if     nargin==0
+    groupDirs{1}        = pwd;
+    fmt                 = '';
+    procStreamCfgFile   = '';
+    parent              = [];
 elseif nargin==1
-    fmt          = varargin{1};
-    procStreamCfgFile  = '';
-    parent       = []';
+    groupDirs           = varargin{1};
+    fmt                 = '';
+    procStreamCfgFile   = '';
+    parent              = []';
 elseif nargin==2
-    fmt          = varargin{1};
-    procStreamCfgFile  = varargin{2};
-    parent       = []';
+    groupDirs           = varargin{1};
+    fmt                 = varargin{2};
+    procStreamCfgFile   = '';
+    parent              = []';
 elseif nargin==3
-    fmt          = varargin{1};
-    procStreamCfgFile  = varargin{2};
-    parent       = varargin{3};
+    groupDirs           = varargin{1};
+    fmt                 = varargin{2};
+    procStreamCfgFile   = varargin{3};
+    parent              = []';
+elseif nargin==4
+    groupDirs           = varargin{1};
+    fmt                 = varargin{2};
+    procStreamCfgFile   = varargin{3};
+    parent              = varargin{4};
 end
 
 if isempty(parent) || ~isproperty(parent, 'dataTree') || isempty(parent.dataTree)
-    dataTree = DataTreeClass(fmt, procStreamCfgFile);
+    dataTree = DataTreeClass(groupDirs, fmt, procStreamCfgFile);
 else
     dataTree = parent.dataTree;
 end

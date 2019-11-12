@@ -35,6 +35,7 @@ varargin = args;
 %%%% These are the parameters that are assigned from external soutrces,
 %%%% either from GUI arguments or parent GUI. 
 %
+% pvaluesgui.groupDirs
 % pvaluesgui.format
 % pvaluesgui.pos
 %
@@ -42,26 +43,37 @@ varargin = args;
 %  Syntax:
 %
 %     PvaluesDisplayGUI()
-%     PvaluesDisplayGUI(format)
-%     PvaluesDisplayGUI(format, pos)
+%     PvaluesDisplayGUI(groupDirs)
+%     PvaluesDisplayGUI(groupDirs, format)
+%     PvaluesDisplayGUI(groupDirs, format, pos)
 
 % Arguments take precedence over parent gui parameters
 if length(varargin)==0
-    return;                                                  % PvaluesDisplayGUI()
+    return;                                                 % PvaluesDisplayGUI()
 elseif length(varargin)==1
-    pvaluesgui.format = varargin{1};                      % PvaluesDisplayGUI(format)
+    pvaluesgui.groupDirs = varargin{1};                     % PvaluesDisplayGUI(groupDirs)
 elseif length(varargin)==2
-    pvaluesgui.format = varargin{1};
-    pvaluesgui.pos = varargin{2};                    % PvaluesDisplayGUI(format, pos)
+    pvaluesgui.groupDirs = varargin{1};
+    pvaluesgui.format = varargin{2};                        % PvaluesDisplayGUI(groupDirs, format)
+elseif length(varargin)==2
+    pvaluesgui.groupDirs = varargin{1};
+    pvaluesgui.format = varargin{2};
+    pvaluesgui.pos = varargin{3};                           % PvaluesDisplayGUI(groupDirs, format, pos)
 end
 
 % Now whichever of the above parameters weren't assigned values
 % obtain values either from parent gui or assign default value
 if isempty(maingui)
+    if isempty(pvaluesgui.groupDirs)
+        pvaluesgui.groupDirs = convertToStandardPath({pwd});
+    end
     if isempty(pvaluesgui.format)
         pvaluesgui.format = 'snirf';
     end
  else
+    if isempty(pvaluesgui.groupDirs)
+        pvaluesgui.groupDirs = maingui.groupDirs;
+    end
     if isempty(pvaluesgui.format)
         pvaluesgui.format = maingui.format;
     end
@@ -82,6 +94,7 @@ pvaluesgui.status = -1;
 
 % These are the parameters that are assigned from external sources,
 % either from GUI arguments or parent GUI. 
+pvaluesgui.groupDirs = {};
 pvaluesgui.format = '';
 pvaluesgui.pos = [];
 
@@ -93,7 +106,7 @@ if ~isempty(p)
     set(hObject, 'position', [p(1), p(2), p(3), p(4)]);
 end
 pvaluesgui.version  = get(hObject, 'name');
-pvaluesgui.dataTree = LoadDataTree(pvaluesgui.format, '', maingui);
+pvaluesgui.dataTree = LoadDataTree(pwd, pvaluesgui.format, '', maingui);
 if pvaluesgui.dataTree.IsEmpty()
     return;
 end

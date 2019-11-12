@@ -1,12 +1,12 @@
-function [snirf, nirsfiles] = Nirs2Snirf(nirsfiles0, replace, ntimebases)
+function [snirf, nirsfiles] = Nirs2Snirf(dirname, nirsfiles0, replace, ntimebases)
 %
 % Syntax:
-%   snirf = Nirs2Snirf(nirsfiles)
-%   snirf = Nirs2Snirf(nirsfiles, replace)
-%   snirf = Nirs2Snirf(nirsfiles, replace, ntimebases)
+%   snirf = Nirs2Snirf(dirname, nirsfiles)
+%   snirf = Nirs2Snirf(dirname, nirsfiles, replace)
+%   snirf = Nirs2Snirf(dirname, nirsfiles, replace, ntimebases)
 %
 % Description:
-%   Convert all .nirs files in the current folder to .snirf
+%   Convert all .nirs files in the folder dirname to .snirf
 %
 % 
 %
@@ -15,8 +15,11 @@ DEBUG=false;
 
 snirf = SnirfClass().empty();
 
+if ~exist('dirname','var') || isempty(dirname)
+    dirname = convertToStandardPath(pwd);
+end
 if ~exist('nirsfiles0','var') || isempty(nirsfiles0)
-    nirsfiles0 = DataFilesClass('nirs').files;
+    nirsfiles0 = DataFilesClass(dirname,'nirs').files;
 end
 if ~exist('replace','var') || isempty(replace)
     replace = false;
@@ -25,7 +28,7 @@ if ~exist('ntimebases','var') || isempty(ntimebases)
     ntimebases = 1;
 end
 
-nirsfiles = mydir('');
+nirsfiles = mydir(dirname);
 if iscell(nirsfiles0)
     for ii=1:length(nirsfiles0)
         nirsfiles(ii) = mydir(nirsfiles0{ii});
@@ -41,7 +44,7 @@ for ii=1:length(nirsfiles)
     if nirsfiles(ii).isdir
         continue;
     end
-    [pname,fname,ext] = fileparts([nirsfiles(ii).pathfull, '/', nirsfiles(ii).filename]);
+    [pname,fname,ext] = fileparts([nirsfiles(ii).pathfull, '/', nirsfiles(ii).name]);
     fprintf('Converting %s to %s\n', [pname,'/',fname,ext], [pname,'/',fname,'.snirf']);
     waitbar_improved(ii/length(nirsfiles), h, sprintf('Converting %s to SNIRF: %d of %d', nirsfiles(ii).name, ii, length(nirsfiles)));
 

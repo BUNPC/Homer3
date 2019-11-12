@@ -25,11 +25,12 @@ classdef RunClass < TreeNodeClass
                 obj.name  = '';
                 return;
             end    
-                        
+            dirname = './';
             if isa(varargin{1}, 'RunClass')
                 obj.Copy(varargin{1});
                 return;
             elseif isa(varargin{1}, 'FileClass')
+                dirname = varargin{1}.pathfull;
                 [~, ~, obj.name] = varargin{1}.ExtractNames();
             elseif ischar(varargin{1}) && strcmp(varargin{1},'copy')
                 return;
@@ -42,7 +43,7 @@ classdef RunClass < TreeNodeClass
                 obj.iRun   = varargin{4};
             end
             
-            obj.Load();
+            obj.Load(dirname);
             if obj.acquired.IsEmpty()
                 obj = RunClass.empty();
                 return;
@@ -57,14 +58,22 @@ classdef RunClass < TreeNodeClass
         
             
         % ----------------------------------------------------------------------------------
-        function Load(obj)
+        function Load(obj, dirname)
             if isempty(obj)
                 return;
             end
+            if nargin==1 || isempty(dirname)
+                dirname = '.';
+            end
+            dirname(dirname=='\') = '/';
+            if dirname(end) ~= '/'
+                dirname(end+1) = '/';
+            end
+            
             if obj.IsNirs()
-                obj.acquired = NirsClass(obj.name);
+                obj.acquired = NirsClass([dirname, obj.name]);
             else
-                obj.acquired = SnirfClass(obj.name);
+                obj.acquired = SnirfClass([dirname, obj.name]);
             end            
             if obj.acquired.IsEmpty()
                 fprintf('     **** Warning: %s failed to load.\n', obj.name);
@@ -588,8 +597,8 @@ classdef RunClass < TreeNodeClass
             % condition involves 2 distinct well defined steps:
             %   a) For the current element change the name of the specified (old)
             %      condition for ONLY for ALL the acquired data elements under the
-            %      currElem, be it run, subj, or group. In this step we DO NOT TOUCH
-            %      the condition names of the run, subject or group.
+            %      currElem, be it run, subj, or group . In this step we DO NOT TOUCH
+            %      the condition names of the run, subject or group .
             %   b) Rebuild condition names and tables of all the tree nodes group, subjects
             %      and runs same as if you were loading during Homer3 startup from the
             %      acquired data.

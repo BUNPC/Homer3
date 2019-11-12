@@ -1,16 +1,21 @@
-function DeleteSnirfFiles(snirffiles0)
+function DeleteSnirfFiles(dirname, snirffiles0)
+
+if ~exist('dirname','var')
+    dirname = pwd;
+end
+dirname = convertToStandardPath(dirname);
 
 if ~exist('snirffiles0','var')
-    snirffiles0 = DataFilesClass('.snirf','standalone').files;
+    snirffiles0 = DataFilesClass(dirname, '.snirf', 'standalone').files;
 end
 
-snirffiles = mydir('');
+snirffiles = mydir(dirname);
 if iscell(snirffiles0)
     for ii=1:length(snirffiles0)
-        snirffiles(ii) = mydir(snirffiles0{ii});
+        snirffiles(ii) = mydir([dirname, snirffiles0{ii}]);
     end
 elseif ischar(snirffiles0)
-    snirffiles = mydir(snirffiles0);
+    snirffiles = mydir([dirname, snirffiles0]);
 elseif isa(snirffiles0, 'FileClass')
     snirffiles = snirffiles0;
 end
@@ -19,8 +24,8 @@ for ii=1:length(snirffiles)
     if snirffiles(ii).isdir
         continue;
     end
-    fprintf('Deleting %s\n', [snirffiles(ii).pathfull, '/', snirffiles(ii).filename]);
-    delete([snirffiles(ii).pathfull, '/', snirffiles(ii).filename]);
+    fprintf('Deleting %s\n', [snirffiles(ii).pathfull, '/', snirffiles(ii).name]);
+    delete([snirffiles(ii).pathfull, '/', snirffiles(ii).name]);
     pause(0.25);
 end
 

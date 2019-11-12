@@ -52,7 +52,6 @@ color       = maingui.axesSDG.linecolor;
 
 SD          = maingui.dataTree.currElem.GetSDG();
 bbox        = maingui.dataTree.currElem.GetSdgBbox();
-procResult  = maingui.dataTree.currElem.procStream.output;
 
 % Set axes handle properties and parameters 
 if ~ishandles(hAxes)
@@ -90,8 +89,7 @@ for iBlk = 1:nDataBlks
     MeasListActAuto = [MeasListActAuto; ch.MeasListActAuto];
     MeasListVis     = [MeasListVis; ch.MeasListVis];
 end
-
-
+    
 lst   = find(MeasList(:,1)>0);
 ml    = MeasList(lst,:);
 lstML = find(ml(:,4)==1); %cw6info.displayLambda);

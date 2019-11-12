@@ -12,11 +12,13 @@ dirs = dir(str);
 if isempty(dirs)
     return;
 end
+kk = 1;
 for ii=1:length(dirs)
-    files(ii) = FileClass(dirs(ii));
-    
-    if isempty(files(ii).pathfull)
-        files(ii).pathfull = fileparts(fullpath(str));
+    foo = FileClass(dirs(ii));
+    if ~foo.IsEmpty()
+        files(kk) = foo;
+        files(kk).pathfull = fileparts(fullpath(str));
+        kk=kk+1;
     end
 end
 

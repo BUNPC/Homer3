@@ -19,14 +19,19 @@ classdef DataFilesClass < handle
             skipconfigfile = false;
             
             if nargin>0
-                obj.type = varargin{1};
+                obj.pathnm = varargin{1};
+            end
+            obj.pathnm = convertToStandardPath(obj.pathnm);
+
+            if nargin>1
+                obj.type = varargin{2};
                 if obj.type(1)=='.'
                     obj.type(1)='';
                 end
             end
             obj.errmsg = {};
             
-            if nargin>1
+            if nargin>2
                 if strcmp(varargin{2}, 'standalone')
                     skipconfigfile = true;
                 end
@@ -44,13 +49,12 @@ classdef DataFilesClass < handle
             else
                 obj.config.RegressionTestActive=false;
             end
-            foo = mydir(obj.pathnm);
-            if ~isempty(foo) && ~foo(1).isdir
-                obj.files = foo;
-            end
+            
             if nargin==0
                 return;
             end
+            
+            obj.files = mydir(obj.pathnm);
             GetDataSet(obj);
         end
         
@@ -60,27 +64,25 @@ classdef DataFilesClass < handle
             if exist(obj.pathnm, 'dir')~=7
                 error(sprintf('Invalid subject folder: ''%s''', obj.pathnm));
             end
-            cd(obj.pathnm);
             obj.findDataSet(obj.type);                        
         end
 
         
         % ----------------------------------------------------
         function findDataSet(obj, type)
-            obj.files = mydir(['./*.', type]);
+            obj.files = mydir([obj.pathnm, '/*.', type]);
             if isempty( obj.files )
                 
                 % If there are no .nirs files in current dir, don't give up yet - check
                 % the subdirs for .nirs files.
-                dirs = mydir();
+                dirs = mydir(obj.pathnm);
                 for ii=1:length(dirs)
                     if dirs(ii).isdir && ...
                             ~strcmp(dirs(ii).name,'.') && ...
                             ~strcmp(dirs(ii).name,'..') && ...
                             ~strcmp(dirs(ii).name,'hide')
                         dirs(ii).idx = length(obj.files)+1;
-                        cd(dirs(ii).name);
-                        foos = mydir(['./*.', type]);
+                        foos = mydir([obj.pathnm, dirs(ii).name, '/*.', type]);
                         nfoos = length(foos);
                         if nfoos>0
                             for jj=1:nfoos
@@ -90,6 +92,7 @@ classdef DataFilesClass < handle
                                 foos(jj).filename     = foos(jj).name;
                                 foos(jj).name         = [dirs(ii).name, '/', foos(jj).name];
                                 foos(jj).map2group    = struct('iGroup',0, 'iSubj',0, 'iRun',0);
+                                foos(jj).pathfull     = dirs(ii).pathfull;
                             end
                             
                             % Add .nirs file from current subdir to files struct
@@ -100,10 +103,13 @@ classdef DataFilesClass < handle
                             end
                             obj.files(end+1:end+nfoos) = foos;
                         end
-                        cd('../');
                     end
                 end
-            end            
+            else
+                for ii=1:length(obj.files)
+                    obj.files(ii).pathfull = obj.pathnm;
+                end
+            end
         end
         
         

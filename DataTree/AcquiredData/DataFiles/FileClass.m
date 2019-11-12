@@ -49,6 +49,12 @@ classdef FileClass < matlab.mixin.Copyable
             else
                 return;
             end
+            if strcmp(file_struct.name,'.')
+                return;
+            end
+            if strcmp(file_struct.name,'..')
+                return;
+            end
             
             % Copy all fields of file_struct that exist in this class to this object. 
             fields = propnames(file_struct);
@@ -64,11 +70,7 @@ classdef FileClass < matlab.mixin.Copyable
             obj.subjdiridx = 0;
             obj.filename = obj.name;
             obj.map2group = struct('iSubj',0,'iRun',0);
-            if obj.isdir
-                obj.pathfull = fileparts(fileparts(fullpath(obj.name)));
-            else
-                obj.pathfull = fileparts(fullpath(obj.name));
-            end
+            obj.err        = 0;          % Assume file is not loadable
         end
 
 
@@ -119,7 +121,12 @@ classdef FileClass < matlab.mixin.Copyable
         
         % -----------------------------------------------------------
         function [groupName, subjName, runName] = ExtractNames(obj)
-            [~, groupName] = fileparts(pwd);
+            if obj.pathfull(end)=='/' || obj.pathfull(end)=='\'
+               groupPath = obj.pathfull(1:end-1);
+            else
+               groupPath = obj.pathfull;
+            end
+            [~, groupName] = fileparts(groupPath);
             subjName = '';
             runName = '';
 
@@ -134,7 +141,9 @@ classdef FileClass < matlab.mixin.Copyable
                 return;
             end
 
-            %%%% obj is a data file
+            %%%% obj is a data file representing single run
+            %             [~, fname, ext] = fileparts(obj.name);
+            %             runName = [fname, ext];
             runName = obj.name;
             
             % Determine subject name from filename
@@ -184,7 +193,21 @@ classdef FileClass < matlab.mixin.Copyable
                 b = true;
             end
         end
+        
+        
+        % -----------------------------------------------------------
+        function b = IsEmpty(obj)
+            b = true;
+            if isempty(obj.name)
+                return;
+            end
+            if obj.err ~= 0
+                return;
+            end
+            b = false;            
+        end
                 
+        
     end
     
 end

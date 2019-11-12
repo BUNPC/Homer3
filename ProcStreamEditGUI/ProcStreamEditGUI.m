@@ -34,8 +34,9 @@ function ProcStreamEditGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 %  Syntax:
 %
 %     ProcStreamEditGUI()
-%     ProcStreamEditGUI(format)
-%     ProcStreamEditGUI(format, pos)
+%     ProcStreamEditGUI(groupDirs)
+%     ProcStreamEditGUI(groupDirs, format)
+%     ProcStreamEditGUI(groupDirs, format, pos)
 %  
 %  Description:
 %     GUI used for editing the processing stream chain of function calls. 
@@ -60,10 +61,12 @@ procStreamEdit = [];
 
 %%%% Begin parse arguments 
 
+procStreamEdit.groupDirs = {};
 procStreamEdit.format = '';
 procStreamEdit.pos = [];
 procStreamEdit.updateParentGui = [];
 if ~isempty(maingui)
+    procStreamEdit.groupDirs = maingui.groupDirs;
     procStreamEdit.format = maingui.format;
     procStreamEdit.updateParentGui = maingui.Update;
 
@@ -73,12 +76,21 @@ if ~isempty(maingui)
     set(handles.menuItemSaveGroup,'visible','off');
 end
 
+% Group dirs argument
+if isempty(procStreamEdit.groupDirs)
+    if length(varargin)<1
+        procStreamEdit.groupDirs = convertToStandardPath({pwd});
+    elseif ischar(varargin{1})
+        procStreamEdit.groupDirs = varargin{1};
+    end
+end
+
 % Format argument
 if isempty(procStreamEdit.format)
-    if isempty(varargin)
+    if length(varargin)<2
         procStreamEdit.format = 'snirf';
-    elseif ischar(varargin{1})
-        procStreamEdit.format = varargin{1};
+    elseif ischar(varargin{2})
+        procStreamEdit.format = varargin{2};
     end
 end
 
@@ -86,8 +98,8 @@ end
 if isempty(procStreamEdit.pos)
     if length(varargin)==1 && ~ischar(varargin{1})
         procStreamEdit.pos = varargin{1};
-    elseif length(varargin)==2 && ~ischar(varargin{2})
-        procStreamEdit.pos = varargin{2};
+    elseif length(varargin)==3 && ~ischar(varargin{3})
+        procStreamEdit.pos = varargin{3};
     end
 end
 
@@ -123,8 +135,8 @@ htab = htabR;
 procStreamEdit.iPanel = procStreamEdit.iRunPanel;
 
 % Load data tree
-procStreamEdit.dataTree = LoadDataTree(procStreamEdit.format, '', maingui);
-if ~procStreamEdit.dataTree.IsEmpty()    
+procStreamEdit.dataTree = LoadDataTree(pwd, procStreamEdit.format, '', maingui);
+if ~procStreamEdit.dataTree.IsEmpty()
     procStreamEdit.procElem{procStreamEdit.iRunPanel} = procStreamEdit.dataTree.group(1).subjs(1).runs(1).copy;
     procStreamEdit.procElem{procStreamEdit.iSubjPanel} = procStreamEdit.dataTree.group(1).subjs(1).copy;
     procStreamEdit.procElem{procStreamEdit.iGroupPanel} = procStreamEdit.dataTree.group(1).copy;
@@ -517,9 +529,11 @@ end
 % Now save procElem to current procStream or to  a config file.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if q==1
-    group.CopyFcalls(procElem{iGroupPanel});
-    group.CopyFcalls(procElem{iSubjPanel});
-    group.CopyFcalls(procElem{iRunPanel});
+    for ii=1:length(group)
+        group(ii).CopyFcalls(procElem{iGroupPanel});
+        group(ii).CopyFcalls(procElem{iSubjPanel});
+        group(ii).CopyFcalls(procElem{iRunPanel});
+    end
     procStreamEdit.updateParentGui('ProcStreamEditGUI');
 elseif q==2
     % load cfg file

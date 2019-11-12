@@ -22,8 +22,9 @@ if stimEdit.dataTree.currElem.iRun==0
     return;
 end
 
-CondNamesGroup = stimEdit.dataTree.group.GetConditions();
-CondColTbl     = stimEdit.dataTree.group.CondColTbl();
+iG = stimEdit.dataTree.GetCurrElemIndexID();
+CondNamesGroup = stimEdit.dataTree.group(iG).GetConditions();
+CondColTbl     = stimEdit.dataTree.group(iG).CondColTbl();
 t              = stimEdit.dataTree.currElem.GetTimeCombined();
 s              = stimEdit.dataTree.currElem.GetStims(t);
 stimVals       = stimEdit.dataTree.currElem.GetStimValSettings();

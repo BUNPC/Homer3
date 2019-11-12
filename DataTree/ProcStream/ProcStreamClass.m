@@ -532,10 +532,15 @@ classdef ProcStreamClass < handle
     methods
 
         % ----------------------------------------------------------------------------------
-        function [fname, autoGenDefault] = GetConfigFileName(obj, procStreamCfgFile)
+        function [fname, autoGenDefault] = GetConfigFileName(obj, procStreamCfgFile, pathname)
             autoGenDefault = false;
             if ~exist('procStreamCfgFile','var')
                 procStreamCfgFile = '';
+            end
+            if ~exist('pathname','var')
+                pathname = convertToStandardPath(pwd);
+            else
+                pathname = convertToStandardPath(pathname);
             end
             
             % If procStream config filename wasn't passed down as an argument, check the 
@@ -550,9 +555,9 @@ classdef ProcStreamClass < handle
 
             % Check if file with name procStreamCfgFile exists
             temp = FileClass();
-            if temp.Exist(procStreamCfgFile)
-                fname = procStreamCfgFile;
-                fprintf('Default config file exists. Processing stream will be loaded from %s\n', procStreamCfgFile, procStreamCfgFile);
+            if temp.Exist([pathname, procStreamCfgFile])
+                fname = [pathname, procStreamCfgFile];
+                fprintf('Default config file exists. Processing stream will be loaded from %s\n', fname);
                 return;
             end
             
@@ -560,10 +565,10 @@ classdef ProcStreamClass < handle
             % 7.11 for Linux, where uigetfile won't block unless there's
             % a breakpoint.
             pause(.5);
-            [fname, pname] = uigetfile('*.cfg', 'Load Process Options File' );
+            [fname, pname] = uigetfile([pathname, '*.cfg'], 'Load Process Options File' );
             if fname==0
                 MessageBox( sprintf('Loading default config file.'),'Creating default config');
-                fname = [pwd, '/', procStreamCfgFile];
+                fname = [pathname, procStreamCfgFile];
                 autoGenDefault = true;
             else
                 fname = [pname, fname];
@@ -1420,8 +1425,8 @@ classdef ProcStreamClass < handle
             % condition involves 2 distinct well defined steps:
             %   a) For the current element change the name of the specified (old)
             %      condition for ONLY for ALL the acquired data elements under the
-            %      currElem, be it run, subj, or group. In this step we DO NOT TOUCH
-            %      the condition names of the run, subject or group.
+            %      currElem, be it run, subj, or group . In this step we DO NOT TOUCH
+            %      the condition names of the run, subject or group .
             %   b) Rebuild condition names and tables of all the tree nodes group, subjects
             %      and runs same as if you were loading during Homer3 startup from the
             %      acquired data.

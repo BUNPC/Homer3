@@ -4,6 +4,7 @@ classdef DataTreeClass <  handle
         files
         filesErr
         group
+        dirnameGroup
         currElem
         reg
         config
@@ -12,45 +13,35 @@ classdef DataTreeClass <  handle
     methods
         
         % ---------------------------------------------------------------
-        function obj = DataTreeClass(fmt, procStreamCfgFile)
+        function obj = DataTreeClass(groupdirs, fmt, procStreamCfgFile)
             obj.group         = GroupClass().empty();
             obj.currElem      = TreeNodeClass().empty();
             obj.reg           = RegistriesClass().empty();
             obj.config        = ConfigFileClass().empty();
+            obj.dirnameGroup  = '';
             
+            %%%% Parse args
+            
+            % Arg 1: get folder of the group being loaded
+            if ~exist('groupdirs','var')
+                groupdirs{1} = pwd;
+            elseif ~iscell(groupdirs)
+                groupdirs = {groupdirs};
+            end
+            
+            % Arg 2: get the file format of the data files
             if ~exist('fmt','var')
                 fmt = '';
             end
+            
+            % Arg 3: Get the processing stream config files name
             if ~exist('procStreamCfgFile','var')
                 procStreamCfgFile = '';
             end
-                       
-            dirnameGroup = '';
-                       
-            % Get file names and load them into DataTree
-            while obj.IsEmpty()
-                obj.files    = FileClass().empty();
-                obj.filesErr = FileClass().empty();
-                
-                dataInit = FindFiles(fmt, dirnameGroup);
-                if isempty(dataInit) || dataInit.isempty()
-                    return;
-                end
-                obj.files = dataInit.files;
-
-                obj.LoadData(procStreamCfgFile);
-                if obj.IsEmpty()                    
-                    msg{1} = sprintf('Could not load any of the requested files in the current group folder. ');
-                    msg{2} = sprintf('Do you want to select another group folder?');
-                    q = MenuBox([msg{:}], {'YES','NO'});
-                    if q==2
-                        return;
-                    end
-                    dirnameGroup = uigetdir(pwd, 'Please select another group folder ...');
-                    if dirnameGroup==0
-                        return;
-                    end
-                end
+            
+            obj.FindAndLoadGroups(groupdirs, fmt, procStreamCfgFile);
+            if obj.IsEmpty()
+                return;
             end
             
             % Load user function registry
@@ -72,8 +63,50 @@ classdef DataTreeClass <  handle
         end
 
 
+        % --------------------------------------------------------------
+        function FindAndLoadGroups(obj, groupdirs, fmt, procStreamCfgFile)
+            
+            for kk=1:length(groupdirs)
+                
+                obj.dirnameGroup = convertToStandardPath(groupdirs{kk});
+
+                iGnew = length(obj.group)+1;
+                
+                % Get file names and load them into DataTree
+                while length(obj.group) < iGnew
+                    obj.files    = FileClass().empty();
+                    obj.filesErr = FileClass().empty();
+                    
+                    dataInit = FindFiles(obj.dirnameGroup, fmt);
+                    if isempty(dataInit) || dataInit.isempty()
+                        return;
+                    end
+                    obj.files = dataInit.files;
+                    
+                    obj.LoadGroup(procStreamCfgFile);
+                    if length(obj.group) < iGnew
+                        msg{1} = sprintf('Could not load any of the requested files in the group folder %s. ', obj.dirnameGroup);
+                        msg{2} = sprintf('Do you want to select another group folder?');
+                        q = MenuBox([msg{:}], {'YES','NO'});
+                        if q==2
+                            fprintf('Skipping group folder %s...', obj.dirnameGroup);
+                            continue;
+                        end
+                        obj.dirnameGroup = uigetdir(pwd, 'Please select another group folder ...');
+                        if obj.dirnameGroup==0
+                            fprintf('Skipping group folder %s...', obj.dirnameGroup);
+                            continue;
+                        end
+                    end
+                end
+                
+            end
+            
+        end
+        
+            
         % ---------------------------------------------------------------
-        function LoadData(obj, procStreamCfgFile)
+        function LoadGroup(obj, procStreamCfgFile)
             if ~exist('procStreamCfgFile','var')
                 procStreamCfgFile = '';
             end
@@ -89,31 +122,33 @@ classdef DataTreeClass <  handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.ErrorCheckLoadedFiles();
 
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Load derived or post-acquisition data from a file if it 
-            % exists
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.group.Load();
+            for ii=1:length(obj.group)
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % Load derived or post-acquisition data from a file if it
+                % exists
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                obj.group(ii).Load();            
             
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Initialize procStream for all tree nodes
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.group.InitProcStream(procStreamCfgFile);
-
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Generate the stimulus conditions for the group tree
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.group.SetConditions();
-                        
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Find the amount of memory the whole group tree requires 
-            % at the run level. If group runs take up more than half a 
-            % GB then do not save dc and dod time courses and recalculate 
-            % dc and dod for each new current element (currElem) on the 
-            % fly. This should be a menu option in future releases
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                        
-            fprintf('Memory required for acquisition data %0.1f MB\n', obj.group.MemoryRequired() / 1e6);
             
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % Initialize procStream for all tree nodes
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                obj.group(ii).InitProcStream(procStreamCfgFile);
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % Generate the stimulus conditions for the group tree
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                obj.group(ii).SetConditions();
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % Find the amount of memory the whole group tree requires
+                % at the run level. If group runs take up more than half a
+                % GB then do not save dc and dod time courses and recalculate
+                % dc and dod for each new current element (currElem) on the
+                % fly. This should be a menu option in future releases
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                fprintf('Memory required for acquisition data %0.1f MB\n', obj.group(ii).MemoryRequired() / 1e6);
+            end
         end
         
         
@@ -140,7 +175,7 @@ classdef DataTreeClass <  handle
                     subjCurr = SubjClass(obj.files(iF));
                 end
                 if ~isempty(runName) && ~strcmp(runName, runCurr.GetName)
-                    runCurr = RunClass(obj.files(iF));                    
+                    runCurr = RunClass(obj.files(iF));
                 end
 
                 % If current run has successfully loaded acquired data from data file, then add 
@@ -152,7 +187,8 @@ classdef DataTreeClass <  handle
                     obj.Add(groupCurr, subjCurr, runCurr);
                     runCurr = RunClass().empty();
                 end
-            end            
+            end
+            
             fprintf('\n');            
         end
 
@@ -176,11 +212,12 @@ classdef DataTreeClass <  handle
                 jj = length(obj.group)+1;
                 group.SetIndexID(jj);
                 obj.group(jj) = group;
+                obj.group(jj).SetPath(obj.dirnameGroup)
                 fprintf('Added group %s to dataTree.\n', obj.group(jj).GetName);
             end
 
             %v Add subj and run to group
-            obj.group.Add(subj, run);            
+            obj.group(jj).Add(subj, run);            
         end
 
         
@@ -206,7 +243,7 @@ classdef DataTreeClass <  handle
         
         % ----------------------------------------------------------
         function SetCurrElem(obj, iGroup, iSubj, iRun)
-            if obj.group.IsEmpty()
+            if isempty(obj.group)
                 return;
             end
             
@@ -247,7 +284,9 @@ classdef DataTreeClass <  handle
 
         % ----------------------------------------------------------
         function Save(obj)
-            obj.group.Save();
+            for ii=1:length(obj.group)
+                obj.group(ii).Save();
+            end
         end
 
 
@@ -266,7 +305,7 @@ classdef DataTreeClass <  handle
             if isempty(obj.files)
                 return;
             end
-            if obj.group.IsEmpty()
+            if isempty(obj.group)
                 return;
             end
             b = false;

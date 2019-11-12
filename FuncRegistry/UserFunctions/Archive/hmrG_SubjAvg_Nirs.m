@@ -6,7 +6,7 @@ function [yAvg, yAvgStd, tHRF, nTrials, grpAvgPass] = hmrG_SubjAvg_Nirs(yAvgSubj
 % Subj_Average
 %
 % DESCRIPTION:
-% Calculate avearge HRF of all subjects in a group. 
+% Calculate avearge HRF of all subjects in a group . 
 %
 % INPUTS:
 % yAvgSubjs:

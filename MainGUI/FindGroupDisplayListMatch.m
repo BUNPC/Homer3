@@ -18,7 +18,7 @@ iR = groupIdx(3);
 % 
 % 6 states, 3 transitional events
 % 
-% In the following specification, R means run, S means eubject, G means group. Note that 
+% In the following specification, R means run, S means eubject, G means group . Note that 
 % every group processing element is associated with a group, subject and run ID. 
 % 
 % 6 states are 

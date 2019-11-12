@@ -41,7 +41,7 @@ else
     return;
 end
 
-dataTree = LoadDataTree(datafmt, procStreamConfigFile);
+dataTree = LoadDataTree(pwd, datafmt, procStreamConfigFile);
 if isempty(dataTree)
     return;
 end

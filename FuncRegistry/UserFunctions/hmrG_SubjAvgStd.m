@@ -5,7 +5,7 @@
 % Subj_Average_Standard_Deviation
 %
 % DESCRIPTION:
-% Calculate avearge HRF standard deviation of all subjects in a group. 
+% Calculate avearge HRF standard deviation of all subjects in a group . 
 %
 % INPUTS:
 % ySubjAvg:

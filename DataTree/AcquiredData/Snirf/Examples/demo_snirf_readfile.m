@@ -25,18 +25,46 @@ fnamefullpath = findfile(rootdirexamples, fname, currdir);
 % Create empty snirf object
 snirf = SnirfClass();
 
+% Use the SnirfClass LoadYYYY method to load whichever field you want 
+
+
 % Read meta data tags from file
 fprintf('Read metaDataTags from %s.\n', fnamefullpath);
-snirf.LoadMetaDataTags(fnamefullpath,'/nirs');      % Use the SnirfClass LoadYYYY method to load whichever field you want 
-tags = snirf.GetMetaDataTags();      % Use the SnirfClass LoadYYYY method to load whichever field you want 
+snirf.LoadMetaDataTags(fnamefullpath,'/nirs');
+tags = snirf.GetMetaDataTags();
 for ii=1:length(tags)
     fprintf('metaDataTag(%d): {key = ''%s'', value = ''%s''}\n', ii, tags(ii).key, tags(ii).value);
 end
 fprintf('\n');
 
+% Read data matrix
+fprintf('Read data field from %s and extract data matrix.\n', fnamefullpath);
+snirf.LoadData(fnamefullpath,'/nirs');
+for ii=1:length(snirf.data)
+    d = snirf.data(ii).GetDataMatrix();
+    s = '';
+    for jj=1:ndims(d)
+        if jj==1
+            s = num2str(size(d,jj));
+        else
+            s = sprintf('%sx%s', s, num2str(size(d,jj)));
+        end
+    end    
+    fprintf('d: %s %s\n', s, class(d));
+end
+fprintf('\n');
+
+
+% Load Probe and extract .nirs-style SD structure
+fprintf('Extract SD structure from %s.\n', fnamefullpath);
+snirf.LoadProbe(fnamefullpath,'/nirs');
+SD = snirf.Get_SD()
+fprintf('\n');
+
+
 % Read meta stims from file
 fprintf('Read stim data from %s.\n', fnamefullpath);
-snirf.LoadStim(fnamefullpath,'/nirs');      % Use the SnirfClass LoadYYYY method to load whichever field you want
+snirf.LoadStim(fnamefullpath,'/nirs');
 for ii=1:length(snirf.stim)
     fprintf('stim(%d): {name = ''%s'', data = [', ii, snirf.stim(ii).name);
     for jj=1:size(snirf.stim(ii).data,1)

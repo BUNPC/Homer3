@@ -34,8 +34,9 @@ function StimEditGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 %  Syntax:
 %
 %     StimEditGUI()
-%     StimEditGUI(format)
-%     StimEditGUI(format, pos)
+%     StimEditGUI(groupDirs)
+%     StimEditGUI(groupDirs, format)
+%     StimEditGUI(groupDirs, format, pos)
 %  
 %  Description:
 %     GUI used for editing/adding/deleting stimulus conditions and related parameters. 
@@ -61,11 +62,13 @@ stimEdit = [];
 %%%% Begin parse arguments 
 
 stimEdit.status=-1;
+stimEdit.groupDirs = {};
 stimEdit.format = '';
 stimEdit.pos = [];
 stimEdit.updateParentGui = [];
 
 if ~isempty(maingui)
+    stimEdit.groupDirs = maingui.groupDirs;
     stimEdit.format = maingui.format;
     stimEdit.updateParentGui = maingui.Update;
     
@@ -76,21 +79,28 @@ if ~isempty(maingui)
     set(handles.menuItemSaveGroup,'visible','off');
 end
 
+% Group dirs argument
+if isempty(stimEdit.groupDirs)
+    if length(varargin)<1
+        stimEdit.groupDirs = convertToStandardPath({pwd});
+    elseif ischar(varargin{1})
+        stimEdit.groupDirs = varargin{1};
+    end
+end
+
 % Format argument
 if isempty(stimEdit.format)
-    if isempty(varargin)
+    if length(varargin)<2
         stimEdit.format = 'snirf';
-    elseif ischar(varargin{1})
-        stimEdit.format = varargin{1};
+    elseif ischar(varargin{2})
+        stimEdit.format = varargin{2};
     end
 end
 
 % Position argument
 if isempty(stimEdit.pos)
-    if length(varargin)==1 && ~ischar(varargin{1})
-        stimEdit.pos = varargin{1};
-    elseif length(varargin)==2 && ~ischar(varargin{2})
-        stimEdit.pos = varargin{2};
+    if length(varargin)>=3
+        stimEdit.pos = varargin{3};
     end
 end
 
@@ -107,7 +117,7 @@ else
 end
 
 stimEdit.version = get(hObject, 'name');
-stimEdit.dataTree = LoadDataTree(stimEdit.format, '', maingui);
+stimEdit.dataTree = LoadDataTree(stimEdit.groupDirs, stimEdit.format, '', maingui);
 if stimEdit.dataTree.IsEmpty()
     return;
 end
@@ -188,8 +198,8 @@ global stimEdit
 % condition involves 2 distinct well defined steps:
 %   a) For the current element change the name of the specified (old) 
 %      condition for ONLY for ALL the acquired data elements under the 
-%      currElem, be it run, subj, or group. In this step we DO NOT TOUCH 
-%      the condition names of the run, subject or group. 
+%      currElem, be it run, subj, or group . In this step we DO NOT TOUCH 
+%      the condition names of the run, subject or group . 
 %   b) Rebuild condition names and tables of all the tree nodes group, subjects 
 %      and runs same as if you were loading during Homer3 startup from the 
 %      acquired data.
@@ -211,12 +221,13 @@ oldname = conditions{idx};
 % in keeping the condition colors straight. Therefore we comment out the 
 % following line in favor of the one after it. 
 
-stimEdit.dataTree.group.RenameCondition(oldname, newname{1});
+iG = stimEdit.dataTree.GetCurrElemIndexID();
+stimEdit.dataTree.group(iG).RenameCondition(oldname, newname{1});
 if stimEdit.status ~= 0
     return;
 end
-stimEdit.dataTree.group.SetConditions();
-set(handles.popupmenuConditions, 'string', stimEdit.dataTree.group.GetConditions());
+stimEdit.dataTree.group(iG).SetConditions();
+set(handles.popupmenuConditions, 'string', stimEdit.dataTree.group(iG).GetConditions());
 StimEditGUI_Display(handles);
 stimEdit.updateParentGui('StimEditGUI');
 figure(handles.figure);
@@ -352,8 +363,9 @@ end
 if ~exist('iS_lst','var') || isempty(iS_lst)
     iS_lst = [];
 end
-                    
-CondNamesGroup = stimEdit.dataTree.group.GetConditions();
+
+iG = stimEdit.dataTree.GetCurrElemIndexID();
+CondNamesGroup = stimEdit.dataTree.group(iG).GetConditions();
 tc             = stimEdit.dataTree.currElem.GetTime();
 
 % Create menu actions list
@@ -397,8 +409,9 @@ end
 if ~exist('mode','var') || isempty(mode)
     mode = 'interactive';
 end
-                    
-CondNamesGroup = stimEdit.dataTree.group.GetConditions();
+
+iG = stimEdit.dataTree.GetCurrElemIndexID();
+CondNamesGroup = stimEdit.dataTree.group(iG).GetConditions();
 tc             = stimEdit.dataTree.currElem.GetTime();
 nCond          = length(CondNamesGroup);
 
@@ -483,7 +496,9 @@ else
     stimEdit.status = 1;
     
 end
-stimEdit.dataTree.group.SetConditions();
+
+iG = stimEdit.dataTree.GetCurrElemIndexID();
+stimEdit.dataTree.group(iG).SetConditions();
 
 
 

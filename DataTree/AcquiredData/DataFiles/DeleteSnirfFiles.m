@@ -1,5 +1,31 @@
 function DeleteSnirfFiles(dirname, snirffiles0)
 
+% Syntax:
+%
+%   DeleteSnirfFiles()
+%   DeleteSnirfFiles(dirname)
+%   DeleteSnirfFiles(dirname, snirffiles0)
+%
+% Description:
+%   
+%   Delete all .snirf files in group folder. The group folder is same
+%   concept as in Homer3 so DeleteSnirfFiles will find all .snirf data 
+%   acquisition files in folder dirname. If dirname is not supplied it'll 
+%   treat the current working directory as the group folder. If snirffiles0
+%   if supplied it'll delete.
+%
+% Examples:
+%
+%   1. Delete all .snirf files in the Homer3 Examples directory
+%
+%       DeleteSnirfFiles('C:\jdubb\workspaces\Homer3\DataTree\AcquiredData\Snirf\Examples')
+%
+%   2. Delete all .snirf files in the current group folder
+%
+%       DeleteSnirfFiles()
+%
+%
+
 if ~exist('dirname','var')
     dirname = pwd;
 end

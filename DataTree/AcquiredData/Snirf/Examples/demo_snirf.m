@@ -10,13 +10,13 @@ function demo_snirf()
 %
 
 % Find the Homer3 Examples folder and cd to it
-[~, currdir] = findexamplesdir(); 
+examplesDir = findexamplesdir(); 
 
 % Delete any previously generated .snirf files to make sure to start from scratch
-DeleteSnirfFiles('standalone');
+DeleteSnirfFiles(examplesDir, 'standalone');
 
 % Start with .nirs files
-nirsfiles = mydir('./*.nirs');
+nirsfiles = mydir([examplesDir, '*.nirs']);
 
 fprintf('\n')
 
@@ -24,9 +24,10 @@ fprintf('\n')
 for ii=1:length(nirsfiles)
     
     % Convert sample .nirs file to SNIRF file (*.snirf) 
-    [pname,fname,ext] = fileparts([nirsfiles(ii).pathfull, '/', nirsfiles(ii).filename]);    
-    fprintf('Converting %s to %s\n', [pname,'/',fname,ext], [pname,'/',fname,'.snirf']);
-    [snirf_saved, snirf_loaded, nirs] = snirf_load_save(nirsfiles(ii).name);
+    [pname,fname,ext] = fileparts([examplesDir, nirsfiles(ii).name]);
+    pname = convertToStandardPath(pname);
+    fprintf('Converting %s to %s\n', [pname, fname, ext], [pname, fname, '.snirf']);
+    [snirf_saved, snirf_loaded, nirs] = snirf_load_save([pname, nirsfiles(ii).name]);
     
     % Compare the saved and loaded SnirfClass objects, using overloaded == operator 
     if snirf_saved == snirf_loaded
@@ -36,7 +37,3 @@ for ii=1:length(nirsfiles)
     end
     fprintf('\n');
 end
-
-% Return to original folder
-cd(currdir);
-

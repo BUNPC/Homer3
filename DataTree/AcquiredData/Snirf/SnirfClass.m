@@ -34,11 +34,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %
             % Example 1:
             %   Nirs2Snirf('./Simple_Probe1_run04.nirs');
-            %   snirf = SnirfClass('./Simple_Probe1_run04.snirf');
+            %   obj = SnirfClass('./Simple_Probe1_run04.obj');
             %    
             %   Here's some of the output:
             %
-            %   snirf(1).data ====>
+            %   obj(1).data ====>
             % 
             %       DataClass with properties:
             %
@@ -214,6 +214,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % -------------------------------------------------------
         function err = LoadMetaDataTags(obj, fname, parent)
             err = 0;
+            if nargin<3
+                parent = '/nirs';
+            end
             obj.metaDataTags = MetaDataTagsClass();
             if obj.metaDataTags.LoadHdf5(fname, [parent, '/metaDataTags']) < 0
                 err=-1;
@@ -225,6 +228,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % -------------------------------------------------------
         function err = LoadData(obj, fname, parent)
             err = 0;
+            if nargin<3
+                parent = '/nirs';
+            end
             ii=1;
             while 1
                 if ii > length(obj.data)
@@ -246,6 +252,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % -------------------------------------------------------
         function err = LoadStim(obj, fname, parent)
             err = 0;
+            if nargin<3
+                parent = '/nirs';
+            end
+            
             % Since we want to load stims in sorted order (i.e., according to alphabetical order
             % of condition names), first load to temporary variable.
             ii=1;
@@ -271,6 +281,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % -------------------------------------------------------
         function err = LoadProbe(obj, fname, parent)
             obj.probe = ProbeClass();
+            if nargin<3
+                parent = '/nirs';
+            end
             err = obj.probe.LoadHdf5(fname, [parent, '/probe']);
         end
         
@@ -278,6 +291,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % -------------------------------------------------------
         function err = LoadAux(obj, fname, parent)
             err = 0;
+            if nargin<3
+                parent = '/nirs';
+            end
             ii=1;
             while 1
                 if ii > length(obj.aux)
@@ -552,6 +568,13 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function val = GetMetaDataTags(obj)
+            val = obj.metaDataTags;
+            if isempty(obj)
+                return;
+            end
+            if isempty(obj.metaDataTags)
+                return;
+            end
             val = obj.metaDataTags.Get();
         end
         
@@ -703,6 +726,14 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function SD = GetSDG(obj)
+            SD = [];
+            if isempty(obj)
+                return;
+            end
+            if isempty(obj.probe)
+                return;
+            end
+            SD.Lambda = obj.probe.GetWls();
             SD.SrcPos = obj.probe.GetSrcPos();
             SD.DetPos = obj.probe.GetDetPos();
         end
@@ -1066,7 +1097,85 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 nbytes = nbytes + obj.aux(ii).MemoryRequired();
             end
         end
-
+        
+        
+        
+        % ----------------------------------------------------------------------------------        
+        function Info(obj)
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Read formatVersion
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            fprintf('    FormatVersion:\n');
+            fv = obj.GetFormatVersion();
+            fprintf('        Format version: %s\n', fv);
+            fprintf('\n');
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Load meta data tags from file and extract the tag names and values for display
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            fprintf('    MetaDataTags:\n');
+            tags = obj.GetMetaDataTags();
+            for ii=1:length(tags)
+                fprintf('        Tag #%d: {''%s'', ''%s''}\n', ii, tags(ii).key, tags(ii).value);
+            end
+            fprintf('\n');
+            
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Load data from file and extract .nirs-style d and ml matrices for display
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            fprintf('    Data (.nirs-style display):\n');
+            for ii=1:length(obj.data)
+                
+                % Display data matrix dimensions and data type
+                d = obj.data(ii).GetDataMatrix();
+                pretty_print_struct(d, 8, 1);
+                
+                % Display meas list dimensions and data type
+                ml = obj.data(ii).GetMeasList();
+                pretty_print_struct(ml, 8, 1);
+                
+            end
+            fprintf('\n');
+            
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Load probe and extract .nirs-style SD structure
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            fprintf('    Probe (.nirs-style display):\n');
+            SD = obj.GetSDG();
+            pretty_print_struct(SD, 8, 1);
+            fprintf('\n');
+            
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Load stim from file and extract it for display
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            fprintf('    Stim (.snirf-style display):\n');
+            for ii=1:length(obj.stim)
+                fprintf('        stim(%d): {name = ''%s'', data = [', ii, obj.stim(ii).name);
+                for jj=1:size(obj.stim(ii).data,1)
+                    if jj==size(obj.stim(ii).data,1)
+                        fprintf('%0.1f', obj.stim(ii).data(jj,1));
+                    else
+                        fprintf('%0.1f, ', obj.stim(ii).data(jj,1));
+                    end
+                end
+                fprintf(']}\n');
+            end
+            fprintf('\n');
+            
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Load aux from file and extract nirs-style data for display
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            fprintf('    Aux (.nirs-style display):\n');
+            auxl = obj.GetAuxiliary();
+            pretty_print_struct(auxl, 8, 1);
+            fprintf('\n');
+            
+        end
         
     end
  

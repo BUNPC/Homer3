@@ -77,9 +77,8 @@ for iG=1:length(groupFiles_h2)
     s(iG,1) = compareDcAvg(group_h2, 'dcAvg');
     s(iG,2) = compareProcStreams(dataTree, groupFiles_h2(iG));
     
-    groupPath = [groupFiles_h2(iG).pathfull, '/', groupFiles_h2(iG).name];
     msgs = MatchMessages(sum(s(iG,:)));
-    logger.Write(sprintf('Comparing output to %s  ==>  Outputs: %s,   Proc Streams: %s\n', groupPath, msgs{1}, msgs{2}));
+    logger.Write(sprintf('Comparing output to %s  ==>  Outputs: %s,   Proc Streams: %s\n', groupFiles_h2(iG).name, msgs{1}, msgs{2}));
 end
 iMatch = find(s(:,1)==0 & s(:,2)==0);
 if ~isempty(iMatch)

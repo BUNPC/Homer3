@@ -63,22 +63,22 @@ igroup = 1;
 isubj = 1;
 irun = 1;
 
-iFcall = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.GetFuncCallIdx(funcName);
+iFcall = dataTree.groups(igroup).subjs(isubj).runs(irun).procStream.GetFuncCallIdx(funcName);
 if isempty(iFcall)
     return;
 end
-paramIdx = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.fcalls(iFcall).GetParamIdx(paramName);
+paramIdx = dataTree.groups(igroup).subjs(isubj).runs(irun).procStream.fcalls(iFcall).GetParamIdx(paramName);
 if isempty(paramIdx)
     return;
 end
-oldval = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.fcalls(iFcall).GetParamVal(paramName);
+oldval = dataTree.groups(igroup).subjs(isubj).runs(irun).procStream.fcalls(iFcall).GetParamVal(paramName);
 if ~exist('newval','var') || isempty(newval)
     newval = oldval;
 end
 
-for iSubj=1:length(dataTree.group.subjs)
-    for iRun=1:length(dataTree.group.subjs(iSubj).runs)
-        dataTree.group.subjs(iSubj).runs(iRun).procStream.EditParam(iFcall, paramIdx, newval);
+for iSubj=1:length(dataTree.groups(igroup).subjs)
+    for iRun=1:length(dataTree.groups(igroup).subjs(iSubj).runs)
+        dataTree.groups(igroup).subjs(iSubj).runs(iRun).procStream.EditParam(iFcall, paramIdx, newval);
     end
 end
 

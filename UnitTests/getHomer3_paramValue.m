@@ -19,26 +19,26 @@ val = [];
 if isempty(dataTree)
     return;
 end
-if isempty(dataTree.group)
+if isempty(dataTree.groups)
     return;
 end
-if isempty(dataTree.group.subjs)
+if isempty(dataTree.groups(igroup).subjs)
     return;
 end
-if isempty(dataTree.group.subjs(isubj).runs)
+if isempty(dataTree.groups(igroup).subjs(isubj).runs)
     return;
 end
-if isempty(dataTree.group.subjs(isubj).runs(irun).procStream.fcalls)
+if isempty(dataTree.groups(igroup).subjs(isubj).runs(irun).procStream.fcalls)
     return;
 end
        
-iFcall = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.GetFuncCallIdx(funcName);
+iFcall = dataTree.groups(igroup).subjs(isubj).runs(irun).procStream.GetFuncCallIdx(funcName);
 if isempty(iFcall)
     return;
 end
-paramIdx = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.fcalls(iFcall).GetParamIdx(paramName);
+paramIdx = dataTree.groups(igroup).subjs(isubj).runs(irun).procStream.fcalls(iFcall).GetParamIdx(paramName);
 if isempty(paramIdx)
     return;
 end
-val = dataTree.group(igroup).subjs(isubj).runs(irun).procStream.fcalls(iFcall).paramIn(paramIdx).value;
+val = dataTree.groups(igroup).subjs(isubj).runs(irun).procStream.fcalls(iFcall).paramIn(paramIdx).value;
 

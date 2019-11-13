@@ -198,6 +198,9 @@ classdef FileClass < matlab.mixin.Copyable
         % -----------------------------------------------------------
         function b = IsEmpty(obj)
             b = true;
+            if isempty(obj)
+                return;
+            end
             if isempty(obj.name)
                 return;
             end

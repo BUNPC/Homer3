@@ -3,7 +3,7 @@ classdef DataTreeClass <  handle
     properties
         files
         filesErr
-        group
+        groups
         dirnameGroup
         currElem
         reg
@@ -13,8 +13,8 @@ classdef DataTreeClass <  handle
     methods
         
         % ---------------------------------------------------------------
-        function obj = DataTreeClass(groupdirs, fmt, procStreamCfgFile)
-            obj.group         = GroupClass().empty();
+        function obj = DataTreeClass(groupDirs, fmt, procStreamCfgFile)
+            obj.groups         = GroupClass().empty();
             obj.currElem      = TreeNodeClass().empty();
             obj.reg           = RegistriesClass().empty();
             obj.config        = ConfigFileClass().empty();
@@ -23,10 +23,10 @@ classdef DataTreeClass <  handle
             %%%% Parse args
             
             % Arg 1: get folder of the group being loaded
-            if ~exist('groupdirs','var')
-                groupdirs{1} = pwd;
-            elseif ~iscell(groupdirs)
-                groupdirs = {groupdirs};
+            if ~exist('groupDirs','var')
+                groupDirs{1} = pwd;
+            elseif ~iscell(groupDirs)
+                groupDirs = {groupDirs};
             end
             
             % Arg 2: get the file format of the data files
@@ -39,16 +39,23 @@ classdef DataTreeClass <  handle
                 procStreamCfgFile = '';
             end
             
-            obj.FindAndLoadGroups(groupdirs, fmt, procStreamCfgFile);
+            obj.FindAndLoadGroups(groupDirs, fmt, procStreamCfgFile);
             if obj.IsEmpty()
                 return;
             end
+            
+            % Change current folder to last loaded group; even though we
+            % handle multiple groups and use absolute paths we still have
+            % group as the basic data unit and context. So we want to 
+            % change the current folder to whatever is the current working
+            % group.
+            cd(obj.groups(end).path);
             
             % Load user function registry
             obj.reg = RegistriesClass();
             if ~isempty(obj.reg.GetSavedRegistryPath())
                 fprintf('Loaded saved registry %s\n', obj.reg.GetSavedRegistryPath());
-            end            
+            end
             
             % Initialize the current processing element within the group
             obj.SetCurrElem(1,1,1);
@@ -64,16 +71,39 @@ classdef DataTreeClass <  handle
 
 
         % --------------------------------------------------------------
-        function FindAndLoadGroups(obj, groupdirs, fmt, procStreamCfgFile)
+        function status = SelectOptionsWhenLoadFails(obj, dataInit)
+            status = -1;
             
-            for kk=1:length(groupdirs)
+            msg{1} = sprintf('Could not load any of the requested files in the group folder %s. ', obj.dirnameGroup);
+            msg{2} = sprintf('Do you want to select another group folder?');
+            q = MenuBox([msg{:}], {'YES','NO'});
+            if q==2
+                fprintf('Skipping group folder %s...\n', obj.dirnameGroup);
+                obj.dirnameGroup = 0;
+                return;
+            end
+            obj.dirnameGroup = uigetdir(pwd, 'Please select another group folder ...');
+            if obj.dirnameGroup==0
+                fprintf('Skipping group folder %s...\n', obj.dirnameGroup);
+                return;
+            end
+            status = 0;
+        end
+        
+        
+        
+        
+        % --------------------------------------------------------------
+        function FindAndLoadGroups(obj, groupDirs, fmt, procStreamCfgFile)
+            
+            for kk=1:length(groupDirs)
                 
-                obj.dirnameGroup = convertToStandardPath(groupdirs{kk});
+                obj.dirnameGroup = convertToStandardPath(groupDirs{kk});
 
-                iGnew = length(obj.group)+1;
+                iGnew = length(obj.groups)+1;
                 
                 % Get file names and load them into DataTree
-                while length(obj.group) < iGnew
+                while length(obj.groups) < iGnew
                     obj.files    = FileClass().empty();
                     obj.filesErr = FileClass().empty();
                     
@@ -84,18 +114,9 @@ classdef DataTreeClass <  handle
                     obj.files = dataInit.files;
                     
                     obj.LoadGroup(procStreamCfgFile);
-                    if length(obj.group) < iGnew
-                        msg{1} = sprintf('Could not load any of the requested files in the group folder %s. ', obj.dirnameGroup);
-                        msg{2} = sprintf('Do you want to select another group folder?');
-                        q = MenuBox([msg{:}], {'YES','NO'});
-                        if q==2
-                            fprintf('Skipping group folder %s...', obj.dirnameGroup);
-                            continue;
-                        end
-                        obj.dirnameGroup = uigetdir(pwd, 'Please select another group folder ...');
-                        if obj.dirnameGroup==0
-                            fprintf('Skipping group folder %s...', obj.dirnameGroup);
-                            continue;
+                    if length(obj.groups) < iGnew
+                        if SelectOptionsWhenLoadFails(obj, dataInit)<0
+                            break;
                         end
                     end
                 end
@@ -122,23 +143,23 @@ classdef DataTreeClass <  handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.ErrorCheckLoadedFiles();
 
-            for ii=1:length(obj.group)
+            for ii=1:length(obj.groups)
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Load derived or post-acquisition data from a file if it
                 % exists
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                obj.group(ii).Load();            
+                obj.groups(ii).Load();            
             
             
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Initialize procStream for all tree nodes
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                obj.group(ii).InitProcStream(procStreamCfgFile);
+                obj.groups(ii).InitProcStream(procStreamCfgFile);
                 
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Generate the stimulus conditions for the group tree
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                obj.group(ii).SetConditions();
+                obj.groups(ii).SetConditions();
                 
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Find the amount of memory the whole group tree requires
@@ -147,7 +168,7 @@ classdef DataTreeClass <  handle
                 % dc and dod for each new current element (currElem) on the
                 % fly. This should be a menu option in future releases
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                fprintf('Memory required for acquisition data %0.1f MB\n', obj.group(ii).MemoryRequired() / 1e6);
+                fprintf('Memory required for acquisition data %0.1f MB\n', obj.groups(ii).MemoryRequired() / 1e6);
             end
         end
         
@@ -202,22 +223,22 @@ classdef DataTreeClass <  handle
                         
             % Add group to this dataTree
             jj=0;
-            for ii=1:length(obj.group)
-                if strcmp(obj.group(ii).GetName, group.GetName())
+            for ii=1:length(obj.groups)
+                if strcmp(obj.groups(ii).GetName, group.GetName())
                     jj=ii;
                     break;
                 end
             end
             if jj==0
-                jj = length(obj.group)+1;
+                jj = length(obj.groups)+1;
                 group.SetIndexID(jj);
-                obj.group(jj) = group;
-                obj.group(jj).SetPath(obj.dirnameGroup)
-                fprintf('Added group %s to dataTree.\n', obj.group(jj).GetName);
+                obj.groups(jj) = group;
+                obj.groups(jj).SetPath(obj.dirnameGroup)
+                fprintf('Added group %s to dataTree.\n', obj.groups(jj).GetName);
             end
 
             %v Add subj and run to group
-            obj.group(jj).Add(subj, run);            
+            obj.groups(jj).Add(subj, run);            
         end
 
         
@@ -235,15 +256,15 @@ classdef DataTreeClass <  handle
         % ----------------------------------------------------------------------------------
         function list = DepthFirstTraversalList(obj)
             list = {};
-            for ii=1:length(obj.group)
-                list = [list; obj.group(ii).DepthFirstTraversalList()];
+            for ii=1:length(obj.groups)
+                list = [list; obj.groups(ii).DepthFirstTraversalList()];
             end
         end        
         
         
         % ----------------------------------------------------------
         function SetCurrElem(obj, iGroup, iSubj, iRun)
-            if isempty(obj.group)
+            if isempty(obj.groups)
                 return;
             end
             
@@ -259,11 +280,11 @@ classdef DataTreeClass <  handle
             end
             
             if iSubj==0 && iRun==0
-                obj.currElem = obj.group(iGroup);
+                obj.currElem = obj.groups(iGroup);
             elseif iSubj>0 && iRun==0
-                obj.currElem = obj.group(iGroup).subjs(iSubj);
+                obj.currElem = obj.groups(iGroup).subjs(iSubj);
             elseif iSubj>0 && iRun>0
-                obj.currElem = obj.group(iGroup).subjs(iSubj).runs(iRun);
+                obj.currElem = obj.groups(iGroup).subjs(iSubj).runs(iRun);
             end
         end
 
@@ -284,9 +305,7 @@ classdef DataTreeClass <  handle
 
         % ----------------------------------------------------------
         function Save(obj)
-            for ii=1:length(obj.group)
-                obj.group(ii).Save();
-            end
+            obj.groups(obj.currElem.iGroup).Save();
         end
 
 
@@ -305,7 +324,7 @@ classdef DataTreeClass <  handle
             if isempty(obj.files)
                 return;
             end
-            if isempty(obj.group)
+            if isempty(obj.groups)
                 return;
             end
             b = false;

@@ -19,9 +19,10 @@ KEEP_AS_IS      = 1;
 KEEP_FONTSIZE   = 2;
 KEEP_FONTWEIGHT = 4;
 FONT_BIGGER     = 8;
+FONT_SMALLER    = 16;
 
 if ismac()
-    fs_def = 14.0;
+    fs_def = 13.0;
 elseif ispc()
     fs_def = 10.0;
 else
@@ -54,7 +55,7 @@ font_axes      = initFont(font_uicontrol.size+4,'normal',[]);
 if ispc()
     font_listbox   = initFont(font_uicontrol.size,'normal',[]);
 elseif ismac()
-    font_listbox   = initFont(font_uicontrol.size+2,'normal',[]);
+    font_listbox   = initFont(font_uicontrol.size+1,'normal',[]);
 end
 
 
@@ -79,7 +80,9 @@ for ii=1:length(hc)
             set(hc(ii), 'fontsize',font_listbox.size);
             set(hc(ii), 'fontweight','normal');        
         else
-            if userdata~=KEEP_FONTSIZE
+            if userdata==FONT_SMALLER
+                set(hc(ii), 'fontsize',font_uicontrol.size-1);
+            elseif userdata~=KEEP_FONTSIZE
                 set(hc(ii), 'fontsize',font_uicontrol.size);
             end
             if userdata~=KEEP_FONTWEIGHT

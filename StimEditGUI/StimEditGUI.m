@@ -222,12 +222,12 @@ oldname = conditions{idx};
 % following line in favor of the one after it. 
 
 iG = stimEdit.dataTree.GetCurrElemIndexID();
-stimEdit.dataTree.group(iG).RenameCondition(oldname, newname{1});
+stimEdit.dataTree.groups(iG).RenameCondition(oldname, newname{1});
 if stimEdit.status ~= 0
     return;
 end
-stimEdit.dataTree.group(iG).SetConditions();
-set(handles.popupmenuConditions, 'string', stimEdit.dataTree.group(iG).GetConditions());
+stimEdit.dataTree.groups(iG).SetConditions();
+set(handles.popupmenuConditions, 'string', stimEdit.dataTree.groups(iG).GetConditions());
 StimEditGUI_Display(handles);
 stimEdit.updateParentGui('StimEditGUI');
 figure(handles.figure);
@@ -365,7 +365,7 @@ if ~exist('iS_lst','var') || isempty(iS_lst)
 end
 
 iG = stimEdit.dataTree.GetCurrElemIndexID();
-CondNamesGroup = stimEdit.dataTree.group(iG).GetConditions();
+CondNamesGroup = stimEdit.dataTree.groups(iG).GetConditions();
 tc             = stimEdit.dataTree.currElem.GetTime();
 
 % Create menu actions list
@@ -411,7 +411,7 @@ if ~exist('mode','var') || isempty(mode)
 end
 
 iG = stimEdit.dataTree.GetCurrElemIndexID();
-CondNamesGroup = stimEdit.dataTree.group(iG).GetConditions();
+CondNamesGroup = stimEdit.dataTree.groups(iG).GetConditions();
 tc             = stimEdit.dataTree.currElem.GetTime();
 nCond          = length(CondNamesGroup);
 
@@ -498,7 +498,7 @@ else
 end
 
 iG = stimEdit.dataTree.GetCurrElemIndexID();
-stimEdit.dataTree.group(iG).SetConditions();
+stimEdit.dataTree.groups(iG).SetConditions();
 
 
 

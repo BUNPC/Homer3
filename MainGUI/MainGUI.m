@@ -133,7 +133,7 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 % Set the main GUI version number
-[~, V] = MainGUIVersion(hObject);
+[~, V] = MainGUIVersion(hObject, 'exclpath');
 maingui.version = V;
 maingui.childguis = ChildGuiClass().empty();
 
@@ -163,6 +163,12 @@ Display(handles, hObject);
 
 maingui.handles = handles;
 maingui.handles.pValuesFig = [];
+
+% Set path in GUI window title
+s = get(hObject,'name');
+title = sprintf('%s - %s', s, pwd);
+set(hObject,'name', title);
+
 
 
 
@@ -533,7 +539,7 @@ hGui=get(get(hObject,'parent'),'parent');
 MainGUI_DeleteFcn(hGui,[],handles);
 
 % restart
-MainGUI(fmt);
+MainGUI(pathnm, fmt, 'userargs');
 
 
 

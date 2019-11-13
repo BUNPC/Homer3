@@ -372,13 +372,13 @@ set( hObject, 'string', str);
 % level
 if ~procStreamOptions.applyEditCurrNodeOnly
     if dataTree.currElem.iSubj>0 && dataTree.currElem.iRun==0
-        for ii=1:length(dataTree.group(iG).subjs)
-            dataTree.group(iG).subjs(ii).procStream.EditParam(iFcall, iParam, val);
+        for ii=1:length(dataTree.groups(iG).subjs)
+            dataTree.groups(iG).subjs(ii).procStream.EditParam(iFcall, iParam, val);
         end
     elseif dataTree.currElem.iSubj>0 && dataTree.currElem.iRun>0
-        for ii=1:length(dataTree.group(iG).subjs)
-            for jj=1:length(dataTree.group(iG).subjs(ii).runs)
-                dataTree.group(iG).subjs(ii).runs(jj).procStream.EditParam(iFcall, iParam, val);
+        for ii=1:length(dataTree.groups(iG).subjs)
+            for jj=1:length(dataTree.groups(iG).subjs(ii).runs)
+                dataTree.groups(iG).subjs(ii).runs(jj).procStream.EditParam(iFcall, iParam, val);
             end
         end
     end

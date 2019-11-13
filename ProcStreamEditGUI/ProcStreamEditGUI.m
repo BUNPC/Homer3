@@ -137,9 +137,9 @@ procStreamEdit.iPanel = procStreamEdit.iRunPanel;
 % Load data tree
 procStreamEdit.dataTree = LoadDataTree(pwd, procStreamEdit.format, '', maingui);
 if ~procStreamEdit.dataTree.IsEmpty()
-    procStreamEdit.procElem{procStreamEdit.iRunPanel} = procStreamEdit.dataTree.group(1).subjs(1).runs(1).copy;
-    procStreamEdit.procElem{procStreamEdit.iSubjPanel} = procStreamEdit.dataTree.group(1).subjs(1).copy;
-    procStreamEdit.procElem{procStreamEdit.iGroupPanel} = procStreamEdit.dataTree.group(1).copy;
+    procStreamEdit.procElem{procStreamEdit.iRunPanel} = procStreamEdit.dataTree.groups(1).subjs(1).runs(1).copy;
+    procStreamEdit.procElem{procStreamEdit.iSubjPanel} = procStreamEdit.dataTree.groups(1).subjs(1).copy;
+    procStreamEdit.procElem{procStreamEdit.iGroupPanel} = procStreamEdit.dataTree.groups(1).copy;
     switch(class(procStreamEdit.dataTree.currElem))
         case 'RunClass'
             htab = htabR;
@@ -225,9 +225,9 @@ if ~exist('reload','var')
     reload=false;
 end
 if reload
-    procStreamEdit.procElem{iRunPanel} = procStreamEdit.dataTree.group(1).subjs(1).runs(1).copy;
-    procStreamEdit.procElem{iSubjPanel} = procStreamEdit.dataTree.group(1).subjs(1).copy;
-    procStreamEdit.procElem{iGroupPanel} = procStreamEdit.dataTree.group(1).copy;
+    procStreamEdit.procElem{iRunPanel} = procStreamEdit.dataTree.groups(1).subjs(1).runs(1).copy;
+    procStreamEdit.procElem{iSubjPanel} = procStreamEdit.dataTree.groups(1).subjs(1).copy;
+    procStreamEdit.procElem{iGroupPanel} = procStreamEdit.dataTree.groups(1).copy;
 end
 
 listPsUsage = procStreamEdit.listPsUsage;
@@ -478,7 +478,7 @@ end
 function pushbuttonSave_Callback(hObject, eventdata, handles)
 global procStreamEdit
 procElem    = procStreamEdit.procElem;
-group       = procStreamEdit.dataTree.group;
+groups      = procStreamEdit.dataTree.groups;
 listPsUsage = procStreamEdit.listPsUsage;
 reg         = procStreamEdit.dataTree.reg;
 iGroupPanel = procStreamEdit.iGroupPanel;
@@ -529,10 +529,10 @@ end
 % Now save procElem to current procStream or to  a config file.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if q==1
-    for ii=1:length(group)
-        group(ii).CopyFcalls(procElem{iGroupPanel});
-        group(ii).CopyFcalls(procElem{iSubjPanel});
-        group(ii).CopyFcalls(procElem{iRunPanel});
+    for ii=1:length(groups)
+        groups(ii).CopyFcalls(procElem{iGroupPanel});
+        groups(ii).CopyFcalls(procElem{iSubjPanel});
+        groups(ii).CopyFcalls(procElem{iRunPanel});
     end
     procStreamEdit.updateParentGui('ProcStreamEditGUI');
 elseif q==2

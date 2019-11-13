@@ -2,7 +2,7 @@ function status = compareProcStreams(dataTree, groupFile_h2)
 
 load(groupFile_h2.name);
 procStream_h2 = group(1).subjs(1).runs(1).procInput;
-procStream_h3 = dataTree.group(1).subjs(1).runs(1).procStream;
+procStream_h3 = dataTree.groups(1).subjs(1).runs(1).procStream;
 
 b = procStream_h3 == procStream_h2;
 

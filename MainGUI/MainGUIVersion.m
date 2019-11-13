@@ -38,7 +38,7 @@ if isempty(option)
 end
 [verstr, vernum] = version2string();
 if strcmp(option, 'inclpath')
-    title = sprintf('Homer3 (v%s) - %s', verstr, pwd);
+    title = sprintf('Homer3 (v%s) - %s', verstr);
 elseif strcmp(option, 'exclpath')
     title = sprintf('Homer3 (v%s)', verstr);
 end

@@ -60,8 +60,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 logger.Write(sprintf('Loaded processing stream from %s\n', procStreamConfigFile));
 iG = dataTree.GetCurrElemIndexID();
-dataTree.group(iG).Calc();
-dataTree.group(iG).Save();
+dataTree.groups(iG).Calc();
+dataTree.groups(iG).Save();
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

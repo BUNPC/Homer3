@@ -87,6 +87,7 @@ classdef DataClass < FileLoadSaveClass
         % -------------------------------------------------------
         function err = LoadHdf5(obj, fname, parent)
             err = 0;
+            
             if ~exist(fname, 'file')
                 err = -1;
                 return;
@@ -126,6 +127,10 @@ classdef DataClass < FileLoadSaveClass
         
         % -------------------------------------------------------
         function SaveHdf5(obj, fname, parent)
+            if ~exist('fname', 'var') || isempty(fname)
+                error('Unable to save file. No file name given.')
+			end
+
             if ~exist(fname, 'file')
                 fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);

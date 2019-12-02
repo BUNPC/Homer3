@@ -129,6 +129,13 @@ classdef MeasListClass < FileLoadSaveClass
         
         % -------------------------------------------------------
         function SaveHdf5(obj, fname, parent)
+
+            % Arg 1
+            if ~exist('fname', 'var') || isempty(fname)
+                error('Unable to save file. No file name given.')
+            end
+            
+            % Arg 2
             if ~exist(fname, 'file')
                 fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);

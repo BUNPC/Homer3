@@ -33,8 +33,22 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %   obj = SnirfClass(nirs, tfactors);
             %
             % Example 1:
-            %   Nirs2Snirf('./Simple_Probe1_run04.nirs');
-            %   obj = SnirfClass('./Simple_Probe1_run04.obj');
+            %   
+            %   % Save .nirs file in SNIRF format
+            %   nirs = load('neuro_run01.nirs','-mat');
+            %   snirf1 = SnirfClass(nirs);
+            %   snirf1.Save('neuro_run01.snirf');
+            %   snirf1.Info()
+            %
+            %   % Check that the file was saved correctly 
+            %   snirf2 = SnirfClass();
+            %   snirf2.Load('neuro_run01.snirf');
+            %   snirf2.Info()
+            %
+            % Example 2:
+            %
+            %   Nirs2Snirf('Simple_Probe1.nirs');
+            %   obj = SnirfClass('Simple_Probe1.snirf');
             %    
             %   Here's some of the output:
             %
@@ -410,7 +424,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         function SaveHdf5(obj, fname, parent)
             % Arg 1
             if ~exist('fname','var') || isempty(fname)
-                fname = '';
+                error('Unable to save file. No file name given.')
             end
             
             % Args
@@ -1106,6 +1120,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Read formatVersion
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            fprintf('\n');
             fprintf('    FormatVersion:\n');
             fv = obj.GetFormatVersion();
             fprintf('        Format version: %s\n', fv);

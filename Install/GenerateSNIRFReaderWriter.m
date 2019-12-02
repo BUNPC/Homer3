@@ -15,6 +15,7 @@ mkdir([dirnameInstall, '/snirf_homer3/Utils']);
 copyFiles([dirnameApp, 'DataFiles'],           [dirnameInstall, 'snirf_homer3/DataFiles']);
 copyFiles([dirnameApp, 'Nirs'],                [dirnameInstall, 'snirf_homer3/Nirs']);
 copyFiles([dirnameApp, 'Snirf'],               [dirnameInstall, 'snirf_homer3/Snirf']);
+copyFiles([dirnameUtils, 'pretty_print_struct.m'], [dirnameInstall, 'snirf_homer3']);
 copyFiles([dirnameUtils, 'isproperty.m'],      [dirnameInstall, 'snirf_homer3/Utils']);
 copyFiles([dirnameUtils, 'iswholenum.m'],      [dirnameInstall, 'snirf_homer3/Utils']);
 copyFiles([dirnameUtils, 'propnames.m'],       [dirnameInstall, 'snirf_homer3/Utils']);
@@ -25,6 +26,7 @@ copyFiles([dirnameUtils, 'setpaths.m'],        [dirnameInstall, 'snirf_homer3'])
 copyFiles([dirnameApp, 'AcqDataClass.m'],      [dirnameInstall, 'snirf_homer3']);
 copyFiles([dirnameApp, 'README.md'],           [dirnameInstall, 'snirf_homer3']);
 copyFiles([getAppDir(), 'cd_safe.m'],          [dirnameInstall, 'snirf_homer3']);
+copyFiles([getAppDir(), 'str2cell.m'],          [dirnameInstall, 'snirf_homer3/Utils']);
 
 
 

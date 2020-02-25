@@ -424,6 +424,24 @@ classdef SubjClass < TreeNodeClass
             end
         end
 
+        
+        % ----------------------------------------------------------------------------------
+        function ExportHRF(obj, options, iBlk)
+            if nargin<2
+                options = 'current';
+            end
+            if nargin<3
+                iBlk = 1;
+            end
+
+            obj.procStream.ExportHRF(obj.name, obj.CondNames, iBlk)
+            if strcmp(options, 'all')
+                for ii=1:length(obj.runs)
+                    obj.runs(ii).ExportHRF(iBlk)
+                end
+            end
+        end
+        
     end
         
     

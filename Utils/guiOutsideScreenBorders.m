@@ -1,7 +1,7 @@
-function [p, b] = GuiOutsideScreenBorders(hObject)
+function [p, b] = guiOutsideScreenBorders(hObject)
 %
 % Syntax:
-%    [p, b] = GuiOutsideScreenBorders(hObject)
+%    [p, b] = guiOutsideScreenBorders(hObject)
 %
 % Description:
 %    Calculates the amount that a figure with handle hObject falls outside of screen borders and returns 

@@ -504,6 +504,65 @@ classdef ProcResultClass < handle
             end
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function ExportHRF(obj, filename, CondNames, iBlk)
+            if nargin<3
+                iBlk = 1;
+            end
+                        
+            % Max column width in number ois characters
+            maxcolwidth = 12;
+            
+            [pname, fname] = fileparts(filename);
+            ext = '_HRF.txt';
+            
+            fd = fopen([pname, fname, ext], 'wt');
+            
+            fprintf(fd, '%s: exported HRF data\n', fname);
+            fprintf('%s: exported HRF data\n', fname);
+            
+            if isa(obj.dcAvg, 'DataClass')
+                dataTimeSeries = obj.dcAvg.GetDataTimeSeries();
+                measList = obj.dcAvg.measurementList;
+                
+                % Header: stim condition
+                for iCh=1:length(measList)
+                    stim_cond_str = sprintf('%s', CondNames{measList(iCh).dataTypeIndex});
+                    nspaces = round((maxcolwidth - length(stim_cond_str)));
+                    fprintf(fd, '%s%s\t', blanks(nspaces), stim_cond_str);
+                end
+                fprintf(fd, '\n');
+                
+                % Header: Hb type row
+                for iCh=1:length(measList)
+                    hb_sd_str = sprintf('%s,%d,%d', measList(iCh).dataTypeLabel, measList(iCh).sourceIndex, measList(iCh).detectorIndex);
+                    nspaces = round((maxcolwidth - length(hb_sd_str)));
+                    fprintf(fd, '%s%s\t', blanks(nspaces), hb_sd_str);
+                end
+                
+                fprintf(fd, '\n');
+                        
+                % Data rows
+                for t=1:size(dataTimeSeries,1)
+                    for iCh=1:length(measList)
+                        if isnan(dataTimeSeries(t,iCh))
+                            nspaces = round((maxcolwidth - length('NaN')));
+                        else
+                            nspaces = dataTimeSeries(t,iCh)>=0;
+                        end
+                        fprintf(fd, '%s%0.5e\t', blanks(nspaces), dataTimeSeries(t,iCh));
+                    end
+                    fprintf(fd, '\n');
+                end
+                fprintf(fd, '\n\n');            
+            end
+            
+            fclose(fd);
+        end
+
     end
     
-end
+    end
+    
+

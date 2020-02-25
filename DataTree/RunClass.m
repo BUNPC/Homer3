@@ -83,7 +83,6 @@ classdef RunClass < TreeNodeClass
         end
         
                 
-        
         % ----------------------------------------------------------------------------------
         % Deletes derived data in procResult
         % ----------------------------------------------------------------------------------
@@ -106,7 +105,8 @@ classdef RunClass < TreeNodeClass
                 obj.Copy@TreeNodeClass(R);
             end
         end
-            
+
+        
         % ----------------------------------------------------------------------------------
         % Copy processing params (procInut and procResult) from
         % N2 to N1 if N1 and N2 are same nodes

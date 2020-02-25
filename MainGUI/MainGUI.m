@@ -1356,7 +1356,7 @@ hf = figure();
 set(hf, 'units','characters');
 p = get(hf, 'position');
 set(hf,'position',[p(1), p(2), xf*p(3), yf*p(4)]);
-p = GuiOutsideScreenBorders(hf);
+p = guiOutsideScreenBorders(hf);
 set(hf, 'position', [p(1), p(2)-5, p(3), p(4)]);
 
 figure(hf);
@@ -1455,4 +1455,17 @@ end
 
 % Display excluded time and rejected stims
 Display(handles, hObject);
+
+
+
+% --------------------------------------------------------------------
+function menuItemExportHRF_Callback(hObject, eventdata, handles)
+global maingui
+
+q = MenuBox('Save only current processing element or current and all elemnts under it?', {'Current Only','Current and All Under It'});
+if q==1
+    maingui.dataTree.currElem.ExportHRF('current');
+elseif q==2
+    maingui.dataTree.currElem.ExportHRF('all');
+end    
 

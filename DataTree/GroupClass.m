@@ -596,7 +596,27 @@ classdef GroupClass < TreeNodeClass
             end            
             fprintf('Completed saving groupResults.mat in %0.3f seconds.\n', toc(t_local));
         end
-
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ExportHRF(obj, options, iBlk)
+            if nargin<2
+                options = 'current';
+            end
+            if nargin<3
+                iBlk = 1;
+            end
+            
+            obj.procStream.ExportHRF(obj.name, obj.CondNames, iBlk)
+            if strcmp(options, 'all')
+                for ii=1:length(obj.subjs)
+                    obj.subjs(ii).ExportHRF('all', iBlk)
+                end
+            end
+        end
+                
+        
     end  % Public Save/Load methods
         
     

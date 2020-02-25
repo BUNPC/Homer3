@@ -218,7 +218,7 @@ classdef ProcStreamClass < handle
                 % remove '[', ']', and ','
                 foos = obj.fcalls(iFcall).argOut.str;
                 for ii=1:length(foos)
-                    if foos(ii)=='[' | foos(ii)==']' | foos(ii)==',' | foos(ii)=='#'
+                    if foos(ii)=='[' || foos(ii)==']' || foos(ii)==',' || foos(ii)=='#'
                         foos(ii) = ' ';
                     end
                 end
@@ -230,7 +230,7 @@ classdef ProcStreamClass < handle
                     foo2 = foos(lst(ii)+1:lst(ii+1)-1);
                     lst2 = strmatch( foo2, paramOut, 'exact' );
                     idx = strfind(foo2,'foo');
-                    if isempty(lst2) & (isempty(idx) || idx>1) & ~isempty(foo2)
+                    if isempty(lst2) && (isempty(idx) || idx>1) && ~isempty(foo2)
                         paramOut{end+1} = foo2;
                     end
                 end
@@ -340,6 +340,19 @@ classdef ProcStreamClass < handle
         end
         
         
+        % ----------------------------------------------------------------------------------
+        function ExportHRF(obj, filename, CondNames, iBlk)
+            if nargin<3
+                iBlk = 1;
+            end
+            obj.output.ExportHRF(filename, CondNames, iBlk)
+        end
+
+    end
+    
+    
+    
+    methods
         
         % ----------------------------------------------------------------------------------
         function [args, type] = GetInputArgs(obj, iFcall)
@@ -388,7 +401,7 @@ classdef ProcStreamClass < handle
             end            
             for iP = 1:nParam
                 p{iP} = obj.fcalls(iFcall).paramIn(iP).value;
-                if length(obj.fcalls(iFcall).argIn.str)==1 & iP==1
+                if length(obj.fcalls(iFcall).argIn.str)==1 && iP==1
                     sargin = sprintf('%sp{%d}', sargin, iP);
                     if isnumeric(p{iP})
                         if length(p{iP})==1

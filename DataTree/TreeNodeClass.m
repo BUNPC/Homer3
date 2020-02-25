@@ -583,8 +583,20 @@ classdef TreeNodeClass < handle
         function SetTincMan(obj, idxs, iBlk, excl_incl)
             ;
         end
+               
+    end
+    
+    
+    methods
         
-        
+        % ----------------------------------------------------------------------------------
+        function ExportHRF(obj, iBlk)
+            if nargin<2
+                iBlk = 1;
+            end
+            obj.procStream.ExportHRF(obj.name, obj.CondNames, iBlk)
+        end
+                
     end
     
     

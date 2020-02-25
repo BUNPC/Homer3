@@ -129,7 +129,7 @@ end
 % Need to make sure position data is saved in pixel units at end of function
 % to as these are the units used to reposition GUI later if needed
 setGuiFonts(hf);
-p = GuiOutsideScreenBorders(hf);
+p = guiOutsideScreenBorders(hf);
 set(hf, 'visible','on', 'position',p);
 
 % Wait for user to respond before exiting

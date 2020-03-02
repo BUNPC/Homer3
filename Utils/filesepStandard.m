@@ -20,7 +20,7 @@ function pathname = filesepStandard(pathname0)
 %
 
 pathname = [];
-if ~isdir(pathname0) && ~isfile(pathname0)    
+if ~isdir_private(pathname0) && ~isfile_private(pathname0)    
     return
 end
 if ~ischar(pathname0)

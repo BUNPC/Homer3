@@ -34,7 +34,11 @@ else
 end
 Hbttn = 2.7;
 
-Wtext = 70;                       % In char units
+if Wbttn < 70
+    Wtext = 70;                       % In char units
+else
+    Wtext = 1.1 * Wbttn;
+end
 Htext = round(nchar / Wtext)+4;
 
 % Position/dimensions in the X direction

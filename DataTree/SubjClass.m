@@ -427,17 +427,25 @@ classdef SubjClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function ExportHRF(obj, options, iBlk)
-            if nargin<2
-                options = 'current';
+            if nargin<2 || isempty(options)
+                q = MenuBox('Export only current subject data OR current subject data and all it''s run data?', ...
+                            {'Current subject data only','Current subject data and all it''s run data','Cancel'});
+                if q==1
+                    options  = 'current';
+                elseif q==2
+                    options  = 'all';
+                else
+                    return
+                end
             end
             if nargin<3
                 iBlk = 1;
             end
 
-            obj.procStream.ExportHRF(obj.name, obj.CondNames, iBlk)
+            obj.procStream.ExportHRF(obj.name, obj.CondNames, iBlk);
             if strcmp(options, 'all')
                 for ii=1:length(obj.runs)
-                    obj.runs(ii).ExportHRF(iBlk)
+                    obj.runs(ii).ExportHRF(iBlk);
                 end
             end
         end

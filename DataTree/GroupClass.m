@@ -601,17 +601,25 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function ExportHRF(obj, options, iBlk)
-            if nargin<2
-                options = 'current';
+            if nargin<2 || isempty(options)
+                q = MenuBox('Export only current group data OR current group data and all it''s subject data?', ...
+                            {'Current group data only','Current group data and all it''s subject data','Cancel'});
+                if q==1
+                    options  = 'current';
+                elseif q==2
+                    options  = 'all';
+                else
+                    return
+                end
             end
             if nargin<3
                 iBlk = 1;
             end
             
-            obj.procStream.ExportHRF(obj.name, obj.CondNames, iBlk)
+            obj.procStream.ExportHRF(obj.name, obj.CondNames, iBlk);
             if strcmp(options, 'all')
                 for ii=1:length(obj.subjs)
-                    obj.subjs(ii).ExportHRF('all', iBlk)
+                    obj.subjs(ii).ExportHRF('all', iBlk);
                 end
             end
         end

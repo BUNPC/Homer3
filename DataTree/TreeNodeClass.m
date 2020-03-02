@@ -585,20 +585,7 @@ classdef TreeNodeClass < handle
         end
                
     end
-    
-    
-    methods
         
-        % ----------------------------------------------------------------------------------
-        function ExportHRF(obj, iBlk)
-            if nargin<2
-                iBlk = 1;
-            end
-            obj.procStream.ExportHRF(obj.name, obj.CondNames, iBlk)
-        end
-                
-    end
-    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Static class methods implementing static class variables

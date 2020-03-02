@@ -345,7 +345,7 @@ classdef ProcStreamClass < handle
             if nargin<3
                 iBlk = 1;
             end
-            obj.output.ExportHRF(filename, CondNames, iBlk)
+            obj.output.ExportHRF(filename, CondNames, iBlk);
         end
 
     end

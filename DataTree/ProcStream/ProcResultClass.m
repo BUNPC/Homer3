@@ -111,7 +111,7 @@ classdef ProcResultClass < handle
                 eval(sprintf('var = obj.%s;', varname));
             elseif isproperty(obj.misc, varname)
                 eval(sprintf('var = obj.misc.%s;', varname));
-            end            
+            end
             if ~isempty(var) && exist('iBlk','var')
                 if iscell(var)
                     var = var{iBlk};
@@ -160,7 +160,7 @@ classdef ProcResultClass < handle
             if ~isempty(obj.dcAvg) && isa(obj.dcAvg, 'DataClass')
                 t = obj.dcAvg(iBlk).GetT;
             elseif ~isempty(obj.dodAvg) && isa(obj.dodAvg, 'DataClass')
-                t = obj.dodAvg(iBlk).GetT;            
+                t = obj.dodAvg(iBlk).GetT;
             else
                 t = obj.tHRF;
             end
@@ -392,7 +392,7 @@ classdef ProcResultClass < handle
                 end
             end
         end
-       
+        
         
         % ----------------------------------------------------------------------------------
         function val = GetTincAutoCh(obj, iBlk)
@@ -408,7 +408,7 @@ classdef ProcResultClass < handle
                 end
             end
         end
-       
+        
         
         % ----------------------------------------------------------------------------------
         function mlActAuto = GetMeasListActAuto(obj, iBlk)
@@ -427,7 +427,7 @@ classdef ProcResultClass < handle
             if ~isempty(obj.dcAvg)
                 n = length(obj.dcAvg);
             elseif ~isempty(obj.dodAvg)
-                n = length(obj.dodAvg);                
+                n = length(obj.dodAvg);
             elseif ~isempty(obj.dc)
                 n = length(obj.dc);
             elseif ~isempty(obj.dod)
@@ -438,6 +438,9 @@ classdef ProcResultClass < handle
     end
     
     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Export related methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
         % ----------------------------------------------------------------------------------
@@ -450,7 +453,7 @@ classdef ProcResultClass < handle
             end
             
             % Ok to shallow copy since ProcResult objects are read only
-            % Also we don't want to transfer space hogging time course 
+            % Also we don't want to transfer space hogging time course
             % data dc and dod
             
             if ~strcmp(option, 'spacesaver')
@@ -469,7 +472,7 @@ classdef ProcResultClass < handle
             else
                 obj.nTrials = {obj2.nTrials};
             end
-             obj.ch = obj2.ch;
+            obj.ch = obj2.ch;
             obj.misc = obj2.misc;
         end
         
@@ -488,7 +491,7 @@ classdef ProcResultClass < handle
                 b=1;
             end
         end
-       
+        
         
         % ----------------------------------------------------------------------------------
         function b = HaveTimeCourseOutput(obj)
@@ -504,65 +507,60 @@ classdef ProcResultClass < handle
             end
         end
         
+    end
+        
+    methods
         
         % ----------------------------------------------------------------------------------
-        function ExportHRF(obj, filename, CondNames, iBlk)
-            if nargin<3
-                iBlk = 1;
-            end
-                        
-            % Max column width in number ois characters
-            maxcolwidth = 12;
+        function tblcells = GenerateTableCells_HRF(obj, CondNames, iBlk)
             
-            [pname, fname] = fileparts(filename);
-            ext = '_HRF.txt';
-            
-            fd = fopen([pname, fname, ext], 'wt');
-            
-            fprintf(fd, '%s: exported HRF data\n', fname);
-            fprintf('%s: exported HRF data\n', fname);
-            
+            tblcells = TableCell.empty();
             if isa(obj.dcAvg, 'DataClass')
                 dataTimeSeries = obj.dcAvg.GetDataTimeSeries();
                 measList = obj.dcAvg.measurementList;
                 
-                % Header: stim condition
+                % Header: stim condition name row
                 for iCh=1:length(measList)
-                    stim_cond_str = sprintf('%s', CondNames{measList(iCh).dataTypeIndex});
-                    nspaces = round((maxcolwidth - length(stim_cond_str)));
-                    fprintf(fd, '%s%s\t', blanks(nspaces), stim_cond_str);
+                    tblcells(1,iCh) = TableCell(sprintf('%s', CondNames{measList(iCh).dataTypeIndex}), 12);
                 end
-                fprintf(fd, '\n');
                 
                 % Header: Hb type row
                 for iCh=1:length(measList)
-                    hb_sd_str = sprintf('%s,%d,%d', measList(iCh).dataTypeLabel, measList(iCh).sourceIndex, measList(iCh).detectorIndex);
-                    nspaces = round((maxcolwidth - length(hb_sd_str)));
-                    fprintf(fd, '%s%s\t', blanks(nspaces), hb_sd_str);
+                    tblcells(2,iCh) = TableCell(sprintf('%s,%d,%d', measList(iCh).dataTypeLabel, measList(iCh).sourceIndex, measList(iCh).detectorIndex), 12);
                 end
                 
-                fprintf(fd, '\n');
-                        
                 % Data rows
                 for t=1:size(dataTimeSeries,1)
                     for iCh=1:length(measList)
                         if isnan(dataTimeSeries(t,iCh))
-                            nspaces = round((maxcolwidth - length('NaN')));
+                            cname  = 'NaN';
                         else
-                            nspaces = dataTimeSeries(t,iCh)>=0;
+                            cname = sprintf('%s%0.5e', blanks(dataTimeSeries(t,iCh)>=0), dataTimeSeries(t,iCh));
                         end
-                        fprintf(fd, '%s%0.5e\t', blanks(nspaces), dataTimeSeries(t,iCh));
+                        tblcells(t+2,iCh) = TableCell(cname, 12);
                     end
-                    fprintf(fd, '\n');
                 end
-                fprintf(fd, '\n\n');            
+            end
+        end
+                
+        
+        % ----------------------------------------------------------------------------------
+        function tbl = ExportHRF(obj, filename, CondNames, iBlk)
+            if nargin<3
+                iBlk = 1;
             end
             
-            fclose(fd);
+            % Generate table cells
+            tblcells = obj.GenerateTableCells_HRF(CondNames, iBlk);
+            
+            % Create table and save it to a file
+            tbl = ExportTable(filename, 'HRF', tblcells);
+            tbl.Open()
+            tbl.Save();
+            tbl.Close();
         end
-
+        
     end
     
-    end
-    
+end
 

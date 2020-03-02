@@ -10,7 +10,7 @@ function pathname = getfullpath(relpath)
 %
 
 currdir = pwd;
-relpath = replacefilesepinpath(relpath);
+relpath = filesepStandard(relpath);
 pathname = '';
 if ~(exist(relpath, 'dir')==7) & ~(exist(relpath, 'file')==2)
     return;
@@ -27,7 +27,7 @@ if ~exist(relpath,'dir')
 end
 
 cd(relpath);
-pathname = replacefilesepinpath([pwd,'/',pp{end}]);
+pathname = filesepStandard([pwd,'/',pp{end}]);
 
 if ispc()
     pathname = lower(pathname);

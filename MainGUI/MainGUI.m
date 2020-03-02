@@ -1462,10 +1462,5 @@ Display(handles, hObject);
 function menuItemExportHRF_Callback(hObject, eventdata, handles)
 global maingui
 
-q = MenuBox('Save only current processing element or current and all elemnts under it?', {'Current Only','Current and All Under It'});
-if q==1
-    maingui.dataTree.currElem.ExportHRF('current');
-elseif q==2
-    maingui.dataTree.currElem.ExportHRF('all');
-end    
+maingui.dataTree.currElem.ExportHRF();
 

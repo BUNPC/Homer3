@@ -1464,3 +1464,13 @@ global maingui
 
 maingui.dataTree.currElem.ExportHRF();
 
+
+
+% --------------------------------------------------------------------
+function menuItemExportSubjHRFMean_Callback(hObject, eventdata, handles)
+global maingui
+
+maingui.dataTree.groups(1).ExportMeanHRF();
+
+
+

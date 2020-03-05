@@ -338,16 +338,7 @@ classdef ProcStreamClass < handle
             end
             b = obj.output.HaveTimeCourseOutput();
         end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function ExportHRF(obj, filename, CondNames, iBlk)
-            if nargin<3
-                iBlk = 1;
-            end
-            obj.output.ExportHRF(filename, CondNames, iBlk);
-        end
-
+                
     end
     
     
@@ -1288,6 +1279,15 @@ classdef ProcStreamClass < handle
             end
             pValues = obj.output.GetVar('pValues',iBlk);
         end
+    
+        
+        % ----------------------------------------------------------------------------------
+        function n = GetNumChForOneCondition(obj, iBlk)
+            if nargin<2
+                iBlk = 1;
+            end            
+            n = obj.output.GetNumChForOneCondition(iBlk);
+        end
         
     end
     
@@ -1453,7 +1453,53 @@ classdef ProcStreamClass < handle
             obj.input.RenameCondition(oldname, newname);
         end
         
-    end    
+    end
+
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Export related methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods        
+        
+        % ----------------------------------------------------------------------------------
+        function [tblcells, maxwidth] = GenerateTableCellsHeader_MeanHRF(obj, iBlk)
+            if nargin<2
+                iBlk = 1;
+            end
+            [tblcells, maxwidth] = obj.output.GenerateTableCellsHeader_MeanHRF(iBlk);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function tblcells = GenerateTableCells_MeanHRF(obj, name, CondNames, width, iBlk)
+            if nargin<4
+                width = 12;
+            end
+            if nargin<5
+                iBlk = 1;
+            end
+            tblcells = obj.output.GenerateTableCells_MeanHRF(name, CondNames, width, iBlk);
+        end
+
+            
+        % ----------------------------------------------------------------------------------
+        function tblcells = GenerateTableCells_HRF(obj, CondNames, iBlk)
+            if nargin<3
+                iBlk = 1;
+            end
+            tblcells = obj.output.GenerateTableCells_HRF(name, CondNames, iBlk);
+        end
+                
+        
+        % ----------------------------------------------------------------------------------
+        function ExportHRF(obj, filename, CondNames, iBlk)
+            if nargin<3
+                iBlk = 1;
+            end
+            obj.output.ExportHRF(filename, CondNames, iBlk);
+        end
+        
+    end
     
 end
 

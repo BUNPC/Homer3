@@ -439,7 +439,7 @@ classdef ProcResultClass < handle
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Export related methods
+    % 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
@@ -507,31 +507,95 @@ classdef ProcResultClass < handle
             end
         end
         
-    end
-        
-    methods
         
         % ----------------------------------------------------------------------------------
-        function tblcells = GenerateTableCells_HRF(obj, CondNames, iBlk)
-            
+        function n = GetNumChForOneCondition(obj, iBlk)
+            n = [];
+            if nargin<2
+                iBlk = 1;
+            end
+            if isa(obj.dcAvg, 'DataClass')
+                n = length(obj.dcAvg(iBlk).GetMeasurementListIdxs(1));
+            end            
+        end
+        
+    end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Export related methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods        
+        
+        % ----------------------------------------------------------------------------------
+        function [tblcells, maxwidth] = GenerateTableCellsHeader_MeanHRF(obj, iBlk)
+            if nargin<5
+                iBlk = 1;
+            end
+            tblcells = TableCell.empty();
+            maxwidth = length('HRF HbX,999,999');
+            if isa(obj.dcAvg, 'DataClass')
+                measList = obj.dcAvg(iBlk).measurementList;
+                measListIdxs = obj.dcAvg(iBlk).GetMeasurementListIdxs(1);
+                for iCh = measListIdxs
+                    tblcells(1,iCh) = TableCell(sprintf('%s,%d,%d', measList(iCh).dataTypeLabel, measList(iCh).sourceIndex, measList(iCh).detectorIndex), maxwidth);
+                end
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function tblcells = GenerateTableCells_MeanHRF(obj, name, CondNames, width, iBlk)
+            if nargin<4
+                width = 12;
+            end
+            if nargin<5
+                iBlk = 1;
+            end
             tblcells = TableCell.empty();
             if isa(obj.dcAvg, 'DataClass')
-                dataTimeSeries = obj.dcAvg.GetDataTimeSeries();
-                measList = obj.dcAvg.measurementList;
+                dataTimeSeries = obj.dcAvg(iBlk).GetDataTimeSeries();                
+                
+                % Data rows
+                for iCond = 1:length(CondNames)
+                    measListIdxs = obj.dcAvg(iBlk).GetMeasurementListIdxs(iCond);
+                    for iCh = measListIdxs
+                        meanData = mean(dataTimeSeries(:,iCh));                        
+                        if isnan(meanData)
+                            cname  = 'N/A';
+                        else
+                            cname = sprintf('%s%0.5e', blanks(meanData>=0), meanData);
+                        end                        
+                        tblcells(iCond, mod(iCh-1, length(measListIdxs))+1) = TableCell(cname, width);
+                    end
+                end
+            end
+        end
+
+            
+        % ----------------------------------------------------------------------------------
+        function tblcells = GenerateTableCells_HRF(obj, CondNames, iBlk)
+            if nargin<3
+                iBlk = 1;
+            end
+            tblcells = TableCell.empty();
+            if isa(obj.dcAvg, 'DataClass')
+                dataTimeSeries = obj.dcAvg(iBlk).GetDataTimeSeries();
+                measList = obj.dcAvg(iBlk).measurementList;
                 
                 % Header: stim condition name row
-                for iCh=1:length(measList)
+                for iCh = 1:length(measList)
                     tblcells(1,iCh) = TableCell(sprintf('%s', CondNames{measList(iCh).dataTypeIndex}), 12);
                 end
                 
                 % Header: Hb type row
-                for iCh=1:length(measList)
+                for iCh = 1:length(measList)
                     tblcells(2,iCh) = TableCell(sprintf('%s,%d,%d', measList(iCh).dataTypeLabel, measList(iCh).sourceIndex, measList(iCh).detectorIndex), 12);
                 end
                 
                 % Data rows
-                for t=1:size(dataTimeSeries,1)
-                    for iCh=1:length(measList)
+                for t = 1:size(dataTimeSeries,1)
+                    for iCh = 1:length(measList)
                         if isnan(dataTimeSeries(t,iCh))
                             cname  = 'NaN';
                         else
@@ -540,6 +604,8 @@ classdef ProcResultClass < handle
                         tblcells(t+2,iCh) = TableCell(cname, 12);
                     end
                 end
+            else
+                
             end
         end
                 

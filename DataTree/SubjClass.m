@@ -426,6 +426,29 @@ classdef SubjClass < TreeNodeClass
 
         
         % ----------------------------------------------------------------------------------
+        function tblcells = GenerateTableCells_MeanHRF(obj, width, iBlk)
+            if nargin<2
+                width = 12;
+            end
+            if nargin<3
+                iBlk = 1;
+            end
+            tblcells = obj.procStream.GenerateTableCells_MeanHRF(obj.name, obj.CondNames, width, iBlk);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function tblcells = GenerateTableCellsHeader_MeanHRF(obj, widthCond, widthSubj)
+            tblcells = repmat(TableCell(), length(obj.CondNames), 2);
+            for iCond = 1:length(obj.CondNames)
+                % First 2 columns contain condition name and group, subject or run name
+                tblcells(iCond, 1) = TableCell(obj.CondNames{iCond}, widthCond);
+                tblcells(iCond, 2) = TableCell(obj.name, widthSubj);
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function ExportHRF(obj, options, iBlk)
             if nargin<2 || isempty(options)
                 q = MenuBox('Export only current subject data OR current subject data and all it''s run data?', ...

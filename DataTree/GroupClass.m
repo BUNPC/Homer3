@@ -623,7 +623,53 @@ classdef GroupClass < TreeNodeClass
                 end
             end
         end
+
+        
+        % ----------------------------------------------------------------------------------
+        function tblcells = ExportMeanHRF(obj, iBlk)
+            if nargin<2
+                iBlk = 1;
+            end
+            
+            nCh   = obj.procStream.GetNumChForOneCondition(iBlk);
+            nCond = length(obj.CondNames);
+            nSubj = length(obj.subjs);
+            
+            % Determine table dimensions            
+            nHdrRows = 3;               % Blank line + name of columns
+            nHdrCols = 2;               % Condition name + subject name
+            nDataRows = nSubj*nCond;    
+            nDataCols = nCh;                 % Number of channels for one condition (for example, if data type is Hb Conc: (HbO + HbR + HbT) * num of SD pairs)
+            nTblRows = nDataRows + nHdrRows;
+            nTblCols = nDataCols + nHdrCols;
+            cellwidthCond = max(length('Condition'), obj.CondNameSizeMax());
+            cellwidthSubj = max(length('Subject Name'), obj.SubjNameSizeMax());
+            
+            %%%% Initialize 2D array of TableCell objects with the above row * column dimensions            
+            tblcells = repmat(TableCell(), nTblRows, nTblCols);
+            
+            % Header row: Condition, Subject Name, HbO,1,1, HbR,1,1, HbT,1,1, ...
+            tblcells(2,1) = TableCell('Condition', cellwidthCond);
+            tblcells(2,2) = TableCell('Subject Name', cellwidthSubj);
+            [tblcells(2,3:end), cellwidthData] = obj.procStream.GenerateTableCellsHeader_MeanHRF(iBlk);
+            
+            % Generate data rows
+            for iSubj = 1:nSubj
+                rowIdxStart = ((iSubj-1)*nCond)+1 + nHdrRows;
+                rowIdxEnd   = rowIdxStart + nCond - 1;
                 
+                tblcells(rowIdxStart:rowIdxEnd, 1:2)        = obj.subjs(iSubj).GenerateTableCellsHeader_MeanHRF(cellwidthCond, cellwidthSubj);
+                tblcells(rowIdxStart:rowIdxEnd, 3:nTblCols) = obj.subjs(iSubj).GenerateTableCells_MeanHRF(cellwidthData, iBlk);
+            end
+            
+            % Create ExportTable initialized with the filled in 2D TableCell array. 
+            % ExportTable object is what actually does the exporting to a file. 
+            tbl = ExportTable(obj.name, 'HRF mean', tblcells);
+            tbl.Open()
+            tbl.Save();
+            tbl.Close();
+            
+        end
         
     end  % Public Save/Load methods
         
@@ -773,6 +819,34 @@ classdef GroupClass < TreeNodeClass
                 if strcmp(obj.subjs(k).name, G.subjs(i).name)
                     j=i;
                     break;
+                end
+            end
+        end
+        
+
+        % ----------------------------------------------------------------------------------
+        function n = CondNameSizeMax(obj)
+            n = 0;
+            if isempty(obj.CondNames)
+                return;
+            end
+            for ii = 1:length(obj.CondNames)
+                if length(obj.CondNames{ii}) > n
+                    n = length(obj.CondNames{ii});
+                end
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function n = SubjNameSizeMax(obj)
+            n = 0;
+            if isempty(obj.subjs)
+                return;
+            end
+            for ii = 1:length(obj.subjs)
+                if length(obj.subjs(ii).name) > n
+                    n = length(obj.subjs(ii).name);
                 end
             end
         end

@@ -45,16 +45,13 @@ for iBlk = 1:length(yAvgSubjs{1})
     subjCh = [];
     nStim = 0;
     grp1 = [];
-    nT = [];
+    nT = [];    
     
     for iSubj = 1:nSubj
         
-        yAvgOut(iBlk) = DataClass();
+        yAvgOut(iBlk) = DataClass();        
         
         yAvg      = yAvgSubjs{iSubj}(iBlk).GetDataMatrix();
-        if isempty(yAvg)
-            continue;
-        end
         if isempty(yAvgStdSubjs{iSubj})
             yAvgStd = [];
         else
@@ -136,7 +133,7 @@ for iBlk = 1:length(yAvgSubjs{1})
                         if iSubj == nSubj
                             yAvgOut(iBlk).AddChannelHbO(ml(iCh,1), ml(iCh,2), iC);
                             yAvgOut(iBlk).AddChannelHbR(ml(iCh,1), ml(iCh,2), iC);
-                            yAvgOut(iBlk).AddChannelHbT(ml(iCh,1), ml(iCh,2), iC);
+                            yAvgOut(iBlk).AddChannelHbT(ml(iCh,1), ml(iCh,2), iC);                            
                         end
                     end
                 end
@@ -196,7 +193,7 @@ for iBlk = 1:length(yAvgSubjs{1})
             if ~isempty(grp1)
                 for iC = 1:size(grp1,3)
                     for iCh = 1:size(grp1,2)
-                        yAvg(:,:,iC) = grp1(:,:,iC) / subjCh(iCh,iC);                        
+                        yAvg(:,:,iC) = grp1(:,:,iC) / subjCh(iCh,iC);
                         if iSubj == nSubj
                             yAvgOut(iBlk).AddChannelDod(ml(iCh,1), ml(iCh,2), ml(iCh,4), iC);
                         end

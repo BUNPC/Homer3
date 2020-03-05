@@ -210,29 +210,26 @@ classdef DataClass < FileLoadSaveClass
                 end
             end
         end
-        
-        
-        % ---------------------------------------------------------
-        function ml = GetMeasListDod(obj)
-            ml = zeros(length(obj.measurementList), 2);
-            for ii=1:length(obj.measurementList)
-                if  obj.measurementList(ii).GetWavelengthIndex()==1
-                    ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex()];
-                end
-            end
-        end
-        
+
         
         % ---------------------------------------------------------
-        function ml = GetMeasListDc(obj)
-            ml = zeros(length(obj.measurementList), 2);
-            for ii=1:length(obj.measurementList)
-                if  obj.measurementList(ii).GetDataTypeLabel()==6
-                    ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex()];
+        function idxs = GetMeasurementListIdxs(obj, CondIdxs)
+            % Get all the measurementList array idxs matching the
+            % conditions in the CondNames argument 
+            idxs = zeros(1,length(obj.measurementList));
+            kk=1;
+            for iCh = 1:length(obj.measurementList)
+                for iCond = 1:length(CondIdxs)
+                    if sum(obj.measurementList(iCh).dataTypeIndex == CondIdxs)
+                        idxs(kk) = iCh;
+                        kk=kk+1;
+                        break;
+                    end
                 end
             end
+            idxs(idxs==0) = [];
         end
-        
+
         
         % ---------------------------------------------------------
         function t = GetTime(obj)

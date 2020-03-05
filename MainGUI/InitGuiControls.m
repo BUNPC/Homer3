@@ -30,10 +30,10 @@ datatype = GetDatatype(handles);
 if datatype == maingui.buttonVals.RAW || datatype == maingui.buttonVals.RAW_HRF
     set(handles.listboxPlotWavelength, 'visible','on');
     set(handles.listboxPlotConc, 'visible','off');
-elseif datatype == maingui.buttonVals.OD || maingui.datatype == maingui.buttonVals.OD_HRF
+elseif datatype == maingui.buttonVals.OD || datatype == maingui.buttonVals.OD_HRF
     set(handles.listboxPlotWavelength, 'visible','on');
     set(handles.listboxPlotConc, 'visible','off');
-elseif datatype == maingui.buttonVals.CONC || maingui.datatype == maingui.buttonVals.CONC_HRF
+elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
     set(handles.listboxPlotWavelength, 'visible','off');
     set(handles.listboxPlotConc, 'visible','on');
 end

@@ -27,7 +27,10 @@ classdef ExportTable < handle
             end
             
             [pname, fname] = fileparts(filename);
-            ext = sprintf('_%s.txt', datatype);
+            
+            datatypeFname = datatype;
+            datatypeFname(datatypeFname==' ') = [];
+            ext = sprintf('_%s.txt', datatypeFname);
             obj.pathname = filesepStandard(pname);
             obj.filename = [fname, ext];
             obj.datatitle = sprintf('%s: Exported %s data', fname, datatype);

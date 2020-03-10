@@ -1452,6 +1452,9 @@ for iBlk=1:iDataBlks
 
 end
 
+if isempty(out.format)
+    return;
+end
 
 % Display excluded time and rejected stims
 Display(handles, hObject);
@@ -1462,15 +1465,41 @@ Display(handles, hObject);
 function menuItemExportHRF_Callback(hObject, eventdata, handles)
 global maingui
 
-maingui.dataTree.currElem.ExportHRF();
-
+out = ExportDataGUI(maingui.dataTree.currElem.name,'.txt','HRF');
+if isempty(out.format) && isempty(out.datatype)
+    return;
+end
+switch(out.format)
+    case '.txt'
+        format = 'text';
+    case '.xls'
+        format = 'spreadsheet';
+    otherwise
+end
+switch(out.procElemSelect)
+    case 'currentonly'
+        procElemSelect = 'current';
+    case 'all'
+        procElemSelect = 'all';
+    otherwise
+end
+maingui.dataTree.currElem.ExportHRF(format, procElemSelect);
 
 
 % --------------------------------------------------------------------
 function menuItemExportSubjHRFMean_Callback(hObject, eventdata, handles)
 global maingui
 
-maingui.dataTree.groups(1).ExportMeanHRF();
-
-
+out = ExportDataGUI(maingui.dataTree.groups(1).name,'.txt','Subjects HRF mean');
+if isempty(out.format) && isempty(out.datatype)
+    return;
+end
+switch(out.format)
+    case '.txt'
+        format = 'text';
+    case '.xls'
+        format = 'spreadsheet';
+    otherwise
+end
+maingui.dataTree.groups(1).ExportMeanHRF(out.trange, format);
 

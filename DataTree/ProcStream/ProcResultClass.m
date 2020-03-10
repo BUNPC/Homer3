@@ -545,11 +545,14 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function tblcells = GenerateTableCells_MeanHRF(obj, name, CondNames, width, iBlk)
-            if nargin<4
+        function tblcells = GenerateTableCells_MeanHRF(obj, name, CondNames, trange, width, iBlk)
+            if ~exist('trange','var') || isempty(trange) || all(trange==0)
+                trange = [obj.tHRF(1), obj.tHRF(end)];
+            end
+            if ~exist('width','var') || isempty(width)
                 width = 12;
             end
-            if nargin<5
+            if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
             tblcells = TableCell.empty();
@@ -560,7 +563,8 @@ classdef ProcResultClass < handle
                 for iCond = 1:length(CondNames)
                     measListIdxs = obj.dcAvg(iBlk).GetMeasurementListIdxs(iCond);
                     for iCh = measListIdxs
-                        meanData = mean(dataTimeSeries(:,iCh));                        
+                        iT = (obj.dcAvg.time >= trange(1)) & (obj.dcAvg.time <= trange(2));
+                        meanData = mean(dataTimeSeries(iT,iCh));
                         if isnan(meanData)
                             cname  = 'N/A';
                         else
@@ -611,8 +615,11 @@ classdef ProcResultClass < handle
                 
         
         % ----------------------------------------------------------------------------------
-        function tbl = ExportHRF(obj, filename, CondNames, iBlk)
-            if nargin<3
+        function tbl = ExportHRF(obj, filename, CondNames, format, iBlk)
+            if ~exist('format','var') || isempty(format)
+                format = 'text';
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
             
@@ -622,7 +629,7 @@ classdef ProcResultClass < handle
             % Create table and save it to a file
             tbl = ExportTable(filename, 'HRF', tblcells);
             tbl.Open()
-            tbl.Save();
+            tbl.Save(format);
             tbl.Close();
         end
         

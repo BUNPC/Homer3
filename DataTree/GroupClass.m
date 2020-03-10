@@ -600,37 +600,46 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function ExportHRF(obj, options, iBlk)
-            if nargin<2 || isempty(options)
+        function ExportHRF(obj, format, procElemSelect, iBlk)
+            if ~exist('format','var') || isempty(format)
+                format = 'text';
+            end
+            if ~exist('procElemSelect','var') || isempty(procElemSelect)
                 q = MenuBox('Export only current group data OR current group data and all it''s subject data?', ...
                             {'Current group data only','Current group data and all it''s subject data','Cancel'});
                 if q==1
-                    options  = 'current';
+                    procElemSelect  = 'current';
                 elseif q==2
-                    options  = 'all';
+                    procElemSelect  = 'all';
                 else
                     return
                 end
             end
-            if nargin<3
+            if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
             
-            obj.procStream.ExportHRF(obj.name, obj.CondNames, iBlk);
-            if strcmp(options, 'all')
+            obj.procStream.ExportHRF(obj.name, obj.CondNames, format, iBlk);
+            if strcmp(procElemSelect, 'all')
                 for ii=1:length(obj.subjs)
-                    obj.subjs(ii).ExportHRF('all', iBlk);
+                    obj.subjs(ii).ExportHRF(format, 'all', iBlk);
                 end
             end
         end
 
         
         % ----------------------------------------------------------------------------------
-        function tblcells = ExportMeanHRF(obj, iBlk)
-            if nargin<2
+        function tblcells = ExportMeanHRF(obj, trange, format, iBlk)
+            if ~exist('format','var') || isempty(format)
+                format = 'text';
+            end
+            if ~exist('trange','var') || isempty(trange)
+                trange = [];
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            
+                        
             nCh   = obj.procStream.GetNumChForOneCondition(iBlk);
             nCond = length(obj.CondNames);
             nSubj = length(obj.subjs);
@@ -659,16 +668,12 @@ classdef GroupClass < TreeNodeClass
                 rowIdxEnd   = rowIdxStart + nCond - 1;
                 
                 tblcells(rowIdxStart:rowIdxEnd, 1:2)        = obj.subjs(iSubj).GenerateTableCellsHeader_MeanHRF(cellwidthCond, cellwidthSubj);
-                tblcells(rowIdxStart:rowIdxEnd, 3:nTblCols) = obj.subjs(iSubj).GenerateTableCells_MeanHRF(cellwidthData, iBlk);
+                tblcells(rowIdxStart:rowIdxEnd, 3:nTblCols) = obj.subjs(iSubj).GenerateTableCells_MeanHRF(trange, cellwidthData, iBlk);
             end
             
             % Create ExportTable initialized with the filled in 2D TableCell array. 
             % ExportTable object is what actually does the exporting to a file. 
-            tbl = ExportTable(obj.name, 'HRF mean', tblcells);
-            tbl.Open()
-            tbl.Save();
-            tbl.Close();
-            
+            ExportTable(obj.name, 'HRF mean', tblcells, format);            
         end
         
     end  % Public Save/Load methods

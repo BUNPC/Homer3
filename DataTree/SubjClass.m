@@ -426,14 +426,17 @@ classdef SubjClass < TreeNodeClass
 
         
         % ----------------------------------------------------------------------------------
-        function tblcells = GenerateTableCells_MeanHRF(obj, width, iBlk)
-            if nargin<2
+        function tblcells = GenerateTableCells_MeanHRF(obj, trange, width, iBlk)
+            if ~exist('trange','var') || isempty(trange)
+                trange = [0,0];
+            end
+            if ~exist('width','var') || isempty(width)
                 width = 12;
             end
-            if nargin<3
+            if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            tblcells = obj.procStream.GenerateTableCells_MeanHRF(obj.name, obj.CondNames, width, iBlk);
+            tblcells = obj.procStream.GenerateTableCells_MeanHRF(obj.name, obj.CondNames, trange, width, iBlk);
         end
         
         
@@ -449,26 +452,29 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function ExportHRF(obj, options, iBlk)
-            if nargin<2 || isempty(options)
+        function ExportHRF(obj, format, procElemSelect, iBlk)
+            if ~exist('format','var') || isempty(format)
+                format = 'text';
+            end
+            if ~exist('procElemSelect','var') || isempty(procElemSelect)
                 q = MenuBox('Export only current subject data OR current subject data and all it''s run data?', ...
                             {'Current subject data only','Current subject data and all it''s run data','Cancel'});
                 if q==1
-                    options  = 'current';
+                    procElemSelect  = 'current';
                 elseif q==2
-                    options  = 'all';
+                    procElemSelect  = 'all';
                 else
                     return
                 end
             end
-            if nargin<3
+            if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
 
-            obj.procStream.ExportHRF(obj.name, obj.CondNames, iBlk);
-            if strcmp(options, 'all')
+            obj.procStream.ExportHRF(obj.name, obj.CondNames, format, iBlk);
+            if strcmp(procElemSelect, 'all')
                 for ii=1:length(obj.runs)
-                    obj.runs(ii).ExportHRF(iBlk);
+                    obj.runs(ii).ExportHRF(format, iBlk);
                 end
             end
         end

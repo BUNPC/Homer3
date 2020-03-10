@@ -1471,14 +1471,17 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function tblcells = GenerateTableCells_MeanHRF(obj, name, CondNames, width, iBlk)
-            if nargin<4
+        function tblcells = GenerateTableCells_MeanHRF(obj, name, CondNames, trange, width, iBlk)
+            if ~exist('trange','var') || isempty(trange)
+                trange = [0,0];
+            end
+            if ~exist('width','var') || isempty(width)
                 width = 12;
             end
-            if nargin<5
+            if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            tblcells = obj.output.GenerateTableCells_MeanHRF(name, CondNames, width, iBlk);
+            tblcells = obj.output.GenerateTableCells_MeanHRF(name, CondNames, trange, width, iBlk);
         end
 
             
@@ -1492,11 +1495,14 @@ classdef ProcStreamClass < handle
                 
         
         % ----------------------------------------------------------------------------------
-        function ExportHRF(obj, filename, CondNames, iBlk)
-            if nargin<3
+        function ExportHRF(obj, filename, CondNames, format, iBlk)
+            if ~exist('format','var') || isempty(format)
+                format = 'text';
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            obj.output.ExportHRF(filename, CondNames, iBlk);
+            obj.output.ExportHRF(filename, CondNames, format, iBlk);
         end
         
     end

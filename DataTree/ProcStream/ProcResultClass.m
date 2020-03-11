@@ -510,7 +510,7 @@ classdef ProcResultClass < handle
         
         % ----------------------------------------------------------------------------------
         function n = GetNumChForOneCondition(obj, iBlk)
-            n = [];
+            n = 0;
             if nargin<2
                 iBlk = 1;
             end
@@ -626,11 +626,8 @@ classdef ProcResultClass < handle
             % Generate table cells
             tblcells = obj.GenerateTableCells_HRF(CondNames, iBlk);
             
-            % Create table and save it to a file
-            tbl = ExportTable(filename, 'HRF', tblcells);
-            tbl.Open()
-            tbl.Save(format);
-            tbl.Close();
+            % Create table export data to file
+            tbl = ExportTable(filename, 'HRF', tblcells, format);
         end
         
     end

@@ -135,7 +135,11 @@ classdef ExportTable < handle
             for jj=1:size(obj.cells,2)
                 headers{jj} = obj.cells(2,jj).name;
             end
+            
+            % 
+            h =  waitbar_improved(0, sprintf('Exporting %s to Excel ... 0%% complete.', obj.filename));
             for ii = idxD:size(obj.cells,1)
+                waitbar_improved(ii/size(obj.cells,1), h, sprintf('Exporting %s to Excel ... %d%% complete', obj.filename, uint32(100 * ii/size(obj.cells,1))))
                 for jj=1:size(obj.cells,2)
                     if isnumber(obj.cells(ii,jj).name)
                         data{ii-idxD+1,jj} = str2double(obj.cells(ii,jj).name);
@@ -144,6 +148,8 @@ classdef ExportTable < handle
                     end
                 end
             end
+            close(h);
+            
             if isfile_private([obj.pathname, obj.filename, '.xls'])
                 delete([obj.pathname, obj.filename, '.xls']);
             end

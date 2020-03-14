@@ -47,8 +47,7 @@ for cond = 1:ncond % for each condition
         % GetStims method to convert stim to the s vector that this function needs.
         snirf = SnirfClass(yRuns{iRun}, stimRuns{iRun});
         t = snirf.GetTimeCombined();
-        s = snirf.GetStims(t);     % stim matrix for run iRun is same for all of a run's data blocks
-        
+        s = snirf.GetStims(t);     % stim matrix for run iRun is same for all of a run's data blocks     
         
         % extract HRF at baselineRange and at hrfTimeWindow
         lst_stim = find(s(:,cond)==1);
@@ -60,7 +59,7 @@ for cond = 1:ncond % for each condition
             end
             mlAct = mlActAuto{iBlk};
             % GetDataMatrix() extract data in old homer2 dimensions (time X Hb X channel)
-            y = data_y.GetDataMatrix();% yRuns{iRun}(iBlk).GetDataMatrix();  % data matrix for run iRun, data block iBlk
+            y = yRuns{iRun}(iBlk).GetDataMatrix();% yRuns{iRun}(iBlk).GetDataMatrix();  % data matrix for run iRun, data block iBlk
             for hb = 1:3 % across HbO/HbR/HbT
                 for iTrial = 1:size(lst_stim,1) % across trials
                     % Hb: # of time points X # of trials X # of runs X # of channels X HbO/HbR
@@ -134,7 +133,7 @@ for comb_inx = 1:size(lst_stim_all{i},1) % for each condition
             end
             mlAct = mlActAuto{iBlk};
             % GetDataMatrix() extract data in old homer2 dimensions (time X Hb X channel)
-            y = data_y.GetDataMatrix();% yRuns{iRun}(iBlk).GetDataMatrix();  % data matrix for run iRun, data block iBlk
+            y = yRuns{iRun}(iBlk).GetDataMatrix();  % data matrix for run iRun, data block iBlk
             for hb = 1:3 % across HbO/HbR/HbT
                 for iTrial = 1:size(lst_stim_all{foo(1)},1) % across trials
                     % Hb: # of time points X # of trials X # of runs X # of channels X HbO/HbR
@@ -152,7 +151,7 @@ for comb_inx = 1:size(lst_stim_all{i},1) % for each condition
     Hb_peak_rs1 = reshape(Hb_peak1, size(Hb_peak1,1),  size(Hb_peak1,2)* size(Hb_peak1,3),  size(Hb_peak1,4),size(Hb_peak1,5),size(Hb_peak1,6));
     Hb_peak_rs2 = reshape(Hb_peak2, size(Hb_peak2,1),  size(Hb_peak2,2)* size(Hb_peak2,3),  size(Hb_peak2,4),size(Hb_peak2,5),size(Hb_peak2,6));
     
-    % take the mean in time ranges: baselineRange, hrfTimeWindow
+    % take the mean in time range hrfTimeWindow
     for hb = 1:3 % HbO/HbR/HbT
         for ch=1:size(Hb_peak_rs,3) % across channels
             MEAN_Hb_peak1(:,ch,hb)= nanmean(squeeze(Hb_peak_rs1(:,:,ch,hb)),1);

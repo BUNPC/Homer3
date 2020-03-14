@@ -115,13 +115,6 @@ end
 for comb_inx = 1:size(lst_stim_all{i},1) % for each condition
     for iRun = 1:length(yRuns)
         
-        % Get stim vector by instantiating temporary SnirfClass object with this
-        % function's stim argument as input, and then using the SnirfClass object's
-        % GetStims method to convert stim to the s vector that this function needs.
-        snirf = SnirfClass(yRuns{iRun}, stimRuns{iRun});
-        t = snirf.GetTimeCombined();
-        s = snirf.GetStims(t);     % stim matrix for run iRun is same for all of a run's data blocks
-        
         % get current combin.
         foo = cond_2_comb(comb_inx,:);
         

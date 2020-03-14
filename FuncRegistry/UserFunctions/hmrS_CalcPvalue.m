@@ -174,7 +174,7 @@ for comb_inx = 1:size(lst_stim_all{i},1) % for each condition
                     
                 end
             else
-                pValuesS_cond(hb,ch,cond) = 'NaN';
+                pValuesS_cond(foo(1),foo(2),hb,ch,cond) = 'NaN';
             end
         end
     end

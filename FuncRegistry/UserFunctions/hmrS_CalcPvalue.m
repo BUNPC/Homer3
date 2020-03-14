@@ -113,11 +113,10 @@ for i = 1:ncond
 end
 
 for comb_inx = 1:size(lst_stim_all{i},1) % for each condition
-    for iRun = 1:length(yRuns)
-        
-        % get current combin.
+            % get current combin.
         foo = cond_2_comb(comb_inx,:);
         
+    for iRun = 1:length(yRuns)
         for iBlk = 1:length(yRuns)
             % get active measuremnt list for each run
             % 1) IS THIS HOW WE EXTRACT MEASLISTACT

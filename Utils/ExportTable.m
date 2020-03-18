@@ -32,7 +32,7 @@ classdef ExportTable < handle
                 datatype = '';
             end
             if ~exist('cells','var') || isempty(cells)
-                cells = TableCells.empty();
+                cells = TableCell.empty();
             end
             if ~exist('format','var') || isempty(format)
                 format = 'text';

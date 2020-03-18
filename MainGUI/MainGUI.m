@@ -1469,13 +1469,6 @@ out = ExportDataGUI(maingui.dataTree.currElem.name,'.txt','HRF');
 if isempty(out.format) && isempty(out.datatype)
     return;
 end
-switch(out.format)
-    case '.txt'
-        format = 'text';
-    case '.xls'
-        format = 'spreadsheet';
-    otherwise
-end
 switch(out.procElemSelect)
     case 'currentonly'
         procElemSelect = 'current';
@@ -1483,7 +1476,7 @@ switch(out.procElemSelect)
         procElemSelect = 'all';
     otherwise
 end
-maingui.dataTree.currElem.ExportHRF(format, procElemSelect);
+maingui.dataTree.currElem.ExportHRF(procElemSelect);
 
 
 % --------------------------------------------------------------------
@@ -1491,15 +1484,8 @@ function menuItemExportSubjHRFMean_Callback(hObject, eventdata, handles)
 global maingui
 
 out = ExportDataGUI(maingui.dataTree.groups(1).name,'.txt','Subjects HRF mean');
-if isempty(out.format) && isempty(out.datatype)
+if isempty(out.datatype)
     return;
 end
-switch(out.format)
-    case '.txt'
-        format = 'text';
-    case '.xls'
-        format = 'spreadsheet';
-    otherwise
-end
-maingui.dataTree.groups(1).ExportMeanHRF(out.trange, format);
+maingui.dataTree.groups(1).ExportMeanHRF(out.trange);
 

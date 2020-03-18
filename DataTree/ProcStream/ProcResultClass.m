@@ -615,10 +615,7 @@ classdef ProcResultClass < handle
                 
         
         % ----------------------------------------------------------------------------------
-        function tbl = ExportHRF(obj, filename, CondNames, format, iBlk)
-            if ~exist('format','var') || isempty(format)
-                format = 'text';
-            end
+        function tbl = ExportHRF(obj, filename, CondNames, iBlk)
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
@@ -627,7 +624,7 @@ classdef ProcResultClass < handle
             tblcells = obj.GenerateTableCells_HRF(CondNames, iBlk);
             
             % Create table export data to file
-            tbl = ExportTable(filename, 'HRF', tblcells, format);
+            tbl = ExportTable(filename, 'HRF', tblcells);
         end
         
     end

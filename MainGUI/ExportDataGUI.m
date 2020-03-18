@@ -28,7 +28,8 @@ exportvar.pathname = '';
 exportvar.filename = '';
 
 exportvar.format = '';
-exportvar.formatchoices = {'.txt','.xls'};
+% exportvar.formatchoices = {'.txt','.xls'};
+exportvar.formatchoices = {'.txt'};
 
 exportvar.datatype = '';
 exportvar.datatypechoices = {'HRF','Subjects HRF mean'};
@@ -136,7 +137,6 @@ varargout{1} = exportvar;
 function figure_DeleteFcn(hObject, eventdata, handles)
 
 
-
 % ----------------------------------------------------------------
 function popupmenuDataType_Callback(hObject, eventdata, handles)
 choices   = get(handles.popupmenuDataType, 'string');
@@ -202,3 +202,9 @@ else
     set(handles.radiobuttonCurrProcElemOnly, 'value', 1);
 end
 UpdateOutput(handles)
+
+
+% ----------------------------------------------------------------
+function figure_CloseRequestFcn(hObject, eventdata, handles)
+InitOutput();
+delete(hObject);

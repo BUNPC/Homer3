@@ -643,14 +643,11 @@ classdef RunClass < TreeNodeClass
     
     
         % ----------------------------------------------------------------------------------
-        function ExportHRF(obj, format, iBlk)
-            if ~exist('format','var') || isempty(format)
-                format = 'text';
-            end
+        function ExportHRF(obj, ~, iBlk)
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            obj.procStream.ExportHRF(obj.name, obj.CondNames, format, iBlk);
+            obj.procStream.ExportHRF(obj.name, obj.CondNames, iBlk);
         end
          
     end

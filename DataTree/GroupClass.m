@@ -600,10 +600,7 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function ExportHRF(obj, format, procElemSelect, iBlk)
-            if ~exist('format','var') || isempty(format)
-                format = 'text';
-            end
+        function ExportHRF(obj, procElemSelect, iBlk)
             if ~exist('procElemSelect','var') || isempty(procElemSelect)
                 q = MenuBox('Export only current group data OR current group data and all it''s subject data?', ...
                             {'Current group data only','Current group data and all it''s subject data','Cancel'});
@@ -619,20 +616,17 @@ classdef GroupClass < TreeNodeClass
                 iBlk = 1;
             end
             
-            obj.procStream.ExportHRF(obj.name, obj.CondNames, format, iBlk);
+            obj.procStream.ExportHRF(obj.name, obj.CondNames, iBlk);
             if strcmp(procElemSelect, 'all')
                 for ii=1:length(obj.subjs)
-                    obj.subjs(ii).ExportHRF(format, 'all', iBlk);
+                    obj.subjs(ii).ExportHRF('all', iBlk);
                 end
             end
         end
 
         
         % ----------------------------------------------------------------------------------
-        function tblcells = ExportMeanHRF(obj, trange, format, iBlk)
-            if ~exist('format','var') || isempty(format)
-                format = 'text';
-            end
+        function tblcells = ExportMeanHRF(obj, trange, iBlk)
             if ~exist('trange','var') || isempty(trange)
                 trange = [];
             end
@@ -673,7 +667,7 @@ classdef GroupClass < TreeNodeClass
             
             % Create ExportTable initialized with the filled in 2D TableCell array. 
             % ExportTable object is what actually does the exporting to a file. 
-            ExportTable(obj.name, 'HRF mean', tblcells, format);            
+            ExportTable(obj.name, 'HRF mean', tblcells);
         end
         
     end  % Public Save/Load methods

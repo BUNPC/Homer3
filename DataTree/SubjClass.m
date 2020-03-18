@@ -452,10 +452,7 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function ExportHRF(obj, format, procElemSelect, iBlk)
-            if ~exist('format','var') || isempty(format)
-                format = 'text';
-            end
+        function ExportHRF(obj, procElemSelect, iBlk)
             if ~exist('procElemSelect','var') || isempty(procElemSelect)
                 q = MenuBox('Export only current subject data OR current subject data and all it''s run data?', ...
                             {'Current subject data only','Current subject data and all it''s run data','Cancel'});
@@ -471,10 +468,10 @@ classdef SubjClass < TreeNodeClass
                 iBlk = 1;
             end
 
-            obj.procStream.ExportHRF(obj.name, obj.CondNames, format, iBlk);
+            obj.procStream.ExportHRF(obj.name, obj.CondNames, iBlk);
             if strcmp(procElemSelect, 'all')
                 for ii=1:length(obj.runs)
-                    obj.runs(ii).ExportHRF(format, iBlk);
+                    obj.runs(ii).ExportHRF(iBlk);
                 end
             end
         end

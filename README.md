@@ -1,7 +1,4 @@
 
-NOTE: This documentation is a work in progress. More detailed documentation will be added in the coming months/years.
-
-
 Introduction:
 =============
 Homer3 is a Matlab application used for analyzing fNIRS data to obtain estimates and maps of brain activation. It is a continuation of the work on the well-established HOMER2 software which itself evolved since the early 1990s, first as the Photon Migration Imaging toolbox, then HOMER, and now HOMER2. While it's purpose, functionality and graphical user interface (GUI) are similar to those applications it adds several important advancements and features:  
@@ -28,9 +25,21 @@ Typically the four GUIs StimEditGUI, PlotProbeGUI, ProcStreamEditGUI, and ProcSt
 But any one of the 5 GUIs can be run separately and all do essentially the same thing at start up; load the data files in a group folder and the list of user function into the two main data structures, DataTree and FuncRegistry. They then display and/or edit these two data structures in various ways depending on the purpose of the particular GUI. 
 
 
-Installing and Running Homer3:
-==============================
-First download the Homer3 package. Go online to https://github.com/BUNPC/Homer3 and click the green "Clone or download" button on right. Then click "Download ZIP" right below the green button. Once you have downloaded the zip file, unzip it.
+Downloading Homer3:
+===================
+To download go to [Homer3 home page](https://github.com/BUNPC/Homer3) and click the green "Clone or download" button on right. Then click "Download ZIP" right below the green button. Once you have downloaded the zip file, unzip it. 
+
+In addition to this if you do NOT have Matlab installed on your computer you will want to be able to run the executable that is included in the project. To do this follow this additional step:
+
+### Windows:
+
+
+Download and install the 64-bit MATLAB Runtime R2017b (9.3) for Windows from the [Mathworks website](https://www.mathworks.com/products/compiler/matlab-runtime.html). 
+
+### Mac:
+
+Download and install the 64-bit MATLAB Runtime R2017b (9.3) for Mac from the [Mathworks website](https://www.mathworks.com/products/compiler/matlab-runtime.html)  
+
 
 
 Installing and running Homer3 if you do NOT have Matlab:
@@ -38,20 +47,20 @@ Installing and running Homer3 if you do NOT have Matlab:
 
 Windows:
 
-1. Download and install the 64-bit MATLAB Runtime R2017b (9.3) for Windows from the Mathworks website (https://www.mathworks.com/products/compiler/matlab-runtime.html)
-1. In File Browser (or Windows Explorer in older Windows versions) navigate to the homer3 root folder you have just downloaded and unzipped. 
-1. Go into the Install folder and find and unzip the file homer3_install_win.zip. Please make sure that the unzipped folder is called homer3_install?. If this folder already existed because of an older version, then you must rename that folder before unzipping this new install file.
-1. Go into the newly created homer3_install folder and double click on the file setup.bat. This should start the installation process. When it finishes you should see a Homer3 icon on your Desktop.
-1. You can now execute Homer3 by double clicking the Homer3 icon on the desktop.
+* Download and install the 64-bit MATLAB Runtime R2017b (9.3) for Windows from the Mathworks website (https://www.mathworks.com/products/compiler/matlab-runtime.html)
+* In File Browser (or Windows Explorer in older Windows versions) navigate to the homer3 root folder you have just downloaded and unzipped. 
+* Go into the Install folder and find and unzip the file homer3_install_win.zip. Please make sure that the unzipped folder is called homer3_install?. If this folder already existed because of an older version, then you must rename that folder before unzipping this new install file.
+* Go into the newly created homer3_install folder and double click on the file setup.bat. This should start the installation process. When it finishes you should see a Homer3 icon on your Desktop.
+* You can now execute Homer3 by double clicking the Homer3 icon on the desktop.
 
 
 Mac:
 
-1. Download and install the 64-bit MATLAB Runtime R2017b (9.3) for Mac from the Mathworks website (https://www.mathworks.com/products/compiler/matlab-runtime.html)  
-1. In Finder navigate to the homer3 root folder you have just downloaded and unzipped. 
-1. Go into the Install folder and find and unzip the file homer3_install_mac.zip. Please make sure that the unzipped folder is called homer3_install?. If this folder already existed because of an older version, then you must rename that folder before unzipping this new install file.
-1. Go into the newly created homer3_install folder and double click on the file setup.command. This should start the installation process. When it finishes you should see a Homer3.command icon on your Desktop along with a link to a sample data folder called 'SubjDataSample'.
-1. You can now execute Homer3 by double clicking the Homer3.command icon on the desktop.
+* Download and install the 64-bit MATLAB Runtime R2017b (9.3) for Mac from the Mathworks website (https://www.mathworks.com/products/compiler/matlab-runtime.html)  
+* In Finder navigate to the homer3 root folder you have just downloaded and unzipped. 
+* Go into the Install folder and find and unzip the file homer3_install_mac.zip. Please make sure that the unzipped folder is called homer3_install?. If this folder already existed because of an older version, then you must rename that folder before unzipping this new install file.
+* Go into the newly created homer3_install folder and double click on the file setup.command. This should start the installation process. When it finishes you should see a Homer3.command icon on your Desktop along with a link to a sample data folder called 'SubjDataSample'.
+* You can now execute Homer3 by double clicking the Homer3.command icon on the desktop.
 
 For either Mac or Windows Homer3 it will open by default in the sample subject folder that came with the installation. You will be asked to choose a processing options config file. Select the only one available, test_process.cfg. Once selected Homer3 should open the test.snirf data file. You are now ready to use Homer3 to work with this data. 
 
@@ -61,7 +70,9 @@ Installing and running Homer3 if you have Matlab:
 
 1. Open Matlab and in the command window, change the current folder to the Homer3 root folder that you downloaded. In the command window, type
 
-   >> setpaths
+<pre> 
+	>> setpaths
+</pre>
 
 This will set all the required matlab search paths for Homer3. Note: this step should be done every time a new Matlab session is started. 
 
@@ -69,9 +80,11 @@ At this point you should be ready to start Homer3 from the Matlab command window
 
 To run:
 
-a) Type Homer3 in the command window
-b) Navigate to a subject folder and select to open it. 
-c) Homer3 will ask you to choose a processing options config file. If you do not have one to select, click the CANCEL button and a default config file will be generated for you. 
+* Type Homer3 in the command window
+
+* Navigate to a subject folder and select to open it. 
+
+* Homer3 will ask you to choose a processing options config file. If you do not have one to select, click the CANCEL button and a default config file will be generated for you. 
 
 
 2. Running the SNIRF demo:
@@ -82,11 +95,15 @@ The Homer3 project includes sample .nirs files (DataTree/AcquiredData/Snirf/Exam
 
 After generating the 3 example .snirf files with demo_snirf, run the demo which shows how to load and display data from a .snirf file. Type 
 
-   >> help demo_snirf_readfile
+<pre>
+	>> help demo_snirf_readfile
+</pre>
 
 Or simply 
 
-   >> snirf = demo_snirf_readfile('Simple_Probe.snirf');
-   >> snirf = demo_snirf_readfile('FingerTapping_run3_tdmlproc.snirf');
-   >> snirf = demo_snirf_readfile('neuro_run01.snirf');
+<pre>
+	>> snirf = demo_snirf_readfile('Simple_Probe.snirf');
+	>> snirf = demo_snirf_readfile('FingerTapping_run3_tdmlproc.snirf');
+	>> snirf = demo_snirf_readfile('neuro_run01.snirf');
+</pre>
 

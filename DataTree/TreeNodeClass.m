@@ -162,7 +162,7 @@ classdef TreeNodeClass < handle
         % ----------------------------------------------------------------------------------
         % 
         % ----------------------------------------------------------------------------------
-        function options_s = parseSaveOptions(obj, options)
+        function options_s = parseSaveOptions(~, options)
             options_s = struct('derived',false, 'acquired',false);
             C = str2cell(options, {':',',','+',' '});
             
@@ -252,7 +252,7 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function d = GetRawData(obj)            
+        function d = GetRawData(~)            
             d = [];
         end
         
@@ -384,7 +384,7 @@ classdef TreeNodeClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function s = GetStims(obj, t)
+        function s = GetStims(~, ~)
             s = [];
         end
         
@@ -415,37 +415,37 @@ classdef TreeNodeClass < handle
         
                
         % ----------------------------------------------------------------------------------
-        function AddStims(obj, tPts, condition)
+        function AddStims(~, ~, ~)
             return;
         end        
         
         
         % ----------------------------------------------------------------------------------
-        function DeleteStims(obj, tPts)
+        function DeleteStims(~, ~)
             return;
         end
         
         
         % ----------------------------------------------------------------------------------
-        function ToggleStims(obj, tPts)
+        function ToggleStims(~, ~)
             return;
         end
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimDuration(obj, icond, duration)
+        function SetStimDuration(~, ~, ~)
             return;
         end
     
         
         % ----------------------------------------------------------------------------------
-        function duration = GetStimDuration(obj, icond)
+        function duration = GetStimDuration(~, ~)
             duration = [];            
         end
         
         
         % ----------------------------------------------------------------------------------
-        function [tpts, duration, vals] = GetStimData(obj, icond)
+        function [tpts, duration, vals] = GetStimData(~, ~)
             tpts     = [];
             duration = [];
             vals     = [];
@@ -468,7 +468,7 @@ classdef TreeNodeClass < handle
                 end
                 newname = newname{1};
             end
-            msg2 = sprintf('Condition name is not valid. New name must be character string. Do you want to choose another name?', newname);
+            msg2 = sprintf('Condition name is not valid. New name must be character string. Do you want to choose another name?');
             while ~ischar(newname)                
                 q = menu(msg2,'YES','NO');
                 if q==2
@@ -501,7 +501,7 @@ classdef TreeNodeClass < handle
             lst1 = find(MeasList(:,4)==1);
             Lambda = obj.GetWls();
 
-            if ndims(y)==2
+            if ndims(y)==2 %#ok<*ISMAT>
                 y = zeros(size(yold,1),length(lst1),length(Lambda));
             elseif ndims(y)==3
                 y = zeros(size(yold,1),length(lst1),length(Lambda),size(yold,3));
@@ -544,48 +544,57 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function d = GetDataMatrix(obj, iBlk)
+        function d = GetDataMatrix(~, ~)
             d = [];
         end
 
         
         % ----------------------------------------------------------------------------------
-        function t = GetTime(obj, iBlk)
+        function t = GetTime(~, ~)
             t = [];
         end
 
         
         % ----------------------------------------------------------------------------------
-        function t = GetTimeCombined(obj)
+        function t = GetTimeCombined(~)
             t = [];
         end
         
         
         % ----------------------------------------------------------------------------------
-        function t = GetTincAuto(obj, iBlk)
+        function t = GetTincAuto(~, ~)
             t = [];
         end
         
         
         % ----------------------------------------------------------------------------------
-        function t = GetTincAutoCh(obj, iBlk)
+        function t = GetTincAutoCh(~, ~)
             t = [];
         end
         
         
         % ----------------------------------------------------------------------------------
-        function t = GetTincMan(obj, iBlk)
+        function t = GetTincMan(~, ~)
             t = [];
         end
 
         
         % ----------------------------------------------------------------------------------
-        function SetTincMan(obj, idxs, iBlk, excl_incl)
-            ;
+        function SetTincMan(~, ~, ~, ~)
+            
         end
                
     end
         
+    
+    methods
+
+        % ----------------------------------------------------------------------------------
+        function tblcells = ExportMeanHRF(~, ~, ~)
+            tblcells = {};
+        end
+        
+    end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Static class methods implementing static class variables

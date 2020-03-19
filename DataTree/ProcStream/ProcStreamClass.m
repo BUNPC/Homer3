@@ -225,7 +225,7 @@ classdef ProcStreamClass < handle
                 
                 % get parameters for Output to obj.output
                 lst = strfind(foos,' ');
-                lst = [0, lst, length(foos)+1];
+                lst = [0, lst, length(foos)+1]; %#ok<*AGROW>
                 for ii=1:length(lst)-1
                     foo2 = foos(lst(ii)+1:lst(ii+1)-1);
                     lst2 = strmatch( foo2, paramOut, 'exact' );
@@ -262,7 +262,7 @@ classdef ProcStreamClass < handle
             idxs = zeros(1, length(obj.fcalls));
             for ii=1:length(obj.fcalls)
                 sargout = ParseOutputArgs(obj, ii);
-                if strfind('dod', sargout)
+                if strfind('dod', sargout) %#ok<*STRIFCND>
                     idxs(ii) = 1;
                 end
                 if strfind('dc', sargout)

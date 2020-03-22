@@ -63,11 +63,7 @@ classdef RunClass < TreeNodeClass
                 return;
             end
             if nargin==1 || isempty(dirname)
-                dirname = '.';
-            end
-            dirname(dirname=='\') = '/';
-            if dirname(end) ~= '/'
-                dirname(end+1) = '/';
+                dirname = convertToStandardPath('.');
             end
             
             if obj.IsNirs()

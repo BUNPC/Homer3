@@ -10,6 +10,9 @@ if ~ischar(pnames) && ~iscell(pnames)
 end
 
 if ischar(pnames)
+    if exist(pnames, 'file')
+        pnames = fullpath(pnames);
+    end
     pnames(pnames=='\') = '/';
     if pnames(end) ~= '/'
         pnames(end+1) = '/';

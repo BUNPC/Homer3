@@ -87,9 +87,10 @@ end
 
 if isempty(tIncMan)
     tIncMan = ones(size(d,1),1);
+else
+    tIncMan = tIncMan{1};
 end
-
-tInc = ones(size(d,1),1);
+tInc = tIncMan;
 
 % Calculate the diff of d to to set the threshold if ncssesary
 diff_d=diff(d);

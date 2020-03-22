@@ -267,6 +267,10 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function val = GetTime(obj, iBlk)
+            val = [];
+            if iBlk>1
+                return
+            end
             val = obj.t;
         end
         

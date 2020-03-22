@@ -51,6 +51,9 @@ end
 % Generate Homer3 output
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 logger.Write(sprintf('Loaded processing stream from %s\n', procStreamConfigFile));
+if dataTree.IsEmpty()
+    return
+end
 dataTree.groups(1).Calc();
 dataTree.groups(1).Save();
 

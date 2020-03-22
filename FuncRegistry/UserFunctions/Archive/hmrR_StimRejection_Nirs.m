@@ -45,6 +45,8 @@
 
 function [s,tRange] = hmrR_StimRejection_Nirs(t,s,tIncAuto,tIncMan,tRange)
 
+tIncMan = tIncMan{1};
+
 dt = (t(end)-t(1))/length(t);
 tRangeIdx = [floor(tRange(1)/dt):ceil(tRange(2)/dt)];
 

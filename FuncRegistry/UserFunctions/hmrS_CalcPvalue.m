@@ -24,20 +24,19 @@
 % baselineRange: [-2.0, 0.0]
 % hrfTimeWindow: [-2.0, 20.0]
 %
-function pValues = hmrS_CalcPvalue(yRuns, stimRuns, mlActAuto, baselineRange, hrfTimeWindow)
-
+function pValues = hmrS_CalcPvalue(yRuns, stimRuns,baselineRange, hrfTimeWindow)
+ 
 pValues = cell(length(yRuns{1}),1);
-
-
+ 
+ 
 % extract fq and number of conditions from the first run:
-snirf = SnirfClass(yRuns, stimRuns);
-% % % % %     snirf = SnirfClass(yRuns{iRun}, stimRuns{iRun});
-ml = snirf.GetMeasListSrcDetPairs();
+snirf = SnirfClass(yRuns{1}, stimRuns{1});
+ml = yRuns{1}.GetMeasListSrcDetPairs();
 t = snirf.GetTimeCombined();
 s = snirf.GetStims(t);
 ncond = size(s,2);
 fq = abs(1/(t(1)-t(2)));
-
+ 
 %% BASELINE vs CONDITION, PAIRED T-TEST
 for cond = 1:ncond % for each condition
     for iRun = 1:length(yRuns)
@@ -54,7 +53,7 @@ for cond = 1:ncond % for each condition
         for iBlk = 1:length(yRuns)
             % get active measuremnt list for each run
             % 1) IS THIS HOW WE EXTRACT MEASLISTACT
-            if isempty(mlActAuto{iBlk})
+            if ~exist('mlActAuto')
                 mlActAuto{iBlk} = ones(size(ml,1),1);
             end
             mlAct = mlActAuto{iBlk};
@@ -101,9 +100,9 @@ for cond = 1:ncond % for each condition
         end
     end
 end
-
-
-
+ 
+ 
+ 
 %% CONDITION vs CONDITION, UNPAIRED T-TEST
 % get all combinations of conditions
 cond_2_comb = sort(combnk(1:ncond,2));
@@ -111,8 +110,8 @@ cond_2_comb = sort(combnk(1:ncond,2));
 for i = 1:ncond
     lst_stim_all{i} = find(s(:,i)==1);
 end
-
-for comb_inx = 1:size(lst_stim_all{i},1) % for each condition
+ 
+for comb_inx = 1:size(cond_2_comb,1) % for each condition
             % get current combin.
         foo = cond_2_comb(comb_inx,:);
         
@@ -120,7 +119,7 @@ for comb_inx = 1:size(lst_stim_all{i},1) % for each condition
         for iBlk = 1:length(yRuns)
             % get active measuremnt list for each run
             % 1) IS THIS HOW WE EXTRACT MEASLISTACT
-            if isempty(mlActAuto{iBlk})
+            if ~exist('mlActAuto')
                 mlActAuto{iBlk} = ones(size(ml,1),1);
             end
             mlAct = mlActAuto{iBlk};
@@ -129,19 +128,19 @@ for comb_inx = 1:size(lst_stim_all{i},1) % for each condition
             for hb = 1:3 % across HbO/HbR/HbT
                 for iTrial = 1:size(lst_stim_all{foo(1)},1) % across trials
                     % Hb: # of time points X # of trials X # of runs X # of channels X HbO/HbR
-                    Hb_peak1(:,iTrial,iRun,:,hb,cond) = squeeze(y([lst_stim_all{foo(1)}(iTrial) + round(abs(hrfTimeWindow(1))*fq)]:[lst_stim_all{foo(1)}(iTrial) + round(hrfTimeWindow(2)*fq)],hb,:)); % get each trial
+                    Hb_peak1(:,iTrial,iRun,:,hb) = squeeze(y([lst_stim_all{foo(1)}(iTrial) + round(abs(hrfTimeWindow(1))*fq)]:[lst_stim_all{foo(1)}(iTrial) + round(hrfTimeWindow(2)*fq)],hb,:)); % get each trial
                 end
                 for iTrial = 1:size(lst_stim_all{foo(2)},1) % across trials
                     % Hb: # of time points X # of trials X # of runs X # of channels X HbO/HbR
-                    Hb_peak2(:,iTrial,iRun,:,hb,cond) = squeeze(y([lst_stim_all{foo(2)}(iTrial) + round(abs(hrfTimeWindow(1))*fq)]:[lst_stim_all{foo(2)}(iTrial) + round(hrfTimeWindow(2)*fq)],hb,:)); % get each trial
+                    Hb_peak2(:,iTrial,iRun,:,hb) = squeeze(y([lst_stim_all{foo(2)}(iTrial) + round(abs(hrfTimeWindow(1))*fq)]:[lst_stim_all{foo(2)}(iTrial) + round(hrfTimeWindow(2)*fq)],hb,:)); % get each trial
                 end
             end
         end
     end
     
     % put together trials from all runs:
-    Hb_peak_rs1 = reshape(Hb_peak1, size(Hb_peak1,1),  size(Hb_peak1,2)* size(Hb_peak1,3),  size(Hb_peak1,4),size(Hb_peak1,5),size(Hb_peak1,6));
-    Hb_peak_rs2 = reshape(Hb_peak2, size(Hb_peak2,1),  size(Hb_peak2,2)* size(Hb_peak2,3),  size(Hb_peak2,4),size(Hb_peak2,5),size(Hb_peak2,6));
+    Hb_peak_rs1 = reshape(Hb_peak1, size(Hb_peak1,1),  size(Hb_peak1,2)* size(Hb_peak1,3),  size(Hb_peak1,4),size(Hb_peak1,5));
+    Hb_peak_rs2 = reshape(Hb_peak2, size(Hb_peak2,1),  size(Hb_peak2,2)* size(Hb_peak2,3),  size(Hb_peak2,4),size(Hb_peak2,5));
     
     % take the mean in time range hrfTimeWindow
     for hb = 1:3 % HbO/HbR/HbT
@@ -153,19 +152,20 @@ for comb_inx = 1:size(lst_stim_all{i},1) % for each condition
     end
     
     % get stats
-    if isempty(pValues_cond{iBlk})
+    if ~exist('pValuesS_cond')
         for ch = 1:size(MEAN_Hb_peak,2) % channels
             if mlAct(ch) ~=0
                 format long
                 for hb = 1:3% HbO/HbR/HbT
                     [h,p,c,stats] = ttest2(MEAN_Hb_peak1(:,ch,hb),(MEAN_Hb_peak2(:,ch,hb)));
-                    pValuesS_cond(foo(1),foo(2),hb,ch,cond) = p;
-                    
+                    pValuesS_cond(hb,ch,comb_inx) = p;
+                    % or                     pValuesS_cond(foo(1),foo(2),hb,ch) = p;
+ 
                     % 2) Pvalue SHOULD BE CONVERTED TO DATA CLASS IN THE RIGHT DIM AT THE END
                     
                 end
             else
-                pValuesS_cond(foo(1),foo(2),hb,ch,cond) = 'NaN';
+                pValuesS_cond(hb,ch,comb_inx) = 'NaN';
             end
         end
     end

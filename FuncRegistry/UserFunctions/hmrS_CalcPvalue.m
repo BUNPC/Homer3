@@ -1,5 +1,5 @@
 % SYNTAX:
-% pValues = hmrS_CalcPvalue(yRuns, stimRuns, baselineRange, hrfTimeWindow)
+% pValues = hmrS_CalcPvalue(yRuns, stimRuns, mlActRuns, baselineRange, hrfTimeWindow)
 %
 % UI NAME:
 % Pvalues_on_Session
@@ -10,6 +10,7 @@
 % INPUTS:
 % yRuns:
 % stimRuns:
+% mlActRuns:
 % baselineRange:
 % hrfTimeWindow:
 %
@@ -17,18 +18,17 @@
 % pValues:
 %
 % USAGE OPTIONS:
-% Pvalues_on_Session_Concentration_Data: pValues = hmrS_CalcPvalue(dcRuns, stimRuns, baselineRange, hrfTimeWindow)
-% Pvalues_on_Session_Delta_OD_Data:      pValues = hmrS_CalcPvalue(dodRuns, stimRuns, baselineRange, hrfTimeWindow)
+% Pvalues_on_Session_Concentration_Data: pValues = hmrS_CalcPvalue(dcRuns, stimRuns, mlActRuns, baselineRange, hrfTimeWindow)
 %
 % PARAMETERS:
 % baselineRange: [-2.0, 0.0]
 % hrfTimeWindow: [-2.0, 20.0]
-%
-function pValues = hmrS_CalcPvalue(yRuns, stimRuns,baselineRange, hrfTimeWindow)
- 
+
+function pValues = hmrS_CalcPvalue(yRuns, stimRuns, mlActRuns, baselineRange, hrfTimeWindow)
+
 pValues = cell(length(yRuns{1}),1);
- 
- 
+
+
 % extract fq and number of conditions from the first run:
 snirf = SnirfClass(yRuns{1}, stimRuns{1});
 ml = yRuns{1}.GetMeasListSrcDetPairs();
@@ -36,27 +36,34 @@ t = snirf.GetTimeCombined();
 s = snirf.GetStims(t);
 ncond = size(s,2);
 fq = abs(1/(t(1)-t(2)));
- 
+nDataBlks = length(yRuns{1});
+
 %% BASELINE vs CONDITION, PAIRED T-TEST
-for cond = 1:ncond % for each condition
-    for iRun = 1:length(yRuns)
-        
-        % Get stim vector by instantiating temporary SnirfClass object with this
-        % function's stim argument as input, and then using the SnirfClass object's
-        % GetStims method to convert stim to the s vector that this function needs.
-        snirf = SnirfClass(yRuns{iRun}, stimRuns{iRun});
-        t = snirf.GetTimeCombined();
-        s = snirf.GetStims(t);     % stim matrix for run iRun is same for all of a run's data blocks     
-        
-        % extract HRF at baselineRange and at hrfTimeWindow
-        lst_stim = find(s(:,cond)==1);
-        for iBlk = 1:length(yRuns)
+for iBlk = 1:nDataBlks
+    for cond = 1:ncond % for each condition
+        for iRun = 1:length(yRuns)
+            
+            % Get stim vector by instantiating temporary SnirfClass object with this
+            % function's stim argument as input, and then using the SnirfClass object's
+            % GetStims method to convert stim to the s vector that this function needs.
+            snirf = SnirfClass(yRuns{iRun}, stimRuns{iRun});
+            t = snirf.GetTimeCombined();
+            s = snirf.GetStims(t);     % stim matrix for run iRun is same for all of a run's data blocks
+            
+            % extract HRF at baselineRange and at hrfTimeWindow
+            lst_stim = find(s(:,cond)==1);
+            
             % get active measuremnt list for each run
-            % 1) IS THIS HOW WE EXTRACT MEASLISTACT
-            if ~exist('mlActAuto')
-                mlActAuto{iBlk} = ones(size(ml,1),1);
+            if isempty(mlActRuns{iRun})
+                mlActRuns{iRun} = cell(length(nDataBlks),1);
             end
-            mlAct = mlActAuto{iBlk};
+            ml    = yRuns{iRun}(iBlk).GetMeasListSrcDetPairs();
+            
+            if isempty(mlActRuns{iRun}{iBlk})
+                mlActRuns{iRun}{iBlk} = ones(size(ml,1),1);
+            end
+            mlAct = mlActRuns{iRun}{iBlk}(1:size(ml,1));
+            
             % GetDataMatrix() extract data in old homer2 dimensions (time X Hb X channel)
             y = yRuns{iRun}(iBlk).GetDataMatrix();% yRuns{iRun}(iBlk).GetDataMatrix();  % data matrix for run iRun, data block iBlk
             for hb = 1:3 % across HbO/HbR/HbT
@@ -85,24 +92,22 @@ for cond = 1:ncond % for each condition
     % get stats
     if isempty(pValues{iBlk})
         for ch = 1:size(MEAN_Hb_peak,2) % channels
-            if mlAct(ch) ~=0
-                format long
-                for hb = 1:3% HbO/HbR/HbT
+                 for hb = 1:3% HbO/HbR/HbT
                     [h,p,c,stats] = ttest(MEAN_Hb_baseline(:,ch,hb),(MEAN_Hb_peak(:,ch,hb)));
                     pValuesS(hb,ch,cond) = p;
                     
                     % 2) Pvalue SHOULD BE CONVERTED TO DATA CLASS IN THE RIGHT DIM AT THE END
                     
                 end
-            else
-                pValuesS(hb,ch,cond) = 'NaN';
-            end
         end
     end
 end
- 
- 
- 
+
+pValuesS(:,find(mlAct==0),:) = NaN;
+   
+
+
+
 %% CONDITION vs CONDITION, UNPAIRED T-TEST
 % get all combinations of conditions
 cond_2_comb = sort(combnk(1:ncond,2));
@@ -110,19 +115,24 @@ cond_2_comb = sort(combnk(1:ncond,2));
 for i = 1:ncond
     lst_stim_all{i} = find(s(:,i)==1);
 end
- 
-for comb_inx = 1:size(cond_2_comb,1) % for each condition
-            % get current combin.
+
+for iBlk = 1:length(nDataBlks)
+    for comb_inx = 1:size(cond_2_comb,1) % for each condition
+        % get current combin.
         foo = cond_2_comb(comb_inx,:);
         
-    for iRun = 1:length(yRuns)
-        for iBlk = 1:length(yRuns)
+        for iRun = 1:length(yRuns)
             % get active measuremnt list for each run
-            % 1) IS THIS HOW WE EXTRACT MEASLISTACT
-            if ~exist('mlActAuto')
-                mlActAuto{iBlk} = ones(size(ml,1),1);
+            if isempty(mlActRuns{iRun})
+                mlActRuns{iRun} = cell(length(nDataBlks),1);
             end
-            mlAct = mlActAuto{iBlk};
+            ml = yRuns{iRun}(iBlk).GetMeasListSrcDetPairs();
+            
+            if isempty(mlActRuns{iRun}{iBlk})
+                mlActRuns{iRun}{iBlk} = ones(size(ml,1),1);
+            end
+            mlAct = mlActRuns{iRun}{iBlk}(1:size(ml,1));
+            
             % GetDataMatrix() extract data in old homer2 dimensions (time X Hb X channel)
             y = yRuns{iRun}(iBlk).GetDataMatrix();  % data matrix for run iRun, data block iBlk
             for hb = 1:3 % across HbO/HbR/HbT
@@ -154,19 +164,16 @@ for comb_inx = 1:size(cond_2_comb,1) % for each condition
     % get stats
     if ~exist('pValuesS_cond')
         for ch = 1:size(MEAN_Hb_peak,2) % channels
-            if mlAct(ch) ~=0
-                format long
                 for hb = 1:3% HbO/HbR/HbT
                     [h,p,c,stats] = ttest2(MEAN_Hb_peak1(:,ch,hb),(MEAN_Hb_peak2(:,ch,hb)));
                     pValuesS_cond(hb,ch,comb_inx) = p;
                     % or                     pValuesS_cond(foo(1),foo(2),hb,ch) = p;
- 
+                    
                     % 2) Pvalue SHOULD BE CONVERTED TO DATA CLASS IN THE RIGHT DIM AT THE END
                     
                 end
-            else
-                pValuesS_cond(hb,ch,comb_inx) = 'NaN';
-            end
         end
     end
 end
+pValuesS_cond(:,find(mlAct==0),:) = NaN;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

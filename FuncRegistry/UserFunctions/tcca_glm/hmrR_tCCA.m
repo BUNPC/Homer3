@@ -83,10 +83,6 @@ if flagtCCA
         t = data_y(iBlk).GetTime();
         fq = 1/(t(2)-t(1));
         ml = data_y(iBlk).GetMeasListSrcDetPairs();
-        if isempty(mlActAuto{iBlk})
-            mlActAuto{iBlk} = ones(size(ml,1),1);
-        end
-        mlAct = mlActAuto{iBlk};
     end
     
     %% find the list of short and long distance channels
@@ -97,8 +93,8 @@ if flagtCCA
         rhoSD(iML) = sum((SrcPos(ml(lst(iML),1),:) - DetPos(ml(lst(iML),2),:)).^2).^0.5;
         posM(iML,:) = (SrcPos(ml(lst(iML),1),:) + DetPos(ml(lst(iML),2),:)) / 2;
     end
-    lstSS = lst(find(rhoSD<=rhoSD_ssThresh & mlAct(lst) == 1));
-    lstLS = lst(find(rhoSD>rhoSD_ssThresh & mlAct(lst) == 1));
+    lstSS = lst(find(rhoSD<=rhoSD_ssThresh));
+    lstLS = lst(find(rhoSD>rhoSD_ssThresh));
     
     
     %% get long and short channels

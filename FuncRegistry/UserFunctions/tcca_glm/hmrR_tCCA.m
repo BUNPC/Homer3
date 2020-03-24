@@ -48,20 +48,16 @@
 % rhoSD_ssThresh: 15.0
 
 %% COMMENTS/THOUGHTS/QUESTIONS ALEX
-% 1) I think we can remove the original perf_temp_emb_cca.m function (done)
 % 2) Output canonical correlation coefficients as quality metric? 
 % 3) Output fNIRS signal(s)/Aux regressors for visualization/quality control?
 % 4) Add single channel (regressor) feature - flag - how do we provide the individual outputs?
 % 5) Implement the variable low/bandpass filter coefficients from previous processing stream
-% Q1) why the flagtCCA?
 %%
 
 function [Aaux] = hmrR_tCCA(data, aux,  probe, yRuns, flagtCCA, tCCAparams, tCCAaux_inx, tCCArest_inx, rhoSD_ssThresh)
 %% flags
 flags.pcaf =  [0 0]; % no pca of X or AUX
 flags.shrink = true;
-% perform regularized (rtcca) (alternatively old approach)
-rtccaflag = true;
 flag_conc = true; % if 1 CCA inputs are in conc, if 0 CCA inputs are in intensity
 
 %% extract user input

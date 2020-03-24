@@ -1,5 +1,5 @@
 % SYNTAX:
-% pValues = hmrS_CalcPvalue(yRuns, stimRuns, mlActRuns, baselineRange, hrfTimeWindow)
+% [pValuesS, pValuesS_cond]  = hmrS_CalcPvalue(yRuns, stimRuns, mlActRuns, baselineRange, hrfTimeWindow)
 %
 % UI NAME:
 % Pvalues_on_Session
@@ -15,16 +15,16 @@
 % hrfTimeWindow:
 %
 % OUTPUTS:
-% pValues:
-%
+% pValuesS:
+% pValuesS_cond
 % USAGE OPTIONS:
-% Pvalues_on_Session_Concentration_Data: pValues = hmrS_CalcPvalue(dcRuns, stimRuns, mlActRuns, baselineRange, hrfTimeWindow)
+% Pvalues_on_Session_Concentration_Data: [pValuesS, pValuesS_cond] = hmrS_CalcPvalue(dcRuns, stimRuns, mlActRuns, baselineRange, hrfTimeWindow)
 %
 % PARAMETERS:
 % baselineRange: [-2.0, 0.0]
 % hrfTimeWindow: [-2.0, 20.0]
 
-function pValues = hmrS_CalcPvalue(yRuns, stimRuns, mlActRuns, baselineRange, hrfTimeWindow)
+function [pValuesS, pValuesS_cond] = hmrS_CalcPvalue(yRuns, stimRuns, mlActRuns, baselineRange, hrfTimeWindow)
 
 pValues = cell(length(yRuns{1}),1);
 

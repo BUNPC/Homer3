@@ -48,20 +48,16 @@
 % rhoSD_ssThresh: 15.0
 
 %% COMMENTS/THOUGHTS/QUESTIONS ALEX
-% 1) I think we can remove the original perf_temp_emb_cca.m function (done)
 % 2) Output canonical correlation coefficients as quality metric? 
 % 3) Output fNIRS signal(s)/Aux regressors for visualization/quality control?
 % 4) Add single channel (regressor) feature - flag - how do we provide the individual outputs?
 % 5) Implement the variable low/bandpass filter coefficients from previous processing stream
-% Q1) why the flagtCCA?
 %%
 
 function [Aaux] = hmrR_tCCA(data, aux,  probe, yRuns, flagtCCA, tCCAparams, tCCAaux_inx, tCCArest_inx, rhoSD_ssThresh)
 %% flags
 flags.pcaf =  [0 0]; % no pca of X or AUX
 flags.shrink = true;
-% perform regularized (rtcca) (alternatively old approach)
-rtccaflag = true;
 flag_conc = true; % if 1 CCA inputs are in conc, if 0 CCA inputs are in intensity
 
 %% extract user input
@@ -87,10 +83,6 @@ if flagtCCA
         t = data_y(iBlk).GetTime();
         fq = 1/(t(2)-t(1));
         ml = data_y(iBlk).GetMeasListSrcDetPairs();
-        if isempty(mlActAuto{iBlk})
-            mlActAuto{iBlk} = ones(size(ml,1),1);
-        end
-        mlAct = mlActAuto{iBlk};
     end
     
     %% find the list of short and long distance channels
@@ -101,8 +93,8 @@ if flagtCCA
         rhoSD(iML) = sum((SrcPos(ml(lst(iML),1),:) - DetPos(ml(lst(iML),2),:)).^2).^0.5;
         posM(iML,:) = (SrcPos(ml(lst(iML),1),:) + DetPos(ml(lst(iML),2),:)) / 2;
     end
-    lstSS = lst(find(rhoSD<=rhoSD_ssThresh & mlAct(lst) == 1));
-    lstLS = lst(find(rhoSD>rhoSD_ssThresh & mlAct(lst) == 1));
+    lstSS = lst(find(rhoSD<=rhoSD_ssThresh));
+    lstLS = lst(find(rhoSD>rhoSD_ssThresh));
     
     
     %% get long and short channels

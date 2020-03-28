@@ -89,8 +89,8 @@ classdef AcqDataClass < matlab.mixin.Copyable
                 height = 1;
             end
             
-            px = width * 0.10; 
-            py = height * 0.10; 
+            px = width * 0.05; 
+            py = height * 0.05; 
 
             bbox = [xmin-px, xmax+px, ymin-py, ymax+py];
         end

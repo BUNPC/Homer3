@@ -1,4 +1,4 @@
-function [h, p1, p2] = line2(p1, p2, k)
+function [h, p1, p2] = line2(p1, p2, k, gridsize)
 
 %
 % Usage: 
@@ -46,16 +46,12 @@ function [h, p1, p2] = line2(p1, p2, k)
 p1_0 = p1;
 p2_0 = p2;
 
-if ~exist('k','var')
+if isempty(k)
     len_edge = dist3(p1_0, p2_0);
     
-    hAxes = gca;
-    gridsize_x = get(hAxes, 'xlim');
-    gridsize_y = get(hAxes, 'ylim');
-    gridsize_z = get(hAxes, 'zlim');
-    sx = gridsize_x(2) - gridsize_x(1);
-    sy = gridsize_y(2) - gridsize_y(1);
-    sz = gridsize_z(2) - gridsize_z(1);
+    sx = gridsize{1}(2) - gridsize{1}(1);
+    sy = gridsize{2}(2) - gridsize{2}(1);
+    sz = gridsize{3}(2) - gridsize{3}(1);
     len_griddiag = sqrt(sx^2+sy^2+sz^2);
     
     if len_edge/len_griddiag >= 1.00
@@ -64,7 +60,7 @@ if ~exist('k','var')
         percent_offset = 0;
     elseif len_edge/len_griddiag >= 0.95
         percent_offset = 2;
-    elseif len_edge/len_griddiag > 0.05 && len_edge/len_griddiag < 0.06
+    elseif len_edge/len_griddiag > 0.06 && len_edge/len_griddiag < 0.07
         percent_offset = len_griddiag/len_edge;
     elseif len_edge/len_griddiag > 0.4
         percent_offset = 3;

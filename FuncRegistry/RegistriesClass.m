@@ -240,6 +240,8 @@ classdef RegistriesClass < handle
         end
         
         
+        
+        
         % ----------------------------------------------------------------------------------
         function fcallstr = GetFuncCallStrDecoded(obj, key, usagename)
             fcallstr = '';
@@ -258,6 +260,42 @@ classdef RegistriesClass < handle
         end
        
         
+        
+        % ----------------------------------------------------------------------------------
+        function fcall = GetFuncCallDecoded(obj, key, usagename)
+            fcall = FuncCallClass().empty();
+            if isempty(obj)
+                return;
+            end
+            if nargin<3
+                return;
+            end
+            for ii=1:length(obj.funcReg)
+                fcall = obj.funcReg(ii).GetFuncCallDecoded(key, usagename);
+                if ~isempty(fcall)
+                    break;
+                end
+            end
+        end
+       
+        
+        % ----------------------------------------------------------------------------------
+        function fcall = FindClosestMatch(obj, fcall0)
+            fcall = FuncCallClass().empty();
+            if isempty(obj)
+                return;
+            end
+            if nargin<2
+                return;
+            end
+            for ii=1:length(obj.funcReg)
+                fcall = obj.funcReg(ii).FindClosestMatch(fcall0);
+                if ~isempty(fcall)
+                    break;
+                end
+            end
+        end
+       
         
         % ----------------------------------------------------------------------------------
         function fname = GetSavedRegistryPath(obj)

@@ -374,7 +374,15 @@ classdef FuncCallClass < handle
             fcallStrEncoded = obj.encodedStr;
         end
         
-                
+    end
+    
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Comparison methods and overriden operators
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+        
         % ----------------------------------------------------------------------------------
         % Override == operator: 
         % ----------------------------------------------------------------------------------
@@ -442,7 +450,7 @@ classdef FuncCallClass < handle
             B = 1;
         end
 
-        
+               
         % ----------------------------------------------------------------------------------
         % Override ~= operator: 
         % ----------------------------------------------------------------------------------
@@ -455,6 +463,42 @@ classdef FuncCallClass < handle
             end
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function scorefinal = Compare(obj, obj2)           
+            score = [];
+            if ~strcmp(obj.name, obj2.name)
+                score(end+1) = 0;
+            else
+                score(end+1) = 0.50;
+            end
+            score(end+1) = 0.16 * obj.argOut.Compare(obj2.argOut);
+            score(end+1) = 0.16 * obj.argIn.Compare(obj2.argIn);
+            
+            % For parameters first get separate score then add to total 
+            scoreParams = zeros(1,max([length(obj.paramIn), length(obj2.paramIn)]));
+            
+            for ii = 1:length(obj.paramIn)
+                for jj = 1:length(obj2.paramIn)
+                    if strcmp(obj.paramIn(ii).GetName(), obj2.paramIn(jj).GetName())
+                        scoreParams(ii) = obj.paramIn(ii).Compare(obj2.paramIn(jj));
+                        if ii ~= jj
+                            scoreParams(ii) = .75 * scoreParams(ii);
+                        end
+                    end
+                end
+            end
+            
+            % Tally up final results
+            score = [score(:)', 0.18 * mean(scoreParams(:))']; 
+            scorefinal = 100*sum(score);
+        end
+        
+    end
+    
+    
+    
+    methods
         
         % ----------------------------------------------------------------------------------
         function val = GetErr(obj)

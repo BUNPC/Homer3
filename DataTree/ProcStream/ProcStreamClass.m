@@ -346,34 +346,18 @@ classdef ProcStreamClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function [args, type] = GetInputArgs(obj, iFcall)
+        function args = GetInputArgs(obj, iFcall)
             args={};
-            type={};
             if isempty(obj.fcalls)
                 return;
             end
             if ~exist('iFcall', 'var') || isempty(iFcall)
                 iFcall = obj.GetFcallsIdxs();
             end
-            nFcall = length(obj.fcalls);
-
-            kk=1;
             for jj=1:length(iFcall)
-                if iFcall(jj)>nFcall
-                    continue;
-                end
-                if obj.fcalls(iFcall(jj)).argIn.str(1) ~= '('
-                    continue;
-                end
-                j=2;
-                k = [strfind(obj.fcalls(iFcall(jj)).argIn.str,',') length(obj.fcalls(iFcall(jj)).argIn.str)+1];
-                for ii=1:length(k)
-                    args{kk} = obj.fcalls(iFcall(jj)).argIn.str(j:k(ii)-1);
-                    j = k(ii)+1;
-                    kk=kk+1;
-                end
+                args{jj} = obj.fcalls(iFcall(jj)).argIn.Extract();
             end
-            args = unique(args, 'stable');
+            args = unique(args(:)', 'stable');
         end
         
         
@@ -931,8 +915,19 @@ classdef ProcStreamClass < handle
             end
             err=0;
         end
-        
-        
+                   
+    end
+
+       
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Methods for decoding encoded function calls and substituting fixing error 
+    % if the encoded call does not exists or has changed in registry. If the 
+    % function call doen not exist but another call with the same function name 
+    % exists then these methods look for the most similar entry to substitute 
+    % for the non-existent call. 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+                
         % ----------------------------------------------------------------------------------
         function Decode(obj, section)
             % Syntax:
@@ -1003,13 +998,26 @@ classdef ProcStreamClass < handle
                         obj.fcalls(kk) = FuncCallClass(temp, obj.reg);
                         kk=kk+1;
                     else
-                        fprintf('Entry not found in registry: "%s"\n', section{ii})
+                        fprintf('Entry \"%s\" not found in registry ...\n', section{ii})
+                        fprintf('  Searching registry for equivalent or similar entry\n')
+                        temp = obj.reg.FindClosestMatch(temp);
+                        if ~isempty(temp)
+                            fprintf('  Found similar entry: %s\n', temp.encodedStr);
+                            obj.fcalls(kk) = FuncCallClass(temp, obj.reg);
+                            kk=kk+1;
+                        else
+                            fprintf('  Found no similar entries. Discarding %s\n', section{ii})
+                        end
                     end
                 end
             end            
         end
         
-
+    end
+    
+    
+    
+    methods
         
         % ----------------------------------------------------------------------------------
         function Add(obj, new)

@@ -90,7 +90,7 @@ classdef ParamClass < matlab.mixin.Copyable
         function val = GetFormat(obj)
             val = obj.format;
         end
-        
+                
         % ----------------------------------------------------------------------------------
         function str = Encode(obj)
             str = '';
@@ -112,6 +112,29 @@ classdef ParamClass < matlab.mixin.Copyable
             str = sprintf('%s %s %s', obj.name, formatstr, valuestr);
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function scorefinal = Compare(obj, obj2)
+            score = [];
+            if ~strcmp(obj.name, obj2.name)
+                scorefinal = 0;
+                return
+            else
+                score(end+1) = 0.50;
+            end
+            if ~strcmp(obj.format, obj2.format)
+                score(end+1) = 0;
+            else
+                score(end+1) = 0.20;
+            end
+            if ~all(obj.value == obj2.value)
+                score(end+1) = 0;
+            else
+                score(end+1) = 0.30;
+            end
+            scorefinal = sum(score);
+        end
+                
     end
 end
 

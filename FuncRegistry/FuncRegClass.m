@@ -312,6 +312,24 @@ classdef FuncRegClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
+        function fcall = FindClosestMatch(obj, fcall0)
+            fcall = FuncCallClass().empty();
+            if isempty(obj)
+                return;
+            end
+            if nargin<2
+                return;
+            end
+            for ii=1:length(obj.entries)            
+                fcall = obj.entries(ii).FindClosestMatch(fcall0);
+                if ~isempty(fcall)
+                    break
+                end
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function paramtxt = GetParamText(obj, key)
             paramtxt = '';
             idx = obj.GetIdx(key);

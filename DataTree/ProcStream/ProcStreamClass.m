@@ -354,10 +354,10 @@ classdef ProcStreamClass < handle
             if ~exist('iFcall', 'var') || isempty(iFcall)
                 iFcall = obj.GetFcallsIdxs();
             end
-            for jj=1:length(iFcall)
-                args{jj} = obj.fcalls(iFcall(jj)).argIn.Extract();
+            for jj = iFcall
+                args{jj} = obj.fcalls(jj).argIn.Extract();
             end
-            args = unique(args(:)', 'stable');
+            args = unique([args{:}], 'stable');
         end
         
         

@@ -52,7 +52,7 @@ classdef ArgClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function args = Extract(obj)
-            args = str2cell(obj.str,',');
+            args = str2cell(obj.str,',')';
             if args{1}(1)=='[' || args{1}(1)=='('
                 args{1}(1) = '';
             end

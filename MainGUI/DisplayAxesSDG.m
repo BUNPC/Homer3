@@ -168,4 +168,4 @@ end
 h=zoom;
 setAllowAxesZoom(h, hAxes, 0);
 
-fprintf('DisplayAxesSDG: Elapsed Time - %0.3f\n', toc);
+% fprintf('DisplayAxesSDG: Elapsed Time - %0.3f\n', toc);

@@ -17,7 +17,7 @@ classdef DataTreeClass <  handle
         function obj = DataTreeClass(groupDirs, fmt, procStreamCfgFile)
             global logger 
             
-            obj.groups         = GroupClass().empty();
+            obj.groups        = GroupClass().empty();
             obj.currElem      = TreeNodeClass().empty();
             obj.reg           = RegistriesClass().empty();
             obj.config        = ConfigFileClass().empty();
@@ -97,7 +97,6 @@ classdef DataTreeClass <  handle
         
         
         
-        
         % --------------------------------------------------------------
         function FindAndLoadGroups(obj, groupDirs, fmt, procStreamCfgFile)
             
@@ -130,7 +129,7 @@ classdef DataTreeClass <  handle
             
         end
         
-            
+          
         % ---------------------------------------------------------------
         function LoadGroup(obj, procStreamCfgFile)
             if ~exist('procStreamCfgFile','var')
@@ -148,13 +147,13 @@ classdef DataTreeClass <  handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.ErrorCheckLoadedFiles();
 
+            tic;            
             for ii=1:length(obj.groups)
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Load derived or post-acquisition data from a file if it
                 % exists
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 obj.groups(ii).Load();            
-            
             
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Initialize procStream for all tree nodes
@@ -164,17 +163,19 @@ classdef DataTreeClass <  handle
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Generate the stimulus conditions for the group tree
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                obj.groups(ii).SetConditions();
-                
-                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                % Find the amount of memory the whole group tree requires
-                % at the run level. If group runs take up more than half a
-                % GB then do not save dc and dod time courses and recalculate
-                % dc and dod for each new current element (currElem) on the
-                % fly. This should be a menu option in future releases
-                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                % obj.logger.Write(sprintf('Memory required for acquisition data %0.1f MB\n', obj.groups(ii).MemoryRequired() / 1e6));
+                obj.groups(ii).SetConditions();                
             end
+            obj.logger.Write(sprintf('Loaded processing stream results in %0.1f seconds\n', toc));
+            
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Find the amount of memory the whole group tree requires
+            % at the run level. If group runs take up more than half a
+            % GB then do not save dc and dod time courses and recalculate
+            % dc and dod for each new current element (currElem) on the
+            % fly. This should be a menu option in future releases
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % obj.logger.Write(sprintf('Memory required for data tree: %0.1f MB\n', obj.groups(ii).MemoryRequired() / 1e6));
         end
         
         
@@ -186,7 +187,8 @@ classdef DataTreeClass <  handle
             groupCurr = GroupClass().empty();
             subjCurr = SubjClass().empty();
             runCurr = RunClass().empty();
-            
+
+            tic;            
             obj.logger.Write(sprintf('\n'));
             iG = 1;
             for iF=1:length(obj.files)
@@ -214,8 +216,7 @@ classdef DataTreeClass <  handle
                     runCurr = RunClass().empty();
                 end
             end
-            
-            obj.logger.Write(sprintf('\n'));            
+            obj.logger.Write(sprintf('\nLoaded acquisition data in %0.1f seconds\n\n', toc));            
         end
 
 

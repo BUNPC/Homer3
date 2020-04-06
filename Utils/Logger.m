@@ -7,6 +7,7 @@ classdef Logger < handle
         fhandle
         options
         DEBUG
+        chapter
     end
     
     methods
@@ -25,15 +26,14 @@ classdef Logger < handle
             % Construct log file name
             self.filename = [approotdir, appname, '.log'];
             
-            % Check if log file for this application already exists - if it does delete it so you can start fresh
+            % Check if log file for this application already exists - if it does close any open handles and delete it 
+            % so you can start fresh
             if exist(self.filename, 'file') == 2
-                if GetFileSize(self.filename) > 0
-                    fds = fopen('all');
-                    for ii = 1:length(fds)
-                        if strcmp(fopen(fds(ii)), self.filename)
-                            fclose(fds(ii));
-                            delete(self.filename)
-                        end
+                fds = fopen('all');
+                for ii = 1:length(fds)
+                    if strcmp(fopen(fds(ii)), self.filename)
+                        fclose(fds(ii));
+                        delete(self.filename)
                     end
                 end
             end
@@ -62,6 +62,8 @@ classdef Logger < handle
             self.options.value = options;
             
             self.DEBUG = 0;
+            
+            self.chapter = struct('maxsize',1e6, 'offset',0, 'number',1);
         end
         
         
@@ -96,6 +98,7 @@ classdef Logger < handle
             end
             if bitand(options, self.options.FILE_ONLY) > 0
                 if self.fhandle > 0
+                    self.CheckFileSize()
                     fprintf(self.fhandle, s);
                 end
             end
@@ -138,6 +141,7 @@ classdef Logger < handle
             end
             if bitand(options, self.options.FILE_ONLY) > 0
                 if self.fhandle > 0
+                    self.CheckFileSize()
                     fprintf(self.fhandle, s);
                 end
             end
@@ -170,6 +174,7 @@ classdef Logger < handle
             
             if bitand(options, self.options.FILE_ONLY) > 0
                 if self.fhandle > 0
+                    self.CheckFileSize()
                     fprintf(self.fhandle, s);
                 end
             end
@@ -242,6 +247,29 @@ classdef Logger < handle
         % ---------------------------------------------------------------
         function filename = GetFilename(obj)
             [~, filename] = fileparts(obj.filename);
+        end
+        
+
+        % ---------------------------------------------------------------
+        function InitChapters(self)
+            self.chapter.offset = ftell(self.fhandle);
+            fprintf(self.fhandle, '\nLogger: Chapter %d\n', self.chapter.number);
+        end
+
+        
+        % ---------------------------------------------------------------
+        function ResetChapter(self)
+            self.chapter.number = self.chapter.number+1;
+            fseek(self.fhandle, self.chapter.offset, 'bof');            
+            fprintf(self.fhandle, '\nLogger: Chapter %d\n', self.chapter.number);
+        end
+        
+        
+        % ---------------------------------------------------------------
+        function CheckFileSize(self)
+            if ftell(self.fhandle) > self.chapter.maxsize
+                self.ResetChapter()
+            end
         end
         
     end

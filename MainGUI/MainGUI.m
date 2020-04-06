@@ -171,6 +171,8 @@ s = get(hObject,'name');
 title = sprintf('%s - %s', s, pwd);
 set(hObject,'name', title);
 
+maingui.logger.InitChapters()
+
 
 
 

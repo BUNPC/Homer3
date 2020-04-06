@@ -24,6 +24,13 @@ elseif nargin==1 && isempty(inputFileFormat)
     inputFileFormat='snirf';
 end
 cfg = ConfigFileClass();
+
+if strcmp(cfg.GetValue('Logging'), 'off')
+    logger.SetDebugLevel(logger.Null());
+end
+
+PrintSystemInfo(logger);
+
 logger.Write(sprintf('Opened application config file %s\n', cfg.filename))
 gdir = cfg.GetValue('Last Group Folder');
 if isempty(gdir)

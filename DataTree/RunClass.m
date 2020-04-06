@@ -641,6 +641,9 @@ classdef RunClass < TreeNodeClass
             if strcmp(option, 'disk')
                 return 
             end
+            if isempty(obj.acquired)
+                return
+            end
             nbytes = obj.acquired.MemoryRequired();
         end
     

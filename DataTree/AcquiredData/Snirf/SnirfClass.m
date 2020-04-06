@@ -1106,7 +1106,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             for ii=1:length(obj.stim)
                 nbytes = nbytes + obj.stim(ii).MemoryRequired();
             end
-            nbytes = nbytes + obj.probe.MemoryRequired();
+            if ~isempty(obj.probe)
+                nbytes = nbytes + obj.probe.MemoryRequired();
+            end
             for ii=1:length(obj.aux)
                 nbytes = nbytes + obj.aux(ii).MemoryRequired();
             end

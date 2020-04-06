@@ -98,6 +98,7 @@ set(handles.textStatus, 'enable', val);
 % --------------------------------------------------------------------
 function eventdata = MainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global maingui
+global logger
 
 maingui = [];
 
@@ -115,9 +116,10 @@ end
 if ~iscell(maingui.groupDirs)
     maingui.groupDirs = {maingui.groupDirs};
 end
+maingui.logger = InitLogger(logger);
 
 for ii=1:length(maingui.groupDirs)
-    fprintf('MainGUI: Will load group folder #%d - %s\n', ii, maingui.groupDirs{ii})
+    maingui.logger.CurrTime(sprintf('MainGUI:  Will load group folder #%d - %s\n', ii, maingui.groupDirs{ii}));
 end
 
 maingui.gid = 1;
@@ -190,6 +192,9 @@ if isempty(maingui)
 end
 if isempty(maingui.dataTree)
     return;
+end
+if ~isempty(maingui.logger)
+    maingui.logger.Close();
 end
 
 % Delete Child GUIs before deleted the dataTree that all GUIs use.
@@ -380,8 +385,8 @@ maingui.dataTree.CalcCurrElem();
 % Restore original selection listboxGroupTree
 set(handles.listboxGroupTree, 'value',val0);
 
-h = waitbar(0,'Auto-saving group processing results. Please wait ...');
-maingui.dataTree.Save();
+h = waitbar(0,'Auto-saving processing results. Please wait ...');
+maingui.dataTree.Save(h);
 close(h);
 Display(handles, hObject);
 
@@ -772,7 +777,7 @@ sclConc    = maingui.sclConc;        % convert Conc from Molar to uMolar
 showStdErr = GetShowStdErrEnabled(handles);
 
 [iDataBlks, iCh] = procElem.GetDataBlocksIdxs(iCh0);
-fprintf('Displaying channels [%s] in data blocks [%s]\n', num2str(iCh0(:)'), num2str(iDataBlks(:)'))
+maingui.logger.Write(sprintf('Displaying channels [%s] in data blocks [%s]\n', num2str(iCh0(:)'), num2str(iDataBlks(:)')))
 iColor = 1;
 for iBlk = iDataBlks
 
@@ -1082,7 +1087,7 @@ if isempty(pValues)
 end
 
 for iBlk=1:length(pValues)
-    fprintf('P-Values for %s, data block %d:\n', maingui.dataTree.currElem.GetName(), iBlk);
+    maingui.logger.Write(sprintf('P-Values for %s, data block %d:\n', maingui.dataTree.currElem.GetName(), iBlk));
     pretty_print_matrix(pValues{iBlk});
 end
 
@@ -1125,7 +1130,7 @@ switch(guiname)
             iGroup = varargin{2}(1);
             iSubj = varargin{2}(2);
             iRun = varargin{2}(3);
-            fprintf('Processing iGroup=%d, iSubj=%d, iRun=%d\n', iGroup, iSubj, iRun);
+            maingui.logger.Write(sprintf('Processing iGroup=%d, iSubj=%d, iRun=%d\n', iGroup, iSubj, iRun));
             listboxGroupTree_Callback([], [iGroup, iSubj, iRun], maingui.handles);
         end
     case 'PatchCallback'

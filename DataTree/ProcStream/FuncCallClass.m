@@ -581,6 +581,24 @@ classdef FuncCallClass < handle
             obj.SetUsageName(usagename);
         end
         
+        
+        % ----------------------------------------------------------------------------------        
+        function nbytes = MemoryRequired(obj)            
+            fields = properties(obj);
+            nbytes = zeros(length(fields),1);
+            if isempty(obj)
+                nbytes = 0;
+                return
+            end
+            for ii = 1:length(fields)
+                fieldstr = sprintf('obj.%s', fields{ii});
+                if ~eval('isempty(fieldstr)')
+                    nbytes(ii) =  eval(sprintf('sizeof(%s);', fieldstr));
+                end
+            end
+            nbytes = sum(nbytes);
+        end
+        
     end
 
     

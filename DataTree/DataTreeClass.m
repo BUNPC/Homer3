@@ -8,17 +8,22 @@ classdef DataTreeClass <  handle
         currElem
         reg
         config
+        logger
     end
     
     methods
         
         % ---------------------------------------------------------------
         function obj = DataTreeClass(groupDirs, fmt, procStreamCfgFile)
+            global logger 
+            
             obj.groups         = GroupClass().empty();
             obj.currElem      = TreeNodeClass().empty();
             obj.reg           = RegistriesClass().empty();
             obj.config        = ConfigFileClass().empty();
             obj.dirnameGroup  = '';
+            obj.logger        = logger;
+            
             
             %%%% Parse args
             
@@ -54,7 +59,7 @@ classdef DataTreeClass <  handle
             % Load user function registry
             obj.reg = RegistriesClass();
             if ~isempty(obj.reg.GetSavedRegistryPath())
-                fprintf('Loaded saved registry %s\n', obj.reg.GetSavedRegistryPath());
+                obj.logger.Write(sprintf('Loaded saved registry %s\n', obj.reg.GetSavedRegistryPath()));
             end
             
             % Initialize the current processing element within the group
@@ -71,20 +76,20 @@ classdef DataTreeClass <  handle
 
 
         % --------------------------------------------------------------
-        function status = SelectOptionsWhenLoadFails(obj, dataInit)
+        function status = SelectOptionsWhenLoadFails(obj, ~)
             status = -1;
             
             msg{1} = sprintf('Could not load any of the requested files in the group folder %s. ', obj.dirnameGroup);
             msg{2} = sprintf('Do you want to select another group folder?');
             q = MenuBox([msg{:}], {'YES','NO'});
             if q==2
-                fprintf('Skipping group folder %s...\n', obj.dirnameGroup);
+                obj.logger.Write(sprintf('Skipping group folder %s...\n', obj.dirnameGroup));
                 obj.dirnameGroup = 0;
                 return;
             end
             obj.dirnameGroup = uigetdir(pwd, 'Please select another group folder ...');
             if obj.dirnameGroup==0
-                fprintf('Skipping group folder %s...\n', obj.dirnameGroup);
+                obj.logger.Write(sprintf('Skipping group folder %s...\n', obj.dirnameGroup));
                 return;
             end
             status = 0;
@@ -168,7 +173,7 @@ classdef DataTreeClass <  handle
                 % dc and dod for each new current element (currElem) on the
                 % fly. This should be a menu option in future releases
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                fprintf('Memory required for acquisition data %0.1f MB\n', obj.groups(ii).MemoryRequired() / 1e6);
+                % obj.logger.Write(sprintf('Memory required for acquisition data %0.1f MB\n', obj.groups(ii).MemoryRequired() / 1e6));
             end
         end
         
@@ -182,7 +187,7 @@ classdef DataTreeClass <  handle
             subjCurr = SubjClass().empty();
             runCurr = RunClass().empty();
             
-            fprintf('\n');
+            obj.logger.Write(sprintf('\n'));
             iG = 1;
             for iF=1:length(obj.files)
                 % Extract group, subj, and run names from file struct
@@ -210,7 +215,7 @@ classdef DataTreeClass <  handle
                 end
             end
             
-            fprintf('\n');            
+            obj.logger.Write(sprintf('\n'));            
         end
 
 
@@ -234,7 +239,12 @@ classdef DataTreeClass <  handle
                 group.SetIndexID(jj);
                 obj.groups(jj) = group;
                 obj.groups(jj).SetPath(obj.dirnameGroup)
-                fprintf('Added group %s to dataTree.\n', obj.groups(jj).GetName);
+                
+                % In case there's not enough disk space in the current
+                % group folder, we have a separate path for saving group
+                % results
+                obj.groups(jj).SetPathOutput(obj.dirnameGroup)
+                obj.logger.Write(sprintf('Added group %s to dataTree.\n', obj.groups(jj).GetName));
             end
 
             %v Add subj and run to group
@@ -304,8 +314,11 @@ classdef DataTreeClass <  handle
 
 
         % ----------------------------------------------------------
-        function Save(obj)
-            obj.groups(obj.currElem.iGroup).Save();
+        function Save(obj, hwait)
+            if ~exist('hwait','var')
+                hwait = [];
+            end
+            obj.groups(obj.currElem.iGroup).Save(hwait);
         end
 
 

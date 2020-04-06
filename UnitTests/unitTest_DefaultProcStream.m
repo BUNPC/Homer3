@@ -22,8 +22,9 @@ if ~exist('dirname','var')
     return;
 end
 if ~exist('logger','var') || isempty(logger)
-    logger = LogClass();
+    logger = [];
 end
+logger = InitLogger(logger);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set up logger and other administrative paramaters

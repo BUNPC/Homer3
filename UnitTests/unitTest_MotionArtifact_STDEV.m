@@ -29,8 +29,9 @@ if ~exist('newval','var')
     newval = [];
 end
 if ~exist('logger','var') || isempty(logger)
-    logger = LogClass();
+    logger = [];
 end
+logger = InitLogger(logger);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

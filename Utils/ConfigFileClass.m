@@ -43,7 +43,7 @@ classdef ConfigFileClass < FileClass
             end
 
             % We have a filename of an exiting readdable file. 
-            obj.filename = filename;
+            obj.filename = filesepStandard(filename);
             obj.ParseFile();
 
             fclose(obj.fid);

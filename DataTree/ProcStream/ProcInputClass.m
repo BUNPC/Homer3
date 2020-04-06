@@ -112,6 +112,21 @@ classdef ProcInputClass < handle
                 eval( sprintf('obj.misc.%s = vars.%s;', fields{ii}, fields{ii}) );
             end
         end
+
+        
+        % ----------------------------------------------------------------------------------        
+        function nbytes = MemoryRequired(obj)
+            nbytes(1) = sizeof(obj.tIncMan);
+            nbytes(2) = sizeof(obj.mlActMan);
+            nbytes(3) = sizeof(obj.misc);
+            nbytes(4) = sizeof(obj.stimValSettings);
+            if isempty(obj.acquiredEditable)
+                nbytes(5) = 0;
+            else
+                nbytes(5) = obj.acquiredEditable.MemoryRequired();
+            end
+            nbytes = sum(nbytes);
+        end
         
     end
         

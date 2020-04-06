@@ -9,6 +9,12 @@ function Homer3(groupDirs, inputFileFormat)
 %       Homer3({'.'}, '.nirs')
 %
 
+global logger
+
+logger = Logger('Homer3');
+
+logger.CurrTime();
+
 if nargin==0
     groupDirs = convertToStandardPath(pwd);
 end
@@ -18,7 +24,7 @@ elseif nargin==1 && isempty(inputFileFormat)
     inputFileFormat='snirf';
 end
 cfg = ConfigFileClass();
-fprintf('Opened application config file %s\n', cfg.filename)
+logger.Write(sprintf('Opened application config file %s\n', cfg.filename))
 gdir = cfg.GetValue('Last Group Folder');
 if isempty(gdir)
     if isdeployed()

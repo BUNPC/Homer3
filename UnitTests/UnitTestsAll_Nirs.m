@@ -14,10 +14,10 @@ if ~exist('standalone','var') || isempty(standalone)
     SetConfig();
 end
 
-if ~exist('logger','var') || isempty(logger)
-    rootpath = fileparts(which('UnitTestsAll_Nirs.m'));
-    logger = LogClass([rootpath, '/'], 'UnitTestsAll_Nirs');
+if ~exist('logger','var')
+    logger = [];
 end
+logger = InitLogger(logger, 'UnitTestsAll_Nirs');
 
 lpf = [00.30, 00.70, 01.00];
 std = [05.00, 10.00, 15.00, 20.00];

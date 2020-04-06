@@ -10,9 +10,7 @@ c.SetValue('Include Archived User Functions','Yes');
 c.SetValue('Default Processing Stream Style','NIRS');
 c.WriteFile();
 
-rootpath = fileparts(which('UnitTestsAll.m'));
-
-logger = LogClass([rootpath, '/'], 'UnitTestsAll');
+logger = Logger('UnitTestsAll');
 
 UnitTestsAll_Nirs(false, logger);
 

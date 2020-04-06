@@ -633,7 +633,14 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------        
-        function nbytes = MemoryRequired(obj)
+        function nbytes = MemoryRequired(obj, option)
+            if ~exist('option','var')
+                option = 'memory';
+            end
+            nbytes = obj.procStream.MemoryRequired();
+            if strcmp(option, 'disk')
+                return 
+            end
             nbytes = obj.acquired.MemoryRequired();
         end
     

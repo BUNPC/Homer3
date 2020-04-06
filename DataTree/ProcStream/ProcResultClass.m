@@ -518,6 +518,24 @@ classdef ProcResultClass < handle
                 n = length(obj.dcAvg(iBlk).GetMeasurementListIdxs(1));
             end            
         end
+
+        
+        % ----------------------------------------------------------------------------------        
+        function nbytes = MemoryRequired(obj)
+            fields = properties(obj);
+            nbytes = zeros(length(fields),1);
+            for ii = 1:length(fields)
+                fieldstr = sprintf('obj.%s', fields{ii});
+                if ~eval('isempty(fieldstr)')
+                    if isa(eval(fieldstr), 'DataClass')
+                        nbytes(ii) =  eval(sprintf('%s.MemoryRequired();', fieldstr));
+                    else
+                        nbytes(ii) =  eval(sprintf('sizeof(%s);', fieldstr));
+                    end
+                end
+            end
+            nbytes = sum(nbytes);
+        end
         
     end
     

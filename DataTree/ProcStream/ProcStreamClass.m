@@ -254,6 +254,18 @@ classdef ProcStreamClass < handle
         end
         
         
+        % ----------------------------------------------------------------------------------        
+        function nbytes = MemoryRequired(obj)
+            nbytes(1) = obj.input.MemoryRequired();
+            nbytes(2) = obj.output.MemoryRequired();
+            for ii = 1:length(obj.fcalls)
+                nbytes(2+ii) = obj.fcalls(ii).MemoryRequired();
+            end
+            nbytes = sum(nbytes);
+        end
+        
+        
+        
         % ----------------------------------------------------------------------------------
         function FcallsIdxsTimeCourses(obj)
             if ~obj.output.HaveBlockAvgOutput()

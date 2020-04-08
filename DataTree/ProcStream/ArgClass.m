@@ -52,7 +52,13 @@ classdef ArgClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function args = Extract(obj)
-            args = str2cell(obj.str,',')';
+            args = str2cell(obj.str,',');
+            
+            % Make sure cell array is a column vector. That the output
+            % type expected by the calling function
+            if size(args,1) > 1
+                args = args';
+            end
             if args{1}(1)=='[' || args{1}(1)=='('
                 args{1}(1) = '';
             end

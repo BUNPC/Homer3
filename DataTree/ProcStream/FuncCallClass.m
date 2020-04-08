@@ -193,14 +193,16 @@ classdef FuncCallClass < handle
             end
             
             % If usage name is already set, then we're done
-            c = str2cell(obj.nameUI, ':');
-            if length(c)==2 && isempty(usagename)
-                return;
+            k = find((obj.nameUI==':')==1);
+            if ~isempty(k)
+                if (k(1) > 1) && (k(1) < length(obj.nameUI))  && isempty(usagename)
+                	return;
+            	end
             end
             if isempty(usagename)
-                obj.nameUI = sprintf('%s', obj.name);
+                obj.nameUI = obj.name;
             else
-                obj.nameUI = sprintf('%s:  %s', obj.name, usagename);
+                obj.nameUI = [obj.name, ':  ', usagename];
             end
         end
 

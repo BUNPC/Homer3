@@ -25,8 +25,10 @@ for kk=1:length(delimiters)
 end
 j = find(~ismember(1:length(str),k));
 
-% Preallocate and trim (afterwards) to speed things up
-C = repmat({blanks(max(diff([k,length(str)])))}, length(k)+1, 1);
+% The following line seems to hurt performance a little bit. It was 
+% meant to preallocate to speed things up but it does seem to do that.
+% C = repmat({blanks(max(diff([k,length(str)])))}, length(k)+1, 1);
+C = {};
 ii=1; kk=1; 
 while ii<=length(j)
     C{kk} = str(j(ii));
@@ -35,7 +37,7 @@ while ii<=length(j)
     while (ii<=length(j)) && ((j(ii)-j(ii-1))==1)
         C{kk}(jj) = str(j(ii));
         jj=jj+1;
-        ii=ii+1;        
+        ii=ii+1;
     end
     C{kk}(jj:end)='';
     kk=kk+1;

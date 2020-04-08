@@ -100,9 +100,10 @@ function eventdata = MainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global maingui
 global logger
 
+startuptimer = tic;
 maingui = [];
 
-if length(varargin)==0
+if isempty(varargin)
     maingui.groupDirs = convertToStandardPath({pwd});
 else
     maingui.groupDirs = varargin{1};
@@ -172,7 +173,7 @@ title = sprintf('%s - %s', s, pwd);
 set(hObject,'name', title);
 
 maingui.logger.InitChapters()
-
+maingui.logger.CurrTime(sprintf('MainGUI: Startup time - %0.1f seconds\n', toc(startuptimer)));
 
 
 

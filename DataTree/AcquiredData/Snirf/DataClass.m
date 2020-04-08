@@ -6,7 +6,7 @@ classdef DataClass < FileLoadSaveClass
         measurementList
     end
     
-       
+    
     methods
         
         % -------------------------------------------------------
@@ -14,26 +14,40 @@ classdef DataClass < FileLoadSaveClass
             %
             %  Syntax:
             %     obj = DataClass()
+            %     obj = DataClass(filename)
             %     obj = DataClass(data)
             %     obj = DataClass(d,t,ml)
-            %     
+            %
             %  Input:
-            %     data - When there's one argument, data can be either NirsClass object or 
-            %            DataClass object. 
+            %     filename - When there's one argument and it is a char,
+            %                then it's interepreted as a filename path
+            %     data - When there's one argument and it it is not a char string, 
+            %            it can be either a DataClass or NirsClass object.
             %     d    - When there are three arguments, d is the data time course matrix
             %     t    - When there are three arguments, t is the data time vector
-            %     ml   - When there are three arguments, ml is the measurent list, which 
+            %     ml   - When there are three arguments, ml is the measurent list, which
             %            can be either a nirs style matrix or a MeasListClass object
             %
-            %  Example:
+            %  Examples:
+            %     
+            %     % Example 1 - Create DataClass object and initialize it with SNIRF data variable 
+            %     %             from file neuro_run01.snirf
+            %
+            %     data = DataClass('c:/users/public/subjects/subj1/neuro_run01.snirf')   
+            %
             %    
-            % Set class properties not part of the SNIRF format
+            %     % Example 2 - Create DataClass object and initialize it with time course data and time vectors 
+            %     %             from the .nirs file ./s1/neuro_run01.nirs
+            %
+            %     nirs = NirsClass('./s1/neuro_run01.nirs')
+            %     data = DataClass(nirs.d, nirs.t)
+            % 
             obj.fileformat = 'hdf5';
             
             % Set SNIRF fomat properties
             obj.measurementList = MeasListClass().empty();
             
-            if nargin==0 
+            if nargin==0
                 return;
             elseif nargin==1
                 if isa(varargin{1}, 'DataClass')
@@ -45,9 +59,10 @@ classdef DataClass < FileLoadSaveClass
                         obj.measurementList(end+1) = MeasListClass(varargin{1}.ml(ii,:));
                     end
                 elseif isa(varargin{1}, 'char')
-                    obj.Load(varargin{1});
+                    obj.filename = varargin{1};
+                    obj.Load();
                 end
-            elseif nargin==3                
+            elseif nargin==3
                 if ~all(isreal(varargin{1}(:)))
                     return;
                 end
@@ -80,35 +95,51 @@ classdef DataClass < FileLoadSaveClass
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Load/Save from/to file methods 
+    % Load/Save from/to file methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
-
+        
         % -------------------------------------------------------
-        function err = LoadHdf5(obj, fname, parent)
+        function err = LoadHdf5(obj, fileobj, location)
             err = 0;
             
-            if ~exist(fname, 'file')
-                err = -1;
-                return;
+            % Arg 1
+            if ~exist('fileobj','var') || (ischar(fileobj) && ~exist(fileobj,'file'))
+                fileobj = '';
+            end
+                      
+            % Arg 2
+            if ~exist('location', 'var')
+                location = '/nirs/data1';
+            elseif location(1)~='/'
+                location = ['/',location];
             end
             
-            % Arg 2
-            if ~exist('parent', 'var')
-                parent = '/nirs/data1';
-            elseif parent(1)~='/'
-                parent = ['/',parent];
+            % Error checking            
+            if ~isempty(fileobj) && ischar(fileobj)
+                obj.filename = fileobj;
+            elseif isempty(fileobj)
+                fileobj = obj.filename;
+            end 
+            if isempty(fileobj)
+               err = -1;
+               return;
             end
+            
             
             try
-                obj.dataTimeSeries = h5read(fname, [parent, '/dataTimeSeries']);
-                obj.time = h5read(fname, [parent, '/time']);
-            	ii=1;
+                % Open group
+                [gid, fid] = HDF5_GroupOpen(fileobj, location);
+                
+                obj.dataTimeSeries  = HDF5_DatasetLoad(gid, 'dataTimeSeries');
+                obj.time            = HDF5_DatasetLoad(gid, 'time');
+                
+                ii=1;
                 while 1
-                if ii > length(obj.measurementList)
-                    obj.measurementList(ii) = MeasListClass;
-                end
-                    if obj.measurementList(ii).LoadHdf5(fname, [parent, '/measurementList', num2str(ii)]) < 0
+                    if ii > length(obj.measurementList)
+                        obj.measurementList(ii) = MeasListClass;
+                    end
+                    if obj.measurementList(ii).LoadHdf5(fileobj, [location, '/measurementList', num2str(ii)]) < 0
                         obj.measurementList(ii).delete();
                         obj.measurementList(ii) = [];
                         if ii==1
@@ -116,31 +147,33 @@ classdef DataClass < FileLoadSaveClass
                         end
                         break;
                     end
-                ii=ii+1;
-            end
-            catch
+                    ii=ii+1;
+                end
+                
+                % Close group
+                HDF5_GroupClose(fileobj, gid, fid);
+            catch ME
                 err = -1;
             end
-            obj.err = err;
         end
         
         
         % -------------------------------------------------------
-        function SaveHdf5(obj, fname, parent)
-            if ~exist('fname', 'var') || isempty(fname)
+        function SaveHdf5(obj, fileobj, location)
+            if ~exist('fileobj', 'var') || isempty(fileobj)
                 error('Unable to save file. No file name given.')
-			end
-
-            if ~exist(fname, 'file')
-                fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+            end
+            
+            if ~exist(fileobj, 'file')
+                fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end
             
-            hdf5write_safe(fname, [parent, '/dataTimeSeries'], obj.dataTimeSeries);
-            hdf5write_safe(fname, [parent, '/time'], obj.time);
+            hdf5write_safe(fileobj, [location, '/dataTimeSeries'], obj.dataTimeSeries);
+            hdf5write_safe(fileobj, [location, '/time'], obj.time);
             
             for ii=1:length(obj.measurementList)
-                obj.measurementList(ii).SaveHdf5(fname, [parent, '/measurementList', num2str(ii)]);
+                obj.measurementList(ii).SaveHdf5(fileobj, [location, '/measurementList', num2str(ii)]);
             end
         end
         
@@ -148,9 +181,9 @@ classdef DataClass < FileLoadSaveClass
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Set/Get properties methods 
+    % Set/Get properties methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    methods        
+    methods
         
         % -------------------------------------------------------
         function b = IsEmpty(obj)
@@ -165,7 +198,7 @@ classdef DataClass < FileLoadSaveClass
                 return;
             end
         end
-    
+        
         
         % ---------------------------------------------------------
         function val = GetDataTimeSeries(obj)
@@ -189,7 +222,7 @@ classdef DataClass < FileLoadSaveClass
         function ml = GetMeasList(obj)
             ml = [];
             for ii=1:length(obj.measurementList)
-                % If this data contains block average then only get the measurements for first condition. That will 
+                % If this data contains block average then only get the measurements for first condition. That will
                 % contain all the measurement channels
                 if obj.measurementList(ii).GetCondition()>1
                     break;
@@ -210,12 +243,12 @@ classdef DataClass < FileLoadSaveClass
                 end
             end
         end
-
+        
         
         % ---------------------------------------------------------
         function idxs = GetMeasurementListIdxs(obj, CondIdxs)
             % Get all the measurementList array idxs matching the
-            % conditions in the CondNames argument 
+            % conditions in the CondNames argument
             idxs = zeros(1,length(obj.measurementList));
             kk=1;
             for iCh = 1:length(obj.measurementList)
@@ -229,7 +262,7 @@ classdef DataClass < FileLoadSaveClass
             end
             idxs(idxs==0) = [];
         end
-
+        
         
         % ---------------------------------------------------------
         function t = GetTime(obj)
@@ -252,7 +285,7 @@ classdef DataClass < FileLoadSaveClass
             hh=1; jj=1; kk=1; ll=1;
             for ii=1:length(obj.measurementList)
                 if ~ismember(obj.measurementList(ii).GetDataTypeLabel(), dataTypeLabels)
-                    dataTypeLabels{hh} = obj.measurementList(ii).GetDataTypeLabel(); 
+                    dataTypeLabels{hh} = obj.measurementList(ii).GetDataTypeLabel();
                     hh=hh+1;
                 end
                 if isempty(find(srcDetPairs(:,1)==obj.measurementList(ii).GetSourceIndex() & srcDetPairs(:,2)==obj.measurementList(ii).GetDetectorIndex()))
@@ -344,7 +377,7 @@ classdef DataClass < FileLoadSaveClass
         
         % ---------------------------------------------------------
         function SetMl(obj, val)
-            obj.measurementList = val.copy();      % shallow copy ok because MeasListClass has no handle properties 
+            obj.measurementList = val.copy();      % shallow copy ok because MeasListClass has no handle properties
         end
         
         
@@ -374,7 +407,7 @@ classdef DataClass < FileLoadSaveClass
             end
             val = unique(val);
         end
-
+        
         
         % ---------------------------------------------------------
         function val = GetCondition(obj, ch_idx)
@@ -389,7 +422,7 @@ classdef DataClass < FileLoadSaveClass
         
     end
     
-        
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Adding/deleting data methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -506,7 +539,7 @@ classdef DataClass < FileLoadSaveClass
         function AppendD(obj, y)
             obj.dataTimeSeries(:, end+1:end+size(y(:,:),2)) = y(:,:);
         end
-
+        
         
         % ---------------------------------------------------------
         function TruncateTpts(obj, n)
@@ -514,11 +547,11 @@ classdef DataClass < FileLoadSaveClass
             obj.time(end-n+1:end) = [];
         end
         
-    end    
+    end
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % 
+    %
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
@@ -531,7 +564,7 @@ classdef DataClass < FileLoadSaveClass
                 return;
             end
             for ii=1:length(obj2.measurementList)
-                obj.measurementList(ii) = obj2.measurementList(ii).copy();      % shallow copy ok because MeasListClass has no handle properties 
+                obj.measurementList(ii) = obj2.measurementList(ii).copy();      % shallow copy ok because MeasListClass has no handle properties
             end
             obj.dataTimeSeries = obj2.dataTimeSeries;
             obj.time = obj2.time;
@@ -559,7 +592,7 @@ classdef DataClass < FileLoadSaveClass
         end
         
         
-        % ----------------------------------------------------------------------------------        
+        % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
             nbytes = sizeof(obj.dataTimeSeries) + sizeof(obj.time);
             for ii=1:length(obj.measurementList)

@@ -11,6 +11,8 @@ classdef AuxClass < FileLoadSaveClass
         
         % -------------------------------------------------------
         function obj = AuxClass(varargin)
+            % Set class properties not part of the SNIRF format
+            obj.fileformat = 'hdf5';
             
             obj.timeOffset = 0;
             if nargin==1
@@ -26,67 +28,70 @@ classdef AuxClass < FileLoadSaveClass
                 obj.time = [];
             end
             
-            % Set base class properties not part of the SNIRF format
-            obj.fileformat = 'hdf5';
         end
         
         
         % -------------------------------------------------------
-        function err = LoadHdf5(obj, fname, parent)
+        function err = LoadHdf5(obj, fileobj, location)
             err = 0;
             
             % Arg 1
-            if ~exist('fname','var') || ~exist(fname,'file')
-                fname = '';
+            if ~exist('fileobj','var') || (ischar(fileobj) && ~exist(fileobj,'file'))
+                fileobj = '';
             end
             
             % Arg 2
-            if ~exist('parent', 'var')
-                parent = '/nirs/aux1';
-            elseif parent(1)~='/'
-                parent = ['/',parent];
+            if ~exist('location', 'var')
+                location = '/nirs/aux1';
+            elseif location(1)~='/'
+                location = ['/',location];
             end
             
-            % Do some error checking            
-            if ~isempty(fname)
-                obj.filename = fname;
-            else
-                fname = obj.filename;
-            end
-            if isempty(fname)
-               err=-1;
+            % Error checking            
+            if ~isempty(fileobj) && ischar(fileobj)
+                obj.filename = fileobj;
+            elseif isempty(fileobj)
+                fileobj = obj.filename;
+            end 
+            if isempty(fileobj)
+               err = -1;
                return;
             end
             
             %%%%%%%%%%%% Ready to load from file
             try
-                obj.name = convertH5StrToStr(h5read(fname, [parent, '/name']));
-                obj.dataTimeSeries    = h5read(fname, [parent, '/dataTimeSeries']);
-                obj.time    = h5read(fname, [parent, '/time']);
-                obj.timeOffset    = h5read(fname, [parent, '/timeOffset']);
+                % Open group
+                [gid, fid] = HDF5_GroupOpen(fileobj, location);
+
+                obj.name            = convertH5StrToStr(HDF5_DatasetLoad(gid, 'name'));
+                obj.dataTimeSeries  = HDF5_DatasetLoad(gid, 'dataTimeSeries');
+                obj.time            = HDF5_DatasetLoad(gid, 'time');
+                obj.timeOffset      = HDF5_DatasetLoad(gid, 'timeOffset');
+
+                % Close group
+                HDF5_GroupClose(fileobj, gid, fid);
             catch
                 err = -1;
             end
-            obj.err = err;            
         end
 
         
         % -------------------------------------------------------
-        function SaveHdf5(obj, fname, parent)
+        function SaveHdf5(obj, fileobj, location)
             % Arg 1
-            if ~exist('fname', 'var') || isempty(fname)
+            if ~exist('fileobj', 'var') || isempty(fileobj)
                 error('Unable to save file. No file name given.')
             end
             
-            if ~exist(fname, 'file')
-                fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+            if ~exist(fileobj, 'file')
+                fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end     
             
-            hdf5write(fname, [parent, '/name'], obj.name, 'WriteMode','append');
-            hdf5write_safe(fname, [parent, '/dataTimeSeries'], obj.dataTimeSeries);
-            hdf5write_safe(fname, [parent, '/time'], obj.time);
-            hdf5write_safe(fname, [parent, '/timeOffset'], obj.timeOffset);
+            hdf5write(fileobj, [location, '/name'], obj.name, 'WriteMode','append');
+            hdf5write_safe(fileobj, [location, '/dataTimeSeries'], obj.dataTimeSeries);
+            hdf5write_safe(fileobj, [location, '/time'], obj.time);
+            hdf5write_safe(fileobj, [location, '/timeOffset'], obj.timeOffset);
         end
         
         

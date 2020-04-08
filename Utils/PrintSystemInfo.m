@@ -10,7 +10,7 @@ try
 	logger.Write(sprintf('=========\n'))
 	logger.Write(sprintf('CPU Info:\n'))
 	logger.Write(sprintf('=========\n'))
-	pretty_print_struct(cpuinfo);
+	pretty_print_struct(cpuinfo, [], [], logger);
 	logger.Write(sprintf('\n'))
 	
 	[~,systemview] = memory();

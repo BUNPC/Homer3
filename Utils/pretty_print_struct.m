@@ -1,13 +1,9 @@
 function pretty_print_struct(st, indent, option, logger)
 spaces = '';
 
-if nargin==0
-    return
-end
-if isempty(st)
+if ~exist('st','var') || isempty(st)
     return;
 end
-
 if ~exist('indent','var') || isempty(indent)
     indent = 0;
 end

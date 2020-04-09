@@ -175,7 +175,7 @@ classdef DataTreeClass <  handle
             % dc and dod for each new current element (currElem) on the
             % fly. This should be a menu option in future releases
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % obj.logger.Write(sprintf('Memory required for data tree: %0.1f MB\n', obj.groups(ii).MemoryRequired() / 1e6));
+            % obj.logger.Write(sprintf('Memory required for data tree: %0.1f MB\n', obj.MemoryRequired() / 1e6));
         end
         
         
@@ -314,12 +314,30 @@ classdef DataTreeClass <  handle
         end
 
 
+        % ----------------------------------------------------------------------------------
+        function nbytes = MemoryRequired(obj, option)
+            if ~exist('option','var')
+                option = 'memory';
+            end
+            if isempty(obj)
+                return;
+            end
+            nbytes = length(obj.groups) * obj.groups(1).MemoryRequired(option);
+        end
+        
+        
         % ----------------------------------------------------------
         function Save(obj, hwait)
             if ~exist('hwait','var')
                 hwait = [];
             end
-            obj.groups(obj.currElem.iGroup).Save(hwait);
+            
+            t_local = tic;
+            for ii = 1:length(obj.groups)
+                obj.logger.Write(sprintf('Saving group %d in %s\n', ii, [obj.groups(ii).pathOutput, 'groupResults.mat']));
+                obj.groups(ii).Save(hwait);
+            end
+            obj.logger.Write(sprintf('Completed saving groupResults.mat for all groups in %0.3f seconds.\n', toc(t_local)));
         end
 
 

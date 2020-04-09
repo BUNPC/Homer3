@@ -417,12 +417,9 @@ classdef SubjClass < TreeNodeClass
         % ----------------------------------------------------------------------------------        
         function nbytes = MemoryRequired(obj, option)
             if ~exist('option','var')
-                option = 'memory';
+                option = 'disk';
             end
-            nbytes = obj.procStream.MemoryRequired();
-            for ii=1:length(obj.runs)
-                nbytes = nbytes + obj.runs(ii).MemoryRequired(option);
-            end
+            nbytes = obj.procStream.MemoryRequired() + length(obj.runs) * obj.runs(1).MemoryRequired(option);
         end
 
         

@@ -644,7 +644,7 @@ classdef RunClass < TreeNodeClass
             if isempty(obj.acquired)
                 return
             end
-            nbytes = obj.acquired.MemoryRequired();
+            nbytes = nbytes + obj.acquired.MemoryRequired();
         end
     
     

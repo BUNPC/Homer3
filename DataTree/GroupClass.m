@@ -265,30 +265,11 @@ classdef GroupClass < TreeNodeClass
             if ~exist('option','var')
                 option = 'memory';
             end
-            if strcmp(option, 'memory')
-                nbytes = obj.spaceRequired.memory;
-            else
-                nbytes = obj.spaceRequired.disk;
-            end
-            if nbytes > 0
-                return
-            end
             if isempty(obj)
                 return;
             end
-            nbytes = obj.procStream.MemoryRequired();
-            for ii=1:length(obj.subjs)
-                nbytes = nbytes + obj.subjs(ii).MemoryRequired(option);
+            nbytes = obj.procStream.MemoryRequired() + length(obj.subjs) * obj.subjs(1).MemoryRequired(option);
             end
-            if nbytes > 5e8
-                obj.spacesaver = true;
-            end
-            if strcmp(option, 'memory')
-                obj.spaceRequired.memory = nbytes; 
-            else
-                obj.spaceRequired.disk = nbytes; 
-            end
-        end
 
 
         % ----------------------------------------------------------------------------------
@@ -616,14 +597,14 @@ classdef GroupClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function [diskspaceToSpare, diskspacePercentRemaining] = CheckAvailableDiskSpace(obj, hwait)
             if ishandle(hwait)
-                obj.logger.Write(sprintf('Calculating disk space required to save processing results ...\n'), obj.logger.ProgressBar(), hwait);
+                obj.logger.Write(sprintf('Estimating disk space required to save processing results ...\n'), obj.logger.ProgressBar(), hwait);
             end
             diskspaceToSpare = (getFreeDiskSpace() - obj.MemoryRequired('disk'));   % Disk space to spare in megabytes
             diskspacePercentRemaining = 100 * diskspaceToSpare/obj.MemoryRequired('disk');
             msg = {};
-            obj.logger.Write(sprintf('CheckAvailableDiskSpace:    disk space available = %0.1f MB,    disk space required = %0.1f MB\n', getFreeDiskSpace()/1e6, obj.MemoryRequired('disk')/1e6));
+            obj.logger.Write(sprintf('CheckAvailableDiskSpace:    disk space available = %0.1f MB,    disk space required estimate = %0.1f MB\n', getFreeDiskSpace()/1e6, obj.MemoryRequired('disk')/1e6));
             if diskspaceToSpare < 0
-                msg{1} = sprintf('ERROR: Cannot save processing results requiring %0.1f MB of disk space on current drive with only %0.1f MB of free space available.\n', ...
+                msg{1} = sprintf('ERROR: Cannot save processing results requiring ~%0.1f MB of disk space on current drive with only %0.1f MB of free space available.\n', ...
                                   obj.MemoryRequired('disk')/1e6, getFreeDiskSpace()/1e6);
             elseif diskspacePercentRemaining < 200
                 msg{1} = sprintf('WARNING: Available disk space on the current drive is low (%0.1f MB). This may cause problems saving processing results in the future.', ...
@@ -645,7 +626,6 @@ classdef GroupClass < TreeNodeClass
             end            
             
             obj.logger.Write(sprintf('Saving processed data in %s\n', [obj.path, 'groupResults.mat']));
-            t_local = tic;
                        
             % Check that there is anough disk space 
             while CheckAvailableDiskSpace(obj, hwait) < 0
@@ -672,7 +652,6 @@ classdef GroupClass < TreeNodeClass
                 MessageBox(ME.message);
                 obj.logger.Write(ME.message);
             end            
-            obj.logger.Write(sprintf('Completed saving groupResults.mat in %0.3f seconds.\n', toc(t_local)));
         end
         
         

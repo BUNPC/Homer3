@@ -423,6 +423,18 @@ classdef SubjClass < TreeNodeClass
         end
 
         
+        % ----------------------------------------------------------------------------------        
+        function nbytes = MemoryRequiredExact(obj, option)
+            if ~exist('option','var')
+                option = 'disk';
+            end
+            nbytes = obj.procStream.MemoryRequired();
+            for ii = 1:length(obj.runs)
+                nbytes = nbytes + obj.runs(ii).MemoryRequired(option);
+            end
+        end
+
+        
         % ----------------------------------------------------------------------------------
         function tblcells = GenerateTableCells_MeanHRF(obj, trange, width, iBlk)
             if ~exist('trange','var') || isempty(trange)

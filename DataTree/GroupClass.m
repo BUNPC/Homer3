@@ -268,10 +268,23 @@ classdef GroupClass < TreeNodeClass
             if isempty(obj)
                 return;
             end
+            
             nbytes = obj.procStream.MemoryRequired() + length(obj.subjs) * obj.subjs(1).MemoryRequired(option);
+        end
+
+
+        % ----------------------------------------------------------------------------------        
+        function nbytes = MemoryRequiredExact(obj, option)
+            if ~exist('option','var')
+                option = 'disk';
             end
+            nbytes = obj.procStream.MemoryRequired();
+            for ii = 1:length(obj.subjs)
+                nbytes = nbytes + obj.subjs(ii).MemoryRequiredExact(option);
+            end
+        end
 
-
+        
         % ----------------------------------------------------------------------------------
         function SetPath(obj, dirname)
             obj.path = dirname;
@@ -594,31 +607,7 @@ classdef GroupClass < TreeNodeClass
         end
         
         
-        % ----------------------------------------------------------------------------------
-        function [diskspaceToSpare, diskspacePercentRemaining] = CheckAvailableDiskSpace(obj, hwait)
-            if ishandle(hwait)
-                obj.logger.Write(sprintf('Estimating disk space required to save processing results ...\n'), obj.logger.ProgressBar(), hwait);
-            end
-            diskspaceToSpare = (getFreeDiskSpace() - obj.MemoryRequired('disk'));   % Disk space to spare in megabytes
-            diskspacePercentRemaining = 100 * diskspaceToSpare/obj.MemoryRequired('disk');
-            msg = {};
-            obj.logger.Write(sprintf('CheckAvailableDiskSpace:    disk space available = %0.1f MB,    disk space required estimate = %0.1f MB\n', getFreeDiskSpace()/1e6, obj.MemoryRequired('disk')/1e6));
-            if diskspaceToSpare < 0
-                msg{1} = sprintf('ERROR: Cannot save processing results requiring ~%0.1f MB of disk space on current drive with only %0.1f MB of free space available.\n', ...
-                                  obj.MemoryRequired('disk')/1e6, getFreeDiskSpace()/1e6);
-            elseif diskspacePercentRemaining < 200
-                msg{1} = sprintf('WARNING: Available disk space on the current drive is low (%0.1f MB). This may cause problems saving processing results in the future.', ...
-                                  getFreeDiskSpace()/1e6);
-                msg{2} = sprintf('Consider moving your data set to a drive with more free space\n');
-            end            
-            if ~isempty(msg)
-                MessageBox([msg{:}]);
-                obj.logger.Write([msg{:}]);
-            end
-        end
-        
-        
-            
+     
         % ----------------------------------------------------------------------------------
         function Save(obj, hwait)
             if ~exist('hwait','var')
@@ -626,20 +615,6 @@ classdef GroupClass < TreeNodeClass
             end            
             
             obj.logger.Write(sprintf('Saving processed data in %s\n', [obj.path, 'groupResults.mat']));
-                       
-            % Check that there is anough disk space 
-            while CheckAvailableDiskSpace(obj, hwait) < 0
-                q = MenuBox('Do you want to save processing results on a different drive?', {'Yes','No'});
-                if q==1
-                    pname = uigetdir(topLevelDir(), 'Please select alternate folder');
-                    if pname == 0
-                        return;
-                    end
-                    obj.pathOutput = pname;
-                else
-                    return
-                end
-            end
             
             if ishandle(hwait)
                 obj.logger.Write(sprintf('Auto-saving processing results ...\n'), obj.logger.ProgressBar(), hwait);

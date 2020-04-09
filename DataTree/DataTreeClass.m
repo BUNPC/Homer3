@@ -322,10 +322,36 @@ classdef DataTreeClass <  handle
             if isempty(obj)
                 return;
             end
-            nbytes = length(obj.groups) * obj.groups(1).MemoryRequired(option);
+            nbytes = length(obj.groups) * obj.currElem.MemoryRequired(option);
         end
         
         
+        % ----------------------------------------------------------------------------------
+        function diskspaceToSpare = CheckAvailableDiskSpace(obj, hwait)
+            if ishandle(hwait)
+                obj.logger.Write(sprintf('Estimating disk space required to save processing results ...\n'), obj.logger.ProgressBar(), hwait);
+            end
+            memRequired = obj.currElem.MemoryRequired('disk');
+            diskspaceToSpare = (getFreeDiskSpace() - memRequired);   % Disk space to spare in megabytes
+            diskspacePercentRemaining = 100 * diskspaceToSpare/memRequired;
+            msg = {};
+            obj.logger.Write(sprintf('CheckAvailableDiskSpace:    disk space available = %0.1f MB,    required disk space estimate = %0.1f MB\n', getFreeDiskSpace()/1e6, memRequired/1e6));
+            if diskspaceToSpare < 0
+                msg{1} = sprintf('ERROR: Cannot save processing results requiring ~%0.1f MB of disk space on current drive with only %0.1f MB of free space available.\n', ...
+                                  memRequired/1e6, getFreeDiskSpace()/1e6);
+            elseif diskspacePercentRemaining < 200
+                msg{1} = sprintf('WARNING: Available disk space on the current drive is low (%0.1f MB). This may cause problems saving processing results in the future.', ...
+                                  getFreeDiskSpace()/1e6);
+                msg{2} = sprintf('Consider moving your data set to a drive with more free space\n');
+            end            
+            if ~isempty(msg)
+                MessageBox([msg{:}]);
+                obj.logger.Write([msg{:}]);
+            end            
+        end
+        
+        
+            
         % ----------------------------------------------------------
         function Save(obj, hwait)
             if ~exist('hwait','var')
@@ -335,6 +361,11 @@ classdef DataTreeClass <  handle
             t_local = tic;
             for ii = 1:length(obj.groups)
                 obj.logger.Write(sprintf('Saving group %d in %s\n', ii, [obj.groups(ii).pathOutput, 'groupResults.mat']));
+                
+                % Check that there is anough disk space
+                if obj.CheckAvailableDiskSpace(hwait) < 0
+                    continue;
+                end
                 obj.groups(ii).Save(hwait);
             end
             obj.logger.Write(sprintf('Completed saving groupResults.mat for all groups in %0.3f seconds.\n', toc(t_local)));

@@ -84,6 +84,7 @@ classdef RunClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function Reset(obj)
             obj.procStream.output = ProcResultClass();
+            obj.RunsProcFlags(obj.iGroup, obj.iSubj, obj.iRun, 0);
         end
         
         
@@ -224,6 +225,9 @@ classdef RunClass < TreeNodeClass
                 fprintf('\n')
             end
             
+            % Mark this run as having processed data thereby taking up
+            % memory
+            obj.RunsProcFlags(obj.iGroup, obj.iSubj, obj.iRun, 1);
         end
 
 

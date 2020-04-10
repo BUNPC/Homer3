@@ -568,8 +568,7 @@ if ~ishandles(hObject)
     return;
 end
 dataTree = maingui.dataTree;
-dataTree.currElem.Reset();
-dataTree.currElem.Save();
+dataTree.ResetCurrElem();
 Display(handles, hObject);
 
 

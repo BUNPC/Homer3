@@ -509,6 +509,19 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function b = IsEmpty(obj)
+            b=0;
+            if obj.HaveTimeCourseOutput()
+                return;
+            end
+            if obj.HaveBlockAvgOutput()
+                return;
+            end
+            b=1;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function n = GetNumChForOneCondition(obj, iBlk)
             n = 0;
             if nargin<2

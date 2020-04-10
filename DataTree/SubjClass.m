@@ -148,11 +148,17 @@ classdef SubjClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         % Deletes derived data in procResult
         % ----------------------------------------------------------------------------------
-        function Reset(obj)
-            obj.procStream.output = ProcResultClass();
-            for jj=1:length(obj.runs)
-                obj.runs(jj).Reset();
+        function Reset(obj, option)
+            if ~exist('option','var')
+                option = 'down';
             end
+            obj.procStream.output = ProcResultClass();
+            if strcmp(option, 'down')
+                for jj=1:length(obj.runs)
+                    obj.runs(jj).Reset();
+                end
+            end
+            obj.SubjsProcFlags(obj.iGroup, obj.iSubj, 0);
         end
         
         
@@ -231,6 +237,11 @@ classdef SubjClass < TreeNodeClass
                 obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
             end
             pause(.5);
+            
+            % Mark this subject as having processed data thereby taking up
+            % memory
+            obj.SubjsProcFlags(obj.iGroup, obj.iSubj, 1);
+            
         end
                 
         
@@ -414,15 +425,6 @@ classdef SubjClass < TreeNodeClass
         end
                 
 
-        % ----------------------------------------------------------------------------------        
-        function nbytes = MemoryRequired(obj, option)
-            if ~exist('option','var')
-                option = 'disk';
-            end
-            nbytes = obj.procStream.MemoryRequired() + length(obj.runs) * obj.runs(1).MemoryRequired(option);
-        end
-
-        
         % ----------------------------------------------------------------------------------        
         function nbytes = MemoryRequiredExact(obj, option)
             if ~exist('option','var')

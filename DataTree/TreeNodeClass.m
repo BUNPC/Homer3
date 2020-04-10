@@ -52,6 +52,7 @@ classdef TreeNodeClass < handle
                 end
             end
             obj.CondColTbl('init');
+                                   
         end
         
     end
@@ -138,8 +139,11 @@ classdef TreeNodeClass < handle
                 obj.iGroup = obj2.iGroup;
                 obj.iSubj = obj2.iSubj;
                 obj.iRun = obj2.iRun;
+            else
+                obj.SetProcFlag()                
             end
         end
+        
         
         % ----------------------------------------------------------------------------------
         % Copy processing params (procInut and procResult) from
@@ -187,14 +191,33 @@ classdef TreeNodeClass < handle
         function SetIndexID(obj, iG, iS, iR)
             if nargin>1
                 obj.iGroup = iG;
+                obj.GroupsProcFlags(iG);
             end            
             if nargin>2
                 obj.iSubj = iS;
+                obj.SubjsProcFlags(iG, iS);
             end
             if nargin>3
                 obj.iRun = iR;
+                obj.RunsProcFlags(iG, iS, iR);
             end
         end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetProcFlag(obj)
+            if obj.procStream.output.IsEmpty()
+                return;
+            end
+            if isa(obj, 'GroupClass')
+                obj.GroupsProcFlags(obj.iGroup, 1);
+            elseif isa(obj, 'SubjClass')
+                obj.SubjsProcFlags(obj.iGroup, obj.iSubj, 1);
+            elseif isa(obj, 'RunClass')
+                obj.RunsProcFlags(obj.iGroup, obj.iSubj, obj.iRun, 1);
+            end
+        end
+        
         
         
         % ----------------------------------------------------------------------------------
@@ -594,12 +617,80 @@ classdef TreeNodeClass < handle
             tblcells = {};
         end
         
+        % ----------------------------------------------------------------------------------
+        function nbytes = MemoryRequired(obj)
+            if isempty(obj)
+                return;
+            end            
+            nbytes = obj.procStream.MemoryRequired();
+        end
+
     end
+
+    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Static class methods implementing static class variables
+    % Static class methods implementing runs, subjs, groups processing 
+    % flags for quickly calculating required memory and color table
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Static)
+                
+        % --------------------------------------------------------------------------------
+        function out = RunsProcFlags(arg1, arg2, arg3, arg4)
+            persistent runs;
+            if nargin==3
+                [iG, iS, iR] = size(runs);
+                if arg1>iG
+                    iG = arg1;
+                end
+                if arg2>iS
+                    iS = arg2;
+                end
+                if arg3>iR
+                    iR = arg3;
+                end
+                runs = zeros(iG, iS, iR);
+            elseif nargin==4
+                runs(arg1, arg2, arg3) = arg4;
+            end
+            out = runs;
+        end
+
+        
+        % --------------------------------------------------------------------------------
+        function out = SubjsProcFlags(arg1, arg2, arg3)
+            persistent subjs;
+            if nargin==2
+                [iG, iS] = size(subjs);
+                if arg1>iG
+                    iG = arg1;
+                end
+                if arg2>iS
+                    iS = arg2;
+                end
+                subjs = zeros(iG, iS);
+            elseif nargin==3
+                subjs(arg1, arg2) = arg3;
+            end
+            out = subjs;
+        end
+
+        
+        % --------------------------------------------------------------------------------
+        function out = GroupsProcFlags(arg1, arg2)
+            persistent groups;
+            if nargin==1
+                iG = size(groups,1);
+                if arg1>iG
+                    iG = arg1;
+                end
+                groups = zeros(1, iG);
+            elseif nargin==2
+                groups(arg1) = arg2;
+            end
+            out = groups;
+        end
+   
                 
         % ----------------------------------------------------------------------------------
         function out = CondColTbl(arg)
@@ -613,7 +704,7 @@ classdef TreeNodeClass < handle
             end
             tbl = distinguishable_colors(20);
         end
-        
+   
     end
     
 end

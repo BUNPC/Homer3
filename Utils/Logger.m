@@ -252,6 +252,9 @@ classdef Logger < handle
 
         % ---------------------------------------------------------------
         function InitChapters(self)
+            if self.fhandle < 0
+                return;
+            end
             self.chapter.offset = ftell(self.fhandle);
             fprintf(self.fhandle, '\nLogger: Chapter %d\n', self.chapter.number);
         end
@@ -259,6 +262,9 @@ classdef Logger < handle
         
         % ---------------------------------------------------------------
         function ResetChapter(self)
+            if self.fhandle < 0
+                return;
+            end
             self.chapter.number = self.chapter.number+1;
             fseek(self.fhandle, self.chapter.offset, 'bof');            
             fprintf(self.fhandle, '\nLogger: Chapter %d\n', self.chapter.number);
@@ -267,6 +273,9 @@ classdef Logger < handle
         
         % ---------------------------------------------------------------
         function CheckFileSize(self)
+            if self.fhandle < 0
+                return;
+            end
             if ftell(self.fhandle) > self.chapter.maxsize
                 self.ResetChapter()
             end

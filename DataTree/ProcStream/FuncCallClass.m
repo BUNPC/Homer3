@@ -216,7 +216,7 @@ classdef FuncCallClass < handle
             if s(1)~='('
                 return;              
             end
-            args = str2cell(s(2:end),',');
+            args = str2cell_fast(s(2:end),',');
             fhelp = FuncHelpClass(obj.name);
             for ii=1:length(args)
                 obj.argIn.vars(ii).name = args{ii};

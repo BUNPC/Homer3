@@ -23,7 +23,7 @@ end
 
 if isstruct(st) || isobject(st)
     s = evalc('disp(st)');
-    c = str2cell(s,10);
+    c = str2cell_fast(s, char(10));
     for ii=1:length(c)
         if option==1
             logger.Write(sprintf('%s%s\n', spaces, strtrim_improve(c{ii})));

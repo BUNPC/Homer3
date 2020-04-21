@@ -1,5 +1,5 @@
 % SYNTAX:
-% [Aaux, tCCAfilter] = hmrR_tCCA(data, aux,  probe, flagtCCA, tCCAparams, tCCAaux_inx, tCCArest_inx, rhoSD_ssThresh, tCCAfilter)
+% [Aaux, tCCAfilter] = hmrR_tCCA(data, aux, probe, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, tCCAfilter)
 % UI NAME:
 % hmrR_tCCA
 %
@@ -45,7 +45,6 @@
 % flagtCCA: 1
 % tCCAparams: [3 2 0.3] 
 % tCCAaux_inx: [1 2 3 4 5 6 7 8]
-% tCCArest_inx: 1
 % rhoSD_ssThresh: 15.0
 % tCCAfilter: []
 

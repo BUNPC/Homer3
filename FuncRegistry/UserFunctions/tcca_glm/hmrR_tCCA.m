@@ -106,11 +106,11 @@ if flagtCCA
         dod = hmrR_BandpassFilt(dod, fq, 0, 0.5);
         dc = hmrR_OD2Conc(dod, SD, [6 6]);
         foo = [squeeze(dc(:,1,:)),squeeze(dc(:,2,:))];    % resize conc to match the size of d, HbO first half, HbR second half
-        d_long = [foo(:,lstLS), foo(:,lstLS+size(d_rest,2)/2)]; % first half HbO; second half HbR
-        d_short = [foo(:,lstSS), foo(:,lstSS+size(d_rest,2)/2)];   
+        d_long = [foo(:,lstLS), foo(:,lstLS+size(d,2)/2)]; % first half HbO; second half HbR
+        d_short = [foo(:,lstSS), foo(:,lstSS+size(d,2)/2)];   
     else % get d_long and short(and active)
-        d_long = [d_resdt(:,lstLS), d_rest(:,lstLS+size(d_rest,2)/2)]; % first half 690 nm; second half 830 nm
-        d_short = [d_rest(:,lstLS), d_rest(:,lstLS+size(d_rest,2)/2)];
+        d_long = [d(:,lstLS), d(:,lstLS+size(d,2)/2)]; % first half 690 nm; second half 830 nm
+        d_short = [d(:,lstSS), d(:,lstSS+size(d,2)/2)];
     end
     
     %% Select and prepare aux channels

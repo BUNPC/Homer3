@@ -64,7 +64,6 @@ flag_conc = true; % if 1 CCA inputs are in conc, if 0 CCA inputs are in intensit
 % tCCA parameters
 param.tau = tCCAparams(2); %stepsize for embedding in samples (tune to sample frequency!)
 timelag = tCCAparams(1);
-param.NumOfEmb = ceil(timelag*fq / sts);
 param.ct = 0;   % correlation threshold for rtcca function, set here to 0 (will be applied later)
 % correlation used outside of the rtcc function
 ctr = tCCAparams(3);
@@ -131,6 +130,10 @@ if flagtCCA
     
         %% Perform CCA on training data
         X = d_long;
+        
+        %%
+        param.NumOfEmb = ceil(timelag*fq / sts);
+
         %% tCCA with shrinkage
         [REG,  ADD] = rtcca(X,AUX,param,flags);
         %% save and output tCCA filter. 

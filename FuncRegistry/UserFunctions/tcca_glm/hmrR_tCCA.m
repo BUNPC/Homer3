@@ -1,5 +1,5 @@
 % SYNTAX:
-% [Aaux] = hmrR_tCCA(data, aux,  probe, yRuns, flagtCCA, tCCAparams, tCCAaux_inx, tCCArest_inx, rhoSD_ssThresh)
+% [Aaux, tCCAfilter] = hmrR_tCCA(data, aux,  probe, flagtCCA, tCCAparams, tCCAaux_inx, tCCArest_inx, rhoSD_ssThresh, tCCAfilter)
 % UI NAME:
 % hmrR_tCCA
 %
@@ -19,14 +19,12 @@
 % data - this is the concentration data with dimensions #time points x [HbO/HbR/HbT] x #channels
 % aux - this is the auxilliary measurements (# time points x #Aux channels)
 % probe - source detector stucture (units should be consistent with rhoSD_ssThresh)
-% yRuns - T O   B E   D E S C R I B E D /// y conc for all runs in the session
 % flagtCCA - turns the function on / off
 % tCCAparams - These are the parameters for tCCA function 
 %            1 - timelag
 %            2 - sts: step size
 %            3 - ctr: if <1  correlation threshold, if =>1 number of regressors
 % tCCAaux_inx -  Indices of the aux channels to be used to generate regressors
-% tCCArest_inx - The order of resting run in the session folder.
 % rhoSD_ssThresh - max distance for a short separation measurement. Set =0
 %          if you do not want to regress the short separation measurements.
 %          Follows the static estimate procedure described in Gagnon et al (2011).
@@ -34,10 +32,13 @@
 %
 % OUTPUTS:
 % Aaux - A matrix of auxilliary regressors (#time points x #Aux channels)
+% tCCAfilter - the filter matrix that is learned from resting state data.
+%           Will be freshly trained if input variable with same name is
+%           empty, otherwise applied and looped through.
 %
 %
 % USAGE OPTIONS:
-% [Aaux] = hmrR_tCCA(data, aux,  probe, yRuns, flagtCCA, tCCAparams, tCCAaux_inx, tCCArest_inx, rhoSD_ssThresh)
+% [Aaux, tCCAfilter] = hmrR_tCCA(data, aux, probe, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, tCCAfilter)
 %
 %
 % PARAMETERS:
@@ -46,38 +47,33 @@
 % tCCAaux_inx: [1 2 3 4 5 6 7 8]
 % tCCArest_inx: 1
 % rhoSD_ssThresh: 15.0
+% tCCAfilter: []
 
 %% COMMENTS/THOUGHTS/QUESTIONS ALEX
-% 1) I think we can remove the original perf_temp_emb_cca.m function (done)
 % 2) Output canonical correlation coefficients as quality metric? 
 % 3) Output fNIRS signal(s)/Aux regressors for visualization/quality control?
 % 4) Add single channel (regressor) feature - flag - how do we provide the individual outputs?
-% 5) Implement the variable low/bandpass filter coefficients from previous processing stream
-% Q1) why the flagtCCA?
+% 5) Implement the variable low/bandpass filter coefficients from previous processing stream !!!
 %%
 
-function [Aaux] = hmrR_tCCA(data, aux,  probe, yRuns, flagtCCA, tCCAparams, tCCAaux_inx, tCCArest_inx, rhoSD_ssThresh)
-%% flags
+function [Aaux, tCCAfilter] = hmrR_tCCA(data, aux, probe, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, tCCAfilter)
+
+%% flags and tCCA settings
 flags.pcaf =  [0 0]; % no pca of X or AUX
-flags.shrink = true;
-% perform regularized (rtcca) (alternatively old approach)
-rtccaflag = true;
+flags.shrink = true; % perform shrinkage in the CCA
 flag_conc = true; % if 1 CCA inputs are in conc, if 0 CCA inputs are in intensity
-
-%% extract user input
+% tCCA parameters
+param.tau = tCCAparams(2); %stepsize for embedding in samples (tune to sample frequency!)
 timelag = tCCAparams(1);
-sts = tCCAparams(2); % step size
+param.NumOfEmb = ceil(timelag*fq / sts);
+param.ct = 0;   % correlation threshold for rtcca function, set here to 0 (will be applied later)
+% correlation used outside of the rtcc function
 ctr = tCCAparams(3);
-
-%% resting run
-filename = XXXXXXXXX (from tCCArestinx and yRuns)
-d_rest = XXXXXXXXXXX
-AUX_rest = XXXXXXX
-
 
 if flagtCCA
     
-    %% current run\
+    %% prepare data
+    % current run\
     for iBlk=1:length(data)
         snirf = SnirfClass(data,stim,aux);
         AUX = snirf.GetAuxiliary();  % CHECK THIS ONE!
@@ -107,89 +103,73 @@ if flagtCCA
     
     %% get long and short channels
     if flag_conc % get short(and active) now in conc
-        
-        % resting
-        dod = hmrR_Intensity2OD(d_rest);
+        dod = hmrR_Intensity2OD(d);
         dod = hmrR_BandpassFilt(dod, fq, 0, 0.5);
         dc = hmrR_OD2Conc(dod, SD, [6 6]);
         foo = [squeeze(dc(:,1,:)),squeeze(dc(:,2,:))];    % resize conc to match the size of d, HbO first half, HbR second half
-        d_long_rest = [foo(:,lstLS), foo(:,lstLS+size(d_rest,2)/2)]; % first half HbO; second half HbR
-        d_short_rest = [foo(:,lstSS), foo(:,lstSS+size(d_rest,2)/2)];
-        
-        % current run
-        foo = [squeeze(d(:,1,:)),squeeze(d(:,2,:))]; % resize conc to match the size of d, HbO first half, HbR second half
-        d_short = [foo(:,lstSS), foo(:,lstSS+size(d,2)/2)]; % first half HbO; second half HbR
-        
+        d_long = [foo(:,lstLS), foo(:,lstLS+size(d_rest,2)/2)]; % first half HbO; second half HbR
+        d_short = [foo(:,lstSS), foo(:,lstSS+size(d_rest,2)/2)];   
     else % get d_long and short(and active)
-        
-        % resting
-        d_long_rest = [d_rest(:,lstLS), d_rest(:,lstLS+size(d_rest,2)/2)]; % first half 690 nm; second half 830 nm
-        d_short_rest = [d_rest(:,lstLS), d_rest(:,lstLS+size(d_rest,2)/2)];
-        
-        % current run
-        d_short = [d(:,lstLS), d(:,lstLS+size(d,2)/2)]; %!!
+        d_long = [d_resdt(:,lstLS), d_rest(:,lstLS+size(d_rest,2)/2)]; % first half 690 nm; second half 830 nm
+        d_short = [d_rest(:,lstLS), d_rest(:,lstLS+size(d_rest,2)/2)];
     end
     
-    % Use only the selected aux channels
-    AUX_rest = AUX_rest(:,tCCAaux_inx);
+    %% Select and prepare aux channels
+    % only selected signals
     AUX = AUX(:,tCCAaux_inx);
-    
-    %% lowpass filter AUX signals
-    AUX_rest = hmrR_BandpassFilt(AUX_rest, fq, 0, 0.5);
+    % lowpass filter AUX signals
     AUX = hmrR_BandpassFilt(AUX, fq, 0, 0.5);
-    
-    %% AUX signals + add ss signal if it exists
-    if ~isempty(d_short_rest)
-        AUX_rest = [AUX_rest, d_short_rest]; % EG: AUX = [acc1 acc2 acc3 PPG BP RESP, d_short];
+    % AUX signals + add ss signal if it exists
+    if ~isempty(d_short)
         AUX = [AUX, d_short]; % this should be of the current run
     end
-    
-    %% zscore AUX signals
-    AUX_rest = zscore(AUX_rest);
+    % zscore AUX signals
     AUX = zscore(AUX);
     
-    %% set stepsize for CCA
-    param.tau = sts; %stepwidth for embedding in samples (tune to sample frequency!)
-    param.NumOfEmb = ceil(timelag*fq / sts);
+    %% DO THE TCCA WORK
+    if isempty(tCCAfilter)
+        %% if the tCCAfilter variable is empty, learn and put it out (this is the training/resting run)
     
-    %% Temporal embedding of auxiliary data from testing run (current run)
-    aux_sigs = AUX;
-    aux_emb = aux_sigs;
-    for i=1:param.NumOfEmb
-        aux = circshift(aux_sigs, i*param.tau, 1);
-        aux(1:2*i,:) = repmat(aux(2*i+1,:),2*i,1);
-        aux_emb = [aux_emb aux];
+        %% Perform CCA on training data
+        X = d_long;
+        %% tCCA with shrinkage
+        [REG,  ADD] = rtcca(X,AUX,param,flags);
+        %% save and output tCCA filter. 
+        %reduce filter matrix with the help of correlation threshold or max number of regressors
+        if ctr < 1
+            % use only auxiliary tcca components that have correlation > ct
+            compindex=find(ADD_trn.ccac>param.ct);
+        else
+            % use only the first ctr auxiliary tcca components (fixed number of
+            % regressors = ctr)
+            if numel(ADD_trn.ccac) >= ctr
+                compindex = 1:ctr;
+            else % not as many components available as regressors requested, provide all
+                compindex = 1:numel(ADD_trn.ccac);
+            end
+            
+        end
+        % return the reduced number of available regressors 
+        Aaux = REG(:,compindex);
+        % return reduced mapping matrix Av, this is the tCCA filter
+        tCCAfilter = ADD.Av(:,compindex);
+   
+    else
+        %% if the tCCAfilter variable exists, apply the filtering and generate the tCCA regressors
+        % Temporal embedding and zscoring of auxiliary data
+        aux_sigs = AUX;
+        aux_emb = aux_sigs;
+        for i=1:param.NumOfEmb
+            aux = circshift(aux_sigs, i*param.tau, 1);
+            aux(1:2*i,:) = repmat(aux(2*i+1,:),2*i,1);
+            aux_emb = [aux_emb aux];
+        end
+        %zscore
+        aux_emb = zscore(aux_emb);
+        % Apply tCCA filter (generate regressors)
+        Aaux = aux_emb * tCCAfilter;
     end
-    
-    %zscore
-    aux_emb = zscore(aux_emb);
-    
-    %% set correlation trheshold for CCA to 0 so we dont lose anything here
-    param.ct = 0;   % correlation threshold
-    
-    %% Perform CCA on training data
-    X = d_long_rest;
-    %% tCCA with shrinkage
-    [REG_trn,  ADD_trn] = rtcca(X,AUX,param,flags);
-
-    
-    
-    %% now use correlation threshold for CCA outside of function to avoid redundant CCA recalculation
-    % overwrite: auxiliary cca components that have
-    % correlation > ctr
-    if ctr < 1  % if corr
-        compindex = find(ADD_trn{tt}.ccac>ctr);
-    else        % # of regressors
-        compindex = 1:ctr;
-    end
-    
-    %overwrite: reduced mapping matrix Av
-    ADD_trn.Av_red = ADD_trn.Av(:,compindex);
-    
-    %% Calculate testing regressors with CCA mapping matrix A from testing
-    REG_tst = aux_emb*ADD_trn.Av_red;
-    
-    Aaux = REG_tst;
 else
     Aaux = [];
+    % tCCAfilter = []; if uncommented, retraining necessary whenever tcca is temporarily flagged out of processing stream
 end

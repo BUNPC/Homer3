@@ -33,19 +33,15 @@
 %          if you do not want to regress the short separation measurements.
 %          Follows the static estimate procedure described in Gagnon et al (2011).
 %          NeuroImage, 56(3), 1362?1371.
-% tCCAfilter - filter matrix that was learned from resting state data.
-%           Will be freshly trained if input was empty. If flagICRegressors = 1, 
-%           then each column corresponds to an indiviudal channel
-%           regressor. Otherwise, columns correspond to common regressors
-%           for all channels in descending order ranked by canonical correlation coefficient
+% tCCAfilter - cell array of the filter matrix/matrices that was/were learned from resting state data.
+%           Will be freshly trained if input is empty. If flagICRegressors = 1, 
+%           then the dimension of the cell array is (1 x #fNIRS channels), otherwise (1x1).
 %
 % OUTPUTS:
 % Aaux - A matrix of auxilliary regressors (#time points x #Aux regressors)
 % tCCAfilter - filter matrix that was learned from resting state data.
 %           Will be freshly trained if input was empty. If flagICRegressors = 1, 
-%           then each column corresponds to an indiviudal channel
-%           regressor. Otherwise, columns correspond to common regressors
-%           for all channels in descending order ranked by canonical correlation coefficient
+%           then each regressor 
 % rcMap - An array of cells (1 x #fNIRS channels) containing
 %           aux regressor indices for individual regressor-channel mapping. 
 %           Only relevant when flagICRegressors = 1, otherwise rcMap is empty.

@@ -6,7 +6,7 @@
 % DESCRIPTION:
 % This script generates regressors using the regularized temporally embedded
 % Canonical Correlation Anlaysis described in detail in von Lühmann, NI,
-% 2020. Generated Aaux is to be passed as an input to GLM function.
+% 2020. Generated Aaux and rcMap are to be passed as an input to GLM function.
 % Reference code:  https://github.com/avolu/tCCA-GLM
 %
 % If you apply this method or want to learn more about it, please use the following

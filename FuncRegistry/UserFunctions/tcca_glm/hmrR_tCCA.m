@@ -96,7 +96,12 @@ if flagtCCA
         t = data_y(iBlk).GetTime();
         fq = 1/(t(2)-t(1));
         ml = data_y(iBlk).GetMeasListSrcDetPairs();
+        if isempty(mlActAuto{iBlk})
+            mlActAuto{iBlk} = ones(size(ml,1),1);
+        end
+        mlAct = mlActAuto{iBlk};
     end
+
     
     %% find the list of short and long distance channels
     lst = 1:size(ml,1);

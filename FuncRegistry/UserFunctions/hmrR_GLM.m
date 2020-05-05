@@ -1,5 +1,5 @@
 % SYNTAX:
-% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] = hmrR_GLM(data, stim, probe, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] = hmrR_GLM(data, stim, probe, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, flagMotionCorrect, rcMap )
 %
 % UI NAME:
 % GLM_HRF_Drift_SS
@@ -57,13 +57,18 @@
 %          if you do not want to regress the short separation measurements.
 %          Follows the static estimate procedure described in Gagnon et al (2011).
 %          NeuroImage, 56(3), 1362?1371.
-% flagSSmethod - 0 if short separation regression is performed with the nearest
+% flagNuisanceRMethod - 0 if short separation regression is performed with the nearest
 %               short separation channel.
 %            1 if performed with the short separation channel with the
 %               greatest correlation.
 %            2 if performed with average of all short separation channels.
+%            3 uses tCCA regressors for nuisance regression, in Aaux,
+%            mapped by rcMap, provided by hmr_tCCA()
 % driftOrder - Polynomial drift correction of this order
 % flagMotionCorrect - set to 1 to baseline correct between motion epochs indicated in tIncAuto, otherwise set to 0
+% rcMap - An array of cells (1 x #fNIRS channels) containing aux regressor 
+%           indices for individual regressor-channel mapping. Currently
+%           only relevant when flagNuisanceRMethod = 3 (tCCA regressors).
 %
 %
 % OUTPUTS:
@@ -82,7 +87,7 @@
 %
 %
 % USAGE OPTIONS:
-% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, flagMotionCorrect, rcMap )
 %
 %
 % PARAMETERS:
@@ -91,13 +96,14 @@
 % idxBasis: 2
 % paramsBasis: [0.1 3.0 10.0 1.8 3.0 10.0], maxnum: 6
 % rhoSD_ssThresh: 15.0
-% flagSSmethod: 1
+% flagNuisanceRMethod: 1
 % driftOrder: 3
 % flagMotionCorrect: 0
+% rcMap: []
 %
 %
 function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks] = ...
-    hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagSSmethod, driftOrder, flagMotionCorrect )
+    hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, flagMotionCorrect, rcMap )
 
 % Init output
 data_yavg     = DataClass().empty();
@@ -170,46 +176,50 @@ for iBlk=1:length(data_y)
     end
     lstSS = lst(find(rhoSD<=rhoSD_ssThresh & mlAct(lst)==1));
     
-    if isempty(lstSS)
-        fprintf('There are no short separation channels in this probe...performing regular deconvolution.\n');
+    if isempty(lstSS) || (isempty(rcMap) && isempty(Aaux) && flagNuisanceRMethod == 3)
+        fprintf('There are no short separation channels in this probe ...performing regular deconvolution.\n');
         mlSSlst = 0;
     else
-        if flagSSmethod==0  % use nearest SS
-            for iML = 1:length(lst)
-                rho = sum((ones(length(lstSS),1)*posM(iML,:) - posM(lstSS,:)).^2,2).^0.5;
-                [foo,ii] = min(rho);
-                iNearestSS(iML) = lstSS(ii);
-            end
-            mlSSlst = unique(iNearestSS);
-            
-        elseif flagSSmethod==1 % use SS with highest correlation
-                       
-            % HbO
-            dc = squeeze(y(:,1,:));
-            dc = (dc-ones(length(dc),1)*mean(dc,1))./(ones(length(dc),1)*std(dc,[],1));
-            cc(:,:,1) = dc'*dc / length(dc);
-            
-            % HbR
-            dc = squeeze(y(:,2,:));
-            dc = (dc-ones(length(dc),1)*mean(dc,1))./(ones(length(dc),1)*std(dc,[],1));
-            cc(:,:,2) = dc'*dc / length(dc);
-            
-            clear dc
-            
-            % find short separation channel with highest correlation
-            for iML = 1:size(cc,1)
+        switch flagNuisanceRMethod
+            case 0  % use nearest SS
+                for iML = 1:length(lst)
+                    rho = sum((ones(length(lstSS),1)*posM(iML,:) - posM(lstSS,:)).^2,2).^0.5;
+                    [foo,ii] = min(rho);
+                    iNearestSS(iML) = lstSS(ii);
+                end
+                mlSSlst = unique(iNearestSS);       
+            case 1 % use SS with highest correlation    
                 % HbO
-                [foo,ii] = max(cc(iML,lstSS,1));
-                iNearestSS(iML,1) = lstSS(ii);
+                dc = squeeze(y(:,1,:));
+                dc = (dc-ones(length(dc),1)*mean(dc,1))./(ones(length(dc),1)*std(dc,[],1));
+                cc(:,:,1) = dc'*dc / length(dc);
+                
                 % HbR
-                [foo,ii] = max(cc(iML,lstSS,2));
-                iNearestSS(iML,2) = lstSS(ii);
-            end
-            
-        elseif flagSSmethod==2 % use average of all active SS as regressor
-            mlSSlst = 1;
+                dc = squeeze(y(:,2,:));
+                dc = (dc-ones(length(dc),1)*mean(dc,1))./(ones(length(dc),1)*std(dc,[],1));
+                cc(:,:,2) = dc'*dc / length(dc);
+                
+                clear dc           
+                % find short separation channel with highest correlation
+                for iML = 1:size(cc,1)
+                    % HbO
+                    [foo,ii] = max(cc(iML,lstSS,1));
+                    iNearestSS(iML,1) = lstSS(ii);
+                    % HbR
+                    [foo,ii] = max(cc(iML,lstSS,2));
+                    iNearestSS(iML,2) = lstSS(ii);
+                end 
+            case 2 % use average of all active SS as regressor
+                mlSSlst = 1;
+            case 3 % use tCCA regressors and channel map from hmrR_tCCA()
+                if isempty(rcMap) % use all regressors for all channels (only one group)
+                    mlSSlst = 1;
+                else % use channel regressor map
+                    mlSSlst = 1:size(rcMap,2); 
+                end
+
+                
         end
-        
     end
     
     %%%%%%%%%%%%%%%%
@@ -365,6 +375,9 @@ for iBlk=1:length(data_y)
     % Expand design matrix with Aaux
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     nAux = size(Aaux,2);
+    if flagNuisanceRMethod == 3
+        nAux = 0;
+    end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Expand design matrix for Motion Correction
@@ -393,8 +406,15 @@ for iBlk=1:length(data_y)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Final design matrix
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    for iConc=1:2
-        A(:,:,iConc)=[dA(:,:,iConc) xDrift Aaux Amotion];
+    switch flagNuisanceRMethod
+        case {1,2,3} % short separation
+            for iConc=1:2
+                A(:,:,iConc)=[dA(:,:,iConc) xDrift Aaux Amotion];
+            end
+        case 4 % tCCA regressor design matrix without Aaux (will be put in in the loop below)
+            for iConc=1:2
+                A(:,:,iConc)=[dA(:,:,iConc) xDrift Amotion];
+            end
     end
     
     nCh = size(y,3);
@@ -434,11 +454,11 @@ for iBlk=1:length(data_y)
     foo     = zeros(nB*nCond+driftOrder+1+nAux+nMC,nCh,2); % 4 extra for 3rd order drift + nAux
     for conc=1:2 %only HbO and HbR
         
-        if flagSSmethod==1 & ~isempty(lstSS) %rhoSD_ssThresh>0
+        if flagNuisanceRMethod==1 & ~isempty(lstSS) %rhoSD_ssThresh>0
             mlSSlst = unique(iNearestSS(:,conc));
         end
         
-        % loop over short separation groups
+        % loop over short separation / nuisance regressor groups
         for iSS = 1:length(mlSSlst)
             
             lstMLtmp = 1:size(ml,1);
@@ -446,21 +466,30 @@ for iBlk=1:length(data_y)
                 lstML = lstMLtmp(find(mlAct(lstMLtmp)==1));
                 % lstML = 1:size(y,3);
                 At = A(:,:,conc);
-            elseif flagSSmethod==0
+            elseif flagNuisanceRMethod==0
                 lstML = find(iNearestSS(:)==mlSSlst(iSS) & mlAct(lstMLtmp)==1);
                 % lstML = find(iNearestSS==mlSSlst(iSS));
                 Ass = y(:,conc,mlSSlst(iSS));
                 At = [A(:,:,conc) Ass];
-            elseif flagSSmethod==1
+            elseif flagNuisanceRMethod==1
                 lstML = find(iNearestSS(:,conc)==mlSSlst(iSS) & mlAct(lstMLtmp)==1);
                 % lstML = find(iNearestSS(:,conc)==mlSSlst(iSS));
                 Ass = y(:,conc,mlSSlst(iSS));
                 At = [A(:,:,conc) Ass];
-            elseif flagSSmethod==2
+            elseif flagNuisanceRMethod==2
                 lstML = lstMLtmp(find(mlAct(lstMLtmp)==1));
                 % lstML = 1:size(y,3);
                 Ass = mean(y(:,conc,lstSS),3);
                 At = [A(:,:,conc) Ass];
+            elseif flagNuisanceRMethod==3
+                if isempty(rcMap) % no channel map: use all tCCA regressors for one group of all channels
+                    lstML = lstMLtmp(find(mlAct(lstMLtmp)==1));
+                    At = [A(:,:,conc) Aaux]; 
+                else % channel map: each single regressor corresponds to one channel (nCH groups)
+                    lstML = lstMLtmp(find(mlAct(rcMap{conc,iSS})==1));
+                    Atcca = Aaux(:,rcMap{conc,iSS});
+                    At = [A(:,:,conc) Atcca];
+                end
             end
             
             if ~isempty(lstML)

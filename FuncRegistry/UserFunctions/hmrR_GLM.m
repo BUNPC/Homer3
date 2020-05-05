@@ -99,7 +99,7 @@
 % flagNuisanceRMethod: 1
 % driftOrder: 3
 % flagMotionCorrect: 0
-% rcMap: []
+% rcMap: 'all'
 %
 %
 function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks] = ...
@@ -176,7 +176,7 @@ for iBlk=1:length(data_y)
     end
     lstSS = lst(find(rhoSD<=rhoSD_ssThresh & mlAct(lst)==1));
     
-    if isempty(lstSS) || (isempty(rcMap) && isempty(Aaux) && flagNuisanceRMethod == 3)
+    if isempty(lstSS) || (isempty(Aaux) && flagNuisanceRMethod == 3)
         fprintf('There are no short separation channels in this probe ...performing regular deconvolution.\n');
         mlSSlst = 0;
     else
@@ -212,9 +212,9 @@ for iBlk=1:length(data_y)
             case 2 % use average of all active SS as regressor
                 mlSSlst = 1;
             case 3 % use tCCA regressors and channel map from hmrR_tCCA()
-                if isempty(rcMap) % use all regressors for all channels (only one group)
+                if ischar(rcMap) % use all regressors for all channels (only one group)
                     mlSSlst = 1;
-                else % use channel regressor map
+                elseif iscell(rcMap) % use channel regressor map
                     mlSSlst = 1:size(rcMap,2); 
                 end
 
@@ -407,11 +407,11 @@ for iBlk=1:length(data_y)
     % Final design matrix
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     switch flagNuisanceRMethod
-        case {1,2,3} % short separation
+        case {0,1,2} % short separation
             for iConc=1:2
                 A(:,:,iConc)=[dA(:,:,iConc) xDrift Aaux Amotion];
             end
-        case 4 % tCCA regressor design matrix without Aaux (will be put in in the loop below)
+        case 3 % tCCA regressor design matrix without Aaux (will be put in in the loop below)
             for iConc=1:2
                 A(:,:,iConc)=[dA(:,:,iConc) xDrift Amotion];
             end
@@ -482,10 +482,10 @@ for iBlk=1:length(data_y)
                 Ass = mean(y(:,conc,lstSS),3);
                 At = [A(:,:,conc) Ass];
             elseif flagNuisanceRMethod==3
-                if isempty(rcMap) % no channel map: use all tCCA regressors for one group of all channels
+                if ischar(rcMap) % no channel map: use all tCCA regressors for one group of all channels
                     lstML = lstMLtmp(find(mlAct(lstMLtmp)==1));
                     At = [A(:,:,conc) Aaux]; 
-                else % channel map: each single regressor corresponds to one channel (nCH groups)
+                elseif iscell(rcMap) % channel map: each single regressor corresponds to one channel (nCH groups)
                     lstML = lstMLtmp(find(mlAct(rcMap{conc,iSS})==1));
                     Atcca = Aaux(:,rcMap{conc,iSS});
                     At = [A(:,:,conc) Atcca];

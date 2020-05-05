@@ -193,7 +193,7 @@ if flagtCCA
                 % return reduced mapping matrix Av, this is the tCCA filter
                 tCCAfilter = ADD.Av(:,compindex);
                 % set channel-regressor map to empty (GLM will use all available regressors for all channels)
-                rcMap = 'all';
+                rcMap = [];
             end
             %% save tCCAfilter matrix that was learned from resting state data.
             save('tCCAfilter', 'tCCAFilter');
@@ -223,7 +223,7 @@ if flagtCCA
                 % reshape (HbO first row, HbR second row)
                 rcMap = reshape(rcMap,[2,numel(rcMap)/2]);
             else
-                rcMap = 'all';
+                rcMap = [];
             end
         case 'skip'
             Aaux = [];

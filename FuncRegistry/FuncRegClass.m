@@ -124,6 +124,8 @@ classdef FuncRegClass < matlab.mixin.Copyable
                 idx = length(obj.entries)+1;
                 obj.entries(idx) = FuncRegEntryClass(tmp);
                 obj.userfuncfiles{idx} = [obj.userfuncdir{1}, funcname];
+            else
+                fprintf('  Discarding %s. Function is not valid registry entry.\n', tmp.name)
             end
         end
         
@@ -135,7 +137,6 @@ classdef FuncRegClass < matlab.mixin.Copyable
             idx = obj.GetIdx(funcname);
             obj.entries(idx) = FuncRegEntryClass(funcname);
         end
-        
         
         
         

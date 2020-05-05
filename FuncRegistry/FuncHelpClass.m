@@ -239,14 +239,13 @@ classdef FuncHelpClass < matlab.mixin.Copyable
             if isempty(subsections)
                 return;
             end
-            if param > length(subsections)
-                return;
-            end
             
             % if the input is a number index into the inputs arrays, then we
             % don't need to seach for the param name
             if iswholenum(param)
-                str = subsections(param).str;
+                if param <= length(subsections)
+                    str = subsections(param).str;
+                end
                 return;
             end
             

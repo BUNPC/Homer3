@@ -517,15 +517,19 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                 return;
             end
             if isempty(obj.name)
+                fprintf('Function name not valid.\n')
                 return
             end
             if isempty(obj.uiname)
+                fprintf('UI NAME section not valid.\n')
                 return
             end
             if isempty(obj.usageoptions)
+                fprintf('USAGE OPTIONS section not valid.\n')
                 return
             end
             if isempty(obj.help)
+                fprintf('Function help section not valid.\n')
                 return
             end
             b = true;

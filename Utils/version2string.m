@@ -8,10 +8,6 @@ if ischar(V)
     verstr = V;
     return
 end
-if length(V)==1
-    verstr = [V{:},'.0'];
-    return;
-end
     
 for ii=length(V):-1:1
     if ~ischar(V{ii})
@@ -20,7 +16,7 @@ for ii=length(V):-1:1
     if ~isnumber(V{ii})
         return;
     end
-    if ~strcmp(V{ii},'0') || ii<3
+    if ii<4
         break;
     end
 end

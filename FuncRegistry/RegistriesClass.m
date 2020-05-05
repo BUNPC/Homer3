@@ -15,11 +15,16 @@ classdef RegistriesClass < handle
         % ----------------------------------------------------------------
         function obj = RegistriesClass(mode)
             %
+            % Syntax:
+            %   reg = RegistriesClass();
+            %   reg = RegistriesClass('normal');
+            %   reg = RegistriesClass('empty');
+            %   reg = RegistriesClass('reload');
+            %
             % Class containing an array of registries named 'group', 
             % 'subj', and 'run'
             %
             %
-
             % Added mode argument to allow 'empty' option to avoid loading 
             % registry but make the methods AND config options available. 
             % This is useful for deleting saved Registry.mat when unit testing.
@@ -44,6 +49,7 @@ classdef RegistriesClass < handle
             end
             
             % Check if saved registry exists. If so load that and exit
+            if ~strcmp(mode, 'reload')
             if exist([obj.userfuncdir{1}, 'Registry.mat'], 'file')
                 obj.filename = [obj.userfuncdir{1}, 'Registry.mat'];
                 r = load(obj.filename, 'reg');
@@ -52,12 +58,12 @@ classdef RegistriesClass < handle
                     return;
                 end
             end
+            end
 
             obj.Load();
             
             % Save registry for next time
             obj.Save();
-            
         end
         
         

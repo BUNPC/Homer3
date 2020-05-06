@@ -61,12 +61,11 @@ classdef Logger < handle
             end
             self.options.value = options;
             
-            self.DEBUG = 0;
-            
+            self.DEBUG = 0;            
             self.chapter = struct('maxsize',1e6, 'offset',0, 'number',1);
         end
         
-        
+               
         % -------------------------------------------------
         function val = Filter(self, options)
             % Value of options arg overrides inetrnal options setting
@@ -190,8 +189,14 @@ classdef Logger < handle
         
         
         % -------------------------------------------------
-        function Close(self)
+        function Close(self, appname)
+            if ~exist('appname','var') || isempty(appname)
+                appname = self.appname;
+            end            
             if self.fhandle < 0
+                return;
+            end            
+            if ~strcmp(self.appname, appname);
                 return;
             end
             fclose(self.fhandle);

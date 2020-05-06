@@ -10,7 +10,6 @@ function Homer3(groupDirs, inputFileFormat)
 %
 
 global logger
-
 logger = Logger('Homer3');
 
 logger.CurrTime();
@@ -38,5 +37,13 @@ if isempty(gdir)
         groupDirs = {[getAppDir(), 'SubjDataSample']};
     end
 end
-MainGUI(groupDirs, inputFileFormat, 'userargs');
+
+try
+    MainGUI(groupDirs, inputFileFormat, logger, 'userargs');
+catch ME
+    % Clean up in case of error make sure all open file handles are closed 
+    % so we don't leave the application in a bad state
+    logger.Close()
+    rethrow(ME)
+end
 

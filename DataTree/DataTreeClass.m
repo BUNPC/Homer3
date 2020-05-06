@@ -23,7 +23,7 @@ classdef DataTreeClass <  handle
             obj.reg           = RegistriesClass().empty();
             obj.config        = ConfigFileClass().empty();
             obj.dirnameGroup  = '';
-            obj.logger        = InitLogger(logger);
+            obj.logger        = InitLogger(logger, 'DataTree');
             
             
             %%%% Parse args
@@ -73,7 +73,7 @@ classdef DataTreeClass <  handle
         % --------------------------------------------------------------
         function delete(obj)
             if isa(obj.logger, 'Logger')
-                obj.logger.Close();
+                obj.logger.Close('DataTree');
             end
         end
 

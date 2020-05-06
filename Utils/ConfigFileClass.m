@@ -37,18 +37,24 @@ classdef ConfigFileClass < FileClass
                     end
                 end
             end
-            obj.fid = fopen(filename,'r');
+            obj.fid = fopen(filename,'rt');
             if obj.fid<0
                 return;
             end
 
-            % We have a filename of an exiting readdable file. 
-            obj.filename = filesepStandard(filename);
-            obj.ParseFile();
-
+            % We have a filename of an existing readable file.
+            try 
+                obj.filename = filesepStandard(filename);
+                obj.ParseFile();
+            catch ME
+                % In case of parsing error make sure to close file handle 
+                % so we don't leave the application in a bad state, then rethrow error
+                fclose(obj.fid);
+	            rethrow(ME)
+            end
             fclose(obj.fid);
             obj.fid = -1;
-            obj.linestr = '';            
+            obj.linestr = '';
         end
         
         

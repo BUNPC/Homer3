@@ -117,7 +117,7 @@ end
 if ~iscell(maingui.groupDirs)
     maingui.groupDirs = {maingui.groupDirs};
 end
-maingui.logger = InitLogger(logger);
+maingui.logger = InitLogger(logger, 'MainGUI');
 
 for ii=1:length(maingui.groupDirs)
     maingui.logger.CurrTime(sprintf('MainGUI:  Will load group folder #%d - %s\n', ii, maingui.groupDirs{ii}));
@@ -197,7 +197,7 @@ if isempty(maingui.dataTree)
     return;
 end
 if ~isempty(maingui.logger)
-    maingui.logger.Close();
+    maingui.logger.Close('MainGUI');
 end
 
 % Delete Child GUIs before deleted the dataTree that all GUIs use.
@@ -207,6 +207,7 @@ end
 delete(maingui.dataTree);
 maingui = [];
 clear maingui;
+
 
 
 % --------------------------------------------------------------------------------------------

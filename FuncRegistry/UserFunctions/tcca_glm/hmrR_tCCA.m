@@ -82,7 +82,7 @@ if flagtCCA
     for iBlk=1:length(data)
         snirf = SnirfClass(data,stim,aux);
         AUX = snirf.GetAuxiliary();  % CHECK THIS ONE!
-        d = snirf.GetDataMatrix();
+        d = snirf.GetDataTimeSeries('reshape');
         SrcPos = probe.GetSrcPos();
         DetPos = probe.GetDetPos();
         t = data_y(iBlk).GetTime();

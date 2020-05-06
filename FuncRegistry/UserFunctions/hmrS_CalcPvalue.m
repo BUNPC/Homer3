@@ -64,8 +64,8 @@ for iBlk = 1:nDataBlks
             end
             mlAct = mlActRuns{iRun}{iBlk}(1:size(ml,1));
             
-            % GetDataMatrix() extract data in old homer2 dimensions (time X Hb X channel)
-            y = yRuns{iRun}(iBlk).GetDataMatrix();% yRuns{iRun}(iBlk).GetDataMatrix();  % data matrix for run iRun, data block iBlk
+            % GetDataTimeSeries() extract data in old homer2 dimensions (time X Hb X channel)
+            y = yRuns{iRun}(iBlk).GetDataTimeSeries('reshape'); % yRuns{iRun}(iBlk).GetDataTimeSeries('reshape');  % data matrix for run iRun, data block iBlk
             for hb = 1:3 % across HbO/HbR/HbT
                 for iTrial = 1:size(lst_stim,1) % across trials
                     % Hb: # of time points X # of trials X # of runs X # of channels X HbO/HbR
@@ -133,8 +133,8 @@ for iBlk = 1:length(nDataBlks)
             end
             mlAct = mlActRuns{iRun}{iBlk}(1:size(ml,1));
             
-            % GetDataMatrix() extract data in old homer2 dimensions (time X Hb X channel)
-            y = yRuns{iRun}(iBlk).GetDataMatrix();  % data matrix for run iRun, data block iBlk
+            % GetDataTimeSeries() extract data in old homer2 dimensions (time X Hb X channel)
+            y = yRuns{iRun}(iBlk).GetDataTimeSeries('reshape');  % data matrix for run iRun, data block iBlk
             for hb = 1:3 % across HbO/HbR/HbT
                 for iTrial = 1:size(lst_stim_all{foo(1)},1) % across trials
                     % Hb: # of time points X # of trials X # of runs X # of channels X HbO/HbR

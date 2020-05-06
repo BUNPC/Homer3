@@ -201,12 +201,6 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function val = GetDataTimeSeries(obj)
-            val = obj.dataTimeSeries;
-        end
-        
-        
-        % ---------------------------------------------------------
         function val = GetT(obj)
             val = obj.time;
         end
@@ -271,10 +265,17 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function d = GetDataMatrix(obj)
+        function d = GetDataTimeSeries(obj, options)
             d = [];
+            if ~exist('options','var') || isempty(options)
+                options = '';
+            end
             if isempty(obj.dataTimeSeries)
                 return;
+            end
+            if ~strcmp(options, 'reshape')
+                d = obj.dataTimeSeries;
+                return
             end
             
             % Get information for each ch in d matrix

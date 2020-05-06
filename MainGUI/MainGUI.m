@@ -799,7 +799,7 @@ for iBlk = iDataBlks
     
     % Get plot data from dataTree
     if datatype == maingui.buttonVals.RAW
-        d = procElem.GetDataMatrix(iBlk);
+        d = procElem.GetDataTimeSeries('same', iBlk);
         t = procElem.GetTime(iBlk);
     elseif datatype == maingui.buttonVals.OD
         d = procElem.GetDod(iBlk);

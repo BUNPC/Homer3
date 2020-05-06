@@ -284,16 +284,19 @@ classdef RunClass < TreeNodeClass
             if nargin<2
                 iBlk = 1;
             end
-            d = obj.acquired.GetDataMatrix(iBlk);
+            d = obj.acquired.GetDataTimeSeries('', iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function d = GetDataMatrix(obj, iBlk)
-            if nargin<2
+        function d = GetDataTimeSeries(obj, options, iBlk)
+            if ~exist('options','var')
+                options = '';
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            d = obj.acquired.GetDataMatrix(iBlk);
+            d = obj.acquired.GetDataTimeSeries(options, iBlk);
         end
         
         

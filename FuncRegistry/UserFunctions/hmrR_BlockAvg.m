@@ -58,10 +58,10 @@ for kk=1:length(data)
     nTrials{kk} = zeros(1, size(s,2));
     
     datatype = data(kk).GetDataTypeLabel();  % Get the input data type
-    y = data(kk).GetDataTimeSeries();    % Get the data vector 
-    if strncmp(datatype{1},'Hb',2)
-        y = reshape(y, size(y,1), 3, size(y,2)/3);
-    end
+    y = data(kk).GetDataTimeSeries('reshape');    % Get the data vector 
+%     if strncmp(datatype{1},'Hb',2)
+%         y = reshape(y, size(y,1), 3, size(y,2)/3);
+%     end
     t = data(kk).GetTime();    % Get the time vector 
     dt = t(2)-t(1);
     nPre = round(trange(1)/dt);

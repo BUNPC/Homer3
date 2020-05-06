@@ -2,11 +2,16 @@ function CleanUp()
 global DEBUG1
 global procStreamStyle
 global testidx;
+global logger
 
 % Clear global variables
+delete(logger)
+clear DEBUG1 testidx procStreamStyle
+
 DEBUG1=[];
 testidx=[];
 procStreamStyle=[];
+logger=[];
 
 reg = RegistriesClass('empty');
 reg.DeleteSaved();

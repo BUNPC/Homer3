@@ -15,7 +15,7 @@ classdef AcqDataClass < matlab.mixin.Copyable
         t         = GetTime(obj, iBlk)
         
         % ---------------------------------------------------------
-        datamat   = GetDataMatrix(obj, iBlk)
+        datamat   = GetDataTimeSeries(obj, options, iBlk)
         
         % ---------------------------------------------------------
         SD        = GetSDG(obj)

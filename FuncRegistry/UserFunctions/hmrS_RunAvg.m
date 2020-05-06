@@ -35,7 +35,7 @@ for iBlk = 1:nDataBlks
             
         yAvgOut(iBlk) = DataClass();
         
-        yAvg      = yAvgRuns{iRun}(iBlk).GetDataMatrix();
+        yAvg      = yAvgRuns{iRun}(iBlk).GetDataTimeSeries('reshape');
         if isempty(yAvg)
             continue;
         end

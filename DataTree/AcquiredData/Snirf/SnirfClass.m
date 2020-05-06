@@ -626,15 +626,18 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function datamat = GetDataMatrix(obj, iBlk)
+        function datamat = GetDataTimeSeries(obj, options, iBlk)
             datamat = [];
+            if ~exist('options','var')
+                options = '';
+            end
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk=1;
             end
             if iBlk>length(obj.data)
                 return;
             end
-            datamat = obj.data(iBlk).GetDataMatrix();
+            datamat = obj.data(iBlk).GetDataTimeSeries(options);
         end
         
         
@@ -841,7 +844,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if iBlk>length(obj.data)
                 return;
             end
-            d = obj.data(iBlk).GetDataMatrix();
+            d = obj.data(iBlk).GetDataTimeSeries();
         end
         
         
@@ -1158,7 +1161,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             for ii=1:length(obj.data)
                 
                 % Display data matrix dimensions and data type
-                d = obj.data(ii).GetDataMatrix();
+                d = obj.data(ii).GetDataTimeSeries();
                 pretty_print_struct(d, 8, 1);
                 
                 % Display meas list dimensions and data type

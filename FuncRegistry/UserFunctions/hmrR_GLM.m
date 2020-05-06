@@ -132,7 +132,7 @@ for iBlk=1:length(data_y)
     data_ynew(iBlk)    = DataClass(data_y(iBlk));
     data_yresid(iBlk)  = DataClass(data_y(iBlk));
 
-    y      = data_y(iBlk).GetDataMatrix();
+    y      = data_y(iBlk).GetDataTimeSeries('reshape');
     t      = data_y(iBlk).GetTime();
     ml     = data_y(iBlk).GetMeasListSrcDetPairs();
     SrcPos = probe.GetSrcPos();

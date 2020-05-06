@@ -334,12 +334,6 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                
         
         % ---------------------------------------------------------
-        function datamat = GetDataMatrix(obj, iBlk)
-            datamat = obj.d;
-        end
-        
-        
-        % ---------------------------------------------------------
         function SD = GetSDG(obj)
             SD = obj.SD;
         end

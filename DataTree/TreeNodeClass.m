@@ -567,7 +567,7 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function d = GetDataMatrix(~, ~)
+        function d = GetDataTimeSeries(~, ~, ~)
             d = [];
         end
 

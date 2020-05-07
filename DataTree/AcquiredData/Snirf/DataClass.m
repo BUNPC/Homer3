@@ -537,7 +537,7 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function AppendD(obj, y)
+        function AppendDataTimeSeries(obj, y)
             obj.dataTimeSeries(:, end+1:end+size(y(:,:),2)) = y(:,:);
         end
         

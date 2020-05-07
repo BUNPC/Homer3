@@ -56,14 +56,14 @@
 % rhoSD_ssThresh: 15.0
 % runIdxResting: 1
 %
+function [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, flagtCCA, flagICRegressors, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting)
+
 %% COMMENTS/THOUGHTS/QUESTIONS ALEX
-% 2) Output canonical correlation coefficients as quality metric?
+% 2) Output canonical correlation coefficients as quality metric? 
 % 3) Output fNIRS signal(s)/Aux regressors for visualization/quality control?
 % 4) single channel (regressor) feature: regressor channel map currently assumes first half HbO, secon half HbR. CHECK HOW NEEDS TO BE ADAPTED FOR GLM?
 % 5) Implement the variable low/bandpass filter coefficients from previous processing stream !!!
 %%
-
-function [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, flagtCCA, flagICRegressors, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting)
 
 %% flags and tCCA settings
 flags.pcaf =  [0 0]; % no pca of X or AUX
@@ -186,16 +186,18 @@ if flagtCCA
                 % set channel-regressor map to empty (GLM will use all available regressors for all channels)
                 rcMap{iBlk} = [];
             end
-            fprintf('hmrR_tCCA: run idx = %d. Generated and saving tCCAfilter\n', runIdx)
+            fprintf('hmrR_tCCA: run idx = %d. Generated and Saved tCCAfilter\n', runIdx)
+            print_filter(tCCAfilter);
             save(filterFilename, '-ascii', 'tCCAfilter');
             
         elseif exist(filterFilename,'file')
             
             %% if the tCCAfilter variable exists, apply the filtering and generate the tCCA regressors
-            fprintf('hmrR_tCCA: run idx = %d. loading and using tCCAfilter\n', runIdx)
-            
+            fprintf('hmrR_tCCA: run idx = %d. Loading and Using tCCAfilter\n', runIdx)
             % Load the filter for the iBlk data block
             tCCAfilter = load(filterFilename,'-ascii');
+            print_filter(tCCAfilter);
+            
             
             % Temporal embedding and zscoring of auxiliary data
             aux_sigs = AUX;
@@ -229,5 +231,17 @@ if flagtCCA
         end
         
     end
+end
+
+
+
+
+% -----------------------------------------------------------
+function print_filter(tCCAfilter)
+if exist('pretty_print_matrix.m','file')
+    pretty_print_matrix(tCCAfilter, 0, '%0.1f')
+else
+    fprintf('%d ', tCCAfilter);
+    fprintf('\n')
 end
 

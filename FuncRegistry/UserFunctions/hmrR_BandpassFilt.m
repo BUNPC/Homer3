@@ -28,11 +28,18 @@
 %
 
 function [data2, ylpf] = hmrR_BandpassFilt( data, hpf, lpf )
-
-data2 = DataClass().empty();
+if isa(data, 'DataClass')
+    data2 = DataClass().empty();
+elseif isa(data, 'AuxClass')
+    data2 = AuxClass().empty();
+end
 ylpf = [];
 for ii=1:length(data)
-    data2(ii) = DataClass(data(ii));
+    if isa(data, 'DataClass')
+        data2(ii) = DataClass(data(ii));
+    elseif isa(data, 'AuxClass')
+        data2(ii) = AuxClass(data(ii));
+    end
     y = data2(ii).GetDataTimeSeries();
     fs = data2(ii).GetTime();
     

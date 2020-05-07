@@ -648,7 +648,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 return;
             end
             for ii=1:length(obj.aux)
-                datamat(:,ii) = obj.aux(ii).GetData();
+                datamat(:,ii) = obj.aux(ii).GetDataTimeSeries();
             end
         end
         
@@ -880,14 +880,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             SD.MeasListAct = ones(size(SD.MeasList,1),1);
         end
         
-        
-        % ----------------------------------------------------------------------------------
-        function aux = Get_aux(obj)
-            aux = [];
-            for ii=1:size(obj.aux,2)
-                aux(:,ii) = obj.aux(ii).GetData();
-            end
-        end
         
         
         % ----------------------------------------------------------------------------------

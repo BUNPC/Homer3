@@ -643,9 +643,9 @@ for iBlk=1:length(data_y)
     end
     
     % Set data vectors for the averages
-    data_yavg(iBlk).AppendD(yavg);
-    data_yavgstd(iBlk).AppendD(yavgstd);
-    data_ysum2(iBlk).AppendD(ysum2);
+    data_yavg(iBlk).AppendDataTimeSeries(yavg);
+    data_yavgstd(iBlk).AppendDataTimeSeries(yavgstd);
+    data_ysum2(iBlk).AppendDataTimeSeries(ysum2);
     
     % Set tHRF time vectors
     data_yavg(iBlk).SetTime(tHRF, true);

@@ -117,7 +117,7 @@ for iBlk = 1:nDataBlks
                     %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages.
                     %%%% Now we can set channel descriptors for avg and standard deviation
                     if iRun == length(yAvgRuns)
-                        yAvgStdOut(iBlk).AppendD(yAvgStd(:,:,iC));
+                        yAvgStdOut(iBlk).AppendDataTimeSeries(yAvgStd(:,:,iC));
                     end
                 end
             end
@@ -179,7 +179,7 @@ for iBlk = 1:nDataBlks
                     %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages.
                     %%%% Now we can set channel descriptors for avg and standard deviation
                     if iRun == length(yAvgRuns)
-                        yAvgStdOut(iBlk).AppendD(yAvgStd(:,:,:,iC));
+                        yAvgStdOut(iBlk).AppendDataTimeSeries(yAvgStd(:,:,:,iC));
                     end
                 end                
             end            

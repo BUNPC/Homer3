@@ -16,8 +16,12 @@ classdef AuxClass < FileLoadSaveClass
             
             obj.timeOffset = 0;
             if nargin==1
-                obj.filename = varargin{1};
-                obj.Load();
+                if isa(varargin{1}, 'AuxClass')
+                    obj = varargin{1}.copy();
+                elseif ischar(varargin{1})
+                    obj.filename = varargin{1};
+                    obj.Load();
+                end
             elseif nargin==3
                 obj.dataTimeSeries    = varargin{1};
                 obj.time = varargin{2};
@@ -95,8 +99,17 @@ classdef AuxClass < FileLoadSaveClass
         end
         
         
+        % ---------------------------------------------------------
+        function SetDataTimeSeries(obj, val)
+            if ~exist('val','var')
+                return;
+            end
+            obj.dataTimeSeries = val;
+        end
+        
+        
         % -------------------------------------------------------
-        function d = GetData(obj)
+        function d = GetDataTimeSeries(obj)
             d = obj.dataTimeSeries;
         end
         
@@ -104,6 +117,28 @@ classdef AuxClass < FileLoadSaveClass
         % -------------------------------------------------------
         function name = GetName(obj)
             name = obj.name;
+        end
+        
+        
+        % -------------------------------------------------------
+        function val = GetTime(obj)
+            val = obj.time;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Copy(obj, obj2)
+            if isempty(obj)
+                obj = DataClass();
+            end
+            if ~isa(obj2, 'DataClass')
+                return;
+            end
+            for ii=1:length(obj2.measurementList)
+                obj.measurementList(ii) = obj2.measurementList(ii).copy();      % shallow copy ok because MeasListClass has no handle properties
+            end
+            obj.dataTimeSeries = obj2.dataTimeSeries;
+            obj.time = obj2.time;
         end
         
         

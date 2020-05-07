@@ -104,7 +104,7 @@ for iBlk = 1:length(yAvgSubjs{1})
                     end
                 end
                 if iSubj == nSubj                
-                    yAvgOut(iBlk).AppendD(yAvg);
+                    yAvgOut(iBlk).AppendDataTimeSeries(yAvg);
                 end
             end
             
@@ -154,7 +154,7 @@ for iBlk = 1:length(yAvgSubjs{1})
                     end
                 end
                 if iSubj == nSubj
-                    yAvgOut(iBlk).AppendD(yAvg);
+                    yAvgOut(iBlk).AppendDataTimeSeries(yAvg);
                 end
             end
             

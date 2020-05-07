@@ -59,9 +59,6 @@ for kk=1:length(data)
     
     datatype = data(kk).GetDataTypeLabel();  % Get the input data type
     y = data(kk).GetDataTimeSeries('reshape');    % Get the data vector 
-%     if strncmp(datatype{1},'Hb',2)
-%         y = reshape(y, size(y,1), 3, size(y,2)/3);
-%     end
     t = data(kk).GetTime();    % Get the time vector 
     dt = t(2)-t(1);
     nPre = round(trange(1)/dt);
@@ -129,9 +126,9 @@ for kk=1:length(data)
             end
             
             % Snirf stuff: set data vectors
-            data_avg(kk).AppendD(yavg(:,:,:,iC));
-            data_std(kk).AppendD(ystd(:,:,:,iC));
-            data_sum2(kk).AppendD(ysum2(:,:,:,iC));
+            data_avg(kk).AppendDataTimeSeries(yavg(:,:,:,iC));
+            data_std(kk).AppendDataTimeSeries(ystd(:,:,:,iC));
+            data_sum2(kk).AppendDataTimeSeries(ysum2(:,:,:,iC));
         elseif strcmp(datatype{1}, 'dOD')
             yTrials(iC).yblk = yblk(:,:,1:nBlk);
             yavg(:,:,iC) = mean(yblk(:,:,1:nBlk),3);
@@ -155,9 +152,9 @@ for kk=1:length(data)
             end
             
             % Snirf stuff: set data vectors
-            data_avg(kk).AppendD(yavg(:,:,iC));
-            data_std(kk).AppendD(ystd(:,:,iC));
-            data_sum2(kk).AppendD(ysum2(:,:,iC));
+            data_avg(kk).AppendDataTimeSeries(yavg(:,:,iC));
+            data_std(kk).AppendDataTimeSeries(ystd(:,:,iC));
+            data_sum2(kk).AppendDataTimeSeries(ysum2(:,:,iC));
         end
     end
     

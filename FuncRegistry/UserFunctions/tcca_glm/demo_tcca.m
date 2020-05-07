@@ -7,7 +7,7 @@ subjFolder = 'UnitTests/Example6_GrpTap';
 subjFolder = [rootpath, subjFolder];
 procStreamConfigFile = './processOpt_tcca.cfg';   % proc stream config file path relative to subject folder
 cd(subjFolder);
-resetGroupFolder('', 'registry_keep');
+resetGroupFolder('');
 
 fprintf('Loading subject folder:  %s\n', subjFolder);
 

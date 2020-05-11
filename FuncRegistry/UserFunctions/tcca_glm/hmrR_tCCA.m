@@ -200,7 +200,6 @@ if flagtCCA
                 end
                 %% save tCCAfilter matrix that was learned from resting state data.
                 fprintf('hmrR_tCCA: run idx = %d. Generated and Saved tCCAfilter\n', runIdx)
-                print_filter(tCCAfilter);
                 save(filterFilename, '-ascii', 'tCCAfilter');
                 
             case 'apply'
@@ -208,8 +207,7 @@ if flagtCCA
                 % Load the filter for the iBlk data block
                 fprintf('hmrR_tCCA: run idx = %d. Loading and Using tCCAfilter\n', runIdx)
                 tCCAfilter = load(filterFilename,'-ascii');
-                print_filter(tCCAfilter);
-                
+               
                 % Temporal embedding and zscoring of auxiliary data
                 aux_sigs = AUX;
                 aux_emb = aux_sigs;

@@ -83,73 +83,79 @@ classdef MeasListClass < FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function err = LoadHdf5(obj, fname, parent)
+        function err = LoadHdf5(obj, fileobj, location)
             err = 0;
             
             % Arg 1
-            if ~exist('fname','var') || ~exist(fname,'file')
-                fname = '';
+            if ~exist('fileobj','var') || (ischar(fileobj) && ~exist(fileobj,'file'))
+                fileobj = '';
             end
-            
+
             % Arg 2
-            if ~exist('parent', 'var')
-                parent = '/nirs/data1/measurementList1';
-            elseif parent(1)~='/'
-                parent = ['/',parent];
+            if ~exist('location', 'var')
+                location = '/nirs/data1/measurementList1';
+            elseif location(1)~='/'
+                location = ['/',location];
             end
             
-            % Do some error checking            
-            if ~isempty(fname)
-                obj.filename = fname;
-            else
-                fname = obj.filename;
+            % Error checking            
+            if ~isempty(fileobj) && ischar(fileobj)
+                obj.filename = fileobj;
+            elseif isempty(fileobj)
+                fileobj = obj.filename;
+            end 
+            if isempty(fileobj)
+               err = -1;
+               return;
             end
-            if isempty(fname)
-               err=-1;
-            else                
-            %%%%%%%%%%%% Ready to load from file
-                try
-		            obj.sourceIndex = hdf5read(fname, [parent, '/sourceIndex']);
-		            obj.detectorIndex = hdf5read(fname, [parent, '/detectorIndex']);
-		            obj.wavelengthIndex = hdf5read(fname, [parent, '/wavelengthIndex']);
-		            obj.dataType = hdf5read(fname, [parent, '/dataType']);
-		            obj.dataTypeLabel = convertH5StrToStr(hdf5read_safe(fname, [parent, '/dataTypeLabel'], obj.dataTypeLabel));
-		            obj.dataTypeIndex = hdf5read(fname, [parent, '/dataTypeIndex']);
-		            obj.sourcePower = hdf5read_safe(fname, [parent, '/sourcePower'], obj.sourcePower);
-		            obj.detectorGain = hdf5read_safe(fname, [parent, '/detectorGain'], obj.detectorGain);
-		            obj.moduleIndex = hdf5read_safe(fname, [parent, '/moduleIndex'], obj.moduleIndex);
-                catch
-                    err=-1;
-                end
+
+            try
+                % Open group
+                [gid, fid] = HDF5_GroupOpen(fileobj, location);
+                
+                % Load datasets
+                obj.sourceIndex     = HDF5_DatasetLoad(gid, 'sourceIndex');
+                obj.detectorIndex   = HDF5_DatasetLoad(gid, 'detectorIndex');
+                obj.wavelengthIndex = HDF5_DatasetLoad(gid, 'wavelengthIndex');
+                obj.dataType        = HDF5_DatasetLoad(gid, 'dataType');
+                obj.dataTypeLabel   = convertH5StrToStr(HDF5_DatasetLoad(gid, 'dataTypeLabel', obj.dataTypeLabel));
+                obj.detectorIndex   = HDF5_DatasetLoad(gid, 'detectorIndex');
+                obj.sourcePower     = HDF5_DatasetLoad(gid, 'sourcePower');
+                obj.sourcePower     = HDF5_DatasetLoad(gid, 'sourcePower');
+                obj.moduleIndex     = HDF5_DatasetLoad(gid, 'moduleIndex');
+                
+                HDF5_GroupClose(fileobj, gid, fid);
+            catch ME
+                err = -1;
+                return
             end
-            obj.err = err;
-            
+
         end
 
         
         % -------------------------------------------------------
-        function SaveHdf5(obj, fname, parent)
+        function SaveHdf5(obj, fileobj, location)
 
             % Arg 1
-            if ~exist('fname', 'var') || isempty(fname)
+            if ~exist('fileobj', 'var') || isempty(fileobj)
                 error('Unable to save file. No file name given.')
             end
             
             % Arg 2
-            if ~exist(fname, 'file')
-                fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+            if ~exist(fileobj, 'file')
+                fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end
             
-            hdf5write(fname, [parent, '/sourceIndex'], obj.sourceIndex, 'WriteMode','append');
-            hdf5write(fname, [parent, '/detectorIndex'], obj.detectorIndex, 'WriteMode','append');
-            hdf5write(fname, [parent, '/wavelengthIndex'], obj.wavelengthIndex, 'WriteMode','append');
-            hdf5write(fname, [parent, '/dataType'], obj.dataType, 'WriteMode','append');
-            hdf5write(fname, [parent, '/dataTypeLabel'], obj.dataTypeLabel, 'WriteMode','append');
-            hdf5write(fname, [parent, '/dataTypeIndex'], obj.dataTypeIndex, 'WriteMode','append');
-            hdf5write(fname, [parent, '/sourcePower'], obj.sourcePower, 'WriteMode','append');
-            hdf5write(fname, [parent, '/detectorGain'], obj.detectorGain, 'WriteMode','append');
-            hdf5write(fname, [parent, '/moduleIndex'], obj.moduleIndex, 'WriteMode','append');
+            hdf5write(fileobj, [location, '/sourceIndex'], obj.sourceIndex, 'WriteMode','append');
+            hdf5write(fileobj, [location, '/detectorIndex'], obj.detectorIndex, 'WriteMode','append');
+            hdf5write(fileobj, [location, '/wavelengthIndex'], obj.wavelengthIndex, 'WriteMode','append');
+            hdf5write(fileobj, [location, '/dataType'], obj.dataType, 'WriteMode','append');
+            hdf5write(fileobj, [location, '/dataTypeLabel'], obj.dataTypeLabel, 'WriteMode','append');
+            hdf5write(fileobj, [location, '/dataTypeIndex'], obj.dataTypeIndex, 'WriteMode','append');
+            hdf5write(fileobj, [location, '/sourcePower'], obj.sourcePower, 'WriteMode','append');
+            hdf5write(fileobj, [location, '/detectorGain'], obj.detectorGain, 'WriteMode','append');
+            hdf5write(fileobj, [location, '/moduleIndex'], obj.moduleIndex, 'WriteMode','append');
         end
 
                 

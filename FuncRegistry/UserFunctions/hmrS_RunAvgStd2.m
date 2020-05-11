@@ -36,13 +36,13 @@ for iBlk = 1:nDataBlks
             
         yAvgStdOut(iBlk) = DataClass();
         
-        yAvg    = yAvgRuns{iRun}(iBlk).GetDataMatrix();
+        yAvg    = yAvgRuns{iRun}(iBlk).GetDataTimeSeries('reshape');
         if isempty(yAvg)
             continue;
         end
         
         yAvgStd = zeros(size(yAvg,1), size(yAvg,2), size(yAvg,3), size(yAvg,4));
-        ySum2   = ySum2Runs{iRun}(iBlk).GetDataMatrix();
+        ySum2   = ySum2Runs{iRun}(iBlk).GetDataTimeSeries('reshape');
         tHRF    = yAvgRuns{iRun}(iBlk).GetTime();
         nTrials = nTrialsRuns{iRun}{iBlk};
         if isempty(mlActRuns{iRun})
@@ -117,7 +117,7 @@ for iBlk = 1:nDataBlks
                     %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages.
                     %%%% Now we can set channel descriptors for avg and standard deviation
                     if iRun == length(yAvgRuns)
-                        yAvgStdOut(iBlk).AppendD(yAvgStd(:,:,iC));
+                        yAvgStdOut(iBlk).AppendDataTimeSeries(yAvgStd(:,:,iC));
                     end
                 end
             end
@@ -179,7 +179,7 @@ for iBlk = 1:nDataBlks
                     %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages.
                     %%%% Now we can set channel descriptors for avg and standard deviation
                     if iRun == length(yAvgRuns)
-                        yAvgStdOut(iBlk).AppendD(yAvgStd(:,:,:,iC));
+                        yAvgStdOut(iBlk).AppendDataTimeSeries(yAvgStd(:,:,:,iC));
                     end
                 end                
             end            

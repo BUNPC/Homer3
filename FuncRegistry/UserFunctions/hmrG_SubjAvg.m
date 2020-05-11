@@ -38,7 +38,7 @@ for iBlk = 1:length(yAvgSubjs{1})
         
         yAvgOut(iBlk) = DataClass();        
         
-        yAvg      = yAvgSubjs{iSubj}(iBlk).GetDataMatrix();
+        yAvg      = yAvgSubjs{iSubj}(iBlk).GetDataTimeSeries('reshape');
         tHRF      = yAvgSubjs{iSubj}(iBlk).GetTime();
         nT        = nTrialsSubjs{iSubj}{iBlk};
         datatype  = yAvgSubjs{iSubj}(iBlk).GetDataTypeLabel();
@@ -104,7 +104,7 @@ for iBlk = 1:length(yAvgSubjs{1})
                     end
                 end
                 if iSubj == nSubj                
-                    yAvgOut(iBlk).AppendD(yAvg);
+                    yAvgOut(iBlk).AppendDataTimeSeries(yAvg);
                 end
             end
             
@@ -154,7 +154,7 @@ for iBlk = 1:length(yAvgSubjs{1})
                     end
                 end
                 if iSubj == nSubj
-                    yAvgOut(iBlk).AppendD(yAvg);
+                    yAvgOut(iBlk).AppendDataTimeSeries(yAvg);
                 end
             end
             

@@ -64,7 +64,7 @@ for iBlk=1:length(data_y)
     data_yc(iBlk) = DataClass(data_y(iBlk));
         
     % Get all the input data from the arguments
-    y        = data_y(iBlk).GetDataMatrix();
+    y        = data_y(iBlk).GetDataTimeSeries('reshape');
     t        = data_y(iBlk).GetTime();
     MeasList = data_y(iBlk).GetMeasList();
     if isempty(mlAct{iBlk})

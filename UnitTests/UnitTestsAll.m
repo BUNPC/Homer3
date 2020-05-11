@@ -1,4 +1,5 @@
 function UnitTestsAll()
+global logger
 
 t_local = tic;
 
@@ -10,16 +11,14 @@ c.SetValue('Include Archived User Functions','Yes');
 c.SetValue('Default Processing Stream Style','NIRS');
 c.WriteFile();
 
-rootpath = fileparts(which('UnitTestsAll.m'));
+logger = Logger('UnitTestsAll');
 
-logger = LogClass([rootpath, '/'], 'UnitTestsAll');
-
-UnitTestsAll_Nirs(false, logger);
+UnitTestsAll_Nirs(false);
 
 c.SetValue('Default Processing Stream Style','SNIRF');
 c.WriteFile();
 
-UnitTestsAll_Snirf(false, logger);
+UnitTestsAll_Snirf(false);
 
 logger.Close();
 

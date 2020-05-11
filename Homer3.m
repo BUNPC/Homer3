@@ -9,6 +9,11 @@ function Homer3(groupDirs, inputFileFormat)
 %       Homer3({'.'}, '.nirs')
 %
 
+global logger
+logger = Logger('Homer3');
+
+logger.CurrTime();
+
 if nargin==0
     groupDirs = convertToStandardPath(pwd);
 end
@@ -18,12 +23,27 @@ elseif nargin==1 && isempty(inputFileFormat)
     inputFileFormat='snirf';
 end
 cfg = ConfigFileClass();
-fprintf('Opened application config file %s\n', cfg.filename)
+
+if strcmp(cfg.GetValue('Logging'), 'off')
+    logger.SetDebugLevel(logger.Null());
+end
+
+PrintSystemInfo(logger);
+
+logger.Write(sprintf('Opened application config file %s\n', cfg.filename))
 gdir = cfg.GetValue('Last Group Folder');
 if isempty(gdir)
     if isdeployed()
         groupDirs = {[getAppDir(), 'SubjDataSample']};
     end
 end
-MainGUI(groupDirs, inputFileFormat, 'userargs');
+
+try
+    MainGUI(groupDirs, inputFileFormat, logger, 'userargs');
+catch ME
+    % Clean up in case of error make sure all open file handles are closed 
+    % so we don't leave the application in a bad state
+    logger.Close()
+    rethrow(ME)
+end
 

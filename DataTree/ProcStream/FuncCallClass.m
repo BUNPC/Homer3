@@ -193,14 +193,16 @@ classdef FuncCallClass < handle
             end
             
             % If usage name is already set, then we're done
-            c = str2cell(obj.nameUI, ':');
-            if length(c)==2 && isempty(usagename)
-                return;
+            k = find((obj.nameUI==':')==1);
+            if ~isempty(k)
+                if (k(1) > 1) && (k(1) < length(obj.nameUI))  && isempty(usagename)
+                	return;
+            	end
             end
             if isempty(usagename)
-                obj.nameUI = sprintf('%s', obj.name);
+                obj.nameUI = obj.name;
             else
-                obj.nameUI = sprintf('%s:  %s', obj.name, usagename);
+                obj.nameUI = [obj.name, ':  ', usagename];
             end
         end
 
@@ -214,7 +216,7 @@ classdef FuncCallClass < handle
             if s(1)~='('
                 return;              
             end
-            args = str2cell(s(2:end),',');
+            args = str2cell_fast(s(2:end),',');
             fhelp = FuncHelpClass(obj.name);
             for ii=1:length(args)
                 obj.argIn.vars(ii).name = args{ii};
@@ -374,7 +376,15 @@ classdef FuncCallClass < handle
             fcallStrEncoded = obj.encodedStr;
         end
         
-                
+    end
+    
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Comparison methods and overriden operators
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+        
         % ----------------------------------------------------------------------------------
         % Override == operator: 
         % ----------------------------------------------------------------------------------
@@ -442,7 +452,7 @@ classdef FuncCallClass < handle
             B = 1;
         end
 
-        
+               
         % ----------------------------------------------------------------------------------
         % Override ~= operator: 
         % ----------------------------------------------------------------------------------
@@ -455,6 +465,42 @@ classdef FuncCallClass < handle
             end
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function scorefinal = Compare(obj, obj2)           
+            score = [];
+            if ~strcmp(obj.name, obj2.name)
+                score(end+1) = 0;
+            else
+                score(end+1) = 0.50;
+            end
+            score(end+1) = 0.16 * obj.argOut.Compare(obj2.argOut);
+            score(end+1) = 0.16 * obj.argIn.Compare(obj2.argIn);
+            
+            % For parameters first get separate score then add to total 
+            scoreParams = zeros(1,max([length(obj.paramIn), length(obj2.paramIn)]));
+            
+            for ii = 1:length(obj.paramIn)
+                for jj = 1:length(obj2.paramIn)
+                    if strcmp(obj.paramIn(ii).GetName(), obj2.paramIn(jj).GetName())
+                        scoreParams(ii) = obj.paramIn(ii).Compare(obj2.paramIn(jj));
+                        if ii ~= jj
+                            scoreParams(ii) = .75 * scoreParams(ii);
+                        end
+                    end
+                end
+            end
+            
+            % Tally up final results
+            score = [score(:)', 0.18 * mean(scoreParams(:))']; 
+            scorefinal = 100*sum(score);
+        end
+        
+    end
+    
+    
+    
+    methods
         
         % ----------------------------------------------------------------------------------
         function val = GetErr(obj)
@@ -535,6 +581,24 @@ classdef FuncCallClass < handle
                 usagename = '';
             end
             obj.SetUsageName(usagename);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------        
+        function nbytes = MemoryRequired(obj)            
+            fields = properties(obj);
+            nbytes = zeros(length(fields),1);
+            if isempty(obj)
+                nbytes = 0;
+                return
+            end
+            for ii = 1:length(fields)
+                fieldstr = sprintf('obj.%s', fields{ii});
+                if ~eval('isempty(fieldstr)')
+                    nbytes(ii) =  eval(sprintf('sizeof(%s);', fieldstr));
+                end
+            end
+            nbytes = sum(nbytes);
         end
         
     end

@@ -1,41 +1,63 @@
-function nbytes = sizeof(type)
+function nbytes = sizeof(x)
 
 nbytes = [];
 
 if nargin==0
     return
 end
-if ischar(type)
-    switch(type)
-        case 'double'
-            x = double(0);
-        case 'single'
-            x = single(0);
-        case 'int8'
-            x = int8(0);
-        case 'int16'
-            x = int16(0);
-        case 'int32'
-            x = int32(0);
-        case 'int64'
-            x = int64(0);
-        case 'uint8'
-            x = uint8(0);
-        case 'uint16'
-            x = uint16(0);
-        case 'uint32'
-            x = uint32(0);
-        case 'uint64'
-            x = uint64(0);
-        case 'char'
-            x = char(0);
-        otherwise
-            x = type;
-    end
-else
-    x = type;
-end    
+if isempty(x)
+    nbytes = 0;
+    return;
+end
 
-a = whos('x');
-nbytes = a.bytes;
+if isobject(x)
+    type = 'object';
+else
+    type = class(x);
+end
+
+nbytes = 0;
+switch(type)
+    case 'double'
+        nbytes = 8 * length(x(:));
+    case 'single'
+        nbytes = 4 * length(x(:));
+    case 'int8'
+        nbytes = 1 * length(x(:));
+    case 'int16'
+        nbytes = 2 * length(x(:));
+    case 'int32'
+        nbytes = 4 * length(x(:));
+    case 'int64'
+        nbytes = 8 * length(x(:));
+    case 'uint8'
+        nbytes = 1 * length(x(:));
+    case 'uint16'
+        nbytes = 2 * length(x(:));
+    case 'uint32'
+        nbytes = 4 * length(x(:));
+    case 'uint64'
+        nbytes = 8 * length(x(:));
+    case 'char'
+        nbytes = 2 * length(x(:));
+    case 'cell'
+        for ii = 1:length(x(:))
+            nbytes = nbytes + sizeof(x{ii}) + 112;
+        end
+    case 'struct'
+        fields = fieldnames(x);
+        for jj = 1:length(x(:))
+            for ii=1:length(fields)
+                eval(sprintf('nbytes = nbytes + sizeof(x(jj).%s) + 176;', fields{ii}));
+            end
+        end
+    case 'object'
+        fields = properties(x);
+        for jj = 1:length(x(:))
+            for ii=1:length(fields)
+                eval(sprintf('nbytes = nbytes + sizeof(x(jj).%s);', fields{ii}));
+            end
+        end
+end
+
 

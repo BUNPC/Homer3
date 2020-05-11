@@ -98,10 +98,12 @@ set(handles.textStatus, 'enable', val);
 % --------------------------------------------------------------------
 function eventdata = MainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global maingui
+global logger
 
+startuptimer = tic;
 maingui = [];
 
-if length(varargin)==0
+if isempty(varargin)
     maingui.groupDirs = convertToStandardPath({pwd});
 else
     maingui.groupDirs = varargin{1};
@@ -115,9 +117,10 @@ end
 if ~iscell(maingui.groupDirs)
     maingui.groupDirs = {maingui.groupDirs};
 end
+maingui.logger = InitLogger(logger, 'MainGUI');
 
 for ii=1:length(maingui.groupDirs)
-    fprintf('MainGUI: Will load group folder #%d - %s\n', ii, maingui.groupDirs{ii})
+    maingui.logger.CurrTime(sprintf('MainGUI:  Will load group folder #%d - %s\n', ii, maingui.groupDirs{ii}));
 end
 
 maingui.gid = 1;
@@ -169,6 +172,8 @@ s = get(hObject,'name');
 title = sprintf('%s - %s', s, pwd);
 set(hObject,'name', title);
 
+maingui.logger.InitChapters()
+maingui.logger.CurrTime(sprintf('MainGUI: Startup time - %0.1f seconds\n', toc(startuptimer)));
 
 
 
@@ -191,6 +196,9 @@ end
 if isempty(maingui.dataTree)
     return;
 end
+if ~isempty(maingui.logger)
+    maingui.logger.Close('MainGUI');
+end
 
 % Delete Child GUIs before deleted the dataTree that all GUIs use.
 for ii=1:length(maingui.childguis)
@@ -199,6 +207,7 @@ end
 delete(maingui.dataTree);
 maingui = [];
 clear maingui;
+
 
 
 % --------------------------------------------------------------------------------------------
@@ -380,8 +389,8 @@ maingui.dataTree.CalcCurrElem();
 % Restore original selection listboxGroupTree
 set(handles.listboxGroupTree, 'value',val0);
 
-h = waitbar(0,'Auto-saving group processing results. Please wait ...');
-maingui.dataTree.Save();
+h = waitbar(0,'Auto-saving processing results. Please wait ...');
+maingui.dataTree.Save(h);
 close(h);
 Display(handles, hObject);
 
@@ -560,8 +569,7 @@ if ~ishandles(hObject)
     return;
 end
 dataTree = maingui.dataTree;
-dataTree.currElem.Reset();
-dataTree.currElem.Save();
+dataTree.ResetCurrElem();
 Display(handles, hObject);
 
 
@@ -772,7 +780,7 @@ sclConc    = maingui.sclConc;        % convert Conc from Molar to uMolar
 showStdErr = GetShowStdErrEnabled(handles);
 
 [iDataBlks, iCh] = procElem.GetDataBlocksIdxs(iCh0);
-fprintf('Displaying channels [%s] in data blocks [%s]\n', num2str(iCh0(:)'), num2str(iDataBlks(:)'))
+maingui.logger.Write(sprintf('Displaying channels [%s] in data blocks [%s]\n', num2str(iCh0(:)'), num2str(iDataBlks(:)')))
 iColor = 1;
 for iBlk = iDataBlks
 
@@ -791,7 +799,7 @@ for iBlk = iDataBlks
     
     % Get plot data from dataTree
     if datatype == maingui.buttonVals.RAW
-        d = procElem.GetDataMatrix(iBlk);
+        d = procElem.GetDataTimeSeries('same', iBlk);
         t = procElem.GetTime(iBlk);
     elseif datatype == maingui.buttonVals.OD
         d = procElem.GetDod(iBlk);
@@ -1082,7 +1090,7 @@ if isempty(pValues)
 end
 
 for iBlk=1:length(pValues)
-    fprintf('P-Values for %s, data block %d:\n', maingui.dataTree.currElem.GetName(), iBlk);
+    maingui.logger.Write(sprintf('P-Values for %s, data block %d:\n', maingui.dataTree.currElem.GetName(), iBlk));
     pretty_print_matrix(pValues{iBlk});
 end
 
@@ -1125,7 +1133,7 @@ switch(guiname)
             iGroup = varargin{2}(1);
             iSubj = varargin{2}(2);
             iRun = varargin{2}(3);
-            fprintf('Processing iGroup=%d, iSubj=%d, iRun=%d\n', iGroup, iSubj, iRun);
+            maingui.logger.Write(sprintf('Processing iGroup=%d, iSubj=%d, iRun=%d\n', iGroup, iSubj, iRun));
             listboxGroupTree_Callback([], [iGroup, iSubj, iRun], maingui.handles);
         end
     case 'PatchCallback'

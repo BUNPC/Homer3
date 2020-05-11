@@ -243,7 +243,9 @@ classdef FuncHelpClass < matlab.mixin.Copyable
             % if the input is a number index into the inputs arrays, then we
             % don't need to seach for the param name
             if iswholenum(param)
-                str = subsections(param).str;
+                if param <= length(subsections)
+                    str = subsections(param).str;
+                end
                 return;
             end
             
@@ -325,7 +327,7 @@ classdef FuncHelpClass < matlab.mixin.Copyable
         
         % -------------------------------------------------------------
         function FindSubSectionLines(obj, section)
-            strs = str2cell(eval(sprintf('obj.sections.%s.str', section)), [], 'keepblanks');
+            strs = str2cell_fast(eval(sprintf('obj.sections.%s.str', section)), [], 'keepblanks');
             kk=0;
             subsect = [];
             for iLine=1:length(strs)
@@ -361,7 +363,7 @@ classdef FuncHelpClass < matlab.mixin.Copyable
         function [name, k] = GetSubSectionName(obj, section, iLine)
             name = '';
             k = [];
-            strs = str2cell(eval(sprintf('obj.sections.%s.str', section)), [], 'keepblanks');
+            strs = str2cell_fast(eval(sprintf('obj.sections.%s.str', section)), [], 'keepblanks');
             
             % Rule 1: Valid section is must end with a ':',' - ', or '--'
             k1 = find(strs{iLine}==':');
@@ -402,7 +404,7 @@ classdef FuncHelpClass < matlab.mixin.Copyable
         
         % -------------------------------------------------------------
         function AssignSubSectionText(obj, section)
-            strs = str2cell(eval(sprintf('obj.sections.%s.str', section)), [], 'keepblanks');
+            strs = str2cell_fast(eval(sprintf('obj.sections.%s.str', section)), [], 'keepblanks');
             subsect = eval(sprintf('obj.sections.%s.subsections', section));
             for ii=1:length(subsect)
                 lines = subsect(ii).lines(1):subsect(ii).lines(2);
@@ -535,7 +537,7 @@ classdef FuncHelpClass < matlab.mixin.Copyable
             if ~strcmp(ext,'.m')
                 func = [func, '.m'];
             end
-            obj.helpstr = str2cell(help_local(func), [], 'keepblanks');
+            obj.helpstr = str2cell_fast(help_local(func), [], 'keepblanks');
         end
         
     end

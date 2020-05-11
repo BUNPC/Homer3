@@ -27,7 +27,7 @@ for ii=1:length(nirsfiles)
     [pname,fname,ext] = fileparts([examplesDir, nirsfiles(ii).name]);
     pname = convertToStandardPath(pname);
     fprintf('Converting %s to %s\n', [pname, fname, ext], [pname, fname, '.snirf']);
-    [snirf_saved, snirf_loaded, nirs] = snirf_load_save([pname, nirsfiles(ii).name]);
+    [snirf_saved, snirf_loaded] = snirf_load_save([pname, nirsfiles(ii).name]);
     
     % Compare the saved and loaded SnirfClass objects, using overloaded == operator 
     if snirf_saved == snirf_loaded

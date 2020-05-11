@@ -5,10 +5,12 @@ classdef GroupClass < TreeNodeClass
         versionStr;
         subjs;
         spacesaver;
+        logger
     end
     
     properties % (Access = private)
         path
+        pathOutput
     end
     
     
@@ -19,11 +21,14 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function obj = GroupClass(varargin)
+            global logger
+
             obj@TreeNodeClass(varargin);
+            obj.logger = InitLogger(logger);
             obj.InitVersion();
 
             if nargin<3 || ~strcmp(varargin{3}, 'noprint')
-                fprintf('Current GroupClass version %s\n', obj.GetVersionStr());
+                obj.logger.Write(sprintf('Current GroupClass version %s\n', obj.GetVersionStr()));
             end
             
             obj.type    = 'group';
@@ -53,7 +58,7 @@ classdef GroupClass < TreeNodeClass
             if isempty(obj.name)
                 % Derive obj name from the name of the root directory
                 curr_dir = pwd;
-                k = sort([findstr(curr_dir,'/') findstr(curr_dir,'\')]);
+                k = sort([findstr(curr_dir,'/') findstr(curr_dir,'\')]); %#ok<*FSTR>
                 obj.name = curr_dir(k(end)+1:end);
             end
         end
@@ -128,15 +133,12 @@ classdef GroupClass < TreeNodeClass
                 end
                 v2 = str2cell(obj2.version,'.');
             elseif iscell(obj2.version)
-                if ~isnumber([obj2.version{:}])
-                    res = 1;
-                end
                 v2 = obj2.version;
             end
             v1 = obj.version;
             
             for ii=1:length(v1)
-                v1{ii} = str2num(v1{ii});
+                v1{ii} = str2num(v1{ii}); %#ok<*ST2NM>
             end
             for ii=1:length(v2)
                 v2{ii} = str2num(v2{ii});
@@ -257,23 +259,14 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function nbytes = MemoryRequired(obj)
-            nbytes = 0;
-            if isempty(obj)
-                return;
-            end
-            for ii=1:length(obj.subjs)
-                nbytes = nbytes + obj.subjs(ii).MemoryRequired();
-            end
-            if nbytes > 5e8
-                obj.spacesaver = true;
-            end
-        end
-
-
-        % ----------------------------------------------------------------------------------
         function SetPath(obj, dirname)
             obj.path = dirname;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetPathOutput(obj, dirname)
+            obj.pathOutput = dirname;
         end
         
         
@@ -291,7 +284,7 @@ classdef GroupClass < TreeNodeClass
                 jj = length(obj.subjs)+1;
                 subj.SetIndexID(obj.iGroup, jj);
                 obj.subjs(jj) = subj;
-                fprintf('   Added subject %s to group %s.\n', obj.subjs(jj).GetName, obj.GetName);
+                obj.logger.Write(sprintf('   Added subject %s to group %s.\n', obj.subjs(jj).GetName, obj.GetName));
             end
             
             % Add run to subj
@@ -304,7 +297,7 @@ classdef GroupClass < TreeNodeClass
         function list = DepthFirstTraversalList(obj)
             list{1} = obj;
             for ii=1:length(obj.subjs)
-                list = [list; obj.subjs(ii).DepthFirstTraversalList()];
+                list = [list; obj.subjs(ii).DepthFirstTraversalList()]; %#ok<AGROW>
             end
         end
         
@@ -360,7 +353,7 @@ classdef GroupClass < TreeNodeClass
                     procStreamRun.SaveConfigFile(fname, 'run');
                 end
                 
-                fprintf('Attempting to load proc stream from %s\n', fname);
+                obj.logger.Write(sprintf('Attempting to load proc stream from %s\n', fname));
                 
                 % Load file to the first empty procStream in the dataTree at each processing level
                 g.LoadProcStreamConfigFile(fname);
@@ -374,18 +367,18 @@ classdef GroupClass < TreeNodeClass
                 % did not have valid proc stream input. If that's the case we
                 % load a default proc stream input
                 if g.procStream.IsEmpty() || s.procStream.IsEmpty() || r.procStream.IsEmpty()
-                    fprintf('Failed to load all function calls in proc stream config file. Loading default proc stream...\n');
+                    obj.logger.Write(sprintf('Failed to load all function calls in proc stream config file. Loading default proc stream...\n'));
                     g.CopyFcalls(procStreamGroup, 'group');
                     g.CopyFcalls(procStreamSubj, 'subj');
                     g.CopyFcalls(procStreamRun, 'run');
                     
                     % If user asked default config file to be generated ...
                     if autoGenDefaultFile
-                        fprintf('Generating default proc stream config file %s\n', fname);
+                        obj.logger.Write(sprintf('Generating default proc stream config file %s\n', fname));
                         
                         % Move exiting default config to same name with .bak extension
                         if ~exist([fname, '.bak'], 'file')
-                            fprintf('Moving existing %s to %s.bak\n', fname, fname);
+                            obj.logger.Write(sprintf('Moving existing %s to %s.bak\n', fname, fname));
                             movefile(fname, [fname, '.bak']);
                         end
                         procStreamGroup.SaveConfigFile(fname, 'group');
@@ -393,7 +386,7 @@ classdef GroupClass < TreeNodeClass
                         procStreamRun.SaveConfigFile(fname, 'run');
                     end
                 else
-                    fprintf('Loading proc stream from %s\n', fname);
+                    obj.logger.Write(sprintf('Loading proc stream from %s\n', fname));
                     procStreamGroup.Copy(g.procStream);
                     procStreamSubj.Copy(s.procStream);
                     procStreamRun.Copy(r.procStream);
@@ -407,7 +400,7 @@ classdef GroupClass < TreeNodeClass
         
                 
         % ----------------------------------------------------------------------------------
-        function Calc(obj, options)
+        function Calc(obj, options)           
             if ~exist('options','var') || isempty(options)
                 options = 'overwrite';
             end
@@ -418,7 +411,7 @@ classdef GroupClass < TreeNodeClass
                 obj.procStream.output.Flush();
             end
             if obj.DEBUG
-                fprintf('Calculating processing stream for group %d\n', obj.iGroup)
+                obj.logger.Write(sprintf('Calculating processing stream for group %d\n', obj.iGroup))
             end
             
             % Calculate all subjs in this session
@@ -431,7 +424,7 @@ classdef GroupClass < TreeNodeClass
                 
                 % Find smallest tHRF among the subjs. We should make this the common one.
                 for iBlk = 1:nDataBlks
-	                if isempty(tHRF_common{iBlk})
+                    if isempty(tHRF_common{iBlk})
                         tHRF_common{iBlk} = s(iSubj).procStream.output.GetTHRF(iBlk);
                     elseif length(s(iSubj).procStream.output.GetTHRF(iBlk)) < length(tHRF_common{iBlk})
                         tHRF_common{iBlk} = s(iSubj).procStream.output.GetTHRF(iBlk);
@@ -468,8 +461,8 @@ classdef GroupClass < TreeNodeClass
             obj.procStream.Calc();
 
             if obj.DEBUG
-                fprintf('Completed processing stream for group %d\n', obj.iGroup);
-                fprintf('\n');
+                obj.logger.Write(sprintf('Completed processing stream for group %d\n', obj.iGroup));
+                obj.logger.Write(sprintf('\n'));
             end
             
             % Update call application GUI using it's generic Update function
@@ -477,6 +470,9 @@ classdef GroupClass < TreeNodeClass
                 obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
             end
             
+            % Mark this Group as having processed data thereby taking up
+            % memory
+            obj.GroupsProcFlags(obj.iGroup, 1);
         end
         
         
@@ -497,7 +493,7 @@ classdef GroupClass < TreeNodeClass
             if ~exist('indent', 'var')
                 indent = 0;
             end
-            fprintf('%sGroup 1:\n', blanks(indent));
+            obj.logger.Write(sprintf('%sGroup 1:\n', blanks(indent)));
             obj.procStream.Print(indent+4);
             obj.procStream.output.Print(indent+4);
             for ii=1:length(obj.subjs)
@@ -509,11 +505,17 @@ classdef GroupClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         % Deletes derived data in procStream.output
         % ----------------------------------------------------------------------------------
-        function Reset(obj)
-            obj.procStream.output = ProcResultClass();
-            for jj=1:length(obj.subjs)
-                obj.subjs(jj).Reset();
+        function Reset(obj, option)
+            if ~exist('option','var')
+                option = 'down';
             end
+            obj.procStream.output = ProcResultClass();            
+            if strcmp(option, 'down')
+                for jj=1:length(obj.subjs)
+                    obj.subjs(jj).Reset();
+                end
+            end
+            obj.GroupsProcFlags(obj.iGroup, 0);
         end
         
         
@@ -545,6 +547,7 @@ classdef GroupClass < TreeNodeClass
             if isempty(obj)
                 return;
             end
+            
             group = [];
             if exist([obj.path, 'groupResults.mat'],'file')
                 g = load([obj.path, 'groupResults.mat']);
@@ -553,7 +556,7 @@ classdef GroupClass < TreeNodeClass
                 if isproperty(g, 'group') && isa(g.group, 'GroupClass')
                     if isproperty(g.group, 'version')
                         if ismethod(g.group, 'GetVersion')
-                            fprintf('Saved group data, version %s exists\n', g.group.GetVersionStr());
+                            obj.logger.Write(sprintf('Saved group data, version %s exists\n', g.group.GetVersionStr()));
                             group = g.group;
                         end
                     end
@@ -570,31 +573,36 @@ classdef GroupClass < TreeNodeClass
                 obj.Copy(group, 'conditional');
                 close(hwait);
             else
-                group = obj;
+                group = obj; %#ok<NASGU>
                 if exist([obj.path, 'groupResults.mat'],'file')
-                    fprintf('Warning: This folder contains old version of groupResults.mat. Will move it to groupResults_old.mat\n');
+                    obj.logger.Write(sprintf('Warning: This folder contains old version of groupResults.mat. Will move it to groupResults_old.mat\n'));
                     movefile([obj.path, 'groupResults.mat'], './groupResults_old.mat')
                 end
-                save([obj.path, 'groupResults.mat'],'group' );
+                obj.Save();
             end
         end
         
         
+     
         % ----------------------------------------------------------------------------------
-        function Save(obj)
-            fprintf('Saving processed data in %s\n', [obj.path, 'groupResults.mat']);
-            t_local = tic;
-            group = GroupClass(obj);
-            try 
-                save([obj.path, 'groupResults.mat'],'group' );
-            catch
-                msg{1} = sprintf('WARNING: Could not save computation output to groupResults.mat file in the subject folder\n\n');
-                msg{2} = sprintf('%s\n\n', pwd);
-                msg{3} = sprintf('This could be because the file or the subject folder itself is read-only.');
-                msg{4} = sprintf('To fix this change groupResults.mat file write permissions to read/write.');
-                MessageBox([msg{:}]);
+        function Save(obj, hwait)
+            if ~exist('hwait','var')
+                hwait = [];
             end            
-            fprintf('Completed saving groupResults.mat in %0.3f seconds.\n', toc(t_local));
+            
+            obj.logger.Write(sprintf('Saving processed data in %s\n', [obj.path, 'groupResults.mat']));
+            
+            if ishandle(hwait)
+                obj.logger.Write(sprintf('Auto-saving processing results ...\n'), obj.logger.ProgressBar(), hwait);
+            end
+            
+            group = GroupClass(obj); %#ok<NASGU>
+            try 
+                save([obj.pathOutput, 'groupResults.mat'], 'group');
+            catch ME
+                MessageBox(ME.message);
+                obj.logger.Write(ME.message);
+            end            
         end
         
         
@@ -721,7 +729,7 @@ classdef GroupClass < TreeNodeClass
         end
         
         % ----------------------------------------------------------------------------------
-        function aux = GetAuxiliary(obj)
+        function aux = GetAuxiliary(obj) %#ok<MANU>
             aux = [];
         end
                 

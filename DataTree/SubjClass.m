@@ -148,11 +148,17 @@ classdef SubjClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         % Deletes derived data in procResult
         % ----------------------------------------------------------------------------------
-        function Reset(obj)
-            obj.procStream.output = ProcResultClass();
-            for jj=1:length(obj.runs)
-                obj.runs(jj).Reset();
+        function Reset(obj, option)
+            if ~exist('option','var')
+                option = 'down';
             end
+            obj.procStream.output = ProcResultClass();
+            if strcmp(option, 'down')
+                for jj=1:length(obj.runs)
+                    obj.runs(jj).Reset();
+                end
+            end
+            obj.SubjsProcFlags(obj.iGroup, obj.iSubj, 0);
         end
         
         
@@ -202,8 +208,6 @@ classdef SubjClass < TreeNodeClass
             % procStream.Calc() to calculate proc stream for this subject
             vars = [];
             for iRun = 1:nRun
-                vars.dcRuns{iRun}        = r(iRun).procStream.output.GetVar('dc');
-                vars.dodRuns{iRun}       = r(iRun).procStream.output.GetVar('dod');
                 vars.dodAvgRuns{iRun}    = r(iRun).procStream.output.GetVar('dodAvg');
                 vars.dodAvgStdRuns{iRun} = r(iRun).procStream.output.GetVar('dodAvgStd');
                 vars.dodSum2Runs{iRun}   = r(iRun).procStream.output.GetVar('dodSum2');
@@ -233,6 +237,11 @@ classdef SubjClass < TreeNodeClass
                 obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
             end
             pause(.5);
+            
+            % Mark this subject as having processed data thereby taking up
+            % memory
+            obj.SubjsProcFlags(obj.iGroup, obj.iSubj, 1);
+            
         end
                 
         
@@ -416,15 +425,6 @@ classdef SubjClass < TreeNodeClass
         end
                 
 
-        % ----------------------------------------------------------------------------------        
-        function nbytes = MemoryRequired(obj)
-            nbytes = 0;
-            for ii=1:length(obj.runs)
-                nbytes = nbytes + obj.runs(ii).MemoryRequired();
-            end
-        end
-
-        
         % ----------------------------------------------------------------------------------
         function tblcells = GenerateTableCells_MeanHRF(obj, trange, width, iBlk)
             if ~exist('trange','var') || isempty(trange)

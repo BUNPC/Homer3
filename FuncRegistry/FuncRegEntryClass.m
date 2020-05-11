@@ -409,7 +409,7 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
             if isempty(usagename)
                 return;
             end            
-            for ii=1:length(obj.usageoptions)
+            for ii=1:size(obj.usageoptions,1)
                 if strcmp(obj.usageoptions{ii,1}, usagename)
                     fcallstr = obj.usageoptions{ii,2};
                     break;
@@ -421,9 +421,21 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
         % ----------------------------------------------------------------------------------
         function fcall = GetFuncCallDecoded(obj, usagename)
             fcall = FuncCallClass().empty();
-            for ii=1:length(obj.usageoptions)
+            for ii=1:size(obj.usageoptions,1)
                 if strcmp(obj.usageoptions{ii,1}, usagename)
                     fcall = obj.usageoptions{ii,4};
+                    break;
+                end
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function fcall = FindClosestMatch(obj, fcall0)
+            fcall = FuncCallClass().empty();
+            for ii=1:size(obj.usageoptions,1)
+                if fcall0.Compare(obj.usageoptions{ii,4}) > 50
+                    fcall = FuncCallClass(obj.usageoptions{ii,4});
                     break;
                 end
             end
@@ -457,7 +469,7 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function usagenames = GetUsageNames(obj)
-            usagenames = {};
+            usagenames = cell(size(obj.usageoptions,1));
             for jj=1:size(obj.usageoptions,1)
                 usagenames{jj} = obj.usageoptions{jj,1};
             end
@@ -505,15 +517,19 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                 return;
             end
             if isempty(obj.name)
+                fprintf('Function name not valid.\n')
                 return
             end
             if isempty(obj.uiname)
+                fprintf('UI NAME section not valid.\n')
                 return
             end
             if isempty(obj.usageoptions)
+                fprintf('USAGE OPTIONS section not valid.\n')
                 return
             end
             if isempty(obj.help)
+                fprintf('Function help section not valid.\n')
                 return
             end
             b = true;

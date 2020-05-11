@@ -14,12 +14,21 @@ classdef StimClass < FileLoadSaveClass
         
         % -------------------------------------------------------
         function obj = StimClass(varargin)
+            % Set class properties not part of the SNIRF format
+            obj.fileformat = 'hdf5';
+            obj.errmargin = 1e-3;
+
             if nargin==1 
                 if isa(varargin{1}, 'StimClass')
                     obj.Copy(varargin{1});
                 elseif ischar(varargin{1})
-                    obj.name = varargin{1};
-                    obj.data = [];
+                    if exist(varargin{1}, 'file')==2
+                        obj.filename = varargin{1};
+                        obj.Load(varargin{1});
+                    else
+                        obj.name = varargin{1};
+                        obj.data = [];
+                    end
                 end
             elseif nargin==3
                 s        = varargin{1};
@@ -40,84 +49,87 @@ classdef StimClass < FileLoadSaveClass
                 obj.data = [];
             end
             
-            % Set class properties not part of the SNIRF format
-            obj.fileformat = 'hdf5';
-            obj.errmargin = 1e-3;
         end
         
         
         % -------------------------------------------------------
-        function err = LoadHdf5(obj, fname, parent)
+        function err = LoadHdf5(obj, fileobj, location)
             err = 0;
             
             % Arg 1
-            if ~exist('fname','var') || ~exist(fname,'file')
-                fname = '';
+            if ~exist('fileobj','var') || (ischar(fileobj) && ~exist(fileobj,'file'))
+                fileobj = '';
             end
-            
+                        
             % Arg 2
-            if ~exist('parent', 'var')
-                parent = '/nirs/stim1';
-            elseif parent(1)~='/'
-                parent = ['/',parent];
+            if ~exist('location', 'var')
+                location = '/nirs/stim1';
+            elseif location(1)~='/'
+                location = ['/',location];
             end
             
-            % Do some error checking            
-            if ~isempty(fname)
-                obj.filename = fname;
-            else
-                fname = obj.filename;
-            end
-            if isempty(fname)
-               err=-1;
+            % Error checking            
+            if ~isempty(fileobj) && ischar(fileobj)
+                obj.filename = fileobj;
+            elseif isempty(fileobj)
+                fileobj = obj.filename;
+            end 
+            if isempty(fileobj)
+               err = -1;
                return;
             end
-            
-            %%%%%%%%%%%% Ready to load from file
-
-            try
-                obj.name = convertH5StrToStr(h5read(fname, [parent, '/name']));
-                obj.data = h5read(fname, [parent, '/data']);
-            catch
+               
+            try 
+                % Open group
+                [gid, fid] = HDF5_GroupOpen(fileobj, location);
+                
+                % Load datasets
+                obj.name   = convertH5StrToStr(HDF5_DatasetLoad(gid, 'name'));
+                obj.data   = HDF5_DatasetLoad(gid, 'data');
+                
+                % Close group
+                HDF5_GroupClose(fileobj, gid, fid);
+            catch ME
                 err = -1;
-                return;
+                return
             end
-            obj.err = err;
+            
         end
         
         
+        
         % -------------------------------------------------------
-        function SaveHdf5(obj, fname, parent)
+        function SaveHdf5(obj, fileobj, location)
             % Arg 1
-            if ~exist('fname', 'var') || isempty(fname)
+            if ~exist('fileobj', 'var') || isempty(fileobj)
                 error('Unable to save file. No file name given.')
             end
             
-            if ~exist(fname, 'file')
-                fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+            if ~exist(fileobj, 'file')
+                fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end
-            hdf5write_safe(fname, [parent, '/name'], obj.name);
+            hdf5write_safe(fileobj, [location, '/name'], obj.name);
             
             % Since this is a writable and variable size parameter, we want to 
             % use h5create and specify 'Inf' for the number of rows to
             % indicate variable number of rows
-            h5create(fname, [parent, '/data'], [Inf,3],'ChunkSize',[3,3]);
+            h5create(fileobj, [location, '/data'], [Inf,3],'ChunkSize',[3,3]);
             if ~isempty(obj.data)
-                h5write(fname,[parent, '/data'], obj.data, [1,1], size(obj.data));
+                h5write(fileobj,[location, '/data'], obj.data, [1,1], size(obj.data));
             end
         end
         
         
         
         % -------------------------------------------------------
-        function Update(obj, fname, parent)
-            if ~exist(fname, 'file')
-                fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+        function Update(obj, fileobj, location)
+            if ~exist(fileobj, 'file')
+                fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end
-            hdf5write_safe(fname, [parent, '/name'], obj.name);
-            h5write_safe(fname, [parent, '/data'], obj.data);
+            hdf5write_safe(fileobj, [location, '/name'], obj.name);
+            h5write_safe(fileobj, [location, '/data'], obj.data);
         end
         
         
@@ -393,7 +405,7 @@ classdef StimClass < FileLoadSaveClass
                 
         % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
-            nbytes = sizeof(obj.name) + sizeof(obj.data);
+            nbytes = sizeof(obj.name) + sizeof(obj.data) + sizeof(obj.filename) + sizeof(obj.fileformat) + sizeof(obj.supportedFomats) + 8;
         end
         
     end

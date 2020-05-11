@@ -1,6 +1,7 @@
-function status = unitTest_BandpassFilt_LPF(datafmt, dirname, newval, logger)
+function status = unitTest_BandpassFilt_LPF(datafmt, dirname, newval)
 global procStreamStyle
 global testidx
+global logger
 
 if isempty(procStreamStyle)
     procStreamStyle = datafmt;
@@ -27,9 +28,8 @@ end
 if ~exist('newval','var')
     newval = [];
 end
-if ~exist('logger','var') || isempty(logger)
-    logger = LogClass();
-end
+logger = InitLogger(logger);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set up logger and other administrative paramaters
@@ -103,9 +103,7 @@ end
 % Clean up before exiting
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 logger.Write('\n');
-if strcmp(logger.GetFilename(), 'History')
-    logger.Close();
-end
+logger.Close();
 
 cd(currpath);
 

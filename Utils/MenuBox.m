@@ -140,9 +140,9 @@ set(hf, 'visible','on', 'position',p);
 t = 0;
 while isempty(bttnId) && ishandles(hf)
     t=t+1;
-    pause(.1);
-    if mod(t,10)==0
-        % fprintf('Waiting for user responce, t = %d ticks\n', t);
+    pause(.2);
+    if mod(t,30)==0
+        fprintf('Waiting for user responce, t = %d ticks\n', t);
     end
 end
 

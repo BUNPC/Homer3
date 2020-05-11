@@ -1,6 +1,7 @@
-function status = unitTest_DefaultProcStream(datafmt, dirname, logger)
+function status = unitTest_DefaultProcStream(datafmt, dirname)
 global procStreamStyle
 global testidx
+global logger
 
 if isempty(procStreamStyle)
     procStreamStyle = datafmt;
@@ -21,9 +22,8 @@ end
 if ~exist('dirname','var')
     return;
 end
-if ~exist('logger','var') || isempty(logger)
-    logger = LogClass();
-end
+logger = InitLogger(logger);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set up logger and other administrative paramaters
@@ -95,9 +95,7 @@ end
 % Clean up before exiting
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 logger.Write('\n');
-if strcmp(logger.GetFilename(), 'History')
-    logger.Close();
-end
+logger.Close();
 
 cd(currpath);
 

@@ -232,7 +232,7 @@ classdef ProcResultClass < handle
                 if isempty(eval(sprintf('obj.%s', type)))
                     return;
                 end
-                yavg = eval(sprintf('obj.%s(iBlk).GetDataMatrix()', type));
+                yavg = eval(sprintf('obj.%s(iBlk).GetDataTimeSeries(''reshape'')', type));
             else
                 yavg = eval(sprintf('obj.%s', type));
             end
@@ -281,7 +281,7 @@ classdef ProcResultClass < handle
                 if isempty(eval(sprintf('obj.%s', type)))
                     return;
                 end
-                yavg = eval(sprintf('obj.%s(iBlk).GetDataMatrix()', type));
+                yavg = eval(sprintf('obj.%s(iBlk).GetDataTimeSeries(''reshape'')', type));
             else
                 yavg = eval(sprintf('obj.%s', type));
             end
@@ -311,6 +311,7 @@ classdef ProcResultClass < handle
         % ----------------------------------------------------------------------------------
         function y = GetDataTimeCourse(obj, type, iBlk)
             y = [];
+            options = '';
             
             % Check type argument
             if ~exist('type','var') || isempty(type)
@@ -328,7 +329,10 @@ classdef ProcResultClass < handle
                 if isempty(eval(sprintf('obj.%s', type)))
                     return;
                 end
-                y = eval(sprintf('obj.%s(iBlk).GetDataMatrix()', type));
+                if strcmp(type, 'dc') || strcmp(type, 'dcAvg') || strcmp(type, 'dodAvg')
+                    options = 'reshape';
+                end
+                y = eval(sprintf('obj.%s(iBlk).GetDataTimeSeries(options)', type));
             else
                 y = eval(sprintf('obj.%s', type));
             end
@@ -509,6 +513,19 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function b = IsEmpty(obj)
+            b=0;
+            if obj.HaveTimeCourseOutput()
+                return;
+            end
+            if obj.HaveBlockAvgOutput()
+                return;
+            end
+            b=1;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function n = GetNumChForOneCondition(obj, iBlk)
             n = 0;
             if nargin<2
@@ -517,6 +534,24 @@ classdef ProcResultClass < handle
             if isa(obj.dcAvg, 'DataClass')
                 n = length(obj.dcAvg(iBlk).GetMeasurementListIdxs(1));
             end            
+        end
+
+        
+        % ----------------------------------------------------------------------------------        
+        function nbytes = MemoryRequired(obj)
+            fields = properties(obj);
+            nbytes = zeros(length(fields),1);
+            for ii = 1:length(fields)
+                fieldstr = sprintf('obj.%s', fields{ii});
+                if ~eval('isempty(fieldstr)')
+                    if isa(eval(fieldstr), 'DataClass')
+                        nbytes(ii) =  eval(sprintf('%s.MemoryRequired();', fieldstr));
+                    else
+                        nbytes(ii) =  eval(sprintf('sizeof(%s);', fieldstr));
+                    end
+                end
+            end
+            nbytes = sum(nbytes);
         end
         
     end
@@ -557,7 +592,7 @@ classdef ProcResultClass < handle
             end
             tblcells = TableCell.empty();
             if isa(obj.dcAvg, 'DataClass')
-                dataTimeSeries = obj.dcAvg(iBlk).GetDataTimeSeries();                
+                dataTimeSeries = obj.dcAvg(iBlk).GetDataTimeSeries('');                
                 
                 % Data rows
                 for iCond = 1:length(CondNames)
@@ -584,7 +619,7 @@ classdef ProcResultClass < handle
             end
             tblcells = TableCell.empty();
             if isa(obj.dcAvg, 'DataClass')
-                dataTimeSeries = obj.dcAvg(iBlk).GetDataTimeSeries();
+                dataTimeSeries = obj.dcAvg(iBlk).GetDataTimeSeries('');
                 measList = obj.dcAvg(iBlk).measurementList;
                 
                 % Header: stim condition name row

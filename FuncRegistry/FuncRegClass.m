@@ -124,6 +124,8 @@ classdef FuncRegClass < matlab.mixin.Copyable
                 idx = length(obj.entries)+1;
                 obj.entries(idx) = FuncRegEntryClass(tmp);
                 obj.userfuncfiles{idx} = [obj.userfuncdir{1}, funcname];
+            else
+                fprintf('  Discarding %s. Function is not valid registry entry.\n', tmp.name)
             end
         end
         
@@ -135,7 +137,6 @@ classdef FuncRegClass < matlab.mixin.Copyable
             idx = obj.GetIdx(funcname);
             obj.entries(idx) = FuncRegEntryClass(funcname);
         end
-        
         
         
         
@@ -308,6 +309,24 @@ classdef FuncRegClass < matlab.mixin.Copyable
                 return;
             end
             fcall = obj.entries(idx).GetFuncCallDecoded(usagename);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function fcall = FindClosestMatch(obj, fcall0)
+            fcall = FuncCallClass().empty();
+            if isempty(obj)
+                return;
+            end
+            if nargin<2
+                return;
+            end
+            for ii=1:length(obj.entries)            
+                fcall = obj.entries(ii).FindClosestMatch(fcall0);
+                if ~isempty(fcall)
+                    break
+                end
+            end
         end
         
         

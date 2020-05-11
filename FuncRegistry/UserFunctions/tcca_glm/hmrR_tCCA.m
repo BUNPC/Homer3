@@ -121,8 +121,6 @@ if flagtCCA
         end
         
         %% Select and prepare aux channels
-        % lowpass filter aux signals from SNIRF aux argument
-        aux = hmrR_BandpassFilt(aux, 0, 0.5);
         % Extract variables from SNIRF aux
         kk = 1;
         for ii = 1:length(aux)

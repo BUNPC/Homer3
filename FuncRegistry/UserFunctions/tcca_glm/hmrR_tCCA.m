@@ -2,7 +2,7 @@
 % [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, flagtCCA, flagICRegressors, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting)
 %
 % UI NAME:
-% User_Friendly_Name_For_hmrR_tCCA
+% tCCA regressor generator
 %
 % DESCRIPTION:
 % This script generates regressors using the regularized temporally embedded
@@ -59,7 +59,7 @@
 function [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, flagtCCA, flagICRegressors, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting)
 
 %% COMMENTS/THOUGHTS/QUESTIONS ALEX
-% 2) Output canonical correlation coefficients as quality metric? 
+% 2) Output canonical correlation coefficients as quality metric?
 % 3) Output fNIRS signal(s)/Aux regressors for visualization/quality control?
 % 4) single channel (regressor) feature: regressor channel map currently assumes first half HbO, secon half HbR. CHECK HOW NEEDS TO BE ADAPTED FOR GLM?
 % 5) Implement the variable low/bandpass filter coefficients from previous processing stream !!!
@@ -78,14 +78,14 @@ param.ct = 0;   % correlation threshold for rtcca function, set here to 0 (will 
 % correlation used outside of the rtcc function
 ctr = tCCAparams(3);
 
-if flagtCCA       
+if flagtCCA
     
     SrcPos  = probe.GetSrcPos();
     DetPos  = probe.GetDetPos();
     
     for iBlk=1:length(data)
         
-        % Extract variables from array-of-data-blocks SNIRF arguments, hence the processing 
+        % Extract variables from array-of-data-blocks SNIRF arguments, hence the processing
         % from within the for loop. (see SNIRF spec on github.com for details on data blocks)
         d        = data(iBlk).GetDataTimeSeries('reshape');
         datatype = data(iBlk).GetDataTypeLabel();  % Get the input data type
@@ -104,8 +104,8 @@ if flagtCCA
         end
         lstSS = lst(find(rhoSD<=rhoSD_ssThresh)); %#ok<*FNDSB>
         lstLS = lst(find(rhoSD>rhoSD_ssThresh));
-               
-        %% get long and short separation data        
+        
+        %% get long and short separation data
         if strncmp(datatype{1}, 'Hb', 2)
             dHbO = squeeze(d(:,1,:));
             dHbR = squeeze(d(:,2,:));
@@ -119,11 +119,11 @@ if flagtCCA
         else
             return;
         end
-               
+        
         %% Select and prepare aux channels
-        % lowpass filter aux signals from SNIRF aux argument 
+        % lowpass filter aux signals from SNIRF aux argument
         aux = hmrR_BandpassFilt(aux, 0, 0.5);
-        % Extract variables from SNIRF aux 
+        % Extract variables from SNIRF aux
         kk = 1;
         for ii = 1:length(aux)
             % only selected aux channels
@@ -131,7 +131,7 @@ if flagtCCA
                 AUX(:,kk) = aux(ii).GetDataTimeSeries();
                 kk = kk+1;
             end
-        end        
+        end
         % AUX signals + add ss signal if it exists
         if ~isempty(d_short)
             AUX = [AUX, d_short]; % this should be of the current run
@@ -139,98 +139,112 @@ if flagtCCA
         % zscore AUX signals
         AUX = zscore(AUX);
         
+        param.NumOfEmb = ceil(timelag*fq / tCCAparams(2));
+
         %% DO THE TCCA WORK
         filterFilename = sprintf('./tCCAfilter_%d.txt', iBlk);
-        % number of embeddings
-        param.NumOfEmb = ceil(timelag*fq / param.tau);
-        if runIdx == runIdxResting
-            %% if the tCCAfilter variable is empty, learn and put it out (this is the training/resting run)
-            if flagICRegressors %% learn channel specific filters and regressors
-                for cc = 1:size(d_long,2)
-                    %% perform tCCA with shrinkage for each fNIRS channel
-                    [REG,  ADD] = rtcca_dummy(d_long(:,cc),AUX,param,flags);    %%%%%%% JD: rtcca generates error, "Undefined function or variable 'cshrink'". %%%%%%% 
-                    %% save individual regressor and channel map
-                    % return the reduced number of available regressors
-                    Aaux{iBlk}(:,cc) = REG(:,1);
-                    % assemble tCCA filter for channel specific regressors from individual reduced mapping matrices Av
-                    tCCAfilter(:,cc) = ADD.Av(:,1);
-                    % save channel-regressor map. First half HbO, second half HbR
-                    rcMap{iBlk}{cc} = cc;
-                end
-            else %% learn common set of regressors for all channels (default)
-                %% perform tCCA with shrinkage for all fNIRS channels
-                [REG,  ADD] = rtcca_dummy(d_long,AUX,param,flags);    %%%%%%% JD: rtcca generates error, "Undefined function or variable 'cshrink'". %%%%%%% 
-                %% save and output tCCA filter.
-                % reduce filter matrix with the help of correlation threshold or max number of regressors
-                
-                %%%%%%% JD: Undefined variable "ADD_trn" or class "ADD_trn.ccac". %%%%%%% 
-                if ctr < 1
-                    % use only auxiliary tcca components that have correlation > ct
-                    % compindex=find(ADD_trn.ccac>param.ct);
-                    compindex=1:10;
-                else
-                    % use only the first ctr auxiliary tcca components (fixed number of
-                    % regressors = ctr)
-                    % if numel(ADD_trn.ccac) >= ctr
-                    %     compindex = 1:ctr;
-                    % else % not as many components available as regressors requested, provide all
-                    %     compindex = 1:numel(ADD_trn.ccac);
-                    % end                    
-                    compindex=1:10;
-                end
-                % return the reduced number of available regressors
-                Aaux{iBlk} = REG(:,compindex);
-                % return reduced mapping matrix Av, this is the tCCA filter
-                tCCAfilter = ADD.Av(:,compindex);
-                
-                % set channel-regressor map to empty (GLM will use all available regressors for all channels)
-                rcMap{iBlk} = [];
-            end
-            fprintf('hmrR_tCCA: run idx = %d. Generated and Saved tCCAfilter\n', runIdx)
-            print_filter(tCCAfilter);
-            save(filterFilename, '-ascii', 'tCCAfilter');
-            
-        elseif exist(filterFilename,'file')
-            
-            %% if the tCCAfilter variable exists, apply the filtering and generate the tCCA regressors
-            fprintf('hmrR_tCCA: run idx = %d. Loading and Using tCCAfilter\n', runIdx)
-            % Load the filter for the iBlk data block
-            tCCAfilter = load(filterFilename,'-ascii');
-            print_filter(tCCAfilter);
-            
-            
-            % Temporal embedding and zscoring of auxiliary data
-            aux_sigs = AUX;
-            aux_emb = aux_sigs;
-            for i=1:param.NumOfEmb
-                aux = circshift(aux_sigs, i*param.tau, 1);
-                aux(1:2*i,:) = repmat(aux(2*i+1,:),2*i,1);
-                aux_emb = [aux_emb aux];
-            end
-            %zscore
-            % aux_emb = zscore(aux_emb);
-            aux_emb = 1;     % JD: Dummy value 
-            % Apply tCCA filter (generate regressors)
-            Aaux{iBlk} = aux_emb * tCCAfilter;
-            % if the individual channel regressor flag was set, indicate by providing rc mapping
-            if flagICRegressors
-                for cc = 1:size(d_long,2)
-                    % save channel-regressor map. First half HbO, second half HbR
-                    rcMap{iBlk}{cc} = cc;
-                end
-            else
-                rcMap{iBlk} = [];
-            end
-        
+        tCCAexists = isfile(sprintf('./tCCAfilter_%d.txt', iBlk));
+        isTrainingRun = runIdxResting == runIdx;
+        if ~tCCAexists && isTrainingRun
+            dotCCA = 'train';
+        elseif tCCAexists && ~isTrainingRun
+            dotCCA = 'apply';
         else
-            
-            Aaux{iBlk} = [];
-            rcMap{iBlk} = [];
-            % tCCAfilter = []; if uncommented, retraining necessary whenever tcca is temporarily flagged out of processing stream
-            
+            dotCCA = 'skip';
+        end
+
+        switch dotCCA
+            case 'train'
+                %% if the tCCAfilter variable is not existing, learn and save it (this is the training/resting run)
+                %       If flagICRegressors = 1,
+                %       then each column corresponds to an indiviudal channel
+                %       regressor. Otherwise, columns correspond to common regressors
+                %       for all channels in descending order ranked by canonical correlation coefficient
+                %       number of embeddings
+                if flagICRegressors %% learn channel specific filters and regressors
+                    for cc = 1:size(d_long,2)
+                        %% perform tCCA with shrinkage for each fNIRS channel
+                        [REG,  ADD] = rtcca_dummy(d_long(:,cc),AUX,param,flags);
+                        %% save individual regressor and channel map
+                        % return the reduced number of available regressors
+                        Aaux{iBlk}(:,cc) = REG(:,1);
+                        % assemble tCCA filter for channel specific regressors from individual reduced mapping matrices Av
+                        tCCAfilter(:,cc) = ADD.Av(:,1);
+                        % save channel-regressor map. First half HbO, second half HbR
+                        rcMap{iBlk}{cc} = cc;
+                    end
+                    % reshape (HbO first row, HbR second row)
+                    rcMap = reshape(rcMap,[2,numel(rcMap)/2]);
+                else %% learn common set of regressors for all channels (default)
+                    %% perform tCCA with shrinkage for all fNIRS channels
+                    [REG,  ADD] = rtcca_dummy(d_long,AUX,param,flags);                 %% save and output tCCA filter.
+                    %reduce filter matrix with the help of correlation threshold or max number of regressors
+                    if ctr < 1
+                        % use only auxiliary tcca components that have correlation > ct
+                        compindex=find(ADD_trn.ccac>param.ct);
+                        %% JD had a comment here as Undefined variable "ADD_trn" or class "ADD_trn.ccac"
+                    else
+                        % use only the first ctr auxiliary tcca components (fixed number of
+                        % regressors = ctr)
+                        if numel(ADD_trn.ccac) >= ctr
+                            compindex = 1:ctr;
+                        else % not as many components available as regressors requested, provide all
+                            compindex = 1:numel(ADD_trn.ccac);
+                        end
+                        
+                    end
+                    % return the reduced number of available regressors
+                    Aaux{iBlk} = REG(:,compindex);
+                    % return reduced mapping matrix Av, this is the tCCA filter
+                    tCCAfilter = ADD.Av(:,compindex);
+                    % set channel-regressor map to empty (GLM will use all available regressors for all channels)
+                    rcMap{iBlk} = 'all';
+                end
+                %% save tCCAfilter matrix that was learned from resting state data.
+                fprintf('hmrR_tCCA: run idx = %d. Generated and Saved tCCAfilter\n', runIdx)
+                print_filter(tCCAfilter);
+                save(filterFilename, '-ascii', 'tCCAfilter');
+                
+            case 'apply'
+                %% if the tCCAfilter variable exists, load it, apply the filtering and generate the tCCA regressors
+                % Load the filter for the iBlk data block
+                fprintf('hmrR_tCCA: run idx = %d. Loading and Using tCCAfilter\n', runIdx)
+                tCCAfilter = load(filterFilename,'-ascii');
+                print_filter(tCCAfilter);
+                
+                % Temporal embedding and zscoring of auxiliary data
+                aux_sigs = AUX;
+                aux_emb = aux_sigs;
+                for i=1:param.NumOfEmb
+                    aux = circshift(aux_sigs, i*param.tau, 1);
+                    aux(1:2*i,:) = repmat(aux(2*i+1,:),2*i,1);
+                    aux_emb = [aux_emb aux];
+                end
+                %zscore
+                aux_emb = zscore(aux_emb);
+                % Apply tCCA filter (generate regressors)
+                Aaux = aux_emb * tCCAfilter;
+                % if the individual channel regressor flag was set, indicate by providing rc mapping
+                if flagICRegressors
+                    for cc = 1:size(d_long,2)
+                        % save channel-regressor map. First half HbO, second half HbR
+                        rcMap{iBlk}{cc} = cc;
+                    end
+                    % reshape (HbO first row, HbR second row)
+                    rcMap = reshape(rcMap,[2,numel(rcMap)/2]);
+                else
+                    rcMap{iBlk} = 'all';
+                end
+            case 'skip'
+                Aaux = [];
+                rcMap = [];
         end
         
     end
+else
+    Aaux = [];
+    rcMap = [];
+    % tCCAfilter = []; if uncommented, retraining necessary whenever tcca is temporarily flagged out of processing stream
 end
 
 

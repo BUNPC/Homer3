@@ -175,7 +175,7 @@ if flagtCCA
                     rcMap = reshape(rcMap,[2,numel(rcMap)/2]);
                 else %% learn common set of regressors for all channels (default)
                     %% perform tCCA with shrinkage for all fNIRS channels
-                    [REG,  ADD] = rtcca_dummy(d_long,AUX,param,flags);                 %% save and output tCCA filter.
+                    [REG,  ADD_trn] = rtcca(d_long,AUX,param,flags);                 %% save and output tCCA filter.
                     %reduce filter matrix with the help of correlation threshold or max number of regressors
                     if ctr < 1
                         % use only auxiliary tcca components that have correlation > ct
@@ -194,7 +194,7 @@ if flagtCCA
                     % return the reduced number of available regressors
                     Aaux{iBlk} = REG(:,compindex);
                     % return reduced mapping matrix Av, this is the tCCA filter
-                    tCCAfilter = ADD.Av(:,compindex);
+                    tCCAfilter = ADD_trn.Av(:,compindex);
                     % set channel-regressor map to empty (GLM will use all available regressors for all channels)
                     rcMap{iBlk} = 'all';
                 end

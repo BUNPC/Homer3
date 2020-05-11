@@ -58,14 +58,12 @@
 %
 function [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, flagtCCA, flagICRegressors, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting)
 
-
 %% COMMENTS/THOUGHTS/QUESTIONS ALEX
 % 2) Output canonical correlation coefficients as quality metric?
 % 3) Output fNIRS signal(s)/Aux regressors for visualization/quality control?
 % 4) single channel (regressor) feature: regressor channel map currently assumes first half HbO, secon half HbR. CHECK HOW NEEDS TO BE ADAPTED FOR GLM?
 % 5) Implement the variable low/bandpass filter coefficients from previous processing stream !!!
-% 6) check/provide group session root directory
-
+%%
 
 %% flags and tCCA settings
 flags.pcaf =  [0 0]; % no pca of X or AUX
@@ -238,11 +236,11 @@ if flagtCCA
                 rcMap = [];
         end
         
-
     end
 else
     Aaux = [];
     rcMap = [];
+    % tCCAfilter = []; if uncommented, retraining necessary whenever tcca is temporarily flagged out of processing stream
 end
 
 

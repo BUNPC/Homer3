@@ -484,7 +484,7 @@ for iBlk=1:length(data_y)
                 if ischar(rcMap{iBlk}) % no channel map: use all tCCA regressors for one group of all channels
                     lstML = lstMLtmp(find(mlAct(lstMLtmp)==1));
                     At = [A(:,:,conc) Aaux]; 
-                elseif iscell(rcMap{iBlk}) % channel map: each single regressor corresponds to one channel (nCH groups)
+                elseif iscell(rcMap) % channel map: each single regressor corresponds to one channel (nCH groups)
                     lstML = lstMLtmp(find(mlAct(rcMap{iBlk}{conc,iSS})==1));
                     Atcca = Aaux(:,rcMap{conc,iSS});
                     At = [A(:,:,conc) Atcca];

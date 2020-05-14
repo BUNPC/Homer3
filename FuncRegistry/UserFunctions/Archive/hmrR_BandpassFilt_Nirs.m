@@ -20,7 +20,8 @@
 % y2 - filtered data
 %
 % USAGE OPTIONS:
-% Bandpass_Filter: dod = hmrR_BandpassFilt_Nirs( dod, t, hpf, lpf )
+% Bandpass_Filter_OpticalDensity: dod = hmrR_BandpassFilt(dod, fs, hpf, lpf)
+% Bandpass_Filter_Auxiliary: aux = hmrR_BandpassFilt(aux, fs, hpf, lpf)
 %
 % PARAMETERS:
 % hpf: [0.010]

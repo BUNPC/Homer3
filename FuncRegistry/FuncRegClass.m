@@ -368,19 +368,19 @@ classdef FuncRegClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
-        function usagestr = GetUsageStrDecorated(obj, funcname, usagehint)
+        function usagestr = GetUsageStrDecorated(obj, funcname, usageparam)
             usagestr = '';
             if ~exist('funcname','var')
                 return;
             end
-            if ~exist('usagename','var')
-                usagehint='';
+            if ~exist('usageparam','var')
+                usageparam='';
             end
             idx = obj.GetIdx(funcname);
             if isempty(idx)
                 return;
             end            
-            usagestr = obj.entries(idx).GetUsageStrDecorated(usagehint);
+            usagestr = obj.entries(idx).GetUsageStrDecorated(usageparam);
         end
 
     end

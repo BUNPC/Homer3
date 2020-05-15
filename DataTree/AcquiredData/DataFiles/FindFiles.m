@@ -65,7 +65,7 @@ while files.isempty()
                         q = MenuBox([msg{:}], {'YES','NO'}, 'center');
                     end
                     if q==2
-                        files = DataFilesClass(dirnameGroup);
+                        files = [];
                         return;
                     end
                 end

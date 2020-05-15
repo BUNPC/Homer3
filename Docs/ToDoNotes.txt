@@ -3,7 +3,7 @@ Issues to think about and address in the future:
 
 --------------
 Jan 31, 2019:
---------------
+
 
 -- Minor mistakes and tough to notice errors in the user function help can mean it's not loaded and parsed properly in the registry. Need to fix this. Maybe add a tool where you enter {function name, input names, output names, parameter names} and it generates help text in the hmr*.m file. 
 
@@ -25,9 +25,9 @@ c) DONE: ProcStreamEditGUI takes a long time to start and it's responce time is 
 d) Snirf HDF5 saving/loading 
 
 
------------------
+=====================================================
 Feb 1, 2019
------------------
+
 
 -- DONE: Make procStream.input.param part of the FuncClass. It is now part of the ProcInputClass which doesn't make sense and is annoying to work with.
 
@@ -39,9 +39,9 @@ Feb 1, 2019
 
 -- DONE: The unit test that tests different outputs for different values was revealed to be not valid, since faulty homer3 code that produces bad output will also produce a passing results.  Instead you have to have the correct result to compare against with non-default lpf values. Need to fix this. 
 
------------------
+=====================================================
 Feb 2, 2019
------------------
+
 
 -- Create a Simple basic LoggerClass to generate logging information for every Homer3 session, with version number, time stamps, etc. You should also be able to email the log as an attachment using a menu option. 
 
@@ -49,17 +49,17 @@ Feb 2, 2019
 
 -- DONE: DataFilesClass should use the same (acquisition-level) classes as the DataTreeClass to load and vet the data files. Also Homer3 should load the files ONLY ONCE not twice like it's done now. This will not only speed up the launching process but also make it much more coherent where the data files use the same mechanism to check their validity as the DataTreeClass object. 
 
-----------------
+=====================================================
 Mar 1, 2019
-----------------
+
 
 -- DONE: Come up with a modular object oriented way to update Homer3 display after changes in stimGUI. Right now it does not update unless you do it manually - that is after changing stimGUI you have to click on a control in Homer3 to see the stim changes in Homer3 display.
 
 -- DONE: Come up with a modular object oriented way to update Homer3 listboxFiles control when calculating proc stream. Right now it does not update. 
 
-----------------
+=====================================================
 Mar 12, 2019
-----------------
+
 
 -- DONE: Display the group folder as a directory tree in listbox files same as subject folders are displyed for consistency and coherence when determining default behavior of processing level and plot data type button selections.
 
@@ -69,9 +69,9 @@ Mar 12, 2019
 
 -- Add checks of dodAvg and dodAvg and dcAvg standard deviations to unit test. 
 
-----------------
+=====================================================
 Apr 10, 2019
-----------------
+
 
 -- Fix PlotProbe using different Y scales for multiple data blocks
 
@@ -81,22 +81,22 @@ Apr 10, 2019
 
 -- DONE: Add to data axes Fix y-range and Fix x-range features that are in Homer2_UI. These are very useful. 
 
-----------------
+=====================================================
 Apr 16, 2019
-----------------
+
 
 -- Check the at the channel dataTypeLabels that are being used conform to spec. 
 
 -- Instead of using hard coded numbers for dataTypeLabels to label channels, create a list of data type values in SnirfClass. 
 
-----------------
+=====================================================
 Apr 21, 2019
-----------------
+
 
 -- Generate dc and dod timecourses on the fly using active proc stream function when starting Homer3 to avoid having to save this in groupResults.mat. In order to save costly memory usage. 
 
 
-==========================
+=====================================================
 Nov 6, 2019
 
 Notes from fnirs course 2019
@@ -107,4 +107,8 @@ Notes from fnirs course 2019
 -- Generate SD file from Homer3
 
 
+=====================================================
+May 11, 2020
+
+-- When loading and rejecting outdated .snirf files, before asking the user about loading a different group folder check for presense of .nirs files and if they're present, do the cycle of telling user about the .nirs files and if they want to convert them to .snirf
 

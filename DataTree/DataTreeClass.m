@@ -16,7 +16,7 @@ classdef DataTreeClass <  handle
         
         % ---------------------------------------------------------------
         function obj = DataTreeClass(groupDirs, fmt, procStreamCfgFile)
-            global logger 
+            global logger
             
             obj.groups        = GroupClass().empty();
             obj.currElem      = TreeNodeClass().empty();
@@ -67,6 +67,7 @@ classdef DataTreeClass <  handle
             obj.SetCurrElem(1,1,1);
             
             obj.warningflag = 0;
+            
         end
         
         
@@ -76,15 +77,71 @@ classdef DataTreeClass <  handle
                 obj.logger.Close('DataTree');
             end
         end
-
-
+        
+        
         % --------------------------------------------------------------
-        function status = SelectOptionsWhenLoadFails(obj, ~)
-            status = -1;
+        function status = FoundDataFilesInOtherFormat(obj, dataInit)            
+            global supportedFormats
+            status = false;
+            k = [];
+
+            format0 = dataInit.type;
             
+            % Find index of another file format to try
+            for ii = 1:length(supportedFormats)
+                if ~isempty(findstr(dataInit.type, supportedFormats{ii,1}))
+                   k = ii;
+                   break;
+                end
+            end
+            if isempty(k)
+                return;
+            end
+            if k<length(supportedFormats) && k>1
+                k = k-1;
+            elseif k<length(supportedFormats)
+                k = k+1;
+            else
+                k = [];
+            end
+            if ~isempty(k)
+                dataInit = FindFiles(obj.dirnameGroup, supportedFormats{k});
+                if isempty(dataInit) || dataInit.isempty()
+                    return;
+                end
+            else
+                dataInit = [];
+            end
+            
+            if ~isempty(dataInit)
+                msg{1} = sprintf('Could not load any of the .%s files in the group folder but did find .%s files. ', format0, dataInit.type);
+                msg{3} = sprintf('Do you want to rename the .%s files to names with a .old extension, delete them or cancel? ', format0);
+                msg{2} = sprintf('NOTE: Renaming or deleting the .%s files will allow Homer3 to regenerate them from .%s file later.', ...
+                    format0, dataInit.type);
+                q = MenuBox([msg{:}], {'Rename (Recommended)','Delete','CANCEL'}, [], 90);
+                if q==1
+                    DeleteDataFiles(obj.dirnameGroup, format0, 'move')
+                    status = true;
+                elseif q==2
+                    DeleteDataFiles(obj.dirnameGroup, format0)
+                    status = true;
+                end
+            end            
+        end
+
+        
+        
+        % --------------------------------------------------------------
+        function status = SelectOptionsWhenLoadFails(obj)
+            status = -1;
+    
+            %             msg{1} = sprintf('Could not load any of the requested files in the group folder %s. ', obj.dirnameGroup);
+            %             msg{2} = sprintf('Do you want to select another group folder?');
+            %             q = MenuBox([msg{:}], {'YES','NO'});
+                        
             msg{1} = sprintf('Could not load any of the requested files in the group folder %s. ', obj.dirnameGroup);
             msg{2} = sprintf('Do you want to select another group folder?');
-            q = MenuBox([msg{:}], {'YES','NO'});
+            q = MenuBox([msg{:}], {'YES','NO'}, [], 110);
             if q==2
                 obj.logger.Write(sprintf('Skipping group folder %s...\n', obj.dirnameGroup));
                 obj.dirnameGroup = 0;
@@ -122,7 +179,9 @@ classdef DataTreeClass <  handle
                     
                     obj.LoadGroup(procStreamCfgFile);
                     if length(obj.groups) < iGnew
-                        if SelectOptionsWhenLoadFails(obj, dataInit)<0
+                        if obj.FoundDataFilesInOtherFormat(dataInit) 
+                            continue;
+                        elseif obj.SelectOptionsWhenLoadFails()<0
                             break;
                         end
                     end

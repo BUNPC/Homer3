@@ -1,4 +1,4 @@
-function [selection, hf] = MenuBox(msg, bttns, relativePos)
+function [selection, hf] = MenuBox(msg, bttns, relativePos, textLineWidth)
 global bttnId
 bttnId = [];
 
@@ -14,6 +14,9 @@ end
 if ~exist('relativePos','var') || isempty(relativePos)
     relativePos = 'center';
 end
+if ~exist('textLineWidth','var') || isempty(textLineWidth)
+    textLineWidth = 70;
+end
 
 title = 'MENU';
 
@@ -28,14 +31,14 @@ bttnstrlenmin = 7;
 nchar     = length(msg);
 nbttns    = length(bttns);
 if bttnstrlenmax<bttnstrlenmin
-    Wbttn = 2*bttnstrlenmin;
+    Wbttn = 2.1*bttnstrlenmin;
 else
-    Wbttn = 2*bttnstrlenmax;
+    Wbttn = 2.1*bttnstrlenmax;
 end
 Hbttn = 2.7;
 
-if Wbttn < 70
-    Wtext = 70;                       % In char units
+if Wbttn < textLineWidth
+    Wtext = textLineWidth;                       % In char units
 else
     Wtext = 1.1 * Wbttn;
 end

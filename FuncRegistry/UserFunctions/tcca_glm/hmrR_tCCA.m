@@ -75,7 +75,7 @@ param.tau = tCCAparams(2); %stepsize for embedding in samples (tune to sample fr
 timelag = tCCAparams(1);
 param.ct = 0;   % correlation threshold for rtcca function, set here to 0 (will be applied later)
 
-% correlation used outside of the rtcc function
+% correlation used outside of the rtcca function
 ctr = tCCAparams(3);
 
 if flagtCCA
@@ -234,6 +234,8 @@ if flagtCCA
             case 'skip'
                 Aaux = [];
                 rcMap = [];
+                %% put a user warning
+                %% if runIdxResting ~=1 put out warning to run the session again. 
         end
         
     end

@@ -6,12 +6,8 @@
 %
 % DESCRIPTION:
 % This script generates regressors using the regularized temporally embedded
-% Canonical Correlation Anlaysis described in detail in von Lühmann, NI,
-% 2020. Generated Aaux and rcMap are to be passed as an input to GLM function.
-% Reference code:  https://github.com/avolu/tCCA-GLM
-%
-% If you apply this method or want to learn more about it, please use the following
-% CITATION:
+% Canonical Correlation Anlaysis described in detail in von Lühmann, NeuroImage,
+% 2020. If you use this method, please use the following CITATION:
 % von Lühmann, Alexander, et al. "Improved physiological noise regression
 % in fNIRS: A multimodal extension of the General Linear Model using temporally
 % embedded Canonical Correlation Analysis." NeuroImage 208 (2020): 116472.
@@ -23,12 +19,12 @@
 % runIdx - the index of the run in a multi-run session
 % flagtCCA - turns the function on / off
 % flagICRegressors - selects regressor generation strategy:
-%            0/false - common set of regressors for all fNIRS channels (default)
-%            1/true - one individual regressor per fNIRS channel (true)
+%            (0/false): common set of regressors for all fNIRS channels
+%            (default), (1/true): one individual regressor per fNIRS channel
 % tCCAparams - These are the parameters for tCCA function
-%            1 - timelag
-%            2 - sts: step size
-%            3 - ctr: if <1  correlation threshold, if =>1 number of regressors.
+%            1 - 1 timelag [s]
+%            2 - 2 step size [samples]
+%            3 - 3 ctr if <1  correlation threshold, if =>1 number of regressors.
 %                   Redundant if flagICRegressors = 1;
 % tCCAaux_inx -  Indices of the aux channels to be used to generate regressors
 % rhoSD_ssThresh - max distance for a short separation measurement. Set =0

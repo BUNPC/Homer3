@@ -1,5 +1,5 @@
 % SYNTAX:
-% [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, flagtCCA, flagICRegressors, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting)
+% [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, flagtCCA, flagICRegressors, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting, tResting)
 %
 % UI NAME:
 % hmrR_tCCA
@@ -18,9 +18,9 @@
 % probe - SNIRF probe type containing source/detector geometry data (See SNIRF Spec for more details)
 % runIdx - the index of the run in a multi-run session
 % flagtCCA - turns the function on / off
-% flagICRegressors - selects regressor generation strategy:
-%            (0/false): common set of regressors for all fNIRS channels
-%            (default), (1/true): one individual regressor per fNIRS channel
+% flagICRegressors - selects regressor generation strategy. (0/false) chooses a common set 
+%           of regressors for all fNIRS channels. (1/true) generates one
+%           individual regressor per fNIRS channel.
 % tCCAparams - These are the parameters for tCCA function
 %            1 - 1 timelag [s]
 %            2 - 2 step size [samples]
@@ -32,6 +32,7 @@
 %          Follows the static estimate procedure described in Gagnon et al (2011).
 %          NeuroImage, 56(3), 1362?1371.
 % runIdxResting - resting state run index
+% tResting - start/stop time [s] to use from resting data for tCCA training
 %
 % OUTPUTS:
 % Aaux - A matrix of auxilliary regressors (#time points x #Aux regressors)
@@ -40,8 +41,8 @@
 %           Only relevant when flagICRegressors = 1, otherwise rcMap is empty.
 %
 % USAGE OPTIONS:
-% hmrR_tCCA_Concentration_Data: [Aaux, rcMap] = hmrR_tCCA(dc, aux, probe, iRun, flagtCCA, flagICRegressors, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting)
-% hmrR_tCCA_OD_Data: [Aaux, rcMap] = hmrR_tCCA(dod, aux, probe, iRun, flagtCCA, flagICRegressors, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting)
+% hmrR_tCCA_Concentration_Data: [Aaux, rcMap] = hmrR_tCCA(dc, aux, probe, iRun, flagtCCA, flagICRegressors, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting, tResting)
+% hmrR_tCCA_OD_Data: [Aaux, rcMap] = hmrR_tCCA(dod, aux, probe, iRun, flagtCCA, flagICRegressors, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting, tResting)
 %
 %
 % PARAMETERS:
@@ -51,8 +52,9 @@
 % tCCAaux_inx: [1 2 3 4 5 6 7 8]
 % rhoSD_ssThresh: 15.0
 % runIdxResting: 1
+% tResting: [30 210]
 %
-function [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, flagtCCA, flagICRegressors, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting)
+function [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, flagtCCA, flagICRegressors, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting, tResting)
 
 %% COMMENTS/THOUGHTS/QUESTIONS ALEX
 % 2) Output canonical correlation coefficients as quality metric?
@@ -73,6 +75,9 @@ param.ct = 0;   % correlation threshold for rtcca function, set here to 0 (will 
 
 % correlation used outside of the rtcca function
 ctr = tCCAparams(3);
+
+%checksum for tCCA filter file
+chksm = int16(7*flagICRegressors + sum(11*tCCAparams(:)) + sum(13*tCCAaux_inx(:)) + 17*rhoSD_ssThresh + 19*runIdxResting + sum(23*tResting(:)));
 
 if flagtCCA
     
@@ -136,8 +141,8 @@ if flagtCCA
         param.NumOfEmb = ceil(timelag*fq / tCCAparams(2));
 
         %% DO THE TCCA WORK
-        filterFilename = sprintf('./tCCAfilter_%d.txt', iBlk);
-        tCCAexists = isfile(sprintf('./tCCAfilter_%d.txt', iBlk));
+        filterFilename = sprintf('./tCCAfilter_%d_%d.txt', iBlk, chksm);
+        tCCAexists = isfile(sprintf('./tCCAfilter_%d_%d.txt', iBlk, chksm));
         isTrainingRun = runIdxResting == runIdx;
         if ~tCCAexists && isTrainingRun
             dotCCA = 'train';
@@ -155,6 +160,19 @@ if flagtCCA
                 %       regressor. Otherwise, columns correspond to common regressors
                 %       for all channels in descending order ranked by canonical correlation coefficient
                 %       number of embeddings
+                
+                % cut data to selected time window before training
+                % warning if resting segment is shorter than 1min
+                if diff(tResting)<60 
+                    msgbox('WARNING: tCCA training with less than 60s of data is not recommended!')
+                end
+                cstrt = find(t>=tResting(1));
+                cstp = find(t<=tResting(2));
+                cIdx = [cstrt(1):cstp(end)];
+                % cut
+                d_long = d_long(cIdx,:);
+                AUX = AUX(cIdx,:);
+                
                 if flagICRegressors %% learn channel specific filters and regressors
                     for cc = 1:size(d_long,2)
                         %% perform tCCA with shrinkage for each fNIRS channel
@@ -231,7 +249,11 @@ if flagtCCA
                 Aaux = [];
                 rcMap = [];
                 %% put a user warning
-                %% if runIdxResting ~=1 put out warning to run the session again. 
+                if runIdx == runIdxResting-1
+                    msgbox('tCCA raining (resting run) is not the first run. Other runs skipped. Please re-run the session for complete results.')
+                elseif runIdx >= runIdxResting
+                    msgbox('no tCCA filter trained. Please run training resting run or whole session first.')
+                end
         end
         
     end

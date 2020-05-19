@@ -32,7 +32,7 @@ classdef DataFilesClass < handle
             obj.errmsg = {};
             
             if nargin>2
-                if strcmp(varargin{2}, 'standalone')
+                if strcmp(varargin{3}, 'standalone')
                     skipconfigfile = true;
                 end
             end

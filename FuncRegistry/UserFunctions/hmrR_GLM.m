@@ -687,9 +687,6 @@ for iBlk=1:length(data_y)
     % Set other data blocks
     beta_blks{iBlk} = beta;
     yR_blks{iBlk}   = yR;
-    %
-    % debug
-    figure
-    plot (squeeze(yavg(:,2,:,2)))
+
 end
 

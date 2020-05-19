@@ -45,7 +45,7 @@ classdef AuxClass < FileLoadSaveClass
             end
             
             % Arg 2
-            if ~exist('location', 'var')
+            if ~exist('location', 'var') || isempty(location)
                 location = '/nirs/aux1';
             elseif location(1)~='/'
                 location = ['/',location];
@@ -67,7 +67,7 @@ classdef AuxClass < FileLoadSaveClass
                 % Open group
                 [gid, fid] = HDF5_GroupOpen(fileobj, location);
 
-                obj.name            = convertH5StrToStr(HDF5_DatasetLoad(gid, 'name'));
+                obj.name            = HDF5_DatasetLoad(gid, 'name');
                 obj.dataTimeSeries  = HDF5_DatasetLoad(gid, 'dataTimeSeries');
                 obj.time            = HDF5_DatasetLoad(gid, 'time');
                 obj.timeOffset      = HDF5_DatasetLoad(gid, 'timeOffset');
@@ -87,12 +87,19 @@ classdef AuxClass < FileLoadSaveClass
                 error('Unable to save file. No file name given.')
             end
             
+            % Arg 2
+            if ~exist('location', 'var') || isempty(location)
+                location = '/nirs/aux1';
+            elseif location(1)~='/'
+                location = ['/',location];
+            end
+            
             if ~exist(fileobj, 'file')
                 fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end     
             
-            hdf5write(fileobj, [location, '/name'], obj.name, 'WriteMode','append');
+            hdf5write_safe(fileobj, [location, '/name'], obj.name);
             hdf5write_safe(fileobj, [location, '/dataTimeSeries'], obj.dataTimeSeries);
             hdf5write_safe(fileobj, [location, '/time'], obj.time);
             hdf5write_safe(fileobj, [location, '/timeOffset'], obj.timeOffset);

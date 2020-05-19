@@ -12,6 +12,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
     properties (Access = private)
         fid
         gid
+        location
         nirs_tb;
     end
     
@@ -37,8 +38,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % Example 1:
             %   
             %   % Save .nirs file in SNIRF format
-            %   nirs = load('neuro_run01.nirs','-mat');
-            %   snirf1 = SnirfClass(nirs);
+            %   snirf1 = SnirfClass(load('neuro_run01.nirs','-mat'));
             %   snirf1.Save('neuro_run01.snirf');
             %   snirf1.Info()
             %
@@ -71,8 +71,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             obj.probe          = ProbeClass().empty();
             obj.aux            = AuxClass().empty();
             
-            % Set base class properties not part of the SNIRF format
+            % Set class properties NOT part of the SNIRF format
             obj.fileformat = 'hdf5';
+            obj.location = '/nirs';
             
             % See if we're loading .nirs data format
             if nargin>4
@@ -229,13 +230,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function err = LoadMetaDataTags(obj, fileobj, location)
+        function err = LoadMetaDataTags(obj, fileobj)
             err = 0;
-            if nargin<3
-                location = '/nirs';
-            end
             obj.metaDataTags = MetaDataTagsClass();
-            if obj.metaDataTags.LoadHdf5(fileobj, [location, '/metaDataTags']) < 0
+            if obj.metaDataTags.LoadHdf5(fileobj, [obj.location, '/metaDataTags']) < 0
                 err=-1;
             end
         end
@@ -243,17 +241,14 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function err = LoadData(obj, fileobj, location)
+        function err = LoadData(obj, fileobj)
             err = 0;
-            if nargin<3
-                location = '/nirs';
-            end
             ii=1;
             while 1
                 if ii > length(obj.data)
                     obj.data(ii) = DataClass;
                 end
-                if obj.data(ii).LoadHdf5(fileobj, [location, '/data', num2str(ii)]) < 0
+                if obj.data(ii).LoadHdf5(fileobj, [obj.location, '/data', num2str(ii)]) < 0
                     obj.data(ii).delete();
                     obj.data(ii) = [];
                     if ii==1
@@ -267,11 +262,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function err = LoadStim(obj, fileobj, location)
+        function err = LoadStim(obj, fileobj)
             err = 0;
-            if nargin<3
-                location = '/nirs';
-            end
             
             % Since we want to load stims in sorted order (i.e., according to alphabetical order
             % of condition names), first load to temporary variable.
@@ -280,7 +272,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 if ii > length(obj.stim)
                     obj.stim(ii) = StimClass;
                 end
-                if obj.stim(ii).LoadHdf5(fileobj, [location, '/stim', num2str(ii)]) < 0
+                if obj.stim(ii).LoadHdf5(fileobj, [obj.location, '/stim', num2str(ii)]) < 0
                     obj.stim(ii).delete();
                     obj.stim(ii) = [];
                     if ii==1
@@ -296,27 +288,21 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
 
         
         % -------------------------------------------------------
-        function err = LoadProbe(obj, fileobj, location)
+        function err = LoadProbe(obj, fileobj, ~)
             obj.probe = ProbeClass();
-            if nargin<3
-                location = '/nirs';
-            end
-            err = obj.probe.LoadHdf5(fileobj, [location, '/probe']);
+            err = obj.probe.LoadHdf5(fileobj, [obj.location, '/probe']);
         end
         
         
         % -------------------------------------------------------
-        function err = LoadAux(obj, fileobj, location)
+        function err = LoadAux(obj, fileobj)
             err = 0;
-            if nargin<3
-                location = '/nirs';
-            end
             ii=1;
             while 1
                 if ii > length(obj.aux)
                     obj.aux(ii) = AuxClass;
                 end
-                if obj.aux(ii).LoadHdf5(fileobj, [location, '/aux', num2str(ii)]) < 0
+                if obj.aux(ii).LoadHdf5(fileobj, [obj.location, '/aux', num2str(ii)]) < 0
                     obj.aux(ii).delete();
                     obj.aux(ii) = [];
                     if ii==1
@@ -330,21 +316,14 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function err = LoadHdf5(obj, fileobj, location)
+        function err = LoadHdf5(obj, fileobj, ~)
             err = 0;
             
             % Arg 1
             if ~exist('fileobj','var') || ~exist(fileobj,'file')
                 fileobj = '';
             end
-            
-            % Arg 2
-            if ~exist('location', 'var') || isempty(location)
-                location = '/nirs';
-            elseif location(1)~='/'
-                location = ['/',location];
-            end
-            
+                       
             % Error checking            
             if ~isempty(fileobj) && ischar(fileobj)
                 obj.filename = fileobj;
@@ -360,11 +339,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %%%%%%%%%%%% Ready to load from file
             
             try 
+                
                 % Open group
                 [obj.gid, obj.fid] = HDF5_GroupOpen(fileobj, '/');
                 
                 %%%% Load formatVersion
-                obj.formatVersion = convertH5StrToStr(HDF5_DatasetLoad(obj.gid, 'formatVersion'));
+                obj.formatVersion = HDF5_DatasetLoad(obj.gid, 'formatVersion');
             
                 %%%% Load metaDataTags
                 obj.LoadMetaDataTags(obj.fid);
@@ -379,13 +359,15 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 obj.LoadProbe(obj.fid);
                 
                 %%%% Load aux
-                obj.LoadAux(obj.fid);            
+                obj.LoadAux(obj.fid);
             
                 % Close group
                 HDF5_GroupClose(fileobj, obj.gid, obj.fid);
-            catch ME
+                
+            catch
+
                 err=-1;
-                rethrow(ME)
+                
             end
             
             if obj.fid>0
@@ -396,44 +378,44 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function SaveMetaDataTags(obj, fileobj, location)
-            obj.metaDataTags.SaveHdf5(fileobj, [location, '/metaDataTags']);
+        function SaveMetaDataTags(obj, fileobj)
+            obj.metaDataTags.SaveHdf5(fileobj, [obj.location, '/metaDataTags']);
         end
         
         
         
         % -------------------------------------------------------
-        function SaveData(obj, fileobj, location)
+        function SaveData(obj, fileobj)
             for ii=1:length(obj.data)
-                obj.data(ii).SaveHdf5(fileobj, [location, '/data', num2str(ii)]);
+                obj.data(ii).SaveHdf5(fileobj, [obj.location, '/data', num2str(ii)]);
             end
         end
         
         
         % -------------------------------------------------------
-        function SaveStim(obj, fileobj, location)
+        function SaveStim(obj, fileobj)
             for ii=1:length(obj.stim)
-                obj.stim(ii).SaveHdf5(fileobj, [location, '/stim', num2str(ii)]);
+                obj.stim(ii).SaveHdf5(fileobj, [obj.location, '/stim', num2str(ii)]);
             end
         end
         
         
         % -------------------------------------------------------
-        function SaveProbe(obj, fileobj, location)
-            obj.probe.SaveHdf5(fileobj, [location, '/probe']);
+        function SaveProbe(obj, fileobj)
+            obj.probe.SaveHdf5(fileobj, [obj.location, '/probe']);
         end
         
         
         % -------------------------------------------------------
-        function SaveAux(obj, fileobj, location)
+        function SaveAux(obj, fileobj)
             for ii=1:length(obj.aux)
-                obj.aux(ii).SaveHdf5(fileobj, [location, '/aux', num2str(ii)]);
+                obj.aux(ii).SaveHdf5(fileobj, [obj.location, '/aux', num2str(ii)]);
             end
         end
         
         
         % -------------------------------------------------------
-        function SaveHdf5(obj, fileobj, location)
+        function SaveHdf5(obj, fileobj, ~)
             % Arg 1
             if ~exist('fileobj','var') || isempty(fileobj)
                 error('Unable to save file. No file name given.')
@@ -443,38 +425,31 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if exist(fileobj, 'file')
                 delete(fileobj);
             end
-            fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
-            H5F.close(fid);
-            
-            if ~exist('location', 'var')
-                location = '/nirs';
-            elseif location(1)~='/'
-                location = ['/',location];
-            end
-            
+            obj.fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+            H5F.close(obj.fid);
+                       
             %%%%% Save this object's properties
             
             % Save formatVersion
             if isempty(obj.formatVersion)
                 obj.formatVersion = '1.10';
             end
-            hdf5write(fileobj, '/formatVersion', obj.formatVersion, 'WriteMode','append');
+            hdf5write_safe(fileobj, '/formatVersion', obj.formatVersion);
             
             % Save metaDataTags
-            obj.SaveMetaDataTags(fileobj, location);
+            obj.SaveMetaDataTags(fileobj);
             
             % Save data
-            obj.SaveData(fileobj, location);
+            obj.SaveData(fileobj);
             
             % Save stim
-            obj.SaveStim(fileobj, location);
+            obj.SaveStim(fileobj);
             
             % Save sd
-            obj.SaveProbe(fileobj, location);
+            obj.SaveProbe(fileobj);
             
             % Save aux
-            obj.SaveAux(fileobj, location);
-            
+            obj.SaveAux(fileobj);            
         end
        
         
@@ -528,7 +503,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             end
             B = true;
         end
-        
     end
     
     

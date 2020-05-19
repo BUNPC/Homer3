@@ -92,7 +92,7 @@ classdef MeasListClass < FileLoadSaveClass
             end
 
             % Arg 2
-            if ~exist('location', 'var')
+            if ~exist('location', 'var') || isempty(location)
                 location = '/nirs/data1/measurementList1';
             elseif location(1)~='/'
                 location = ['/',location];
@@ -118,7 +118,7 @@ classdef MeasListClass < FileLoadSaveClass
                 obj.detectorIndex   = HDF5_DatasetLoad(gid, 'detectorIndex');
                 obj.wavelengthIndex = HDF5_DatasetLoad(gid, 'wavelengthIndex');
                 obj.dataType        = HDF5_DatasetLoad(gid, 'dataType');
-                obj.dataTypeLabel   = convertH5StrToStr(HDF5_DatasetLoad(gid, 'dataTypeLabel', obj.dataTypeLabel));
+                obj.dataTypeLabel   = HDF5_DatasetLoad(gid, 'dataTypeLabel', obj.dataTypeLabel);
                 obj.detectorIndex   = HDF5_DatasetLoad(gid, 'detectorIndex');
                 obj.sourcePower     = HDF5_DatasetLoad(gid, 'sourcePower');
                 obj.sourcePower     = HDF5_DatasetLoad(gid, 'sourcePower');
@@ -142,20 +142,26 @@ classdef MeasListClass < FileLoadSaveClass
             end
             
             % Arg 2
+            if ~exist('location', 'var') || isempty(location)
+                location = '/nirs/data1/measurementList1';
+            elseif location(1)~='/'
+                location = ['/',location];
+            end
+            
             if ~exist(fileobj, 'file')
                 fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end
             
-            hdf5write(fileobj, [location, '/sourceIndex'], obj.sourceIndex, 'WriteMode','append');
-            hdf5write(fileobj, [location, '/detectorIndex'], obj.detectorIndex, 'WriteMode','append');
-            hdf5write(fileobj, [location, '/wavelengthIndex'], obj.wavelengthIndex, 'WriteMode','append');
-            hdf5write(fileobj, [location, '/dataType'], obj.dataType, 'WriteMode','append');
-            hdf5write(fileobj, [location, '/dataTypeLabel'], obj.dataTypeLabel, 'WriteMode','append');
-            hdf5write(fileobj, [location, '/dataTypeIndex'], obj.dataTypeIndex, 'WriteMode','append');
-            hdf5write(fileobj, [location, '/sourcePower'], obj.sourcePower, 'WriteMode','append');
-            hdf5write(fileobj, [location, '/detectorGain'], obj.detectorGain, 'WriteMode','append');
-            hdf5write(fileobj, [location, '/moduleIndex'], obj.moduleIndex, 'WriteMode','append');
+            hdf5write_safe(fileobj, [location, '/sourceIndex'], obj.sourceIndex);
+            hdf5write_safe(fileobj, [location, '/detectorIndex'], obj.detectorIndex);
+            hdf5write_safe(fileobj, [location, '/wavelengthIndex'], obj.wavelengthIndex);
+            hdf5write_safe(fileobj, [location, '/dataType'], obj.dataType);
+            hdf5write_safe(fileobj, [location, '/dataTypeLabel'], obj.dataTypeLabel);
+            hdf5write_safe(fileobj, [location, '/dataTypeIndex'], obj.dataTypeIndex);
+            hdf5write_safe(fileobj, [location, '/sourcePower'], obj.sourcePower);
+            hdf5write_safe(fileobj, [location, '/detectorGain'], obj.detectorGain);
+            hdf5write_safe(fileobj, [location, '/moduleIndex'], obj.moduleIndex);
         end
 
                 

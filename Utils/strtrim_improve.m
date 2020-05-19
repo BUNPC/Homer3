@@ -5,22 +5,11 @@ function  s = strtrim_improve(s0)
 % whitespaces including 0 to plain old spaces which strtrim
 % does handle.
 %
-% strtrim_improve also handles cell string arrays unlike strtrim
 %
-if ~iscell(s0)
-    s = {s0};
-else
-    s = s0;
-end
-
-for ii=1:length(s)
-    s{ii}(s{ii}<33) = ' ';
+s = s0;
+s(s<33) = ' ';     % Replace all non-printable chracters with spaces
     
-    % Feed the digeteable new string to strtrim.
-    s{ii} = strtrim(s{ii});
-end
+% Feed the digestable new string to strtrim.
+s = strtrim(s);
 
-if ~iscell(s0)
-    s = s{1};
-end
 

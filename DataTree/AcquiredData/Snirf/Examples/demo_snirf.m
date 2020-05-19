@@ -36,4 +36,7 @@ for ii=1:length(nirsfiles)
         fprintf('ERROR: Saved and loaded SnirfClass objects for %s are NOT equal\n', [fname,'.snirf']);
     end
     fprintf('\n');
+    
 end
+
+

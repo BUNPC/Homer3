@@ -23,48 +23,52 @@ classdef FileLoadSaveClass < matlab.mixin.Copyable
         
         
         % ---------------------------------------------------------
-        function Load(obj, filename, format)
+        function Load(obj, filename, format, params)
             if ~exist('filename','var')
                 filename = obj.filename;
             end
-            
             if ~exist('format','var')
                 format = obj.fileformat;
             elseif obj.Supported(format)
                 obj.fileformat = format;
             end
-            
+            if ~exist('params','var')
+                params = [];
+            end            
+                        
             switch(lower(format))
                 case obj.supportedFomats.matlab
-                    if ismethod(obj, 'LoadMat')
+                    if ismethod(obj, 'LoadMat', params)
                         obj.LoadMat(filename);
                     end
                 case obj.supportedFomats.hdf5
                     if ismethod(obj, 'LoadHdf5')
-                        obj.LoadHdf5(filename);
+                        obj.LoadHdf5(filename, params);
                     end
             end
         end
         
         
         % ---------------------------------------------------------
-        function Save(obj, filename, format)
+        function Save(obj, filename, format, params)
             if ~exist('filename','var')
                 filename = obj.filename;
-            end
-            
+            end            
             if ~exist('format','var')
                 format = obj.fileformat;
             end
-            
+            if ~exist('params','var')
+                params = [];
+            end            
+                       
             switch(lower(format))
                 case obj.supportedFomats.matlab
                     if ismethod(obj, 'SaveMat')
-                        obj.SaveMat(filename);
+                        obj.SaveMat(filename, params);
                     end
                 case obj.supportedFomats.hdf5
                     if ismethod(obj, 'SaveHdf5')
-                        obj.SaveHdf5(filename);
+                        obj.SaveHdf5(filename, params);
                     end
             end
         end

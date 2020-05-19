@@ -38,7 +38,13 @@ for j_item = 0:num_objs-1
         if ~isempty(regexp(name,'^[a-zA-Z].*'))
             dataset_loc = H5D.open(loc, name);
             try
+                % NOTE: HDF5 stores contiguous muti-dimensional arrays in row-major order.
+                % Matlab stores them in row-major order. We want to transpose the loaded data
+                % it back to Matlab's column-major storage order and thus get back the
+                % original array.
                 sub_data = H5D.read(dataset_loc, 'H5ML_DEFAULT', 'H5S_ALL','H5S_ALL','H5P_DEFAULT');
+                sub_data = HDF5_PostProcessing(sub_data);
+
                 H5D.close(dataset_loc);
             catch exc
                 H5D.close(dataset_loc);

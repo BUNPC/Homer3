@@ -30,6 +30,18 @@ classdef StimClass < FileLoadSaveClass
                         obj.data = [];
                     end
                 end
+            elseif nargin==2
+                if ischar(varargin{1})
+                    obj.filename = varargin{1};
+                    obj.Load(varargin{1}, obj.fileformat, varargin{2});
+                else
+                    t        = varargin{1};
+                    CondName = varargin{2};
+                    obj.name = CondName;
+                    for ii=1:length(t)
+                        obj.data(end+1,:) = [t(ii), 5, 1];
+                    end
+                end
             elseif nargin==3
                 s        = varargin{1};
                 t        = varargin{2};
@@ -37,13 +49,6 @@ classdef StimClass < FileLoadSaveClass
                 obj.name = CondName;
                 k = s>0;
                 obj.data = [t(k), 5*ones(length(t(k)),1), ones(length(t(k)),1)];
-            elseif nargin==2
-                t        = varargin{1};
-                CondName = varargin{2};
-                obj.name = CondName;
-                for ii=1:length(t)
-                    obj.data(end+1,:) = [t(ii), 5, 1];
-                end
             elseif nargin==0
                 obj.name = '';
                 obj.data = [];
@@ -62,7 +67,7 @@ classdef StimClass < FileLoadSaveClass
             end
                         
             % Arg 2
-            if ~exist('location', 'var')
+            if ~exist('location', 'var') || isempty(location)
                 location = '/nirs/stim1';
             elseif location(1)~='/'
                 location = ['/',location];
@@ -80,18 +85,22 @@ classdef StimClass < FileLoadSaveClass
             end
                
             try 
+                
                 % Open group
                 [gid, fid] = HDF5_GroupOpen(fileobj, location);
                 
                 % Load datasets
-                obj.name   = convertH5StrToStr(HDF5_DatasetLoad(gid, 'name'));
-                obj.data   = HDF5_DatasetLoad(gid, 'data');
+                obj.name   = HDF5_DatasetLoad(gid, 'name');
+                obj.data   = HDF5_DatasetLoad(gid, 'data', [], '2D');
                 
                 % Close group
                 HDF5_GroupClose(fileobj, gid, fid);
+                
             catch ME
+                
                 err = -1;
                 return
+                
             end
             
         end
@@ -105,23 +114,27 @@ classdef StimClass < FileLoadSaveClass
                 error('Unable to save file. No file name given.')
             end
             
+            % Arg 2
+            if ~exist('location', 'var') || isempty(location)
+                location = '/nirs/stim1';
+            elseif location(1)~='/'
+                location = ['/',location];
+            end
+                       
             if ~exist(fileobj, 'file')
                 fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end
             hdf5write_safe(fileobj, [location, '/name'], obj.name);
             
-            % Since this is a writable and variable size parameter, we want to 
-            % use h5create and specify 'Inf' for the number of rows to
-            % indicate variable number of rows
-            h5create(fileobj, [location, '/data'], [Inf,3],'ChunkSize',[3,3]);
+            % Since this is a writable writeable parameter AFTER it's creation, we 
+            % call hdf5write_safe with the 'rw' option
             if ~isempty(obj.data)
-                h5write(fileobj,[location, '/data'], obj.data, [1,1], size(obj.data));
+                hdf5write_safe(fileobj, [location, '/data'], obj.data, 'rw:2D');
             end
         end
         
-        
-        
+                
         % -------------------------------------------------------
         function Update(obj, fileobj, location)
             if ~exist(fileobj, 'file')
@@ -129,7 +142,7 @@ classdef StimClass < FileLoadSaveClass
                 H5F.close(fid);
             end
             hdf5write_safe(fileobj, [location, '/name'], obj.name);
-            h5write_safe(fileobj, [location, '/data'], obj.data);
+            hdf5write_safe(fileobj, [location, '/data'], obj.data, 'w');
         end
         
         
@@ -146,6 +159,13 @@ classdef StimClass < FileLoadSaveClass
             if ~strcmp(obj.name, obj2.name)
                 return;
             end
+            
+            % Dimensions matter so dimensions must equal
+            if ~all(size(obj.data)==size(obj2.data))
+                return;
+            end
+            
+            % Now check contents
             if ~all(obj.data(:)==obj2.data(:))
                 return;
             end

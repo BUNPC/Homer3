@@ -75,7 +75,7 @@ classdef ProbeClass < FileLoadSaveClass
             end
                         
             % Arg 2
-            if ~exist('location', 'var')
+            if ~exist('location', 'var') || isempty(location)
                 location = '/nirs/probe';
             elseif location(1)~='/'
                 location = ['/',location];
@@ -99,25 +99,17 @@ classdef ProbeClass < FileLoadSaveClass
                 % Load datasets
                 obj.wavelengths               = HDF5_DatasetLoad(gid, 'wavelengths');
                 obj.wavelengthsEmission       = HDF5_DatasetLoad(gid, 'wavelengthsEmission');
-                obj.sourcePos                 = HDF5_DatasetLoad(gid, 'sourcePos');
-                obj.detectorPos               = HDF5_DatasetLoad(gid, 'detectorPos');
+                obj.sourcePos                 = HDF5_DatasetLoad(gid, 'sourcePos', [], '2D');
+                obj.detectorPos               = HDF5_DatasetLoad(gid, 'detectorPos', [], '2D');
                 obj.frequency                 = HDF5_DatasetLoad(gid, 'frequency');
                 obj.timeDelay                 = HDF5_DatasetLoad(gid, 'timeDelay');
                 obj.timeDelayWidth            = HDF5_DatasetLoad(gid, 'timeDelayWidth');
                 obj.momentOrder               = HDF5_DatasetLoad(gid, 'momentOrder');
                 obj.correlationTimeDelay      = HDF5_DatasetLoad(gid, 'correlationTimeDelay');
                 obj.correlationTimeDelayWidth = HDF5_DatasetLoad(gid, 'correlationTimeDelayWidth');
-                sourceLabels                  = HDF5_DatasetLoad(gid, 'sourceLabels')'; %#ok<*PROPLC>
-                detectorLabels                = HDF5_DatasetLoad(gid, 'detectorLabels')';
-
-                
-                for ii=1:size(sourceLabels,1)
-                    obj.sourceLabels{ii} = convertH5StrToStr(sourceLabels(ii,:)); 
-                end
-                for ii=1:size(detectorLabels,1)
-                    obj.detectorLabels{ii} = convertH5StrToStr(detectorLabels(ii,:)); 
-                end
-                
+                obj.sourceLabels              = HDF5_DatasetLoad(gid, 'sourceLabels', obj.sourceLabels); %#ok<*PROPLC>
+                obj.detectorLabels            = HDF5_DatasetLoad(gid, 'detectorLabels', obj.detectorLabels);
+                                
                 % Close group
                 HDF5_GroupClose(fileobj, gid, fid);
             catch 
@@ -134,20 +126,27 @@ classdef ProbeClass < FileLoadSaveClass
                 error('Unable to save file. No file name given.')
             end
             
+            % Arg 2
+            if ~exist('location', 'var') || isempty(location)
+                location = '/nirs/probe';
+            elseif location(1)~='/'
+                location = ['/',location];
+            end
+            
             if ~exist(fileobj, 'file')
                 fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end     
             hdf5write_safe(fileobj, [location, '/wavelengths'], obj.wavelengths);
             hdf5write_safe(fileobj, [location, '/wavelengthsEmission'], obj.wavelengthsEmission);
-            h5write_safe(fileobj, [location, '/sourcePos'], obj.sourcePos);
-            h5write_safe(fileobj, [location, '/detectorPos'], obj.detectorPos);
-            hdf5write(fileobj, [location, '/frequency'], obj.frequency, 'WriteMode','append');
-            hdf5write(fileobj, [location, '/timeDelay'], obj.timeDelay, 'WriteMode','append');
-            hdf5write(fileobj, [location, '/timeDelayWidth'], obj.timeDelayWidth, 'WriteMode','append');
+            hdf5write_safe(fileobj, [location, '/sourcePos'], obj.sourcePos, 'rw:2D');
+            hdf5write_safe(fileobj, [location, '/detectorPos'], obj.detectorPos, 'rw:2D');
+            hdf5write_safe(fileobj, [location, '/frequency'], obj.frequency);
+            hdf5write_safe(fileobj, [location, '/timeDelay'], obj.timeDelay);
+            hdf5write_safe(fileobj, [location, '/timeDelayWidth'], obj.timeDelayWidth);
             hdf5write_safe(fileobj, [location, '/momentOrder'], obj.momentOrder);
-            hdf5write(fileobj, [location, '/correlationTimeDelay'], obj.correlationTimeDelay, 'WriteMode','append');
-            hdf5write(fileobj, [location, '/correlationTimeDelayWidth'], obj.correlationTimeDelayWidth, 'WriteMode','append');
+            hdf5write_safe(fileobj, [location, '/correlationTimeDelay'], obj.correlationTimeDelay);
+            hdf5write_safe(fileobj, [location, '/correlationTimeDelayWidth'], obj.correlationTimeDelayWidth);
             hdf5write_safe(fileobj, [location, '/sourceLabels'], obj.sourceLabels);
             hdf5write_safe(fileobj, [location, '/detectorLabels'], obj.detectorLabels);
         end

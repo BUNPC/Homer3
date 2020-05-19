@@ -35,7 +35,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             end
             
             % Arg 2
-            if ~exist('location', 'var')
+            if ~exist('location', 'var') || isempty(location)
                 location = '/nirs/metaDataTags';
             elseif location(1)~='/'
                 location = ['/',location];
@@ -56,16 +56,18 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             %%%%%%%%%%%% Ready to load from file
 
             try
+                
                 % Open group
                 [gid, fid] = HDF5_GroupOpen(fileobj, location);
                 
                 metaDataStruct = h5loadgroup(gid);
                 tags = fieldnames(metaDataStruct); %#ok<*PROPLC>
                 for ii=1:length(tags)
-                    eval(sprintf('obj.tags.%s = convertH5StrToStr(metaDataStruct.%s);', tags{ii}, tags{ii}));
+                    eval(sprintf('obj.tags.%s = metaDataStruct.%s;', tags{ii}, tags{ii}));
                 end
                 
                 HDF5_GroupClose(fileobj, gid, fid);
+                
             catch
                 
                 err = -1;
@@ -82,13 +84,20 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
                 error('Unable to save file. No file name given.')
             end
             
+            % Arg 2
+            if ~exist('location', 'var') || isempty(location)
+                location = '/nirs/metaDataTags';
+            elseif location(1)~='/'
+                location = ['/',location];
+            end
+            
             if ~exist(fileobj, 'file')
                 fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end
             props = propnames(obj.tags);
             for ii=1:length(props)
-                eval(sprintf('hdf5write_safe(fileobj, [location, ''/%s''], obj.tags.%s)', props{ii}, props{ii}));
+                eval(sprintf('hdf5write_safe(fileobj, [location, ''/%s''], obj.tags.%s);', props{ii}, props{ii}));
             end
         end
         

@@ -109,7 +109,7 @@ classdef DataClass < FileLoadSaveClass
             end
                       
             % Arg 2
-            if ~exist('location', 'var')
+            if ~exist('location', 'var') || isempty(location)
                 location = '/nirs/data1';
             elseif location(1)~='/'
                 location = ['/',location];
@@ -162,6 +162,13 @@ classdef DataClass < FileLoadSaveClass
         function SaveHdf5(obj, fileobj, location)
             if ~exist('fileobj', 'var') || isempty(fileobj)
                 error('Unable to save file. No file name given.')
+            end
+            
+            % Arg 2
+            if ~exist('location', 'var') || isempty(location)
+                location = '/nirs/data1';
+            elseif location(1)~='/'
+                location = ['/',location];
             end
             
             if ~exist(fileobj, 'file')
@@ -575,6 +582,15 @@ classdef DataClass < FileLoadSaveClass
         % -------------------------------------------------------
         function B = eq(obj, obj2)
             B = false;
+            if length(obj.dataTimeSeries(:)) ~= length(obj2.dataTimeSeries(:))
+                return;
+            end
+            if ndims(obj.dataTimeSeries) ~= ndims(obj2.dataTimeSeries)
+                return;
+            end
+            if ~all(size(obj.dataTimeSeries)==size(obj2.dataTimeSeries))
+                return;
+            end
             if ~all(obj.dataTimeSeries(:)==obj2.dataTimeSeries(:))
                 return;
             end

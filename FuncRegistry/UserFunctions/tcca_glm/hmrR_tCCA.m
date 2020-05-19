@@ -18,7 +18,7 @@
 % probe - SNIRF probe type containing source/detector geometry data (See SNIRF Spec for more details)
 % runIdx - the index of the run in a multi-run session
 % flagtCCA - turns the function on / off
-% flagICRegressors - selects regressor generation strategy. (0/false) chooses a common set 
+% flagICRegressors - selects regressor generation strategy. (0/false) chooses a common set
 %           of regressors for all fNIRS channels. (1/true) generates one
 %           individual regressor per fNIRS channel.
 % tCCAparams - These are the parameters for tCCA function
@@ -139,7 +139,7 @@ if flagtCCA
         AUX = zscore(AUX);
         
         param.NumOfEmb = ceil(timelag*fq / tCCAparams(2));
-
+        
         %% DO THE TCCA WORK
         filterFilename = sprintf('./tCCAfilter_%d_%d.txt', iBlk, chksm);
         tCCAexists = isfile(sprintf('./tCCAfilter_%d_%d.txt', iBlk, chksm));
@@ -151,7 +151,7 @@ if flagtCCA
         else
             dotCCA = 'skip';
         end
-
+        
         switch dotCCA
             case 'train'
                 %% if the tCCAfilter variable is not existing, learn and save it (this is the training/resting run)
@@ -163,7 +163,7 @@ if flagtCCA
                 
                 % cut data to selected time window before training
                 % warning if resting segment is shorter than 1min
-                if diff(tResting)<60 
+                if diff(tResting)<60
                     msgbox('WARNING: tCCA training with less than 60s of data is not recommended!')
                 end
                 cstrt = find(t>=tResting(1));
@@ -206,12 +206,13 @@ if flagtCCA
                         
                     end
                     % return the reduced number of available regressors
-                    Aaux{iBlk} = REG(:,compindex);
+                    Aaux = REG(:,compindex);
                     % return reduced mapping matrix Av, this is the tCCA filter
                     tCCAfilter = ADD_trn.Av(:,compindex);
                     % set channel-regressor map to empty (GLM will use all available regressors for all channels)
                     rcMap{iBlk} = 'all';
                 end
+                Aaux = []; % we do not want to use regressors for the resting run
                 %% save tCCAfilter matrix that was learned from resting state data.
                 fprintf('hmrR_tCCA: run idx = %d. Generated and Saved tCCAfilter\n', runIdx)
                 save(filterFilename, '-ascii', 'tCCAfilter');
@@ -221,7 +222,7 @@ if flagtCCA
                 % Load the filter for the iBlk data block
                 fprintf('hmrR_tCCA: run idx = %d. Loading and Using tCCAfilter\n', runIdx)
                 tCCAfilter = load(filterFilename,'-ascii');
-               
+                
                 % Temporal embedding and zscoring of auxiliary data
                 aux_sigs = AUX;
                 aux_emb = aux_sigs;

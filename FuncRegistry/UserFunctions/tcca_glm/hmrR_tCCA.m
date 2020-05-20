@@ -177,7 +177,7 @@ if flagtCCA
                     %reduce filter matrix with the help of correlation threshold or max number of regressors
                     if ctr < 1
                         % use only auxiliary tcca components that have correlation > ct
-                        compindex=find(ADD_trn.ccac>param.ct);
+                        compindex=find(ADD_trn.ccac > ctr);
                     else
                         % use only the first ctr auxiliary tcca components (fixed number of
                         % regressors = ctr)

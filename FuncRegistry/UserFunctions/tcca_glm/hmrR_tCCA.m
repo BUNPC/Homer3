@@ -249,7 +249,7 @@ if flagtCCA
                 %% put a user warning
                 if runIdx == runIdxResting-1
                     msgbox('tCCA raining (resting run) is not the first run. Other runs skipped. Please re-run the session for complete results.')
-                elseif runIdx >= runIdxResting
+                elseif runIdx > runIdxResting
                     msgbox('no tCCA filter trained. Please run training resting run or whole session first.')
                 end
         end

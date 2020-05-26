@@ -68,8 +68,8 @@ class ProbeClass(ErrorClass):
 
         self.wavelengths          = np.array(fid.get(location + '/wavelengths'))
         self.wavelengthsEmission  = fid.get(location + '/wavelengthsEmission')
-        self.sourcePos  = np.array(fid.get(location + '/sourcePos'))
-        self.detectorPos  = np.array(fid.get(location + '/detectorPos'))
+        self.sourcePos2D  = np.array(fid.get(location + '/sourcePos2D'))
+        self.detectorPos2D  = np.array(fid.get(location + '/detectorPos2D'))
         self.frequency  = np.array(fid.get(location + '/frequency'))
         self.timeDelay  = 0
         self.timeDelayWidth  = 0
@@ -86,12 +86,12 @@ class ProbeClass(ErrorClass):
     def Print(self):
         sys.stdout.write('  wavelengths = %s\n'% self.wavelengths)
         sys.stdout.write('  wavelengthsEmission = %s\n'% self.wavelengthsEmission)
-        sys.stdout.write('  sourcePos:\n')
-        for ii in range(0, self.sourcePos.shape[0]):
-            sys.stdout.write('      %s\n'% self.sourcePos[ii])
-        sys.stdout.write('  detectorPos:\n')
-        for ii in range(0, self.detectorPos.shape[0]):
-            sys.stdout.write('      %s\n'% self.detectorPos[ii])
+        sys.stdout.write('  sourcePos2D:\n')
+        for ii in range(0, self.sourcePos2D.shape[0]):
+            sys.stdout.write('      %s\n'% self.sourcePos2D[ii])
+        sys.stdout.write('  detectorPos2D:\n')
+        for ii in range(0, self.detectorPos2D.shape[0]):
+            sys.stdout.write('      %s\n'% self.detectorPos2D[ii])
         sys.stdout.write('  frequency = %s\n'% self.frequency)
         sys.stdout.write('  timeDelay = %s\n'% self.timeDelay)
         sys.stdout.write('  timeDelayWidth = %s\n'% self.timeDelayWidth)
@@ -218,7 +218,8 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         filenames[0] =  sys.argv[1]
     else:
-        filenames = glob.glob('./Examples/*.snirf')
+        filenames = glob.glob('../../../../snirf-samples/basic/*.snirf')
+        # filenames = glob.glob('./Examples/*.snirf')
 
     for ii in range(0, len(filenames)):
         sys.stdout.write('======================================================================\n')

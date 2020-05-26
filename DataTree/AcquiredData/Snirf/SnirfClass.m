@@ -450,6 +450,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Save aux
             obj.SaveAux(fileobj);            
+
         end
        
         

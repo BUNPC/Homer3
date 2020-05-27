@@ -9,6 +9,7 @@ if ~exist('legal_options','var')
             {'mvpathconfl','rmpathconfl'}
             {'quiet','verbose'}
             {'fluence_simulate','nofluence_simulate'}
+            {'diffnames','nodiffnames'}
         };
 end
 

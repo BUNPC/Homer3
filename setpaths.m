@@ -25,6 +25,8 @@ function setpaths(options_str)
 %           {'mvpathconfl','rmpathconfl'}  (default: mvpathconfl) 'conflcheck' option must be selected 
 %                                                                  for this this option not to be ignored
 %           {'quiet','verbose'}            (default: quiet)
+%           {'nodiffnames','diffnames'}    (default: nodiffnames) Diffs files that share a name with a file already on the path
+% 
 %    
 % EXAMPLES:
 %
@@ -77,13 +79,40 @@ end
 %     end
 % end
 
-
 % Add or remove paths for this application
 rootpath = pwd;
 rootpath(rootpath=='\')='/';
 paths_str = '';
+
+dnum = 0;
+diffqueue = {};  % Files to be diff'd
+
 for ii=1:length(paths)
     paths{ii} = [rootpath, paths{ii}];
+    
+    if options.diffnames
+        
+    % See if any of the imported functions already exist
+    
+        files = dir(fullfile(paths{ii},'*.m'));
+        
+        for f = 1:length(files)
+            % When exists returns 2 but excluding the working dir
+            if ( (exist(files(f).name(1:end-2),'file') == 2) & (~isequal(files(f).folder,pwd())) )
+                
+                fprintf("This file shadows one already on the path: %s\n",[files(f).folder '\' files(f).name(1:end-2)]);
+                fprintf("Here is the original: %s\n", which(files(f).name(1:end-2)));
+                
+                if (strcmp( fileread([files(f).folder '\' files(f).name]), fileread(which(files(f).name(1:end-2))) ))
+                   fprintf("The files are the same.\n") 
+                else
+                   fprintf("The files have some differences.\n")
+                   dnum = dnum + 1;
+                   diffqueue{end+1} = {[files(f).folder '\' files(f).name], which(files(f).name(1:end-2))};
+                end
+            end            
+        end        
+    end
     
     if options.verbose
         if options.add
@@ -100,8 +129,20 @@ for ii=1:length(paths)
     end
     
     paths_str = [paths_str, delimiter, paths{ii}];
+    
 end
 
+% If there are different files with same name
+if dnum > 0
+   fprintf('There are %i files that shadow different files already on the path.\n', dnum);
+    diffchoice = input(sprintf('Would you like to diff them now? y/n '),'s'); 
+    if (size(diffchoice,2) > 0) & ((diffchoice == 'y') | (diffchoice == 'yes'))
+        for i = 1:size(diffqueue,2)
+            % Use visual diff tool
+            visdiff(diffqueue{i}{1}, diffqueue{i}{2});
+        end
+    end
+end
 
 % Add current workspace at the top of the stack of conflicting workspaces
 wspaths = [pwd; wspaths];
@@ -118,8 +159,6 @@ else
     fprintf('REMOVED search paths for workspace %s\n', pwd);
     rmpath(paths_excl_str{1});
 end
-
-
 
 
 % ---------------------------------------------------

@@ -11,6 +11,19 @@ sys.path.append(rootpath)
 from DataFiles.Hdf5.hdf5lib import h5getstr
 
 
+# ---------------------------------------------------------------------------
+def PrintArraySize(v, vname):
+    if len(v.shape)==1:
+        nrows = v.shape[0]
+        ncols = 1
+    elif len(v.shape)==2:
+        nrows = v.shape[0]
+        ncols = v.shape[1]
+    sys.stdout.write('%s = [%d x %d]\n'% (vname, nrows, ncols))
+
+
+
+
 ############################################################
 class ErrorClass:
     # -----------------------------------------------------------
@@ -55,9 +68,8 @@ class DataClass(ErrorClass):
 
     # -----------------------------------------------------------
     def Print(self):
-        sys.stdout.write('  dataTimeSeries = [%d x %d]\n'% (self.dataTimeSeries.shape[0], self.dataTimeSeries.shape[1]))
-        sys.stdout.write('  time = %d\n'% self.time.shape[0])
-
+        PrintArraySize(self.dataTimeSeries, '  dataTimeSeries')
+        PrintArraySize(self.time, '  time')
 
 
 ############################################################
@@ -70,14 +82,14 @@ class ProbeClass(ErrorClass):
         self.wavelengthsEmission  = fid.get(location + '/wavelengthsEmission')
         self.sourcePos2D  = np.array(fid.get(location + '/sourcePos2D'))
         self.detectorPos2D  = np.array(fid.get(location + '/detectorPos2D'))
-        self.frequency  = np.array(fid.get(location + '/frequency'))
+        self.frequencies  = np.array(fid.get(location + '/frequencies'))
         self.timeDelay  = 0
         self.timeDelayWidth  = 0
         self.momentOrder = []
         self.correlationTimeDelay = 0
         self.correlationTimeDelayWidth = 0
-        self.sourceLabels = h5getstr(fid, location + '/sourceLabels')
-        self.detectorLabels = h5getstr(fid, location + '/detectorLabels')
+        self.sourceLabels = np.array(fid.get(location + '/sourceLabels'))
+        self.detectorLabels = np.array(fid.get(location + '/detectorLabels'))
 
         ErrorClass.__init__(self)
 
@@ -92,7 +104,7 @@ class ProbeClass(ErrorClass):
         sys.stdout.write('  detectorPos2D:\n')
         for ii in range(0, self.detectorPos2D.shape[0]):
             sys.stdout.write('      %s\n'% self.detectorPos2D[ii])
-        sys.stdout.write('  frequency = %s\n'% self.frequency)
+        sys.stdout.write('  frequencies = %s\n'% self.frequencies)
         sys.stdout.write('  timeDelay = %s\n'% self.timeDelay)
         sys.stdout.write('  timeDelayWidth = %s\n'% self.timeDelayWidth)
         sys.stdout.write('  momentOrder = %s\n'% self.momentOrder)
@@ -125,6 +137,31 @@ class StimClass(ErrorClass):
         if not self.name:
             return True
         if (self.data.all()==None) or (len(self.data)==0):
+            return True
+        return False
+
+
+
+###########################################################
+class AuxClass(ErrorClass):
+
+    # -----------------------------------------------------------
+    def __init__(self, fid, location):
+        self.name  = h5getstr(fid, location + '/name')
+        self.time  = np.array(fid.get(location + '/time'))
+        self.dataTimeSeries  = np.array(fid.get(location + '/dataTimeSeries'))
+        ErrorClass.__init__(self)
+
+    # -----------------------------------------------------------
+    def Print(self):
+        sys.stdout.write('  name: %s\n'% self.name)
+        PrintArraySize(self.dataTimeSeries, '  dataTimeSeries')
+        PrintArraySize(self.time, '  time')
+
+    # -----------------------------------------------------------
+    def IsEmpty(self):
+        if ((self.time.all()==None) or (len(self.time)==0)) and \
+            ((self.dataTimeSeries.all()==None) or (len(self.dataTimeSeries)==0)):
             return True
         return False
 
@@ -189,6 +226,13 @@ class SnirfClass(ErrorClass):
 
         # aux
         self.aux = []
+        ii = 1
+        while 1:
+            temp = AuxClass(fid, '/nirs/aux' + str(ii))
+            if temp.GetError() < 0:
+                break
+            self.aux.append(temp)
+            ii = ii+1
 
         fid.close()
 
@@ -212,6 +256,10 @@ class SnirfClass(ErrorClass):
         sys.stdout.write('probe:\n')
         self.probe.Print()
 
+        for ii in range(0, len(self.aux)):
+            sys.stdout.write('aux[%d]:\n'% ii)
+            self.aux[ii].Print()
+
 
 # -----------------------------------------------------------
 if __name__ == "__main__":
@@ -223,7 +271,7 @@ if __name__ == "__main__":
 
     for ii in range(0, len(filenames)):
         sys.stdout.write('======================================================================\n')
-        sys.stdout.write('Loading data from %s\n'% filenames[ii])
+        sys.stdout.write('Loading data from %s\n\n'% filenames[ii])
         snirf = SnirfClass(filenames[ii])
         snirf.Print()
         sys.stdout.write('\n')

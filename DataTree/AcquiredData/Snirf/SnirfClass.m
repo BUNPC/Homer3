@@ -13,7 +13,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         fid
         gid
         location
-        nirs_tb;
+        nirs_tb;        
     end
     
     methods
@@ -64,7 +64,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %
              
             % Initialize properties from SNIRF spec 
-            obj.formatVersion = '1.0';
+            obj.formatVersion = '1.1';
             obj.metaDataTags   = MetaDataTagsClass().empty();
             obj.data           = DataClass().empty();
             obj.stim           = StimClass().empty();
@@ -344,7 +344,14 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 [obj.gid, obj.fid] = HDF5_GroupOpen(fileobj, '/');
                 
                 %%%% Load formatVersion
-                obj.formatVersion = HDF5_DatasetLoad(obj.gid, 'formatVersion');
+                formatVersionFile = HDF5_DatasetLoad(obj.gid, 'formatVersion'); %#ok<*PROPLC>
+                formatVersionFile = str2double(formatVersionFile);
+                formatVersionCurr = str2double(obj.formatVersion); 
+                if formatVersionFile < formatVersionCurr
+                    fprintf('Warning: Current SNIRF version is %0.1f. Cannot load older version (%0.1f) file. Backward compatibility not yet implemented ...\n', formatVersionCurr, formatVersionFile)
+                    err = -2;
+                    return 
+                end
             
                 %%%% Load metaDataTags
                 obj.LoadMetaDataTags(obj.fid);
@@ -432,7 +439,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Save formatVersion
             if isempty(obj.formatVersion)
-                obj.formatVersion = '1.10';
+                obj.formatVersion = '1.1';
             end
             hdf5write_safe(fileobj, '/formatVersion', obj.formatVersion);
             

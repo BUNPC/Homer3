@@ -73,9 +73,13 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function SetVersion(obj, vernum)
+            % Version number should be incremented whenever properties are added, deleted or changed in 
+            % GroupClass, SubjectClass, RunClass OR acquisition class, like AcqDataClass, SnirfClass and 
+            % its sub-classes or NirsClass 
+            
             if nargin==1
                 obj.version{1} = '1';   % Major version #
-                obj.version{2} = '0';   % Major sub-version #
+                obj.version{2} = '1';   % Major sub-version #
                 obj.version{3} = '0';   % Minor version #
                 obj.version{4} = '0';   % Minor sub-version # or patch #: 'p1', 'p2', etc
             elseif iscell(vernum)

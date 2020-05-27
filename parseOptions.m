@@ -9,8 +9,8 @@ if ~exist('legal_options','var')
             {'mvpathconfl','rmpathconfl'}
             {'quiet','verbose'}
             {'fluence_simulate','nofluence_simulate'}
-            {'diffnames','nodiffnames'}
-        };
+            {'nodiffnames','diffnames'}
+    };
 end
 
 % Create options struct with options fields and set the defaults

@@ -178,6 +178,11 @@ if flagtCCA
                     if ctr < 1
                         % use only auxiliary tcca components that have correlation > ct
                         compindex=find(ADD_trn.ccac > ctr);
+                        % throw a warning that overfitting might occur if
+                        % all regressor's correlations are > ctr
+                        if numel(compindex) == numel(ADD_trn.ccac)
+                            msgbox('WARNING: All regressors have a canonical correlation larger than your threshold. To avoid overfitting, consider setting the number of regressors to a fixed number ctr = N.')
+                        end
                     else
                         % use only the first ctr auxiliary tcca components (fixed number of
                         % regressors = ctr)
@@ -213,7 +218,8 @@ if flagtCCA
                 %% save tCCAfilter matrix that was learned from resting state data.
                 fprintf('hmrR_tCCA: run idx = %d. Generated and Saved tCCAfilter\n', runIdx)
                 save(filterFilename, '-ascii', 'tCCAfilter');
-                
+                fprintf('Canonical correlation coefficients of all trained regressors:')
+                ADD_trn.ccac(compindex)
             case 'apply'
                 %% if the tCCAfilter variable exists, load it, apply the filtering and generate the tCCA regressors
                 % Load the filter for the iBlk data block

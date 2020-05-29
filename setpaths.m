@@ -1,7 +1,7 @@
 function setpaths(options_str)
 
 %
-% USAGE: 
+% USAGE:
 %
 %   setpaths
 %   setpaths(1)
@@ -10,48 +10,48 @@ function setpaths(options_str)
 %
 % DESCRIPTION:
 %
-%   Sets all the paths needed by a tool 
+%   Sets all the paths needed by a tool
 %
 % INPUTS:
 %
-%   options:   Char string containing one or more options. To select mutiple options, combine 
-%              together the 4 mutually exclusive options below in any order, separating 
-%              individual options with ',',':' or '|'. The list of mutually exclusive 
+%   options:   Char string containing one or more options. To select mutiple options, combine
+%              together the 4 mutually exclusive options below in any order, separating
+%              individual options with ',',':' or '|'. The list of mutually exclusive
 %              options are:
 %
-%           {'add','remove'}               (default: add)         Add or remove paths of current 
+%           {'add','remove'}               (default: add)         Add or remove paths of current
 %                                                                 workspace to search path
-%           {'conflcheck','noconflcheck'}  (default: conflcheck)    
-%           {'mvpathconfl','rmpathconfl'}  (default: mvpathconfl) 'conflcheck' option must be selected 
+%           {'conflcheck','noconflcheck'}  (default: conflcheck)
+%           {'mvpathconfl','rmpathconfl'}  (default: mvpathconfl) 'conflcheck' option must be selected
 %                                                                  for this this option not to be ignored
 %           {'quiet','verbose'}            (default: quiet)
 %           {'nodiffnames','diffnames'}    (default: nodiffnames) Diffs files that share a name with a file already on the path
-% 
-%    
+%
+%
 % EXAMPLES:
 %
 %   Example 1: Add paths for current workspace quietly and do not do any
 %              checking for conflicting workspaces.
-% 
+%
 %   setpaths;
 %      setpaths(1);
 %
-%   Example 2: Quietly add paths for current workspace to have precedence over any 
-%              conflicting workspace. The paths for any conflicting workspace will 
-%              be made lower precedence than current workspace. 
+%   Example 2: Quietly add paths for current workspace to have precedence over any
+%              conflicting workspace. The paths for any conflicting workspace will
+%              be made lower precedence than current workspace.
 %
 %      setpaths('add:conflcheck');
 %
 %
 %   Example 3: Quietly remove paths for current workspace quietly.
-% 
+%
 %   setpaths(0);
 %      setpaths('remove');
 %      setpaths('remove:quiet');
 %
 %
-%   Example 4: Add paths for the current workspace verbosely and remove all 
-%              paths of conflicting workspaces. 
+%   Example 4: Add paths for the current workspace verbosely and remove all
+%              paths of conflicting workspaces.
 %
 %      setpaths('rmpathconfl:verbose');
 %      setpaths('add:rmpathconfl:verbose');
@@ -88,30 +88,34 @@ dnum = 0;
 diffqueue = {};  % Files to be diff'd
 
 for ii=1:length(paths)
+    
     paths{ii} = [rootpath, paths{ii}];
     
     if options.diffnames
+        % See if any of the imported functions already exist
         
-    % See if any of the imported functions already exist
-    
         files = dir(fullfile(paths{ii},'*.m'));
         
         for f = 1:length(files)
             % When exists returns 2 but excluding the working dir
-            if ( (exist(files(f).name(1:end-2),'file') == 2) & (~isequal(files(f).folder,pwd())) )
-                
-                fprintf("This file shadows one already on the path: %s\n",[files(f).folder '\' files(f).name(1:end-2)]);
-                fprintf("Here is the original: %s\n", which(files(f).name(1:end-2)));
-                
-                if (strcmp( fileread([files(f).folder '\' files(f).name]), fileread(which(files(f).name(1:end-2))) ))
-                   fprintf("The files are the same.\n") 
-                else
-                   fprintf("The files have some differences.\n")
-                   dnum = dnum + 1;
-                   diffqueue{end+1} = {[files(f).folder '\' files(f).name], which(files(f).name(1:end-2))};
+            if ( (exist(files(f).name(1:end-2),'file') == 2) & (~isequal(files(f).folder,pwd())))
+                if options.verbose
+                    fprintf("This file shadows one already on the path: %s\n",[files(f).folder '\' files(f).name(1:end-2)]);
+                    fprintf("Here is the original: %s\n", which(files(f).name(1:end-2)));
                 end
-            end            
-        end        
+                if (strcmp( fileread([files(f).folder '\' files(f).name]), fileread(which(files(f).name(1:end-2))) ))
+                    if options.verbose
+                        fprintf("The files are the same.\n");
+                    end
+                else
+                    if options.verbose
+                        fprintf("The files have some differences.\n")
+                    end
+                    dnum = dnum + 1;
+                    diffqueue{end+1} = {[files(f).folder '\' files(f).name], which(files(f).name(1:end-2))};
+                end
+            end
+        end
     end
     
     if options.verbose
@@ -133,9 +137,9 @@ for ii=1:length(paths)
 end
 
 % If there are different files with same name
-if dnum > 0
-   fprintf('There are %i files that shadow different files already on the path.\n', dnum);
-    diffchoice = input(sprintf('Would you like to diff them now? y/n '),'s'); 
+if dnum > 0  % True only if options.diffpaths is
+    fprintf('There are %i files that shadow different files already on the path.\n', dnum);
+    diffchoice = input(sprintf('Would you like to diff them now? y/n '),'s');
     if (size(diffchoice,2) > 0) & ((diffchoice == 'y') | (diffchoice == 'yes'))
         for i = 1:size(diffqueue,2)
             % Use visual diff tool
@@ -148,11 +152,10 @@ end
 wspaths = [pwd; wspaths];
 paths_excl_str = [paths_str, paths_excl_str];
 
-
 % Either add all conflicting workspaces to the search path or remove the
-% current one, depending on user selection 
+% current one, depending on user selection
 if options.add
-    fprintf('ADDED search paths for workspace %s\n', pwd);    
+    fprintf('ADDED search paths for workspace %s\n', pwd);
     addwspaths(wspaths, paths_excl_str, options);
     setpermissions(paths);
 else

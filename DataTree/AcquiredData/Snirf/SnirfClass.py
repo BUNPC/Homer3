@@ -266,8 +266,8 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         filenames[0] =  sys.argv[1]
     else:
-        filenames = glob.glob('../../../../snirf-samples/basic/*.snirf')
-        # filenames = glob.glob('./Examples/*.snirf')
+        # filenames = glob.glob('../../../../snirf-samples/basic/*.snirf')
+        filenames = glob.glob('./Examples/*.snirf')
 
     for ii in range(0, len(filenames)):
         sys.stdout.write('======================================================================\n')

@@ -5,6 +5,9 @@ classdef ProbeClass < FileLoadSaveClass
         wavelengthsEmission
         sourcePos2D
         detectorPos2D
+        landmarkPos2D
+        sourcePos3D
+        detectorPos3D
         frequencies
         timeDelay
         timeDelayWidth
@@ -13,6 +16,7 @@ classdef ProbeClass < FileLoadSaveClass
         correlationTimeDelayWidth
         sourceLabels
         detectorLabels
+        landmarkLabels
     end
     
     
@@ -31,6 +35,8 @@ classdef ProbeClass < FileLoadSaveClass
                     obj.wavelengthsEmission  = [];
                     obj.sourcePos2D  = SD.SrcPos;
                     obj.detectorPos2D  = SD.DetPos;
+                    obj.sourcePos3D  = [];
+                    obj.detectorPos3D  = [];
                     obj.frequencies  = 1;
                     obj.timeDelay  = 0;
                     obj.timeDelayWidth  = 0;
@@ -52,6 +58,8 @@ classdef ProbeClass < FileLoadSaveClass
                 obj.wavelengthsEmission  = [];
                 obj.sourcePos2D  = [];
                 obj.detectorPos2D  = [];
+                obj.sourcePos3D  = [];
+                obj.detectorPos3D  = [];
                 obj.frequencies  = 1;
                 obj.timeDelay  = 0;
                 obj.timeDelayWidth  = 0;
@@ -72,6 +80,21 @@ classdef ProbeClass < FileLoadSaveClass
             end
             if size(obj.detectorPos2D,2)<3
                 obj.detectorPos2D     = [obj.detectorPos2D, zeros(size(obj.detectorPos2D,1), 1)];
+            end
+        end
+
+        
+        
+        % -------------------------------------------------------
+        function BackwardCompatibility(obj)
+            if isempty(obj.sourcePos2D)
+                obj.sourcePos2D   = HDF5_DatasetLoad(gid, 'sourcePos', [], '2D');
+            end
+            if isempty(obj.detectorPos2D)
+                obj.detectorPos2D = HDF5_DatasetLoad(gid, 'detectorPos', [], '2D');
+            end
+            if isempty(obj.landmarkPos2D)
+                obj.landmarkPos2D = HDF5_DatasetLoad(gid, 'landmarkPos', [], '2D');
             end
         end
 
@@ -111,8 +134,11 @@ classdef ProbeClass < FileLoadSaveClass
                 % Load datasets
                 obj.wavelengths               = HDF5_DatasetLoad(gid, 'wavelengths');
                 obj.wavelengthsEmission       = HDF5_DatasetLoad(gid, 'wavelengthsEmission');
-                obj.sourcePos2D                 = HDF5_DatasetLoad(gid, 'sourcePos2D', [], '2D');
-                obj.detectorPos2D               = HDF5_DatasetLoad(gid, 'detectorPos2D', [], '2D');
+                obj.sourcePos2D               = HDF5_DatasetLoad(gid, 'sourcePos2D', [], '2D');
+                obj.detectorPos2D             = HDF5_DatasetLoad(gid, 'detectorPos2D', [], '2D');
+                obj.landmarkPos2D             = HDF5_DatasetLoad(gid, 'landmarkPos2D', [], '2D');
+                obj.sourcePos3D               = HDF5_DatasetLoad(gid, 'sourcePos3D', [], '2D');
+                obj.detectorPos3D             = HDF5_DatasetLoad(gid, 'detectorPos3D', [], '2D');
                 obj.frequencies               = HDF5_DatasetLoad(gid, 'frequencies');
                 obj.timeDelay                 = HDF5_DatasetLoad(gid, 'timeDelay');
                 obj.timeDelayWidth            = HDF5_DatasetLoad(gid, 'timeDelayWidth');
@@ -121,6 +147,7 @@ classdef ProbeClass < FileLoadSaveClass
                 obj.correlationTimeDelayWidth = HDF5_DatasetLoad(gid, 'correlationTimeDelayWidth');
                 obj.sourceLabels              = HDF5_DatasetLoad(gid, 'sourceLabels', obj.sourceLabels);
                 obj.detectorLabels            = HDF5_DatasetLoad(gid, 'detectorLabels', obj.detectorLabels);
+                obj.landmarkLabels            = HDF5_DatasetLoad(gid, 'landmarkLabels', obj.landmarkLabels);
                                 
                 % Close group
                 HDF5_GroupClose(fileobj, gid, fid);
@@ -135,6 +162,7 @@ classdef ProbeClass < FileLoadSaveClass
             
         end
 
+        
         
         % -------------------------------------------------------
         function SaveHdf5(obj, fileobj, location)
@@ -249,7 +277,21 @@ classdef ProbeClass < FileLoadSaveClass
             for ii=1:length(fields)
                 nbytes = nbytes + eval(sprintf('sizeof(obj.%s)', fields{ii}));
             end
-        end        
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsEmpty(obj)
+            b = true;
+            if isempty(obj.wavelengths)
+                return;
+            end
+            if isempty(obj.sourcePos2D) && isempty(obj.detectorPos2D) && ...
+                    isempty(obj.sourcePos3D) && isempty(obj.detectorPos3D) 
+                return;
+            end
+            b = false;
+        end
         
     end
     

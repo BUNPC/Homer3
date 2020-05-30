@@ -13,6 +13,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         fid
         gid
         location
+        nirsdatanum
         nirs_tb;        
     end
     
@@ -64,7 +65,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %
              
             % Initialize properties from SNIRF spec 
-            obj.formatVersion = '1.1';
+            obj.formatVersion = '1.0';
             obj.metaDataTags   = MetaDataTagsClass().empty();
             obj.data           = DataClass().empty();
             obj.stim           = StimClass().empty();
@@ -73,6 +74,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Set class properties NOT part of the SNIRF format
             obj.fileformat = 'hdf5';
+            obj.nirsdatanum = 1;
             obj.location = '/nirs';
             
             % See if we're loading .nirs data format
@@ -91,7 +93,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % because of all the variations of calling this class constructor but 
             % there should be a simpler way to do this 
             
-            % The basic 5 of a .nirs format in a struct
             if nargin==1 || (nargin==2 && isa(varargin{2}, 'double'))
                 if isa(varargin{1}, 'SnirfClass')
                     obj.Copy(varargin{1});
@@ -100,7 +101,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 
                 if ischar(varargin{1})
                     obj.filename = varargin{1};
+                    if nargin==2
+                        obj.nirsdatanum = varargin{2};
+                    end
                     obj.Load(varargin{1});
+                    
+                % The basic 5 of a .nirs format in a struct
                 elseif isstruct(varargin{1}) || isa(varargin{1}, 'NirsClass')
                     tfactors = 1;    % Debug simulation parameter
                     if nargin==2
@@ -229,6 +235,40 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         end
         
         
+        
+        % -------------------------------------------------------
+        function err = SetLocation(obj)
+            err = 0;
+            gid1 = HDF5_GroupOpen(obj.fid, sprintf('%s%d', obj.location, obj.nirsdatanum));
+            gid2 = HDF5_GroupOpen(obj.fid, obj.location);
+            
+            if gid1.double > 0
+                obj.location = sprintf('%s%d', obj.location, obj.nirsdatanum);
+                return;
+            elseif gid2.double > 0
+                return;
+            end
+            err = -1;
+        end
+        
+        
+        
+
+        % -------------------------------------------------------        
+        function err = LoadFormatVersion(obj)
+            err = 0;
+            formatVersionFile = HDF5_DatasetLoad(obj.gid, 'formatVersion'); %#ok<*PROPLC>
+            formatVersionFile = str2double(formatVersionFile);
+            formatVersionCurr = str2double(obj.formatVersion);
+            if formatVersionFile < formatVersionCurr
+                fprintf('Warning: Current SNIRF version is %0.1f. Cannot load older version (%0.1f) file. Backward compatibility not yet implemented ...\n', formatVersionCurr, formatVersionFile)
+                err = -2;
+                return
+            end
+        end
+        
+        
+        
         % -------------------------------------------------------
         function err = LoadMetaDataTags(obj, fileobj)
             err = 0;
@@ -294,6 +334,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         end
         
         
+        
         % -------------------------------------------------------
         function err = LoadAux(obj, fileobj)
             err = 0;
@@ -313,6 +354,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 ii=ii+1;
             end
         end
+        
         
         
         % -------------------------------------------------------
@@ -343,30 +385,43 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 % Open group
                 [obj.gid, obj.fid] = HDF5_GroupOpen(fileobj, '/');
                 
-                %%%% Load formatVersion
-                formatVersionFile = HDF5_DatasetLoad(obj.gid, 'formatVersion'); %#ok<*PROPLC>
-                formatVersionFile = str2double(formatVersionFile);
-                formatVersionCurr = str2double(obj.formatVersion); 
-                if formatVersionFile < formatVersionCurr
-                    fprintf('Warning: Current SNIRF version is %0.1f. Cannot load older version (%0.1f) file. Backward compatibility not yet implemented ...\n', formatVersionCurr, formatVersionFile)
-                    err = -2;
-                    return 
+                if obj.SetLocation() < 0
+                    err = -1;
+                    return
                 end
-            
+                
+                %%%% Load formatVersion
+                if obj.LoadFormatVersion() < 0
+                    err = -2;
+                    return;
+                end
+                
                 %%%% Load metaDataTags
-                obj.LoadMetaDataTags(obj.fid);
+                if obj.LoadMetaDataTags(obj.fid) < 0
+                    err = -3;
+                    return;
+                end
                 
                 %%%% Load data
-                obj.LoadData(obj.fid);
+                if obj.LoadData(obj.fid) < 0
+                    err = -4;
+                end
                 
                 %%%% Load stim
-                obj.LoadStim(obj.fid);
+                if obj.LoadStim(obj.fid)
+                    err = -5;
+                end
                 
                 %%%% Load probe
-                obj.LoadProbe(obj.fid);
+                if obj.LoadProbe(obj.fid)
+                    err = -6;
+                end
                 
                 %%%% Load aux
-                obj.LoadAux(obj.fid);
+                if obj.LoadAux(obj.fid)
+                    err = -7;
+                end
+                    
             
                 % Close group
                 HDF5_GroupClose(fileobj, obj.gid, obj.fid);
@@ -1072,10 +1127,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if isempty(obj)
                 return;
             end
-            if isempty(obj.data)
+            if isempty(obj.data) || (isa(obj.data, 'DataClass') && obj.data(1).IsEmpty())
                 return;
             end
-            if isempty(obj.probe)
+            if isempty(obj.data) || (isa(obj.probe, 'ProbeClass') && obj.probe.IsEmpty())
                 return;
             end
             b = false;

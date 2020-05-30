@@ -16,6 +16,9 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             obj.tags.MeasurementTime = datestr(now,'hh:mm:ss');
             obj.tags.LengthUnit = 'mm';
             obj.tags.TimeUnit = 'unknown';
+            obj.tags.FrequencyUnit = 'unknown';
+            obj.tags.AppName  = 'snirf-homer3';
+            obj.tags.SnirfDraft = '3';
             
             if nargin==1
                 obj.filename = varargin{1};
@@ -56,6 +59,8 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             %%%%%%%%%%%% Ready to load from file
 
             try
+                % Reset tags
+                obj.tags = struct();
                 
                 % Open group
                 [gid, fid] = HDF5_GroupOpen(fileobj, location);
@@ -67,6 +72,9 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
                 end
                 
                 HDF5_GroupClose(fileobj, gid, fid);
+
+                % Detect old or invalid metadatatag data
+                assert(obj.IsValid());
                 
             catch
                 
@@ -100,6 +108,22 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
                 eval(sprintf('hdf5write_safe(fileobj, [location, ''/%s''], obj.tags.%s);', props{ii}, props{ii}));
             end
         end
+        
+        
+        
+        % -------------------------------------------------------
+        function b = IsValid(obj)
+            b = false;
+            
+            % Use latest required fields to determine if we're loading old
+            % metaDataTag format version of SNIRF spec
+            if ~isproperty(obj.tags, 'FrequencyUnit')
+                return;
+            end
+            
+            b = true;
+        end
+
         
         
         % -------------------------------------------------------

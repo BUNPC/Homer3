@@ -79,7 +79,7 @@ classdef GroupClass < TreeNodeClass
             
             if nargin==1
                 obj.version{1} = '1';   % Major version #
-                obj.version{2} = '1';   % Major sub-version #
+                obj.version{2} = '2';   % Major sub-version #
                 obj.version{3} = '0';   % Minor version #
                 obj.version{4} = '0';   % Minor sub-version # or patch #: 'p1', 'p2', etc
             elseif iscell(vernum)

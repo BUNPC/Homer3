@@ -22,9 +22,7 @@ function colors = distinguishable_colors(n_colors, bg, func)
 % removing lines.
 %
 % Syntax:
-%
 %   colors = distinguishable_colors(n_colors)
-%
 % Specify the number of colors you want as a scalar, n_colors. This will
 % generate an n_colors-by-3 matrix, each row representing an RGB
 % color triple. If you don't precisely know how many you will need in
@@ -32,21 +30,17 @@ function colors = distinguishable_colors(n_colors, bg, func)
 % slightly more than you think you will need.
 %
 %   colors = distinguishable_colors(n_colors,bg)
-%
 % This syntax allows you to specify the background color, to make sure that
 % your colors are also distinguishable from the background. Default value
 % is white. bg may be specified as an RGB triple or as one of the standard
 % "ColorSpec" strings. You can even specify multiple colors:
-%
 %     bg = {'w','k'}
 % or
 %     bg = [1 1 1; 0 0 0]
-%
 % will only produce colors that are distinguishable from both white and
 % black.
 %
 %   colors = distinguishable_colors(n_colors,bg,rgb2labfunc)
-%
 % By default, distinguishable_colors uses the image processing toolbox's
 % color conversion functions makecform and applycform. Alternatively, you
 % can supply your own color conversion function.
@@ -59,11 +53,10 @@ function colors = distinguishable_colors(n_colors, bg, func)
 % Example using the file exchange's 'colorspace':
 %   func = @(x) colorspace('RGB->Lab',x);
 %   c = distinguishable_colors(25,'w',func);
-%
-% Copyright 2010-2011 by Timothy E. Holy
-% Parse the inputs
-%
 
+% Copyright 2010-2011 by Timothy E. Holy
+
+% Parse the inputs
 if (nargin < 2)
     bg = [1 1 1];  % default white background
 else
@@ -101,6 +94,7 @@ else
     lab = applycform(rgb,C);
     bglab = applycform(bg,C);
 end
+
 % If the user specified multiple background colors, compute distances
 % from the candidate colors to the background colors
 mindist2 = inf(size(rgb,1),1);
@@ -124,7 +118,8 @@ for i = 1:n_colors
 end
 
 
-% --------------------------------------------------------------------
+
+%-------------------------------------------------------------------------
 function c = parsecolor(s)
 if ischar(s)
     c = colorstr2rgb(s);
@@ -136,7 +131,8 @@ end
 
 
 
-% --------------------------------------------------------------------
+
+%-------------------------------------------------------------------------
 function c = colorstr2rgb(c)
 % Convert a color string to an RGB value.
 % This is cribbed from Matlab's whitebg function.
@@ -158,4 +154,3 @@ elseif length(c)>2,
         error('MATLAB:UnknownColorString', 'Unknown color string.');
     end
 end
-

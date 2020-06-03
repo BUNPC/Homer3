@@ -1,17 +1,20 @@
 function checkForHomerUpdates()
     url = 'http://bu.edu/neurophotonics/research/fnirs/homer3';
-    updateAvailable = 0;
+    cfg = ConfigFileClass();
+    promptFlag = 0;
     try
         s = urlread(url,'timeout',2);
     catch
-        % app is offline or server could not be reached
+        % App is offline or server could not be reached
         return
     end
-    updateTxt = ''; % Get information about update from s
-    vrnnum = getVernum();
-    % Do something to updateAvailable flag
-
-    if (updateAvailable)
+    updateTxt = ''; % Get information about potential update from s
+    vrnnum = getVernum();  % Compare to current version and set promptFlag
+    % if (vrnum < updateTxt) & (cfg.GetValue('LatestUpdateRefused') < updateTxt)
+    %   promptFlag = 1;
+    % end
+    
+    if (promptFlag)
         choice = questdlg(['An update for Homer3 is available: ',...
             updateTxt,...
             ' Would you like to download it?'],...
@@ -23,7 +26,10 @@ function checkForHomerUpdates()
                 % Open browser to update page
                 web(url);    
             case 'Don''t ask again'
-                % Prevent this prompt for showing until next version
+                % Make sure user doesn't get asked about this particular
+                % update again.
+                %
+                % cfg.SetValue('LatestUpdateRefused',updateTxt); 
         end
     end
 end

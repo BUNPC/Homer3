@@ -20,7 +20,7 @@
 % Aaux - A matrix of auxilliary regressors (#time points x #Aux channels)
 % tIncAuto - a vector (#time points x 1) indicating which data time points
 %            are motion (=0) or not (=1)
-% rcMap - An array of cells (1 x #fNIRS channels) containing aux regressor
+% rcMap - An array of cells (1 x #fNIRS channels) containing aux regressor 
 %           indices for individual regressor-channel mapping. Currently
 %           only relevant when flagNuisanceRMethod = 3 (tCCA regressors).
 % trange - defines the range for the block average [tPre tPost]
@@ -121,9 +121,9 @@ if isempty(mlActAuto)
     mlActAuto = cell(length(data_y),1);
 end
 
-% Get stim vector by instantiating temporary SnirfClass object with this
-% function's stim argument as input, and then using the SnirfClass object's
-% GetStims method to convert stim to the s vector that this function needs.
+% Get stim vector by instantiating temporary SnirfClass object with this 
+% function's stim argument as input, and then using the SnirfClass object's 
+% GetStims method to convert stim to the s vector that this function needs. 
 snirf = SnirfClass(data_y, stim);
 t = snirf.GetTimeCombined();
 s = snirf.GetStims(t);
@@ -136,7 +136,7 @@ for iBlk=1:length(data_y)
     data_ysum2(iBlk)   = DataClass();
     data_ynew(iBlk)    = DataClass(data_y(iBlk));
     data_yresid(iBlk)  = DataClass(data_y(iBlk));
-    
+
     y      = data_y(iBlk).GetDataTimeSeries('reshape');
     t      = data_y(iBlk).GetTime();
     ml     = data_y(iBlk).GetMeasListSrcDetPairs();
@@ -154,7 +154,7 @@ for iBlk=1:length(data_y)
     yavg = [];
     yavgstd = [];
     ysum2 = [];
-    
+
     dt = t(2)-t(1);
     nPre = round(trange(1)/dt);
     nPost = round(trange(2)/dt);
@@ -186,8 +186,8 @@ for iBlk=1:length(data_y)
                     [foo,ii] = min(rho);
                     iNearestSS(iML) = lstSS(ii);
                 end
-                mlSSlst = unique(iNearestSS);
-            case 1 % use SS with highest correlation
+                mlSSlst = unique(iNearestSS);       
+            case 1 % use SS with highest correlation    
                 % HbO
                 dc = squeeze(y(:,1,:));
                 dc = (dc-ones(length(dc),1)*mean(dc,1))./(ones(length(dc),1)*std(dc,[],1));
@@ -198,7 +198,7 @@ for iBlk=1:length(data_y)
                 dc = (dc-ones(length(dc),1)*mean(dc,1))./(ones(length(dc),1)*std(dc,[],1));
                 cc(:,:,2) = dc'*dc / length(dc);
                 
-                clear dc
+                clear dc           
                 % find short separation channel with highest correlation
                 for iML = 1:size(cc,1)
                     % HbO
@@ -207,16 +207,16 @@ for iBlk=1:length(data_y)
                     % HbR
                     [foo,ii] = max(cc(iML,lstSS,2));
                     iNearestSS(iML,2) = lstSS(ii);
-                end
+                end 
             case 2 % use average of all active SS as regressor
                 mlSSlst = 1;
             case 3 % use tCCA regressors and channel map from hmrR_tCCA()
                 if ischar(rcMap{iBlk}) % use all regressors for all channels (only one group)
                     mlSSlst = 1;
                 elseif iscell(rcMap{iBlk}) % use channel regressor map
-                    mlSSlst = 1:size(rcMap,2);
+                    mlSSlst = 1:size(rcMap,2); 
                 end
-                
+
                 
         end
     end
@@ -399,8 +399,8 @@ for iBlk=1:length(data_y)
     else
         nMC = 0;
         Amotion = [];
-    end
-    lstInc = find(tInc==1);
+    end   
+    lstInc = find(tInc==1);    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Final design matrix
@@ -418,7 +418,7 @@ for iBlk=1:length(data_y)
     
     nCh = size(y,3);
     
-    % Exit if not enough data to analyze the 3 here is arbitrary.
+    % Exit if not enough data to analyze the 3 here is arbitrary. 
     % Certainly needs to be larger than 1
     if length(lstInc)<3*size(A,2) | nCond==0
         warning('Not enough data to find a solution')
@@ -483,10 +483,10 @@ for iBlk=1:length(data_y)
             elseif flagNuisanceRMethod==3
                 if ischar(rcMap{iBlk}) % no channel map: use all tCCA regressors for one group of all channels
                     lstML = lstMLtmp(find(mlAct(lstMLtmp)==1));
-                    At = [A(:,:,conc) Aaux];
-                elseif iscell(rcMap{iBlk}) % channel map: each single regressor corresponds to one channel (nCH groups)
+                    At = [A(:,:,conc) Aaux]; 
+                elseif iscell(rcMap) % channel map: each single regressor corresponds to one channel (nCH groups)
                     lstML = lstMLtmp(find(mlAct(rcMap{iBlk}{conc,iSS})==1));
-                    Atcca = Aaux{iBlk}(:,rcMap{conc,iSS});
+                    Atcca = Aaux(:,rcMap{conc,iSS});
                     At = [A(:,:,conc) Atcca];
                 end
             end
@@ -522,7 +522,7 @@ for iBlk=1:length(data_y)
                     ysum2 = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
                     ysum2(:,:,:,lstCond) = foo;
                     
-                    beta = [];
+                    beta = [];                    
                     return
                 end
                 
@@ -624,7 +624,7 @@ for iBlk=1:length(data_y)
     ynew(:,3,:) = ynew(:,1,:) + ynew(:,2,:);
     
     tb = permute(tb,[1 3 2 4]);
-    
+        
     if nPre<0
         for iConc = 1:size(yavg,2)
             for iCh = 1:size(yavg,3)
@@ -634,7 +634,7 @@ for iBlk=1:length(data_y)
             end
         end
     end
-    
+       
     foo = nTrials{iBlk};
     nTrials{iBlk} = zeros(1,size(s,2));
     nTrials{iBlk}(lstCond) = foo;
@@ -656,17 +656,17 @@ for iBlk=1:length(data_y)
     beta(:,:,:,lstCond) = foo;
     
     %%%%%%%%%%%%%%%%%%%%%%%%%
-    % Snirf stuff:
+    % Snirf stuff: 
     %%%%%%%%%%%%%%%%%%%%%%%%%
     
     % Add the channels describing the data
     for iHb = 1:size(yavg,2)
         for iCh = 1:size(yavg,3)
-            for iCond = 1:size(yavg,4)
+            for iCond = 1:size(yavg,4)                
                 data_yavg(iBlk).AddChannelHb(ml(iCh,1), ml(iCh,2), iHb, iCond);
                 data_yavgstd(iBlk).AddChannelHb(ml(iCh,1), ml(iCh,2), iHb, iCond);
-                data_ysum2(iBlk).AddChannelHb(ml(iCh,1), ml(iCh,2), iHb, iCond);
-            end
+                data_ysum2(iBlk).AddChannelHb(ml(iCh,1), ml(iCh,2), iHb, iCond);                
+            end            
         end
     end
     
@@ -679,14 +679,14 @@ for iBlk=1:length(data_y)
     data_yavg(iBlk).SetTime(tHRF, true);
     data_yavgstd(iBlk).SetTime(tHRF, true);
     data_ysum2(iBlk).SetTime(tHRF, true);
-    
+
     % Set data vectors for the dc-parallel data
     data_ynew(iBlk).SetDataTimeSeries(ynew);
     data_yresid(iBlk).SetDataTimeSeries(yresid);
-    
-    % Set other data blocks
+          
+    % Set other data blocks 
     beta_blks{iBlk} = beta;
     yR_blks{iBlk}   = yR;
-
+    
 end
 

@@ -29,6 +29,7 @@ if strcmp(cfg.GetValue('Logging'), 'off')
 end
 
 PrintSystemInfo(logger);
+checkForHomerUpdates();
 
 logger.Write(sprintf('Opened application config file %s\n', cfg.filename))
 gdir = cfg.GetValue('Last Group Folder');

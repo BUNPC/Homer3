@@ -115,12 +115,15 @@ classdef ExportTable < handle
             err = 0;
             fprintf(obj.fd, '%s\n', obj.datatitle);
             fprintf('%s\n', obj.datatitle);
+            h =  waitbar_improved(0, sprintf('Exporting %s to text ... 0%% complete.', obj.filename));
             for ii=1:size(obj.cells,1)
+                waitbar_improved(ii/size(obj.cells,1), h, sprintf('Exporting %s to text ... %d%% complete', obj.filename, uint32(100 * ii/size(obj.cells,1))));
                 for jj=1:size(obj.cells,2)
                     obj.cells(ii,jj).Write(obj.fd);
                 end
                 fprintf(obj.fd, '\n');
             end
+            close(h);
         end
         
         
@@ -139,7 +142,7 @@ classdef ExportTable < handle
             % 
             h =  waitbar_improved(0, sprintf('Exporting %s to Excel ... 0%% complete.', obj.filename));
             for ii = idxD:size(obj.cells,1)
-                waitbar_improved(ii/size(obj.cells,1), h, sprintf('Exporting %s to Excel ... %d%% complete', obj.filename, uint32(100 * ii/size(obj.cells,1))))
+                waitbar_improved(ii/size(obj.cells,1), h, sprintf('Exporting %s to Excel ... %d%% complete', obj.filename, uint32(100 * ii/size(obj.cells,1))));
                 for jj=1:size(obj.cells,2)
                     if isnumber(obj.cells(ii,jj).name)
                         data{ii-idxD+1,jj} = str2double(obj.cells(ii,jj).name);

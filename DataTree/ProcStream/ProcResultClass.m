@@ -593,9 +593,10 @@ classdef ProcResultClass < handle
             tblcells = TableCell.empty();
             if isa(obj.dcAvg, 'DataClass')
                 dataTimeSeries = obj.dcAvg(iBlk).GetDataTimeSeries('');                
-                
+                h = waitbar_improved(0, sprintf('Generating table cells for export ... 0%% complete.'));
                 % Data rows
                 for iCond = 1:length(CondNames)
+                    waitbar_improved(iCond/length(CondNames), h, sprintf('Generating table cells for export ... %d%% complete.', uint32(100 * iCond/length(CondNames))));
                     measListIdxs = obj.dcAvg(iBlk).GetMeasurementListIdxs(iCond);
                     for iCh = measListIdxs
                         iT = (obj.dcAvg.time >= trange(1)) & (obj.dcAvg.time <= trange(2));
@@ -608,6 +609,7 @@ classdef ProcResultClass < handle
                         tblcells(iCond, mod(iCh-1, length(measListIdxs))+1) = TableCell(cname, width);
                     end
                 end
+                close(h);
             end
         end
 
@@ -633,7 +635,9 @@ classdef ProcResultClass < handle
                 end
                 
                 % Data rows
+                h = waitbar_improved(0, sprintf('Generating table cells for export ... 0%% complete.'));
                 for t = 1:size(dataTimeSeries,1)
+                    waitbar_improved(t/size(dataTimeSeries,1), h, sprintf('Generating table cells for export ... %d%% complete.', uint32(100 * t/size(dataTimeSeries,1))));
                     for iCh = 1:length(measList)
                         if isnan(dataTimeSeries(t,iCh))
                             cname  = 'NaN';
@@ -643,6 +647,7 @@ classdef ProcResultClass < handle
                         tblcells(t+2,iCh) = TableCell(cname, 12);
                     end
                 end
+                close(h);
             else
                 
             end

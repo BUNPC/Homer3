@@ -9,11 +9,11 @@ classdef ProbeClass < FileLoadSaveClass
         sourcePos3D
         detectorPos3D
         frequencies
-        timeDelay
-        timeDelayWidth
+        timeDelays
+        timeDelayWidths
         momentOrder
-        correlationTimeDelay
-        correlationTimeDelayWidth
+        correlationTimeDelays
+        correlationTimeDelayWidths
         sourceLabels
         detectorLabels
         landmarkLabels
@@ -38,11 +38,11 @@ classdef ProbeClass < FileLoadSaveClass
                     obj.sourcePos3D  = [];
                     obj.detectorPos3D  = [];
                     obj.frequencies  = 1;
-                    obj.timeDelay  = 0;
-                    obj.timeDelayWidth  = 0;
+                    obj.timeDelays  = 0;
+                    obj.timeDelayWidths  = 0;
                     obj.momentOrder = [];
-                    obj.correlationTimeDelay = 0;
-                    obj.correlationTimeDelayWidth = 0;
+                    obj.correlationTimeDelays = 0;
+                    obj.correlationTimeDelayWidths = 0;
                     for ii=1:size(SD.SrcPos)
                         obj.sourceLabels{ii} = ['S',num2str(ii)];
                     end
@@ -61,11 +61,11 @@ classdef ProbeClass < FileLoadSaveClass
                 obj.sourcePos3D  = [];
                 obj.detectorPos3D  = [];
                 obj.frequencies  = 1;
-                obj.timeDelay  = 0;
-                obj.timeDelayWidth  = 0;
+                obj.timeDelays  = 0;
+                obj.timeDelayWidths  = 0;
                 obj.momentOrder = [];
-                obj.correlationTimeDelay = 0;
-                obj.correlationTimeDelayWidth = 0;
+                obj.correlationTimeDelays = 0;
+                obj.correlationTimeDelayWidths = 0;
                 obj.sourceLabels = {};
                 obj.detectorLabels = {};
             end
@@ -140,11 +140,11 @@ classdef ProbeClass < FileLoadSaveClass
                 obj.sourcePos3D               = HDF5_DatasetLoad(gid, 'sourcePos3D', [], '2D');
                 obj.detectorPos3D             = HDF5_DatasetLoad(gid, 'detectorPos3D', [], '2D');
                 obj.frequencies               = HDF5_DatasetLoad(gid, 'frequencies');
-                obj.timeDelay                 = HDF5_DatasetLoad(gid, 'timeDelay');
-                obj.timeDelayWidth            = HDF5_DatasetLoad(gid, 'timeDelayWidth');
+                obj.timeDelays                 = HDF5_DatasetLoad(gid, 'timeDelays');
+                obj.timeDelayWidths            = HDF5_DatasetLoad(gid, 'timeDelayWidths');
                 obj.momentOrder               = HDF5_DatasetLoad(gid, 'momentOrder');
-                obj.correlationTimeDelay      = HDF5_DatasetLoad(gid, 'correlationTimeDelay');
-                obj.correlationTimeDelayWidth = HDF5_DatasetLoad(gid, 'correlationTimeDelayWidth');
+                obj.correlationTimeDelays      = HDF5_DatasetLoad(gid, 'correlationTimeDelays');
+                obj.correlationTimeDelayWidths = HDF5_DatasetLoad(gid, 'correlationTimeDelayWidths');
                 obj.sourceLabels              = HDF5_DatasetLoad(gid, 'sourceLabels', obj.sourceLabels);
                 obj.detectorLabels            = HDF5_DatasetLoad(gid, 'detectorLabels', obj.detectorLabels);
                 obj.landmarkLabels            = HDF5_DatasetLoad(gid, 'landmarkLabels', obj.landmarkLabels);
@@ -187,11 +187,11 @@ classdef ProbeClass < FileLoadSaveClass
             hdf5write_safe(fileobj, [location, '/sourcePos2D'], obj.sourcePos2D(:,1:2), 'rw:2D');
             hdf5write_safe(fileobj, [location, '/detectorPos2D'], obj.detectorPos2D(:,1:2), 'rw:2D');
             hdf5write_safe(fileobj, [location, '/frequencies'], obj.frequencies);
-            hdf5write_safe(fileobj, [location, '/timeDelay'], obj.timeDelay);
-            hdf5write_safe(fileobj, [location, '/timeDelayWidth'], obj.timeDelayWidth);
+            hdf5write_safe(fileobj, [location, '/timeDelays'], obj.timeDelays);
+            hdf5write_safe(fileobj, [location, '/timeDelayWidths'], obj.timeDelayWidths);
             hdf5write_safe(fileobj, [location, '/momentOrder'], obj.momentOrder);
-            hdf5write_safe(fileobj, [location, '/correlationTimeDelay'], obj.correlationTimeDelay);
-            hdf5write_safe(fileobj, [location, '/correlationTimeDelayWidth'], obj.correlationTimeDelayWidth);
+            hdf5write_safe(fileobj, [location, '/correlationTimeDelays'], obj.correlationTimeDelays);
+            hdf5write_safe(fileobj, [location, '/correlationTimeDelayWidths'], obj.correlationTimeDelayWidths);
             hdf5write_safe(fileobj, [location, '/sourceLabels'], obj.sourceLabels);
             hdf5write_safe(fileobj, [location, '/detectorLabels'], obj.detectorLabels);
         end
@@ -235,19 +235,19 @@ classdef ProbeClass < FileLoadSaveClass
             if ~all(obj.frequencies(:)==obj2.frequencies(:))
                 return;
             end
-            if ~all(obj.timeDelay(:)==obj2.timeDelay(:))
+            if ~all(obj.timeDelays(:)==obj2.timeDelays(:))
                 return;
             end
-            if ~all(obj.timeDelayWidth(:)==obj2.timeDelayWidth(:))
+            if ~all(obj.timeDelayWidths(:)==obj2.timeDelayWidths(:))
                 return;
             end
             if ~all(obj.momentOrder(:)==obj2.momentOrder(:))
                 return;
             end
-            if ~all(obj.correlationTimeDelay(:)==obj2.correlationTimeDelay(:))
+            if ~all(obj.correlationTimeDelays(:)==obj2.correlationTimeDelays(:))
                 return;
             end
-            if ~all(obj.correlationTimeDelayWidth(:)==obj2.correlationTimeDelayWidth(:))
+            if ~all(obj.correlationTimeDelayWidths(:)==obj2.correlationTimeDelayWidths(:))
                 return;
             end
             if length(obj.sourceLabels)~=length(obj2.sourceLabels)

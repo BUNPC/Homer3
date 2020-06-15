@@ -41,13 +41,12 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function Copy(obj, obj2, option)
-            if nargin==2
-                option = '';
-            end
-            
+        function Copy(obj, obj2, filename)
             if ~isa(obj, 'ProcStreamClass')
                 return;
+            end
+            if ~exist('filename', 'var')
+                filename = '';
             end
             
             if isempty(obj)
@@ -63,7 +62,7 @@ classdef ProcStreamClass < handle
             obj.fcalls(ii+1:end) = [];
             
             obj.input.Copy(obj2.input);
-            obj.output.Copy(obj2.output, option);
+            obj.output.Copy(obj2.output, filename);
         end
         
         
@@ -173,10 +172,12 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function Calc(obj)
-            DEBUG = 0;
+        function Calc(obj, filename)
+            if ~exist('filename','var')
+                filename = '';
+            end
             
-            % loop over functions            
+            % loop over functions
             FcallsIdxs = obj.GetFcallsIdxs();
             nFcall = length(FcallsIdxs);
             
@@ -201,9 +202,6 @@ classdef ProcStreamClass < handle
                 
                 % call function
                 fcall = sprintf('%s = %s%s%s);', sargout, obj.GetFuncCallName(iFcall), obj.fcalls(iFcall).argIn.str, sargin);
-                if DEBUG
-                    fprintf('%s = %s%s%s);\n', sargout, obj.GetFuncCallName(iFcall), obj.fcalls(iFcall).argIn.str, sarginVal);
-                end
                 try
                     eval( fcall );
                 catch ME
@@ -237,20 +235,15 @@ classdef ProcStreamClass < handle
             end
             
             % Copy paramOut to output
+            paramsOutStruct = struct();
             for ii=1:length(paramOut)
-                if eval( sprintf('isproperty(obj.output, ''%s'');', paramOut{ii}) )
-                    eval( sprintf('obj.output.%s = %s;', paramOut{ii}, paramOut{ii}) );
-                else
-                    eval( sprintf('obj.output.misc.%s = %s;', paramOut{ii}, paramOut{ii}) );
-                end
-            end
+                eval( sprintf('paramsOutStruct.%s = %s;', paramOut{ii}, paramOut{ii}) );
+            end            
+            obj.output.AddVars(paramsOutStruct, filename);
+            
             obj.input.misc = [];
             close(hwait);
-            
-            if DEBUG
-                fprintf('\n');
-            end
-            
+                        
         end
         
         

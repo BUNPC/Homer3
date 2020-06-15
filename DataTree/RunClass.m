@@ -105,21 +105,6 @@ classdef RunClass < TreeNodeClass
 
         
         % ----------------------------------------------------------------------------------
-        % Copy processing params (procInut and procResult) from
-        % N2 to N1 if N1 and N2 are same nodes
-        % ----------------------------------------------------------------------------------
-        function CopySpaceSave(obj, R, conditional)
-            if nargin==3 && strcmp(conditional, 'conditional')
-                if obj == R
-                    obj.CopySpaceSave@TreeNodeClass(R, 'conditional');
-                end
-            else
-                obj.CopySpaceSave@TreeNodeClass(R);
-            end
-        end
-
-        
-        % ----------------------------------------------------------------------------------
         % Subjects obj1 and obj2 are considered equivalent if their names
         % are equivalent and their sets of runs are equivalent.
         % ----------------------------------------------------------------------------------

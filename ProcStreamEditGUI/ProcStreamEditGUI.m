@@ -520,8 +520,22 @@ for iPanel=1:length(procElem)
         funcname = strtrim(parts{1});
         usagename = strtrim(parts{2});
         fcall = reg.funcReg(MapRegIdx(iPanel)).GetFuncCallDecoded(funcname, usagename);
-        CopyParamValues(fcall, procStreamPrev.fcalls);
+        %  Get parameters from global processing stream
+        global procStreamOptions;
+        switch iPanel
+            case iGroupPanel
+                fcall2 = procStreamOptions.dataTree.groups(1).procStream.fcalls(jj);
+            case iSubjPanel
+                fcall2 = procStreamOptions.dataTree.groups(1).subjs(1).procStream.fcalls(jj);
+            case iRunPanel
+                fcall2 = procStreamOptions.dataTree.groups(1).subjs(1).runs(1).procStream.fcalls(jj);
+        end
+        
+        % Copy parameter to exported proc stream
+        fcall.paramIn = fcall2.paramIn;
+        
         procElem{iPanel}.procStream.Add(fcall);
+        
     end
 end
 

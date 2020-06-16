@@ -2,14 +2,21 @@ function checkForHomerUpdates()
     url = 'http://bu.edu/neurophotonics/research/fnirs/homer3';
     cfg = ConfigFileClass();
     promptFlag = 0;
+    % Open a hidden web browser to run Google Analytics code
     try
+        % Open a hidden web browser 
+        [~,h] = web(url);
+        p = getParentRecursive(h);
+        p.setVisible(0);
         s = urlread(url,'timeout',2);
     catch
         % App is offline or server could not be reached
+        close(h);
         return
     end
+    
     updateTxt = ''; % Get information about potential update from s
-    vrnnum = getVernum();  % Compare to current version and set promptFlag
+    vrnum = getVernum();  % Compare to current version and set promptFlag
     % if (vrnum < updateTxt) & (cfg.GetValue('LatestUpdateRefused') < updateTxt)
     %   promptFlag = 1;
     % end
@@ -32,4 +39,5 @@ function checkForHomerUpdates()
                 % cfg.SetValue('LatestUpdateRefused',updateTxt); 
         end
     end
+    close(h);
 end

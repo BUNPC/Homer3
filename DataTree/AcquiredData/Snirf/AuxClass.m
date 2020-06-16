@@ -170,6 +170,10 @@ classdef AuxClass < FileLoadSaveClass
         
         % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
+            nbytes = 0;
+            if isempty(obj)
+                return
+            end
             nbytes = sizeof(obj.name) + sizeof(obj.dataTimeSeries) + sizeof(obj.time) + sizeof(obj.timeOffset);
         end
         

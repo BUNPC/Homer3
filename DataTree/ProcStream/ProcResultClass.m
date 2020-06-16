@@ -121,6 +121,29 @@ classdef ProcResultClass < handle
             end
         end
         
+
+        
+        % ----------------------------------------------------------------------------------
+        function AddVars(obj, vars, filename)
+            output = obj;
+            props = propnames(vars);
+            for ii=1:length(props)
+                if eval( sprintf('isproperty(output, ''%s'');', props{ii}) )
+                    eval( sprintf('output.%s = vars.%s;', props{ii}, props{ii}) );
+                else
+                    eval( sprintf('output.misc.%s = vars.%s;', props{ii}, props{ii}) );
+                end
+            end
+            if ~isempty(filename)
+                [~, ~, ext] = fileparts(filename);
+                if isempty(ext)
+                    filename = [filename, '.mat']; 
+                end
+                save(filename, '-mat', 'output');
+            end
+        end
+            
+
         
         % ----------------------------------------------------------------------------------
         function Flush(obj)
@@ -448,22 +471,17 @@ classdef ProcResultClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function Copy(obj, obj2, option)
+        function Copy(obj, obj2, filename)
             if ~isa(obj, 'ProcResultClass')
                 return;
-            end
-            if nargin==2
-                option = '';
             end
             
             % Ok to shallow copy since ProcResult objects are read only
             % Also we don't want to transfer space hogging time course
             % data dc and dod
             
-            if ~strcmp(option, 'spacesaver')
-                obj.dod = obj2.dod;
-                obj.dc = obj2.dc;
-            end
+            obj.dod = obj2.dod;
+            obj.dc = obj2.dc;
             obj.dodAvg = obj2.dodAvg;
             obj.dcAvg = obj2.dcAvg;
             obj.dodAvgStd = obj2.dodAvgStd;
@@ -543,7 +561,7 @@ classdef ProcResultClass < handle
             nbytes = zeros(length(fields),1);
             for ii = 1:length(fields)
                 fieldstr = sprintf('obj.%s', fields{ii});
-                if ~eval('isempty(fieldstr)')
+                if ~isempty(fieldstr)
                     if isa(eval(fieldstr), 'DataClass')
                         nbytes(ii) =  eval(sprintf('%s.MemoryRequired();', fieldstr));
                     else

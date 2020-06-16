@@ -4,7 +4,6 @@ classdef GroupClass < TreeNodeClass
         version;
         versionStr;
         subjs;
-        spacesaver;
         logger
     end
     
@@ -33,7 +32,6 @@ classdef GroupClass < TreeNodeClass
             
             obj.type    = 'group';
             obj.subjs   = SubjClass().empty;
-            obj.spacesaver = false;
             
             if nargin==0
                 return;
@@ -218,13 +216,8 @@ classdef GroupClass < TreeNodeClass
                     end
                 end
             else
-                if obj.spacesaver
-                    option = 'spacesaver';
-                else
-                    option = 'saveall';
-                end
                 for i=1:length(obj2.subjs)
-                    obj.subjs(i) = SubjClass(obj2.subjs(i), option);
+                    obj.subjs(i) = SubjClass(obj2.subjs(i));
                 end
                 obj.Copy@TreeNodeClass(obj2);
             end

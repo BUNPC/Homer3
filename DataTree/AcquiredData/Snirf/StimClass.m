@@ -425,6 +425,10 @@ classdef StimClass < FileLoadSaveClass
                 
         % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
+            nbytes = 0;
+            if isempty(obj)
+                return
+            end
             nbytes = sizeof(obj.name) + sizeof(obj.data) + sizeof(obj.filename) + sizeof(obj.fileformat) + sizeof(obj.supportedFomats) + 8;
         end
         

@@ -1,5 +1,5 @@
 % SYNTAX:
-% [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting, tResting)
+% [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_inx, runIdxResting, tResting)
 %
 % UI NAME:
 % hmrR_tCCA
@@ -28,6 +28,8 @@
 %          if you do not want to regress the short separation measurements.
 %          Follows the static estimate procedure described in Gagnon et al (2011).
 %          NeuroImage, 56(3), 1362?1371.
+% ss_ch_inx - short separation channel index, starts from one ends with the
+% total number of short separation channels
 % runIdxResting - resting state run index
 % tResting - start/stop time [s] to use from resting data for tCCA training
 %
@@ -39,8 +41,8 @@
 %           Only relevant when flagICRegressors = 1.
 %
 % USAGE OPTIONS:
-% hmrR_tCCA_Concentration_Data: [Aaux, rcMap] = hmrR_tCCA(dc, aux, probe, iRun, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting, tResting)
-% hmrR_tCCA_OD_Data: [Aaux, rcMap] = hmrR_tCCA(dod, aux, probe, iRun, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting, tResting)
+% hmrR_tCCA_Concentration_Data: [Aaux, rcMap] = hmrR_tCCA(dc, aux, probe, iRun, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_inx, runIdxResting, tResting)
+% hmrR_tCCA_OD_Data: [Aaux, rcMap] = hmrR_tCCA(dod, aux, probe, iRun, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_inx, runIdxResting, tResting)
 %
 %
 % PARAMETERS:
@@ -48,10 +50,11 @@
 % tCCAparams: [3 2 0.3]
 % tCCAaux_inx: [1 2 3 4 5 6 7 8]
 % rhoSD_ssThresh: 15.0
+% ss_ch_inx: 0
 % runIdxResting: 1
 % tResting: [30 210]
 %
-function [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, runIdxResting, tResting)
+function [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_inx, runIdxResting, tResting)
 
 %% COMMENTS/THOUGHTS/QUESTIONS ALEX
 % 2) Output canonical correlation coefficients as quality metric?
@@ -104,6 +107,10 @@ if flagtCCA
         end
         lstSS = lst(find(rhoSD<=rhoSD_ssThresh)); %#ok<*FNDSB>
         lstLS = lst(find(rhoSD>rhoSD_ssThresh));
+        
+        if ss_ch_inx ~= 0
+            lstSS = lstSS(ss_ch_inx);
+        end
         
         %% get long and short separation data
         if strncmp(datatype{1}, 'Hb', 2)

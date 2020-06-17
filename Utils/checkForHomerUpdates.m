@@ -8,10 +8,12 @@ function checkForHomerUpdates()
         [~,h] = web(url);
         p = getParentRecursive(h);
         p.setVisible(0);
-        s = urlread(url,'timeout',2);
+        s = urlread(url,'timeout',2)
     catch
         % App is offline or server could not be reached
+        fprintf("Could not reach server to check for updates.\n");
         close(h);
+        
         return
     end
     

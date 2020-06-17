@@ -476,7 +476,9 @@ end
 
 % -------------------------------------------------------------
 function pushbuttonSave_Callback(hObject, eventdata, handles)
+
 global procStreamEdit
+
 procElem    = procStreamEdit.procElem;
 groups      = procStreamEdit.dataTree.groups;
 listPsUsage = procStreamEdit.listPsUsage;
@@ -499,7 +501,7 @@ end
 % First get the user selection of proc stream function calls from the proc stream listbox 
 % (listboxFuncProcStream) and load them into the procElem for all panels.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-for iPanel=1:length(procElem)    
+for iPanel=1:length(procElem)
     % Save current proc stream in a temp variable - we will copy the aram
     % values for any func call which reappears in the new proc stream
     procStreamPrev = ProcStreamClass();
@@ -520,15 +522,19 @@ for iPanel=1:length(procElem)
         funcname = strtrim(parts{1});
         usagename = strtrim(parts{2});
         fcall = reg.funcReg(MapRegIdx(iPanel)).GetFuncCallDecoded(funcname, usagename);
-        %  Get parameters from global processing stream
-        global procStreamOptions;
+        % Get path up the tree from currElem
+        ir = procStreamEdit.dataTree.currElem.iRun;
+        is = procStreamEdit.dataTree.currElem.iSubj;
+        ig = procStreamEdit.dataTree.currElem.iGroup;
+        
+        % Get parameters from global processing stream
         switch iPanel
             case iGroupPanel
-                fcall2 = procStreamOptions.dataTree.groups(1).procStream.fcalls(jj);
+                fcall2 = procStreamEdit.dataTree.groups(ig).procStream.fcalls(jj);
             case iSubjPanel
-                fcall2 = procStreamOptions.dataTree.groups(1).subjs(1).procStream.fcalls(jj);
+                fcall2 = procStreamOptions.dataTree.groups(ig).subjs(is).procStream.fcalls(jj);
             case iRunPanel
-                fcall2 = procStreamOptions.dataTree.groups(1).subjs(1).runs(1).procStream.fcalls(jj);
+                fcall2 = procStreamOptions.dataTree.groups(ig).subjs(is).runs(ir).procStream.fcalls(jj);
         end
         
         % Copy parameter to exported proc stream

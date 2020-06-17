@@ -45,7 +45,7 @@ classdef ConfigFileClass < FileClass
             % We have a filename of an existing readable file.
             try 
                 obj.filename = filesepStandard(filename);
-                obj.ParseFile();
+                obj.Parse();
             catch ME
                 % In case of parsing error make sure to close file handle 
                 % so we don't leave the application in a bad state, then rethrow error
@@ -59,7 +59,7 @@ classdef ConfigFileClass < FileClass
         
         
         % ----------------------------------------------------
-        function ParseFile(obj)
+        function Parse(obj)
             %
             % Parse(obj)
             %
@@ -185,7 +185,14 @@ classdef ConfigFileClass < FileClass
         
         
         % -------------------------------------------------------------------------------------------------
-        function WriteFile(obj)
+        function Save(obj, options)
+            if ~exist('options', 'var')
+                options = '';
+            end
+            if strcmp(options, 'backup')
+                copyfile(obj.filename, [obj.filename, '.bak'])
+            end
+            
             if obj.fid<0
                 obj.fid = fopen(obj.filename, 'w');
             end
@@ -205,7 +212,6 @@ classdef ConfigFileClass < FileClass
             fclose(obj.fid);
             obj.fid = -1;
         end
-        
         
         
         
@@ -275,8 +281,7 @@ classdef ConfigFileClass < FileClass
                 b=true;
             end
         end
-    
-        
+            
         
         % -------------------------------------------------------------------------------------------------
         function name = getSectionNameFromLine(obj)
@@ -361,6 +366,19 @@ classdef ConfigFileClass < FileClass
         end
         
         
+        
+        % -------------------------------------------------------------------------------------------------
+        function Restore(obj)
+            if exist([obj.filename, '.bak'], 'file')
+                movefile([obj.filename, '.bak'], obj.filename)
+            end
+        end
+        
+        
+        % -------------------------------------------------------------------------------------------------
+        function b = BackupExists(obj)
+            b = exist([obj.filename, '.bak'], 'file');
+        end
         
         
     end

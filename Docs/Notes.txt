@@ -112,3 +112,102 @@ May 11, 2020
 
 -- When loading and rejecting outdated .snirf files, before asking the user about loading a different group folder check for presense of .nirs files and if they're present, do the cycle of telling user about the .nirs files and if they want to convert them to .snirf
 
+
+
+-- 1.18.8  vs  1.18.5
+
+-- Before these changes if the file wasn't successfully saved for whatever reason, it was left in a bad state and corrupted state. And next time you repoen H3 it tries to load this file but because it's bad it can;t read it and throws an error. Also another quirk Ive seen is that if it got to that point where a a bad file was created, until you exit matlab you can't even delete the bad file. 
+
+-- Added check 2 things  
+
+
+
+
+Issue 1:
+
+    Since we made a release and since then have made changes to the spec and data structure names and functionality we should have a new version number, no? 
+    This matter greatly for instance Homer3 where people are getting errors as I make changes to Snirf functionality to match latest spec. I want to be able to 
+    compare currently supported version with the loaded snirf file's version and based on that know what to do: warn user that loaded file is older version, 
+    call an older version's snirf reader/writer, etc.
+    
+    I propose changing the spec as soon as possible to have formatVersion = 1.1 (or whatever we agree on) and have that be a new release 
+
+    I changed the latest Homer3 to produce snirf files with formatVersion == '1.1', in order to be able to compare to formatVersion in existing snirf files. 
+
+Issue 2:
+
+    We (Qianqian and I) have /nirs/probe/frequency not matching spec which says it should be named /nirs/probe/frequencies. I changed this in my snirf reader/writer
+    
+    
+Issue 2:  
+
+    Generating 2D arrays for data items specified as 1D arrays. Examples include /nirs/probe/frequencies and /nirs/probe/wavelengths.
+
+    easyh5-generated  sample when read in python produces a 2D array which does not agree with spec:
+
+        >> h5disp('./Simple_probe.snirf')
+        Dataset 'frequency' 
+            Size:  1x1
+            MaxSize:  1x1
+            Datatype:   H5T_IEEE_F64LE (double)
+            ChunkSize:  []
+            Filters:  none
+            FillValue:  0.000000
+
+    Homer3 generated sample when read in python produces 1D array according to spec:
+    
+        >> h5disp('./Simple_probe.snirf')
+        Dataset 'frequency' 
+            Size:  1
+            MaxSize:  1
+            Datatype:   H5T_IEEE_F64LE (double)
+            ChunkSize:  1
+            Filters:  none
+            FillValue:  0.000000
+
+
+Issue 4: 
+
+    While string arrays are bit of a gray area as far as the spec is concerned, I was curious how the various softwares would save and load them in python where storage order is not an issue relative to HDF5.  As Qianqian has suggested a row-major language is a good way to independently verify your snirf files. So I tried to read the string-array data items in a python interpreter and it seems to show homer3 handling string arrays for sourceLabels and detectorLabels for instance, better than easyh5.
+
+    easyh5-generated
+
+        C:\Users\same1\workspaces\snirf-samples\basic>python
+          . . . . . . .       
+        >>> import numpy as np
+        >>> import h5py
+        >>> fid = h5py.File('Simple_probe.snirf','r')
+        >>> sl = np.array(fid.get('/nirs/probe/sourceLabels'))
+        >>> sl
+        array([[b'S', b'1']], dtype='|S1')
+        >>> dl = np.array(fid.get('/nirs/probe/detectorLabels'))
+        >>> dl
+        array([[b'D', b'D', b'D', b'D'],
+               [b'1', b'2', b'3', b'4']], dtype='|S1')
+
+
+
+    snirf_homer3-generated
+    
+        C:\Users\same1\workspaces\Homer3\DataTree\AcquiredData\Snirf\Examples>python
+          . . . . . . .       
+        >>> fid = h5py.File('Simple_probe.snirf','r')
+        >>> sl = np.array(fid.get('/nirs/probe/sourceLabels'))
+        >>> sl
+        array([b'S1'], dtype='|S2')
+        >>> dl = np.array(fid.get('/nirs/probe/detectorLabels'))
+        >>> dl
+        array([b'D1', b'D2', b'D3', b'D4'], dtype='|S2')
+
+
+Also I added a python SNIRF reader (SnirfClass.py) to Homer3 and snirf-homer3. It reads a snirf file and summarizes it's contents in a printout. The attachements contain a full summary of equivalent file printouts. 
+
+
+=============================
+Jun 17, 2020
+
+Zoom Meeting with Steve Tucker, David Boas and 
+-- Ask about version number checking. Am I supposed to change to v1.0?
+-- Snirf validator, Snirf samples git repo, HDFView, Data space. 
+ 
+

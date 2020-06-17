@@ -736,6 +736,9 @@ end
 % ----------------------------------------------------------------------------------
 function hObject = Display(handles, hObject)
 
+if ~exist('hObject','var')
+    hObject=[];
+end
 hObject = DisplayData(handles, hObject);
 DisplayAxesSDG();
 
@@ -1150,8 +1153,7 @@ switch(guiname)
             listboxGroupTree_Callback([], [iGroup, iSubj, iRun], maingui.handles);
         end
     case 'PatchCallback'
-        Display(maingui.handles, maingui.handles.axesData);  % Redisplay data axes since stims might have edited
-        
+        Display(maingui.handles, maingui.handles.axesData);  % Redisplay data axes since stims might have edited        
 end
 
 

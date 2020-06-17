@@ -427,21 +427,19 @@ classdef GroupClass < TreeNodeClass
                         tHRF_common{iBlk} = s(iSubj).procStream.output.GetTHRF(iBlk);
                     end
                 end
-                
             end
            
-            % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
-            % all subjs. Use smallest tHRF as the common one.
-            for iSubj = 1:nSubj
-                for iBlk = 1:length(tHRF_common)
-                    s(iSubj).procStream.output.SettHRFCommon(tHRF_common{iBlk}, s(iSubj).name, s(iSubj).type, iBlk);
-                end
-            end
             
             % Instantiate all the variables that might be needed by
             % procStream.Calc() to calculate proc stream for this group
             vars = [];
             for iSubj = 1:nSubj
+                % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
+                % all subjs. Use smallest tHRF as the common one.
+                for iBlk = 1:length(tHRF_common)
+                    s(iSubj).procStream.output.SettHRFCommon(tHRF_common{iBlk}, s(iSubj).name, s(iSubj).type, iBlk);
+                end
+
                 vars.dodAvgSubjs{iSubj}    = s(iSubj).procStream.output.GetVar('dodAvg');
                 vars.dodAvgStdSubjs{iSubj} = s(iSubj).procStream.output.GetVar('dodAvgStd');
                 vars.dcAvgSubjs{iSubj}     = s(iSubj).procStream.output.GetVar('dcAvg');
@@ -474,17 +472,6 @@ classdef GroupClass < TreeNodeClass
         
         
         
-        % ----------------------------------------------------------------------------------
-        function CalcRunLevelTimeCourse(obj)
-            % Calculate all subjs in this session
-            s = obj.subjs;
-            nSubj = length(s);
-            for iSubj = 1:nSubj
-                s(iSubj).CalcRunLevelTimeCourse();
-            end
-        end
-        
-
         % ----------------------------------------------------------------------------------
         function Print(obj, indent)
             if ~exist('indent', 'var')

@@ -62,7 +62,7 @@ classdef ProcStreamClass < handle
             obj.fcalls(ii+1:end) = [];
             
             obj.input.Copy(obj2.input);
-            obj.output.Copy(obj2.output, filename);
+            obj.output.Copy(obj2.output);
         end
         
         
@@ -239,11 +239,10 @@ classdef ProcStreamClass < handle
             for ii=1:length(paramOut)
                 eval( sprintf('paramsOutStruct.%s = %s;', paramOut{ii}, paramOut{ii}) );
             end            
-            obj.output.AddVars(paramsOutStruct, filename);
+            obj.output.Save(paramsOutStruct, filename);
             
             obj.input.misc = [];
             close(hwait);
-                        
         end
         
         
@@ -260,29 +259,8 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function FcallsIdxsTimeCourses(obj)
-            if ~obj.output.HaveBlockAvgOutput()
-                return;
-            end
-            idxs = zeros(1, length(obj.fcalls));
-            for ii=1:length(obj.fcalls)
-                sargout = ParseOutputArgs(obj, ii);
-                if strfind('dod', sargout) %#ok<*STRIFCND>
-                    idxs(ii) = 1;
-                end
-                if strfind('dc', sargout)
-                    idxs(ii) = 1;
-                end
-            end
-            k = find(idxs==1);
-            obj.fcallsIdxs=1:k(end);
-        end
-                
-        
-        
-        % ----------------------------------------------------------------------------------
         function FcallsIdxsReset(obj)
-            obj.fcallsIdxs=[];            
+            obj.fcallsIdxs=[];
         end
         
         
@@ -316,34 +294,6 @@ classdef ProcStreamClass < handle
             end
         end
         
-        
-        
-        % ----------------------------------------------------------------------------------
-        function b = HaveBlockAvgOutput(obj)
-            b=0;
-            if isempty(obj)
-                return;
-            end
-            if isempty(obj.output)
-                return;
-            end
-            b = obj.output.HaveBlockAvgOutput();
-        end
-        
-        
-        
-        % ----------------------------------------------------------------------------------
-        function b = HaveTimeCourseOutput(obj)
-            b=0;
-            if isempty(obj)
-                return;
-            end
-            if isempty(obj.output)
-                return;
-            end
-            b = obj.output.HaveTimeCourseOutput();
-        end
-                
     end
     
     

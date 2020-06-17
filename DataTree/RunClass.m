@@ -218,18 +218,6 @@ classdef RunClass < TreeNodeClass
 
         
         % ----------------------------------------------------------------------------------
-        function CalcTimeCourses(obj)
-            if obj.procStream.HaveTimeCourseOutput()
-                return;
-            end
-            obj.procStream.FcallsIdxsTimeCourses();
-            obj.Calc('keepexisting');
-            obj.procStream.FcallsIdxsReset();
-        end
-        
-        
-        
-        % ----------------------------------------------------------------------------------
         function Print(obj, indent)
             if ~exist('indent', 'var')
                 indent = 4;

@@ -196,18 +196,17 @@ classdef SubjClass < TreeNodeClass
                 end
             end
             
-            % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
-            % all runs. Use smallest tHRF as the common one.
-            for iRun = 1:nRun
-                for iBlk = 1:length(tHRF_common)
-                    r(iRun).procStream.output.SettHRFCommon(tHRF_common{iBlk}, r(iRun).name, r(iRun).type, iBlk);
-                end
-            end            
             
             % Instantiate all the variables that might be needed by
             % procStream.Calc() to calculate proc stream for this subject
             vars = [];
             for iRun = 1:nRun
+                % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
+                % all runs. Use smallest tHRF as the common one.
+                for iBlk = 1:length(tHRF_common)
+                    r(iRun).procStream.output.SettHRFCommon(tHRF_common{iBlk}, r(iRun).name, r(iRun).type, iBlk);
+                end
+
                 vars.dodAvgRuns{iRun}    = r(iRun).procStream.output.GetVar('dodAvg');
                 vars.dodAvgStdRuns{iRun} = r(iRun).procStream.output.GetVar('dodAvgStd');
                 vars.dodSum2Runs{iRun}   = r(iRun).procStream.output.GetVar('dodSum2');
@@ -245,17 +244,6 @@ classdef SubjClass < TreeNodeClass
         end
                 
         
-        % ----------------------------------------------------------------------------------
-        function CalcRunLevelTimeCourse(obj)
-            r = obj.runs;
-            nRun = length(r);
-            for iRun = 1:nRun
-                r(iRun).CalcTimeCourses();
-            end
-        end
-        
-        
-
         % ----------------------------------------------------------------------------------
         function Print(obj, indent)
             if ~exist('indent', 'var')

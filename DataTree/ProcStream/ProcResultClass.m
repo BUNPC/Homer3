@@ -121,10 +121,28 @@ classdef ProcResultClass < handle
             end
         end
         
-
+    end
+        
+        
+    methods
         
         % ----------------------------------------------------------------------------------
-        function AddVars(obj, vars, filename)
+        function SetFilename(obj, filename)
+            if isempty(filename)
+                return;
+            end
+            [pname, fname] = fileparts(filename);
+            if isempty(pname)
+                pname = '.';
+            end
+            obj.filename = [pname, '/', fname, '.mat'];
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Save(obj, vars, filename)            
+            obj.SetFilename(filename)
+
             output = obj;
             props = propnames(vars);
             for ii=1:length(props)
@@ -175,7 +193,6 @@ classdef ProcResultClass < handle
         
         % ----------------------------------------------------------------------------------
         function t = GetTHRF(obj, iBlk)
-            t = [];
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
@@ -235,7 +252,7 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function yavg = GetDodAvg(obj, type, condition, iBlk)
+        function yavg = GetDodAvg(obj, type, condition, iBlk) %#ok<*INUSL>
             yavg = [];
             
             % Check type argument
@@ -243,7 +260,7 @@ classdef ProcResultClass < handle
                 type = 'dodAvg';
             end
             if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk = 1;
+                iBlk = 1; %#ok<NASGU>
             end
             
             if ~ischar(type)
@@ -292,7 +309,7 @@ classdef ProcResultClass < handle
                 type = 'dcAvg';
             end
             if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk = 1;
+                iBlk = 1; %#ok<NASGU>
             end
             
             if ~ischar(type)
@@ -334,14 +351,14 @@ classdef ProcResultClass < handle
         % ----------------------------------------------------------------------------------
         function y = GetDataTimeCourse(obj, type, iBlk)
             y = [];
-            options = '';
+            options = ''; %#ok<NASGU>
             
             % Check type argument
             if ~exist('type','var') || isempty(type)
                 type = 'dcAvg';
             end
             if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk = 1;
+                iBlk = 1; %#ok<NASGU>
             end
             
             if ~ischar(type)
@@ -353,7 +370,7 @@ classdef ProcResultClass < handle
                     return;
                 end
                 if strcmp(type, 'dc') || strcmp(type, 'dcAvg') || strcmp(type, 'dodAvg')
-                    options = 'reshape';
+                    options = 'reshape'; %#ok<NASGU>
                 end
                 y = eval(sprintf('obj.%s(iBlk).GetDataTimeSeries(options)', type));
             else
@@ -439,7 +456,6 @@ classdef ProcResultClass < handle
         
         % ----------------------------------------------------------------------------------
         function mlActAuto = GetMeasListActAuto(obj, iBlk)
-            mlActAuto = {};
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk=1;
             end
@@ -471,7 +487,7 @@ classdef ProcResultClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function Copy(obj, obj2, filename)
+        function Copy(obj, obj2)
             if ~isa(obj, 'ProcResultClass')
                 return;
             end
@@ -501,45 +517,48 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function b = HaveBlockAvgOutput(obj)
-            b=0;
+        function b = IsEmpty(obj)
+            b = false;
             if isempty(obj)
-                return;
-            end
-            if ~isempty(obj.dcAvg)
-                b=1;
-            end
-            if ~isempty(obj.dodAvg)
-                b=1;
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function b = HaveTimeCourseOutput(obj)
-            b=0;
-            if isempty(obj)
-                return;
-            end
-            if ~isempty(obj.dc)
-                b=1;
+                return
             end
             if ~isempty(obj.dod)
-                b=1;
+                return
             end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function b = IsEmpty(obj)
-            b=0;
-            if obj.HaveTimeCourseOutput()
-                return;
+            if ~isempty(obj.dc)
+                return
             end
-            if obj.HaveBlockAvgOutput()
-                return;
+            if ~isempty(obj.dodAvg)
+                return
             end
-            b=1;
+            if ~isempty(obj.dcAvg)
+                return
+        	end
+            if ~isempty(obj.dodAvgStd)
+                return
+            end
+            if ~isempty(obj.dcAvgStd)
+                return
+            end
+            if ~isempty(obj.dodSum2)
+                return
+            end
+            if ~isempty(obj.dcSum2)
+                return
+            end
+            if ~isempty(obj.tHRF)
+                return
+            end
+            if ~isempty(obj.nTrials)
+                return
+        	end
+            if ~isempty(obj.grpAvgPass)
+                return
+            end
+            if ~isempty(obj.misc)
+                return
+            end
+            b = false;
         end
         
         

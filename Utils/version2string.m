@@ -8,27 +8,34 @@ if ischar(V)
     verstr = V;
     return
 end
-    
-for ii=length(V):-1:1
+
+% Error checking
+for ii = length(V):-1:1
     if ~ischar(V{ii})
         return;
     end
-    if ~isnumber(V{ii})
+    if ~isnumber(V{ii}) && ii<4
         return;
     end
     if ii<4
         break;
     end
 end
-verstr = '';
-for kk=1:length(V(1:ii))
-    if isempty(verstr)
-        verstr = sprintf('%s', V{kk});
+
+% Generate vresion string from version cell array
+zeroflag = false;
+for kk = length(V):-1:1
+    if kk>2 && strcmp(V{kk},'0') && ~zeroflag
+        continue;
+    end
+    zeroflag = true;
+    if (kk+1)>length(V) || isnumber(V{kk+1})
+        verstr = sprintf('%s.%s', V{kk}, verstr);
     else
-        if isnumber(V{3})
-            verstr = sprintf('%s.%s', verstr, V{kk});
-        else
-            verstr = sprintf('%s, %s', verstr, V{kk});
-        end
+        verstr = sprintf('%s, %s', V{kk}, verstr);
     end
 end
+if verstr(end) == '.'
+    verstr(end) = '';
+end
+

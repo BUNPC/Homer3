@@ -176,6 +176,9 @@ classdef ProcStreamClass < handle
         function Calc(obj)
             DEBUG = 0;
             
+            % Disable GUI while processing taking place
+            MainGUI_EnableDisableGUI('off');
+            
             % loop over functions            
             FcallsIdxs = obj.GetFcallsIdxs();
             nFcall = length(FcallsIdxs);
@@ -250,6 +253,8 @@ classdef ProcStreamClass < handle
             if DEBUG
                 fprintf('\n');
             end
+            
+            MainGUI_EnableDisableGUI('on');
             
         end
         

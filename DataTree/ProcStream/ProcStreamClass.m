@@ -246,11 +246,7 @@ classdef ProcStreamClass < handle
             
             obj.input.misc = [];
             close(hwait);
-            
-            if DEBUG
-                fprintf('\n');
-            end
-            
+        
             MainGUI_EnableDisableGUI('on');
             
         end

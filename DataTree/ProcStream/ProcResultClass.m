@@ -121,6 +121,47 @@ classdef ProcResultClass < handle
             end
         end
         
+    end
+        
+        
+    methods
+        
+        % ----------------------------------------------------------------------------------
+        function SetFilename(obj, filename)
+            if isempty(filename)
+                return;
+            end
+            [pname, fname] = fileparts(filename);
+            if isempty(pname)
+                pname = '.';
+            end
+            obj.filename = [pname, '/', fname, '.mat'];
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Save(obj, vars, filename)            
+            obj.SetFilename(filename)
+
+            output = obj;
+            props = propnames(vars);
+            for ii=1:length(props)
+                if eval( sprintf('isproperty(output, ''%s'');', props{ii}) )
+                    eval( sprintf('output.%s = vars.%s;', props{ii}, props{ii}) );
+                else
+                    eval( sprintf('output.misc.%s = vars.%s;', props{ii}, props{ii}) );
+                end
+            end
+            if ~isempty(filename)
+                [~, ~, ext] = fileparts(filename);
+                if isempty(ext)
+                    filename = [filename, '.mat']; 
+                end
+                save(filename, '-mat', 'output');
+            end
+        end
+            
+
         
         % ----------------------------------------------------------------------------------
         function Flush(obj)
@@ -152,7 +193,6 @@ classdef ProcResultClass < handle
         
         % ----------------------------------------------------------------------------------
         function t = GetTHRF(obj, iBlk)
-            t = [];
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
@@ -212,7 +252,7 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function yavg = GetDodAvg(obj, type, condition, iBlk)
+        function yavg = GetDodAvg(obj, type, condition, iBlk) %#ok<*INUSL>
             yavg = [];
             
             % Check type argument
@@ -220,7 +260,7 @@ classdef ProcResultClass < handle
                 type = 'dodAvg';
             end
             if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk = 1;
+                iBlk = 1; %#ok<NASGU>
             end
             
             if ~ischar(type)
@@ -269,7 +309,7 @@ classdef ProcResultClass < handle
                 type = 'dcAvg';
             end
             if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk = 1;
+                iBlk = 1; %#ok<NASGU>
             end
             
             if ~ischar(type)
@@ -311,14 +351,14 @@ classdef ProcResultClass < handle
         % ----------------------------------------------------------------------------------
         function y = GetDataTimeCourse(obj, type, iBlk)
             y = [];
-            options = '';
+            options = ''; %#ok<NASGU>
             
             % Check type argument
             if ~exist('type','var') || isempty(type)
                 type = 'dcAvg';
             end
             if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk = 1;
+                iBlk = 1; %#ok<NASGU>
             end
             
             if ~ischar(type)
@@ -330,7 +370,7 @@ classdef ProcResultClass < handle
                     return;
                 end
                 if strcmp(type, 'dc') || strcmp(type, 'dcAvg') || strcmp(type, 'dodAvg')
-                    options = 'reshape';
+                    options = 'reshape'; %#ok<NASGU>
                 end
                 y = eval(sprintf('obj.%s(iBlk).GetDataTimeSeries(options)', type));
             else
@@ -416,7 +456,6 @@ classdef ProcResultClass < handle
         
         % ----------------------------------------------------------------------------------
         function mlActAuto = GetMeasListActAuto(obj, iBlk)
-            mlActAuto = {};
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk=1;
             end
@@ -448,22 +487,17 @@ classdef ProcResultClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function Copy(obj, obj2, option)
+        function Copy(obj, obj2)
             if ~isa(obj, 'ProcResultClass')
                 return;
-            end
-            if nargin==2
-                option = '';
             end
             
             % Ok to shallow copy since ProcResult objects are read only
             % Also we don't want to transfer space hogging time course
             % data dc and dod
             
-            if ~strcmp(option, 'spacesaver')
-                obj.dod = obj2.dod;
-                obj.dc = obj2.dc;
-            end
+            obj.dod = obj2.dod;
+            obj.dc = obj2.dc;
             obj.dodAvg = obj2.dodAvg;
             obj.dcAvg = obj2.dcAvg;
             obj.dodAvgStd = obj2.dodAvgStd;
@@ -483,45 +517,48 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function b = HaveBlockAvgOutput(obj)
-            b=0;
+        function b = IsEmpty(obj)
+            b = false;
             if isempty(obj)
-                return;
-            end
-            if ~isempty(obj.dcAvg)
-                b=1;
-            end
-            if ~isempty(obj.dodAvg)
-                b=1;
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function b = HaveTimeCourseOutput(obj)
-            b=0;
-            if isempty(obj)
-                return;
-            end
-            if ~isempty(obj.dc)
-                b=1;
+                return
             end
             if ~isempty(obj.dod)
-                b=1;
+                return
             end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function b = IsEmpty(obj)
-            b=0;
-            if obj.HaveTimeCourseOutput()
-                return;
+            if ~isempty(obj.dc)
+                return
             end
-            if obj.HaveBlockAvgOutput()
-                return;
+            if ~isempty(obj.dodAvg)
+                return
             end
-            b=1;
+            if ~isempty(obj.dcAvg)
+                return
+        	end
+            if ~isempty(obj.dodAvgStd)
+                return
+            end
+            if ~isempty(obj.dcAvgStd)
+                return
+            end
+            if ~isempty(obj.dodSum2)
+                return
+            end
+            if ~isempty(obj.dcSum2)
+                return
+            end
+            if ~isempty(obj.tHRF)
+                return
+            end
+            if ~isempty(obj.nTrials)
+                return
+        	end
+            if ~isempty(obj.grpAvgPass)
+                return
+            end
+            if ~isempty(obj.misc)
+                return
+            end
+            b = false;
         end
         
         
@@ -543,7 +580,7 @@ classdef ProcResultClass < handle
             nbytes = zeros(length(fields),1);
             for ii = 1:length(fields)
                 fieldstr = sprintf('obj.%s', fields{ii});
-                if ~eval('isempty(fieldstr)')
+                if ~isempty(fieldstr)
                     if isa(eval(fieldstr), 'DataClass')
                         nbytes(ii) =  eval(sprintf('%s.MemoryRequired();', fieldstr));
                     else
@@ -593,10 +630,9 @@ classdef ProcResultClass < handle
             tblcells = TableCell.empty();
             if isa(obj.dcAvg, 'DataClass')
                 dataTimeSeries = obj.dcAvg(iBlk).GetDataTimeSeries('');                
-                h = waitbar_improved(0, sprintf('Generating table cells for export ... 0%% complete.'));
+                
                 % Data rows
                 for iCond = 1:length(CondNames)
-                    waitbar_improved(iCond/length(CondNames), h, sprintf('Generating table cells for export ... %d%% complete.', uint32(100 * iCond/length(CondNames))));
                     measListIdxs = obj.dcAvg(iBlk).GetMeasurementListIdxs(iCond);
                     for iCh = measListIdxs
                         iT = (obj.dcAvg.time >= trange(1)) & (obj.dcAvg.time <= trange(2));
@@ -609,7 +645,6 @@ classdef ProcResultClass < handle
                         tblcells(iCond, mod(iCh-1, length(measListIdxs))+1) = TableCell(cname, width);
                     end
                 end
-                close(h);
             end
         end
 
@@ -635,9 +670,7 @@ classdef ProcResultClass < handle
                 end
                 
                 % Data rows
-                h = waitbar_improved(0, sprintf('Generating table cells for export ... 0%% complete.'));
                 for t = 1:size(dataTimeSeries,1)
-                    waitbar_improved(t/size(dataTimeSeries,1), h, sprintf('Generating table cells for export ... %d%% complete.', uint32(100 * t/size(dataTimeSeries,1))));
                     for iCh = 1:length(measList)
                         if isnan(dataTimeSeries(t,iCh))
                             cname  = 'NaN';
@@ -647,7 +680,6 @@ classdef ProcResultClass < handle
                         tblcells(t+2,iCh) = TableCell(cname, 12);
                     end
                 end
-                close(h);
             else
                 
             end

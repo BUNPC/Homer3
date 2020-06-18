@@ -47,3 +47,13 @@ end
 fprintf('\n');
 
 fclose all;
+
+% Create or restore config file
+c = ConfigFileClass();
+if c.BackupExists()
+    c.Restore()
+else
+    c.SetValue('Regression Test Active','true');
+    c.SetValue('Include Archived User Functions','Yes');
+    c.Save('backup');
+end

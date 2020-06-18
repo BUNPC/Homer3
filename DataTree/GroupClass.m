@@ -4,7 +4,6 @@ classdef GroupClass < TreeNodeClass
         version;
         versionStr;
         subjs;
-        spacesaver;
         logger
     end
     
@@ -33,7 +32,6 @@ classdef GroupClass < TreeNodeClass
             
             obj.type    = 'group';
             obj.subjs   = SubjClass().empty;
-            obj.spacesaver = false;
             
             if nargin==0
                 return;
@@ -73,9 +71,13 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function SetVersion(obj, vernum)
+            % Version number should be incremented whenever properties are added, deleted or changed in 
+            % GroupClass, SubjectClass, RunClass OR acquisition class, like AcqDataClass, SnirfClass and 
+            % its sub-classes or NirsClass 
+            
             if nargin==1
                 obj.version{1} = '1';   % Major version #
-                obj.version{2} = '0';   % Major sub-version #
+                obj.version{2} = '2';   % Major sub-version #
                 obj.version{3} = '0';   % Minor version #
                 obj.version{4} = '0';   % Minor sub-version # or patch #: 'p1', 'p2', etc
             elseif iscell(vernum)
@@ -214,13 +216,8 @@ classdef GroupClass < TreeNodeClass
                     end
                 end
             else
-                if obj.spacesaver
-                    option = 'spacesaver';
-                else
-                    option = 'saveall';
-                end
                 for i=1:length(obj2.subjs)
-                    obj.subjs(i) = SubjClass(obj2.subjs(i), option);
+                    obj.subjs(i) = SubjClass(obj2.subjs(i));
                 end
                 obj.Copy@TreeNodeClass(obj2);
             end
@@ -430,21 +427,19 @@ classdef GroupClass < TreeNodeClass
                         tHRF_common{iBlk} = s(iSubj).procStream.output.GetTHRF(iBlk);
                     end
                 end
-                
             end
            
-            % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
-            % all subjs. Use smallest tHRF as the common one.
-            for iSubj = 1:nSubj
-                for iBlk = 1:length(tHRF_common)
-                    s(iSubj).procStream.output.SettHRFCommon(tHRF_common{iBlk}, s(iSubj).name, s(iSubj).type, iBlk);
-                end
-            end
             
             % Instantiate all the variables that might be needed by
             % procStream.Calc() to calculate proc stream for this group
             vars = [];
             for iSubj = 1:nSubj
+                % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
+                % all subjs. Use smallest tHRF as the common one.
+                for iBlk = 1:length(tHRF_common)
+                    s(iSubj).procStream.output.SettHRFCommon(tHRF_common{iBlk}, s(iSubj).name, s(iSubj).type, iBlk);
+                end
+
                 vars.dodAvgSubjs{iSubj}    = s(iSubj).procStream.output.GetVar('dodAvg');
                 vars.dodAvgStdSubjs{iSubj} = s(iSubj).procStream.output.GetVar('dodAvgStd');
                 vars.dcAvgSubjs{iSubj}     = s(iSubj).procStream.output.GetVar('dcAvg');
@@ -477,17 +472,6 @@ classdef GroupClass < TreeNodeClass
         
         
         
-        % ----------------------------------------------------------------------------------
-        function CalcRunLevelTimeCourse(obj)
-            % Calculate all subjs in this session
-            s = obj.subjs;
-            nSubj = length(s);
-            for iSubj = 1:nSubj
-                s(iSubj).CalcRunLevelTimeCourse();
-            end
-        end
-        
-
         % ----------------------------------------------------------------------------------
         function Print(obj, indent)
             if ~exist('indent', 'var')

@@ -601,14 +601,46 @@ end
 
 
 
-% -------------------------------------------------------------------
-function [eventdata, handles] = menuItemLaunchStimGUI_Callback(hObject, eventdata, handles)
+% --------------------------------------------------------------------
+function LaunchChildGuiFromMenu(guiname, h)
 global maingui
-if ~ishandles(hObject)
+if ~ishandles(h)
     return;
 end
-idx = FindChildGuiIdx('StimEditGUI');
-maingui.childguis(idx).Launch();
+idx = FindChildGuiIdx(guiname);
+checked = get(h,'checked');
+if strcmp(checked, 'off')
+    set(h, 'checked', 'on');
+    maingui.childguis(idx).Launch();
+elseif strcmp(checked, 'on')
+    set(h, 'checked', 'off');
+    maingui.childguis(idx).Close();
+end
+
+
+
+% --------------------------------------------------------------------
+function menuItemPlotProbe_Callback(hObject, eventdata, handles)
+LaunchChildGuiFromMenu('PlotProbeGUI', hObject);
+
+
+
+% -------------------------------------------------------------------
+function [eventdata, handles] = menuItemLaunchStimGUI_Callback(hObject, eventdata, handles)
+LaunchChildGuiFromMenu('StimEditGUI', hObject);
+
+
+
+% --------------------------------------------------------------------
+function [eventdata, handles] = menuItemProcStreamEdit_Callback(hObject, eventdata, handles)
+LaunchChildGuiFromMenu('ProcStreamEditGUI', hObject);
+
+
+
+
+% --------------------------------------------------------------------
+function menuItemDisplayPvalues_Callback(hObject, eventdata, handles)
+LaunchChildGuiFromMenu('PvaluesDisplayGUI', hObject);
 
 
 
@@ -624,7 +656,6 @@ maingui.dataTree.currElem.Save();
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = menuItemViewHRFStdErr_Callback(hObject, eventdata, handles)
-global maingui
 if ~ishandles(hObject)
     return;
 end
@@ -635,24 +666,6 @@ elseif strcmp(get(hObject, 'checked'), 'off')
     set(hObject, 'checked', 'on')
 end
 Display(handles, hObject);
-
-
-
-
-% --------------------------------------------------------------------
-function [eventdata, handles] = menuItemProcStreamEdit_Callback(hObject, eventdata, handles)
-global maingui
-if ~ishandles(hObject)
-    return;
-end
-
-checked = get(hObject,'checked');
-idx = FindChildGuiIdx('ProcStreamEditGUI');
-if checked
-    maingui.childguis(idx).Launch();
-else
-    maingui.childguis(idx).Close();
-end
 
 
 % --------------------------------------------------------------------
@@ -708,6 +721,9 @@ end
 % ----------------------------------------------------------------------------------
 function hObject = Display(handles, hObject)
 
+if ~exist('hObject','var')
+    hObject=[];
+end
 hObject = DisplayData(handles, hObject);
 DisplayAxesSDG();
 
@@ -1122,8 +1138,7 @@ switch(guiname)
             listboxGroupTree_Callback([], [iGroup, iSubj, iRun], maingui.handles);
         end
     case 'PatchCallback'
-        Display(maingui.handles, maingui.handles.axesData);  % Redisplay data axes since stims might have edited
-        
+        Display(maingui.handles, maingui.handles.axesData);  % Redisplay data axes since stims might have edited        
 end
 
 
@@ -1296,47 +1311,15 @@ if strcmp(get(hObject, 'checked'), 'on')
 end
 
 
-
-% --------------------------------------------------------------------
-function menuItemDisplayPvalues_Callback(hObject, eventdata, handles)
-global maingui
-if ~ishandles(hObject)
-    return;
-end
-
-idx = FindChildGuiIdx('PvaluesDisplayGUI');
-maingui.childguis(idx).Launch();
-
-
-
 % --------------------------------------------------------------------
 function checkboxPlotAux_Callback(hObject, eventdata, handles)
 Display(handles, hObject);
 
 
 
-
 % --------------------------------------------------------------------
 function popupmenuAux_Callback(hObject, eventdata, handles)
 Display(handles, hObject);
-
-
-
-% --------------------------------------------------------------------
-function menuItemPlotProbe_Callback(hObject, eventdata, handles)
-global maingui
-if ~ishandles(hObject)
-    return;
-end
-
-idx = FindChildGuiIdx('PlotProbeGUI');
-if strcmp(get(hObject, 'checked'), 'off')
-    set(hObject, 'checked', 'on');
-    maingui.childguis(idx).Launch(GetDatatype(handles), GetCondition(handles));
-else
-    set(hObject, 'checked', 'off');
-    maingui.childguis(idx).Close();
-end
 
 
 

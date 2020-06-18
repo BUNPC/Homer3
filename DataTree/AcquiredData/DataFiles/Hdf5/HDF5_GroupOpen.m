@@ -9,7 +9,7 @@ end
 try
     gid = H5G.open(fid, location);
 catch
-    gid = -1;
+    gid.double = -1;
 end
 
 

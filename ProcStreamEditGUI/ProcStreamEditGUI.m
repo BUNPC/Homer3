@@ -532,9 +532,9 @@ for iPanel=1:length(procElem)
             case iGroupPanel
                 fcall2 = procStreamEdit.dataTree.groups(ig).procStream.fcalls(jj);
             case iSubjPanel
-                fcall2 = procStreamOptions.dataTree.groups(ig).subjs(is).procStream.fcalls(jj);
+                fcall2 = procStreamEdit.dataTree.groups(ig).subjs(is).procStream.fcalls(jj);
             case iRunPanel
-                fcall2 = procStreamOptions.dataTree.groups(ig).subjs(is).runs(ir).procStream.fcalls(jj);
+                fcall2 = procStreamEdit.dataTree.groups(ig).subjs(is).runs(ir).procStream.fcalls(jj);
         end
         
         % Copy parameter to exported proc stream

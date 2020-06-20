@@ -14,6 +14,7 @@ classdef TreeNodeClass < handle
     end
      
     properties
+        outputVars
         DEBUG
     end
         
@@ -32,7 +33,9 @@ classdef TreeNodeClass < handle
             obj.procStream = ProcStreamClass();
             obj.err = 0;
             obj.CondNames = {};
-                        
+            obj.outputVars = [];
+            
+            
             obj.InitParentAppFunc();
             
             % If this constructor is called from this class' copy method,

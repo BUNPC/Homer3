@@ -38,7 +38,7 @@ classdef FileLoadSaveClass < matlab.mixin.Copyable
                         
             switch(lower(format))
                 case obj.supportedFomats.matlab
-                    if ismethod(obj, 'LoadMat', params)
+                    if ismethod(obj, 'LoadMat')
                         obj.LoadMat(filename);
                     end
                 case obj.supportedFomats.hdf5

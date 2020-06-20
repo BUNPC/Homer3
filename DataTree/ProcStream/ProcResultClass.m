@@ -15,7 +15,7 @@ classdef ProcResultClass < handle
         grpAvgPass;
         misc;
     end
-    
+        
     methods
         
         % ---------------------------------------------------------------------------
@@ -40,65 +40,88 @@ classdef ProcResultClass < handle
         end
         
         
+        
         % ---------------------------------------------------------------------------
-        function SettHRFCommon(obj, tHRF_common, name, type, iBlk)
-            if size(tHRF_common,2)<size(tHRF_common,1)
-                tHRF_common = tHRF_common';
+        function tHRF_common = GeneratetHRFCommon(obj, tHRF_common)
+            nDataBlks = obj.GetDataBlocksNum();
+            if isempty(tHRF_common)
+                tHRF_common = cell(nDataBlks,1);
             end
-            t = obj.GetTHRF(iBlk);
-            if isempty(t)
-                return;
-            end
-            n = length(tHRF_common);
-            m = length(t);
-            d = n-m;
-            if d<0
-                fprintf('WARNING: tHRF for %s %s is larger than the common tHRF.\n',type, name);
-                if ~isempty(obj.dodAvg)
-                    if isa(obj.dodAvg, 'DataClass')
-                        obj.dodAvg(iBlk).TruncateTpts(abs(d));
-                    else
-                        obj.dodAvg(n+1:m,:,:) = [];
-                    end
-                end
-                if ~isempty(obj.dodAvgStd)
-                    if isa(obj.dodAvgStd, 'DataClass')
-                        obj.dodAvgStd(iBlk).TruncateTpts(abs(d));
-                    else
-                        obj.dodAvgStd(n+1:m,:,:) = [];
-                    end
-                end
-                if ~isempty(obj.dodSum2)
-                    if isa(obj.dodSum2, 'DataClass')
-                        obj.dodSum2(iBlk).TruncateTpts(abs(d));
-                    else
-                        obj.dodSum2(n+1:m,:,:) = [];
-                    end
-                end
-                if ~isempty(obj.dcAvg)
-                    if isa(obj.dcAvg, 'DataClass')
-                        obj.dcAvg(iBlk).TruncateTpts(abs(d));
-                    else
-                        obj.dcAvg(n+1:m,:,:,:) = [];
-                    end
-                end
-                if ~isempty(obj.dcAvgStd)
-                    if isa(obj.dcAvgStd, 'DataClass')
-                        obj.dcAvgStd(iBlk).TruncateTpts(abs(d));
-                    else
-                        obj.dcAvgStd(n+1:m,:,:) = [];
-                    end
-                end
-                if ~isempty(obj.dcSum2)
-                    if isa(obj.dcSum2, 'DataClass')
-                        obj.dcSum2(iBlk).TruncateTpts(abs(d));
-                    else
-                        obj.dcSum2(n+1:m,:,:,:) = [];
-                    end
+            
+            % Find smallest tHRF among the runs. We should make this the common one.
+            for iBlk = 1:nDataBlks
+                if isempty(tHRF_common{iBlk})
+                    tHRF_common{iBlk} = obj.GetTHRF(iBlk);
+                elseif length(obj.GetTHRF(iBlk)) < length(tHRF_common{iBlk})
+                    tHRF_common{iBlk} = obj.GetTHRF(iBlk);
                 end
             end
-            obj.tHRF = tHRF_common;
         end
+        
+        
+        
+        % ---------------------------------------------------------------------------
+        function SettHRFCommon(obj, tHRF_common, name, type)
+            for iBlk = 1:length(tHRF_common)
+                if size(tHRF_common{iBlk},2)<size(tHRF_common{iBlk},1)
+                    tHRF_common{iBlk} = tHRF_common{iBlk}';
+                end
+                t = obj.GetTHRF(iBlk);
+                if isempty(t)
+                    return;
+                end
+                n = length(tHRF_common{iBlk});
+                m = length(t);
+                d = n-m;
+                if d<0
+                    fprintf('WARNING: tHRF for %s %s is larger than the common tHRF.\n',type, name);
+                    if ~isempty(obj.dodAvg)
+                        if isa(obj.dodAvg, 'DataClass')
+                            obj.dodAvg(iBlk).TruncateTpts(abs(d));
+                        else
+                            obj.dodAvg(n+1:m,:,:) = [];
+                        end
+                    end
+                    if ~isempty(obj.dodAvgStd)
+                        if isa(obj.dodAvgStd, 'DataClass')
+                            obj.dodAvgStd(iBlk).TruncateTpts(abs(d));
+                        else
+                            obj.dodAvgStd(n+1:m,:,:) = [];
+                        end
+                    end
+                    if ~isempty(obj.dodSum2)
+                        if isa(obj.dodSum2, 'DataClass')
+                            obj.dodSum2(iBlk).TruncateTpts(abs(d));
+                        else
+                            obj.dodSum2(n+1:m,:,:) = [];
+                        end
+                    end
+                    if ~isempty(obj.dcAvg)
+                        if isa(obj.dcAvg, 'DataClass')
+                            obj.dcAvg(iBlk).TruncateTpts(abs(d));
+                        else
+                            obj.dcAvg(n+1:m,:,:,:) = [];
+                        end
+                    end
+                    if ~isempty(obj.dcAvgStd)
+                        if isa(obj.dcAvgStd, 'DataClass')
+                            obj.dcAvgStd(iBlk).TruncateTpts(abs(d));
+                        else
+                            obj.dcAvgStd(n+1:m,:,:) = [];
+                        end
+                    end
+                    if ~isempty(obj.dcSum2)
+                        if isa(obj.dcSum2, 'DataClass')
+                            obj.dcSum2(iBlk).TruncateTpts(abs(d));
+                        else
+                            obj.dcSum2(n+1:m,:,:,:) = [];
+                        end
+                    end
+                end
+                obj.tHRF = tHRF_common{iBlk};
+            end
+        end
+        
         
         
         % ----------------------------------------------------------------------------------
@@ -122,8 +145,8 @@ classdef ProcResultClass < handle
         end
         
     end
-        
-        
+    
+    
     methods
         
         % ----------------------------------------------------------------------------------
@@ -140,9 +163,9 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function Save(obj, vars, filename)            
+        function Save(obj, vars, filename)
             obj.SetFilename(filename)
-
+            
             output = obj;
             props = propnames(vars);
             for ii=1:length(props)
@@ -155,13 +178,13 @@ classdef ProcResultClass < handle
             if ~isempty(filename)
                 [~, ~, ext] = fileparts(filename);
                 if isempty(ext)
-                    filename = [filename, '.mat']; 
+                    filename = [filename, '.mat'];
                 end
                 save(filename, '-mat', 'output');
             end
         end
-            
-
+        
+        
         
         % ----------------------------------------------------------------------------------
         function Flush(obj)
@@ -467,14 +490,31 @@ classdef ProcResultClass < handle
         % ----------------------------------------------------------------------------------
         function n = GetDataBlocksNum(obj)
             n = 0;
+                
             if ~isempty(obj.dcAvg)
-                n = length(obj.dcAvg);
+                if isnumeric(obj.dcAvg)
+                    n = 1;
+                else
+                    n = length(obj.dcAvg);
+                end
             elseif ~isempty(obj.dodAvg)
-                n = length(obj.dodAvg);
+                if isnumeric(obj.dodAvg)
+                    n = 1;
+                else
+                    n = length(obj.dodAvg);
+                end
             elseif ~isempty(obj.dc)
-                n = length(obj.dc);
+                if isnumeric(obj.dc)
+                    n = 1;
+                else
+                    n = length(obj.dc);
+                end
             elseif ~isempty(obj.dod)
-                n = length(obj.dod);
+                if isnumeric(obj.dod)
+                    n = 1;
+                else
+                    n = length(obj.dod);
+                end
             end
         end
         
@@ -482,7 +522,7 @@ classdef ProcResultClass < handle
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % 
+    %
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
@@ -533,7 +573,7 @@ classdef ProcResultClass < handle
             end
             if ~isempty(obj.dcAvg)
                 return
-        	end
+            end
             if ~isempty(obj.dodAvgStd)
                 return
             end
@@ -551,7 +591,7 @@ classdef ProcResultClass < handle
             end
             if ~isempty(obj.nTrials)
                 return
-        	end
+            end
             if ~isempty(obj.grpAvgPass)
                 return
             end
@@ -570,11 +610,11 @@ classdef ProcResultClass < handle
             end
             if isa(obj.dcAvg, 'DataClass')
                 n = length(obj.dcAvg(iBlk).GetMeasurementListIdxs(1));
-            end            
+            end
         end
-
         
-        % ----------------------------------------------------------------------------------        
+        
+        % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
             fields = properties(obj);
             nbytes = zeros(length(fields),1);
@@ -597,7 +637,7 @@ classdef ProcResultClass < handle
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Export related methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    methods        
+    methods
         
         % ----------------------------------------------------------------------------------
         function [tblcells, maxwidth] = GenerateTableCellsHeader_MeanHRF(obj, iBlk)
@@ -629,7 +669,7 @@ classdef ProcResultClass < handle
             end
             tblcells = TableCell.empty();
             if isa(obj.dcAvg, 'DataClass')
-                dataTimeSeries = obj.dcAvg(iBlk).GetDataTimeSeries('');                
+                dataTimeSeries = obj.dcAvg(iBlk).GetDataTimeSeries('');
                 
                 % Data rows
                 for iCond = 1:length(CondNames)
@@ -641,14 +681,14 @@ classdef ProcResultClass < handle
                             cname  = 'N/A';
                         else
                             cname = sprintf('%s%0.5e', blanks(meanData>=0), meanData);
-                        end                        
+                        end
                         tblcells(iCond, mod(iCh-1, length(measListIdxs))+1) = TableCell(cname, width);
                     end
                 end
             end
         end
-
-            
+        
+        
         % ----------------------------------------------------------------------------------
         function tblcells = GenerateTableCells_HRF(obj, CondNames, iBlk)
             if nargin<3
@@ -684,7 +724,7 @@ classdef ProcResultClass < handle
                 
             end
         end
-                
+        
         
         % ----------------------------------------------------------------------------------
         function tbl = ExportHRF(obj, filename, CondNames, iBlk)
@@ -700,6 +740,6 @@ classdef ProcResultClass < handle
         end
         
     end
-    
+        
 end
 

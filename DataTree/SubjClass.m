@@ -162,6 +162,28 @@ classdef SubjClass < TreeNodeClass
         end
         
         
+        
+        % ----------------------------------------------------------------------------------
+        function LoadVars(obj, r, tHRF_common)
+            % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
+            % all runs. Use smallest tHRF as the common one.
+            r.procStream.output.SettHRFCommon(tHRF_common, r.name, r.type);
+            
+            obj.outputVars.dodAvgRuns{r.iRun}    = r.procStream.output.GetVar('dodAvg');
+            obj.outputVars.dodAvgStdRuns{r.iRun} = r.procStream.output.GetVar('dodAvgStd');
+            obj.outputVars.dodSum2Runs{r.iRun}   = r.procStream.output.GetVar('dodSum2');
+            obj.outputVars.dcAvgRuns{r.iRun}     = r.procStream.output.GetVar('dcAvg');
+            obj.outputVars.dcAvgStdRuns{r.iRun}  = r.procStream.output.GetVar('dcAvgStd');
+            obj.outputVars.dcSum2Runs{r.iRun}    = r.procStream.output.GetVar('dcSum2');
+            obj.outputVars.tHRFRuns{r.iRun}      = r.procStream.output.GetTHRF();
+            obj.outputVars.nTrialsRuns{r.iRun}   = r.procStream.output.GetVar('nTrials');
+            obj.outputVars.mlActRuns{r.iRun}     = r.procStream.output.GetVar('mlActAuto');
+            obj.outputVars.SDRuns{r.iRun}        = r.GetMeasList();
+            obj.outputVars.stimRuns{r.iRun}      = r.GetVar('stim');
+        end
+            
+                   
+            
         % ----------------------------------------------------------------------------------
         function Calc(obj, options)
             if ~exist('options','var') || isempty(options)
@@ -178,50 +200,25 @@ classdef SubjClass < TreeNodeClass
                 fprintf('Calculating processing stream for group %d, subject %d\n', obj.iGroup, obj.iSubj)
             end
             
-            % Calculate all runs in this session
+            % Calculate all runs in this session and generate common tHRF
             r = obj.runs;
-            nRun = length(r);
-            nDataBlks = r(1).GetDataBlocksNum();
-            tHRF_common = cell(nDataBlks,1);
-            for iRun = 1:nRun
+            tHRF_common = {};
+            for iRun = 1:length(r)
                 r(iRun).Calc();
-                
-                % Find smallest tHRF among the runs. We should make this the common one.
-                for iBlk = 1:nDataBlks
-	                if isempty(tHRF_common{iBlk})
-                        tHRF_common{iBlk} = r(iRun).procStream.output.GetTHRF(iBlk);
-                    elseif length(r(iRun).procStream.output.GetTHRF(iBlk)) < length(tHRF_common{iBlk})
-                        tHRF_common{iBlk} = r(iRun).procStream.output.GetTHRF(iBlk);
-                    end
-                end
+
+                % Find smallest tHRF among the subjects and make this the common one.
+                tHRF_common = r(iRun).procStream.output.GeneratetHRFCommon(tHRF_common);
             end
             
             
-            % Instantiate all the variables that might be needed by
-            % procStream.Calc() to calculate proc stream for this subject
-            vars = [];
-            for iRun = 1:nRun
-                % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
-                % all runs. Use smallest tHRF as the common one.
-                for iBlk = 1:length(tHRF_common)
-                    r(iRun).procStream.output.SettHRFCommon(tHRF_common{iBlk}, r(iRun).name, r(iRun).type, iBlk);
-                end
-
-                vars.dodAvgRuns{iRun}    = r(iRun).procStream.output.GetVar('dodAvg');
-                vars.dodAvgStdRuns{iRun} = r(iRun).procStream.output.GetVar('dodAvgStd');
-                vars.dodSum2Runs{iRun}   = r(iRun).procStream.output.GetVar('dodSum2');
-                vars.dcAvgRuns{iRun}     = r(iRun).procStream.output.GetVar('dcAvg');
-                vars.dcAvgStdRuns{iRun}  = r(iRun).procStream.output.GetVar('dcAvgStd');
-                vars.dcSum2Runs{iRun}    = r(iRun).procStream.output.GetVar('dcSum2');
-                vars.tHRFRuns{iRun}      = r(iRun).procStream.output.GetTHRF();
-                vars.nTrialsRuns{iRun}   = r(iRun).procStream.output.GetVar('nTrials');
-                vars.mlActRuns{iRun}     = r(iRun).procStream.output.GetVar('mlActAuto');
-                vars.SDRuns{iRun}        = r(iRun).GetMeasList();
-                vars.stimRuns{iRun}      = r(iRun).GetVar('stim');
+            % Load all the variables that might be needed by procStream.Calc() to calculate proc stream for this subject
+            obj.outputVars = struct();
+            for iRun = 1:length(r)
+                obj.LoadVars(r(iRun), tHRF_common); 
             end
             
             % Make variables in this subject available to processing stream input
-            obj.procStream.input.LoadVars(vars);
+            obj.procStream.input.LoadVars(obj.outputVars);
 
             % Calculate processing stream
             obj.procStream.Calc();

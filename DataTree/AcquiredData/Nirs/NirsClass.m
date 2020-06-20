@@ -256,7 +256,17 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         end
         
         % ---------------------------------------------------------
-        function val = GetDataTimeSeries(obj)
+        function val = GetDataTimeSeries(obj, options, iBlk)
+            val = [];
+            if ~exist('options','var')
+                options = '';
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk=1;
+            end
+            if iBlk>1
+            	return
+            end
             val = obj.d;
         end
         

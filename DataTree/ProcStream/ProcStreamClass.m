@@ -20,7 +20,8 @@ classdef ProcStreamClass < handle
             obj.fcallsIdxs = [];
             obj.config = struct('procStreamCfgFile','', 'defaultProcStream','','suffix','');
             cfg = ConfigFileClass();
-            obj.config.procStreamCfgFile = cfg.GetValue('Processing Stream Config File');
+            obj.config.procStreamCfgFile    = cfg.GetValue('Processing Stream Config File');
+            obj.config.regressionTestActive = cfg.GetValue('Regression Test Active');
             copyOptions = '';
             if strcmpi(obj.getDefaultProcStream(), '_nirs')
                 copyOptions = 'extended';
@@ -206,9 +207,13 @@ classdef ProcStreamClass < handle
                     eval( fcall );
                 catch ME
                     msg = sprintf('Function %s generated error at line %d: %s', obj.fcalls(iFcall).name, ME.stack(1).line, ME.message);
-                    menu(msg,'OK');
+                    if strcmp(obj.config.regressionTestActive, 'false')
+                        MessageBox(msg);
+                    elseif strcmp(obj.config.regressionTestActive, 'false')
+                        fprintf('%s\n', msg);
+                    end
                     close(hwait);
-                    assert(false, msg);
+                    rethrow(ME)
                 end
                 
                 %%%% Parse output parameters

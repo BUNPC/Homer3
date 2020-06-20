@@ -3,7 +3,9 @@ global logger
 
 t_local = tic;
 
-CleanUp();
+CleanUp(true);
+
+cleanupObj = onCleanup(@()userInterrupt_Callback(true));
 
 c = ConfigFileClass();
 c.SetValue('Regression Test Active','true');
@@ -19,11 +21,20 @@ c.Save();
 
 UnitTestsAll_Snirf(false);
 
-logger.Close();
 
 c.SetValue('Regression Test Active','false');
 c.SetValue('Include Archived User Functions','No');
 
-CleanUp();
-
 toc(t_local);
+
+
+
+% ---------------------------------------------------
+function userInterrupt_Callback(standalone)
+fprintf('UnitTestsAll cleaning\n')
+userInterrupt(standalone)
+
+
+
+
+

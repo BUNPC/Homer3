@@ -5,17 +5,24 @@ global testidx;
 global logger
 
 t_local = tic;
+
+if ~exist('standalone','var') 
+    standalone = true;
+end
+
 DEBUG1=0;
 testidx=0;
 procStreamStyle = 'nirs';
 
-if ~exist('standalone','var') || isempty(standalone)
-    standalone = true;
-    CleanUp();
-    SetConfig();
-end
-
+CleanUp(standalone);
 logger = InitLogger(logger, 'UnitTestsAll_Nirs');
+
+if standalone 
+    % System test runs for a long time. We want to be able to interrupt it with
+    % Ctrl-C and have it automatically do the cleanup that the test would normally 
+    % do if it ran to completion
+    cleanupObj = onCleanup(@()userInterrupt_Callback(standalone));
+end
 
 lpf = [00.30, 00.70, 01.00];
 std = [05.00, 10.00, 15.00, 20.00];
@@ -51,16 +58,13 @@ for ii=1:size(status,2)
 end
 logger.Write('\n');
 
-testidx=[];
-procStreamStyle=[];
-
-logger.Close();
-
-% If we are NOT standalone then we'll rely on the parent caller to cleanup 
-if standalone
-    CleanUp();
-    ResetConfig();
-end
-
 toc(t_local)
+
+
+
+% ---------------------------------------------------
+function userInterrupt_Callback(standalone)
+fprintf('UnitTestsAll_Nirs cleaning\n')
+userInterrupt(standalone)
+
 

@@ -1,17 +1,30 @@
-function CleanUp()
+function CleanUp(standalone, start)
 global DEBUG1
 global procStreamStyle
 global testidx;
 global logger
 
+if ~exist('standalone','var') || isempty(standalone)
+    standalone = true;
+end
+if ~exist('start','var') || isempty(start)
+    start = true;
+end
+
+if ~standalone
+    return
+end
+
 % Clear global variables
-delete(logger)
+if start
+    delete(logger)
+    logger=[];
+end
 clear DEBUG1 testidx procStreamStyle
 
 DEBUG1=[];
 testidx=[];
 procStreamStyle=[];
-logger=[];
 
 reg = RegistriesClass('empty');
 reg.DeleteSaved();
@@ -57,3 +70,9 @@ else
     c.SetValue('Include Archived User Functions','Yes');
     c.Save('backup');
 end
+
+if ~start
+    logger.Close();
+end
+
+

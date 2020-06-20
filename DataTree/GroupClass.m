@@ -393,9 +393,29 @@ classdef GroupClass < TreeNodeClass
                 end
             end
         end
-            
         
-                
+        
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function LoadVars(obj, s, tHRF_common)
+            % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
+            % all subjects. Use smallest tHRF as the common one.
+            s.procStream.output.SettHRFCommon(tHRF_common, s.name, s.type);
+            
+            obj.outputVars.dodAvgSubjs{s.iSubj}    = s.procStream.output.GetVar('dodAvg');
+            obj.outputVars.dodAvgStdSubjs{s.iSubj} = s.procStream.output.GetVar('dodAvgStd');
+            obj.outputVars.dcAvgSubjs{s.iSubj}     = s.procStream.output.GetVar('dcAvg');
+            obj.outputVars.dcAvgStdSubjs{s.iSubj}  = s.procStream.output.GetVar('dcAvgStd');
+            obj.outputVars.tHRFSubjs{s.iSubj}      = s.procStream.output.GetTHRF();
+            obj.outputVars.nTrialsSubjs{s.iSubj}   = s.procStream.output.GetVar('nTrials');
+            obj.outputVars.SDSubjs{s.iSubj}        = s.GetMeasList();
+        end
+            
+            
+            
+            
         % ----------------------------------------------------------------------------------
         function Calc(obj, options)           
             if ~exist('options','var') || isempty(options)
@@ -413,44 +433,23 @@ classdef GroupClass < TreeNodeClass
             
             % Calculate all subjs in this session
             s = obj.subjs;
-            nSubj = length(s);
-            nDataBlks = s(1).GetDataBlocksNum();
-            tHRF_common = cell(nDataBlks,1);
-            for iSubj = 1:nSubj
+            tHRF_common = {};
+            for iSubj = 1:length(s)
                 s(iSubj).Calc();
                 
-                % Find smallest tHRF among the subjs. We should make this the common one.
-                for iBlk = 1:nDataBlks
-                    if isempty(tHRF_common{iBlk})
-                        tHRF_common{iBlk} = s(iSubj).procStream.output.GetTHRF(iBlk);
-                    elseif length(s(iSubj).procStream.output.GetTHRF(iBlk)) < length(tHRF_common{iBlk})
-                        tHRF_common{iBlk} = s(iSubj).procStream.output.GetTHRF(iBlk);
-                    end
-                end
+                % Find smallest tHRF among the subjs and make this the common one.
+                tHRF_common = s(iSubj).procStream.output.GeneratetHRFCommon(tHRF_common);
             end
            
             
-            % Instantiate all the variables that might be needed by
-            % procStream.Calc() to calculate proc stream for this group
-            vars = [];
-            for iSubj = 1:nSubj
-                % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
-                % all subjs. Use smallest tHRF as the common one.
-                for iBlk = 1:length(tHRF_common)
-                    s(iSubj).procStream.output.SettHRFCommon(tHRF_common{iBlk}, s(iSubj).name, s(iSubj).type, iBlk);
-                end
-
-                vars.dodAvgSubjs{iSubj}    = s(iSubj).procStream.output.GetVar('dodAvg');
-                vars.dodAvgStdSubjs{iSubj} = s(iSubj).procStream.output.GetVar('dodAvgStd');
-                vars.dcAvgSubjs{iSubj}     = s(iSubj).procStream.output.GetVar('dcAvg');
-                vars.dcAvgStdSubjs{iSubj}  = s(iSubj).procStream.output.GetVar('dcAvgStd');
-                vars.tHRFSubjs{iSubj}      = s(iSubj).procStream.output.GetTHRF();
-                vars.nTrialsSubjs{iSubj}   = s(iSubj).procStream.output.GetVar('nTrials');
-                vars.SDSubjs{iSubj}        = s(iSubj).GetMeasList();
+            % Load all the output valiraibles that might be needed by procStream.Calc() to calculate proc stream for this group
+            obj.outputVars = [];
+            for iSubj = 1:length(s)
+                obj.LoadVars(s(iSubj), tHRF_common); 
             end
             
             % Make variables in this group available to processing stream input
-            obj.procStream.input.LoadVars(vars);
+            obj.procStream.input.LoadVars(obj.outputVars);
 
             % Calculate processing stream
             obj.procStream.Calc();

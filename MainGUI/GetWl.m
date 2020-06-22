@@ -13,6 +13,10 @@ Lambda =  maingui.dataTree.currElem.GetWls();
 
 val = get(handles.listboxPlotWavelength, 'value');
 strs = get(handles.listboxPlotWavelength, 'string');
+if strs(val) == ""
+    % If user selects an empty option
+   return 
+end
 if isempty(strs)
     return;
 end

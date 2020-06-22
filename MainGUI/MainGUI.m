@@ -377,7 +377,9 @@ maingui.dataTree.CalcCurrElem();
 set(handles.listboxGroupTree, 'value',val0);
 
 h = waitbar(0,'Auto-saving processing results. Please wait ...');
+MainGUI_EnableDisableGUI('off');
 maingui.dataTree.Save(h);
+MainGUI_EnableDisableGUI('on');
 close(h);
 Display(handles, hObject);
 

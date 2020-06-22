@@ -81,19 +81,6 @@ menuCopyCurrentPlot_Callback([]);
 uipanelProcessingType_SelectionChangeFcn([]);
 
 
-% ---------------------------------------------------------------------
-function MainGUI_EnableDisableGUI(handles, val)
-
-set(handles.listboxGroupTree, 'enable', val);
-set(handles.radiobuttonProcTypeGroup, 'enable', val);
-set(handles.radiobuttonProcTypeSubj, 'enable', val);
-set(handles.radiobuttonProcTypeRun, 'enable', val);
-set(handles.radiobuttonPlotRaw, 'enable', val);
-set(handles.radiobuttonPlotOD,  'enable', val);
-set(handles.radiobuttonPlotConc, 'enable', val);
-set(handles.checkboxPlotHRF, 'enable', val);
-set(handles.textStatus, 'enable', val);
-
 
 % --------------------------------------------------------------------
 function eventdata = MainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -141,7 +128,7 @@ maingui.version = V;
 maingui.childguis = ChildGuiClass().empty();
 
 % Disable and reset all window gui objects
-MainGUI_EnableDisableGUI(handles,'off');
+MainGUI_EnableDisableGUI('off');
 MainGUI_Init(handles, {'zbuffer'});
 
 maingui.childguis(1) = ChildGuiClass('ProcStreamEditGUI');
@@ -158,7 +145,7 @@ end
 InitGuiControls(handles);
 
 % If data set has no errors enable window gui objects
-MainGUI_EnableDisableGUI(handles,'on');
+MainGUI_EnableDisableGUI('on');
 
 % Display data from currently selected processing element
 DisplayGroupTree(handles);

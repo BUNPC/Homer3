@@ -14,7 +14,7 @@ logger = Logger('Homer3');
 
 logger.CurrTime();
 
-if ~exist('groupDirs','var') || isempty(groupDirs)
+if nargin==0
     groupDirs = convertToStandardPath(pwd);
 end
 if nargin<2

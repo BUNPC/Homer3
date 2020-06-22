@@ -465,10 +465,10 @@ LoadProcStream(handles, reload);
 
 % -------------------------------------------------------------
 function CopyParamValues(fcall, fcalls)
-
 % Look for the function call fcall in fcalls
 for ii=1:length(fcalls)
-    if strcmp(fcalls(ii).GetUsageName(), fcall.GetUsageName())
+    % Compare names, not usage names, which may differ
+    if strcmp(fcalls(ii).GetName(), fcall.GetName())
         fcall.Copy(fcalls(ii));
     end
 end
@@ -521,12 +521,43 @@ for iPanel=1:length(procElem)
         usagename = strtrim(parts{2});
         fcall = reg.funcReg(MapRegIdx(iPanel)).GetFuncCallDecoded(funcname, usagename);
         CopyParamValues(fcall, procStreamPrev.fcalls);
+        % Get path up the tree from currElem
+        ir = procStreamEdit.dataTree.currElem.iRun;
+        is = procStreamEdit.dataTree.currElem.iSubj;
+        ig = procStreamEdit.dataTree.currElem.iGroup;  
+        % Get parameters from global processing stream if they're there and
+        % if we're saving to a file
+        if (q == 2)
+            switch iPanel
+                case iGroupPanel
+                    try
+                        fcall2 = procStreamEdit.dataTree.groups(ig).procStream.fcalls(jj);
+                        fcall.paramIn = fcall2.paramIn;
+                    catch
+                        fprintf("Saving newly-added function %s to stream with default parameters.\n", fcall.name);
+                    end
+                case iSubjPanel
+                    try
+                        fcall2 = procStreamEdit.dataTree.groups(ig).subjs(is).procStream.fcalls(jj);
+                        fcall.paramIn = fcall2.paramIn;
+                    catch
+                        fprintf("Saving newly-added function %s to stream with default parameters.\n", fcall.name);
+                    end
+                case iRunPanel
+                    try
+                        fcall2 = procStreamEdit.dataTree.groups(ig).subjs(is).runs(ir).procStream.fcalls(jj);
+                        fcall.paramIn = fcall2.paramIn;
+                    catch
+                        fprintf("Saving newly-added function %s to stream with default parameters.\n", fcall.name);
+                    end
+            end
+        end
         procElem{iPanel}.procStream.Add(fcall);
     end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Now save procElem to current procStream or to  a config file.
+% Now save procElem to current procStream or to a config file.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if q==1
     for ii=1:length(groups)

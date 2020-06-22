@@ -66,6 +66,9 @@ for ii=1:length(hc)
         userdata = 0;
     else
         userdata = get(hc(ii),'userdata');
+        if isstruct(userdata)
+            userdata = 0;
+        end
     end
     
     if userdata==KEEP_AS_IS

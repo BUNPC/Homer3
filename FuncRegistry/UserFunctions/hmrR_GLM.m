@@ -25,47 +25,47 @@
 %           only relevant when flagNuisanceRMethod = 3 (tCCA regressors).
 % trange - defines the range for the block average [tPre tPost]
 % glmSolveMethod - this specifies the GLM solution method to use
-%            1 - use ordinary least squares (Ye et al (2009). NeuroImage, 44(2), 428?447.)
-%            2 - use iterative weighted least squares (Barker,
+%            1. use ordinary least squares (Ye et al (2009). NeuroImage, 44(2), 428?447.)
+%            2. use iterative weighted least squares (Barker,
 %               Aarabi, Huppert (2013). Biomedical optics express, 4(8), 1366?1379.)
 %               Note that we suggest driftOrder=0 for this method as
 %               otherwise it can produce spurious results.
 % idxBasis - this specifies the type of basis function to use for the HRF
-%            1 - a consecutive sequence of gaussian functions
-%            2 - a modified gamma function convolved with a square-wave of
+%            1. a consecutive sequence of gaussian functions
+%            2. a modified gamma function convolved with a square-wave of
 %                duration T. Set T=0 for no convolution.
 %                The modified gamma function is
 %                (exp(1)*(t-tau).^2/sigma^2) .* exp(-(tHRF-tau).^2/sigma^2)
-%            3 - a modified gamma function and its derivative convolved
+%            3. a modified gamma function and its derivative convolved
 %                with a square-wave of duration T. Set T=0 for no convolution.
-%			 4-  GAM function from 3dDeconvolve AFNI convolved with
+%			 4.  GAM function from 3dDeconvolve AFNI convolved with
 %                a square-wave of duration T. Set T=0 for no convolution.
 % 			         (t/(p*q))^p * exp(p-t/q)
 %                Defaults: p=8.6 q=0.547
 %                The peak is at time p*q.  The FWHM is about 2.3*sqrt(p)*q.
 % paramsBasis - Parameters for the basis function depends on idxBasis
-%               idxBasis=1 - [stdev step] where stdev is the width of the
+%               idxBasis=1 [stdev step] where stdev is the width of the
 %                  gaussian and step is the temporal spacing between
 %                  consecutive gaussians
-%               idxBasis=2 - [tau sigma T] applied to both HbO and HbR
+%               idxBasis=2. [tau sigma T] applied to both HbO and HbR
 %                  or [tau1 sigma1 T1 tau2 sigma2 T2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
-%               idxBasis=3 - [tau sigma T] applied to both HbO and HbR
+%               idxBasis=3 [tau sigma T] applied to both HbO and HbR
 %                  or [tau1 sigma1 T1 tau2 sigma2 T2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
-%               idxBasis=4 - [p q T] applied to both HbO and HbR
+%               idxBasis=4 [p q T] applied to both HbO and HbR
 %                  or [p1 q1 T1 p2 q2 T2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
 % rhoSD_ssThresh - max distance for a short separation measurement. Set =0
 %          if you do not want to regress the short separation measurements.
 %          Follows the static estimate procedure described in Gagnon et al (2011).
 %          NeuroImage, 56(3), 1362?1371.
-% flagNuisanceRMethod - 0 if short separation regression is performed with the nearest
+% flagNuisanceRMethod - 0. if short separation regression is performed with the nearest
 %               short separation channel.
-%            1 if performed with the short separation channel with the
+%            1. if performed with the short separation channel with the
 %               greatest correlation.
-%            2 if performed with average of all short separation channels.
-%            3 uses tCCA regressors for nuisance regression, in Aaux,
+%            2. if performed with average of all short separation channels.
+%            3. uses tCCA regressors for nuisance regression, in Aaux,
 %            mapped by rcMap, provided by hmr_tCCA()
 % driftOrder - Polynomial drift correction of this order
 % flagMotionCorrect - set to 1 to baseline correct between motion epochs indicated in tIncAuto, otherwise set to 0

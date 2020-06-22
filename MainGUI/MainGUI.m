@@ -127,6 +127,9 @@ guidata(hObject, handles);
 maingui.version = V;
 maingui.childguis = ChildGuiClass().empty();
 
+maingui.handles = handles;
+maingui.handles.pValuesFig = [];
+
 % Disable and reset all window gui objects
 MainGUI_EnableDisableGUI('off');
 MainGUI_Init(handles, {'zbuffer'});
@@ -150,9 +153,6 @@ MainGUI_EnableDisableGUI('on');
 % Display data from currently selected processing element
 DisplayGroupTree(handles);
 Display(handles, hObject);
-
-maingui.handles = handles;
-maingui.handles.pValuesFig = [];
 
 % Set path in GUI window title
 s = get(hObject,'name');

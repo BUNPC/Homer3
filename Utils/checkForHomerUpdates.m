@@ -52,7 +52,7 @@ function checkForHomerUpdates()
 
         pause(1);
         close(wb);
-        cfg.WriteFile();
+        cfg.Save();
         cfg.Close();
        
     end

@@ -375,7 +375,9 @@ val0 = get(handles.listboxGroupTree, 'value');
 % Set the display status to pending. In order to avoid redisplaying 
 % in a single callback thread in functions called from here which 
 % also call DisplayData
+MainGUI_EnableDisableGUI('off');
 maingui.dataTree.CalcCurrElem();
+MainGUI_EnableDisableGUI('on');
 
 % Restore original selection listboxGroupTree
 set(handles.listboxGroupTree, 'value',val0);

@@ -45,10 +45,7 @@ function checkForHomerUpdates()
                         close(wb);
                         web(url);    
                     case 'Don''t ask again'
-                        % Make sure user doesn't get asked about this particular
-                        % update again.
-                        cfg.SetValue('Update Refused', updateTxt);
-
+                        cfg.SetValue('Check For Updates', 'off');
                 end
 
             end

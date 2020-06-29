@@ -585,7 +585,7 @@ classdef ProcStreamClass < handle
             %              name: 'hmrS_RunAvg'
             %            nameUI: 'hmrS_RunAvg'
             %            argOut: '[dcAvg,dcAvgStd,tHRF,nTrials]'
-            %             argIn: '(dcAvgRuns,dcAvgStdRuns,dcSum2Runs,tHRFRuns,SDRuns,nTrialsRuns'
+            %             argIn: '(dcAvgRuns,dcAvgStdRuns,dcSum2Runs,tHRFRuns,mlActRuns,nTrialsRuns'
             %           paramIn: [0x0 ParamClass]
             %              help: '  Calculate the block average for all subjects, for all common stimuli…'
             %
@@ -725,7 +725,7 @@ classdef ProcStreamClass < handle
             %          '@ hmrG_SubjAvg [dcAvg,dcAvgStd,nTrials,grpAvgPass] (dcAvgSubjs,dcAvgStdSubjs,SDSubjs,nTrialsSubjs tRange %0.1f…'
             %         }
             %     S = {
-            %          '@ hmrS_RunAvg [dcAvg,dcAvgStd,nTrials] (dcAvgRuns,dcAvgStdRuns,dcSum2Runs,SDRuns,nTrialsRuns'
+            %          '@ hmrS_RunAvg [dcAvg,dcAvgStd,nTrials] (dcAvgRuns,dcAvgStdRuns,dcSum2Runs,mlActRuns,nTrialsRuns'
             %         }
             %     R = {
             %         '@ hmrR_Intensity2OD dod (d'

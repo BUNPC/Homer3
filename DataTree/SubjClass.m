@@ -204,9 +204,8 @@ classdef SubjClass < TreeNodeClass
             obj.outputVars.dcAvgStdRuns{r.iRun}  = r.procStream.output.GetVar('dcAvgStd');
             obj.outputVars.dcSum2Runs{r.iRun}    = r.procStream.output.GetVar('dcSum2');
             obj.outputVars.tHRFRuns{r.iRun}      = r.procStream.output.GetTHRF();
-            obj.outputVars.nTrialsRuns{r.iRun}   = r.procStream.output.GetVar('nTrials');
             obj.outputVars.mlActRuns{r.iRun}     = r.procStream.output.GetVar('mlActAuto');
-            obj.outputVars.SDRuns{r.iRun}        = r.GetMeasList();
+            obj.outputVars.nTrialsRuns{r.iRun}   = r.procStream.output.GetVar('nTrials');
             obj.outputVars.stimRuns{r.iRun}      = r.GetVar('stim');
             
             % Free run memory 
@@ -243,10 +242,10 @@ classdef SubjClass < TreeNodeClass
             
             
             % Load all the variables that might be needed by procStream.Calc() to calculate proc stream for this subject
-            obj.outputVars = struct();
             for iRun = 1:length(r)
-                obj.LoadVars(r(iRun), tHRF_common);                
+                obj.LoadVars(r(iRun), tHRF_common);
             end
+            
             
             % Make variables in this subject available to processing stream input
             obj.procStream.input.LoadVars(obj.outputVars);

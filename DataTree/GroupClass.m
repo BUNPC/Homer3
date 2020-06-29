@@ -410,7 +410,6 @@ classdef GroupClass < TreeNodeClass
             obj.outputVars.dcAvgStdSubjs{s.iSubj}  = s.procStream.output.GetVar('dcAvgStd');
             obj.outputVars.tHRFSubjs{s.iSubj}      = s.procStream.output.GetTHRF();
             obj.outputVars.nTrialsSubjs{s.iSubj}   = s.procStream.output.GetVar('nTrials');
-            obj.outputVars.SDSubjs{s.iSubj}        = s.GetMeasList();
             
             s.FreeMemory();
         end

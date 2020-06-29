@@ -466,9 +466,6 @@ classdef GroupClass < TreeNodeClass
                 obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
             end
             
-            % Mark this Group as having processed data thereby taking up
-            % memory
-            obj.GroupsProcFlags(obj.iGroup, 1);
         end
         
         
@@ -500,7 +497,6 @@ classdef GroupClass < TreeNodeClass
                     obj.subjs(jj).Reset();
                 end
             end
-            obj.GroupsProcFlags(obj.iGroup, 0);
         end
         
         
@@ -526,6 +522,35 @@ classdef GroupClass < TreeNodeClass
     % Public Save/Load methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
+        
+        % ----------------------------------------------------------------------------------
+        function nbytes = MemoryRequired(obj)
+            nbytes = 0;
+            for ii = 1:length(obj.subjs)
+                nbytes = nbytes + obj.subjs(ii).MemoryRequired();
+            end
+            nbytes = nbytes + obj.procStream.MemoryRequired();
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function LoadSubBranch(obj)
+            if isempty(obj)
+                return;
+            end
+            obj.subjs(1).LoadSubBranch()
+        end            
+                        
+            
+        % ----------------------------------------------------------------------------------
+        function FreeMemorySubBranch(obj)
+            if isempty(obj)
+                return;
+            end
+            obj.subjs(1).FreeMemorySubBranch()
+        end            
+            
         
         % ----------------------------------------------------------------------------------
         function Load(obj, options)

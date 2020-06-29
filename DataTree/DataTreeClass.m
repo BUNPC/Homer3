@@ -305,7 +305,7 @@ classdef DataTreeClass <  handle
                 % (We do not reset current subject or group because they can contain multiple 
                 % nodes and they cannot be empty once they've been initialized once whereas run 
                 % can be if it fails to load a data file. 
-                if ~runCurr.IsEmpty()
+                if ~runCurr.Error()
                     obj.Add(groupCurr, subjCurr, runCurr);
                     runCurr = RunClass().empty();
                 end
@@ -426,77 +426,26 @@ classdef DataTreeClass <  handle
 
 
         % ----------------------------------------------------------------------------------
-        function nbytes = MemoryRequired(obj, option)
-            if ~exist('option','var')
-                option = 'memory';
-            end
+        function nbytes = MemoryRequired(obj)
+            nbytes = 0;
             if isempty(obj)
                 return;
+            end                        
+            for ii = 1:length(obj.groups)
+                nbytes = nbytes + obj.groups(ii).MemoryRequired();
             end
-            
-            nbytes = [0,0,0];
-            kg = find(obj.groups.GroupsProcFlags==1);
-            ks = find(obj.groups.SubjsProcFlags==1);
-            kr = find(obj.groups.RunsProcFlags==1);
-            
-            % We assume for practcal purposes that unprocessed nodes take up zero bytes 
-            if ~isempty(kg)
-                nbytes(1) = length(kg) * obj.groups(kg(1)).MemoryRequired();
-            end
-            if ~isempty(ks)
-                [iG,iS] = ind2sub(size(obj.groups.SubjsProcFlags), ks);
-                nbytes(2) = length(ks) * obj.groups(iG(1)).subjs(iS(1)).MemoryRequired();
-            end
-            if ~isempty(kr)
-                [iG,iS,iR] = ind2sub(size(obj.groups.RunsProcFlags), kr);
-                nbytes(3) = length(kr) * obj.groups(iG(1)).subjs(iS(1)).runs(iR(1)).MemoryRequired(option);
-            end
-                        
-            % Add up the bytes. 
-            nbytes = sum(nbytes);
         end
+        
         
         
         % ----------------------------------------------------------------------------------
-        function diskspaceToSpare = CheckAvailableDiskSpace(obj, hwait)            
-            if ishandle(hwait)
-                obj.logger.Write(sprintf('Estimating disk space required to save processing results ...\n'), obj.logger.ProgressBar(), hwait);
-            end
-            
-            % Calculate the amount of disk space already used by groupResults. Add that to free disk space because
-            % groupResults will be overwritten 
-            freeDiskSpace = 0;
-            for ii = 1:length(obj.groups)
-                freeDiskSpace = freeDiskSpace + GetFileSize([obj.groups(ii).pathOutput, 'groupResults.mat']);
-            end
-            
-            memRequired = obj.MemoryRequired('disk');
-            freeDiskSpace = getFreeDiskSpace() + freeDiskSpace;
-            
-            diskspaceToSpare = (freeDiskSpace - memRequired);   % Disk space to spare in megabytes
-            diskspacePercentRemaining = 100 * diskspaceToSpare/memRequired;
-            msg = {};
-            obj.logger.Write(sprintf('CheckAvailableDiskSpace:    disk space available = %0.1f MB,    required disk space estimate = %0.1f MB\n', freeDiskSpace/1e6, memRequired/1e6));
-            if diskspaceToSpare < 0
-                msg{1} = sprintf('ERROR: Cannot save processing results requiring ~%0.1f MB of disk space on current drive with only %0.1f MB of free space available.\n', ...
-                                  memRequired/1e6, freeDiskSpace/1e6);
-                obj.warningflag = 0;
-            elseif diskspacePercentRemaining < 200                
-                msg{1} = sprintf('WARNING: Available disk space on the current drive is low (%0.1f MB). This may cause problems saving processing results in the future.', ...
-                                  freeDiskSpace/1e6);
-                msg{2} = sprintf('Consider moving your data set to a drive with more free space\n');
-            end            
-            if ~isempty(msg)
-                if ~obj.warningflag
-                    MessageBox([msg{:}]);
-                    obj.warningflag = 1;
-                end
-                obj.logger.Write([msg{:}]);
-            end            
+        function diskspaceToSpare = CheckAvailableDiskSpace(obj, hwait)
+            diskspaceToSpare = getFreeDiskSpace();   % Disk space to spare in megabytes
+            %diskspaceToSpare = (getFreeDiskSpace() - obj.MemoryRequired());   % Disk space to spare in megabytes
         end
+
         
         
-            
         % ----------------------------------------------------------
         function Save(obj, hwait)
             if ~exist('hwait','var')
@@ -506,7 +455,7 @@ classdef DataTreeClass <  handle
             % Check that there is anough disk space. NOTE: for now we
             % assume that all groups are on the same drive. This should be 
             % changed but for now we simplify. 
-            if obj.CheckAvailableDiskSpace(hwait) < 0
+            if obj.CheckAvailableDiskSpace(hwait) <= 0
                 return;
             end
             

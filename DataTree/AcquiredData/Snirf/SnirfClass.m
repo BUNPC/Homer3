@@ -371,7 +371,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if ~exist('fileobj','var') || ~exist(fileobj,'file')
                 fileobj = '';
             end
-                       
+            
             % Error checking            
             if ~isempty(fileobj) && ischar(fileobj)
                 obj.filename = fileobj;
@@ -380,6 +380,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             end 
             if isempty(fileobj)
                err = -1;
+               return;
+            end
+            
+            % Don't reload if not empty
+            if ~obj.IsEmpty()
                return;
             end
             

@@ -43,6 +43,17 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function nbytes = MemoryRequired(obj)
+            nbytes = 0;
+            for ii = 1:length(obj.runs)
+                nbytes = nbytes + obj.runs(ii).MemoryRequired();
+            end
+            nbytes = nbytes + obj.procStream.MemoryRequired();
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
         % Copy processing params (procInut and procResult) from
         % S to obj if obj and S are equivalent nodes
         % ----------------------------------------------------------------------------------
@@ -158,10 +169,27 @@ classdef SubjClass < TreeNodeClass
                     obj.runs(jj).Reset();
                 end
             end
-            obj.SubjsProcFlags(obj.iGroup, obj.iSubj, 0);
         end
         
         
+        
+        % ----------------------------------------------------------------------------------
+        function LoadSubBranch(obj)
+            if isempty(obj)
+                return;
+            end
+            obj.runs(1).LoadAcquiredData()
+        end            
+
+        
+        % ----------------------------------------------------------------------------------
+        function FreeMemorySubBranch(obj)
+            if isempty(obj)
+                return;
+            end
+            obj.runs(1).FreeMemory()
+        end            
+            
         
         % ----------------------------------------------------------------------------------
         function LoadVars(obj, r, tHRF_common)
@@ -236,10 +264,6 @@ classdef SubjClass < TreeNodeClass
                 obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
             end
             pause(.5);
-            
-            % Mark this subject as having processed data thereby taking up
-            % memory
-            obj.SubjsProcFlags(obj.iGroup, obj.iSubj, 1);
             
         end
                 

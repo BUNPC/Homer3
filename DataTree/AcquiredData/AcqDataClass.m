@@ -70,17 +70,26 @@ classdef AcqDataClass < matlab.mixin.Copyable
     methods
         
         % -------------------------------------------------------
+        function b = Error(obj)
+            if obj.err<0
+                b = true;
+            elseif obj.err==0
+                b = false;
+            else
+                b = true;
+            end
+        end
+        
+        
+        % -------------------------------------------------------
         function FreeMemory(obj, filename)
             if ~exist('filename','var')
                 filename = '';
             end
             if isempty(filename)
                 return;
-            end
-            
-            % TBD: Tight now we only save processed output and free memory 
-            % associated with it. Need to do the same for acquired data
-            % obj.Initialize();  
+            end            
+            obj.Initialize();
         end
         
         

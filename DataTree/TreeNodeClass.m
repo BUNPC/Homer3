@@ -140,8 +140,6 @@ classdef TreeNodeClass < handle
                 obj.iGroup = obj2.iGroup;
                 obj.iSubj = obj2.iSubj;
                 obj.iRun = obj2.iRun;
-            else
-                obj.SetProcFlag()                
             end
         end
         
@@ -174,15 +172,12 @@ classdef TreeNodeClass < handle
         function SetIndexID(obj, iG, iS, iR)
             if nargin>1
                 obj.iGroup = iG;
-                obj.GroupsProcFlags(iG);
             end            
             if nargin>2
                 obj.iSubj = iS;
-                obj.SubjsProcFlags(iG, iS);
             end
             if nargin>3
                 obj.iRun = iR;
-                obj.RunsProcFlags(iG, iS, iR);
             end
         end
         
@@ -611,7 +606,8 @@ classdef TreeNodeClass < handle
         function Load(obj)
             if isempty(obj)
                 return
-            end            
+            end
+            obj.LoadSubBranch();
             obj.procStream.Load(obj.GetFilename);
         end
         
@@ -621,6 +617,7 @@ classdef TreeNodeClass < handle
             if isempty(obj)
                 return
             end
+            obj.FreeMemorySubBranch();
             obj.procStream.FreeMemory(obj.GetFilename);
         end
         
@@ -659,63 +656,6 @@ classdef TreeNodeClass < handle
     % flags for quickly calculating required memory and color table
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Static)
-                
-        % --------------------------------------------------------------------------------
-        function out = RunsProcFlags(arg1, arg2, arg3, arg4)
-            persistent runs;
-            if nargin==3
-                [iG, iS, iR] = size(runs);
-                if arg1>iG
-                    iG = arg1;
-                end
-                if arg2>iS
-                    iS = arg2;
-                end
-                if arg3>iR
-                    iR = arg3;
-                end
-                runs = zeros(iG, iS, iR);
-            elseif nargin==4
-                runs(arg1, arg2, arg3) = arg4;
-            end
-            out = runs;
-        end
-
-        
-        % --------------------------------------------------------------------------------
-        function out = SubjsProcFlags(arg1, arg2, arg3)
-            persistent subjs;
-            if nargin==2
-                [iG, iS] = size(subjs);
-                if arg1>iG
-                    iG = arg1;
-                end
-                if arg2>iS
-                    iS = arg2;
-                end
-                subjs = zeros(iG, iS);
-            elseif nargin==3
-                subjs(arg1, arg2) = arg3;
-            end
-            out = subjs;
-        end
-
-        
-        % --------------------------------------------------------------------------------
-        function out = GroupsProcFlags(arg1, arg2)
-            persistent groups;
-            if nargin==1
-                iG = size(groups,1);
-                if arg1>iG
-                    iG = arg1;
-                end
-                groups = zeros(1, iG);
-            elseif nargin==2
-                groups(arg1) = arg2;
-            end
-            out = groups;
-        end
-   
                 
         % ----------------------------------------------------------------------------------
         function out = CondColTbl(arg)

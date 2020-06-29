@@ -104,10 +104,17 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             else
                 fname = obj.filename;
             end
-            if isempty(fname)
+            if exist(fname, 'file') ~= 2
                err=-1;
                return;
             end
+            
+            % Don't reload if not empty
+            if ~obj.IsEmpty()
+               return;
+            end
+            
+            
                         
             warning('off', 'MATLAB:load:variableNotFound');
             fdata = load(fname,'-mat', 'SD','t','d','s','aux','CondNames');

@@ -21,7 +21,6 @@ c.Save();
 
 UnitTestsAll_Snirf(false);
 
-
 c.SetValue('Regression Test Active','false');
 c.SetValue('Include Archived User Functions','No');
 

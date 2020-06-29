@@ -10,25 +10,25 @@ classdef AcqDataClass < matlab.mixin.Copyable
 
         % ---------------------------------------------------------
         val       = GetFormatVersionString(obj);
-        
+   
         % ---------------------------------------------------------
         t         = GetTime(obj, iBlk)
-        
+       
         % ---------------------------------------------------------
         datamat   = GetDataTimeSeries(obj, options, iBlk)
         
         % ---------------------------------------------------------
         SD        = GetSDG(obj)
-        
+
         % ---------------------------------------------------------
         srcpos    = GetSrcPos(obj)
-        
+
         % ---------------------------------------------------------
         detpos    = GetDetPos(obj)
         
         % ---------------------------------------------------------
         ml        = GetMeasList(obj, iBlk)
-                
+
 
         % ---------------------------------------------------------
         wls       = GetWls(obj)
@@ -38,10 +38,10 @@ classdef AcqDataClass < matlab.mixin.Copyable
         
         % ---------------------------------------------------------
         s         = GetStims(obj, t)
-        
+
         % ---------------------------------------------------------
         CondNames = GetConditions(obj)
-        
+
 
         % ---------------------------------------------------------
         SetConditions(obj, CondNames)
@@ -68,7 +68,22 @@ classdef AcqDataClass < matlab.mixin.Copyable
     
     
     methods
-
+        
+        % -------------------------------------------------------
+        function FreeMemory(obj, filename)
+            if ~exist('filename','var')
+                filename = '';
+            end
+            if isempty(filename)
+                return;
+            end
+            
+            % TBD: Tight now we only save processed output and free memory 
+            % associated with it. Need to do the same for acquired data
+            % obj.Initialize();  
+        end
+        
+        
         % ---------------------------------------------------------
         function bbox = GetSdgBbox(obj)
             optpos = [obj.GetSrcPos(); obj.GetDetPos()];

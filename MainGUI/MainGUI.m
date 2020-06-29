@@ -85,6 +85,19 @@ menuCopyCurrentPlot_Callback([]);
 uipanelProcessingType_SelectionChangeFcn([]);
 
 
+% ---------------------------------------------------------------------
+function MainGUI_EnableDisableGUI(handles, val)
+
+set(handles.listboxGroupTree, 'enable', val);
+set(handles.radiobuttonProcTypeGroup, 'enable', val);
+set(handles.radiobuttonProcTypeSubj, 'enable', val);
+set(handles.radiobuttonProcTypeRun, 'enable', val);
+set(handles.radiobuttonPlotRaw, 'enable', val);
+set(handles.radiobuttonPlotOD,  'enable', val);
+set(handles.radiobuttonPlotConc, 'enable', val);
+set(handles.checkboxPlotHRF, 'enable', val);
+set(handles.textStatus, 'enable', val);
+
 
 % --------------------------------------------------------------------
 function eventdata = MainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -131,11 +144,8 @@ guidata(hObject, handles);
 maingui.version = V;
 maingui.childguis = ChildGuiClass().empty();
 
-maingui.handles = handles;
-maingui.handles.pValuesFig = [];
-
 % Disable and reset all window gui objects
-MainGUI_EnableDisableGUI('off');
+MainGUI_EnableDisableGUI(handles,'off');
 MainGUI_Init(handles, {'zbuffer'});
 
 maingui.childguis(1) = ChildGuiClass('ProcStreamEditGUI');
@@ -152,11 +162,14 @@ end
 InitGuiControls(handles);
 
 % If data set has no errors enable window gui objects
-MainGUI_EnableDisableGUI('on');
+MainGUI_EnableDisableGUI(handles,'on');
 
 % Display data from currently selected processing element
 DisplayGroupTree(handles);
 Display(handles, hObject);
+
+maingui.handles = handles;
+maingui.handles.pValuesFig = [];
 
 % Set path in GUI window title
 s = get(hObject,'name');
@@ -375,17 +388,13 @@ val0 = get(handles.listboxGroupTree, 'value');
 % Set the display status to pending. In order to avoid redisplaying 
 % in a single callback thread in functions called from here which 
 % also call DisplayData
-MainGUI_EnableDisableGUI('off');
 maingui.dataTree.CalcCurrElem();
-MainGUI_EnableDisableGUI('on');
 
 % Restore original selection listboxGroupTree
 set(handles.listboxGroupTree, 'value',val0);
 
 h = waitbar(0,'Auto-saving processing results. Please wait ...');
-MainGUI_EnableDisableGUI('off');
 maingui.dataTree.Save(h);
-MainGUI_EnableDisableGUI('on');
 close(h);
 Display(handles, hObject);
 
@@ -730,10 +739,15 @@ end
 
 % ----------------------------------------------------------------------------------
 function hObject = Display(handles, hObject)
+global maingui
 
-if ~exist('hObject','var')
-    hObject=[];
+if ~exist('hObject','var') || isempty(hObject)
+    return;
 end
+
+% Load current element data from file
+maingui.dataTree.LoadCurrElem();
+
 hObject = DisplayData(handles, hObject);
 DisplayAxesSDG();
 
@@ -1149,6 +1163,7 @@ switch(guiname)
         end
     case 'PatchCallback'
         Display(maingui.handles, maingui.handles.axesData);  % Redisplay data axes since stims might have edited        
+        
 end
 
 

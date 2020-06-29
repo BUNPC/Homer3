@@ -33,8 +33,6 @@ classdef TreeNodeClass < handle
             obj.procStream = ProcStreamClass();
             obj.err = 0;
             obj.CondNames = {};
-            obj.outputVars = [];
-            
             
             obj.InitParentAppFunc();
             
@@ -124,7 +122,7 @@ classdef TreeNodeClass < handle
             objnew.type = obj.type;
             objnew.err = obj.err;
             objnew.CondNames = obj.CondNames;
-            objnew.procStream.Copy(obj.procStream);
+            objnew.procStream.Copy(obj.procStream, obj.GetFilename);
         end
         
                
@@ -134,7 +132,7 @@ classdef TreeNodeClass < handle
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2, conditional)
             if ~isempty(obj2.procStream)
-                obj.procStream.Copy(obj2.procStream, obj.name);
+                obj.procStream.Copy(obj2.procStream, obj.GetFilename);
             end
             if nargin==2 || strcmp(conditional, 'unconditional')
                 obj.name = obj2.name;
@@ -240,6 +238,18 @@ classdef TreeNodeClass < handle
             else
                 b = false;
             end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsSame(obj, iG, iS, iR)
+            b = false;
+            if isempty(obj)
+                return;
+            end
+            if iG==obj.iGroup && iS==obj.iSubj && iR==obj.iRun
+                b = true;
+            end                
         end
                 
     end
@@ -596,11 +606,30 @@ classdef TreeNodeClass < handle
         
     
     methods
-
+        
+        % ----------------------------------------------------------------------------------
+        function Load(obj)
+            if isempty(obj)
+                return
+            end            
+            obj.procStream.Load(obj.GetFilename);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function FreeMemory(obj)
+            if isempty(obj)
+                return
+            end
+            obj.procStream.FreeMemory(obj.GetFilename);
+        end
+        
+        
         % ----------------------------------------------------------------------------------
         function tblcells = ExportMeanHRF(~, ~, ~)
             tblcells = {};
         end
+        
         
         % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
@@ -609,7 +638,18 @@ classdef TreeNodeClass < handle
             end            
             nbytes = obj.procStream.MemoryRequired();
         end
-
+        
+        
+        % ----------------------------------------------------------------------------------
+        function filename = GetFilename(obj)
+            filename = '';
+            if isempty(obj)
+                return;
+            end
+            filename = obj.SaveMemorySpace(obj.name);
+        end
+        
+                        
     end
 
     
@@ -690,6 +730,34 @@ classdef TreeNodeClass < handle
             tbl = distinguishable_colors(20);
         end
    
+        
+        % --------------------------------------------------------------------------------
+        function out = SaveMemorySpace(arg)
+            persistent v;
+            out = [];
+                        
+            % If first time we call SaveMemorySpace is with a filename argument, that is arg is a char string 
+            % rather than a numeric, then we want to set v to true to make sure not to load everything into memory 
+            % by default. Later in the Homer3 initalization if we detect our data set is small, we can reverse that 
+            % and set the SaveMemorySpace to false to improve responce time. 
+            if isempty(v)
+                v = true;
+            end
+            
+            if islogical(arg) || isnumeric(arg)
+                v = arg;
+                out = v;
+            elseif ischar(arg)                
+                if v
+                    out = arg;
+                else
+                    out = '';
+                end
+            end
+        end
+   
+                
     end
     
 end
+

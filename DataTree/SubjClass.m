@@ -152,7 +152,7 @@ classdef SubjClass < TreeNodeClass
             if ~exist('option','var')
                 option = 'down';
             end
-            obj.procStream.output = ProcResultClass();
+            obj.procStream.output.Reset(obj.GetFilename);
             if strcmp(option, 'down')
                 for jj=1:length(obj.runs)
                     obj.runs(jj).Reset();
@@ -180,6 +180,9 @@ classdef SubjClass < TreeNodeClass
             obj.outputVars.mlActRuns{r.iRun}     = r.procStream.output.GetVar('mlActAuto');
             obj.outputVars.SDRuns{r.iRun}        = r.GetMeasList();
             obj.outputVars.stimRuns{r.iRun}      = r.GetVar('stim');
+            
+            % Free run memory 
+            r.FreeMemory()
         end
             
                    
@@ -214,14 +217,14 @@ classdef SubjClass < TreeNodeClass
             % Load all the variables that might be needed by procStream.Calc() to calculate proc stream for this subject
             obj.outputVars = struct();
             for iRun = 1:length(r)
-                obj.LoadVars(r(iRun), tHRF_common); 
+                obj.LoadVars(r(iRun), tHRF_common);                
             end
             
             % Make variables in this subject available to processing stream input
             obj.procStream.input.LoadVars(obj.outputVars);
 
             % Calculate processing stream
-            obj.procStream.Calc();
+            obj.procStream.Calc(obj.GetFilename);
 
             if obj.DEBUG
                 fprintf('Completed processing stream for group %d, subject %d\n', obj.iGroup, obj.iSubj);

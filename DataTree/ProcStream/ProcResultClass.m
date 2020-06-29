@@ -16,11 +16,17 @@ classdef ProcResultClass < handle
         misc;
     end
         
+    properties (Access=private)
+        filename
+    end
+    
+    
     methods
         
         % ---------------------------------------------------------------------------
         function obj = ProcResultClass()
             obj.Initialize();
+            obj.filename = '';
         end
         
         % ---------------------------------------------------------------------------
@@ -163,10 +169,18 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function Save(obj, vars, filename)
+        function Save(obj, vars, filename, options)
+            % options possible values:  
+            %    freememory
+            %    keepinmemory
+            
+            if ~exist('options', 'var') || isempty(options)
+                options = 'keepinmemory';
+            end
+            
             obj.SetFilename(filename)
             
-            output = obj;
+            output = obj; %#ok<NASGU>
             props = propnames(vars);
             for ii=1:length(props)
                 if eval( sprintf('isproperty(output, ''%s'');', props{ii}) )
@@ -175,13 +189,89 @@ classdef ProcResultClass < handle
                     eval( sprintf('output.misc.%s = vars.%s;', props{ii}, props{ii}) );
                 end
             end
-            if ~isempty(filename)
-                [~, ~, ext] = fileparts(filename);
-                if isempty(ext)
-                    filename = [filename, '.mat'];
+            
+            % If file name is not an empty string, save results to file and free memory
+            % to save memory space
+            if ~isempty(obj.filename)
+                save(obj.filename, '-mat', 'output');
+                
+                % Free memory for this object
+                if ~isempty(findstr('freememory', options)) %#ok<FSTR>
+                    obj.FreeMemory();
                 end
-                save(filename, '-mat', 'output');
             end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Load(obj, filename)
+            obj.SetFilename(filename)
+            if isempty(obj.filename)
+                return;
+                end
+
+            % If object is not empty it means we already have loaded data. No
+            % need to waste time loading it from file.
+            if ~obj.IsEmpty()
+                return;
+            end
+            
+            % Error check file
+            if ~exist(obj.filename,'file')
+                return
+            end
+            
+            % If file name is not an empty string, load proc stream output from file
+            load(obj.filename, '-mat');
+            
+            % Error check output
+            if ~exist('output','var')
+                return
+            end
+            if ~isa(output,'ProcResultClass')
+                return
+            end
+            obj.Copy(output);
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function FreeMemory(obj, filename)            
+            if ~exist('filename','var')
+                filename = '';
+            end
+            
+            % If file name is not passed and is not already set within this
+            % object it means we are not saving output to seperate files
+            % and therefore not freeing memory for the processed output. 
+            % Therefore we simply return to avoid re-initialzing the object
+            if isempty(obj.filename) && isempty(filename)
+                return;
+            end            
+            
+            % Free memory for this object
+            obj.Initialize();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Reset(obj, filename)
+            obj.Initialize();
+
+            obj.SetFilename(filename)
+            if isempty(obj.filename)
+                return;
+            end
+            
+            % Error check file
+            if ~exist(obj.filename,'file')
+                return
+            end
+            
+            % Delete file containing the actual datas
+            delete(obj.filename);
         end
         
         
@@ -527,31 +617,46 @@ classdef ProcResultClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function Copy(obj, obj2)
+        function Copy(obj, obj2, filename)
+          
             if ~isa(obj, 'ProcResultClass')
                 return;
             end
+            if ~exist('filename', 'var')
+                filename = '';
+            end            
+            obj.SetFilename(filename)
             
-            % Ok to shallow copy since ProcResult objects are read only
-            % Also we don't want to transfer space hogging time course
-            % data dc and dod
+            % If file name is set and exists then load data from file
+            if ~isempty(filename) && exist(obj.filename, 'file')
             
-            obj.dod = obj2.dod;
-            obj.dc = obj2.dc;
-            obj.dodAvg = obj2.dodAvg;
-            obj.dcAvg = obj2.dcAvg;
-            obj.dodAvgStd = obj2.dodAvgStd;
-            obj.dcAvgStd = obj2.dcAvgStd;
-            obj.dodSum2 = obj2.dodSum2;
-            obj.dcSum2 = obj2.dcSum2;
-            obj.tHRF = obj2.tHRF;
-            if iscell(obj2.nTrials)
-                obj.nTrials = obj2.nTrials;
-            else
-                obj.nTrials = {obj2.nTrials};
+                obj.FreeMemory(filename);
+                
+            % If file name is set but does not exist then we should NOT
+            % copy from obj2 but instead save it to a file
+            elseif ~isempty(filename) && ~exist(obj.filename, 'file')
+                
+                obj.Save(obj2, filename, 'freememory');
+                
+            elseif isempty(filename)
+            
+	            obj.dod = obj2.dod;
+	            obj.dc = obj2.dc;
+	            obj.dodAvg = obj2.dodAvg;
+	            obj.dcAvg = obj2.dcAvg;
+	            obj.dodAvgStd = obj2.dodAvgStd;
+	            obj.dcAvgStd = obj2.dcAvgStd;
+	            obj.dodSum2 = obj2.dodSum2;
+	            obj.dcSum2 = obj2.dcSum2;
+	            obj.tHRF = obj2.tHRF;
+	            if iscell(obj2.nTrials)
+	                obj.nTrials = obj2.nTrials;
+	            else
+	                obj.nTrials = {obj2.nTrials};
+	            end
+	            obj.ch = obj2.ch;
+	            obj.misc = obj2.misc;	                
             end
-            obj.ch = obj2.ch;
-            obj.misc = obj2.misc;
         end
         
         
@@ -560,6 +665,7 @@ classdef ProcResultClass < handle
         function b = IsEmpty(obj)
             b = false;
             if isempty(obj)
+                b = true;
                 return
             end
             if ~isempty(obj.dod)
@@ -598,7 +704,7 @@ classdef ProcResultClass < handle
             if ~isempty(obj.misc)
                 return
             end
-            b = false;
+            b = true;
         end
         
         

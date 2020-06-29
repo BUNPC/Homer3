@@ -37,8 +37,6 @@ classdef ChildGuiClass < handle
             %
             %       c) GUI 'tag' property must be named 'figure'
             %
-            %       d) Optoinal position argument 'pos' if it exist must be
-            %          last argument
             %      
             % Examples:
             %   gui = ChildGuiClass('ProcStreamEditGUI', true, '.nirs');

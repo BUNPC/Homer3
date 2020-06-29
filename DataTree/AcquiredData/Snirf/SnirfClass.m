@@ -65,12 +65,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %
              
             % Initialize properties from SNIRF spec 
-            obj.formatVersion = '1.0';
-            obj.metaDataTags   = MetaDataTagsClass().empty();
-            obj.data           = DataClass().empty();
-            obj.stim           = StimClass().empty();
-            obj.probe          = ProbeClass().empty();
-            obj.aux            = AuxClass().empty();
+            obj.Initialize()
             
             % Set class properties NOT part of the SNIRF format
             obj.fileformat = 'hdf5';
@@ -180,6 +175,17 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
         end
         
+        
+        
+        % -------------------------------------------------------
+        function Initialize(obj)
+            obj.formatVersion = '1.0';
+            obj.metaDataTags   = MetaDataTagsClass().empty();
+            obj.data           = DataClass().empty();
+            obj.stim           = StimClass().empty();
+            obj.probe          = ProbeClass().empty();
+            obj.aux            = AuxClass().empty();
+        end
         
         
         % -------------------------------------------------------
@@ -1135,8 +1141,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             end
             b = false;
         end
+               
         
-
         % ----------------------------------------------------------------------------------        
         function nbytes = MemoryRequired(obj)
             nbytes = 0;

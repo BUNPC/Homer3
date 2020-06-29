@@ -9,7 +9,8 @@ classdef DataTreeClass <  handle
         reg
         config
         logger
-        warningflag        
+        warningflag
+        dataStorageScheme
     end
     
     methods
@@ -18,13 +19,15 @@ classdef DataTreeClass <  handle
         function obj = DataTreeClass(groupDirs, fmt, procStreamCfgFile)
             global logger
             
-            obj.groups        = GroupClass().empty();
-            obj.currElem      = TreeNodeClass().empty();
-            obj.reg           = RegistriesClass().empty();
-            obj.config        = ConfigFileClass().empty();
-            obj.dirnameGroup  = '';
-            obj.logger        = InitLogger(logger, 'DataTree');
-            
+            obj.groups              = GroupClass().empty();
+            obj.currElem            = TreeNodeClass().empty();
+            obj.reg                 = RegistriesClass().empty();
+            obj.config              = ConfigFileClass().empty();
+            obj.dirnameGroup        = '';
+            obj.logger              = InitLogger(logger, 'DataTree');
+                        
+            cfg = ConfigFileClass();
+            obj.dataStorageScheme = cfg.GetValue('Data Storage Scheme');
             
             %%%% Parse args
             
@@ -89,7 +92,7 @@ classdef DataTreeClass <  handle
             
             % Find index of another file format to try
             for ii = 1:length(supportedFormats)
-                if ~isempty(findstr(dataInit.type, supportedFormats{ii,1}))
+                if ~isempty(findstr(dataInit.type, supportedFormats{ii,1})) %#ok<FSTR>
                    k = ii;
                    break;
                 end
@@ -177,7 +180,7 @@ classdef DataTreeClass <  handle
                     end
                     obj.files = dataInit.files;
                     
-                    obj.LoadGroup(procStreamCfgFile);
+                    obj.LoadGroups(procStreamCfgFile);
                     if length(obj.groups) < iGnew
                         if obj.FoundDataFilesInOtherFormat(dataInit) 
                             continue;
@@ -191,13 +194,42 @@ classdef DataTreeClass <  handle
             
         end
         
+        
+                
+        % ---------------------------------------------------------------
+        function SetDataStorageScheme(obj, iG)
+            if length(obj.groups) < iG
+                return
+            end
+
+            % Estimate memory requirement based on number of acquired files and their
+            % average size
+            % obj.logger.Write(sprintf('Memory required for data tree: %0.1f MB\n', obj.MemoryRequired() / 1e6));            
+            if strcmp(obj.dataStorageScheme, 'disk')
+                onoff = true;
+            elseif strcmp(obj.dataStorageScheme, 'memory') || strcmpi(obj.dataStorageScheme, 'ram')
+                onoff = false;
+            else
+                onoff = false;
+            end
+            obj.groups(iG).SaveMemorySpace(onoff);
+            
+            % If storage scheme is to store everything in memory, then
+            % reload data set this time with the SavememorySpace variable 
+            % turned off.
+            if onoff == false
+                obj.groups(iG).Load('reload');
+                obj.groups(iG).SetConditions();
+            end
+        end 
+        
           
         % ---------------------------------------------------------------
-        function LoadGroup(obj, procStreamCfgFile)
+        function LoadGroups(obj, procStreamCfgFile)
             if ~exist('procStreamCfgFile','var')
                 procStreamCfgFile = '';
             end
-            
+                       
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Load acquisition data from the data files
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -210,34 +242,34 @@ classdef DataTreeClass <  handle
             obj.ErrorCheckLoadedFiles();
 
             tic;            
-            for ii=1:length(obj.groups)
+            for iG = 1:length(obj.groups)
+                
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Load derived or post-acquisition data from a file if it
                 % exists
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                obj.groups(ii).Load();            
+                obj.groups(iG).Load();
             
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Initialize procStream for all tree nodes
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                obj.groups(ii).InitProcStream(procStreamCfgFile);
+                obj.groups(iG).InitProcStream(procStreamCfgFile);
                 
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Generate the stimulus conditions for the group tree
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                obj.groups(ii).SetConditions();                
+                obj.groups(iG).SetConditions();
+
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % Estimate amount of memory required and set the
+                % data storage scheme
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                obj.SetDataStorageScheme(iG);
+                
             end
+            
             obj.logger.Write(sprintf('Loaded processing stream results in %0.1f seconds\n', toc));
             
-            
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Find the amount of memory the whole group tree requires
-            % at the run level. If group runs take up more than half a
-            % GB then do not save dc and dod time courses and recalculate
-            % dc and dod for each new current element (currElem) on the
-            % fly. This should be a menu option in future releases
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % obj.logger.Write(sprintf('Memory required for data tree: %0.1f MB\n', obj.MemoryRequired() / 1e6));
         end
         
         
@@ -336,6 +368,15 @@ classdef DataTreeClass <  handle
         
         
         % ----------------------------------------------------------
+        function LoadCurrElem(obj)
+            if isempty(obj.groups)
+                return;
+            end
+            obj.currElem.Load()
+        end
+
+
+        % ----------------------------------------------------------
         function SetCurrElem(obj, iGroup, iSubj, iRun)
             if isempty(obj.groups)
                 return;
@@ -351,6 +392,14 @@ classdef DataTreeClass <  handle
             elseif nargin==3
                 iRun  = 0;
             end
+
+            if obj.currElem.IsSame(iGroup, iSubj, iRun)
+                return;
+            end
+            
+            % Free up memory of current element before reassigning it to
+            % another node. 
+            obj.currElem.FreeMemory();
             
             if iSubj==0 && iRun==0
                 obj.currElem = obj.groups(iGroup);

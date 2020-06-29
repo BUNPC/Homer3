@@ -46,12 +46,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             %
             
             % Initialize Nirs public properties
-            obj.SD        = struct([]);
-            obj.t         = [];
-            obj.s         = [];
-            obj.d         = [];
-            obj.aux       = [];
-            obj.CondNames = {};
+            obj.Initialize();
 
             % Set base class properties not part of NIRS format 
             obj.filename  = '';
@@ -72,6 +67,17 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 return;
             end
             obj.Load(filename);
+        end
+        
+        
+        % -------------------------------------------------------
+        function Initialize(obj)
+            obj.SD        = struct([]);
+            obj.t         = [];
+            obj.s         = [];
+            obj.d         = [];
+            obj.aux       = [];
+            obj.CondNames = {};
         end
         
         

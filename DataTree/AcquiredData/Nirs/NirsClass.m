@@ -105,43 +105,65 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 fname = obj.filename;
             end
             if exist(fname, 'file') ~= 2
-               err=-1;
+               err = -1;
                return;
             end
             
             % Don't reload if not empty
             if ~obj.IsEmpty()
                return;
-            end
-            
-            
+            end                        
                         
             warning('off', 'MATLAB:load:variableNotFound');
             fdata = load(fname,'-mat', 'SD','t','d','s','aux','CondNames');
+            
+            % Mandatory fields
             if isproperty(fdata,'d')
                 obj.d = fdata.d;
+                if isempty(obj.d)
+                    err = -2;
+                end
+            else
+                err = -2;
             end
             if isproperty(fdata,'t')
                 obj.t = fdata.t;
+                if ~isempty(obj.t)
+                    obj.errmargin = min(diff(obj.t))/10;
+                else
+                    err = -3;                
+                end
+            else
+                err = -3;
             end
             if isproperty(fdata,'SD')
                 obj.SetSD(fdata.SD);
+                if isempty(obj.SD)
+                    err = -4;
+                end
+            else
+                err = -4;
             end
+            
+            
+            % Optional fields
             if isproperty(fdata,'s')
                 obj.s = fdata.s;
+                obj.SortStims();
+            else
+                obj.s = [];
             end
             if isproperty(fdata,'aux')
                 obj.aux = fdata.aux;
+            else
+                obj.aux = [];
             end
             if isproperty(fdata,'CondNames')
                 obj.CondNames = fdata.CondNames;
             else
                 obj.InitCondNames();
             end
-            if ~isempty(obj.t)
-                obj.errmargin = min(diff(obj.t))/10;
-            end
-            obj.SortStims();
+            
         end
         
         

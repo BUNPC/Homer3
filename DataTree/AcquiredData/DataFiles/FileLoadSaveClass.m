@@ -39,11 +39,11 @@ classdef FileLoadSaveClass < matlab.mixin.Copyable
             switch(lower(format))
                 case obj.supportedFomats.matlab
                     if ismethod(obj, 'LoadMat')
-                        obj.LoadMat(filename);
+                        obj.err = obj.LoadMat(filename);
                     end
                 case obj.supportedFomats.hdf5
                     if ismethod(obj, 'LoadHdf5')
-                        obj.LoadHdf5(filename, params);
+                        obj.err = obj.LoadHdf5(filename, params);
                     end
             end
         end

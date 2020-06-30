@@ -280,7 +280,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             err = 0;
             obj.metaDataTags = MetaDataTagsClass();
             if obj.metaDataTags.LoadHdf5(fileobj, [obj.location, '/metaDataTags']) < 0
-                err=-1;
+                err = -1;
             end
         end
         
@@ -298,7 +298,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     obj.data(ii).delete();
                     obj.data(ii) = [];
                     if ii==1
-                        err=-1;
+                        err = -1;
                     end
                     break;
                 end
@@ -322,7 +322,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     obj.stim(ii).delete();
                     obj.stim(ii) = [];
                     if ii==1
-                        err=-1;
+                        err = -1;
                     end
                     break;
                 end
@@ -353,7 +353,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     obj.aux(ii).delete();
                     obj.aux(ii) = [];
                     if ii==1
-                        err=-1;
+                        err = -1;
                     end
                     break;
                 end
@@ -404,13 +404,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 %%%% Load formatVersion
                 if obj.LoadFormatVersion() < 0
                     err = -2;
-                    return;
                 end
                 
                 %%%% Load metaDataTags
                 if obj.LoadMetaDataTags(obj.fid) < 0
                     err = -3;
-                    return;
                 end
                 
                 %%%% Load data
@@ -439,7 +437,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 
             catch
 
-                err=-1;
+                err = -1;
                 
             end
             

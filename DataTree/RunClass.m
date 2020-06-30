@@ -106,7 +106,7 @@ classdef RunClass < TreeNodeClass
             else
                 obj.acquired = SnirfClass([dirname, obj.name]);
             end
-            if obj.acquired.Error() < 0
+            if obj.acquired.Error() > 0
                 fprintf('     **** Warning: %s failed to load.\n', obj.name);
                 return;
             else

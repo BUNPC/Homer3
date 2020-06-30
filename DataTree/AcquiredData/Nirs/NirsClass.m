@@ -149,7 +149,6 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             % Optional fields
             if isproperty(fdata,'s')
                 obj.s = fdata.s;
-                obj.SortStims();
             else
                 obj.s = [];
             end
@@ -164,6 +163,9 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 obj.InitCondNames();
             end
             
+            % Always sort stimulus conditions and associated stims 
+            % to have a predictable order for display
+            obj.SortStims();
         end
         
         

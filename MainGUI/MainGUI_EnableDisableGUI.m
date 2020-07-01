@@ -29,4 +29,11 @@ function MainGUI_EnableDisableGUI(val)
     set(maingui.handles.pushbuttonCalcProcStream, 'enable', val);
     set(maingui.handles.pushbuttonProcStreamOptionsEdit, 'enable', val);
     set(maingui.handles.checkboxApplyProcStreamEditToAll, 'enable', val);
+    % Menu
+    set(maingui.handles.ToolsMenu, 'enable', val);
+    set(maingui.handles.ViewMenu, 'enable', val);
+    set(maingui.handles.menuItemSaveGroup, 'enable', val);
+    set(maingui.handles.menuItemExport, 'enable', val);
+    set(maingui.handles.menuItemReset, 'enable', val);
+    set(maingui.handles.menuItemResetGroupFolder, 'enable', val)
 end

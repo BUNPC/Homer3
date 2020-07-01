@@ -57,6 +57,10 @@ end
 positionGUI(hFig, 0.15, 0.05, 0.80, 0.90)
 setGuiFonts(hFig);
 
+% Set checkForUpdates checkbox based on config setting
+cfg = ConfigFileClass();
+handles.menuItemUpdateCheck.Checked = cfg.GetValue('Check For Updates');
+
 % Get rid of the useless "might be unsused" warnings for GUI callbacks
 checkboxPlotHRF_Callback([]);
 checkboxApplyProcStreamEditToAll_Callback([]);
@@ -1483,3 +1487,27 @@ if isempty(out.datatype)
 end
 maingui.dataTree.currElem.ExportMeanHRF(out.trange);
 
+
+
+% --------------------------------------------------------------------
+function menuItemUpdateCheck_Callback(hObject, eventdata, handles)
+% hObject    handle to menuItemUpdateCheck (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+cfg = ConfigFileClass();
+if (strcmp(hObject.Checked,'on'))
+    hObject.Checked = 'off';
+    cfg.SetValue('Check For Updates','off');
+else
+    hObject.Checked = 'on';
+    cfg.SetValue('Check For Updates','on');
+end
+cfg.Save();
+cfg.Close();
+
+
+% --------------------------------------------------------------------
+function SettingsMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to SettingsMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

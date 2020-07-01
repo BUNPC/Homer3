@@ -146,23 +146,19 @@ maingui.axesSDG.handles.ch = hCh(hCh>0);
 
 % ADD SOURCE AND DETECTOR LABELS
 hSD = zeros(nSrcs+nDets,1);
-if isempty(maingui.axesSDG.handles.SD)
-    for idx1 = 1:nSrcs
-        if ~isempty(find(MeasList(:,1)==idx1)) %#ok<*EFIND>
-            hSD(idx1) = text( SD.SrcPos(idx1,1), SD.SrcPos(idx1,2), sprintf('%d', idx1), 'fontsize',fs, 'fontweight','bold', 'color','r' );
-            set(hSD(idx1), 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
-        end
+for idx1 = 1:nSrcs
+    if ~isempty(find(MeasList(:,1)==idx1)) %#ok<*EFIND>
+        hSD(idx1) = text( SD.SrcPos(idx1,1), SD.SrcPos(idx1,2), sprintf('%d', idx1), 'fontsize',fs, 'fontweight','bold', 'color','r' );
+        set(hSD(idx1), 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
     end
-    for idx2 = 1:nDets
-        if ~isempty(find(MeasList(:,2)==idx2))
-            hSD(idx2+idx1) = text( SD.DetPos(idx2,1), SD.DetPos(idx2,2), sprintf('%d', idx2), 'fontsize',fs, 'fontweight','bold', 'color','b' );
-            set(hSD(idx2+idx1), 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
-        end
-    end
-    maingui.axesSDG.handles.SD = hSD;
-else
-    uistack(maingui.axesSDG.handles.SD,'top')
 end
+for idx2 = 1:nDets
+    if ~isempty(find(MeasList(:,2)==idx2))
+        hSD(idx2+idx1) = text( SD.DetPos(idx2,1), SD.DetPos(idx2,2), sprintf('%d', idx2), 'fontsize',fs, 'fontweight','bold', 'color','b' );
+        set(hSD(idx2+idx1), 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
+    end
+end
+maingui.axesSDG.handles.SD = hSD;
 
 % Turn off zoom but only for SDG axes
 h=zoom;

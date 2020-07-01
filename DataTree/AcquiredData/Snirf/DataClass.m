@@ -230,6 +230,7 @@ classdef DataClass < FileLoadSaveClass
                 end
                 ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), 1, obj.measurementList(ii).GetWavelengthIndex()];
             end
+            ml = sortrows(ml,4);
         end
         
         

@@ -178,8 +178,6 @@ classdef ProcStreamClass < handle
                 filename = '';
             end
             
-            MainGUI_EnableDisableGUI('off');
-            
             % loop over functions
             FcallsIdxs = obj.GetFcallsIdxs();
             nFcall = length(FcallsIdxs);
@@ -250,8 +248,6 @@ classdef ProcStreamClass < handle
             
             obj.input.misc = [];
             close(hwait);
-            
-            MainGUI_EnableDisableGUI('on');
             
         end
         

@@ -365,13 +365,21 @@ if ~ishandles(hObject)
     return;
 end
 
+            
+MainGUI_EnableDisableGUI('off');
+
 % Save original selection in listboxGroupTree because it'll change during auto processing 
 val0 = get(handles.listboxGroupTree, 'value');
 
 % Set the display status to pending. In order to avoid redisplaying 
 % in a single callback thread in functions called from here which 
 % also call DisplayData
-maingui.dataTree.CalcCurrElem();
+try
+    maingui.dataTree.CalcCurrElem();
+catch
+    MainGUI_EnableDisableGUI('on');
+    return;
+end
 
 % Restore original selection listboxGroupTree
 set(handles.listboxGroupTree, 'value',val0);
@@ -382,6 +390,7 @@ maingui.dataTree.Save(h);
 MainGUI_EnableDisableGUI('on');
 close(h);
 Display(handles, hObject);
+MainGUI_EnableDisableGUI('on');
 
 
 

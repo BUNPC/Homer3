@@ -382,7 +382,6 @@ try
     maingui.dataTree.CalcCurrElem();
 catch
     MainGUI_EnableDisableGUI('on');
-    return;
 end
 
 % Restore original selection listboxGroupTree

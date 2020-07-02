@@ -33,14 +33,11 @@ status = zeros(4, nGroups);
 for ii=1:nGroups
     irow = 1;
     status(irow,ii) = unitTest_DefaultProcStream('.nirs',  groupFolders{ii});  irow=irow+1;
-    status(irow,ii) = unitTest_DefaultProcStream('.snirf', groupFolders{ii});  irow=irow+1;
     for jj=1:length(lpf)
         status(irow,ii) = unitTest_BandpassFilt_LPF('.nirs',  groupFolders{ii}, lpf(jj));  irow=irow+1;
-        status(irow,ii) = unitTest_BandpassFilt_LPF('.snirf', groupFolders{ii}, lpf(jj));  irow=irow+1;
     end
     for kk=1:length(std)
         status(irow,ii) = unitTest_MotionArtifact_STDEV('.nirs',  groupFolders{ii}, std(kk));  irow=irow+1;
-        status(irow,ii)   = unitTest_MotionArtifact_STDEV('.snirf', groupFolders{ii}, std(kk));  irow=irow+1;
     end
 end
 logger.Write('\n');

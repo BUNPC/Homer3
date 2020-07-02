@@ -221,8 +221,11 @@ classdef DataClass < FileLoadSaveClass
         
         % ---------------------------------------------------------
         function ml = GetMeasList(obj)
-            ml = [];
-            for ii=1:length(obj.measurementList)
+            % Preallocate for speed 
+            ml = ones(length(obj.measurementList), 4);
+            
+            % Convert obj.measurementList to matrix
+            for ii = 1:length(obj.measurementList)
                 % If this data contains block average then only get the measurements for first condition. That will
                 % contain all the measurement channels
                 if obj.measurementList(ii).GetCondition()>1
@@ -230,6 +233,9 @@ classdef DataClass < FileLoadSaveClass
                 end
                 ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), 1, obj.measurementList(ii).GetWavelengthIndex()];
             end
+            
+            % Remove any unused allocated rows that were pre-allocated
+            ml(ii+1:end,:) = [];
         end
         
         

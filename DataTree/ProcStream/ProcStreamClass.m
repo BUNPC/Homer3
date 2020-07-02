@@ -63,7 +63,7 @@ classdef ProcStreamClass < handle
             obj.fcalls(ii+1:end) = [];
             
             obj.input.Copy(obj2.input);
-            obj.output.Copy(obj2.output);
+            obj.output.Copy(obj2.output, filename);
         end
         
         
@@ -142,6 +142,26 @@ classdef ProcStreamClass < handle
 
         
         % ----------------------------------------------------------------------------------
+        function Load(obj, filename)
+            if ~exist('filename','var')
+                return
+            end
+            obj.output.Load(filename)
+        end
+
+
+        
+        % ----------------------------------------------------------------------------------
+        function FreeMemory(obj, filename)
+            if ~exist('filename','var')
+                return
+            end
+            obj.output.FreeMemory(filename)
+        end
+
+
+        
+        % ----------------------------------------------------------------------------------
         function str = EditParam(obj, iFcall, iParam, val)
             str = '';
             if isempty(iFcall)
@@ -177,8 +197,6 @@ classdef ProcStreamClass < handle
             if ~exist('filename','var')
                 filename = '';
             end
-            
-            MainGUI_EnableDisableGUI('off');
             
             % loop over functions
             FcallsIdxs = obj.GetFcallsIdxs();
@@ -250,9 +268,6 @@ classdef ProcStreamClass < handle
             
             obj.input.misc = [];
             close(hwait);
-            
-            MainGUI_EnableDisableGUI('on');
-            
         end
         
         
@@ -570,7 +585,7 @@ classdef ProcStreamClass < handle
             %              name: 'hmrS_RunAvg'
             %            nameUI: 'hmrS_RunAvg'
             %            argOut: '[dcAvg,dcAvgStd,tHRF,nTrials]'
-            %             argIn: '(dcAvgRuns,dcAvgStdRuns,dcSum2Runs,tHRFRuns,SDRuns,nTrialsRuns'
+            %             argIn: '(dcAvgRuns,dcAvgStdRuns,dcSum2Runs,tHRFRuns,mlActRuns,nTrialsRuns'
             %           paramIn: [0x0 ParamClass]
             %              help: '  Calculate the block average for all subjects, for all common stimuli…'
             %
@@ -710,7 +725,7 @@ classdef ProcStreamClass < handle
             %          '@ hmrG_SubjAvg [dcAvg,dcAvgStd,nTrials,grpAvgPass] (dcAvgSubjs,dcAvgStdSubjs,SDSubjs,nTrialsSubjs tRange %0.1f…'
             %         }
             %     S = {
-            %          '@ hmrS_RunAvg [dcAvg,dcAvgStd,nTrials] (dcAvgRuns,dcAvgStdRuns,dcSum2Runs,SDRuns,nTrialsRuns'
+            %          '@ hmrS_RunAvg [dcAvg,dcAvgStd,nTrials] (dcAvgRuns,dcAvgStdRuns,dcSum2Runs,mlActRuns,nTrialsRuns'
             %         }
             %     R = {
             %         '@ hmrR_Intensity2OD dod (d'
@@ -1476,4 +1491,5 @@ classdef ProcStreamClass < handle
     end
     
 end
+
 

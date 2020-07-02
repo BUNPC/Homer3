@@ -4,6 +4,9 @@ global procStreamStyle
 global testidx;
 global logger
 
+% Close all guis
+close all force
+
 if ~exist('standalone','var') || isempty(standalone)
     standalone = true;
 end

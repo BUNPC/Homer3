@@ -43,6 +43,17 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function nbytes = MemoryRequired(obj)
+            nbytes = 0;
+            for ii = 1:length(obj.runs)
+                nbytes = nbytes + obj.runs(ii).MemoryRequired();
+            end
+            nbytes = nbytes + obj.procStream.MemoryRequired();
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
         % Copy processing params (procInut and procResult) from
         % S to obj if obj and S are equivalent nodes
         % ----------------------------------------------------------------------------------
@@ -152,16 +163,33 @@ classdef SubjClass < TreeNodeClass
             if ~exist('option','var')
                 option = 'down';
             end
-            obj.procStream.output = ProcResultClass();
+            obj.procStream.output.Reset(obj.GetFilename);
             if strcmp(option, 'down')
                 for jj=1:length(obj.runs)
                     obj.runs(jj).Reset();
                 end
             end
-            obj.SubjsProcFlags(obj.iGroup, obj.iSubj, 0);
         end
         
         
+        
+        % ----------------------------------------------------------------------------------
+        function LoadSubBranch(obj)
+            if isempty(obj)
+                return;
+            end
+            obj.runs(1).LoadAcquiredData()
+        end            
+
+        
+        % ----------------------------------------------------------------------------------
+        function FreeMemorySubBranch(obj)
+            if isempty(obj)
+                return;
+            end
+            obj.runs(1).FreeMemory()
+        end            
+            
         
         % ----------------------------------------------------------------------------------
         function LoadVars(obj, r, tHRF_common)
@@ -176,10 +204,12 @@ classdef SubjClass < TreeNodeClass
             obj.outputVars.dcAvgStdRuns{r.iRun}  = r.procStream.output.GetVar('dcAvgStd');
             obj.outputVars.dcSum2Runs{r.iRun}    = r.procStream.output.GetVar('dcSum2');
             obj.outputVars.tHRFRuns{r.iRun}      = r.procStream.output.GetTHRF();
-            obj.outputVars.nTrialsRuns{r.iRun}   = r.procStream.output.GetVar('nTrials');
             obj.outputVars.mlActRuns{r.iRun}     = r.procStream.output.GetVar('mlActAuto');
-            obj.outputVars.SDRuns{r.iRun}        = r.GetMeasList();
+            obj.outputVars.nTrialsRuns{r.iRun}   = r.procStream.output.GetVar('nTrials');
             obj.outputVars.stimRuns{r.iRun}      = r.GetVar('stim');
+            
+            % Free run memory 
+            r.FreeMemory()
         end
             
                    
@@ -212,16 +242,16 @@ classdef SubjClass < TreeNodeClass
             
             
             % Load all the variables that might be needed by procStream.Calc() to calculate proc stream for this subject
-            obj.outputVars = struct();
             for iRun = 1:length(r)
-                obj.LoadVars(r(iRun), tHRF_common); 
+                obj.LoadVars(r(iRun), tHRF_common);
             end
+            
             
             % Make variables in this subject available to processing stream input
             obj.procStream.input.LoadVars(obj.outputVars);
 
             % Calculate processing stream
-            obj.procStream.Calc();
+            obj.procStream.Calc(obj.GetFilename);
 
             if obj.DEBUG
                 fprintf('Completed processing stream for group %d, subject %d\n', obj.iGroup, obj.iSubj);
@@ -233,10 +263,6 @@ classdef SubjClass < TreeNodeClass
                 obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
             end
             pause(.5);
-            
-            % Mark this subject as having processed data thereby taking up
-            % memory
-            obj.SubjsProcFlags(obj.iGroup, obj.iSubj, 1);
             
         end
                 

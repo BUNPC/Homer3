@@ -16,6 +16,8 @@ maingui.sclConc = 1e6;                      % convert Conc from Molar to uMolar
 maingui.plotViewOptions = struct('zoom',true, 'ranges',struct('X',[], 'Y',[]));
 
 % Set the wavelength popup menu
+% Load current element data from file
+maingui.dataTree.LoadCurrElem();
 Lambda =  maingui.dataTree.currElem.GetWls();
 strs = cell(length(Lambda));
 for ii=1:length(Lambda)

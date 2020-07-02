@@ -33,8 +33,6 @@ classdef TreeNodeClass < handle
             obj.procStream = ProcStreamClass();
             obj.err = 0;
             obj.CondNames = {};
-            obj.outputVars = [];
-            
             
             obj.InitParentAppFunc();
             
@@ -124,7 +122,7 @@ classdef TreeNodeClass < handle
             objnew.type = obj.type;
             objnew.err = obj.err;
             objnew.CondNames = obj.CondNames;
-            objnew.procStream.Copy(obj.procStream);
+            objnew.procStream.Copy(obj.procStream, obj.GetFilename);
         end
         
                
@@ -134,7 +132,7 @@ classdef TreeNodeClass < handle
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2, conditional)
             if ~isempty(obj2.procStream)
-                obj.procStream.Copy(obj2.procStream, obj.name);
+                obj.procStream.Copy(obj2.procStream, obj.GetFilename);
             end
             if nargin==2 || strcmp(conditional, 'unconditional')
                 obj.name = obj2.name;
@@ -142,8 +140,6 @@ classdef TreeNodeClass < handle
                 obj.iGroup = obj2.iGroup;
                 obj.iSubj = obj2.iSubj;
                 obj.iRun = obj2.iRun;
-            else
-                obj.SetProcFlag()                
             end
         end
         
@@ -176,15 +172,12 @@ classdef TreeNodeClass < handle
         function SetIndexID(obj, iG, iS, iR)
             if nargin>1
                 obj.iGroup = iG;
-                obj.GroupsProcFlags(iG);
             end            
             if nargin>2
                 obj.iSubj = iS;
-                obj.SubjsProcFlags(iG, iS);
             end
             if nargin>3
                 obj.iRun = iR;
-                obj.RunsProcFlags(iG, iS, iR);
             end
         end
         
@@ -240,6 +233,18 @@ classdef TreeNodeClass < handle
             else
                 b = false;
             end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsSame(obj, iG, iS, iR)
+            b = false;
+            if isempty(obj)
+                return;
+            end
+            if iG==obj.iGroup && iS==obj.iSubj && iR==obj.iRun
+                b = true;
+            end                
         end
                 
     end
@@ -596,11 +601,32 @@ classdef TreeNodeClass < handle
         
     
     methods
-
+        
+        % ----------------------------------------------------------------------------------
+        function Load(obj)
+            if isempty(obj)
+                return
+            end
+            obj.LoadSubBranch();
+            obj.procStream.Load(obj.GetFilename);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function FreeMemory(obj)
+            if isempty(obj)
+                return
+            end
+            obj.FreeMemorySubBranch();
+            obj.procStream.FreeMemory(obj.GetFilename);
+        end
+        
+        
         % ----------------------------------------------------------------------------------
         function tblcells = ExportMeanHRF(~, ~, ~)
             tblcells = {};
         end
+        
         
         % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
@@ -609,7 +635,18 @@ classdef TreeNodeClass < handle
             end            
             nbytes = obj.procStream.MemoryRequired();
         end
-
+        
+        
+        % ----------------------------------------------------------------------------------
+        function filename = GetFilename(obj)
+            filename = '';
+            if isempty(obj)
+                return;
+            end
+            filename = obj.SaveMemorySpace(obj.name);
+        end
+        
+                        
     end
 
     
@@ -619,63 +656,6 @@ classdef TreeNodeClass < handle
     % flags for quickly calculating required memory and color table
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Static)
-                
-        % --------------------------------------------------------------------------------
-        function out = RunsProcFlags(arg1, arg2, arg3, arg4)
-            persistent runs;
-            if nargin==3
-                [iG, iS, iR] = size(runs);
-                if arg1>iG
-                    iG = arg1;
-                end
-                if arg2>iS
-                    iS = arg2;
-                end
-                if arg3>iR
-                    iR = arg3;
-                end
-                runs = zeros(iG, iS, iR);
-            elseif nargin==4
-                runs(arg1, arg2, arg3) = arg4;
-            end
-            out = runs;
-        end
-
-        
-        % --------------------------------------------------------------------------------
-        function out = SubjsProcFlags(arg1, arg2, arg3)
-            persistent subjs;
-            if nargin==2
-                [iG, iS] = size(subjs);
-                if arg1>iG
-                    iG = arg1;
-                end
-                if arg2>iS
-                    iS = arg2;
-                end
-                subjs = zeros(iG, iS);
-            elseif nargin==3
-                subjs(arg1, arg2) = arg3;
-            end
-            out = subjs;
-        end
-
-        
-        % --------------------------------------------------------------------------------
-        function out = GroupsProcFlags(arg1, arg2)
-            persistent groups;
-            if nargin==1
-                iG = size(groups,1);
-                if arg1>iG
-                    iG = arg1;
-                end
-                groups = zeros(1, iG);
-            elseif nargin==2
-                groups(arg1) = arg2;
-            end
-            out = groups;
-        end
-   
                 
         % ----------------------------------------------------------------------------------
         function out = CondColTbl(arg)
@@ -690,6 +670,34 @@ classdef TreeNodeClass < handle
             tbl = distinguishable_colors(20);
         end
    
+        
+        % --------------------------------------------------------------------------------
+        function out = SaveMemorySpace(arg)
+            persistent v;
+            out = [];
+                        
+            % If first time we call SaveMemorySpace is with a filename argument, that is arg is a char string 
+            % rather than a numeric, then we want to set v to true to make sure not to load everything into memory 
+            % by default. Later in the Homer3 initalization if we detect our data set is small, we can reverse that 
+            % and set the SaveMemorySpace to false to improve responce time. 
+            if isempty(v)
+                v = true;
+            end
+            
+            if islogical(arg) || isnumeric(arg)
+                v = arg;
+                out = v;
+            elseif ischar(arg)                
+                if v
+                    out = arg;
+                else
+                    out = '';
+                end
+            end
+        end
+   
+                
     end
     
 end
+

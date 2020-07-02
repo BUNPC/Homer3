@@ -14,12 +14,10 @@ logger = Logger('Homer3');
 
 logger.CurrTime();
 
-if nargin==0
+if ~exist('groupDirs','var') || isempty(groupDirs)
     groupDirs = convertToStandardPath(pwd);
 end
-if nargin<2
-    inputFileFormat='snirf';
-elseif nargin==1 && isempty(inputFileFormat)
+if ~exist('inputFileFormat','var') || isempty(inputFileFormat)
     inputFileFormat='snirf';
 end
 cfg = ConfigFileClass();

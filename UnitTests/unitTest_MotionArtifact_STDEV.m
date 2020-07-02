@@ -105,5 +105,7 @@ end
 logger.Write('\n');
 logger.Close();
 
+dataTree.groups(1).Reset();
+
 cd(currpath);
 

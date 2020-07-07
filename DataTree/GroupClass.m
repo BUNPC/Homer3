@@ -410,7 +410,8 @@ classdef GroupClass < TreeNodeClass
             obj.outputVars.dcAvgStdSubjs{s.iSubj}  = s.procStream.output.GetVar('dcAvgStd');
             obj.outputVars.tHRFSubjs{s.iSubj}      = s.procStream.output.GetTHRF();
             obj.outputVars.nTrialsSubjs{s.iSubj}   = s.procStream.output.GetVar('nTrials');
-            obj.outputVars.SDSubjs{s.iSubj}        = s.GetMeasList();
+            
+            s.FreeMemory();
         end
             
             
@@ -452,7 +453,7 @@ classdef GroupClass < TreeNodeClass
             obj.procStream.input.LoadVars(obj.outputVars);
 
             % Calculate processing stream
-            obj.procStream.Calc();
+            obj.procStream.Calc(obj.GetFilename);
 
             if obj.DEBUG
                 obj.logger.Write(sprintf('Completed processing stream for group %d\n', obj.iGroup));
@@ -464,9 +465,6 @@ classdef GroupClass < TreeNodeClass
                 obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
             end
             
-            % Mark this Group as having processed data thereby taking up
-            % memory
-            obj.GroupsProcFlags(obj.iGroup, 1);
         end
         
         
@@ -492,13 +490,12 @@ classdef GroupClass < TreeNodeClass
             if ~exist('option','var')
                 option = 'down';
             end
-            obj.procStream.output = ProcResultClass();            
+            obj.procStream.output.Reset(obj.GetFilename);
             if strcmp(option, 'down')
                 for jj=1:length(obj.subjs)
                     obj.subjs(jj).Reset();
                 end
             end
-            obj.GroupsProcFlags(obj.iGroup, 0);
         end
         
         
@@ -526,8 +523,47 @@ classdef GroupClass < TreeNodeClass
     methods
         
         % ----------------------------------------------------------------------------------
-        function Load(obj)
+        function nbytes = MemoryRequired(obj)
+            nbytes = 0;
+            for ii = 1:length(obj.subjs)
+                nbytes = nbytes + obj.subjs(ii).MemoryRequired();
+            end
+            nbytes = nbytes + obj.procStream.MemoryRequired();
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function LoadSubBranch(obj)
             if isempty(obj)
+                return;
+            end
+            obj.subjs(1).LoadSubBranch()
+        end            
+                        
+            
+        % ----------------------------------------------------------------------------------
+        function FreeMemorySubBranch(obj)
+            if isempty(obj)
+                return;
+            end
+            obj.subjs(1).FreeMemorySubBranch()
+        end            
+            
+        
+        % ----------------------------------------------------------------------------------
+        function Load(obj, options)
+            if isempty(obj)
+                return;
+            end
+            if ~exist('options','var')
+                options = '';
+            end
+            
+            % If this group has been loaded, then no need to go through the whole Load function. Instead 
+            % default to the generic TreeNodeClass.Load method.
+            if isempty(findstr('reload', options)) && ~obj.procStream.IsEmpty()
+                obj.Load@TreeNodeClass();
                 return;
             end
             

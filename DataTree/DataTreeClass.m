@@ -9,7 +9,8 @@ classdef DataTreeClass <  handle
         reg
         config
         logger
-        warningflag        
+        warningflag
+        dataStorageScheme
     end
     
     methods
@@ -18,13 +19,15 @@ classdef DataTreeClass <  handle
         function obj = DataTreeClass(groupDirs, fmt, procStreamCfgFile)
             global logger
             
-            obj.groups        = GroupClass().empty();
-            obj.currElem      = TreeNodeClass().empty();
-            obj.reg           = RegistriesClass().empty();
-            obj.config        = ConfigFileClass().empty();
-            obj.dirnameGroup  = '';
-            obj.logger        = InitLogger(logger, 'DataTree');
-            
+            obj.groups              = GroupClass().empty();
+            obj.currElem            = TreeNodeClass().empty();
+            obj.reg                 = RegistriesClass().empty();
+            obj.config              = ConfigFileClass().empty();
+            obj.dirnameGroup        = '';
+            obj.logger              = InitLogger(logger, 'DataTree');
+                        
+            cfg = ConfigFileClass();
+            obj.dataStorageScheme = cfg.GetValue('Data Storage Scheme');
             
             %%%% Parse args
             
@@ -89,7 +92,7 @@ classdef DataTreeClass <  handle
             
             % Find index of another file format to try
             for ii = 1:length(supportedFormats)
-                if ~isempty(findstr(dataInit.type, supportedFormats{ii,1}))
+                if ~isempty(findstr(dataInit.type, supportedFormats{ii,1})) %#ok<FSTR>
                    k = ii;
                    break;
                 end
@@ -177,7 +180,7 @@ classdef DataTreeClass <  handle
                     end
                     obj.files = dataInit.files;
                     
-                    obj.LoadGroup(procStreamCfgFile);
+                    obj.LoadGroups(procStreamCfgFile);
                     if length(obj.groups) < iGnew
                         if obj.FoundDataFilesInOtherFormat(dataInit) 
                             continue;
@@ -191,13 +194,42 @@ classdef DataTreeClass <  handle
             
         end
         
+        
+                
+        % ---------------------------------------------------------------
+        function SetDataStorageScheme(obj, iG)
+            if length(obj.groups) < iG
+                return
+            end
+
+            % Estimate memory requirement based on number of acquired files and their
+            % average size
+            % obj.logger.Write(sprintf('Memory required for data tree: %0.1f MB\n', obj.MemoryRequired() / 1e6));            
+            if strcmp(obj.dataStorageScheme, 'disk')
+                onoff = true;
+            elseif strcmp(obj.dataStorageScheme, 'memory') || strcmpi(obj.dataStorageScheme, 'ram')
+                onoff = false;
+            else
+                onoff = false;
+            end
+            obj.groups(iG).SaveMemorySpace(onoff);
+            
+            % If storage scheme is to store everything in memory, then
+            % reload data set this time with the SavememorySpace variable 
+            % turned off.
+            if onoff == false
+                obj.groups(iG).Load('reload');
+                obj.groups(iG).SetConditions();
+            end
+        end 
+        
           
         % ---------------------------------------------------------------
-        function LoadGroup(obj, procStreamCfgFile)
+        function LoadGroups(obj, procStreamCfgFile)
             if ~exist('procStreamCfgFile','var')
                 procStreamCfgFile = '';
             end
-            
+                       
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Load acquisition data from the data files
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -210,34 +242,34 @@ classdef DataTreeClass <  handle
             obj.ErrorCheckLoadedFiles();
 
             tic;            
-            for ii=1:length(obj.groups)
+            for iG = 1:length(obj.groups)
+                
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Load derived or post-acquisition data from a file if it
                 % exists
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                obj.groups(ii).Load();            
+                obj.groups(iG).Load();
             
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Initialize procStream for all tree nodes
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                obj.groups(ii).InitProcStream(procStreamCfgFile);
+                obj.groups(iG).InitProcStream(procStreamCfgFile);
                 
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Generate the stimulus conditions for the group tree
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                obj.groups(ii).SetConditions();                
+                obj.groups(iG).SetConditions();
+
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % Estimate amount of memory required and set the
+                % data storage scheme
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                obj.SetDataStorageScheme(iG);
+                
             end
+            
             obj.logger.Write(sprintf('Loaded processing stream results in %0.1f seconds\n', toc));
             
-            
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Find the amount of memory the whole group tree requires
-            % at the run level. If group runs take up more than half a
-            % GB then do not save dc and dod time courses and recalculate
-            % dc and dod for each new current element (currElem) on the
-            % fly. This should be a menu option in future releases
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % obj.logger.Write(sprintf('Memory required for data tree: %0.1f MB\n', obj.MemoryRequired() / 1e6));
         end
         
         
@@ -273,7 +305,7 @@ classdef DataTreeClass <  handle
                 % (We do not reset current subject or group because they can contain multiple 
                 % nodes and they cannot be empty once they've been initialized once whereas run 
                 % can be if it fails to load a data file. 
-                if ~runCurr.IsEmpty()
+                if ~runCurr.Error()
                     obj.Add(groupCurr, subjCurr, runCurr);
                     runCurr = RunClass().empty();
                 end
@@ -336,6 +368,15 @@ classdef DataTreeClass <  handle
         
         
         % ----------------------------------------------------------
+        function LoadCurrElem(obj)
+            if isempty(obj.groups)
+                return;
+            end
+            obj.currElem.Load()
+        end
+
+
+        % ----------------------------------------------------------
         function SetCurrElem(obj, iGroup, iSubj, iRun)
             if isempty(obj.groups)
                 return;
@@ -351,6 +392,14 @@ classdef DataTreeClass <  handle
             elseif nargin==3
                 iRun  = 0;
             end
+
+            if obj.currElem.IsSame(iGroup, iSubj, iRun)
+                return;
+            end
+            
+            % Free up memory of current element before reassigning it to
+            % another node. 
+            obj.currElem.FreeMemory();
             
             if iSubj==0 && iRun==0
                 obj.currElem = obj.groups(iGroup);
@@ -377,77 +426,26 @@ classdef DataTreeClass <  handle
 
 
         % ----------------------------------------------------------------------------------
-        function nbytes = MemoryRequired(obj, option)
-            if ~exist('option','var')
-                option = 'memory';
-            end
+        function nbytes = MemoryRequired(obj)
+            nbytes = 0;
             if isempty(obj)
                 return;
+            end                        
+            for ii = 1:length(obj.groups)
+                nbytes = nbytes + obj.groups(ii).MemoryRequired();
             end
-            
-            nbytes = [0,0,0];
-            kg = find(obj.groups.GroupsProcFlags==1);
-            ks = find(obj.groups.SubjsProcFlags==1);
-            kr = find(obj.groups.RunsProcFlags==1);
-            
-            % We assume for practcal purposes that unprocessed nodes take up zero bytes 
-            if ~isempty(kg)
-                nbytes(1) = length(kg) * obj.groups(kg(1)).MemoryRequired();
-            end
-            if ~isempty(ks)
-                [iG,iS] = ind2sub(size(obj.groups.SubjsProcFlags), ks);
-                nbytes(2) = length(ks) * obj.groups(iG(1)).subjs(iS(1)).MemoryRequired();
-            end
-            if ~isempty(kr)
-                [iG,iS,iR] = ind2sub(size(obj.groups.RunsProcFlags), kr);
-                nbytes(3) = length(kr) * obj.groups(iG(1)).subjs(iS(1)).runs(iR(1)).MemoryRequired(option);
-            end
-                        
-            % Add up the bytes. 
-            nbytes = sum(nbytes);
         end
+        
         
         
         % ----------------------------------------------------------------------------------
-        function diskspaceToSpare = CheckAvailableDiskSpace(obj, hwait)            
-            if ishandle(hwait)
-                obj.logger.Write(sprintf('Estimating disk space required to save processing results ...\n'), obj.logger.ProgressBar(), hwait);
-            end
-            
-            % Calculate the amount of disk space already used by groupResults. Add that to free disk space because
-            % groupResults will be overwritten 
-            freeDiskSpace = 0;
-            for ii = 1:length(obj.groups)
-                freeDiskSpace = freeDiskSpace + GetFileSize([obj.groups(ii).pathOutput, 'groupResults.mat']);
-            end
-            
-            memRequired = obj.MemoryRequired('disk');
-            freeDiskSpace = getFreeDiskSpace() + freeDiskSpace;
-            
-            diskspaceToSpare = (freeDiskSpace - memRequired);   % Disk space to spare in megabytes
-            diskspacePercentRemaining = 100 * diskspaceToSpare/memRequired;
-            msg = {};
-            obj.logger.Write(sprintf('CheckAvailableDiskSpace:    disk space available = %0.1f MB,    required disk space estimate = %0.1f MB\n', freeDiskSpace/1e6, memRequired/1e6));
-            if diskspaceToSpare < 0
-                msg{1} = sprintf('ERROR: Cannot save processing results requiring ~%0.1f MB of disk space on current drive with only %0.1f MB of free space available.\n', ...
-                                  memRequired/1e6, freeDiskSpace/1e6);
-                obj.warningflag = 0;
-            elseif diskspacePercentRemaining < 200                
-                msg{1} = sprintf('WARNING: Available disk space on the current drive is low (%0.1f MB). This may cause problems saving processing results in the future.', ...
-                                  freeDiskSpace/1e6);
-                msg{2} = sprintf('Consider moving your data set to a drive with more free space\n');
-            end            
-            if ~isempty(msg)
-                if ~obj.warningflag
-                    MessageBox([msg{:}]);
-                    obj.warningflag = 1;
-                end
-                obj.logger.Write([msg{:}]);
-            end            
+        function diskspaceToSpare = CheckAvailableDiskSpace(obj, hwait)
+            diskspaceToSpare = getFreeDiskSpace();   % Disk space to spare in megabytes
+            %diskspaceToSpare = (getFreeDiskSpace() - obj.MemoryRequired());   % Disk space to spare in megabytes
         end
+
         
         
-            
         % ----------------------------------------------------------
         function Save(obj, hwait)
             if ~exist('hwait','var')
@@ -457,7 +455,7 @@ classdef DataTreeClass <  handle
             % Check that there is anough disk space. NOTE: for now we
             % assume that all groups are on the same drive. This should be 
             % changed but for now we simplify. 
-            if obj.CheckAvailableDiskSpace(hwait) < 0
+            if obj.CheckAvailableDiskSpace(hwait) <= 0
                 return;
             end
             

@@ -46,12 +46,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             %
             
             % Initialize Nirs public properties
-            obj.SD        = struct([]);
-            obj.t         = [];
-            obj.s         = [];
-            obj.d         = [];
-            obj.aux       = [];
-            obj.CondNames = {};
+            obj.Initialize();
 
             % Set base class properties not part of NIRS format 
             obj.filename  = '';
@@ -72,6 +67,17 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 return;
             end
             obj.Load(filename);
+        end
+        
+        
+        % -------------------------------------------------------
+        function Initialize(obj)
+            obj.SD        = struct([]);
+            obj.t         = [];
+            obj.s         = [];
+            obj.d         = [];
+            obj.aux       = [];
+            obj.CondNames = {};
         end
         
         
@@ -98,36 +104,67 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             else
                 fname = obj.filename;
             end
-            if isempty(fname)
-               err=-1;
+            if exist(fname, 'file') ~= 2
+               err = -1;
                return;
             end
+            
+            % Don't reload if not empty
+            if ~obj.IsEmpty()
+               return;
+            end                        
                         
             warning('off', 'MATLAB:load:variableNotFound');
             fdata = load(fname,'-mat', 'SD','t','d','s','aux','CondNames');
+            
+            % Mandatory fields
             if isproperty(fdata,'d')
                 obj.d = fdata.d;
+                if isempty(obj.d)
+                    err = -2;
+                end
+            else
+                err = -2;
             end
             if isproperty(fdata,'t')
                 obj.t = fdata.t;
+                if ~isempty(obj.t)
+                    obj.errmargin = min(diff(obj.t))/10;
+                else
+                    err = -3;                
+                end
+            else
+                err = -3;
             end
             if isproperty(fdata,'SD')
                 obj.SetSD(fdata.SD);
+                if isempty(obj.SD)
+                    err = -4;
+                end
+            else
+                err = -4;
             end
+            
+            
+            % Optional fields
             if isproperty(fdata,'s')
                 obj.s = fdata.s;
+            else
+                obj.s = [];
             end
             if isproperty(fdata,'aux')
                 obj.aux = fdata.aux;
+            else
+                obj.aux = [];
             end
             if isproperty(fdata,'CondNames')
                 obj.CondNames = fdata.CondNames;
             else
                 obj.InitCondNames();
             end
-            if ~isempty(obj.t)
-                obj.errmargin = min(diff(obj.t))/10;
-            end
+            
+            % Always sort stimulus conditions and associated stims 
+            % to have a predictable order for display
             obj.SortStims();
         end
         

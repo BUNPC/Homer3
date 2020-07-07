@@ -1,6 +1,5 @@
-function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_RunAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
 % SYNTAX:
-% [yAvg, yAvgStd, tHRF, nTrials] = hmrS_RunAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
+% [yAvg, yAvgStd, tHRF, nTrials] = hmrS_RunAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, mlActRuns, nTrialsRuns)
 %
 % UI NAME:
 % Run_Average
@@ -12,7 +11,7 @@ function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_RunAvg_Nirs(yAvgRuns, yAvgStdRuns
 % yAvgRuns:
 % yAvgStdRuns:
 % tHRFRuns: 
-% SDRuns:
+% mlActRuns:
 % nTrialsRuns:
 % trange: defines the range for the block average
 % thresh: Threshold for excluding channels if it's data deviates too much
@@ -25,15 +24,18 @@ function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_RunAvg_Nirs(yAvgRuns, yAvgStdRuns
 % nTrials: the number of trials averaged for each condition across all runs
 %
 % USAGE OPTIONS:
-% Run_Average_on_Concentration_Data:  [dcAvg, dcAvgStd, tHRF, nTrials]    = hmrS_RunAvg_Nirs(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
-% Run_Average_on_Delta_OD_Data:       [dodAvg, dodAvgStd, tHRF, nTrials]  = hmrS_RunAvg_Nirs(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, tHRFRuns, SDRuns, nTrialsRuns)
+% Run_Average_on_Concentration_Data:  [dcAvg, dcAvgStd, tHRF, nTrials]    = hmrS_RunAvg_Nirs(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, tHRFRuns, mlActRuns, nTrialsRuns)
+% Run_Average_on_Delta_OD_Data:       [dodAvg, dodAvgStd, tHRF, nTrials]  = hmrS_RunAvg_Nirs(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, tHRFRuns, mlActRuns, nTrialsRuns)
 %
+
+function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_RunAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, mlActRuns, nTrialsRuns)
 
 yAvg = [];
 yAvgStd = [];
 tHRF = [];
 nTrials_tot = [];
 grp1=[];
+
 for iRun = 1:length(yAvgRuns)
     
     yAvg      = yAvgRuns{iRun};
@@ -41,7 +43,7 @@ for iRun = 1:length(yAvgRuns)
     ySum2     = ySum2Runs{iRun};
     tHRF      = tHRFRuns{iRun};
     nTrials   = nTrialsRuns{iRun};
-    SD        = SDRuns{iRun};    
+    mlAct     = mlActRuns{iRun};
     
     if isempty(yAvg)
         break;
@@ -51,6 +53,10 @@ for iRun = 1:length(yAvgRuns)
     
     if ndims(yAvg) == (3-(nCond<2))
         
+        if isempty(mlAct)
+            mlAct = 1:size(yAvg,2);
+        end
+        
         % grab tHRF to make common for group average
         if iRun==1
             grp1 = zeros(size(yAvg,1), size(yAvg,2), nCond);
@@ -58,19 +64,18 @@ for iRun = 1:length(yAvgRuns)
             nTrials_tot = zeros(size(yAvg,2), nCond);
         end
         
-        lstChInc = find(SD.MeasListActAuto==1);
         for iC = 1:nCond
             nT = nTrials(iC);            
             if nT>0
                 if iRun==1
-                    grp1(:,lstChInc,iC) = yAvg(:,lstChInc,iC) * nT;
-                    grp1Sum2(:,lstChInc,iC) = ySum2(:,lstChInc,iC);
-                    nTrials_tot(lstChInc,iC) = nT;
+                    grp1(:,mlAct,iC) = yAvg(:,mlAct,iC) * nT;
+                    grp1Sum2(:,mlAct,iC) = ySum2(:,mlAct,iC);
+                    nTrials_tot(mlAct,iC) = nT;
                 else
-                    for iCh=1:length(lstChInc) %size(yAvg,2)
-                        grp1(:,lstChInc(iCh),iC) = grp1(:,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,lstChInc(iCh),iC),tHRF(:)) * nT;
-                        grp1Sum2(:,lstChInc(iCh),iC) = grp1Sum2(:,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,lstChInc(iCh),iC),tHRF(:));
-                        nTrials_tot(lstChInc(iCh),iC) = nTrials_tot(lstChInc(iCh),iC) + nT;
+                    for iCh=1:length(mlAct) %size(yAvg,2)
+                        grp1(:,mlAct(iCh),iC) = grp1(:,mlAct(iCh),iC) + interp1(tHRF,yAvg(:,mlAct(iCh),iC),tHRF(:)) * nT;
+                        grp1Sum2(:,mlAct(iCh),iC) = grp1Sum2(:,mlAct(iCh),iC) + interp1(tHRF,ySum2(:,mlAct(iCh),iC),tHRF(:));
+                        nTrials_tot(mlAct(iCh),iC) = nTrials_tot(mlAct(iCh),iC) + nT;
                     end
                 end
             end
@@ -97,6 +102,10 @@ for iRun = 1:length(yAvgRuns)
         
     elseif ndims(yAvg) == (4-(nCond<2))
         
+        if isempty(mlAct)
+            mlAct = 1:size(yAvg,3);
+        end
+        
         % grab tHRF to make common for group average
         if iRun==1
             grp1 = zeros(size(yAvg,1), size(yAvg,2), size(yAvg,3), nCond);
@@ -104,22 +113,20 @@ for iRun = 1:length(yAvgRuns)
             nTrials_tot = zeros(size(yAvg,3), nCond);
         end
         
-        lst1 = find(SD.MeasList(:,4)==1);
-        lstChInc = find(SD.MeasListActAuto(lst1)==1);
         for iC = 1:1:nCond
             nT = nTrials(iC);
             if nT>0
                 if iRun==1
-                    grp1(:,:,lstChInc,iC) = yAvg(:,:,lstChInc,iC) * nT;
-                    grp1Sum2(:,:,lstChInc,iC) = ySum2(:,:,lstChInc,iC);
-                    nTrials_tot(lstChInc,iC) = nT;
+                    grp1(:,:,mlAct,iC) = yAvg(:,:,mlAct,iC) * nT;
+                    grp1Sum2(:,:,mlAct,iC) = ySum2(:,:,mlAct,iC);
+                    nTrials_tot(mlAct,iC) = nT;
                 else
-                    for iCh=1:length(lstChInc) %size(yAvg,3)
+                    for iCh=1:length(mlAct) %size(yAvg,3)
                         for iHb=1:size(yAvg,2)
-                            grp1(:,iHb,lstChInc(iCh),iC) = grp1(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,iHb,lstChInc(iCh),iC),tHRF(:)) * nT;
-                            grp1Sum2(:,iHb,lstChInc(iCh),iC) = grp1Sum2(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,ySum2(:,iHb,lstChInc(iCh),iC),tHRF(:));
+                            grp1(:,iHb,mlAct(iCh),iC) = grp1(:,iHb,mlAct(iCh),iC) + interp1(tHRF,yAvg(:,iHb,mlAct(iCh),iC),tHRF(:)) * nT;
+                            grp1Sum2(:,iHb,mlAct(iCh),iC) = grp1Sum2(:,iHb,mlAct(iCh),iC) + interp1(tHRF,ySum2(:,iHb,mlAct(iCh),iC),tHRF(:));
                         end
-                        nTrials_tot(lstChInc(iCh),iC) = nTrials_tot(lstChInc(iCh),iC) + nT;
+                        nTrials_tot(mlAct(iCh),iC) = nTrials_tot(mlAct(iCh),iC) + nT;
                     end
                 end
             end

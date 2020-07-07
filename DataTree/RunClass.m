@@ -43,39 +43,90 @@ classdef RunClass < TreeNodeClass
                 obj.iRun   = varargin{4};
             end
             
-            obj.Load(dirname);
-            if obj.acquired.IsEmpty()
+            obj.LoadAcquiredData(dirname);
+            if obj.acquired.Error()
                 obj = RunClass.empty();
                 return;
             end
-            obj.procStream = ProcStreamClass(obj.acquired);
+            obj.procStream = ProcStreamClass(obj.acquired);                        
             obj.InitTincMan();
             if isa(varargin{1}, 'FileClass')
                 varargin{1}.Loaded();
             end
+            
+            % If obj.GetFilename returns a non-empty filename that means we
+            % are using disk space and the distributed data storage scheme
+            % to store processed and acquired data. Which means we don't
+            % free memory for acquired data.
+            obj.acquired.FreeMemory(obj.GetFilename);            
         end
 
         
             
         % ----------------------------------------------------------------------------------
-        function Load(obj, dirname)
+        function b = Error(obj)
+            if isempty(obj)
+                b = -1;
+                return;
+            end
+            b = obj.acquired.Error();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Load(obj, dirname)            
+            if nargin==1 || isempty(dirname)
+                dirname = convertToStandardPath('.');
+            end
+            obj.LoadDerivedData();
+            obj.LoadAcquiredData(dirname);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function LoadDerivedData(obj)
+            if isempty(obj)
+                return;
+            end
+            obj.procStream.Load(obj.GetFilename);
+        end        
+        
+
+                
+        % ----------------------------------------------------------------------------------
+        function LoadAcquiredData(obj, dirname)
             if isempty(obj)
                 return;
             end
             if nargin==1 || isempty(dirname)
                 dirname = convertToStandardPath('.');
             end
-            
             if obj.IsNirs()
                 obj.acquired = NirsClass([dirname, obj.name]);
             else
                 obj.acquired = SnirfClass([dirname, obj.name]);
-            end            
-            if obj.acquired.IsEmpty()
+            end
+            if obj.acquired.Error() > 0
                 fprintf('     **** Warning: %s failed to load.\n', obj.name);
+                return;
             else
                 %fprintf('    Loaded file %s to run.\n', obj.name);                
+            end                
+        end        
+        
+
+                
+        % ----------------------------------------------------------------------------------
+        function FreeMemory(obj)
+            if isempty(obj)
+                return;
             end
+            
+            % Unload derived data 
+            obj.procStream.FreeMemory(obj.GetFilename);
+
+            % Unload acquired data 
+            obj.acquired.FreeMemory(obj.GetFilename);
         end
         
                 
@@ -83,8 +134,7 @@ classdef RunClass < TreeNodeClass
         % Deletes derived data in procResult
         % ----------------------------------------------------------------------------------
         function Reset(obj)
-            obj.procStream.output = ProcResultClass();
-            obj.RunsProcFlags(obj.iGroup, obj.iSubj, obj.iRun, 0);
+            obj.procStream.output.Reset(obj.GetFilename);
         end
         
         
@@ -174,6 +224,9 @@ classdef RunClass < TreeNodeClass
             if ~isempty(obj.updateParentGui)
                 obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
             end
+
+            % Load acquired data
+            obj.acquired.Load();
             
             if strcmpi(options, 'overwrite')
                 % Recalculating result means deleting old results, if
@@ -203,20 +256,15 @@ classdef RunClass < TreeNodeClass
             obj.procStream.input.LoadVars(vars);
 
             % Calculate processing stream
-            obj.procStream.Calc();
+            obj.procStream.Calc(obj.GetFilename);
 
             if obj.DEBUG
                 fprintf('Completed processing stream for group %d, subject %d, run %d\n', obj.iGroup, obj.iSubj, obj.iRun);
                 fprintf('\n')
-            end
-            
-            % Mark this run as having processed data thereby taking up
-            % memory
-            obj.RunsProcFlags(obj.iGroup, obj.iSubj, obj.iRun, 1);
+            end            
         end
 
 
-        
         % ----------------------------------------------------------------------------------
         function Print(obj, indent)
             if ~exist('indent', 'var')
@@ -225,7 +273,7 @@ classdef RunClass < TreeNodeClass
             fprintf('%sRun %d:\n', blanks(indent), obj.iRun);
             fprintf('%sCondNames: %s\n', blanks(indent+4), cell2str(obj.CondNames));
             obj.procStream.input.Print(indent+4);
-            obj.procStream.output.Print(indent+4);            
+            obj.procStream.output.Print(indent+4);
         end
         
     end    % Public methods

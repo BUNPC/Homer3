@@ -84,21 +84,6 @@ menuItemReset_Callback([]);
 menuCopyCurrentPlot_Callback([]);
 uipanelProcessingType_SelectionChangeFcn([]);
 
-
-% ---------------------------------------------------------------------
-function MainGUI_EnableDisableGUI(handles, val)
-
-set(handles.listboxGroupTree, 'enable', val);
-set(handles.radiobuttonProcTypeGroup, 'enable', val);
-set(handles.radiobuttonProcTypeSubj, 'enable', val);
-set(handles.radiobuttonProcTypeRun, 'enable', val);
-set(handles.radiobuttonPlotRaw, 'enable', val);
-set(handles.radiobuttonPlotOD,  'enable', val);
-set(handles.radiobuttonPlotConc, 'enable', val);
-set(handles.checkboxPlotHRF, 'enable', val);
-set(handles.textStatus, 'enable', val);
-
-
 % --------------------------------------------------------------------
 function eventdata = MainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global maingui
@@ -1527,3 +1512,44 @@ function SettingsMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to SettingsMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function menuItemPowerSpectrum_Callback(hObject, eventdata, handles)
+% hObject    handle to menuItemPowerSpectrum (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global maingui;
+iCh = maingui.axesSDG.iCh;
+n_channels = length(iCh);
+if n_channels > 0
+    iSrcDet = maingui.axesSDG.iSrcDet;
+    colors = maingui.axesSDG.linecolor;
+    d = maingui.dataTree.currElem.acquired.data.dataTimeSeries;
+    sf = maingui.dataTree.currElem.acquired.data.time(2) - maingui.dataTree.currElem.acquired.data.time(1);
+    fs = 1/sf;
+    try
+       close(maingui.spectrumFigureHandle);
+    catch
+    end
+    maingui.spectrumFigureHandle = figure('NumberTitle', 'off', 'Name', 'PSD of selected channels');
+    n = 3;
+    m = ceil(n_channels / n);
+    for i = 1:n_channels
+        % 100 sec window with 50% overlap
+        window = floor(100 / sf);
+        overlap = window / 2;
+        bins = 1024;
+        [pxx,f] = pwelch(d(:,iCh(i)), window, overlap, bins, fs);
+        subplot(m,n,i);
+        plot(f, 10*log10(pxx), 'Color', colors(i,:));
+        title([num2str(iSrcDet(i,1)), ' \rightarrow ', num2str(iSrcDet(i,2))]);
+        xlim([0,fs/2]);
+        xlabel(sprintf('Frequency (Hz)\n'));
+        ylabel(sprintf('PSD (dB)'));
+    end
+else
+    errordlg('Cannot calculate power spectra with no channels selected.', 'No channels selected'); 
+end
+
+

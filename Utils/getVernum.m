@@ -1,4 +1,4 @@
-edfunction vrnnum = getVernum()
+function vrnnum = getVernum()
 
 vrnnum{1} = '1';   % Major version #
 vrnnum{2} = '22';  % Major sub-version #

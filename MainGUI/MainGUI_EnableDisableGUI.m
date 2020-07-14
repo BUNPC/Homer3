@@ -1,5 +1,6 @@
 function MainGUI_EnableDisableGUI(val)
     global maingui;
+    try
     set(maingui.handles.listboxGroupTree, 'enable', val);
     set(maingui.handles.radiobuttonProcTypeGroup, 'enable', val);
     set(maingui.handles.radiobuttonProcTypeSubj, 'enable', val);
@@ -36,4 +37,7 @@ function MainGUI_EnableDisableGUI(val)
     set(maingui.handles.menuItemExport, 'enable', val);
     set(maingui.handles.menuItemReset, 'enable', val);
     set(maingui.handles.menuItemResetGroupFolder, 'enable', val)
+    catch
+       ; 
+    end
 end

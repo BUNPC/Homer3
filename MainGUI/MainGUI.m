@@ -84,6 +84,48 @@ menuItemReset_Callback([]);
 menuCopyCurrentPlot_Callback([]);
 uipanelProcessingType_SelectionChangeFcn([]);
 
+
+% ---------------------------------------------------------------------
+function MainGUI_EnableDisableGUI(handles, val)
+
+    set(maingui.handles.listboxGroupTree, 'enable', val);
+    set(maingui.handles.radiobuttonProcTypeGroup, 'enable', val);
+    set(maingui.handles.radiobuttonProcTypeSubj, 'enable', val);
+    set(maingui.handles.radiobuttonProcTypeRun, 'enable', val);
+    set(maingui.handles.radiobuttonPlotRaw, 'enable', val);
+    set(maingui.handles.radiobuttonPlotOD,  'enable', val);
+    set(maingui.handles.radiobuttonPlotConc, 'enable', val);
+    set(maingui.handles.checkboxPlotHRF, 'enable', val);
+    set(maingui.handles.textStatus, 'enable', val);
+    set(maingui.handles.listboxPlotConc, 'enable', val);
+    % Plot window panel
+    set(maingui.handles.pushbuttonPanLeft, 'enable', val);
+    set(maingui.handles.pushbuttonPanRight, 'enable', val);
+    set(maingui.handles.pushbuttonPanLeft, 'enable', val);
+    set(maingui.handles.pushbuttonResetView, 'enable', val);
+    set(maingui.handles.pushbuttonPanLeft, 'enable', val);
+    set(maingui.handles.checkboxFixRangeX, 'enable', val);
+    set(maingui.handles.editFixRangeX, 'enable', val);
+    set(maingui.handles.checkboxFixRangeY, 'enable', val);
+    set(maingui.handles.editFixRangeY, 'enable', val);
+    % Motion artifact panel
+    set(maingui.handles.checkboxShowExcludedTimeManual, 'enable', val);
+    set(maingui.handles.checkboxShowExcludedTimeAuto, 'enable', val);
+    set(maingui.handles.checkboxShowExcludedTimeAutoByChannel, 'enable', val);
+    set(maingui.handles.checkboxExcludeTime, 'enable', val);
+    % Control
+    set(maingui.handles.pushbuttonCalcProcStream, 'enable', val);
+    set(maingui.handles.pushbuttonProcStreamOptionsEdit, 'enable', val);
+    set(maingui.handles.checkboxApplyProcStreamEditToAll, 'enable', val);
+    % Menu
+    set(maingui.handles.ToolsMenu, 'enable', val);
+    set(maingui.handles.ViewMenu, 'enable', val);
+    set(maingui.handles.menuItemSaveGroup, 'enable', val);
+    set(maingui.handles.menuItemExport, 'enable', val);
+    set(maingui.handles.menuItemReset, 'enable', val);
+    set(maingui.handles.menuItemResetGroupFolder, 'enable', val)
+
+
 % --------------------------------------------------------------------
 function eventdata = MainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global maingui
@@ -130,7 +172,7 @@ maingui.version = V;
 maingui.childguis = ChildGuiClass().empty();
 
 % Disable and reset all window gui objects
-MainGUI_EnableDisableGUI('off');
+MainGUI_EnableDisableGUI(handles,'off');
 MainGUI_Init(handles, {'zbuffer'});
 
 maingui.childguis(1) = ChildGuiClass('ProcStreamEditGUI');
@@ -145,9 +187,6 @@ if maingui.dataTree.IsEmpty()
     return;
 end
 InitGuiControls(handles);
-
-% If data set has no errors enable window gui objects
-MainGUI_EnableDisableGUI('on');
 
 % Display data from currently selected processing element
 DisplayGroupTree(handles);
@@ -164,6 +203,8 @@ set(hObject,'name', title);
 maingui.logger.InitChapters()
 maingui.logger.CurrTime(sprintf('MainGUI: Startup time - %0.1f seconds\n', toc(startuptimer)));
 
+% If data set has no errors enable window gui objects
+MainGUI_EnableDisableGUI(handles,'on');
 
 
 % --------------------------------------------------------------------
@@ -367,20 +408,14 @@ if ~ishandles(hObject)
     return;
 end
 
-            
-MainGUI_EnableDisableGUI('off');
-
+MainGUI_EnableDisableGUI(handles,'off');
 % Save original selection in listboxGroupTree because it'll change during auto processing 
 val0 = get(handles.listboxGroupTree, 'value');
 
 % Set the display status to pending. In order to avoid redisplaying 
 % in a single callback thread in functions called from here which 
 % also call DisplayData
-try
-    maingui.dataTree.CalcCurrElem();
-catch
-    MainGUI_EnableDisableGUI('on');
-end
+maingui.dataTree.CalcCurrElem();
 
 % Restore original selection listboxGroupTree
 set(handles.listboxGroupTree, 'value',val0);
@@ -389,7 +424,7 @@ h = waitbar(0,'Auto-saving processing results. Please wait ...');
 maingui.dataTree.Save(h);
 close(h);
 Display(handles, hObject);
-MainGUI_EnableDisableGUI('on');
+MainGUI_EnableDisableGUI(handles,'off');
 
 
 
@@ -1512,44 +1547,3 @@ function SettingsMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to SettingsMenu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-
-% --------------------------------------------------------------------
-function menuItemPowerSpectrum_Callback(hObject, eventdata, handles)
-% hObject    handle to menuItemPowerSpectrum (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-global maingui;
-iCh = maingui.axesSDG.iCh;
-n_channels = length(iCh);
-if n_channels > 0
-    iSrcDet = maingui.axesSDG.iSrcDet;
-    colors = maingui.axesSDG.linecolor;
-    d = maingui.dataTree.currElem.acquired.data.dataTimeSeries;
-    sf = maingui.dataTree.currElem.acquired.data.time(2) - maingui.dataTree.currElem.acquired.data.time(1);
-    fs = 1/sf;
-    try
-       close(maingui.spectrumFigureHandle);
-    catch
-    end
-    maingui.spectrumFigureHandle = figure('NumberTitle', 'off', 'Name', 'PSD of selected channels');
-    n = 3;
-    m = ceil(n_channels / n);
-    for i = 1:n_channels
-        % 100 sec window with 50% overlap
-        window = floor(100 / sf);
-        overlap = window / 2;
-        bins = 1024;
-        [pxx,f] = pwelch(d(:,iCh(i)), window, overlap, bins, fs);
-        subplot(m,n,i);
-        plot(f, 10*log10(pxx), 'Color', colors(i,:));
-        title([num2str(iSrcDet(i,1)), ' \rightarrow ', num2str(iSrcDet(i,2))]);
-        xlim([0,fs/2]);
-        xlabel(sprintf('Frequency (Hz)\n'));
-        ylabel(sprintf('PSD (dB)'));
-    end
-else
-    errordlg('Cannot calculate power spectra with no channels selected.', 'No channels selected'); 
-end
-
-

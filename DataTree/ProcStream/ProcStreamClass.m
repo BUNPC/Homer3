@@ -268,6 +268,7 @@ classdef ProcStreamClass < handle
             
             obj.input.misc = [];
             close(hwait);
+            
         end
         
         
@@ -587,7 +588,7 @@ classdef ProcStreamClass < handle
             %            argOut: '[dcAvg,dcAvgStd,tHRF,nTrials]'
             %             argIn: '(dcAvgRuns,dcAvgStdRuns,dcSum2Runs,tHRFRuns,mlActRuns,nTrialsRuns'
             %           paramIn: [0x0 ParamClass]
-            %              help: '  Calculate the block average for all subjects, for all common stimuli…'
+            %              help: '  Calculate the block average for all subjects, for all common stimuliï¿½'
             %
             err = -1;
             if ~exist('fname', 'var')
@@ -722,7 +723,7 @@ classdef ProcStreamClass < handle
             %    Here's the output:
             %
             %     G = {
-            %          '@ hmrG_SubjAvg [dcAvg,dcAvgStd,nTrials,grpAvgPass] (dcAvgSubjs,dcAvgStdSubjs,SDSubjs,nTrialsSubjs tRange %0.1f…'
+            %          '@ hmrG_SubjAvg [dcAvg,dcAvgStd,nTrials,grpAvgPass] (dcAvgSubjs,dcAvgStdSubjs,SDSubjs,nTrialsSubjs tRange %0.1fï¿½'
             %         }
             %     S = {
             %          '@ hmrS_RunAvg [dcAvg,dcAvgStd,nTrials] (dcAvgRuns,dcAvgStdRuns,dcSum2Runs,mlActRuns,nTrialsRuns'
@@ -732,7 +733,7 @@ classdef ProcStreamClass < handle
             %         '@ hmrR_MotionArtifact tIncAuto (dod,t,SD,tIncMan tMotion %0.1f 0.5 tMask %0.1f 1.0 STDEVthresh %0.1f 50.0 AMPthresh %0.1f 5.0'
             %         '@ hmrR_BandpassFilt dod (dod,t hpf %0.3f 0.010 lpf %0.3f 0.500'
             %         '@ hmrR_OD2Conc dc (dod,SD ppf %0.1f_%0.1f 6.0_6.0'
-            %         '@ hmrR_DeconvHRF_DriftSS [dcAvg,dcAvgstd,tHRF,nTrials,ynew,yresid,ysum2,beta,R] (dc,s,t,SD,aux,tIncAuto trange %0.1f_%0.1f -2.0_20.0 glmSolv…'
+            %         '@ hmrR_DeconvHRF_DriftSS [dcAvg,dcAvgstd,tHRF,nTrials,ynew,yresid,ysum2,beta,R] (dc,s,t,SD,aux,tIncAuto trange %0.1f_%0.1f -2.0_20.0 glmSolvï¿½'
             %         }
             % 
             if ~exist('mode','var') || isempty(mode) || ~ischar(mode)
@@ -814,7 +815,7 @@ classdef ProcStreamClass < handle
             %         '@ hmrR_MotionArtifact tIncAuto (dod,t,SD,tIncMan tMotion %0.1f 0.5 tMask %0.1f 1.0 STDEVthresh %0.1f 50.0 AMPthresh %0.1f 5.0'
             %         '@ hmrR_BandpassFilt dod (dod,t hpf %0.3f 0.010 lpf %0.3f 0.500'
             %         '@ hmrR_OD2Conc dc (dod,SD ppf %0.1f_%0.1f 6.0_6.0'
-            %         '@ hmrR_DeconvHRF_DriftSS [dcAvg,dcAvgstd,tHRF,nTrials,ynew,yresid,ysum2,beta,R] (dc,s,t,SD,aux,tIncAuto trange %0.1f_%0.1f -2.0_20.0 glmSolv…'
+            %         '@ hmrR_DeconvHRF_DriftSS [dcAvg,dcAvgstd,tHRF,nTrials,ynew,yresid,ysum2,beta,R] (dc,s,t,SD,aux,tIncAuto trange %0.1f_%0.1f -2.0_20.0 glmSolvï¿½'
             %         }
             %
             section = cell(length(obj.fcalls), 1);
@@ -861,7 +862,7 @@ classdef ProcStreamClass < handle
             %            argOut: 'tIncAuto'
             %             argIn: '(dod,t,SD,tIncMan'
             %           paramIn: [1x4 ParamClass]
-            %              help: '  Excludes stims that fall within the time points identified as …'
+            %              help: '  Excludes stims that fall within the time points identified as ï¿½'
             %
             %    p.fcalls(3)
             %     
@@ -872,7 +873,7 @@ classdef ProcStreamClass < handle
             %            argOut: '[s,tRangeStimReject]'
             %             argIn: '(t,s,tIncAuto,tIncMan'
             %           paramIn: [1x1 ParamClass]
-            %              help: '  Excludes stims that fall within the time points identified as …'
+            %              help: '  Excludes stims that fall within the time points identified as ï¿½'
             %
             
             err=-1;
@@ -939,7 +940,7 @@ classdef ProcStreamClass < handle
             %        argOut: 'dod'
             %         argIn: '(dod,t'
             %       paramIn: [1x2 ParamClass]
-            %          help: '  Perform a bandpass filter…'
+            %          help: '  Perform a bandpass filterï¿½'
             %
             %    p.fcalls(2)
             %
@@ -950,7 +951,7 @@ classdef ProcStreamClass < handle
             %        argOut: 'dc'
             %         argIn: '(dod,SD'
             %       paramIn: [1x1 ParamClass]
-            %          help: '  Convert OD to concentrations…'
+            %          help: '  Convert OD to concentrationsï¿½'
             % 
             if nargin<2
                 return

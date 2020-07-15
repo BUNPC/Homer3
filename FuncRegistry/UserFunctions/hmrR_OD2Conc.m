@@ -5,19 +5,21 @@
 % OD_to_Conc
 %
 % DESCRIPTION:
-% Convert OD to concentrations
+% Convert OD to concentrations. For use with 2-wavelength data only: use
+% hmrR_OD2Conc_3 or hmrR_OD2Conc_multi for 3 or more wavelengths.
 %
 % INPUTS:
 % dod: SNIRF.data container with the Change in OD tim course 
 % probe: SNIRF.probe container with the source/detector geometry
-% ppf: Partial path length factors for each wavelength. If there are 2 wavelengths 
-%      of data, then this is a vector of 2 elements.  Typical value is ~6 for each 
+% ppf: Partial path length factors for each wavelength. This is a vector of 
+%      of 2 elements, one for each wavelength.  Typical value is ~6 for each 
 %      wavelength if the absorption change is uniform over the volume of tissue measured. 
 %      To approximate the partial volume effect of a small localized absorption change 
-%      within an adult human head, this value could be as small as 0.1. It is recommended 
-%      to use default values of “1 1” which will result in concentration units of 
-%      “molar ppf” such that the user can then divide by an estimated ppf at any future 
-%      point to estimate what the molar concentration change would be.%
+%      within an adult human head, this value could be as small as 0.1. Convention is 
+%      becoming to set ppf=1 and to not divide by the source-detector separation such that 
+%      the resultant "concentration" is in units of Molar mm (or Molar cm if those are the 
+%      spatial units). This is becoming wide spread in the literature but there is no 
+%      fixed citation. Use a value of 1 to choose this option.
 %
 % OUTPUTS:
 % dc: SNIRF.data container with the concentration data 

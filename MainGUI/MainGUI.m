@@ -88,15 +88,42 @@ uipanelProcessingType_SelectionChangeFcn([]);
 % ---------------------------------------------------------------------
 function MainGUI_EnableDisableGUI(handles, val)
 
-set(handles.listboxGroupTree, 'enable', val);
-set(handles.radiobuttonProcTypeGroup, 'enable', val);
-set(handles.radiobuttonProcTypeSubj, 'enable', val);
-set(handles.radiobuttonProcTypeRun, 'enable', val);
-set(handles.radiobuttonPlotRaw, 'enable', val);
-set(handles.radiobuttonPlotOD,  'enable', val);
-set(handles.radiobuttonPlotConc, 'enable', val);
-set(handles.checkboxPlotHRF, 'enable', val);
-set(handles.textStatus, 'enable', val);
+    set(handles.listboxGroupTree, 'enable', val);
+    set(handles.radiobuttonProcTypeGroup, 'enable', val);
+    set(handles.radiobuttonProcTypeSubj, 'enable', val);
+    set(handles.radiobuttonProcTypeRun, 'enable', val);
+    set(handles.radiobuttonPlotRaw, 'enable', val);
+    set(handles.radiobuttonPlotOD,  'enable', val);
+    set(handles.radiobuttonPlotConc, 'enable', val);
+    set(handles.checkboxPlotHRF, 'enable', val);
+    set(handles.textStatus, 'enable', val);
+    set(handles.listboxPlotConc, 'enable', val);
+    % Plot window panel
+    set(handles.pushbuttonPanLeft, 'enable', val);
+    set(handles.pushbuttonPanRight, 'enable', val);
+    set(handles.pushbuttonPanLeft, 'enable', val);
+    set(handles.pushbuttonResetView, 'enable', val);
+    set(handles.pushbuttonPanLeft, 'enable', val);
+    set(handles.checkboxFixRangeX, 'enable', val);
+    set(handles.editFixRangeX, 'enable', val);
+    set(handles.checkboxFixRangeY, 'enable', val);
+    set(handles.editFixRangeY, 'enable', val);
+    % Motion artifact panel
+    set(handles.checkboxShowExcludedTimeManual, 'enable', val);
+    set(handles.checkboxShowExcludedTimeAuto, 'enable', val);
+    set(handles.checkboxShowExcludedTimeAutoByChannel, 'enable', val);
+    set(handles.checkboxExcludeTime, 'enable', val);
+    % Control
+    set(handles.pushbuttonCalcProcStream, 'enable', val);
+    set(handles.pushbuttonProcStreamOptionsEdit, 'enable', val);
+    set(handles.checkboxApplyProcStreamEditToAll, 'enable', val);
+    % Menu
+    set(handles.ToolsMenu, 'enable', val);
+    set(handles.ViewMenu, 'enable', val);
+    set(handles.menuItemSaveGroup, 'enable', val);
+    set(handles.menuItemExport, 'enable', val);
+    set(handles.menuItemReset, 'enable', val);
+    set(handles.menuItemResetGroupFolder, 'enable', val)
 
 
 % --------------------------------------------------------------------
@@ -161,9 +188,6 @@ if maingui.dataTree.IsEmpty()
 end
 InitGuiControls(handles);
 
-% If data set has no errors enable window gui objects
-MainGUI_EnableDisableGUI(handles,'on');
-
 % Display data from currently selected processing element
 DisplayGroupTree(handles);
 Display(handles, hObject);
@@ -179,6 +203,8 @@ set(hObject,'name', title);
 maingui.logger.InitChapters()
 maingui.logger.CurrTime(sprintf('MainGUI: Startup time - %0.1f seconds\n', toc(startuptimer)));
 
+% If data set has no errors enable window gui objects
+MainGUI_EnableDisableGUI(handles,'on');
 
 
 % --------------------------------------------------------------------
@@ -382,6 +408,7 @@ if ~ishandles(hObject)
     return;
 end
 
+MainGUI_EnableDisableGUI(handles,'off');
 % Save original selection in listboxGroupTree because it'll change during auto processing 
 val0 = get(handles.listboxGroupTree, 'value');
 
@@ -397,6 +424,7 @@ h = waitbar(0,'Auto-saving processing results. Please wait ...');
 maingui.dataTree.Save(h);
 close(h);
 Display(handles, hObject);
+MainGUI_EnableDisableGUI(handles,'on');
 
 
 
@@ -1512,6 +1540,44 @@ else
 end
 cfg.Save();
 cfg.Close();
+
+
+function menuItemPowerSpectrum_Callback(hObject, eventdata, handles)
+% hObject    handle to menuItemPowerSpectrum (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global maingui;
+iCh = maingui.axesSDG.iCh;
+n_channels = length(iCh);
+if n_channels > 0
+    iSrcDet = maingui.axesSDG.iSrcDet;
+    colors = maingui.axesSDG.linecolor;
+    d = maingui.dataTree.currElem.acquired.data.dataTimeSeries;
+    sf = maingui.dataTree.currElem.acquired.data.time(2) - maingui.dataTree.currElem.acquired.data.time(1);
+    fs = 1/sf;
+    try
+       close(maingui.spectrumFigureHandle);
+    catch
+    end
+    maingui.spectrumFigureHandle = figure('NumberTitle', 'off', 'Name', 'PSD of selected channels');
+    n = 3;
+    m = ceil(n_channels / n);
+    for i = 1:n_channels
+        % 100 sec window with 50% overlap
+        window = floor(100 / sf);
+        overlap = window / 2;
+        bins = 2048;
+        [pxx,f] = pwelch(d(:,iCh(i)), window, overlap, bins, fs);
+        subplot(m,n,i);
+        plot(f, 10*log10(pxx), 'Color', colors(i,:));
+        title([num2str(iSrcDet(i,1)), ' \rightarrow ', num2str(iSrcDet(i,2))]);
+        xlim([0,fs/2]);
+        xlabel(sprintf('Frequency (Hz)'));
+        ylabel(sprintf('PSD (dB)\n'));
+    end
+else
+    errordlg('Cannot calculate power spectra with no channels selected.', 'No channels selected'); 
+end
 
 
 % --------------------------------------------------------------------

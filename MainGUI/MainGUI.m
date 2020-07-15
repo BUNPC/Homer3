@@ -424,7 +424,7 @@ h = waitbar(0,'Auto-saving processing results. Please wait ...');
 maingui.dataTree.Save(h);
 close(h);
 Display(handles, hObject);
-MainGUI_EnableDisableGUI(handles,'off');
+MainGUI_EnableDisableGUI(handles,'on');
 
 
 

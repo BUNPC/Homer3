@@ -1542,6 +1542,8 @@ cfg.Save();
 cfg.Close();
 
 
+
+% --------------------------------------------------------------------
 function menuItemPowerSpectrum_Callback(hObject, eventdata, handles)
 % hObject    handle to menuItemPowerSpectrum (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -1578,6 +1580,7 @@ if n_channels > 0
 else
     errordlg('Cannot calculate power spectra with no channels selected.', 'No channels selected'); 
 end
+
 
 
 % --------------------------------------------------------------------

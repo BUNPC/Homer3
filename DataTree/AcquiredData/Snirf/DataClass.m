@@ -234,8 +234,11 @@ classdef DataClass < FileLoadSaveClass
                 ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), 1, obj.measurementList(ii).GetWavelengthIndex()];
             end
             
-            % Remove any unused allocated rows that were pre-allocated
+            % Remove unused rows that were pre-allocated
             ml(ii+1:end,:) = [];
+
+            % Sort according to wavelength
+            ml = sortrows(ml,4);
         end
         
         

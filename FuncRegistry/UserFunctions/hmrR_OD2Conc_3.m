@@ -5,14 +5,13 @@
 % OD_to_Conc
 %
 % DESCRIPTION:
-% Convert OD to concentrations. For use with 2-wavelength data only: use
-% hmrR_OD2Conc_3 or hmrR_OD2Conc_multi for 3 or more wavelengths.
+% Convert OD to concentrations. For use with 3-wavelength data only.
 %
 % INPUTS:
 % dod: SNIRF.data container with the Change in OD tim course 
 % probe: SNIRF.probe container with the source/detector geometry
-% ppf: Partial path length factors for each wavelength. This is a vector of 
-%      of 2 elements, one for each wavelength.  Typical value is ~6 for each 
+% ppf: Partial path length factors for each wavelength. This is a vector of  
+%      3 elements, one for each wavelength.  Typical value is ~6 for each 
 %      wavelength if the absorption change is uniform over the volume of tissue measured. 
 %      To approximate the partial volume effect of a small localized absorption change 
 %      within an adult human head, this value could be as small as 0.1. Convention is 
@@ -28,7 +27,7 @@
 % Delta_OD_to_Conc: dc = hmrR_OD2Conc_new( dod, probe, ppf )
 %
 % PARAMETERS:
-% ppf: [1.0, 1.0]
+% ppf: [1.0, 1.0, 1.0]
 %
 function dc = hmrR_OD2Conc_new( dod, probe, ppf )
 
@@ -70,7 +69,7 @@ for ii=1:length(dod)
         if ppf(1)~=1
             y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,1)*rho*ppf))' )';
         else
-            y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,2)))' )';
+            y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,nWav)))' )';
         end
         y2(:,k+2) = y2(:,k) + y2(:,k+1);
         dc(ii).AddChannelHbO(ml(idx1,1), ml(idx1,2));

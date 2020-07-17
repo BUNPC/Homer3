@@ -14,7 +14,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         gid
         location
         nirsdatanum
-        nirs_tb;        
+        nirs_tb;
     end
     
     methods
@@ -25,7 +25,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % Syntax:
             %   obj = SnirfClass()
             %   obj = SnirfClass(filename);
-            %   obj = SnirfClass(nirs);
+            %   obj = SnirfClass(filename, nirsdatanum);
+            %   obj = SnirfClass(filename, nirsdatanum, options);
+            %   obj = SnirfClass(filename, options);
+            %   obj = SnirfClass(dotnirs);
+            %   obj = SnirfClass(dotnirs, numdatabllocks);
             %   obj = SnirfClass(data, stim);
             %   obj = SnirfClass(data, stim, probe);
             %   obj = SnirfClass(data, stim, probe, aux);
@@ -34,7 +38,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %   
             %   Also for debugging/simulation of time bases 
             % 
-            %   obj = SnirfClass(nirs, tfactors);
+            %   obj = SnirfClass(dotnirs, tfactors);
             %
             % Example 1:
             %   
@@ -69,108 +73,159 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Set class properties NOT part of the SNIRF format
             obj.fileformat = 'hdf5';
-            obj.nirsdatanum = 1;
             obj.location = '/nirs';
+            obj.nirsdatanum = 1;
             
-            % See if we're loading .nirs data format
-            if nargin>4
-                d         = varargin{1};
-                t         = varargin{2}(:);
-                SD        = varargin{3};
-                aux       = varargin{4};
-                s         = varargin{5};
-            end
-            if nargin>5
-                CondNames = varargin{6};
-            end
-            
-            % TBD: Need to find better way of parsing arguments. It gets complicated 
-            % because of all the variations of calling this class constructor but 
-            % there should be a simpler way to do this 
-            
-            if nargin==1 || (nargin==2 && isa(varargin{2}, 'double'))
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Between 1 and 4 arguments covers the following syntax variants
+            %
+            % obj = SnirfClass(filename);
+            % obj = SnirfClass(filename, nirsdatanum);
+            % obj = SnirfClass(filename, nirsdatanum, options);
+            % obj = SnirfClass(filename, options);
+            % obj = SnirfClass(dotnirs);
+            % obj = SnirfClass(dotnirs, numdatabllocks);
+            % obj = SnirfClass(data, stim);
+            % obj = SnirfClass(data, stim, probe);
+            % obj = SnirfClass(data, stim, probe, aux);
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+            if nargin>0 && nargin<5
+                
+                % obj = SnirfClass(filename);
                 if isa(varargin{1}, 'SnirfClass')
                     obj.Copy(varargin{1});
                     return;
                 end                
                 
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+                % obj = SnirfClass(filename, nirsdatanum);
+                % obj = SnirfClass(filename, nirsdatanum, options);
+                % obj = SnirfClass(filename, options);
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
                 if ischar(varargin{1})
                     obj.filename = varargin{1};
-                    if nargin==2
-                        obj.nirsdatanum = varargin{2};
+                    if nargin>1
+                        % obj = SnirfClass(filename, nirsdatanum);
+                        if isnumeric(varargin{2})
+                            obj.nirsdatanum = varargin{2};
+                            
+                            % obj = SnirfClass(filename, nirsdatanum, options);
+                            if nargin>2
+                                obj.options = varargin{3};
+                            end
+                            
+                        % obj = SnirfClass(filename, options);
+                        elseif ischar(varargin{2})
+                            obj.options = varargin{2};
+                            
+                        end
                     end
-                    obj.Load(varargin{1});
                     
-                % The basic 5 of a .nirs format in a struct
+                    % Conditional loading of snirf file data
+                    if strcmpi(obj.options, 'memory')
+                        obj.Load(varargin{1});
+                    end
+                    
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+                % obj = SnirfClass(dotnirs);
+                % obj = SnirfClass(dotnirs, numdatabllocks);
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
                 elseif isstruct(varargin{1}) || isa(varargin{1}, 'NirsClass')
+                    
+                    % obj = SnirfClass(dotnirs);
                     tfactors = 1;    % Debug simulation parameter
+    
+                    % obj = SnirfClass(dotnirs, numdatabllocks);
                     if nargin==2
                         tfactors = varargin{2};
                     end
-                    nirs = varargin{1};
-                    obj.GenSimulatedTimeBases(nirs, tfactors);
+                    dotnirs = varargin{1};
+                    obj.GenSimulatedTimeBases(dotnirs, tfactors);
                     for ii=1:length(tfactors)                        
                         obj.data(ii) = DataClass(obj.nirs_tb(ii).d, obj.nirs_tb(ii).t(:), obj.nirs_tb(ii).SD.MeasList);
                     end
                     
-                    for ii=1:size(nirs.s,2)
-                        if isfield(nirs, 'CondNames')
-                            obj.stim(ii) = StimClass(nirs.s(:,ii), nirs.t(:), nirs.CondNames{ii});
+                    for ii=1:size(dotnirs.s,2)
+                        if isfield(dotnirs, 'CondNames')
+                            obj.stim(ii) = StimClass(dotnirs.s(:,ii), dotnirs.t(:), dotnirs.CondNames{ii});
                         else
-                            obj.stim(ii) = StimClass(nirs.s(:,ii), nirs.t(:), num2str(ii));
+                            obj.stim(ii) = StimClass(dotnirs.s(:,ii), dotnirs.t(:), num2str(ii));
                         end
                     end
-                    obj.probe      = ProbeClass(nirs.SD);
-                    for ii=1:size(nirs.aux,2)
-                        obj.aux(ii) = AuxClass(nirs.aux(:,ii), nirs.t(:), sprintf('aux%d',ii));
+                    obj.probe      = ProbeClass(dotnirs.SD);
+                    for ii=1:size(dotnirs.aux,2)
+                        obj.aux(ii) = AuxClass(dotnirs.aux(:,ii), dotnirs.t(:), sprintf('aux%d',ii));
                     end
                                        
                     % Add metadatatags
-                    obj.metaDataTags   = MetaDataTagsClass();
+                    obj.metaDataTags   = MetaDataTagsClass();               
                 
-                end                
-            elseif nargin>1 && nargin<5
-                data = varargin{1};
-                obj.SetData(data);
-                stim = varargin{2};
-                obj.SetStim(stim);
-                if nargin>2
-                    probe = varargin{3};
-                    obj.SetSd(probe);
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+                % obj = SnirfClass(data, stim);
+                % obj = SnirfClass(data, stim, probe);
+                % obj = SnirfClass(data, stim, probe, aux);
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+                elseif isa(varargin{1}, 'DataClass')
+                    
+                    % obj = SnirfClass(data, stim);
+                    data = varargin{1};
+                    obj.SetData(data);
+                    stim = varargin{2};
+                    obj.SetStim(stim);
+    
+                    % obj = SnirfClass(data, stim, probe);
+                    if nargin>2
+                        probe = varargin{3};
+                        obj.SetSd(probe);
+                    end
+                    
+                    % obj = SnirfClass(data, stim, probe, aux);
+                    if nargin>3
+                        aux = varargin{4};
+                        obj.SetAux(aux);
+                    end  
+                    
                 end
-                if nargin>3
-                    aux = varargin{4};
-                    obj.SetAux(aux);
+
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+            % Between 5 and 6 arguments covers the following syntax variants
+            %
+            % obj = SnirfClass(d, t, SD, aux, s);
+            % obj = SnirfClass(d, t, SD, aux, s, CondNames);
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
+            elseif nargin>4
+                
+                % obj = SnirfClass(d, t, SD, aux, s);
+                d         = varargin{1};
+                t         = varargin{2}(:);
+                SD        = varargin{3};
+                aux       = varargin{4};
+                s         = varargin{5};
+                CondNames = {};
+
+                % obj = SnirfClass(d, t, SD, aux, s, CondNames);
+                if nargin>5
+                    CondNames = varargin{6};
                 end
+                
+                obj.data(1) = DataClass(d, t(:), SD.MeasList);
+                for ii=1:size(s,2)
+                    if nargin==5                        
+                        condition = num2str(ii);
+                    else
+                        condition = CondNames{ii};
+                    end
+                    obj.stim(ii) = StimClass(s(:,ii), t(:), condition);
+                end
+                obj.probe      = ProbeClass(SD);
+                for ii=1:size(aux,2)
+                    obj.aux(ii) = AuxClass(aux, t(:), sprintf('aux%d',ii));
+                end
+                
+                % Add metadatatags
+                obj.metaDataTags   = MetaDataTagsClass();
                                 
-            % The basic 5 of a .nirs format as separate args
-            elseif nargin==5
-                obj.data(1) = DataClass(d, t(:), SD.MeasList);
-                for ii=1:size(s,2)
-                    obj.stim(ii) = StimClass(s(:,ii), t(:), num2str(ii));
-                end
-                obj.probe      = ProbeClass(SD);
-                for ii=1:size(aux,2)
-                    obj.aux(ii) = AuxClass(aux, t(:), sprintf('aux%d',ii));
-                end
-                
-                % Add metadatatags
-                obj.metaDataTags   = MetaDataTagsClass();
-                
-            % The basic 5 of a .nirs format plus condition names
-            elseif nargin==6
-                obj.data(1) = DataClass(d, t(:), SD.MeasList);
-                for ii=1:size(s,2)
-                    obj.stim(ii) = StimClass(s(:,ii), t(:), CondNames{ii});
-                end
-                obj.probe      = ProbeClass(SD);
-                for ii=1:size(aux,2)
-                    obj.aux(ii) = AuxClass(aux, t(:), sprintf('aux%d',ii));
-                end
-                
-                % Add metadatatags
-                obj.metaDataTags   = MetaDataTagsClass();
-                
             end
             
         end
@@ -210,12 +265,18 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 options = '';
             end
             
+            % If we're working off the snirf file instead of loading everything into memory
+            % then we have to load stim here from file before accessing it.
+            if strcmpi(obj.options, 'file')
+                obj.LoadStim(obj.filename);
+            end
+            
             % Generate new instance of SnirfClass
             objnew = SnirfClass();
-            
+                        
             % Copy mutable properties to new object instance;
             objnew.stim = CopyHandles(obj.stim);
-            
+   
             if strcmp(options, 'extended') 
                 t = obj.GetTimeCombined();
                 objnew.data = DataClass([],t,[]);
@@ -364,7 +425,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function err = LoadHdf5(obj, fileobj, ~)
+        function err = LoadHdf5(obj, fileobj, params)
             err = 0;
             
             % Arg 1

@@ -409,8 +409,12 @@ if ~ishandles(hObject)
 end
 
 MainGUI_EnableDisableGUI(handles,'off');
+
 % Save original selection in listboxGroupTree because it'll change during auto processing 
 val0 = get(handles.listboxGroupTree, 'value');
+
+% Measure elapsed time
+t = tic;
 
 % Set the display status to pending. In order to avoid redisplaying 
 % in a single callback thread in functions called from here which 
@@ -424,6 +428,10 @@ h = waitbar(0,'Auto-saving processing results. Please wait ...');
 maingui.dataTree.Save(h);
 close(h);
 Display(handles, hObject);
+
+% Report elapsed time of calculation
+fprintf('Finished calculating, saving and displaying proc stream in %0.1f seconds\n', toc(t));
+
 MainGUI_EnableDisableGUI(handles,'on');
 
 

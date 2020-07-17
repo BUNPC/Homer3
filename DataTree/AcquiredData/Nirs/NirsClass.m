@@ -17,11 +17,12 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
     methods
         
         % ---------------------------------------------------------
-        function obj = NirsClass(arg)
+        function obj = NirsClass(varargin)
             %
             % Syntax:
             %   obj = NirsClass()
             %   obj = NirsClass(filename);
+            %   obj = NirsClass(filename, options);
             %   
             %
             % Example 1:
@@ -56,17 +57,25 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             if nargin==0
                 return;
             end
+            if nargin==2
+                obj.options = varargin{2};
+            end
             
-            if isa(arg, 'NirsClass')
-                obj.Copy(arg);
+            if isa(varargin{1}, 'NirsClass')
+                obj.Copy(varargin{1});
                 return;
             end
-            filename = arg;
+            filename = varargin{1};
             if ~exist('filename','var') || ~exist(filename,'file')
                 obj = NirsClass.empty();
                 return;
             end
-            obj.Load(filename);
+            obj.filename = filename;
+            
+            % Conditional loading of snirf file data
+            if strcmpi(obj.options, 'memory')
+                obj.Load(filename);
+            end
         end
         
         
@@ -90,7 +99,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function err = LoadMat(obj, fname, ~)
+        function err = LoadMat(obj, fname, params)
             err = 0;
             
             % Arg 1
@@ -147,15 +156,53 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             
             
             % Optional fields
-            if isproperty(fdata,'s')
-                obj.s = fdata.s;
-            else
-                obj.s = [];
-            end
             if isproperty(fdata,'aux')
                 obj.aux = fdata.aux;
             else
                 obj.aux = [];
+            end            
+            if obj.LoadStims(fname, fdata)<0 
+                err = -4;
+            end            
+        end
+        
+        
+        
+        % ---------------------------------------------------------
+        function err = LoadStims(obj, fname, fdata)
+            err = 0;
+            
+            if ~exist('fdata','var') || isempty(fdata)
+                % Arg 1
+                if ~exist('fname','var') || ~exist(fname,'file')
+                    fname = '';
+                end
+                
+                % Do some error checking
+                if ~isempty(fname)
+                    obj.filename = fname;
+                else
+                    fname = obj.filename;
+                end
+                if exist(fname, 'file') ~= 2
+                    err = -1;
+                    return;
+                end
+                
+                % Don't reload if not empty
+                if ~obj.IsEmpty()
+                    return;
+                end
+                
+                warning('off', 'MATLAB:load:variableNotFound');
+                fdata = load(fname,'-mat', 's','CondNames');
+            end
+               
+            
+            if isproperty(fdata,'s')
+                obj.s = fdata.s;
+            else
+                obj.s = [];
             end
             if isproperty(fdata,'CondNames')
                 obj.CondNames = fdata.CondNames;
@@ -202,8 +249,16 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         end
         
         
+        
         % -------------------------------------------------------
-        function objnew = CopyMutable(obj, options)
+        function objnew = CopyMutable(obj, ~)
+
+            % If we're working off the snirf file instead of loading everything into memory
+            % then we have to load stim here from file before accessing it.
+            if strcmpi(obj.options, 'file')
+                obj.LoadStims(obj.filename);
+            end
+            
             % Generate new instance of NirsClass
             objnew = NirsClass();
             
@@ -212,7 +267,8 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             objnew.s          = obj.s;
             objnew.CondNames  = obj.CondNames;
         end
-              
+
+        
         
         % ---------------------------------------------------------
         function nTrials = InitCondNames(obj)

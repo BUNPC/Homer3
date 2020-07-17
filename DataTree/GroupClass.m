@@ -490,7 +490,11 @@ classdef GroupClass < TreeNodeClass
             if ~exist('option','var')
                 option = 'down';
             end
-            obj.procStream.output.Reset(obj.GetFilename);
+            if exist([obj.path, 'groupResults.mat'],'file')
+                delete([obj.path, 'groupResults.mat']);
+            end
+                
+            obj.procStream.output.Reset(obj.name);
             if strcmp(option, 'down')
                 for jj=1:length(obj.subjs)
                     obj.subjs(jj).Reset();

@@ -42,7 +42,7 @@ rootpath = fileparts(which('Homer3.m'));
 currpath = pwd;
 
 cd([rootpath, '/', dirname]);
-resetGroupFolder('', 'registry_keep');
+resetGroupFolder('', 'keep_registry:nodatatree');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

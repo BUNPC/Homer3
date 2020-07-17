@@ -54,11 +54,6 @@ classdef RunClass < TreeNodeClass
                 varargin{1}.Loaded();
             end
             
-            % If obj.GetFilename returns a non-empty filename that means we
-            % are using disk space and the distributed data storage scheme
-            % to store processed and acquired data. Which means we don't
-            % free memory for acquired data.
-            obj.acquired.FreeMemory(obj.GetFilename);            
         end
 
         
@@ -101,11 +96,23 @@ classdef RunClass < TreeNodeClass
             if nargin==1 || isempty(dirname)
                 dirname = convertToStandardPath('.');
             end
-            if obj.IsNirs()
-                obj.acquired = NirsClass([dirname, obj.name]);
+            
+            if ~isempty(obj.SaveMemorySpace(obj.name))
+                options = 'file';
             else
-                obj.acquired = SnirfClass([dirname, obj.name]);
+                options = 'memory';
             end
+            
+            if isempty(obj.acquired)
+                if obj.IsNirs()
+                    obj.acquired = NirsClass([dirname, obj.name], options);
+                else
+                    obj.acquired = SnirfClass([dirname, obj.name], options);
+                end
+            elseif strcmp(options, 'file')
+                obj.acquired.Load([dirname, obj.name]);
+            end
+            
             if obj.acquired.Error() > 0
                 fprintf('     **** Warning: %s failed to load.\n', obj.name);
                 return;
@@ -666,7 +673,7 @@ classdef RunClass < TreeNodeClass
                 option = 'memory';
             end
             nbytes = obj.procStream.MemoryRequired();
-            if strcmp(option, 'disk')
+            if strcmp(option, 'file')
                 return 
             end
             if isempty(obj.acquired)

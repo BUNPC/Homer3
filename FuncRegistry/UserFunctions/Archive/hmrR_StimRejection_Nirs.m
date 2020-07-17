@@ -45,6 +45,12 @@
 
 function [s,tRange] = hmrR_StimRejection_Nirs(t,s,tIncAuto,tIncMan,tRange)
 
+if isempty(tIncAuto)
+    tIncAuto = cell(1,1);
+end
+if isempty(tIncMan)
+    tIncMan = cell(1,1);
+end
 tIncMan = tIncMan{1};
 
 dt = (t(end)-t(1))/length(t);

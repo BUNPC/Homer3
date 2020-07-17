@@ -5,6 +5,7 @@ classdef FileLoadSaveClass < matlab.mixin.Copyable
         fileformat;
         supportedFomats;
         err;
+        options;        
     end
     
     
@@ -18,7 +19,8 @@ classdef FileLoadSaveClass < matlab.mixin.Copyable
                 'matlab', {{'.mat','matlab','mat'}}, ...
                 'hdf5', {{'hdf','.hdf','hdf5','.hdf5','hf5','.hf5','h5','.h5'}} ...
                 );
-            obj.err=0;
+            obj.err = 0;
+            obj.options = 'memory';            
         end
         
         
@@ -39,7 +41,7 @@ classdef FileLoadSaveClass < matlab.mixin.Copyable
             switch(lower(format))
                 case obj.supportedFomats.matlab
                     if ismethod(obj, 'LoadMat')
-                        obj.err = obj.LoadMat(filename);
+                        obj.err = obj.LoadMat(filename, params);
                     end
                 case obj.supportedFomats.hdf5
                     if ismethod(obj, 'LoadHdf5')

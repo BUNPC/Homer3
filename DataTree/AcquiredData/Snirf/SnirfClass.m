@@ -259,6 +259,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         end
         
         
+        
         % -------------------------------------------------------
         function objnew = CopyMutable(obj, options)
             if nargin==1
@@ -273,17 +274,18 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Generate new instance of SnirfClass
             objnew = SnirfClass();
-                        
+            
+            objnew.filename = obj.filename;
+            
             % Copy mutable properties to new object instance;
             objnew.stim = CopyHandles(obj.stim);
    
             if strcmp(options, 'extended') 
                 t = obj.GetTimeCombined();
                 objnew.data = DataClass([],t,[]);
-            end
-            
+            end            
         end
-       
+        
         
         
         % -------------------------------------------------------
@@ -369,8 +371,16 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function err = LoadStim(obj, fileobj)
+        function err = LoadStim(obj, fileobj, options)
             err = 0;
+            if ~exist('options','var')
+                options = '';
+            end
+            
+            paramName = 'stim';
+            if optionExists(options, 'original') || optionExists(options, 'orig')
+                paramName = 'stim0';
+            end
             
             % Since we want to load stims in sorted order (i.e., according to alphabetical order
             % of condition names), first load to temporary variable.
@@ -379,7 +389,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 if ii > length(obj.stim)
                     obj.stim(ii) = StimClass;
                 end
-                if obj.stim(ii).LoadHdf5(fileobj, [obj.location, '/stim', num2str(ii)]) < 0
+                if obj.stim(ii).LoadHdf5(fileobj, [obj.location, '/', paramName, num2str(ii)]) < 0
                     obj.stim(ii).delete();
                     obj.stim(ii) = [];
                     if ii==1
@@ -525,9 +535,18 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function SaveStim(obj, fileobj)
+        function SaveStim(obj, fileobj, options)
+            if ~exist('options','var')
+                options = '';
+            end
+            
+            paramName = 'stim';
+            if optionExists(options, 'original') || optionExists(options, 'orig')
+                paramName = 'stim0';
+            end            
+
             for ii=1:length(obj.stim)
-                obj.stim(ii).SaveHdf5(fileobj, [obj.location, '/stim', num2str(ii)]);
+                obj.stim(ii).SaveHdf5(fileobj, [obj.location, '/', paramName, num2str(ii)]);
             end
         end
         
@@ -581,10 +600,120 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             obj.SaveProbe(fileobj);
             
             % Save aux
-            obj.SaveAux(fileobj);            
-
+            obj.SaveAux(fileobj);
         end
        
+        
+        
+        % -------------------------------------------------------
+        function [changes, stim0] = UpdateStim(obj, fileobj)
+            flags = zeros(length(obj.stim), 1);
+            
+            % Load original unedited stim, rename it and save it if it
+            % doesn't already exist
+            snirf = SnirfClass();
+            snirf.LoadStim(fileobj, 'orig');
+            if snirf.stim.Error()<0  
+                obj.stim.SaveStim('orig');
+            end
+            
+            % Now load current stim from file and update it
+            snirf.LoadStim(fileobj);
+            stim0 = snirf.stim;
+            
+            % Update original stims from file with edited stims
+            for ii = 1:length(obj.stim)
+                for jj = 1:length(stim0)
+                    if strcmp(obj.stim(ii).GetName(), stim0(jj).GetName())
+                        if obj.stim(ii) ~= stim0(jj)
+                            stim0(jj).Copy(obj.stim(ii));
+                            stim0(jj).SaveHdf5(fileobj, [obj.location, '/stim', num2str(jj)]);
+                        end
+                        flags(ii) = 1;
+                        break;
+                    end
+                end
+                if ~flags(ii)
+                    % We have new stimulus condition added
+                    if ~obj.stim(ii).IsEmpty()
+                        stim0(jj+1) = StimClass(obj.stim(ii));
+                        stim0(jj+1).SaveHdf5(fileobj, [obj.location, '/stim', num2str(jj+1)]);
+                    end
+                end
+            end            
+            changes = sum(flags);
+        end
+        
+        
+        
+        % -------------------------------------------------------
+        function changes = StimChangesMade(obj)
+            % Load original unedited stims from file
+            snirf = SnirfClass();
+            snirf.LoadStim(obj.filename);
+            stim0 = snirf.stim;
+
+            flags = zeros(length(obj.stim), 1);
+                
+            % Update original stims from file with edited stims
+            for ii = 1:length(obj.stim)
+                for jj = 1:length(stim0)
+                    if strcmp(obj.stim(ii).GetName(), stim0(jj).GetName())
+                        if obj.stim(ii) ~= stim0(jj)
+                            flags(ii) = 1;
+                        else
+                            flags(ii) = -1;
+                        end
+                        break;
+                    end
+                end
+                if flags(ii)==0
+                    % We have new stimulus condition added
+                    if ~obj.stim(ii).IsEmpty()
+                        flags(ii) = 1;
+                    end
+                end
+            end
+            flags(flags ~= 1) = 0;
+            changes = sum(flags)>0;
+        end
+        
+        
+        
+        % -------------------------------------------------------
+        function b = DataModified(obj)
+            b = obj.StimChangesMade();
+        end
+        
+        
+        
+        % -------------------------------------------------------
+        function err = SaveMutable(obj, fileobj)
+            if isempty(obj)
+                return
+            end
+            % Arg 1
+            if ~exist('fileobj','var') || ~exist(fileobj,'file')
+                fileobj = '';
+            end
+            
+            % Error checking            
+            if ~isempty(fileobj) && ischar(fileobj)
+                obj.filename = fileobj;
+            elseif isempty(fileobj)
+                fileobj = obj.filename;
+            end 
+            if isempty(fileobj)
+               err = -1;
+               return;
+            end
+                        
+            % Update original stims and save back to file
+            obj.UpdateStim(fileobj);
+        end
+       
+        
+        
         
         % -------------------------------------------------------
         function B = eq(obj, obj2)

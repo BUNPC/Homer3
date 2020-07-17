@@ -419,6 +419,9 @@ classdef StimClass < FileLoadSaveClass
             if isempty(obj.name)
                 return;
             end
+            if isempty(obj.data)
+                return;
+            end
             b = false;
         end
         

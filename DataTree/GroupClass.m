@@ -631,6 +631,27 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function SaveAcquiredData(obj)            
+            for ii = 1:length(obj.subjs)
+                obj.subjs(ii).SaveAcquiredData();
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = AcquiredDataModified(obj)
+            b = false;
+            for ii = 1:length(obj.subjs)
+                if obj.subjs(ii).AcquiredDataModified()
+                    b = true;
+                end
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
         function ExportHRF(obj, procElemSelect, iBlk)
             if ~exist('procElemSelect','var') || isempty(procElemSelect)
                 q = MenuBox('Export only current group data OR current group data and all it''s subject data?', ...

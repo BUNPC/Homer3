@@ -136,7 +136,27 @@ classdef RunClass < TreeNodeClass
             obj.acquired.FreeMemory(obj.GetFilename);
         end
         
-                
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SaveAcquiredData(obj)
+            if isempty(obj)
+                return;
+            end
+            obj.procStream.input.SaveAcquiredData()
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = AcquiredDataModified(obj)
+            b = obj.procStream.AcquiredDataModified();
+            if b
+                fprintf('Acquisition data for run %s has been modified\n', obj.name);
+            end
+        end
+
+        
+        
         % ----------------------------------------------------------------------------------
         % Deletes derived data in procResult
         % ----------------------------------------------------------------------------------

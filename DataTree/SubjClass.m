@@ -300,6 +300,25 @@ classdef SubjClass < TreeNodeClass
         end
 
 
+        % ----------------------------------------------------------------------------------
+        function SaveAcquiredData(obj)            
+            for ii = 1:length(obj.runs)
+                obj.runs(ii).SaveAcquiredData();
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = AcquiredDataModified(obj)
+            b = false;
+            for ii = 1:length(obj.runs)
+                if obj.runs(ii).AcquiredDataModified()
+                    b = true;
+                end
+            end
+        end
+                
     end
     
     

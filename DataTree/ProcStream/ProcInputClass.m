@@ -6,8 +6,7 @@ classdef ProcInputClass < handle
     properties
         tIncMan;                 % Manually include/excluded time points
         mlActMan;                % Manually include/excluded time points
-        acquiredEditable;        % Copy of acquisition parameters that are editable 
-                                 % through manual GUI operations. 
+        acquired;                % Modifiable acquisition parameters initally copied from acquisition files
         stimValSettings;         % Derived stim values 
         misc;
     end
@@ -30,7 +29,7 @@ classdef ProcInputClass < handle
             if isempty(acquired)
                 return;
             end
-            obj.acquiredEditable = acquired.CopyMutable(copyOptions);
+            obj.acquired = acquired.CopyMutable(copyOptions);
         end
         
                 
@@ -56,7 +55,10 @@ classdef ProcInputClass < handle
                 % CopyHandles instead of plain old assignment statement 
                 eval( sprintf('obj.misc.%s = CopyHandles(obj2.misc.%s, obj.misc.%s);', fields{ii}, fields{ii}) );
             end
-            obj.acquiredEditable = CopyHandles(obj2.acquiredEditable, obj.acquiredEditable);
+            if isempty(obj.acquired)
+                return;
+            end
+            obj.acquired.Copy(obj2.acquired);
         end
         
         
@@ -90,7 +92,7 @@ classdef ProcInputClass < handle
             elseif isproperty(obj.misc, varname)
                 eval(sprintf('varval = obj.misc.%s;', varname));
             else
-                varval = obj.acquiredEditable.GetVar(varname);
+                varval = obj.acquired.GetVar(varname);
             end
             if ~isempty(varval) && exist('iBlk','var')
                 if iscell(varval)
@@ -120,12 +122,25 @@ classdef ProcInputClass < handle
             nbytes(2) = sizeof(obj.mlActMan);
             nbytes(3) = sizeof(obj.misc);
             nbytes(4) = sizeof(obj.stimValSettings);
-            if isempty(obj.acquiredEditable)
+            if isempty(obj.acquired)
                 nbytes(5) = 0;
             else
-                nbytes(5) = obj.acquiredEditable.MemoryRequired();
+                nbytes(5) = obj.acquired.MemoryRequired();
             end
             nbytes = sum(nbytes);
+        end
+
+        
+        
+        % ----------------------------------------------------------------------------------        
+        function SaveAcquiredData(obj)
+            obj.acquired.SaveMutable();
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function b = AcquiredDataModified(obj)
+            b = obj.acquired.DataModified();
         end
         
     end
@@ -188,7 +203,7 @@ classdef ProcInputClass < handle
             if nargin==1
                 t = [];
             end
-            s = obj.acquiredEditable.GetStims(t);
+            s = obj.acquired.GetStims(t);
         end
         
         
@@ -200,7 +215,7 @@ classdef ProcInputClass < handle
             if isempty(condition)
                 return;
             end
-            obj.acquiredEditable.AddStims(tPts, condition);
+            obj.acquired.AddStims(tPts, condition);
         end
 
         
@@ -212,7 +227,7 @@ classdef ProcInputClass < handle
             if ~exist('condition','var')
                 condition = '';
             end
-            obj.acquiredEditable.DeleteStims(tPts, condition);
+            obj.acquired.DeleteStims(tPts, condition);
         end
         
         
@@ -224,7 +239,7 @@ classdef ProcInputClass < handle
             if ~exist('condition','var')
                 condition = '';
             end
-            obj.acquiredEditable.ToggleStims(tPts, condition);
+            obj.acquired.ToggleStims(tPts, condition);
         end
         
         
@@ -236,7 +251,7 @@ classdef ProcInputClass < handle
             if ~exist('condition','var')
                 condition = '';
             end
-            obj.acquiredEditable.MoveStims(tPts, condition);
+            obj.acquired.MoveStims(tPts, condition);
         end
         
         
@@ -250,7 +265,7 @@ classdef ProcInputClass < handle
     
         % ----------------------------------------------------------------------------------
         function SetStimTpts(obj, icond, tpts)
-            obj.acquiredEditable.SetStimTpts(icond, tpts);
+            obj.acquired.SetStimTpts(icond, tpts);
         end
         
     
@@ -259,13 +274,13 @@ classdef ProcInputClass < handle
             if ~exist('icond','var')
                 icond=1;
             end
-            tpts = obj.acquiredEditable.GetStimTpts(icond);
+            tpts = obj.acquired.GetStimTpts(icond);
         end
         
         
         % ----------------------------------------------------------------------------------
         function SetStimDuration(obj, icond, duration)
-            obj.acquiredEditable.SetStimDuration(icond, duration);
+            obj.acquired.SetStimDuration(icond, duration);
         end
         
     
@@ -274,13 +289,13 @@ classdef ProcInputClass < handle
             if ~exist('icond','var')
                 icond=1;
             end
-            duration = obj.acquiredEditable.GetStimDuration(icond);
+            duration = obj.acquired.GetStimDuration(icond);
         end
         
         
         % ----------------------------------------------------------------------------------
         function SetStimValues(obj, icond, vals)
-            obj.acquiredEditable.SetStimValues(icond, vals);
+            obj.acquired.SetStimValues(icond, vals);
         end
         
     
@@ -289,13 +304,13 @@ classdef ProcInputClass < handle
             if ~exist('icond','var')
                 icond=1;
             end
-            vals = obj.acquiredEditable.GetStimValues(icond);
+            vals = obj.acquired.GetStimValues(icond);
         end
         
         
         % ----------------------------------------------------------------------------------
         function CondNames = GetConditions(obj)
-            CondNames = obj.acquiredEditable.GetConditions();
+            CondNames = obj.acquired.GetConditions();
         end
         
         
@@ -304,13 +319,13 @@ classdef ProcInputClass < handle
             if nargin==1
                 return;
             end
-            obj.acquiredEditable.SetConditions(CondNames);
+            obj.acquired.SetConditions(CondNames);
         end
         
         
         % ----------------------------------------------------------------------------------
         function SetStims_MatInput(obj, s, t, CondNames)
-            obj.acquiredEditable.SetStims_MatInput(s, t);
+            obj.acquired.SetStims_MatInput(s, t);
         end
         
         
@@ -318,7 +333,7 @@ classdef ProcInputClass < handle
         function StimReject(obj, t, iBlk)
             tRange = [-2, 10];
             
-            s = obj.acquiredEditable.GetStims(t);
+            s = obj.acquired.GetStims(t);
             dt = (t(end)-t(1))/length(t);
             tRangeIdx = floor(tRange(1)/dt):ceil(tRange(2)/dt);
             smax = max(s,[],2);
@@ -329,7 +344,7 @@ classdef ProcInputClass < handle
                     s(lstS(iS),:) = -1*abs(s(lstS(iS),:));
                 end
             end
-            obj.acquiredEditable.SetStims_MatInput(s, t);
+            obj.acquired.SetStims_MatInput(s, t);
         end
         
         
@@ -337,7 +352,7 @@ classdef ProcInputClass < handle
         function StimInclude(obj, t, iBlk)
             tRange = [-2, 10];
             
-            s = obj.acquiredEditable.GetStims(t);
+            s = obj.acquired.GetStims(t);
             dt = (t(end)-t(1))/length(t);
             tRangeIdx = floor(tRange(1)/dt):ceil(tRange(2)/dt);
             for iC = 1:size(s,2)
@@ -349,21 +364,24 @@ classdef ProcInputClass < handle
                     end
                 end
             end
-            obj.acquiredEditable.SetStims_MatInput(s, t);
+            obj.acquired.SetStims_MatInput(s, t);
         end
         
         
         % ----------------------------------------------------------------------------------
         function RenameCondition(obj, oldname, newname)
-            % Function to rename a condition. Important to remeber that changing the
+            % Function to rename a condition. Important to note that changing the
             % condition involves 2 distinct well defined steps:
+            %
             %   a) For the current element change the name of the specified (old)
-            %      condition for ONLY for ALL the acquired data elements under the
-            %      currElem, be it run, subj, or group . In this step we DO NOT TOUCH
-            %      the condition names of the run, subject or group .
+            %      condition ONLY for ALL the ACQUIRED data elements under the
+            %      current element, be it run, subj, or group . In this step we DO NOT TOUCH
+            %      the derived set of condition names of the run, subject or group .
             %   b) Rebuild condition names and tables of all the tree nodes group, subjects
             %      and runs same as if you were loading during Homer3 startup from the
             %      acquired data.
+            %
+            % This method only implements step a). 
             %
             if ~exist('oldname','var') || ~ischar(oldname)
                 return;
@@ -371,7 +389,7 @@ classdef ProcInputClass < handle
             if ~exist('newname','var')  || ~ischar(newname)
                 return;
             end
-            obj.acquiredEditable.RenameCondition(oldname, newname);
+            obj.acquired.RenameCondition(oldname, newname);
         end
     end   
     

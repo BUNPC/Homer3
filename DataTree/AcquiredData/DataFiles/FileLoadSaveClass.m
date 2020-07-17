@@ -25,7 +25,7 @@ classdef FileLoadSaveClass < matlab.mixin.Copyable
         
         
         % ---------------------------------------------------------
-        function Load(obj, filename, format, params)
+        function Load(obj, filename, params, format)
             if ~exist('filename','var')
                 filename = obj.filename;
             end
@@ -52,16 +52,16 @@ classdef FileLoadSaveClass < matlab.mixin.Copyable
         
         
         % ---------------------------------------------------------
-        function Save(obj, filename, format, params)
+        function Save(obj, filename, params, format)
             if ~exist('filename','var')
                 filename = obj.filename;
+            end            
+            if ~exist('params','var')
+                params = [];
             end            
             if ~exist('format','var')
                 format = obj.fileformat;
             end
-            if ~exist('params','var')
-                params = [];
-            end            
                        
             switch(lower(format))
                 case obj.supportedFomats.matlab

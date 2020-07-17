@@ -320,6 +320,11 @@ classdef ProcStreamClass < handle
             end
         end
         
+        % ----------------------------------------------------------------------------------
+        function b = AcquiredDataModified(obj)
+            b = obj.input.AcquiredDataModified();
+        end
+        
     end
     
     

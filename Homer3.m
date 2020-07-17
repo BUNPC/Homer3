@@ -18,7 +18,7 @@ if ~exist('groupDirs','var') || isempty(groupDirs)
     groupDirs = convertToStandardPath(pwd);
 end
 if ~exist('inputFileFormat','var') || isempty(inputFileFormat)
-    inputFileFormat='snirf';
+    inputFileFormat = '.snirf';
 end
 cfg = ConfigFileClass();
 

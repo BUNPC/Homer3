@@ -107,9 +107,7 @@ varargin = args;
 %     PlotProbeGUI(datatype, condition, pos)
 
 % Arguments take precedence over parent gui parameters
-if length(varargin)==0
-    return;                                                 % PlotProbeGUI()
-elseif length(varargin)==1
+if length(varargin)==1
     if iswholenum(varargin{1}) & length(varargin{1})==1
         plotprobe.datatype = varargin{1};                   % PlotProbeGUI(datatype)
     else
@@ -223,6 +221,7 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 Initialize(handles);
+plotprobe.updateParentGui = [];
 
 % Parse GUI args
 ParseArgs(varargin);
@@ -260,6 +259,15 @@ DisplayData(handles, hObject);
 
 
 % ----------------------------------------------------------------------
+function SetWindowTitle(handles)
+global plotprobe
+
+windowtitlenew = sprintf('PlotProbeGUI:   %s', plotprobe.dataTree.currElem.GetName());
+set(handles.figure, 'name', windowtitlenew)
+
+
+
+% ----------------------------------------------------------------------
 function DisplayData(handles, hObject)
 global plotprobe
 
@@ -284,6 +292,13 @@ axis off;
 condition = plotprobe.condition;
 datatype  = plotprobe.datatype;
 currElem  = plotprobe.dataTree.currElem;
+
+% Load current element data from file
+if currElem.IsEmpty()
+    currElem.Load();
+end
+
+SetWindowTitle(handles)
 
 % Clear axes of previous data, before redisplaying it
 ClearAxesData();
@@ -542,7 +557,12 @@ end
 % ----------------------------------------------------------------------
 function PlotProbeGUI_Close(hObject, eventdata, handles)
 global plotprobe
-plotprobe.updateParentGui('PlotProbeGUI');
+if isempty(plotprobe)
+    return
+end
+if ~isempty(plotprobe.updateParentGui) 
+	plotprobe.updateParentGui('PlotProbeGUI');
+end
 if ishandles(plotprobe.handles.figureDup)
     delete(plotprobe.handles.figureDup);
 end
@@ -561,11 +581,18 @@ end
 ParseArgs(varargin);
 axes(handles.axes1);
 
+SetWindowTitle(handles)
+
 condition = plotprobe.condition;
 datatype  = plotprobe.datatype;
 
 % Clear axes of previous data, before redisplaying it
 ClearAxesData();
+
+% Load current element data from file
+if plotprobe.dataTree.currElem.IsEmpty()
+    plotprobe.dataTree.currElem.Load();
+end
 
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 plotprobe.y = cell(nDataBlks,1);

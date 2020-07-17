@@ -249,7 +249,9 @@ if stimEdit.status==0
     return;
 end
 StimEditGUI_Display(handles);
-stimEdit.updateParentGui('StimEditGUI');
+if ~isempty(stimEdit.updateParentGui)
+    stimEdit.updateParentGui('StimEditGUI');
+end
 figure(handles.figure);
 
 % Reset status

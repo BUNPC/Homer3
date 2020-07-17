@@ -22,6 +22,11 @@ if stimEdit.dataTree.currElem.iRun==0
     return;
 end
 
+% Load current element data from file
+if stimEdit.dataTree.currElem.IsEmpty()
+    stimEdit.dataTree.currElem.Load();
+end
+
 iG = stimEdit.dataTree.GetCurrElemIndexID();
 CondNamesGroup = stimEdit.dataTree.groups(iG).GetConditions();
 CondColTbl     = stimEdit.dataTree.groups(iG).CondColTbl();

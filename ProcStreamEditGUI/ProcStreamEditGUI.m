@@ -20,11 +20,17 @@ else
 end
 
 
+% -------------------------------------------------------------
+function ProcStreamEditGUI_Close()
+global procStreamEdit
+procStreamEdit.updateParentGui('ProcStreamEditGUI', 'close');
+
+
 
 % -------------------------------------------------------------
 function varargout = ProcStreamEditGUI_OutputFcn(hObject, eventdata, handles)
 handles.updateptr = @ProcStreamEditGUI_Update;
-handles.closeptr = [];
+handles.closeptr = @ProcStreamEditGUI_Close;
 varargout{1} = handles;
 
 

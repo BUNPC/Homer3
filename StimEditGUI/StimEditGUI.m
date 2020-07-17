@@ -21,9 +21,16 @@ end
 
 
 % -------------------------------------------------------------
+function StimEditGUI_Close()
+global stimEdit
+stimEdit.updateParentGui('StimEditGUI', 'close');
+
+
+
+% -------------------------------------------------------------
 function varargout = StimEditGUI_OutputFcn(hObject, eventdata, handles)
 handles.updateptr = @StimEditGUI_Update;
-handles.closeptr = [];
+handles.closeptr = @StimEditGUI_Close;
 varargout{1} = handles;
 
 
@@ -552,7 +559,6 @@ stimEdit.dataTree.currElem.SetStimValues(icond, data(:,3));
 
 % -------------------------------------------------------------------
 function StimEditGUI_DeleteFcn(hObject, eventdata, handles)
-edit ProcStreamOptionsGUI.m
 
 
 

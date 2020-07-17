@@ -67,12 +67,12 @@ checkboxApplyProcStreamEditToAll_Callback([]);
 pushbuttonCalcProcStream_Callback([]);
 listboxFilesErr_Callback([]);
 uipanelPlot_SelectionChangeFcn([]);
-menuItemProcStreamEdit_Callback([]);
-menuItemPlotProbe_Callback([]);
+menuItemProcStreamEditGUI_Callback([]);
+menuItemPlotProbeGUI_Callback([]);
 menuItemSaveGroup_Callback([]);
 menuItemViewHRFStdErr_Callback([]);
-menuItemLaunchStimGUI_Callback([]);
-pushbuttonProcStreamOptionsEdit_Callback([]);
+menuItemStimEditGUI_Callback([]);
+pushbuttonProcStreamOptionsGUI_Callback([]);
 guiControls_ButtonDownFcn([]);
 axesSDG_ButtonDownFcn([]);
 popupmenuConditions_Callback([]);
@@ -88,42 +88,49 @@ uipanelProcessingType_SelectionChangeFcn([]);
 % ---------------------------------------------------------------------
 function MainGUI_EnableDisableGUI(handles, val)
 
-    set(handles.listboxGroupTree, 'enable', val);
-    set(handles.radiobuttonProcTypeGroup, 'enable', val);
-    set(handles.radiobuttonProcTypeSubj, 'enable', val);
-    set(handles.radiobuttonProcTypeRun, 'enable', val);
-    set(handles.radiobuttonPlotRaw, 'enable', val);
-    set(handles.radiobuttonPlotOD,  'enable', val);
-    set(handles.radiobuttonPlotConc, 'enable', val);
-    set(handles.checkboxPlotHRF, 'enable', val);
-    set(handles.textStatus, 'enable', val);
-    set(handles.listboxPlotConc, 'enable', val);
-    % Plot window panel
-    set(handles.pushbuttonPanLeft, 'enable', val);
-    set(handles.pushbuttonPanRight, 'enable', val);
-    set(handles.pushbuttonPanLeft, 'enable', val);
-    set(handles.pushbuttonResetView, 'enable', val);
-    set(handles.pushbuttonPanLeft, 'enable', val);
-    set(handles.checkboxFixRangeX, 'enable', val);
-    set(handles.editFixRangeX, 'enable', val);
-    set(handles.checkboxFixRangeY, 'enable', val);
-    set(handles.editFixRangeY, 'enable', val);
-    % Motion artifact panel
-    set(handles.checkboxShowExcludedTimeManual, 'enable', val);
-    set(handles.checkboxShowExcludedTimeAuto, 'enable', val);
-    set(handles.checkboxShowExcludedTimeAutoByChannel, 'enable', val);
-    set(handles.checkboxExcludeTime, 'enable', val);
-    % Control
-    set(handles.pushbuttonCalcProcStream, 'enable', val);
-    set(handles.pushbuttonProcStreamOptionsEdit, 'enable', val);
-    set(handles.checkboxApplyProcStreamEditToAll, 'enable', val);
-    % Menu
-    set(handles.ToolsMenu, 'enable', val);
-    set(handles.ViewMenu, 'enable', val);
-    set(handles.menuItemSaveGroup, 'enable', val);
-    set(handles.menuItemExport, 'enable', val);
-    set(handles.menuItemReset, 'enable', val);
-    set(handles.menuItemResetGroupFolder, 'enable', val)
+set(handles.listboxGroupTree, 'enable', val);
+set(handles.radiobuttonProcTypeGroup, 'enable', val);
+set(handles.radiobuttonProcTypeSubj, 'enable', val);
+set(handles.radiobuttonProcTypeRun, 'enable', val);
+set(handles.radiobuttonPlotRaw, 'enable', val);
+set(handles.radiobuttonPlotOD,  'enable', val);
+set(handles.radiobuttonPlotConc, 'enable', val);
+set(handles.checkboxPlotHRF, 'enable', val);
+set(handles.textStatus, 'enable', val);
+set(handles.listboxPlotConc, 'enable', val);
+
+% Plot window panel
+set(handles.pushbuttonPanLeft, 'enable', val);
+set(handles.pushbuttonPanRight, 'enable', val);
+set(handles.pushbuttonPanLeft, 'enable', val);
+set(handles.pushbuttonResetView, 'enable', val);
+set(handles.pushbuttonPanLeft, 'enable', val);
+set(handles.checkboxFixRangeX, 'enable', val);
+set(handles.editFixRangeX, 'enable', val);
+set(handles.checkboxFixRangeY, 'enable', val);
+set(handles.editFixRangeY, 'enable', val);
+
+% Motion artifact panel
+set(handles.checkboxShowExcludedTimeManual, 'enable', val);
+set(handles.checkboxShowExcludedTimeAuto, 'enable', val);
+set(handles.checkboxShowExcludedTimeAutoByChannel, 'enable', val);
+set(handles.checkboxExcludeTime, 'enable', val);
+
+% Control
+set(handles.pushbuttonCalcProcStream, 'enable', val);
+set(handles.pushbuttonProcStreamOptionsGUI, 'enable', val);
+set(handles.checkboxApplyProcStreamEditToAll, 'enable', val);
+
+% Menu
+set(handles.ToolsMenu, 'enable', val);
+set(handles.ViewMenu, 'enable', val);
+set(handles.menuItemSaveGroup, 'enable', val);
+set(handles.menuItemExport, 'enable', val);
+set(handles.menuItemReset, 'enable', val);
+set(handles.menuItemResetGroupFolder, 'enable', val)
+
+
+
 
 
 % --------------------------------------------------------------------
@@ -413,7 +420,7 @@ MainGUI_EnableDisableGUI(handles,'off');
 % Save original selection in listboxGroupTree because it'll change during auto processing 
 val0 = get(handles.listboxGroupTree, 'value');
 
-% Measure elapsed time
+% Measure elapsed time of calculation
 t = tic;
 
 % Set the display status to pending. In order to avoid redisplaying 
@@ -641,7 +648,7 @@ axis off
 
 
 % --------------------------------------------------------------------
-function [eventdata, handles] = pushbuttonProcStreamOptionsEdit_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = pushbuttonProcStreamOptionsGUI_Callback(hObject, eventdata, handles)
 global maingui
 if ~ishandles(hObject)
     return;
@@ -675,19 +682,19 @@ end
 
 
 % --------------------------------------------------------------------
-function menuItemPlotProbe_Callback(hObject, eventdata, handles)
+function menuItemPlotProbeGUI_Callback(hObject, eventdata, handles)
 LaunchChildGuiFromMenu('PlotProbeGUI', hObject);
 
 
 
 % -------------------------------------------------------------------
-function [eventdata, handles] = menuItemLaunchStimGUI_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = menuItemStimEditGUI_Callback(hObject, eventdata, handles)
 LaunchChildGuiFromMenu('StimEditGUI', hObject);
 
 
 
 % --------------------------------------------------------------------
-function [eventdata, handles] = menuItemProcStreamEdit_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = menuItemProcStreamEditGUI_Callback(hObject, eventdata, handles)
 LaunchChildGuiFromMenu('ProcStreamEditGUI', hObject);
 
 
@@ -1172,23 +1179,35 @@ end
 function Update(varargin)
 global maingui
 
-% Which application called us? 
+% Args: 1) Which application called us? 2) What action is being performed?
 guiname = '';
+action = '';
 if nargin>0
     guiname = varargin{1};
+end
+if nargin>1
+    action = varargin{2};
 end
 
 % Redisplay main GUI based on what was done in the calling app
 switch(guiname)
     case 'PlotProbeGUI'
-        set(maingui.handles.menuItemPlotProbe, 'checked','off'); 
+        set(maingui.handles.menuItemPlotProbeGUI, 'checked','off'); 
     case 'StimEditGUI'
-        Display(maingui.handles, maingui.handles.axesData);  % Redisplay data axes since stims might have edited
+        if strcmp(action, 'close')
+            set(maingui.handles.menuItemStimEditGUI, 'checked','off'); 
+        else
+            Display(maingui.handles, maingui.handles.axesData);  % Redisplay data axes since stims might have edited
+        end
     case 'ProcStreamOptionsGUI'
-        set(maingui.handles.pushbuttonProcStreamOptionsEdit, 'value',0);  % Redisplay enable/disable toggle button 
+        set(maingui.handles.pushbuttonProcStreamOptionsGUI, 'value',0);  % Redisplay enable/disable toggle button 
     case 'ProcStreamEditGUI'
-        idx = FindChildGuiIdx('ProcStreamOptionsGUI');
-        maingui.childguis(idx).Update();
+        if strcmp(action, 'close')
+            set(maingui.handles.menuItemProcStreamEditGUI, 'checked','off'); 
+        else
+            idx = FindChildGuiIdx('ProcStreamOptionsGUI');
+            maingui.childguis(idx).Update();
+        end
     case 'DataTreeClass'
         if ~isempty(maingui.handles)
             iGroup = varargin{2}(1);
@@ -1590,9 +1609,3 @@ else
 end
 
 
-
-% --------------------------------------------------------------------
-function SettingsMenu_Callback(hObject, eventdata, handles)
-% hObject    handle to SettingsMenu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)

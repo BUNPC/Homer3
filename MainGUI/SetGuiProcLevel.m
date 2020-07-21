@@ -21,6 +21,9 @@ end
 views = maingui.listboxGroupTreeParams.views;
 viewSetting = maingui.listboxGroupTreeParams.viewSetting;
 
+% Save changes to any child GUIs before switching context
+SaveChildGuis();
+
 % First handle the cases NOT dependent on view type
 if     listboxGroupTreeMap == maingui.rid && procLevelSelect==maingui.rid   % Case 1: Input  - List Entry maps to run(iGroup, iSubj, iRun);  Proc level setting: Run
     set(handles.radiobuttonProcTypeRun, 'value',1);                 %         Output - Proc level setting: run;      currElem: run(iGroup, iSubj, iRun)
@@ -71,3 +74,18 @@ else
         end
     end
 end
+
+
+
+% --------------------------------------------------------------------
+function SaveChildGuis(handles)
+global maingui
+if isempty(maingui.childguis)
+    return;
+end
+for ii=1:length(maingui.childguis)
+    maingui.childguis(ii).Save();
+end
+
+
+

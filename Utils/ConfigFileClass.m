@@ -14,16 +14,14 @@ classdef ConfigFileClass < FileClass
             obj.filename = '';
             
             % Error checks
-            if nargin==0
+            if ~exist('filename0','var') || isempty(filename0)
                 if isdeployed()
                     filename0 = [getAppDir(), 'AppSettings.cfg'];
                 else
                     filename0 = which('AppSettings.cfg');
                 end
-            elseif nargin>1
-                obj.params = params;
             end
-            
+                                    
             [pname, fname, ext] = fileparts(filename0); 
             if isempty(pname)
                 pname = '.';
@@ -41,6 +39,7 @@ classdef ConfigFileClass < FileClass
             if obj.fid<0
                 return;
             end
+                       
 
             % We have a filename of an existing readable file.
             try 

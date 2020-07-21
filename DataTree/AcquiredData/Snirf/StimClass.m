@@ -91,7 +91,10 @@ classdef StimClass < FileLoadSaveClass
                 
                 % Load datasets
                 obj.name   = HDF5_DatasetLoad(gid, 'name');
-                obj.data   = HDF5_DatasetLoad(gid, 'data', [], '2D');
+                obj.data   = HDF5_DatasetLoad(gid, 'data', [], '2D');                
+                if all(obj.data(:)==0)
+                    obj.data = [];
+                end
                 
                 % Close group
                 HDF5_GroupClose(fileobj, gid, fid);
@@ -109,6 +112,10 @@ classdef StimClass < FileLoadSaveClass
         
         % -------------------------------------------------------
         function SaveHdf5(obj, fileobj, location)
+            if isempty(obj.data)
+                obj.data = 0;
+            end
+            
             % Arg 1
             if ~exist('fileobj', 'var') || isempty(fileobj)
                 error('Unable to save file. No file name given.')
@@ -120,7 +127,7 @@ classdef StimClass < FileLoadSaveClass
             elseif location(1)~='/'
                 location = ['/',location];
             end
-                       
+
             if ~exist(fileobj, 'file')
                 fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
@@ -129,10 +136,9 @@ classdef StimClass < FileLoadSaveClass
             
             % Since this is a writable writeable parameter AFTER it's creation, we 
             % call hdf5write_safe with the 'rw' option
-            if ~isempty(obj.data)
-                hdf5write_safe(fileobj, [location, '/data'], obj.data, 'rw:2D');
-            end
+            hdf5write_safe(fileobj, [location, '/data'], obj.data, 'rw:2D');
         end
+        
         
                 
         % -------------------------------------------------------
@@ -420,6 +426,9 @@ classdef StimClass < FileLoadSaveClass
                 return;
             end
             if isempty(obj.data)
+                return;
+            end
+            if all(obj.data(:)==0)
                 return;
             end
             b = false;

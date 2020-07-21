@@ -22,7 +22,7 @@ classdef ChildGuiClass < handle
             %   Child GUIs must follow certain rules to be managed by this 
             %   class. Rules are these:
             % 
-            %       a) GUI output function <gui_name>_OutputFcn callback 
+            %       a) GUI output function <gui_name>_OutputFcn callback
             %          function must be in this form:
             % 
             %           function varargout = <gui_name>_OutputFcn(hObject, eventdata, handles)
@@ -44,7 +44,7 @@ classdef ChildGuiClass < handle
             %
             
             obj.name = '';
-            obj.handles = struct('figure',[], 'updateptr',[], 'closeptr',[]);
+            obj.handles = struct('figure',[], 'updateptr',[], 'closeptr',[], 'saveptr',[]);
             obj.args = {};
             obj.visible = 'on';
             obj.lastpos = [];
@@ -84,7 +84,7 @@ classdef ChildGuiClass < handle
                             obj.Launch(a{1}, a{2}, a{3}, a{4});
                         case 5
                             obj.Launch(a{1}, a{2}, a{3}, a{4}, a{5});
-                        case 5
+                        case 6
                             obj.Launch(a{1}, a{2}, a{3}, a{4}, a{5}, a{6});
                     end
                 end
@@ -183,11 +183,11 @@ classdef ChildGuiClass < handle
                 return;
             end
             
-            % Allow up to 5 arguments to be passed to GUI
+            % Allow up to 6 arguments to be passed to GUI
             a = obj.args;
             switch(length(a))
                 % Note that in addition to the guis known args we add as the last arg the last gui position. 
-                % We do this because even we can set the position after launching gui, it is much nices when 
+                % We do this because even if we can set the position after launching gui, it is much nicer when 
                 % the gui is not seen to change position. If the position is set from within the GUI it 
                 % appears only in the position we pass it since it is invisible until the gui's open function 
                 % exits
@@ -206,6 +206,26 @@ classdef ChildGuiClass < handle
                 case 6
                     eval( sprintf('obj.handles.updateptr(obj.handles, a{1}, a{2}, a{3}, a{4}, a{5}, a{6});') );
             end
+        end
+        
+        
+        
+        % -------------------------------------------------------------------
+        function Save(obj)
+            if isempty(obj.name)
+                return;
+            end            
+            if isempty(obj.handles)
+                return;
+            end
+            if ~ishandle(obj.handles.figure)
+                % If GUI is not already up and running, then exit
+                return;
+            end
+            if ~isa(obj.handles.saveptr, 'function_handle')
+                return;
+            end            
+            obj.handles.saveptr();            
         end
         
         

@@ -1,4 +1,4 @@
-function HDF5_WriteStrings(fname, location, data)
+function HDF5_DatasetWriteStrings(fname, location, data)
 
 if ~exist(fname, 'file')
     fid = H5F.create(fname, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');

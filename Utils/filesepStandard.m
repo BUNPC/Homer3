@@ -1,8 +1,8 @@
-function pathname = filesepStandard(pathname0)
+function pathname = filesepStandard(pathname0, options)
 
 %
 % Usage:
-%    pathname = filesepStandard(pathname)
+%    pathname = filesepStandard(pathname, options)
 %
 % Takes a pathname as argument and replaces any non-standard file/folder
 % separators with standard ones, that is '/'. It also gets rid of redundant
@@ -20,8 +20,14 @@ function pathname = filesepStandard(pathname0)
 %
 
 pathname = [];
-if ~isdir_private(pathname0) && ~isfile_private(pathname0)    
-    return
+
+if ~exist('options', 'var')
+    options = '';
+end
+if ~optionExists(options,'nameonly')
+    if ~isdir_private(pathname0) && ~isfile_private(pathname0)
+        return
+    end
 end
 if ~ischar(pathname0)
     return

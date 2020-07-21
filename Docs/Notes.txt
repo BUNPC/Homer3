@@ -211,3 +211,51 @@ Zoom Meeting with Steve Tucker, David Boas and
 -- Snirf validator, Snirf samples git repo, HDFView, Data space. 
  
 
+=============================
+Jul 17, 2020
+
+
+groups = '/g1/g2/g3/g4/g5/ds'
+groups = fileparts(groups)
+r = fileparts('/')
+r = fileparts('/g1')
+groups = '/g1/g2/g3/g4/g5/ds'
+err = HDF5WriteDataset2('tryme.h5', groups, data)
+delete tryme.crap
+delete tryme.*
+err = HDF5WriteDataset2('tryme.h5', groups, data)
+delete tryme.*
+err = HDF5WriteDataset2('tryme.h5', groups, data)
+fid = H5F.create('tryme.h5', 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
+gid = H5G.open(fid, '/')
+H5G.close()
+H5G.close(gid)
+H5F.close(fid)
+delete tryme.*
+delete tryme.*; err = HDF5WriteDataset2('tryme.h5', groups, data)
+dbquit
+delete tryme.*; err = HDF5WriteDataset2('tryme.h5', groups, data)
+location = groups;
+data2 = h5read(fname, location);
+fname = 'tryme.h5'
+data2 = h5read(fname, location);
+data2
+data
+data3 = round(100*rand(5,3));
+err = HDF5WriteDataset2('tryme.h5', groups, data)
+data3
+data2 = h5read(fname, location);
+data2
+data
+err = HDF5WriteDataset2('tryme.h5', groups, data3)
+err = HDF5WriteDataset('tryme.h5', groups, data3)
+h5disp(fname)
+err = HDF5_DatasetWrite('tryme.h5', groups, data3)
+h5disp(fname)
+err = HDF5_DatasetWrite('tryme.h5', groups, data3)
+H5D.set_extent(dset_id, size(data))
+
+
+https://www.mathworks.com/matlabcentral/answers/415137-how-do-i-replace-a-dataset-in-an-hdf5-file-with-a-smaller-dataset-without-leaving-some-values-of-th
+https://portal.hdfgroup.org/display/HDF5/H5D_SET_EXTENT
+

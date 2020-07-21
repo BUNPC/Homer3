@@ -23,14 +23,18 @@ end
 % -------------------------------------------------------------
 function StimEditGUI_Close()
 global stimEdit
-stimEdit.updateParentGui('StimEditGUI', 'close');
+if ~isempty(stimEdit.updateParentGui)
+    stimEdit.updateParentGui('StimEditGUI', 'close');
+end
+Save()
 
 
 
 % -------------------------------------------------------------
 function varargout = StimEditGUI_OutputFcn(hObject, eventdata, handles)
-handles.updateptr = @StimEditGUI_Update;
+handles.updateptr = @Update;
 handles.closeptr = @StimEditGUI_Close;
+handles.saveptr = @Save;
 varargout{1} = handles;
 
 
@@ -73,6 +77,10 @@ stimEdit.groupDirs = {};
 stimEdit.format = '';
 stimEdit.pos = [];
 stimEdit.updateParentGui = [];
+
+cfg = ConfigFileClass();
+stimEdit.config.autoSaveAcqFiles = cfg.GetValue('Auto Save Acquisition Files');
+
 
 if ~isempty(maingui)
     stimEdit.groupDirs = maingui.groupDirs;
@@ -129,14 +137,15 @@ if stimEdit.dataTree.IsEmpty()
     return;
 end
 if isempty(stimEdit.dataTree)
-    StimEditGUI_EnableGuiObjects('off', hObject);
+    EnableGuiObjects('off', hObject);
     return;
 end
 set(get(handles.axes1,'children'), 'ButtonDownFcn', @axes1_ButtonDownFcn);
 zoom(hObject,'off');
-StimEditGUI_Update(handles);
-StimEditGUI_EnableGuiObjects('on', handles);
+Update(handles);
+EnableGuiObjects('on', handles);
 stimEdit.status=0;
+
 
 
 
@@ -153,7 +162,7 @@ function popupmenuConditions_Callback(hObject, eventdata, handles)
 conditions = get(hObject, 'string');
 idx = get(hObject, 'value');
 condition = conditions{idx};
-StimEditGUI_SetUitableStimInfo(condition, handles);
+SetUitableStimInfo(condition, handles);
 
 
 
@@ -168,8 +177,10 @@ EditSelectTpts(tPts_select);
 if stimEdit.status==0
     return;
 end
-StimEditGUI_Display(handles);
-stimEdit.updateParentGui('StimEditGUI');
+Display(handles);
+if ~isempty(stimEdit.updateParentGui)
+    stimEdit.updateParentGui('StimEditGUI');
+end
 figure(handles.figure);
 
 % Reset status only should be set/reset in top-level gui functions (ie
@@ -184,15 +195,17 @@ global stimEdit
 
 data = get(hObject,'data') ;
 conditions =  stimEdit.dataTree.currElem.GetConditions();
-icond = StimEditGUI_GetConditionIdxFromPopupmenu(conditions, handles);
+icond = GetConditionIdxFromPopupmenu(conditions, handles);
 SetStimData(icond, data);
 r=eventdata.Indices(1);
 c=eventdata.Indices(2);
 if c==2
     return;
 end
-StimEditGUI_Display(handles);
-stimEdit.updateParentGui('StimEditGUI');
+Display(handles);
+if ~isempty(stimEdit.updateParentGui)
+    stimEdit.updateParentGui('StimEditGUI');
+end
 figure(handles.figure);
 
 
@@ -235,8 +248,10 @@ if stimEdit.status ~= 0
 end
 stimEdit.dataTree.groups(iG).SetConditions();
 set(handles.popupmenuConditions, 'string', stimEdit.dataTree.groups(iG).GetConditions());
-StimEditGUI_Display(handles);
-stimEdit.updateParentGui('StimEditGUI');
+Display(handles);
+if ~isempty(stimEdit.updateParentGui)
+    stimEdit.updateParentGui('StimEditGUI');
+end
 figure(handles.figure);
 
 
@@ -255,7 +270,7 @@ EditSelectRange(t1, t2, handles);
 if stimEdit.status==0
     return;
 end
-StimEditGUI_Display(handles);
+Display(handles);
 if ~isempty(stimEdit.updateParentGui)
     stimEdit.updateParentGui('StimEditGUI');
 end
@@ -542,10 +557,12 @@ end
 duration = stimEdit.dataTree.currElem.GetStimDuration(icond);
 
 
+
 % -------------------------------------------------------------------
 function [tpts, duration, vals] = GetStimData(icond)
 global stimEdit
 [tpts, duration, vals] = stimEdit.dataTree.currElem.GetStimData(icond);
+
 
 
 % -------------------------------------------------------------------
@@ -558,7 +575,39 @@ stimEdit.dataTree.currElem.SetStimValues(icond, data(:,3));
 
 
 % -------------------------------------------------------------------
+function Save()
+global stimEdit
+
+% If nothing changes, nothing to save, so exit
+if ~stimEdit.dataTree.currElem.AcquiredDataModified()
+    return
+end
+
+% Check auto-save config parameter
+if ~strcmpi(stimEdit.config.autoSaveAcqFiles, 'yes')
+    % Ask user if they want to save, before changing contents of acquisition file
+    if stimEdit.dataTree.currElem.IsRun()
+        msg = sprintf('Do you want to save stimulus edits directly in the acquisition file %s?', stimEdit.dataTree.currElem.name);
+    else
+        msg = sprintf('Do you want to save stimulus edits directly in acquisition files in %s?', stimEdit.dataTree.currElem.name);
+    end
+    q = MenuBox(msg, {'YES','NO'});
+    if q==2
+        return;
+    end
+else
+    % Otherwise auto-save 
+    fprintf('StimEditGUI: auto-saving ...\n')
+end
+
+% Update acquisition file with new contents
+stimEdit.dataTree.currElem.SaveAcquiredData()
+
+
+
+% -------------------------------------------------------------------
 function StimEditGUI_DeleteFcn(hObject, eventdata, handles)
+Save()
 
 
 
@@ -580,4 +629,212 @@ if ~ishandles(hObject)
     return;
 end
 stimEdit.dataTree.currElem.Save();
+
+
+
+% --------------------------------------------------------------------
+function Update(handles)
+global stimEdit
+
+if ~exist('handles','var') || isempty(handles)
+    return;
+end
+if ~ishandles(handles.figure)
+    return;
+end
+conditions =  stimEdit.dataTree.currElem.GetConditions();
+filename = stimEdit.dataTree.currElem.GetName();
+[~, fname, ext] = fileparts(filename);
+SetTextFilename([fname, ext, ' :'], handles);
+
+% Try to keep the same condition as old run
+[icond, conditions] = GetConditionIdxFromPopupmenu(conditions, handles);
+set(handles.popupmenuConditions, 'value',icond);
+set(handles.popupmenuConditions, 'string',conditions);
+SetUitableStimInfo(conditions{icond}, handles);
+Display(handles);
+figure(handles.figure);
+
+
+% -----------------------------------------------------------
+function EnableGuiObjects(onoff, handles)
+if ~exist('handles','var') || isempty(handles)
+    return;
+end
+if ~isstruct(handles)
+    return;
+end
+fields = fieldnames(handles);
+for ii=1:length(fields)
+    sprintf('enableHandle(%s, onoff);', fields{ii});
+end
+
+
+% -----------------------------------------------------------
+function enableHandle(handle, onoff)
+if eval( sprintf('ishandles(obj.handles.%s)', handle) )
+    eval( sprintf('set(obj.handles.%s, ''enable'',onoff);', handle) );
+end
+
+
+
+% -----------------------------------------------------------
+function [icond, conditions] = GetConditionIdxFromPopupmenu(conditions, handles)
+conditions_menu = get(handles.popupmenuConditions, 'string');
+idx = get(handles.popupmenuConditions, 'value');
+if isempty(conditions_menu)
+    icond = 1;
+    return;
+end
+condition = conditions_menu{idx};
+icond = find(strcmp(conditions, condition));
+if isempty(icond)
+    icond = 1;
+end
+
+
+
+% -----------------------------------------------------------
+function SetTextFilename(name, handles)
+if isempty(handles)
+    return;
+end
+if ~ishandles(handles.textFilename)
+    return;
+end
+n = length(name);
+set(handles.textFilename, 'units','characters');
+p = get(handles.textFilename, 'position');
+set(handles.textFilename, 'position',[p(1), p(2), n+.50*n, p(4)]);
+set(handles.textFilename, 'units','normalized');
+set(handles.textFilename, 'string',name);
+
+
+
+% -----------------------------------------------------------
+function Display(handles)
+global stimEdit
+
+if isempty(stimEdit.dataTree)
+    return;
+end
+if isempty(handles)
+    return;
+end
+if ~ishandles(handles.axes1)
+    return;
+end
+
+axes(handles.axes1)
+cla(handles.axes1);
+set(handles.axes1, 'ytick','');
+hold(handles.axes1, 'on');
+
+% As of now this operation is undefined for non-Run nodes (i.e., Subj and Group)
+% So we clear the axes and exit
+if stimEdit.dataTree.currElem.iRun==0
+    return;
+end
+
+% Load current element data from file
+if stimEdit.dataTree.currElem.IsEmpty()
+    stimEdit.dataTree.currElem.Load();
+end
+
+iG = stimEdit.dataTree.GetCurrElemIndexID();
+CondNamesGroup = stimEdit.dataTree.groups(iG).GetConditions();
+CondColTbl     = stimEdit.dataTree.groups(iG).CondColTbl();
+t              = stimEdit.dataTree.currElem.GetTimeCombined();
+s              = stimEdit.dataTree.currElem.GetStims(t);
+stimVals       = stimEdit.dataTree.currElem.GetStimValSettings();
+
+[lstR,lstC] = find(abs(s) ~= stimVals.none);
+[lstR,k] = sort(lstR);
+lstC = lstC(k);
+nStim = length(lstR);
+yy = get(handles.axes1, 'ylim');
+Lines = InitStimLines(length(lstR));
+idxLg=[];
+hLg=[];
+kk=1;
+for ii=1:nStim
+    if(s(lstR(ii),lstC(ii))==stimVals.incl)
+        linestyle = '-';
+    elseif(s(lstR(ii),lstC(ii))==stimVals.excl_manual)
+        linestyle = '--';
+    elseif(s(lstR(ii),lstC(ii))==stimVals.excl_auto)
+        linestyle = '-.';
+    end
+    Lines(ii).handle = plot([1 1]*t(lstR(ii)), yy, linestyle, 'parent',handles.axes1);
+    
+    iCond = lstC(ii);
+    Lines(ii).color = CondColTbl(iCond,1:3);
+    try
+        set(Lines(ii).handle,'color',Lines(ii).color);
+    catch
+        fprintf('ERROR!!!!\n');
+    end
+    set(Lines(ii).handle, 'linewidth',Lines(ii).widthReg);
+    
+    % Check which conditions are represented in S for the conditions
+    % legend display.
+    if ~ismember(iCond, idxLg)
+        hLg(kk) = plot([1 1]*t(1), yy,'-', 'color',Lines(ii).color, 'linewidth',4, 'visible','off', 'parent',handles.axes1);
+        idxLg(kk) = iCond;
+        kk=kk+1;
+    end
+end
+
+% Update legend
+[idxLg,k] = sort(idxLg);
+if ~isempty(hLg)
+    hLg = legend(hLg(k), CondNamesGroup(idxLg));
+end
+set(handles.axes1,'xlim', [t(1), t(end)]);
+
+% Update conditions popupmenu
+set(handles.popupmenuConditions, 'string', sort(stimEdit.dataTree.currElem.GetConditions()));
+conditions = get(handles.popupmenuConditions, 'string');
+idx = get(handles.popupmenuConditions, 'value');
+condition = conditions{idx};
+SetUitableStimInfo(condition, handles);
+
+
+% -----------------------------------------------------------
+function Lines = InitStimLines(n)
+if ~exist('n','var')
+    n = 0;
+end
+Lines = repmat( struct('handle',[], 'color',[], 'widthReg',2, 'widthHighl',4), n,1);
+
+
+
+
+% -----------------------------------------------------------
+function SetUitableStimInfo(condition, handles)
+global stimEdit
+
+if ~exist('condition','var')
+    return;
+end
+conditions =  stimEdit.dataTree.currElem.GetConditions();
+if isempty(conditions)
+    return;
+end
+icond = find(strcmp(conditions, condition));
+if isempty(icond)
+    return;
+end
+[tpts, duration, vals] = stimEdit.dataTree.currElem.GetStimData(icond);
+if isempty(tpts)
+    set(handles.uitableStimInfo, 'data',[]);
+    return;
+end
+[~,idx] = sort(tpts);
+data = zeros(length(tpts),3);
+data(:,1) = tpts(idx);
+data(:,2) = duration(idx);
+data(:,3) = vals(idx);
+set(handles.uitableStimInfo, 'data',data);
+
 

@@ -12,6 +12,9 @@ function [p, b] = guiOutsideScreenBorders(hObject)
 %
 
 b = [0, 0, 0, 0];
+u0 = get(hObject, 'units');
+
+set(hObject, 'units','characters');
 p = get(hObject,'position');
 
 % Set screen units to be same as GUI
@@ -61,5 +64,4 @@ p = p - b;
 
 % Set the screen units back to pixels
 set(0,'units','pixels');
-
-
+set(hObject, 'units',u0);

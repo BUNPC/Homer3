@@ -57,6 +57,8 @@ end
 positionGUI(hFig, 0.15, 0.05, 0.80, 0.90)
 setGuiFonts(hFig);
 
+set(handles.togglebuttonMinimizeGUI, 'tooltipstring','Minimize GUI Window')
+
 % Set checkForUpdates checkbox based on config setting
 cfg = ConfigFileClass();
 handles.menuItemUpdateCheck.Checked = cfg.GetValue('Check For Updates');
@@ -212,6 +214,7 @@ maingui.logger.CurrTime(sprintf('MainGUI: Startup time - %0.1f seconds\n', toc(s
 
 % If data set has no errors enable window gui objects
 MainGUI_EnableDisableGUI(handles,'on');
+
 
 
 % --------------------------------------------------------------------
@@ -778,6 +781,7 @@ UpdateArgsChildGuis(handles)
 for ii=1:length(maingui.childguis)
     maingui.childguis(ii).Update();
 end
+
 
 
 % ----------------------------------------------------------------------------------
@@ -1607,5 +1611,35 @@ if n_channels > 0
 else
     errordlg('Cannot calculate power spectra with no channels selected.', 'No channels selected'); 
 end
+
+
+
+% -------------------------------------------------------------------------------
+function togglebuttonMinimizeGUI_Callback(hObject, eventdata, handles)
+u0 = get(handles.MainGUI, 'units');
+k = [1.0, 1.0, 0.8, 0.8];
+p0 = get(handles.MainGUI, 'position');
+if strcmp(get(hObject, 'tooltipstring'), 'Minimize GUI Window')
+    set(hObject, 'tooltipstring', 'Maximize GUI Window')
+    set(hObject, 'string', '+');
+    p = k.*p0;
+
+    % Shift position closer to screen edge since GUI got smaller
+	p(1) = p(1) + abs(p0(3)-p(3));
+	p(2) = p(2) + abs(p0(4)-p(4));
+else
+    set(hObject, 'tooltipstring', 'Minimize GUI Window')
+    set(hObject, 'string', '--');
+    p = p0./k;
+
+    % Shift position away from screen edge since GUI got bigger
+	p(1) = p(1) - abs(p0(3)-p(3));
+	p(2) = p(2) - abs(p0(4)-p(4));
+end
+pause(.2)
+set(handles.MainGUI, 'position', p);
+p = guiOutsideScreenBorders(handles.MainGUI);
+set(handles.MainGUI, 'units','characters', 'position',p);
+set(handles.MainGUI, 'units',u0);
 
 

@@ -161,7 +161,7 @@ if isempty(maingui.axesSDG.handles.SD)
     end
     maingui.axesSDG.handles.SD = hSD;
 else
-    uistack(maingui.axesSDG.handles.SD,'top')
+    uistack(nonzeros(maingui.axesSDG.handles.SD),'top')
 end
 
 % Turn off zoom but only for SDG axes

@@ -151,6 +151,9 @@ classdef ProbeClass < FileLoadSaveClass
                                 
                 % Close group
                 HDF5_GroupClose(fileobj, gid, fid);
+                
+                assert(obj.IsValid())
+                
             catch 
                 err=-1;
                 return;
@@ -291,6 +294,32 @@ classdef ProbeClass < FileLoadSaveClass
                 return;
             end
             b = false;
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsValid(obj)
+            b = false;
+            if obj.IsEmpty()
+                return;
+            end
+            if iscolumn(obj.sourcePos2D)
+                return;
+            end
+            if length(obj.sourcePos2D)>4
+                if size(obj.sourcePos2D,2) > size(obj.sourcePos2D,1)
+                    return;
+                end
+            end
+            if iscolumn(obj.detectorPos2D)
+                return;
+            end
+            if length(obj.detectorPos2D)>4
+                if size(obj.detectorPos2D,2) > size(obj.detectorPos2D,1)
+                    return;
+                end
+            end
+            b = true;
         end
         
     end

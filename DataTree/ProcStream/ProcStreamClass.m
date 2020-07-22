@@ -142,11 +142,12 @@ classdef ProcStreamClass < handle
 
         
         % ----------------------------------------------------------------------------------
-        function Load(obj, filename)
+        function err = Load(obj, filename)
+            err = 0;
             if ~exist('filename','var')
                 return
             end
-            obj.output.Load(filename)
+            err = obj.output.Load(filename);
         end
 
 

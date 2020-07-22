@@ -603,11 +603,12 @@ classdef TreeNodeClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function Load(obj)
+        function err = Load(obj)
+            err = -1;
             if isempty(obj)
                 return
             end
-            obj.LoadSubBranch();
+            err = obj.LoadSubBranch(); %#ok<*MCNPN>
             obj.procStream.Load(obj.GetFilename);
         end
         

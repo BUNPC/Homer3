@@ -19,7 +19,7 @@ maingui.plotViewOptions = struct('zoom',true, 'ranges',struct('X',[], 'Y',[]));
 % Load current element data from file
 maingui.dataTree.LoadCurrElem();
 Lambda =  maingui.dataTree.currElem.GetWls();
-strs = cell(length(Lambda));
+strs = cell(1,length(Lambda));
 for ii=1:length(Lambda)
     strs{ii} = num2str(Lambda(ii));
 end

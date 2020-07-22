@@ -538,11 +538,12 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function LoadSubBranch(obj)
+        function err = LoadSubBranch(obj)
+            err = -1;
             if isempty(obj)
                 return;
             end
-            obj.subjs(1).LoadSubBranch()
+            err = obj.subjs(1).LoadSubBranch();
         end            
                         
             
@@ -556,7 +557,8 @@ classdef GroupClass < TreeNodeClass
             
         
         % ----------------------------------------------------------------------------------
-        function Load(obj, options)
+        function err = Load(obj, options)
+            err = -1;
             if isempty(obj)
                 return;
             end
@@ -567,7 +569,7 @@ classdef GroupClass < TreeNodeClass
             % If this group has been loaded, then no need to go through the whole Load function. Instead 
             % default to the generic TreeNodeClass.Load method.
             if isempty(findstr('reload', options)) && ~obj.procStream.IsEmpty()
-                obj.Load@TreeNodeClass();
+                err = obj.Load@TreeNodeClass();
                 return;
             end
             
@@ -603,6 +605,7 @@ classdef GroupClass < TreeNodeClass
                 end
                 obj.Save();
             end
+            err = 0;
         end
         
         

@@ -205,11 +205,12 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function Load(obj, filename)
+        function err = Load(obj, filename)
+            err = 0;
             obj.SetFilename(filename)
             if isempty(obj.filename)
                 return;
-                end
+            end
 
             % If object is not empty it means we already have loaded data. No
             % need to waste time loading it from file.

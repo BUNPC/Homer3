@@ -370,11 +370,12 @@ classdef DataTreeClass <  handle
         
         
         % ----------------------------------------------------------
-        function LoadCurrElem(obj)
+        function err = LoadCurrElem(obj)
+            err = 0;
             if isempty(obj.groups)
                 return;
             end
-            obj.currElem.Load()
+            err = obj.currElem.Load();
         end
 
 

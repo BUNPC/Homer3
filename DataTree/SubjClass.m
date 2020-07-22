@@ -193,11 +193,12 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function LoadSubBranch(obj)
+        function err = LoadSubBranch(obj)
+            err = -1;
             if isempty(obj)
                 return;
             end
-            obj.runs(1).LoadAcquiredData()
+            err = obj.runs(1).LoadAcquiredData();
         end            
 
         

@@ -69,27 +69,33 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function Load(obj, dirname)            
+        function err = Load(obj, dirname)
+            err = 0;
             if nargin==1 || isempty(dirname)
                 dirname = convertToStandardPath('.');
             end
-            obj.LoadDerivedData();
-            obj.LoadAcquiredData(dirname);
+            err1 = obj.LoadDerivedData();
+            err2 = obj.LoadAcquiredData(dirname);            
+            if ~(err1==0 && err2==0)
+                err = -1;
+            end
         end
         
         
         % ----------------------------------------------------------------------------------
-        function LoadDerivedData(obj)
+        function err = LoadDerivedData(obj)
+            err = 0;
             if isempty(obj)
                 return;
             end
-            obj.procStream.Load(obj.GetFilename);
+            err = obj.procStream.Load(obj.GetFilename);            
         end        
         
 
                 
         % ----------------------------------------------------------------------------------
-        function LoadAcquiredData(obj, dirname)
+        function err = LoadAcquiredData(obj, dirname)
+            err = -1;
             if isempty(obj)
                 return;
             end
@@ -118,7 +124,8 @@ classdef RunClass < TreeNodeClass
                 return;
             else
                 %fprintf('    Loaded file %s to run.\n', obj.name);                
-            end                
+            end
+            err = 0;
         end        
         
 

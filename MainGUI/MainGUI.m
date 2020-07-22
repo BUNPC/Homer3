@@ -793,7 +793,10 @@ if ~exist('hObject','var') || isempty(hObject)
 end
 
 % Load current element data from file
-maingui.dataTree.LoadCurrElem();
+if maingui.dataTree.LoadCurrElem() < 0
+    MessageBox('Could not load current processing element. Acquisition files might be outdated or corrupted');
+    return;
+end
 
 hObject = DisplayData(handles, hObject);
 DisplayAxesSDG();

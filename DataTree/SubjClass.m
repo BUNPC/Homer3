@@ -127,6 +127,17 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function b = CheckForNameConflict(obj, run)
+            b = false;
+            [~, runname] = fileparts(run.GetName());
+            if strcmp(runname, obj.name)
+                b = true;
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
         function Add(obj, run)
             % Add run to this subject
             jj=0;
@@ -141,6 +152,14 @@ classdef SubjClass < TreeNodeClass
                 run.SetIndexID(obj.iGroup, obj.iSubj, jj);
                 obj.runs(jj) = run;
                 fprintf('     Added run %s to subject %s.\n', obj.runs(jj).GetFileName, obj.GetName);
+            end
+            
+            % If subject has only one run AND the run file name is not formatted according to the standard Homer 
+            % naming convention (so as to distinguish between subject and run) then run name (minus extension) will 
+            % have the same name as the subject which will create a conflict when saving .mat files in a distributed 
+            % storage scheme. We therefore rename the subject name in case of this type of conflict
+            if obj.CheckForNameConflict(run)
+                obj.name = ['Subj_', obj.name];
             end
         end
         

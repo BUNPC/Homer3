@@ -561,6 +561,7 @@ global stimEdit
 
 % If nothing changes, nothing to save, so exit
 if ~stimEdit.dataTree.currElem.AcquiredDataModified()
+    errordlg('There are no changes to save!','Unmodified file')
     return
 end
 
@@ -570,7 +571,7 @@ if ~strcmpi(stimEdit.config.autoSaveAcqFiles, 'Yes')
     if stimEdit.dataTree.currElem.IsRun()
         msg = sprintf('Are you sure you want to save stimulus edits directly in the acquisition file %s?', stimEdit.dataTree.currElem.name);
     else
-        msg = sprintf('Are you sure to save stimulus edits directly in acquisition files in %s?', stimEdit.dataTree.currElem.name);
+        msg = sprintf('Are you sure you want to save stimulus edits directly in acquisition files in %s?', stimEdit.dataTree.currElem.name);
     end
     q = MenuBox(msg, {'Yes','No','Don''t ask again'});
     if q==2
@@ -586,7 +587,10 @@ else
 end
 
 % Update acquisition file with new contents
+h = waitbar_improved(0, 'Saving new stim marks to %s...', stimEdit.dataTree.currElem.name);
 stimEdit.dataTree.currElem.SaveAcquiredData()
+waitbar_improved(1, h, 'Saving new stim marks to %s...', stimEdit.dataTree.currElem.name);
+close(h)
 
 
 % --------------------------------------------------------------------

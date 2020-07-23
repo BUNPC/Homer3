@@ -565,16 +565,20 @@ if ~stimEdit.dataTree.currElem.AcquiredDataModified()
 end
 
 % Check auto-save config parameter
-if ~strcmpi(stimEdit.config.autoSaveAcqFiles, 'yes')
+if ~strcmpi(stimEdit.config.autoSaveAcqFiles, 'Yes')
     % Ask user if they want to save, before changing contents of acquisition file
     if stimEdit.dataTree.currElem.IsRun()
         msg = sprintf('Are you sure you want to save stimulus edits directly in the acquisition file %s?', stimEdit.dataTree.currElem.name);
     else
         msg = sprintf('Are you sure to save stimulus edits directly in acquisition files in %s?', stimEdit.dataTree.currElem.name);
     end
-    q = MenuBox(msg, {'YES','NO'});
+    q = MenuBox(msg, {'Yes','No','Don''t ask again'});
     if q==2
         return;
+    elseif q==3
+        cfg = ConfigFileClass();
+        cfg.SetValue('Auto Save Acquisition Files', 'Yes');
+        cfg.Save()
     end
 else
     % Otherwise auto-save 

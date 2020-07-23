@@ -6,10 +6,11 @@ function checkForHomerUpdates()
     if (strcmp(cfg.GetValue('Check For Updates'),'on'))
 
         % If it has been a week since Homer checked for an update
-        if (datetime - cfg.GetValue('Last Checked For Update') > duration(168,0,0))
+        if (1)
+%         if (datetime - cfg.GetValue('Last Checked For Update') > duration(168,0,0))
 
             url = 'http://bu.edu/neurophotonics/research/fnirs/homer3';
-            promptFlag = 0;
+            promptFlag = false;
 
             [s,status] = urlread(url,'timeout',4);
             if (~status)
@@ -26,16 +27,20 @@ function checkForHomerUpdates()
             p = getParentRecursive(wb);
             p.setVisible(0);
 
-%             out = regexp(s, '<a id="version">(.*?)<\/a>', 'match')
-            vrnum = getVernum();  % Compare to current version and set promptFlag
-%             if (vrnum < updateTxt) & (cfg.GetValue('LatestUpdateRefused') < updateTxt)
-%               promptFlag = 1;
-%             end
-
+            version = regexp(s, '<a id="version">(.*?)<\/a>', 'tokens');
+            desc = regexp(s, '<p id="description">(.*?)<\/p>', 'tokens');
+            try  % Version description might not exist
+                updateTxt = [version{1}{1},': ', desc{1}{1}];
+            catch
+                updateTxt = version{1}{1};
+            end
+            web_vrnum = split(version{1}{1},'.');
+            this_vrnum = getVernum();
+            promptFlag = compareVernum(web_vrnum, this_vrnum);  % If fetched vernum is greater
             if (promptFlag)
-                choice = questdlg(['An update for Homer3 is available: ',...
+                choice = questdlg(sprintf(['An update for Homer3 is available:\n',...
                     updateTxt,...
-                    ' Would you like to download it?'],...
+                    '\nWould you like to download it?']),...
                     'Update Available',...
                     'Yes','Remind me later','Don''t show this again',...
                     'Remind me later');
@@ -60,4 +65,23 @@ function checkForHomerUpdates()
     
     cfg.Close();
     
+end
+
+
+function v1_greater = compareVernum(v1, v2)
+    v1_greater = false;
+    for i = 1:max([length(v1), length(v2)])
+        v1_part = str2num(v1{i});
+        v2_part = str2num(v2{i});
+        try  % Version format is unstable
+            if v1_part > v2_part
+               v1_greater = true
+               return
+            elseif v1_part < v2_part
+                return
+            end
+        catch
+            return
+        end
+    end
 end

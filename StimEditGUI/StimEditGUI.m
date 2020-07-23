@@ -773,6 +773,8 @@ for ii=1:nStim
         linestyle = '--';
     elseif(s(lstR(ii),lstC(ii))==stimVals.excl_auto)
         linestyle = '-.';
+    else
+        linestyle = '-';
     end
     Lines(ii).handle = plot([1 1]*t(lstR(ii)), yy, linestyle, 'parent',handles.axes1);
     

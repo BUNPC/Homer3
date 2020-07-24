@@ -48,7 +48,7 @@ function checkForHomerUpdates()
                     case 'Yes'
                         % Open browser to update page
                         close(wb);
-                        web(url);    
+                        web('https://github.com/BUNPC/Homer3/wiki/Installing-and-updating-Homer3-with-Git-or-GitHub-Desktop');
                     case 'Don''t ask again'
                         cfg.SetValue('Check For Updates', 'off');
                 end

@@ -47,7 +47,7 @@
 %
 % PARAMETERS:
 % flagtCCA: 1
-% tCCAparams: [3 0.04 0.3]
+% tCCAparams: [3 0.08 0.3]
 % tCCAaux_inx: [1 2 3 4 5 6 7 8]
 % rhoSD_ssThresh: 15.0
 % ss_ch_inx: 0

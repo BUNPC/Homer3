@@ -20,7 +20,7 @@
 % flagtCCA - turns the function on / off
 % tCCAparams - These are the parameters for tCCA function
 %            1 - 1 timelag [s]
-%            2 - 2 step size [samples]
+%            2 - 2 step size [s]
 %            3 - 3 ctr if <1  correlation threshold, if =>1 number of regressors.
 %                   Redundant if flagICRegressors = 1;
 % tCCAaux_inx -  Indices of the aux channels to be used to generate regressors
@@ -47,7 +47,7 @@
 %
 % PARAMETERS:
 % flagtCCA: 1
-% tCCAparams: [3 2 0.3]
+% tCCAparams: [3 0.04 0.3]
 % tCCAaux_inx: [1 2 3 4 5 6 7 8]
 % rhoSD_ssThresh: 15.0
 % ss_ch_inx: 0
@@ -71,7 +71,8 @@ flags.shrink = false;  % JD: set to false because rtcca generate error, "Undefin
 % please do not use it.
 flagICRegressors = 0;
 % tCCA parameters
-param.tau = tCCAparams(2); %stepsize for embedding in samples (tune to sample frequency!)
+tCCAparams(2) = tCCAparams(2)*round(1/abs(data.time(1)-data.time(2)));% Now stepsize in sec converted to # of samples, may
+param.tau = tCCAparams(2);  %{old comment by avl: stepsize for embedding in samples (tune to sample frequency!)}
 timelag = tCCAparams(1);
 param.ct = 0;   % correlation threshold for rtcca function, set here to 0 (will be applied later)
 

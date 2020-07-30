@@ -26,7 +26,6 @@ global stimEdit
 if ~isempty(stimEdit.updateParentGui)
     stimEdit.updateParentGui('StimEditGUI', 'close');
 end
-Save()
 
 
 
@@ -80,7 +79,6 @@ stimEdit.updateParentGui = [];
 
 cfg = ConfigFileClass();
 stimEdit.config.autoSaveAcqFiles = cfg.GetValue('Auto Save Acquisition Files');
-
 
 if ~isempty(maingui)
     stimEdit.groupDirs = maingui.groupDirs;
@@ -147,14 +145,11 @@ EnableGuiObjects('on', handles);
 stimEdit.status=0;
 
 
-
-
 % --------------------------------------------------------------------
 function pushbuttonExit_Callback(hObject, eventdata, handles)
 if ishandles(handles.figure)
     delete(handles.figure);
 end
-
 
 
 % --------------------------------------------------------------------
@@ -163,7 +158,6 @@ conditions = get(hObject, 'string');
 idx = get(hObject, 'value');
 condition = conditions{idx};
 SetUitableStimInfo(condition, handles);
-
 
 
 %---------------------------------------------------------------------------
@@ -188,7 +182,6 @@ figure(handles.figure);
 stimEdit.status=0;
 
 
-
 %---------------------------------------------------------------------------
 function uitableStimInfo_CellEditCallback(hObject, eventdata, handles)
 global stimEdit
@@ -207,7 +200,6 @@ if ~isempty(stimEdit.updateParentGui)
     stimEdit.updateParentGui('StimEditGUI');
 end
 figure(handles.figure);
-
 
 
 %---------------------------------------------------------------------------
@@ -304,7 +296,6 @@ s2 = sum(abs(s(tPts_idxs_select,:)),2);
 stims_select = find(s2>=1);
 
 
-
 % ------------------------------------------------
 function h = HighlightStims(t, t_select, s, handles)
 h = [];
@@ -322,7 +313,6 @@ for ii=1:length(s)
 end
 hold off
 drawnow
-
 
 
 % ------------------------------------------------
@@ -456,13 +446,10 @@ end
 if menu_choice==nActions || menu_choice==0
     return;
 end
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % New stim
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if isempty(iS_lst)
-    
     % If stim added to new condition update group conditions
     if menu_choice==nCond+1
         CondNameNew = inputdlg('','New Condition name');
@@ -479,7 +466,6 @@ if isempty(iS_lst)
     else
         CondName = CondNamesGroup{menu_choice};
     end
-    
     %%%% Add new stim to currElem's condition
     stimEdit.dataTree.currElem.AddStims(tc(tPts_idxs_select), CondName);
     stimEdit.status = 1;
@@ -525,7 +511,6 @@ iG = stimEdit.dataTree.GetCurrElemIndexID();
 stimEdit.dataTree.groups(iG).SetConditions();
 
 
-
 % ------------------------------------------------
 function SetStimDuration(icond, duration)
 global stimEdit
@@ -541,9 +526,8 @@ end
 stimEdit.dataTree.currElem.SetStimDuration(icond, duration);
 
 
-
 % ------------------------------------------------
-function duration = GetStimDuration(icond)
+function duration = GetStimDuration(icond) %#ok<*DEFNU>
 global stimEdit
 if isempty(stimEdit)
     return;
@@ -557,12 +541,10 @@ end
 duration = stimEdit.dataTree.currElem.GetStimDuration(icond);
 
 
-
 % -------------------------------------------------------------------
 function [tpts, duration, vals] = GetStimData(icond)
 global stimEdit
 [tpts, duration, vals] = stimEdit.dataTree.currElem.GetStimData(icond);
-
 
 
 % -------------------------------------------------------------------
@@ -573,27 +555,31 @@ stimEdit.dataTree.currElem.SetStimDuration(icond, data(:,2));
 stimEdit.dataTree.currElem.SetStimValues(icond, data(:,3));
 
 
-
 % -------------------------------------------------------------------
 function Save()
 global stimEdit
 
 % If nothing changes, nothing to save, so exit
 if ~stimEdit.dataTree.currElem.AcquiredDataModified()
+    errordlg('There are no changes to save!','Unmodified file')
     return
 end
 
 % Check auto-save config parameter
-if ~strcmpi(stimEdit.config.autoSaveAcqFiles, 'yes')
+if ~strcmpi(stimEdit.config.autoSaveAcqFiles, 'Yes')
     % Ask user if they want to save, before changing contents of acquisition file
     if stimEdit.dataTree.currElem.IsRun()
-        msg = sprintf('Do you want to save stimulus edits directly in the acquisition file %s?', stimEdit.dataTree.currElem.name);
+        msg = sprintf('Are you sure you want to save stimulus edits directly in the acquisition file %s?', stimEdit.dataTree.currElem.name);
     else
-        msg = sprintf('Do you want to save stimulus edits directly in acquisition files in %s?', stimEdit.dataTree.currElem.name);
+        msg = sprintf('Are you sure you want to save stimulus edits directly in acquisition files in %s?', stimEdit.dataTree.currElem.name);
     end
-    q = MenuBox(msg, {'YES','NO'});
+    q = MenuBox(msg, {'Yes','No','Don''t ask again'});
     if q==2
         return;
+    elseif q==3
+        cfg = ConfigFileClass();
+        cfg.SetValue('Auto Save Acquisition Files', 'Yes');
+        cfg.Save()
     end
 else
     % Otherwise auto-save 
@@ -601,14 +587,20 @@ else
 end
 
 % Update acquisition file with new contents
+h = waitbar_improved(0, 'Saving new stim marks to %s...', stimEdit.dataTree.currElem.name);
 stimEdit.dataTree.currElem.SaveAcquiredData()
+waitbar_improved(1, h, 'Saving new stim marks to %s...', stimEdit.dataTree.currElem.name);
+close(h)
 
+
+% --------------------------------------------------------------------
+function pushbuttonWriteToFile_Callback(hObject, eventdata, handles)
+Save()
 
 
 % -------------------------------------------------------------------
 function StimEditGUI_DeleteFcn(hObject, eventdata, handles)
 Save()
-
 
 
 % --------------------------------------------------------------------
@@ -621,7 +613,6 @@ cd(pathname);
 StimEditGUI();
 
 
-
 % --------------------------------------------------------------------
 function menuItemSaveGroup_Callback(hObject, eventdata, handles)
 global stimEdit
@@ -629,7 +620,6 @@ if ~ishandles(hObject)
     return;
 end
 stimEdit.dataTree.currElem.Save();
-
 
 
 % --------------------------------------------------------------------
@@ -677,7 +667,6 @@ if eval( sprintf('ishandles(obj.handles.%s)', handle) )
 end
 
 
-
 % -----------------------------------------------------------
 function [icond, conditions] = GetConditionIdxFromPopupmenu(conditions, handles)
 conditions_menu = get(handles.popupmenuConditions, 'string');
@@ -691,7 +680,6 @@ icond = find(strcmp(conditions, condition));
 if isempty(icond)
     icond = 1;
 end
-
 
 
 % -----------------------------------------------------------
@@ -710,11 +698,9 @@ set(handles.textFilename, 'units','normalized');
 set(handles.textFilename, 'string',name);
 
 
-
 % -----------------------------------------------------------
 function Display(handles)
 global stimEdit
-
 if isempty(stimEdit.dataTree)
     return;
 end
@@ -727,7 +713,6 @@ end
 
 axes(handles.axes1)
 cla(handles.axes1);
-set(handles.axes1, 'ytick','');
 hold(handles.axes1, 'on');
 
 % As of now this operation is undefined for non-Run nodes (i.e., Subj and Group)
@@ -748,6 +733,30 @@ t              = stimEdit.dataTree.currElem.GetTimeCombined();
 s              = stimEdit.dataTree.currElem.GetStims(t);
 stimVals       = stimEdit.dataTree.currElem.GetStimValSettings();
 
+% Aux preview
+if get(handles.checkboxPreview, 'Value')  % If preview is enabled, plot
+    iaux = handles.listboxAuxSelect.Value;
+    currAux = stimEdit.dataTree.currElem.acquired.aux(iaux);
+    [onsets, auxFiltered, timeFiltered] = StimEditGUI_StimFromAux(currAux,...
+                                                            handles.editThresh.Value,...          % Stim threshold
+                                                            handles.editLPF.Value,...             % LPF window width
+                                                            handles.radiobuttonRisingEdge.Value); % rising vs falling
+    % Plot selected aux signal after applying filter
+    auxPlot = plot(timeFiltered + currAux.timeOffset, auxFiltered, 'k-');  % TODO is this what timeOffset is for?
+    auxPlot.Color(4) = 0.5;  % Stim opacity
+    % Plot stim preview
+    yy = get(handles.axes1, 'ylim');
+    for iOnset = 1:length(onsets)
+        plot([1 1]*onsets(iOnset), yy, 'k:', 'LineWidth', 2.5, 'parent', handles.axes1);
+    end
+    if length(onsets) > 9999
+        nmarks = '>9999';
+    else
+        nmarks = num2str(length(onsets));
+    end
+    set(handles.pushbuttonGenerate, 'String', ['Generate ', nmarks, ' stim marks']);
+end
+
 [lstR,lstC] = find(abs(s) ~= stimVals.none);
 [lstR,k] = sort(lstR);
 lstC = lstC(k);
@@ -764,6 +773,8 @@ for ii=1:nStim
         linestyle = '--';
     elseif(s(lstR(ii),lstC(ii))==stimVals.excl_auto)
         linestyle = '-.';
+    else
+        linestyle = '-';
     end
     Lines(ii).handle = plot([1 1]*t(lstR(ii)), yy, linestyle, 'parent',handles.axes1);
     
@@ -786,6 +797,7 @@ for ii=1:nStim
 end
 
 % Update legend
+set(0,'DefaultLegendAutoUpdate','off')  % Required to keep aux signals from appearing
 [idxLg,k] = sort(idxLg);
 if ~isempty(hLg)
     hLg = legend(hLg(k), CondNamesGroup(idxLg));
@@ -806,8 +818,6 @@ if ~exist('n','var')
     n = 0;
 end
 Lines = repmat( struct('handle',[], 'color',[], 'widthReg',2, 'widthHighl',4), n,1);
-
-
 
 
 % -----------------------------------------------------------
@@ -837,4 +847,146 @@ data(:,2) = duration(idx);
 data(:,3) = vals(idx);
 set(handles.uitableStimInfo, 'data',data);
 
+
+% --------------------------------------------------------------------
+function [onsets, aux_filt, time_filt] = StimEditGUI_StimFromAux(currElemAux, thresh, lpf_len, rising_edge)
+T = currElemAux.time(2) - currElemAux.time(1);  % Aux sample period
+moving_avg_filter = ones(lpf_len,1) / lpf_len;
+auxMax = max(currElemAux.dataTimeSeries);
+auxMin = min(currElemAux.dataTimeSeries);
+% Apply filter
+if lpf_len > 0
+   aux_filt = filter(moving_avg_filter, 1, currElemAux.dataTimeSeries);
+   time_filt = currElemAux.time - T*(lpf_len/2);  % Remove group delay induced by LPF
+   aux_filt(aux_filt > auxMax) = auxMax;
+   aux_filt(aux_filt < auxMin) = auxMin;
+else
+   aux_filt = currElemAux.dataTimeSeries;
+   time_filt = currElemAux.time;
+end
+onsets = [];
+last = currElemAux.dataTimeSeries(1);
+% Naive search for threshold crossings
+for i = (lpf_len + 1):length(time_filt)  % Exclude LPF artifact
+    next = aux_filt(i);
+    if rising_edge
+        if ((last <= thresh) && (next > thresh))
+           onsets = [onsets, time_filt(i) + currElemAux.timeOffset];  %#ok<*AGROW>
+        end
+    else
+        if ((last >= thresh) && (next < thresh))
+            onsets = [onsets, time_filt(i) + currElemAux.timeOffset];
+        end
+    end
+    last = aux_filt(i);
+end
+
+% --------------------------------------------------------------------
+function editThresh_Callback(hObject, eventdata, handles)
+val = str2double(hObject.String);
+if isnan(val)
+   set(hObject ,'String', hObject.Value);
+else
+    hObject.Value = val;
+end
+Display(handles);
+
+
+% --------------------------------------------------------------------
+function pushbuttonGenerate_Callback(hObject, eventdata, handles)
+global stimEdit; 
+iaux = handles.listboxAuxSelect.Value;
+currAux = stimEdit.dataTree.currElem.acquired.aux(iaux);
+[onsets, ~, ~] = StimEditGUI_StimFromAux(currAux,...
+                                         handles.editThresh.Value,...          % Stim threshold
+                                         handles.editLPF.Value,...             % LPF window width
+                                         handles.radiobuttonRisingEdge.Value); % rising vs falling
+% Add stim to dataTree element
+cond = char(handles.listboxAuxSelect.String(handles.listboxAuxSelect.Value));
+for i = 1:length(onsets)
+    stimEdit.dataTree.currElem.AddStims(onsets(i), cond);
+end
+iG = stimEdit.dataTree.GetCurrElemIndexID();
+stimEdit.dataTree.groups(iG).SetConditions();
+if ~isempty(stimEdit.updateParentGui)
+    stimEdit.updateParentGui('StimEditGUI', 'close');
+end
+Display(handles);
+    
+
+% --------------------------------------------------------------------
+function listboxAuxSelect_Callback(hObject, eventdata, handles)
+Display(handles);
+
+
+% --------------------------------------------------------------------
+function listboxAuxSelect_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+try
+    % Try to populate listbox with aux channels
+    global stimEdit
+    aux = stimEdit.dataTree.currElem.acquired.aux;
+    names = cell(1, length(aux));
+    for i = 1:length(aux)
+        names{i} = aux(i).name;
+    end
+    set(hObject, 'string', names);
+    set(stimEdit.handles.editCondition, 'String', names{1});
+catch
+    return
+end
+
+
+% --------------------------------------------------------------------
+function editThresh_CreateFcn(hObject, eventdata, handles)
+set(hObject ,'String', '0.0');
+
+
+% --------------------------------------------------------------------
+function checkboxPreview_Callback(hObject, eventdata, handles)
+Display(handles);
+
+
+% --------------------------------------------------------------------
+function radiobuttonFallingEdge_Callback(hObject, eventdata, handles)
+Display(handles);
+
+
+% --------------------------------------------------------------------
+function radiobuttonRisingEdge_Callback(hObject, eventdata, handles)
+Display(handles);
+
+
+% --------------------------------------------------------------------
+function editLPF_Callback(hObject, eventdata, handles)
+val = abs(floor(str2num(hObject.String))); %#ok<ST2NM>
+if isnan(val)
+   set(hObject ,'String', hObject.Value);
+else
+    hObject.Value = val;
+    set(hObject ,'String', val);
+end
+Display(handles);
+
+
+% --------------------------------------------------------------------
+function editLPF_CreateFcn(hObject, eventdata, handles)
+hObject.Value = floor(str2double(hObject.String));
+
+
+% --------------------------------------------------------------------
+function editDuration_Callback(hObject, eventdata, handles)
+val = str2double(hObject.String);
+if isnan(val)
+   set(hObject ,'String', hObject.Value);
+else
+    hObject.Value = val;
+end
+
+
+% --------------------------------------------------------------------
+function editDuration_CreateFcn(hObject, eventdata, handles)
+val = str2double(hObject.String);
 

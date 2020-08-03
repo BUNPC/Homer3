@@ -561,7 +561,6 @@ global stimEdit
 
 % If nothing changes, nothing to save, so exit
 if ~stimEdit.dataTree.currElem.AcquiredDataModified()
-    errordlg('There are no changes to save!','Unmodified file')
     return
 end
 
@@ -687,6 +686,7 @@ function SetTextFilename(name, handles)
 if isempty(handles)
     return;
 end
+
 if ~ishandles(handles.textFilename)
     return;
 end

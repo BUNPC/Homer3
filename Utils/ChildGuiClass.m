@@ -93,6 +93,21 @@ classdef ChildGuiClass < handle
         
         
         % -------------------------------------------------------------------
+        function CopyHandles(obj, handles) %#ok<INUSL>
+            props = propnames(handles);
+            for ii = 1:length(props)               
+                % If field does exist in handles, then chack that it's a
+                % valid handle before copying it. 
+                if eval( sprintf('ishandles(handles.%s)', props{ii}) )
+                    eval( sprintf('obj.handles.%s = handles.%s;', props{ii}, props{ii}) )
+                elseif eval( sprintf('isa(handles.%s, ''function_handle'')', props{ii}) )
+                    eval( sprintf('obj.handles.%s = handles.%s;', props{ii}, props{ii}) )
+                end
+            end
+        end
+        
+        
+        % -------------------------------------------------------------------
         function Launch(obj, varargin)
             if isempty(obj)
                 return;
@@ -113,6 +128,7 @@ classdef ChildGuiClass < handle
             
             % Allow up to 6 arguments to be passed to GUI
             a = obj.args;
+            handles = []; %#ok<*PROPLC>
             switch(length(a))
                 % Note that in addition to the guis known args we add as the last arg the last gui position. 
                 % We do this because even we can set the position after launching gui, it is much nices when 
@@ -120,20 +136,23 @@ classdef ChildGuiClass < handle
                 % appears only in the position we pass it since it is invisible until the gui's open function 
                 % exits
                 case 0
-                    eval( sprintf('obj.handles = %s(obj.lastpos);', obj.name) );
+                    eval( sprintf('handles = %s(obj.lastpos);', obj.name) );
                 case 1
-                    eval( sprintf('obj.handles = %s(a{1}, obj.lastpos);', obj.name) );
+                    eval( sprintf('handles = %s(a{1}, obj.lastpos);', obj.name) );
                 case 2
-                    eval( sprintf('obj.handles = %s(a{1}, a{2}, obj.lastpos);', obj.name) );
+                    eval( sprintf('handles = %s(a{1}, a{2}, obj.lastpos);', obj.name) );
                 case 3
-                    eval( sprintf('obj.handles = %s(a{1}, a{2}, a{3}, obj.lastpos);', obj.name) );
+                    eval( sprintf('handles = %s(a{1}, a{2}, a{3}, obj.lastpos);', obj.name) );
                 case 4
-                    eval( sprintf('obj.handles = %s(a{1}, a{2}, a{3}, a{4}, obj.lastpos);', obj.name) );
+                    eval( sprintf('handles = %s(a{1}, a{2}, a{3}, a{4}, obj.lastpos);', obj.name) );
                 case 5
-                    eval( sprintf('obj.handles = %s(a{1}, a{2}, a{3}, a{4}, a{5}, obj.lastpos);', obj.name) );
+                    eval( sprintf('handles = %s(a{1}, a{2}, a{3}, a{4}, a{5}, obj.lastpos);', obj.name) );
                 case 6
-                    eval( sprintf('obj.handles = %s(a{1}, a{2}, a{3}, a{4}, a{5}, a{6}, obj.lastpos);', obj.name) );
+                    eval( sprintf('handles = %s(a{1}, a{2}, a{3}, a{4}, a{5}, a{6}, obj.lastpos);', obj.name) );
             end
+            
+            obj.CopyHandles(handles);            
+            
             if ishandle(obj.handles.figure)
                 set(obj.handles.figure, 'visible',obj.visible, 'CloseRequestFcn',@obj.Close);
                 set(obj.handles.figure, 'visible',obj.visible, 'DeleteFcn',@obj.Close);
@@ -231,7 +250,7 @@ classdef ChildGuiClass < handle
         
         
         % -------------------------------------------------------------------
-        function Close(obj, hObject, eventdata)
+        function Close(obj, hObject, eventdata) %#ok<INUSD>
             if isempty(obj.name)
                 return;
             end

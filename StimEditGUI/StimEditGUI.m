@@ -552,7 +552,7 @@ function SetStimData(icond, data)
 global stimEdit
 stimEdit.dataTree.currElem.SetStimTpts(icond, data(:,1));
 stimEdit.dataTree.currElem.SetStimDuration(icond, data(:,2));
-stimEdit.dataTree.currElem.SetStimValues(icond, data(:,3));
+stimEdit.dataTree.currElem.SetStimAmplitudes(icond, data(:,3));
 
 
 % -------------------------------------------------------------------
@@ -600,7 +600,7 @@ Save()
 
 % -------------------------------------------------------------------
 function StimEditGUI_DeleteFcn(hObject, eventdata, handles)
-Save()
+% pass
 
 
 % --------------------------------------------------------------------
@@ -902,7 +902,9 @@ currAux = stimEdit.dataTree.currElem.acquired.aux(iaux);
                                          handles.editLPF.Value,...             % LPF window width
                                          handles.radiobuttonRisingEdge.Value); % rising vs falling
 % Add stim to dataTree element
-cond = char(handles.listboxAuxSelect.String(handles.listboxAuxSelect.Value));
+cond = char(handles.listboxAuxSelect.String(iaux));
+stimEdit.dataTree.currElem.SetStimDuration(icond, handles.editDuration.Value);
+stimEdit.dataTree.currElem.SetStimAmplitude(icond, handles.editAmplitude.Value);
 for i = 1:length(onsets)
     stimEdit.dataTree.currElem.AddStims(onsets(i), cond);
 end
@@ -978,6 +980,15 @@ hObject.Value = floor(str2double(hObject.String));
 
 % --------------------------------------------------------------------
 function editDuration_Callback(hObject, eventdata, handles)
+val = str2double(hObject.String);
+if isnan(val)
+   set(hObject ,'String', hObject.Value);
+else
+    hObject.Value = val;
+end
+
+
+function editAmplitude_Callback(hObject, eventdata, handles)
 val = str2double(hObject.String);
 if isnan(val)
    set(hObject ,'String', hObject.Value);

@@ -1343,10 +1343,10 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function [tpts, duration, vals] = GetStimData(obj, icond)
+        function [tpts, duration, amps] = GetStimData(obj, icond)
             tpts     = obj.GetStimTpts(icond);
             duration = obj.GetStimDuration(icond);
-            vals     = obj.GetStimValues(icond);
+            amps     = obj.GetStimAmplitudes(icond);
         end
         
     
@@ -1378,22 +1378,21 @@ classdef ProcStreamClass < handle
             end
             duration = obj.input.GetStimDuration(icond);
         end
-        
+
         
         % ----------------------------------------------------------------------------------
-        function SetStimValues(obj, icond, vals)
-            obj.input.SetStimValues(icond, vals);
+        function SetStimAmplitudes(obj, icond, amps)
+            obj.input.SetStimAmplitudes(icond, amps);
         end
         
     
         % ----------------------------------------------------------------------------------
-        function vals = GetStimValues(obj, icond)
+        function amps = GetStimAmplitudes(obj, icond)
             if ~exist('icond','var')
                 icond=1;
             end
-            vals = obj.input.GetStimValues(icond);
+            amps = obj.input.GetStimAmplitudes(icond);
         end
-                       
         
         % ---------------------------------------------------------
         function CondNames = GetConditions(obj)

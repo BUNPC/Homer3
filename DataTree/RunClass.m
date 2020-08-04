@@ -597,10 +597,10 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function [tpts, duration, vals] = GetStimData(obj, icond)
+        function [tpts, duration, amps] = GetStimData(obj, icond)
             tpts     = obj.GetStimTpts(icond);
             duration = obj.GetStimDuration(icond);
-            vals     = obj.GetStimValues(icond);
+            amps     = obj.GetStimAmplitudes(icond);
         end
         
     
@@ -635,17 +635,17 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimValues(obj, icond, vals)
-            obj.procStream.SetStimValues(icond, vals);
+        function SetStimAmplitudes(obj, icond, amps)
+            obj.procStream.SetStimAmplitudes(icond, amps);
         end
         
     
         % ----------------------------------------------------------------------------------
-        function vals = GetStimValues(obj, icond)
+        function amps = GetStimAmplitudes(obj, icond)
             if ~exist('icond','var')
                 icond=1;
             end
-            vals = obj.procStream.GetStimValues(icond);
+            amps = obj.procStream.GetStimAmplitudes(icond);
         end
         
         

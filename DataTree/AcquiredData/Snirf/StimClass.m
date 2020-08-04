@@ -47,8 +47,8 @@ classdef StimClass < FileLoadSaveClass
                 t        = varargin{2};
                 CondName = varargin{3};
                 obj.name = CondName;
-                k = s>0 | s==-1 | s==-2;  % Include stim marks with these values
-                obj.data = [t(k), 5*ones(length(t(k)),1), s(k)];
+                k = s>0 | s==-1 | s==-2;  % Include stim marks with these values on import from .nirs
+                obj.data = [t(k), 5*ones(length(t(k)),1), ones(length(t(k)),1)];
             elseif nargin==0
                 obj.name = '';
                 obj.data = [];
@@ -247,19 +247,19 @@ classdef StimClass < FileLoadSaveClass
 
         
         % ----------------------------------------------------------------------------------
-        function EditValue(obj, tPts, val)
+        function EditAmplitude(obj, tPts, amp)
             if isempty(obj.data)
                 return;
             end
             if ~exist('val','var')
-                val = 1;
+                amp = 1;
             end
             for ii=1:length(tPts)
                 k = find( abs(obj.data(:,1)-tPts(ii)) < obj.errmargin );
                 if isempty(k)
                     continue;
                 end
-                obj.data(k,3) = val;
+                obj.data(k,3) = amp;
             end
         end
 
@@ -344,12 +344,12 @@ classdef StimClass < FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetValues(obj, vals, tPts)
+        function SetAmplitudes(obj, amps, tPts)
             if isempty(obj.data)
                 return;
             end
-            if ~exist('vals','var')
-                vals = 1;
+            if ~exist('amps','var')
+                amps = 1;
             end
             if ~exist('tPts','var')
                 tPts = obj.data(:,1);
@@ -361,12 +361,12 @@ classdef StimClass < FileLoadSaveClass
                     continue;
                 end
             end
-            obj.data(k,3) = vals;
+            obj.data(k,3) = amps;
         end
 
         
         % -------------------------------------------------------
-        function vals = GetValues(obj, tPts)
+        function vals = GetAmplitudes(obj, tPts)
             vals = [];
             if isempty(obj.data)
                 return;
@@ -380,7 +380,6 @@ classdef StimClass < FileLoadSaveClass
             end
             vals = obj.data(k,3);
         end
-        
         
         % ----------------------------------------------------------------------------------
         function DeleteStims(obj, tPts)

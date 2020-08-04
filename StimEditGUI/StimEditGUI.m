@@ -902,9 +902,9 @@ currAux = stimEdit.dataTree.currElem.acquired.aux(iaux);
                                          handles.editLPF.Value,...             % LPF window width
                                          handles.radiobuttonRisingEdge.Value); % rising vs falling
 % Add stim to dataTree element
-conditions =  stimEdit.dataTree.currElem.GetConditions()
-cond = char(handles.listboxAuxSelect.String(iaux))
-icond = find(strcmp(conditions, cond))
+conditions =  stimEdit.dataTree.currElem.GetConditions();
+cond = char(handles.listboxAuxSelect.String(iaux));
+icond = find(strcmp(conditions, cond));
 for i = 1:length(onsets)
     stimEdit.dataTree.currElem.AddStims(onsets(i), cond);
 end

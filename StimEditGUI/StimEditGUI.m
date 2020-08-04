@@ -902,14 +902,16 @@ currAux = stimEdit.dataTree.currElem.acquired.aux(iaux);
                                          handles.editLPF.Value,...             % LPF window width
                                          handles.radiobuttonRisingEdge.Value); % rising vs falling
 % Add stim to dataTree element
-cond = char(handles.listboxAuxSelect.String(iaux));
-stimEdit.dataTree.currElem.SetStimDuration(icond, handles.editDuration.Value);
-stimEdit.dataTree.currElem.SetStimAmplitude(icond, handles.editAmplitude.Value);
+conditions =  stimEdit.dataTree.currElem.GetConditions()
+cond = char(handles.listboxAuxSelect.String(iaux))
+icond = find(strcmp(conditions, cond))
 for i = 1:length(onsets)
     stimEdit.dataTree.currElem.AddStims(onsets(i), cond);
 end
 iG = stimEdit.dataTree.GetCurrElemIndexID();
 stimEdit.dataTree.groups(iG).SetConditions();
+stimEdit.dataTree.currElem.SetStimDuration(icond, handles.editDuration.Value);
+stimEdit.dataTree.currElem.SetStimAmplitudes(icond, handles.editAmplitude.Value);
 if ~isempty(stimEdit.updateParentGui)
     stimEdit.updateParentGui('StimEditGUI', 'close');
 end

@@ -12,7 +12,7 @@
 % FreqCut: 1x2 array [fmin fmax] representing the bandpass of the cardiac pulsation (default [0.5 2.5])
 % window:  length in seconds of the window to partition the signal with (defaut: 5)
 % windowOverlap: fraction overlap (0..0.99) between adjacent windows (default: 0, no overlap)
-% qualityThreshold: The required quality value (normalized; 0 to 1) of good-quality windows in every channel (default: 0.75)
+% qualityThreshold: The required quality value (normalized; 0 to 1) of good quality windows in every channel (default: 0.75)
 % conditionsMask: A binary mask (or the keyword 'all') to indicate the conditions for computing the periods of interest (default: 'all')
 % lambdaMask: A binary array mapping the selected two wavelength to compute the SCI (default: [1 1], the first two WLs)
 % dodFlag: A flag indicating to work from DOD data (default: 0)

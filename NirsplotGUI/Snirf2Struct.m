@@ -1,4 +1,3 @@
-
 % nirsData = NirsClass('C:\Users\Peter.W\Desktop\Research\Ex1_Basic_data_analysis\2-group-averaging\SubjB\subjB_run01.nirs')
 % snirfData = SnirfClass(nirsData);
 % testStruct = Nirs2Snirf(snirfData);

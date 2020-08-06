@@ -189,6 +189,7 @@ maingui.childguis(2) = ChildGuiClass('ProcStreamOptionsGUI');
 maingui.childguis(3) = ChildGuiClass('StimEditGUI');
 maingui.childguis(4) = ChildGuiClass('PlotProbeGUI');
 maingui.childguis(5) = ChildGuiClass('PvaluesDisplayGUI');
+maingui.childguis(6) = ChildGuiClass('nirsplotLoadFileGUI');
 
 % Load date files into group tree object
 maingui.dataTree  = LoadDataTree(maingui.groupDirs, maingui.format);
@@ -706,6 +707,70 @@ LaunchChildGuiFromMenu('ProcStreamEditGUI', hObject);
 % --------------------------------------------------------------------
 function menuItemDisplayPvalues_Callback(hObject, eventdata, handles)
 LaunchChildGuiFromMenu('PvaluesDisplayGUI', hObject);
+
+
+% --------------------------------------------------------------------
+function [eventdata, handles] = nirsPlotGui_Callback(hObject, eventdata, handles)
+
+global maingui
+parts = strsplit(maingui.dataTree.dirnameGroup, '/');
+curFileLocation = maingui.dataTree.dirnameGroup(1:(end-(length(parts{end-1})+1)));
+addpath (curFileLocation + "NirsplotGUI");
+
+curFileLocation = strcat(maingui.dataTree.dirnameGroup, maingui.dataTree.currElem.name);
+fileLocation =  curFileLocation(1:end-6);
+% check if there is a nirs file
+if ~isfile(strcat(fileLocation, '.nirs')) 
+    %none nirs -> convert snirf to nir(Usually will not happen)
+    struct = Snirf2Struct(maingui.dataTree.currElem.acquired, strcat(fileLocation, '.nirs'));
+else
+    %struct is build upon current snirf file
+    struct = Snirf2Struct(maingui.dataTree.currElem.acquired);
+end
+nirsplot(struct,...
+                'freqCut',[0.5, 2.5],...
+                'window',5,...
+                'overlap',0,....
+                'qualityThreshold',0.9,...
+                'conditionsMask','all',...
+                'dodFlag',0,...
+                'guiFlag',1);
+
+% qualityMatrices = nirsplot(strcat(fileLocation, '.nirs'),...
+%                 'freqCut',[0.5, 2.5],...
+%                 'window',5,...
+%                 'overlap',0,....
+%                 'qualityThreshold',0.9,...
+%                 'conditionsMask','all',...
+%                 'dodFlag',0,...
+%                 'guiFlag',1);
+% use for opening the file 
+% parts = strsplit(fileLocation, '/');
+% curFileLocation = curFileLocation(1:(end-(length(parts{end})+1)));
+% nirsplot(curFileLocation,...
+%                 'freqCut',[0.5, 2.5],...
+%                 'window',5,...
+%                 'overlap',0,....
+%                 'qualityThreshold',0.9,...
+%                 'conditionsMask','all',...
+%                 'dodFlag',0,...
+%                 'guiFlag',1);
+
+% nirsplot(curFileLocation);
+% 
+% LaunchChildGuiFromMenu('NirsPlotOptionGUI', hObject);
+
+
+%     disp("NirsPlot called, please select your file")
+% %     try to get the datatree inside Homer and pass that into NirsPlot
+% %     dataTree.files.pathfull
+
+
+
+% hObject    handle to nirsPlotGui (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
 
 
 

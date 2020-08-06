@@ -291,7 +291,7 @@ end
 % Now that we made sure legit dataTree exists, we can match up
 % the selected stims to the stims in currElem
 t = stimEdit.dataTree.currElem.GetTimeCombined();
-s = stimEdit.dataTree.currElem.GetStims(t);
+s = stimEdit.dataTree.currElem.GetStimStatus(t);
 s2 = sum(abs(s(tPts_idxs_select,:)),2);
 stims_select = find(s2>=1);
 
@@ -730,8 +730,8 @@ iG = stimEdit.dataTree.GetCurrElemIndexID();
 CondNamesGroup = stimEdit.dataTree.groups(iG).GetConditions();
 CondColTbl     = stimEdit.dataTree.groups(iG).CondColTbl();
 t              = stimEdit.dataTree.currElem.GetTimeCombined();
-s              = stimEdit.dataTree.currElem.GetStims(t);
-stimVals       = stimEdit.dataTree.currElem.GetStimValSettings();
+s              = stimEdit.dataTree.currElem.GetStimStatus(t);
+stimStatuses   = stimEdit.dataTree.currElem.GetstimStatusSettings();
 
 % Aux preview
 if get(handles.checkboxPreview, 'Value')  % If preview is enabled, plot
@@ -757,7 +757,7 @@ if get(handles.checkboxPreview, 'Value')  % If preview is enabled, plot
     set(handles.pushbuttonGenerate, 'String', ['Generate ', nmarks, ' stim marks']);
 end
 
-[lstR,lstC] = find(abs(s) ~= stimVals.none);
+[lstR,lstC] = find(abs(s) ~= stimStatuses.none);
 [lstR,k] = sort(lstR);
 lstC = lstC(k);
 nStim = length(lstR);
@@ -767,11 +767,11 @@ idxLg=[];
 hLg=[];
 kk=1;
 for ii=1:nStim
-    if(s(lstR(ii),lstC(ii))==stimVals.incl)
+    if(s(lstR(ii),lstC(ii))==stimStatuses.incl)
         linestyle = '-';
-    elseif(s(lstR(ii),lstC(ii))==stimVals.excl_manual)
+    elseif(s(lstR(ii),lstC(ii))==stimStatuses.excl_manual)
         linestyle = '--';
-    elseif(s(lstR(ii),lstC(ii))==stimVals.excl_auto)
+    elseif(s(lstR(ii),lstC(ii))==stimStatuses.excl_auto)
         linestyle = '-.';
     else
         linestyle = '-';
@@ -835,16 +835,18 @@ icond = find(strcmp(conditions, condition));
 if isempty(icond)
     return;
 end
-[tpts, duration, vals] = stimEdit.dataTree.currElem.GetStimData(icond);
+[tpts, duration, amps] = stimEdit.dataTree.currElem.GetStimData(icond);
+states = stimEdit.dataTree.currElem.GetStimStatusCond(icond);
 if isempty(tpts)
     set(handles.uitableStimInfo, 'data',[]);
     return;
 end
 [~,idx] = sort(tpts);
-data = zeros(length(tpts),3);
+data = zeros(length(tpts),4);
 data(:,1) = tpts(idx);
 data(:,2) = duration(idx);
-data(:,3) = vals(idx);
+data(:,3) = amps(idx);
+data(:,4) = states(idx, 2)
 set(handles.uitableStimInfo, 'data',data);
 
 

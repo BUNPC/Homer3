@@ -411,9 +411,9 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function s = GetStims(obj, t)            
+        function s = GetStimStatus(obj, t)            
             % Proc stream output 
-            s_inp = obj.procStream.input.GetStims(t);
+            s_inp = obj.procStream.input.GetStimStatusTimeSeries(t);
             s_out = obj.procStream.output.GetStims(t);
             
             k_inp_all  = find(s_inp~=0);
@@ -618,6 +618,10 @@ classdef RunClass < TreeNodeClass
             tpts = obj.procStream.GetStimTpts(icond);
         end
         
+        % ----------------------------------------------------------------------------------
+        function status = GetStimStatusCond(obj, icond)
+            status = obj.procStream.input.GetStimStatus(icond);
+        end
         
         % ----------------------------------------------------------------------------------
         function SetStimDuration(obj, icond, duration)
@@ -689,8 +693,8 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function vals = GetStimValSettings(obj)
-            vals = obj.procStream.input.GetStimValSettings();
+        function vals = GetstimStatusSettings(obj)
+            vals = obj.procStream.input.GetstimStatusSettings();
         end        
         
         

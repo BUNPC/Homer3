@@ -399,11 +399,10 @@ classdef StimClass < FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function ToggleStims(obj, tPts)
+        function ToggleStims(obj, tPts)  % Deprecated
             if isempty(obj.data)
                 return;
             end
-            
             % Find all stims for any conditions which match the time points and 
             % flip it's value.
             k = [];

@@ -955,9 +955,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function s = GetStims(obj, t)
+        function s = GetStims(obj, t)  % TODO rename GetStimAmplitudes
+            % Takes array of time points t and returns array the same size
+            % valued with stimulus amplitudes at the nearest time point to
+            % their onset
             s = zeros(length(t), length(obj.stim));
-            for ii=1:length(obj.stim)
+            for ii=1:length(obj.stim)  % For each stimulus condition
                 [ts, v] = obj.stim(ii).GetStim();
                 [~, k] = nearest_point(t, ts);
                 if isempty(k)

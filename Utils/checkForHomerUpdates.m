@@ -6,8 +6,7 @@ function checkForHomerUpdates()
     if (strcmp(cfg.GetValue('Check For Updates'),'on'))
 
         % If it has been a week since Homer checked for an update
-        if (1)
-%         if (datetime - cfg.GetValue('Last Checked For Update') > duration(168,0,0))
+        if (datetime - cfg.GetValue('Last Checked For Update') > duration(168,0,0))
 
             url = 'http://bu.edu/neurophotonics/research/fnirs/homer3';
             promptFlag = false;

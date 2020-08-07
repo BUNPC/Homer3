@@ -208,7 +208,7 @@ if length(wspaths)>1
 end
 
 if exist('./setpaths_proprietary.m','file')
-    setpaths_proprietary(options);
+    setpaths_proprietary();
 end
 
 

@@ -13,8 +13,8 @@
 %
 % INPUT:
 % data: SNIRF.data container with the delta OD or delat concentration data
-% stimStatus: ProcInputClass.stimStatus cell array of time; status for each
-% stimulus condition
+% stimStatus: ProcInputClass.stimStatus cell array of time and status per
+% stim mark per condition
 % trange: defines the range for the block average [tPre tPost]
 %
 % OUTPUT:
@@ -49,10 +49,12 @@ t = snirf.GetTimeCombined();
 s = zeros(length(t), length(stimStatus));
 for i = 1:length(stimStatus)  % For each condition
     status = stimStatus{i};
-    for j = 1:length(t(:,1))
-         k = find(abs(t - status(j,1)) < 1e-3); % Error margin is const
-         s(k, i) = status(j, 2);
-    end            
+    if ~isempty(status)
+        for j = 1:length(status(:,1))
+             k = find(abs(t - status(j,1)) < 1e-3); % Error margin is const
+             s(k, i) = status(j, 2);
+        end            
+    end         
 end
 
 nTrials = cell(length(data),1);

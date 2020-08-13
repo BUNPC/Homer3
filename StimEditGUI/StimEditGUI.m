@@ -292,6 +292,10 @@ end
 % the selected stims to the stims in currElem
 t = stimEdit.dataTree.currElem.GetTimeCombined();
 s = stimEdit.dataTree.currElem.GetStimStatus(t);
+if isempty(s) || isempty(t)
+   stims_select = [];
+   return
+end
 s2 = sum(abs(s(tPts_idxs_select,:)),2);
 stims_select = find(s2>=1);
 
@@ -846,7 +850,7 @@ data = zeros(length(tpts),4);
 data(:,1) = tpts(idx);
 data(:,2) = duration(idx);
 data(:,3) = amps(idx);
-data(:,4) = states(idx, 2)
+data(:,4) = states(idx, 2);
 set(handles.uitableStimInfo, 'data',data);
 
 

@@ -13,7 +13,6 @@ classdef ProcInputClass < handle
         misc;
     end
     
-    
     methods
         
         % ----------------------------------------------------------------------------------
@@ -40,6 +39,8 @@ classdef ProcInputClass < handle
                 data = stim(i).GetData();
                 if ~isempty(data)
                    obj.stimStatus{i} = [data(:, 1), ones(size(data, 1), 1)]; 
+                else
+                   obj.stimStatus{i} = []; 
                 end
             end
         end
@@ -174,6 +175,10 @@ classdef ProcInputClass < handle
             if ~exist('icond', 'var')
                 status = obj.stimStatus(1);
             end
+            if isempty(obj.stimStatus)
+                status = [];
+                return
+            end
             status = obj.stimStatus{icond};
         end
         
@@ -226,12 +231,16 @@ classdef ProcInputClass < handle
             if nargin==1
                 t = [];
             end
+            if isempty(obj.stimStatus)
+                s = [];
+                return
+            end
             stim = obj.acquired.GetStim();
             s = zeros(length(t), length(stim));
-            for i = 1:length(stim)  % For each stimulus condition
+            for i = 1:length(obj.stimStatus)  % For each stimulus condition in stimStatus
                 data = stim(i).GetData();
                 status = obj.stimStatus{i};
-                if ~isempty(data)
+                if ~isempty(data) && ~isempty(status)
                     for j = 1:length(data(:,1))
                          k = find(abs(t - data(j,1)) < obj.errmargin);
                          s(k, i) = status(j, 2);
@@ -257,7 +266,40 @@ classdef ProcInputClass < handle
             if isempty(condition)
                 return;
             end
+            stim = obj.acquired.GetStim();
+            % Need to ensure proper stimStatus order after calls to
+            % SortStims in acquired object
+            names_pre = {stim.name};
+            % Add the stims to the acq files
             obj.acquired.AddStims(tPts, condition);
+            stim = obj.acquired.GetStim();
+            names_post = {stim.name};
+            tmp = obj.stimStatus;
+            obj.stimStatus = {};
+            % Reorder existing stims
+            for i = 1:length(names_post)
+                if strcmp(names_post{i}, condition)  % If this is the condition of the added stim
+                    j = find(strcmp(condition, names_pre));
+                    if ~isempty(j)
+                        obj.stimStatus{i} = tmp{j};
+                    else
+                        obj.stimStatus{i} = [];
+                    end
+                else
+                    for j = 1:length(names_pre)
+                        if strcmp(names_post{i}, names_pre{j})
+                           obj.stimStatus{i} = tmp{j};
+                        end
+                    end
+                end
+            end
+            % Init status for new stim
+            for i = 1:length(obj.stimStatus)
+                if strcmp(condition, stim(i).GetName())
+                    obj.stimStatus{i} = [obj.stimStatus{i}; [tPts, ones(length(tPts))]];
+                    return
+                end
+            end
         end
 
         
@@ -266,8 +308,26 @@ classdef ProcInputClass < handle
             if ~exist('tPts','var') || isempty(tPts)
                 return;
             end
-            if ~exist('condition','var')
+            if ~exist('condition','var') || strcmp(condition, '')
                 condition = '';
+                stim = obj.acquired.GetStim();
+                % Find all stims for any conditions which match the time points and 
+                % remove the row
+                for i = 1:length(stim)  % For each condition
+                    data = stim(i).GetData();
+                    if ~isempty(data)
+                        k = [];
+                        for j=1:length(tPts)  % For each selected time point, search for nearby stims
+                            k = [k, find( abs(data(:,1)-tPts(j)) < obj.errmargin )]; %#ok<AGROW>
+                        end
+                        % Remove stims from stimStatus property too
+                        status = obj.stimStatus{i};
+                        if ~isempty(status)
+                            status(k, :) = [];
+                            obj.stimStatus{i} = status; 
+                        end
+                    end
+                end
             end
             obj.acquired.DeleteStims(tPts, condition);
         end
@@ -456,9 +516,27 @@ classdef ProcInputClass < handle
             if ~exist('newname','var')  || ~ischar(newname)
                 return;
             end
+            % Reorder stimStatus
+            stim = obj.acquired.GetStim();
+            names_pre = {stim.name};
             obj.acquired.RenameCondition(oldname, newname);
+            stim = obj.acquired.GetStim();
+            names_post = {stim.name};
+            tmp = obj.stimStatus;
+            obj.stimStatus = {};
+            for i = 1:length(names_post)
+               if strcmp(names_post{i}, newname)
+                   j = find(strcmp(oldname, names_pre));
+                   obj.stimStatus{i} = tmp{j};
+               else
+                   for j = 1:length(names_pre)
+                        if strcmp(names_post{i}, names_pre{j})
+                           obj.stimStatus{i} = tmp{j};
+                        end
+                   end
+               end
+            end
         end
     end   
-    
 end
 

@@ -1,5 +1,5 @@
 % SYNTAX:
-% [stim, tRange] = hmrR_StimRejection(data, stim, tIncAuto, tIncMan, tRange)
+% [stimStatus, tRange] = hmrR_StimRejection(data, stimStatus, tIncAuto, tIncMan, tRange)
 %
 % UI NAME:
 % Stim_Exclude
@@ -11,7 +11,8 @@
 %
 % INPUT:
 % data:     SNIRF data object    
-% stim:     SNIRF stim object
+% stimStatus: ProcInputClass.stimStatus cell array of time and status per
+% stim mark per condition
 % tIncAuto: Cell array of length equal to the # of time bases in data. Each 
 %           cell element is time points (#time points x 1) identified as motion
 %           artifacts by processing stream.
@@ -26,16 +27,16 @@
 %           duration.
 %
 % OUTPUT:
-% stim:     SNIRF stim object
+% stimStatus: ProcInputClass.stimStatus with disabled stims
 % tRange:   same tRange array as in the input
 %
 % USAGE OPTIONS:
-% Stim_Exclude: [stim,tRange] = hmrR_StimRejection(dod,stim,tIncAuto,tIncMan,tRange)
+% Stim_Exclude: [stimStatus,tRange] = hmrR_StimRejection(dod,stimStatus,tIncAuto,tIncMan,tRange)
 %
 % PARAMETERS:
 % tRange: [-5.0, 10.0]
 %
-function [stim, tRange] = hmrR_StimRejection(data, stim, tIncAuto, tIncMan, tRange)
+function [stimStatus, tRange] = hmrR_StimRejection(data, stimStatus, tIncAuto, tIncMan, tRange)
 
 if isempty(tIncAuto)
     tIncAuto = cell(length(data),1);
@@ -44,26 +45,35 @@ if isempty(tIncMan)
     tIncMan = cell(length(data),1);
 end
 
-snirf = SnirfClass(data, stim);
-for iBlk=1:length(snirf.data)
+% Get stim time by instantiating temporary SnirfClass object with this 
+% function's data argument, calling GetTimeCombined method
+snirf = SnirfClass(data);
+
+for iBlk=1:length(snirf.data)  % For each data block
     t = snirf.data(iBlk).GetTime();
-    s = snirf.GetStims(t);
-    
-    dt = (t(end)-t(1))/length(t);
-    tRangeIdx = [floor(tRange(1)/dt):ceil(tRange(2)/dt)];
-    
-    smax = max(s,[],2);
-    lstS = find(smax==1);
-    for iS = 1:length(lstS)
-        lst = round(min(max(lstS(iS) + tRangeIdx,1),length(t)));
-        if ~isempty(tIncAuto{iBlk}) && min(tIncAuto{iBlk}(lst))==0
-            s(lstS(iS),:) = -2*abs(s(lstS(iS),:));
-        end
-        if ~isempty(tIncMan{iBlk}) && min(tIncMan{iBlk}(lst))==0
-            s(lstS(iS),:) = -1*abs(s(lstS(iS),:));
+    % Interpolate stim status signal onto t, reject stims with tIncMan or
+    % tIncAuto values of 0
+    for i = 1:length(stimStatus)  % For each condition
+        status = stimStatus{i};
+        if ~isempty(status)
+            for j = 1:length(status(:,1))  % For each mark in each condition
+                % Find index k of stim mark in time series t
+                k = find(abs(t - status(j,1)) < 1e-3); % Error margin is const
+                % Check if stims are excluded by time series
+                if ~isempty(tIncAuto{iBlk})
+                    if tIncAuto{iBlk}(k) == 0 
+                        status(j, 2) = -2
+                    end
+                end
+                if ~isempty(tIncMan{iBlk})  % Manual rejection takes precedence
+                    if tIncMan{iBlk}(k) == 0
+                        status(j, 2) = -1
+                    end
+                end
+            end            
         end
     end
-    snirf.SetStims_MatInput(s, t);
 end
-stim = snirf.stim;
+
+end
 

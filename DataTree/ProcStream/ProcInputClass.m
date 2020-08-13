@@ -296,7 +296,7 @@ classdef ProcInputClass < handle
             % Init status for new stim
             for i = 1:length(obj.stimStatus)
                 if strcmp(condition, stim(i).GetName())
-                    obj.stimStatus{i} = [obj.stimStatus{i}; [tPts, ones(length(tPts))]];
+                    obj.stimStatus{i} = [obj.stimStatus{i}; [tPts, ones(length(tPts),1)]];
                     return
                 end
             end

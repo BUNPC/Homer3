@@ -1,5 +1,5 @@
 % SYNTAX:
-% [data_avg, data_std, nTrials, data_sum2, yTrials] = hmrR_BlockAvg( data, stim, trange )
+% [data_avg, data_std, nTrials, data_sum2, yTrials] = hmrR_BlockAvg( data, stimStatus, trange )
 %
 % UI NAME:
 % Block_Average
@@ -13,7 +13,8 @@
 %
 % INPUT:
 % data: SNIRF.data container with the delta OD or delat concentration data
-% stim: SNIRF.stim container with the stimulus condition data
+% stimStatus: ProcInputClass.stimStatus cell array of time; status for each
+% stimulus condition
 % trange: defines the range for the block average [tPre tPost]
 %
 % OUTPUT:
@@ -24,14 +25,14 @@
 % yTrials: a structure containing the individual trial responses
 %
 % USAGE OPTIONS:
-% Block_Average_on_Concentration_Data: [dcAvg, dcAvgStd, nTrials, dcSum2] = hmrR_BlockAvg( dc, stim, trange )
-% Block_Average_on_Delta_OD_Data: [dodAvg, dodAvgStd, nTrials, dodSum2] = hmrR_BlockAvg( dod, stim, trange )
+% Block_Average_on_Concentration_Data: [dcAvg, dcAvgStd, nTrials, dcSum2] = hmrR_BlockAvg( dc, stimStatus, trange )
+% Block_Average_on_Delta_OD_Data: [dodAvg, dodAvgStd, nTrials, dodSum2] = hmrR_BlockAvg( dod, stimStatus, trange )
 %
 % PARAMETERS:
 % trange: [-2.0, 20.0]
 %
 
-function [data_avg, data_std, nTrials, data_sum2, yTrials] = hmrR_BlockAvg( data, stim, trange )
+function [data_avg, data_std, nTrials, data_sum2, yTrials] = hmrR_BlockAvg( data, stimStatus, trange )
 
 % Initialize outputs;
 data_avg  = DataClass().empty();
@@ -39,12 +40,21 @@ data_std  = DataClass().empty();
 data_sum2 = DataClass().empty();
 yTrials   = [];
 
-% Get stim vector by instantiating temporary SnirfClass object with this 
-% function's stim argument as input, and then using the SnirfClass object's 
-% GetStims method to convert stim to the s vector that this function needs. 
-snirf = SnirfClass(data, stim);
+% Get stim time by instantiating temporary SnirfClass object with this 
+% function's data argument, calling GetTimeCombined method
+snirf = SnirfClass(data);
 t = snirf.GetTimeCombined();
-s = snirf.GetStims(t);
+
+% Interpolate stim status signal from stim, t 
+s = zeros(length(t), length(stimStatus));
+for i = 1:length(stimStatus)  % For each condition
+    status = stimStatus{i};
+    for j = 1:length(t(:,1))
+         k = find(abs(t - status(j,1)) < 1e-3); % Error margin is const
+         s(k, i) = status(j, 2);
+    end            
+end
+
 nTrials = cell(length(data),1);
 
 for kk=1:length(data)

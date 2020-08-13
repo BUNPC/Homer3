@@ -31,6 +31,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %   obj = SnirfClass(filename, options);
             %   obj = SnirfClass(dotnirs);
             %   obj = SnirfClass(dotnirs, numdatabllocks);
+            %   obj = SnirfClass(data);
             %   obj = SnirfClass(data, stim);
             %   obj = SnirfClass(data, stim, probe);
             %   obj = SnirfClass(data, stim, probe, aux);
@@ -163,17 +164,22 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     obj.metaDataTags   = MetaDataTagsClass();
                     
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                    % obj = SnirfClass(data);
                     % obj = SnirfClass(data, stim);
                     % obj = SnirfClass(data, stim, probe);
                     % obj = SnirfClass(data, stim, probe, aux);
                     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 elseif isa(varargin{1}, 'DataClass')
                     
-                    % obj = SnirfClass(data, stim);
+                    % obj = SnirfClass(data);
                     data = varargin{1};
                     obj.SetData(data);
-                    stim = varargin{2};
-                    obj.SetStim(stim);
+                    
+                    % obj = SnirfClass(data, stim);
+                    if nargin>1
+                        stim = varargin{2};
+                        obj.SetStim(stim);
+                    end
                     
                     % obj = SnirfClass(data, stim, probe);
                     if nargin>2

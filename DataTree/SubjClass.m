@@ -58,6 +58,11 @@ classdef SubjClass < TreeNodeClass
         % S to obj if obj and S are equivalent nodes
         % ----------------------------------------------------------------------------------
         function Copy(obj, S, conditional)
+            % Copy SubjClass object obj2 to SubjClass object obj. Conditional option applies 
+            % only to all the runs under this group. If == 'conditional' ONLY derived data, 
+            % that is, only from procStream but NOT from acquired data is copied for all the runs. 
+            % 
+            % Conversly unconditional copy copies all properties in the runs under this subject
             if nargin==3 && strcmp(conditional, 'conditional')
                 if strcmp(obj.name, S.name)
                     for i=1:length(obj.runs)

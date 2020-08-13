@@ -1132,6 +1132,11 @@ if isempty(aux) || isempty(t)
     set(handles.popupmenuAux, 'enable','off');
     return;
 end
+if isempty(aux.names)
+    set(handles.checkboxPlotAux, 'enable','off');
+    set(handles.popupmenuAux, 'enable','off');
+    return;
+end
 
 % Enable aux gui objects and set their values based on the aux values
 onoff = get(handles.checkboxPlotAux, 'value');

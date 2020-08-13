@@ -184,6 +184,14 @@ classdef RunClass < TreeNodeClass
                 end
             else
                 obj.Copy@TreeNodeClass(R);
+                if isempty(obj.acquired)
+                    if obj.IsNirs()
+                        obj.acquired = NirsClass();
+                    else
+                        obj.acquired = SnirfClass();
+                    end
+                end
+                obj.acquired.Copy(R.acquired);
             end
         end
 

@@ -199,10 +199,12 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        % Copy processing params (procInut and procStream.output) from
-        % N2 to obj if obj and N2 are equivalent nodes
-        % ----------------------------------------------------------------------------------
         function Copy(obj, obj2, conditional)
+            % Copy GroupClass object obj2 to GroupClass object obj. Conditional option applies 
+            % only to all the runs under this group. If == 'conditional' ONLY derived data, 
+            % that is, only from procStream but NOT from acquired data is copied for all the runs. 
+            % 
+            % Conversly unconditional copy copies all properties in the runs under this group
             if nargin==3 && strcmp(conditional, 'conditional')
                 if strcmp(obj.name,obj2.name)
                     for i=1:length(obj.subjs)
@@ -494,7 +496,7 @@ classdef GroupClass < TreeNodeClass
                 delete([obj.path, 'groupResults.mat']);
             end
                 
-            obj.procStream.output.Reset(obj.name);
+            obj.procStream.output.Reset(obj.GetFilename);
             if strcmp(option, 'down')
                 for jj=1:length(obj.subjs)
                     obj.subjs(jj).Reset();
@@ -588,12 +590,12 @@ classdef GroupClass < TreeNodeClass
                 end
             end
             
-            % Copy saved group to current group if versions are compatible.
-            % obj.CompareVersions==0 means the versions of the saved group
-            % and current one are equal.
+            % Copy saved group to current group if versions are compatible. obj.CompareVersions==0 
+            % means the versions of the saved group and current one are equal.
             if ~isempty(group) && obj.CompareVersions(group)<=0
-                % copy procStream.output from previous group to current group for
-                % all nodes that still exist in the current group .
+                % Do a conditional copy of group from groupResults file. Conditional copy copies ONLY 
+                % derived data, that is, only from procStream but NOT acqruired. We do not want to 
+                % overwrite the real acquired data loaded from acquisition files 
                 hwait = waitbar(0,'Loading group');
                 obj.Copy(group, 'conditional');
                 close(hwait);

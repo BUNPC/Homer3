@@ -510,8 +510,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     err = -6;
                 end
                 
-                %%%% Load aux
-                if obj.LoadAux(obj.fid)
+                %%%% Load aux. This is an optional field, therefore error must 
+                %%%% be less then -1 (-1 means aux is not in SNIRF file) to be 
+                %%%% error for whole SNIRF file
+                if obj.LoadAux(obj.fid)<-1
                     err = -7;
                 end
                 

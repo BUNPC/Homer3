@@ -66,6 +66,10 @@ classdef AuxClass < FileLoadSaveClass
             try
                 % Open group
                 [gid, fid] = HDF5_GroupOpen(fileobj, location);
+                if gid<0
+                    err = -1;
+                    return;
+                end
 
                 obj.name            = HDF5_DatasetLoad(gid, 'name');
                 obj.dataTimeSeries  = HDF5_DatasetLoad(gid, 'dataTimeSeries');
@@ -75,7 +79,7 @@ classdef AuxClass < FileLoadSaveClass
                 % Close group
                 HDF5_GroupClose(fileobj, gid, fid);
             catch
-                err = -1;
+                err = -2;
             end
         end
 

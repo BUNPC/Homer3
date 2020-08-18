@@ -540,21 +540,21 @@ for iPanel=1:length(procElem)
                         fcall2 = procStreamEdit.dataTree.groups(ig).procStream.fcalls(jj);
                         fcall.paramIn = fcall2.paramIn;
                     catch
-                        fprintf("Saving newly-added function %s to stream with default parameters.\n", fcall.name);
+                        fprintf('Saving newly-added function %s to stream with default parameters.\n', fcall.name);
                     end
                 case iSubjPanel
                     try
                         fcall2 = procStreamEdit.dataTree.groups(ig).subjs(is).procStream.fcalls(jj);
                         fcall.paramIn = fcall2.paramIn;
                     catch
-                        fprintf("Saving newly-added function %s to stream with default parameters.\n", fcall.name);
+                        fprintf('Saving newly-added function %s to stream with default parameters.\n', fcall.name);
                     end
                 case iRunPanel
                     try
                         fcall2 = procStreamEdit.dataTree.groups(ig).subjs(is).runs(ir).procStream.fcalls(jj);
                         fcall.paramIn = fcall2.paramIn;
                     catch
-                        fprintf("Saving newly-added function %s to stream with default parameters.\n", fcall.name);
+                        fprintf('Saving newly-added function %s to stream with default parameters.\n', fcall.name);
                     end
             end
         end

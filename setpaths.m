@@ -100,16 +100,16 @@ for ii=1:length(paths)
             % When exists returns 2 but excluding the working dir
             if ( (exist(files(f).name(1:end-2),'file') == 2) & (~isequal(files(f).folder,pwd())))
                 if options.verbose
-                    fprintf("This file shadows one already on the path: %s\n",[files(f).folder '\' files(f).name(1:end-2)]);
-                    fprintf("Here is the original: %s\n", which(files(f).name(1:end-2)));
+                    fprintf('This file shadows one already on the path: %s\n',[files(f).folder '\' files(f).name(1:end-2)]);
+                    fprintf('Here is the original: %s\n', which(files(f).name(1:end-2)));
                 end
                 if (strcmp( fileread([files(f).folder '\' files(f).name]), fileread(which(files(f).name(1:end-2))) ))
                     if options.verbose
-                        fprintf("The files are the same.\n");
+                        fprintf('The files are the same.\n');
                     end
                 else
                     if options.verbose
-                        fprintf("The files have some differences.\n")
+                        fprintf('The files have some differences.\n')
                     end
                     dnum = dnum + 1;
                     diffqueue{end+1} = {[files(f).folder '\' files(f).name], which(files(f).name(1:end-2))};

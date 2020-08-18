@@ -72,9 +72,6 @@ classdef ProcStreamClass < handle
             if ~isa(obj, 'ProcStreamClass')
                 return;
             end
-            if nargin<3
-                reg = RegistriesClass.empty();
-            end            
             delete(obj.fcalls);
             obj.fcalls = FuncCallClass().empty();
             for ii=1:length(obj2.fcalls)

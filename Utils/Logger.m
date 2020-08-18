@@ -96,8 +96,8 @@ classdef Logger < handle
                 return
             end
             if bitand(options, self.options.FILE_ONLY) > 0
+                self.CheckFileSize()
                 if self.fhandle > 0
-                    self.CheckFileSize()
                     fprintf(self.fhandle, s);
                 end
             end
@@ -139,8 +139,8 @@ classdef Logger < handle
                 end
             end
             if bitand(options, self.options.FILE_ONLY) > 0
+                self.CheckFileSize()
                 if self.fhandle > 0
-                    self.CheckFileSize()
                     fprintf(self.fhandle, s);
                 end
             end
@@ -172,8 +172,8 @@ classdef Logger < handle
             s =  sprintf('\n%s:  %s', ct, msg);
             
             if bitand(options, self.options.FILE_ONLY) > 0
+                self.CheckFileSize()
                 if self.fhandle > 0
-                    self.CheckFileSize()
                     fprintf(self.fhandle, s);
                 end
             end
@@ -196,7 +196,7 @@ classdef Logger < handle
             if self.fhandle < 0
                 return;
             end            
-            if ~strcmp(self.appname, appname);
+            if ~strcmp(self.appname, appname)
                 return;
             end
             fclose(self.fhandle);
@@ -281,8 +281,12 @@ classdef Logger < handle
             if self.fhandle < 0
                 return;
             end
+            try
             if ftell(self.fhandle) > self.chapter.maxsize
                 self.ResetChapter()
+                end
+            catch
+                self.fhandle = -1;
             end
         end
         

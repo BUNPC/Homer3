@@ -89,7 +89,7 @@ if ischar(dotNirsFilePath)
     else
         error('The input path does not exist.');
     end
-elseif isstruct(dotNirsFilePath)
+elseif isstruct(dotNirsFilePath) || isa(dotNirsFilePath,'NirsClass')
     rawDotNirs = dotNirsFilePath;
     filepath = pwd;
     name = 'NirsplotAnalized';
@@ -163,7 +163,7 @@ rawDotNirs.d = rawDotNirs.d(:,idxML);
 
 frequency_samp = 1/mean(diff(rawDotNirs.t));
 % Creating 's' variable (stimuli matrix) from the information in StimDesign
-if ~isfield(rawDotNirs,'s')
+if ~(sum(strcmp(fieldnames(rawDotNirs), 's')) == 1)
     if isfield(rawDotNirs,'StimDesign')
         nStim = length(rawDotNirs.StimDesign);
         sTmp = zeros(size(rawDotNirs.d,1),nStim);

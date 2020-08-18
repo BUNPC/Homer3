@@ -306,8 +306,10 @@ classdef StimClass < FileLoadSaveClass
         
         % ----------------------------------------------------------------------------------
         function SetDuration(obj, duration, tPts)
-            if isempty(obj.data)
-                return;
+            if exist('obj.data', 'var')
+                if isempty(obj.data)
+                    return;
+                end
             end
             if ~exist('duration','var')
                 duration = 5;

@@ -24,7 +24,7 @@ classdef ProcInputClass < handle
             obj.tIncMan = {};
             obj.mlActMan = {};
             obj.misc = [];
-            obj.stimStatusSettings = struct('none',0, 'incl',1, 'excl_manual',-1, 'excl_auto',-2);
+            obj.stimStatusSettings = struct('none',0, 'incl',1, 'excl_manual',-1, 'excl_auto',-2);  % TODO: remove
             if nargin==0
                 return;
             end

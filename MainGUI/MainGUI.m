@@ -1533,7 +1533,7 @@ Display(handles, hObject);
 function menuItemExportHRF_Callback(hObject, eventdata, handles)
 global maingui
 
-out = ExportDataGUI(maingui.dataTree.currElem.name,'.txt','HRF');
+out = ExportDataGUI(maingui.dataTree.currElem.name,'.txt','HRF', 'userargs');
 if isempty(out.format) && isempty(out.datatype)
     return;
 end

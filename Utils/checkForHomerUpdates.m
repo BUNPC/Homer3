@@ -34,7 +34,7 @@ function checkForHomerUpdates()
             catch
                 updateTxt = version{1}{1};
             end
-            web_vrnum = split(version{1}{1},'.');
+            web_vrnum = str2cell(version{1}{1},'.');
             this_vrnum = getVernum();
             promptFlag = compareVernum(web_vrnum, this_vrnum);  % If fetched vernum is greater
             if (promptFlag)

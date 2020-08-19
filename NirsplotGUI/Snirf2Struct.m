@@ -1,8 +1,14 @@
+% nirsData = NirsClass('C:\Users\Peter.W\Desktop\Research\Ex1_Basic_data_analysis\2-group-averaging\SubjB\subjB_run01.nirs')
+% snirfData = SnirfClass(nirsData);
+% testStruct = Nirs2Snirf(snirfData);
+% The input should be a snirfClass data
+% dirname = 'C:\Users\Peter.W\Desktop\Research\Ex1_Basic_data_analysis\2-group-averaging\SubjB\subjB_test.nirs'
+% struct = Snirf2Struct(snirfData, 'test11.nirs')
 function struct = Snirf2Struct(snirfData, dirname)
 %
 % Syntax:
-%   struct = Snirf2Struct(snirfData)    // return a struct
-%   struct = Snirf2Struct(snirfData, dirname) // return a struct and createa local nirs file in 'dirname'
+%   struct = Snirf2Struct(snirfData)
+%   struct = Snirf2Struct(snirfData, dirname)
 %
 % Description:
 %   -Convert snirf data into Struct OR save as a nirsClass Data
@@ -29,32 +35,35 @@ function struct = Snirf2Struct(snirfData, dirname)
 %           struct = Snirf2Struct(snirfData, 'convertedNirs.nirs')
 % 
 
+
     if ~exist('dirname','var')
         % if not given a path, set it to snirf path
         dirname = snirfData.filename;
+        save2dir = false; 
     else
+        save2dir = true; 
         if ~endsWith(dirname,'.nirs') && isempty(snirfData.filename)
-            disp('please enter a dirname for your .nirs file to continue')
+            disp('please enter a valid dirname for your .nirs file to continue')
         end
     end
     
     struct.t = snirfData.data.time;
     struct.d = snirfData.data.dataTimeSeries;
     
-    %   following fields for stimData(SD)
+%   following fields for stimData(SD)
     SDtest.Lambda = snirfData.probe.wavelengths;
     SDtest.SrcPos = snirfData.probe.sourcePos2D;
     SDtest.DetPos = snirfData.probe.detectorPos2D;
     SDtest.NSrcs = snirfData.data.measurementList(length(snirfData.data.measurementList)).sourceIndex;
     SDtest.NDets = snirfData.data.measurementList(length(snirfData.data.measurementList)).detectorIndex; 
     
-    %   need further testing on this two
+    %     need further testing on this two
     SDtest.MeasListAct = ones(length(snirfData.data.measurementList),1);
     SDtest.MeasListVis = ones(length(snirfData.data.measurementList),1);
     if isfield(snirfData.metaDataTags.tags,'LengthUnit')
         SDtest.SpatialUnit = snirfData.metaDataTags.tags.LengthUnit;
     end
-    %   measList build    
+%   measList build    
     TempMeasList = zeros(length(snirfData.data.measurementList),4);
     TempMeasList(:,3) = 1;
     for i = 1:length(snirfData.data.measurementList)
@@ -66,16 +75,17 @@ function struct = Snirf2Struct(snirfData, dirname)
     struct.ml = TempMeasList;
     struct.SD = SDtest;
     
-    %   following for constructing Stim(S) field 
+%     following for constructing Stim(S) field 
     Stemp = zeros(length(snirfData.data.time),1);
-    for i = 1:size(snirfData.stim.data,1)
-        index = round(snirfData.stim.data(i,1)*snirfData.stim.data(i,2));
-        Stemp(index,1) = 1;
-        
+    for j = 1:size(snirfData.stim,2)
+        for i = 1:size(snirfData.stim(j).data,1)
+            index = round(snirfData.stim(j).data(i,1)*snirfData.stim(j).data(i,2));
+            Stemp(index,1) = 1;
+
+        end
+        struct.s(:,j) = Stemp;
     end
-    struct.s = Stemp;
-    
-    %   For AUX
+%   AUX
     AuxTemp = zeros(length(snirfData.data.time),size(snirfData.aux,2));
     for i = 1:size(snirfData.aux,2)
         AuxTemp(:,i) = snirfData.aux(i).dataTimeSeries;
@@ -85,22 +95,24 @@ function struct = Snirf2Struct(snirfData, dirname)
     struct.aux = AuxTemp;
     
     
-    %   filenames
+%   filenames
     struct.filename = dirname;
         
     
     struct.supportedFomats = snirfData.supportedFomats;
     struct.fileformat = 'mat';
     
-    %   CondNames
+%   CondNames
     struct.CondNames={};
-    for ii = 1:length(snirfData.stim.name)
-        struct.CondNames{ii} =  snirfData.stim.name;
+    for ii = 1:length(snirfData.stim)
+        struct.CondNames{ii} =  snirfData.stim(ii).name;
         
     end
     
-    %     save struct as nirs file
-    SaveMat(struct, dirname)
+%     save struct as nirs file
+    if (save2dir)
+        SaveMat(struct, dirname)
+    end
 end
 
 

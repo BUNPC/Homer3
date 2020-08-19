@@ -49,14 +49,14 @@
 %               idxBasis=1 [stdev step] where stdev is the width of the
 %                  gaussian and step is the temporal spacing between
 %                  consecutive gaussians
-%               idxBasis=2 [tau sigma T] applied to both HbO and HbR
-%                  or [tau1 sigma1 T1 tau2 sigma2 T2]
+%               idxBasis=2 [tau sigma] applied to both HbO and HbR
+%                  or [tau1 sigma1 tau2 sigma2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
-%               idxBasis=3 [tau sigma T] applied to both HbO and HbR
-%                  or [tau1 sigma1 T1 tau2 sigma2 T2]
+%               idxBasis=3 [tau sigma] applied to both HbO and HbR
+%                  or [tau1 sigma1 tau2 sigma2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
-%               idxBasis=4 [p q T] applied to both HbO and HbR
-%                  or [p1 q1 T1 p2 q2 T2]
+%               idxBasis=4 [p q] applied to both HbO and HbR
+%                  or [p1 q1 p2 q2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
 % rhoSD_ssThresh - max distance for a short separation measurement. Set =0
 %          if you do not want to regress the short separation measurements.
@@ -96,7 +96,7 @@
 % trange: [-2.0, 20.0]
 % glmSolveMethod: 1
 % idxBasis: 2
-% paramsBasis: [0.1 3.0 10.0 1.8 3.0 10.0], maxnum: 6
+% paramsBasis: [0.1 3.0 1.8 3.0] maxnum: 4
 % rhoSD_ssThresh: 15.0
 % flagNuisanceRMethod: 1
 % driftOrder: 3
@@ -127,7 +127,7 @@ end
 % object with this function's data, stim arguments
 snirf = SnirfClass(data_y, stim);
 t = snirf.GetTimeCombined();
-stim = snirf.GetStims(t);
+stimAmps = snirf.GetStims(t);
 
 % Interpolate stim status signal from stim, t 
 stimStates = zeros(length(t), length(stimStatus));
@@ -223,7 +223,7 @@ for iBlk=1:length(data_y)
                     iNearestSS(iML,2) = lstSS(ii);
                 end
             case 2 % use average of all active SS as regressor
-                mlSSlst = 1;
+                mlSSlst = 1; 
             case 3 % use tCCA regressors and channel map from hmrR_tCCA()
                 if ischar(rcMap{iBlk}) % use all regressors for all channels (only one group)
                     mlSSlst = 1;
@@ -236,19 +236,31 @@ for iBlk=1:length(data_y)
     end
     
     %%%%%%%%%%%%%%%%
-    % Prune good stim
+    % Prune good stim, generate onset matrix
     %%%%%%%%%%%%%%%%
-    % handle case of conditions with 0 trials
-    lstCond = find(sum(stimStatus > 0, 1) > 0);
-    nCond = length(lstCond); % size(stimStatus,2);
-    onset = zeros(nT, nCond);
+    % Get only indices of conditions with any stimStates that are 1
+    lstCond = find(sum(stimStates == 1, 1) > 0);
+    nCond = length(lstCond); % size(stimStates,2);
     nTrials{iBlk} = zeros(nCond,1);
+    onset = zeros(nT, nCond);
     for iCond = 1:nCond
-        lstT = find(stimStatus(:, lstCond(iCond)) == 1);
-        lstp = find((lstT+nPre) >= 1 & (lstT+nPost) <= nTpts);
+        lstT = find(stimStates(:, lstCond(iCond)) == 1);  % Indices of stims enabled (== 1)
+        lstp = find((lstT+nPre) >= 1 & (lstT+nPost) <= nTpts);  % Indices of stims not clipped by signal
         lst = lstT(lstp);
         nTrials{iBlk}(iCond) = length(lst);
-        onset(lst+nPre,iCond) = 1;
+        % Generate basis boxcars of stim amplitude and duration
+        starts = lst+nPre;
+        durations = stim(iCond).data(:, 2);
+        amplitudes = stim(iCond).data(:, 3);
+        for i = 1:length(starts)
+            if idxBasis == 1  % Gaussian has no duration T (yet)
+               pulse_duration = 1; 
+            else
+               pulse_duration = round(durations(i) / dt); 
+            end
+            pulse = (amplitudes(i) / pulse_duration) * ones(pulse_duration, 1);
+            onset(starts(i):starts(i) + pulse_duration - 1, iCond) = pulse;
+        end
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -263,23 +275,22 @@ for iBlk=1:length(data_y)
         tbasis = zeros(ntHRF,nB);
         for b=1:nB
             tbasis(:,b) = exp(-(tHRF-(trange(1)+b*gms)).^2/(2*gstd.^2));
-            tbasis(:,b) = tbasis(:,b)./max(tbasis(:,b)); %normalize to 1
+            tbasis(:,b) = tbasis(:,b)./max(tbasis(:,b));
         end
         
     elseif idxBasis==2
         % Modified Gamma
-        if length(paramsBasis)==3
+        if length(paramsBasis)==2
             nConc = 1;
-        elseif length(paramsBasis)==6
+        else
             nConc = 2;
         end
-        
+            
         nB = 1;
         tbasis = zeros(ntHRF,nB,nConc);
         for iConc = 1:nConc
             tau = paramsBasis((iConc-1)*3+1);
             sigma = paramsBasis((iConc-1)*3+2);
-            T = paramsBasis((iConc-1)*3+3);
             
             tbasis(:,1,iConc) = (exp(1)*(tHRF-tau).^2/sigma^2) .* exp( -(tHRF-tau).^2/sigma^2 );
             lstNeg = find(tHRF<0);
@@ -289,19 +300,13 @@ for iBlk=1:length(data_y)
                 tbasis(1:round((tau-tHRF(1))/dt),1,iConc) = 0;
             end
             
-            if T>0
-                for ii=1:nB
-                    foo = conv(tbasis(:,ii,iConc),ones(round(T/dt),1)) / round(T/dt);
-                    tbasis(:,ii,iConc) = foo(1:ntHRF,1);
-                end
-            end
         end
         
     elseif idxBasis==3
         % Modified Gamma and Derivative
-        if length(paramsBasis)==3
+        if length(paramsBasis)==2
             nConc = 1;
-        elseif length(paramsBasis)==6
+        else
             nConc = 2;
         end
         
@@ -310,7 +315,6 @@ for iBlk=1:length(data_y)
         for iConc = 1:nConc
             tau = paramsBasis((iConc-1)*3+1);
             sigma = paramsBasis((iConc-1)*3+2);
-            T = paramsBasis((iConc-1)*3+3);
             
             tbasis(:,1,iConc) = (exp(1)*(tHRF-tau).^2/sigma^2) .* exp( -(tHRF-tau).^2/sigma^2 );
             tbasis(:,2,iConc) = 2*exp(1)*( (tHRF-tau)/sigma^2 - (tHRF-tau).^3/sigma^4 ) .* exp( -(tHRF-tau).^2/sigma^2 );
@@ -319,19 +323,13 @@ for iBlk=1:length(data_y)
                 tbasis(1:round((tau-tHRF(1))/dt),1:2,iConc) = 0;
             end
             
-            if T>0
-                for ii=1:nB
-                    foo = conv(tbasis(:,ii,iConc),ones(round(T/dt),1)) / round(T/dt);
-                    tbasis(:,ii,iConc) = foo(1:ntHRF,1);
-                end
-            end
         end
         
     elseif idxBasis==4
         % AFNI Gamma function
-        if length(paramsBasis)==3
+        if length(paramsBasis)==2
             nConc = 1;
-        elseif length(paramsBasis)==6
+        else
             nConc = 2;
         end
         
@@ -341,14 +339,9 @@ for iBlk=1:length(data_y)
             
             p = paramsBasis((iConc-1)*3+1);
             q = paramsBasis((iConc-1)*3+2);
-            T = paramsBasis((iConc-1)*3+3);
             
             tbasis(:,1,iConc) = (tHRF/(p*q)).^p.* exp(p-tHRF/q);
             
-            if T>0
-                foo = conv(tbasis(:,1,iConc),ones(round(T/dt),1)) / round(T/dt);
-                tbasis(:,1,iConc) = foo(1:ntHRF,1);
-            end
         end
         
     end
@@ -521,19 +514,19 @@ for iBlk=1:length(data_y)
                     yresid = zeros(size(y));
                     
                     foo = nTrials{iBlk};
-                    nTrials{iBlk} = zeros(1,size(s,2));
+                    nTrials{iBlk} = zeros(1,size(stimAmps,2));
                     nTrials{iBlk}(lstCond) = foo;
                     
                     foo = yavg;
-                    yavg = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
+                    yavg = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
                     yavg(:,:,:,lstCond) = foo;
                     
                     foo = yavgstd;
-                    yavgstd = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
+                    yavgstd = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
                     yavgstd(:,:,:,lstCond) = foo;
                     
                     foo = ysum2;
-                    ysum2 = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
+                    ysum2 = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
                     ysum2(:,:,:,lstCond) = foo;
                     
                     beta = [];
@@ -650,23 +643,23 @@ for iBlk=1:length(data_y)
     end
     
     foo = nTrials{iBlk};
-    nTrials{iBlk} = zeros(1,size(s,2));
+    nTrials{iBlk} = zeros(1,size(stimAmps,2));
     nTrials{iBlk}(lstCond) = foo;
     
     foo = yavg;
-    yavg = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
+    yavg = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
     yavg(:,:,:,lstCond) = foo;
     
     foo = yavgstd;
-    yavgstd = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
+    yavgstd = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
     yavgstd(:,:,:,lstCond) = foo;
     
     foo = ysum2;
-    ysum2 = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
+    ysum2 = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
     ysum2(:,:,:,lstCond) = foo;
     
     foo = tb;
-    beta = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
+    beta = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
     beta(:,:,:,lstCond) = foo;
     
     %%%%%%%%%%%%%%%%%%%%%%%%%

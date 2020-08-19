@@ -1687,3 +1687,28 @@ set(handles.MainGUI, 'units',u0);
 
 
 
+% --------------------------------------------------------------------
+function menuItemNirsPlot_Callback(hObject, eventdata, handles)
+% hObject    handle to menuItemNirsPlot (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global maingui
+curFileLocation = strcat(maingui.dataTree.dirnameGroups, maingui.dataTree.currElem.name);
+fileLocation =  curFileLocation(1:end-6);
+% check if there is a nirs file
+if ~isfile(strcat(fileLocation, '.nirs')) 
+    %none nirs -> convert snirf to nirf(Usually will not happen)
+    struct = Snirf2Struct(maingui.dataTree.currElem.acquired, strcat(fileLocation, '.nirs'));
+else
+    %struct is build upon current snirf file
+    struct = Snirf2Struct(maingui.dataTree.currElem.acquired);
+end
+nirsplot(struct,...
+                'freqCut',[0.5, 2.5],...
+                'window',5,...
+                'overlap',0,....
+                'qualityThreshold',0.9,...
+                'conditionsMask','all',...
+                'dodFlag',0,...
+                'guiFlag',1);

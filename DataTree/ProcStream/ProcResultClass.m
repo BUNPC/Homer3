@@ -266,13 +266,18 @@ classdef ProcResultClass < handle
                 return;
             end
             
-            % Error check file
-            if ~exist(obj.filename,'file')
-                return
+            % Check that data file associated with this processing element exists
+            if exist(obj.filename,'file')
+                % Delete file containing the actual datas
+                delete(obj.filename);
             end
             
-            % Delete file containing the actual datas
-            delete(obj.filename);
+
+            % Check that exported data file associated with this processing element exists
+            [pname, fname] = fileparts(obj.filename);
+            if exist([pname, '/', fname, '_HRF.txt'], 'file')
+                delete([pname, '/', fname, '_HRF.txt']);
+            end
         end
         
         
@@ -805,30 +810,39 @@ classdef ProcResultClass < handle
             end
             tblcells = TableCell.empty();
             if isa(obj.dcAvg, 'DataClass')
-                dataTimeSeries = obj.dcAvg(iBlk).GetDataTimeSeries('');
-                measList = obj.dcAvg(iBlk).measurementList;
+                dataTimeSeries  = obj.dcAvg(iBlk).GetDataTimeSeries();
+                time            = obj.dcAvg(iBlk).GetTime();
+                measList        = obj.dcAvg(iBlk).measurementList;
                 
-                % Header: stim condition name row
+                % Header: row containing stim condition name
+                tblcells(2,1) = TableCell('', 12);      % Make space for time column
                 for iCh = 1:length(measList)
-                    tblcells(1,iCh) = TableCell(sprintf('%s', CondNames{measList(iCh).dataTypeIndex}), 12);
+                    tblcells(1,iCh+1) = TableCell(sprintf('%s', CondNames{measList(iCh).dataTypeIndex}), 12);
                 end
                 
-                % Header: Hb type row
+                % Header: row containing time label followed by Hb type 
+                tblcells(2,1) = TableCell('time', 12);      
                 for iCh = 1:length(measList)
-                    tblcells(2,iCh) = TableCell(sprintf('%s,%d,%d', measList(iCh).dataTypeLabel, measList(iCh).sourceIndex, measList(iCh).detectorIndex), 12);
+                    tblcells(2,iCh+1) = TableCell(sprintf('%s,%d,%d', measList(iCh).dataTypeLabel, measList(iCh).sourceIndex, measList(iCh).detectorIndex), 12);
                 end
                 
                 % Data rows
                 h = waitbar_improved(0, sprintf('Generating table cells for export ... 0%% complete.'));
                 for t = 1:size(dataTimeSeries,1)
                     waitbar_improved(t/size(dataTimeSeries,1), h, sprintf('Generating table cells for export ... %d%% complete.', uint32(100 * t/size(dataTimeSeries,1))));
+                    
+                    % time 
+                    cname = sprintf('%s%0.3f', blanks(time(t)>=0), time(t));
+                    tblcells(t+2,1) = TableCell(cname, 12);
+                    
+                    % data
                     for iCh = 1:length(measList)
                         if isnan(dataTimeSeries(t,iCh))
                             cname  = 'NaN';
                         else
                             cname = sprintf('%s%0.5e', blanks(dataTimeSeries(t,iCh)>=0), dataTimeSeries(t,iCh));
                         end
-                        tblcells(t+2,iCh) = TableCell(cname, 12);
+                        tblcells(t+2,iCh+1) = TableCell(cname, 12);
                     end
                 end
                 close(h);

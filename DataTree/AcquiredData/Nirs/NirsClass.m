@@ -22,7 +22,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             % Syntax:
             %   obj = NirsClass()
             %   obj = NirsClass(filename);
-            %   obj = NirsClass(filename, options);
+            %   obj = NirsClass(filename, dataStorageScheme);
             %   
             %
             % Example 1:
@@ -58,7 +58,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 return;
             end
             if nargin==2
-                obj.options = varargin{2};
+                obj.dataStorageScheme = varargin{2};
             end
             
             if isa(varargin{1}, 'NirsClass')
@@ -73,7 +73,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             obj.filename = filename;
             
             % Conditional loading of snirf file data
-            if strcmpi(obj.options, 'memory')
+            if strcmpi(obj.dataStorageScheme, 'memory')
                 obj.Load(filename);
             end
         end
@@ -255,7 +255,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
 
             % If we're working off the snirf file instead of loading everything into memory
             % then we have to load stim here from file before accessing it.
-            if strcmpi(obj.options, 'file')
+            if strcmpi(obj.dataStorageScheme, 'files')
                 obj.LoadStims(obj.filename);
             end
             
@@ -349,11 +349,8 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         end
         
         % ---------------------------------------------------------
-        function val = GetDataTimeSeries(obj, options, iBlk)
+        function val = GetDataTimeSeries(obj, ~, iBlk)
             val = [];
-            if ~exist('options','var')
-                options = '';
-            end
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk=1;
             end

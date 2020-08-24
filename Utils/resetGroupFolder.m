@@ -12,7 +12,7 @@ if exist([dirname, 'groupResults.mat'],'file')
 end
 
 if isempty(findstr(options, 'nodatatree')) %#ok<*FSTR>
-    dataTree = DataTreeClass(dirname,'','','file');
+    dataTree = DataTreeClass(dirname,'','','files');
     for iG = 1:length(dataTree.groups)
         dataTree.SetCurrElem(iG,0,0)
         dataTree.ResetCurrElem();

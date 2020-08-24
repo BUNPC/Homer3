@@ -5,7 +5,7 @@ classdef FileLoadSaveClass < matlab.mixin.Copyable
         fileformat;
         supportedFomats;
         err;
-        options;        
+        dataStorageScheme;        
     end
     
     
@@ -20,7 +20,7 @@ classdef FileLoadSaveClass < matlab.mixin.Copyable
                 'hdf5', {{'hdf','.hdf','hdf5','.hdf5','hf5','.hf5','h5','.h5'}} ...
                 );
             obj.err = 0;
-            obj.options = 'memory';            
+            obj.dataStorageScheme = 'memory';
         end
         
         

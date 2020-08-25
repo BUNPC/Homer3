@@ -1524,10 +1524,6 @@ for iBlk=1:iDataBlks
 
 end
 
-if isempty(out.format)
-    return;
-end
-
 % Display excluded time and rejected stims
 Display(handles, hObject);
 

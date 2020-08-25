@@ -529,9 +529,9 @@ classdef RunClass < TreeNodeClass
             end
             tIncMan = obj.procStream.GetTincMan(iBlk);
             if strcmp(excl_incl, 'exclude')
-                tIncMan{iBlk}(idxs) = 0; 
+                tIncMan(idxs) = 0; 
             elseif strcmp(excl_incl, 'include')
-                tIncMan{iBlk}(idxs) = 1; 
+                tIncMan(idxs) = 1; 
             end
             obj.procStream.SetTincMan(tIncMan, iBlk);
         end

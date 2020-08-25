@@ -193,11 +193,13 @@ classdef ProcInputClass < handle
         
         % ----------------------------------------------------------------------------------
         function val = GetTincMan(obj, iBlk)
-            val = {};
+            val = [];
             if ~exist('iBlk','var') || isempty(iBlk)
-                val = obj.tIncMan;
+                val = obj.tIncMan{1};
             elseif ~isempty(obj.tIncMan)
                 val = obj.tIncMan{iBlk};
+            else  % tInc is invalid or unpopulated
+                val = [];
             end
         end
        

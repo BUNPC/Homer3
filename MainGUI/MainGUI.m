@@ -189,7 +189,6 @@ maingui.childguis(2) = ChildGuiClass('ProcStreamOptionsGUI');
 maingui.childguis(3) = ChildGuiClass('StimEditGUI');
 maingui.childguis(4) = ChildGuiClass('PlotProbeGUI');
 maingui.childguis(5) = ChildGuiClass('PvaluesDisplayGUI');
-maingui.childguis(6) = ChildGuiClass('nirsplotLoadFileGUI');
 
 % Load date files into group tree object
 maingui.dataTree  = LoadDataTree(maingui.groupDirs, maingui.format);
@@ -708,39 +707,10 @@ LaunchChildGuiFromMenu('ProcStreamEditGUI', hObject);
 
 
 
-
 % --------------------------------------------------------------------
 function menuItemDisplayPvalues_Callback(hObject, eventdata, handles)
 LaunchChildGuiFromMenu('PvaluesDisplayGUI', hObject);
 
-
-% --------------------------------------------------------------------
-function [eventdata, handles] = menuItemNirsPlot_Callback(hObject, eventdata, handles)
-global maingui
-dirname = char(maingui.dataTree.dirnameGroups(1,1));
-parts = strsplit(dirname, '/');
-curFileLocation = dirname(1:(end-(length(parts{end-1})+1)));
-addpath (curFileLocation + "NirsplotGUI");
-
-curFileLocation = strcat(maingui.dataTree.dirnameGroups, maingui.dataTree.currElem.name);
-fileLocation =  curFileLocation(1:end-6);
-% check if there is a nirs file
-if ~isfile(strcat(fileLocation, '.nirs')) 
-    %none nirs -> convert snirf to nir(Usually will not happen)
-    struct = Snirf2Struct(maingui.dataTree.currElem.acquired, strcat(fileLocation, '.nirs'));
-else
-    %struct is build upon current snirf file
-    struct = Snirf2Struct(maingui.dataTree.currElem.acquired);
-end
-nirsplot(struct,...
-                'freqCut',[0.5, 2.5],...
-                'window',5,...
-                'overlap',0,....
-                'qualityThreshold',0.9,...
-                'conditionsMask','all',...
-                'dodFlag',0,...
-                'guiFlag',1);
-            
 
 
 % --------------------------------------------------------------------
@@ -1683,32 +1653,3 @@ set(handles.MainGUI, 'position', p);
 p = guiOutsideScreenBorders(handles.MainGUI);
 set(handles.MainGUI, 'units','characters', 'position',p);
 set(handles.MainGUI, 'units',u0);
-
-
-
-
-% --------------------------------------------------------------------
-function menuItemNirsPlot_Callback(hObject, eventdata, handles)
-% hObject    handle to menuItemNirsPlot (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-global maingui
-curFileLocation = strcat(maingui.dataTree.dirnameGroups, maingui.dataTree.currElem.name);
-fileLocation =  curFileLocation(1:end-6);
-% check if there is a nirs file
-if ~isfile(strcat(fileLocation, '.nirs')) 
-    %none nirs -> convert snirf to nirf(Usually will not happen)
-    struct = Snirf2Struct(maingui.dataTree.currElem.acquired, strcat(fileLocation, '.nirs'));
-else
-    %struct is build upon current snirf file
-    struct = Snirf2Struct(maingui.dataTree.currElem.acquired);
-end
-nirsplot(struct,...
-                'freqCut',[0.5, 2.5],...
-                'window',5,...
-                'overlap',0,....
-                'qualityThreshold',0.9,...
-                'conditionsMask','all',...
-                'dodFlag',0,...
-                'guiFlag',1);

@@ -48,7 +48,7 @@ for iBlk = iDataBlks
         end
         col = setColor(mode, ii);
         t = maingui.dataTree.currElem.GetTime(iBlk);
-        [h, tPtsExclTot] = drawPatches(t, tInc(:,kk), tPtsExclTot, col, handles);        
+        [h, tPtsExclTot] = drawPatches(t, tInc, tPtsExclTot, col, handles);        
         if strcmp(mode,'manual')
             for jj=1:length(h)
                 set(h(jj), 'ButtonDownFcn', sprintf('PatchCallback(%d)',jj));

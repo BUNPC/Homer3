@@ -511,6 +511,10 @@ classdef RunClass < TreeNodeClass
                 iBlk = 1;
             end
             tIncMan = obj.procStream.input.GetTincMan(iBlk);
+            if isempty(tIncMan)  % If the Tinc array is unitialized TODO find a more sensical place to do this
+               obj.InitTincMan();
+               tIncMan = obj.procStream.input.GetTincMan(iBlk);
+            end
         end
         
         
@@ -534,7 +538,7 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function InitTincMan(obj)
-            iBlk = 1;
+            iBlk = 1;  % TODO implement multiple data blocks
             while 1
                 t = obj.acquired.GetTime(iBlk);
                 if isempty(t)
@@ -544,8 +548,7 @@ classdef RunClass < TreeNodeClass
                 obj.procStream.SetTincMan(tIncMan, iBlk);
                 iBlk = iBlk+1;
             end
-        end
-                
+        end              
     end        % Public Set/Get methods
     
     

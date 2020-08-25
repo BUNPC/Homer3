@@ -453,47 +453,40 @@ classdef ProcInputClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function SetStims_MatInput(obj, s, t, CondNames)
+        function SetStims_MatInput(obj, s, t, CondNames)  % Deprecated
             obj.acquired.SetStims_MatInput(s, t);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function StimReject(obj, t, iBlk)
-            tRange = [-2, 10];
-            
-            s = obj.acquired.GetStims(t);
-            dt = (t(end)-t(1))/length(t);
-            tRangeIdx = floor(tRange(1)/dt):ceil(tRange(2)/dt);
-            smax = max(s,[],2);
-            lstS = find(smax==1);
-            for iS = 1:size(lstS,1)
-                lst = round(min(max(lstS(iS) + tRangeIdx,1),length(t)));
-                if ~isempty(obj.tIncMan{iBlk}) && min(obj.tIncMan{iBlk}(lst))==0
-                    s(lstS(iS),:) = -1*abs(s(lstS(iS),:));
-                end
-            end
-            obj.acquired.SetStims_MatInput(s, t);
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function StimInclude(obj, t, iBlk)
-            tRange = [-2, 10];
-            
-            s = obj.acquired.GetStims(t);
-            dt = (t(end)-t(1))/length(t);
-            tRangeIdx = floor(tRange(1)/dt):ceil(tRange(2)/dt);
-            for iC = 1:size(s,2)
-                lstS = find(s(:,iC)<0);
-                for iS = 1:size(lstS,1)
-                    lst = round(min(max(lstS(iS) + tRangeIdx,1),length(t)));
-                    if ~isempty(obj.tIncMan{iBlk}) && min(obj.tIncMan{iBlk}(lst))==1
-                        s(lstS(iS),iC) = 1;
+        function StimReject(obj, t, ~)
+            % TODO implement 3rd argument iBlk
+            iBlk = 1;
+            for i = 1:length(obj.stimStatus)  % For each stim condition
+                enabled = find(obj.stimStatus{i}(:, 2) == 1);
+                k = find(abs(t - obj.stimStatus{i}(:, enabled)) < obj.errmargin);
+                for j = 1:length(k)
+                    if ~obj.tIncMan{iBlk}(k(j))
+                        obj.stimStatus{i}(enabled(j), 2) = -1;
                     end
                 end
             end
-            obj.acquired.SetStims_MatInput(s, t);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function StimInclude(obj, t, ~)
+            % TODO implement 3rd argument iBlk
+            iBlk = 1;
+            for i = 1:length(obj.stimStatus)  % For each stim condition
+                disabled = find(obj.stimStatus{i}(:, 2) == -1);
+                k = find(abs(t - obj.stimStatus{i}(:, disabled)) < obj.errmargin);
+                for j = 1:length(k)
+                    if obj.tIncMan{iBlk}(k(j))
+                        obj.stimStatus{i}(disabled(j), 2) = 1;
+                    end
+                end
+            end
         end
         
         

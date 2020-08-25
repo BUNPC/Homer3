@@ -216,16 +216,16 @@ classdef DataTreeClass <  handle
                 options = '';
             end
             
-            if optionExists(options, 'file')
-                obj.dataStorageScheme = 'file';
+            if optionExists(options, 'files')
+                obj.dataStorageScheme = 'files';
             end
             
             % Estimate memory requirement based on number of acquired files and their
             % average size
             % obj.logger.Write(sprintf('Memory required for data tree: %0.1f MB\n', obj.MemoryRequired() / 1e6));            
-            if strcmp(obj.dataStorageScheme, 'file') || strcmp(obj.dataStorageScheme, 'disk')
+            if strcmpi(obj.dataStorageScheme, 'files') || strcmpi(obj.dataStorageScheme, 'disk')
                 onoff = true;
-            elseif strcmp(obj.dataStorageScheme, 'memory') || strcmpi(obj.dataStorageScheme, 'ram')
+            elseif strcmpi(obj.dataStorageScheme, 'memory') || strcmpi(obj.dataStorageScheme, 'ram')
                 onoff = false;
             else
                 onoff = false;

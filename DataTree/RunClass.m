@@ -99,23 +99,24 @@ classdef RunClass < TreeNodeClass
             if isempty(obj)
                 return;
             end
-            if nargin==1 || isempty(dirname)
+            if ~exist('dirname','var') || isempty(dirname)
                 dirname = convertToStandardPath('.');
             end
             
-            if ~isempty(obj.SaveMemorySpace(obj.name))
-                options = 'file';
+            if isempty(obj.SaveMemorySpace(obj.name))
+                % Storage scheme is memory: In this case load acquisition data unconditionally.  
+                dataStorageScheme = 'memory';
             else
-                options = 'memory';
+                dataStorageScheme = 'files';
             end
             
             if isempty(obj.acquired)
                 if obj.IsNirs()
-                    obj.acquired = NirsClass([dirname, obj.name], options);
+                    obj.acquired = NirsClass([dirname, obj.name], dataStorageScheme);
                 else
-                    obj.acquired = SnirfClass([dirname, obj.name], options);
+                    obj.acquired = SnirfClass([dirname, obj.name], dataStorageScheme);
                 end
-            elseif strcmp(options, 'file')
+            else
                 obj.acquired.Load([dirname, obj.name]);
             end
             

@@ -545,7 +545,11 @@ classdef GroupClass < TreeNodeClass
             if isempty(obj)
                 return;
             end
-            err = obj.subjs(1).LoadSubBranch();
+            err1 = obj.procStream.Load(obj.GetFilename);
+            err2 = obj.subjs(1).LoadSubBranch();
+            if err1==0 && err2==0
+                err = 0;
+            end
         end            
                         
             

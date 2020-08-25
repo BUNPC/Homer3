@@ -626,10 +626,10 @@ for iBlk=1:length(data_y)
     tb = permute(tb,[1 3 2 4]);
     
     if nPre<0
-        for iConc = 1:size(yavg,2)
+        for iCond = 1:size(yavg,4)
             for iCh = 1:size(yavg,3)
-                for iCond = 1:size(yavg,4)
-                    yavg(:,iConc,iCh,iCond) = yavg(:,iConc,iCh,iCond) - ones(size(yavg,1),1)*mean(yavg(1:(-nPre),iConc,iCh,iCond),1);
+                for iHb = 1:size(yavg,2)
+                    yavg(:,iHb,iCh,iCond) = yavg(:,iHb,iCh,iCond) - ones(size(yavg,1),1)*mean(yavg(1:(-nPre),iHb,iCh,iCond),1);
                 end
             end
         end
@@ -660,9 +660,9 @@ for iBlk=1:length(data_y)
     %%%%%%%%%%%%%%%%%%%%%%%%%
     
     % Add the channels describing the data
-    for iHb = 1:size(yavg,2)
+	for iCond = 1:size(yavg,4)
         for iCh = 1:size(yavg,3)
-            for iCond = 1:size(yavg,4)
+            for iHb = 1:size(yavg,2)
                 data_yavg(iBlk).AddChannelHb(ml(iCh,1), ml(iCh,2), iHb, iCond);
                 data_yavgstd(iBlk).AddChannelHb(ml(iCh,1), ml(iCh,2), iHb, iCond);
                 data_ysum2(iBlk).AddChannelHb(ml(iCh,1), ml(iCh,2), iHb, iCond);

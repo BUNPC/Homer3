@@ -27,8 +27,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %   obj = SnirfClass()
             %   obj = SnirfClass(filename);
             %   obj = SnirfClass(filename, nirsdatanum);
-            %   obj = SnirfClass(filename, nirsdatanum, options);
-            %   obj = SnirfClass(filename, options);
+            %   obj = SnirfClass(filename, nirsdatanum, dataStorageScheme);
+            %   obj = SnirfClass(filename, dataStorageScheme);
             %   obj = SnirfClass(dotnirs);
             %   obj = SnirfClass(dotnirs, numdatabllocks);
             %   obj = SnirfClass(data);
@@ -83,8 +83,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %
             % obj = SnirfClass(filename);
             % obj = SnirfClass(filename, nirsdatanum);
-            % obj = SnirfClass(filename, nirsdatanum, options);
-            % obj = SnirfClass(filename, options);
+            % obj = SnirfClass(filename, nirsdatanum, dataStorageScheme);
+            % obj = SnirfClass(filename, dataStorageScheme);
             % obj = SnirfClass(dotnirs);
             % obj = SnirfClass(dotnirs, numdatabllocks);
             % obj = SnirfClass(data, stim);
@@ -101,8 +101,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % obj = SnirfClass(filename, nirsdatanum);
-                % obj = SnirfClass(filename, nirsdatanum, options);
-                % obj = SnirfClass(filename, options);
+                % obj = SnirfClass(filename, nirsdatanum, dataStorageScheme);
+                % obj = SnirfClass(filename, dataStorageScheme);
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 if ischar(varargin{1})
                     obj.filename = varargin{1};
@@ -111,20 +111,20 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                         if isnumeric(varargin{2})
                             obj.nirsdatanum = varargin{2};
                             
-                            % obj = SnirfClass(filename, nirsdatanum, options);
+                            % obj = SnirfClass(filename, nirsdatanum, dataStorageScheme);
                             if nargin>2
-                                obj.options = varargin{3};
+                                obj.dataStorageScheme = varargin{3};
                             end
                             
-                            % obj = SnirfClass(filename, options);
+                            % obj = SnirfClass(filename, dataStorageScheme);
                         elseif ischar(varargin{2})
-                            obj.options = varargin{2};
+                            obj.dataStorageScheme = varargin{2};
                             
                         end
                     end
                     
-                    % Conditional loading of snirf file data
-                    if strcmpi(obj.options, 'memory')
+                    % Load Snirf file here ONLY if data storage scheme is 'memory'
+                    if strcmpi(obj.dataStorageScheme, 'memory')
                         obj.Load(varargin{1});
                     end
                     
@@ -280,9 +280,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 options = '';
             end
             
-            % If we're working off the snirf file instead of loading everything into memory
-            % then we have to load stim here from file before accessing it.
-            if strcmpi(obj.options, 'file')
+            % Load mutable data from Snirf file here ONLY if data storage scheme is 'files'
+            if strcmpi(obj.dataStorageScheme, 'files')
                 obj.LoadStim(obj.filename);
             end
             

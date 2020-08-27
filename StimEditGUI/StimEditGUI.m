@@ -922,6 +922,7 @@ if ~isempty(stimEdit.updateParentGui)
     stimEdit.updateParentGui('StimEditGUI', 'close');
 end
 Display(handles);
+msgbox(['Generated ', num2str(length(onsets)), ' stims from ', cond], 'Stims generated');
     
 
 % --------------------------------------------------------------------

@@ -205,8 +205,21 @@ classdef ProcInputClass < handle
        
         
         % ----------------------------------------------------------------------------------
-        function mlActMan = GetMeasListActMan(obj, iBlk)
-            mlActMan = {};            
+        function ml = GetMeasListActMan(obj, iBlk)
+            ml = obj.mlActMan;            
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function SetMeasListActMan(obj, ml, iBlk)
+            if ~exist('iBlk','var')
+                iBlk = 1;
+            end
+            if isempty(obj.mlActMan)
+                obj.mlActMan{iBlk} = ml;
+            elseif length(obj.mlActMan) == length(ml)
+               obj.mlActMan{iBlk} = ml; 
+            end
         end
         
         
@@ -464,9 +477,9 @@ classdef ProcInputClass < handle
             iBlk = 1;
             for i = 1:length(obj.stimStatus)  % For each stim condition
                 enabled = find(obj.stimStatus{i}(:, 2) == 1);
-                k = find(abs(t - obj.stimStatus{i}(:, enabled)) < obj.errmargin);
-                for j = 1:length(k)
-                    if ~obj.tIncMan{iBlk}(k(j))
+                for j = 1:length(enabled)
+                    k = find(abs(t - obj.stimStatus{i}(enabled(j), 1)) < obj.errmargin);
+                    if ~obj.tIncMan{iBlk}(k)
                         obj.stimStatus{i}(enabled(j), 2) = -1;
                     end
                 end
@@ -480,9 +493,9 @@ classdef ProcInputClass < handle
             iBlk = 1;
             for i = 1:length(obj.stimStatus)  % For each stim condition
                 disabled = find(obj.stimStatus{i}(:, 2) == -1);
-                k = find(abs(t - obj.stimStatus{i}(:, disabled)) < obj.errmargin);
-                for j = 1:length(k)
-                    if obj.tIncMan{iBlk}(k(j))
+                for j = 1:length(disabled)
+                    k = find(abs(t - obj.stimStatus{i}(disabled(j), 1)) < obj.errmargin);
+                    if obj.tIncMan{iBlk}(k)
                         obj.stimStatus{i}(disabled(j), 2) = 1;
                     end
                 end

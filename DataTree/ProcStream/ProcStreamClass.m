@@ -459,12 +459,26 @@ classdef ProcStreamClass < handle
                 
         
         % ----------------------------------------------------------------------------------
-        function maxnamelen = GetMaxCallNameLength(obj)
+        function [maxnamelen, numUsages] = GetMaxCallNameLength(obj)
             maxnamelen = 0;
+            numUsages = zeros(length(obj.fcalls),1);
             for iFcall = 1:length(obj.fcalls)
-                if length(obj.fcalls(iFcall).GetUsageName()) > maxnamelen
-                    maxnamelen = length(obj.fcalls(iFcall).nameUI)+1;
+                % Look up number of usages for function associated with current function call. If it equals 1 
+                % then set length to just thew length of the function name and exclude the usage portion. 
+                % If there are multiple usages then include the whole function call name length; 
+                % that is, <function name>: <usage name>
+                numUsages(iFcall) = obj.reg.GetNumUsages(obj.fcalls(iFcall).GetName());
+                if numUsages(iFcall) > 1
+                    lenName = length(obj.fcalls(iFcall).GetUsageName());
+                else
+                    lenName = length(obj.fcalls(iFcall).GetName());
                 end
+                
+                % If current usage name string length is greater than maxnamelen then set maxnamelen 
+                % to current usage name string length 
+                if lenName > maxnamelen
+                    maxnamelen = lenName+1;
+                end                
             end
         end
         

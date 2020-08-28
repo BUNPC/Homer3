@@ -264,9 +264,12 @@ p = get(hObject, 'position');
 fs = 1.5; 
 
 % Position/dimensions in the X direction
+[Xsf, numUsages] = ps.GetMaxCallNameLength();
+Xsp              = ps.GetMaxParamNameLength();
+
 a     = 2;
-Xsf   = ps.GetMaxCallNameLength()*fs;
-Xsp   = ps.GetMaxParamNameLength()*fs;
+Xsf   = Xsf * fs;
+Xsp   = Xsp * fs;
 Xse   = 20;
 Xsb   = 10;
 Xp1   = Xsf + a;
@@ -306,8 +309,13 @@ for k = 1:nFcalls
                                     'enable','off');
     % Draw function call
     p(end+1,:) = [a, Ypfk, Xsf, Ys];
+    if numUsages(k)>1
+        fcallname = fcalls(k).GetUsageName();
+    else
+        fcallname = fcalls(k).GetName();
+    end
     h(end+1,:) = uicontrol(hObject, 'style','text', 'units','characters', 'horizontalalignment','left', ...
-                                    'units','characters', 'position',p(end,:), 'string',fcalls(k).GetUsageName(), ...
+                                    'units','characters', 'position',p(end,:), 'string',fcallname, ...
                                     'BackgroundColor',bgc, 'ForegroundColor',fgc, ...
                                     'tooltipstring',fcalls(k).GetHelp());
     

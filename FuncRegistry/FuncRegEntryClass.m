@@ -477,6 +477,12 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
         
         
         % ----------------------------------------------------------------------------------
+        function n = GetNumUsages(obj)
+            n = length(obj.GetUsageNames(obj));
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function fcallstr = GetFuncCallsEncoded(obj, fcall)
             fcallstr = '';
             for jj=1:size(obj.usageoptions,1)

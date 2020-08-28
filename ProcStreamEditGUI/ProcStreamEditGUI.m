@@ -143,9 +143,7 @@ procStreamEdit.iPanel = procStreamEdit.iRunPanel;
 % Load data tree
 procStreamEdit.dataTree = LoadDataTree(pwd, procStreamEdit.format, '', maingui);
 if ~procStreamEdit.dataTree.IsEmpty()
-    procStreamEdit.procElem{procStreamEdit.iRunPanel} = procStreamEdit.dataTree.groups(1).subjs(1).runs(1).copy;
-    procStreamEdit.procElem{procStreamEdit.iSubjPanel} = procStreamEdit.dataTree.groups(1).subjs(1).copy;
-    procStreamEdit.procElem{procStreamEdit.iGroupPanel} = procStreamEdit.dataTree.groups(1).copy;
+    UpdateProcElem()
     switch(class(procStreamEdit.dataTree.currElem))
         case 'RunClass'
             htab = htabR;
@@ -167,6 +165,20 @@ LoadRegistry(handles);
 
 % Before we exit display current proc stream by default
 LoadProcStream(handles);
+
+
+
+% -------------------------------------------------------------
+function UpdateProcElem()
+global procStreamEdit
+idx = procStreamEdit.dataTree.currElem.GetIndexID();
+iG = idx(1);
+iS = idx(2);
+iR = idx(3);
+procStreamEdit.procElem{procStreamEdit.iRunPanel} = procStreamEdit.dataTree.groups(iG).subjs(iS).runs(iR).copy;
+procStreamEdit.procElem{procStreamEdit.iSubjPanel} = procStreamEdit.dataTree.groups(iG).subjs(iS).copy;
+procStreamEdit.procElem{procStreamEdit.iGroupPanel} = procStreamEdit.dataTree.groups(iG).copy;
+
 
 
 % -------------------------------------------------------------
@@ -473,9 +485,9 @@ LoadProcStream(handles, reload);
 function CopyParamValues(fcall, fcalls)
 % Look for the function call fcall in fcalls
 for ii=1:length(fcalls)
-    % Compare names, not usage names, which may differ
-    if strcmp(fcalls(ii).GetName(), fcall.GetName())
+    if strcmp(fcalls(ii).GetUsageName(), fcall.GetUsageName())
         fcall.Copy(fcalls(ii));
+        break;
     end
 end
 
@@ -483,6 +495,12 @@ end
 % -------------------------------------------------------------
 function pushbuttonSave_Callback(hObject, eventdata, handles)
 global procStreamEdit
+
+% Processing stream function calls haven't been changed from the outside (since this GUI is the only way to change that) 
+% BUT the value of the user options could have been changed from the outside. Before saving processing stream we need to 
+% update our copy of the user options at the run, subject and group levels. 
+UpdateProcElem();
+
 procElem    = procStreamEdit.procElem;
 groups      = procStreamEdit.dataTree.groups;
 listPsUsage = procStreamEdit.listPsUsage;
@@ -527,37 +545,6 @@ for iPanel=1:length(procElem)
         usagename = strtrim(parts{2});
         fcall = reg.funcReg(MapRegIdx(iPanel)).GetFuncCallDecoded(funcname, usagename);
         CopyParamValues(fcall, procStreamPrev.fcalls);
-        % Get path up the tree from currElem
-        ir = procStreamEdit.dataTree.currElem.iRun;
-        is = procStreamEdit.dataTree.currElem.iSubj;
-        ig = procStreamEdit.dataTree.currElem.iGroup;  
-        % Get parameters from global processing stream if they're there and
-        % if we're saving to a file
-        if (q == 2)
-            switch iPanel
-                case iGroupPanel
-                    try
-                        fcall2 = procStreamEdit.dataTree.groups(ig).procStream.fcalls(jj);
-                        fcall.paramIn = fcall2.paramIn;
-                    catch
-                        fprintf('Saving newly-added function %s to stream with default parameters.\n', fcall.name);
-                    end
-                case iSubjPanel
-                    try
-                        fcall2 = procStreamEdit.dataTree.groups(ig).subjs(is).procStream.fcalls(jj);
-                        fcall.paramIn = fcall2.paramIn;
-                    catch
-                        fprintf('Saving newly-added function %s to stream with default parameters.\n', fcall.name);
-                    end
-                case iRunPanel
-                    try
-                        fcall2 = procStreamEdit.dataTree.groups(ig).subjs(is).runs(ir).procStream.fcalls(jj);
-                        fcall.paramIn = fcall2.paramIn;
-                    catch
-                        fprintf('Saving newly-added function %s to stream with default parameters.\n', fcall.name);
-                    end
-            end
-        end
         procElem{iPanel}.procStream.Add(fcall);
     end
 end

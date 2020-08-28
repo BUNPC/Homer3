@@ -164,7 +164,7 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
                 % encoded function string in obj.usageoptions{ii,3}. This will allow
                 % easy lookup and comparison matching in the registry of proc stream
                 % FuncCallClass objects.
-                obj.usageoptions{ii,4} = FuncCallClass(encoding);
+                obj.usageoptions{ii,4} = FuncCallClass(encoding, obj.usageoptions{ii,1});
             end
         end
         

@@ -550,10 +550,10 @@ classdef ProcStreamClass < handle
             % This pause is a workaround for a matlab bug in version
             % 7.11 for Linux, where uigetfile won't block unless there's
             % a breakpoint.
-            pause(.5);
+            pause(.1);
             [fname, pname] = uigetfile([pathname, '*.cfg'], 'Load Process Options File' );
             if fname==0
-                MessageBox( sprintf('Loading default config file.'),'Creating default config');
+                fprintf('Loading default config file.\n');
                 fname = [pathname, procStreamCfgFile];
                 autoGenDefault = true;
             else
@@ -623,7 +623,7 @@ classdef ProcStreamClass < handle
             obj.fcalls = FuncCallClass().empty();
             obj.ParseFile(fid, type);
             fclose(fid);
-            err=0;            
+            err=0;
         end
         
         

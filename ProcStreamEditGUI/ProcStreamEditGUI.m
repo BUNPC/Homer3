@@ -172,6 +172,7 @@ LoadProcStream(handles);
 function UpdateProcElem()
 global procStreamEdit
 idx = procStreamEdit.dataTree.currElem.GetIndexID();
+idx(idx==0)=1;
 iG = idx(1);
 iS = idx(2);
 iR = idx(3);

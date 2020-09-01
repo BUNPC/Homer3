@@ -1228,9 +1228,9 @@ classdef ProcStreamClass < handle
         % ----------------------------------------------------------------------------------
         function tIncMan = GetTincMan(obj, iBlk)
             if ~exist('iBlk','var')
-                iBlk = [];
+                iBlk = 1;
             end
-            tIncMan = obj.input.GetVar('tIncMan', iBlk);
+            tIncMan = obj.input.GetTincMan(iBlk);
         end
         
 

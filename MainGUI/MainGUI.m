@@ -429,8 +429,13 @@ t = tic;
 % Set the display status to pending. In order to avoid redisplaying 
 % in a single callback thread in functions called from here which 
 % also call DisplayData
-maingui.dataTree.CalcCurrElem();
-
+try
+    maingui.dataTree.CalcCurrElem();
+catch
+    MainGUI_EnableDisableGUI(handles,'on');
+    return
+end
+    
 % Restore original selection listboxGroupTree
 set(handles.listboxGroupTree, 'value',val0);
 
@@ -1518,10 +1523,6 @@ for iBlk=1:iDataBlks
     % Reject all stims that fall within the excluded time
     maingui.dataTree.currElem.StimReject(t, iBlk);
 
-end
-
-if isempty(out.format)
-    return;
 end
 
 % Display excluded time and rejected stims

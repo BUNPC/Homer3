@@ -431,11 +431,12 @@ t = tic;
 % also call DisplayData
 try
     maingui.dataTree.CalcCurrElem();
-catch
+catch ME
     MainGUI_EnableDisableGUI(handles,'on');
-    return
+	rethrow(ME)
+
 end
-    
+      
 % Restore original selection listboxGroupTree
 set(handles.listboxGroupTree, 'value',val0);
 

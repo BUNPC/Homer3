@@ -7,11 +7,12 @@ logger = InitLogger(logger, 'SystemInfo');
 logger.Write(sprintf('Running Homer3 v%s\n\n', version2string()));
 
 try
-	logger.Write(sprintf('=========\n'))
-	logger.Write(sprintf('CPU Info:\n'))
-	logger.Write(sprintf('=========\n'))
-	pretty_print_struct(cpuinfo, [], [], logger);
-	logger.Write(sprintf('\n'))
+    % Sep 4, 2020: Removed because it's slowing down Homer3 startup 
+% 	logger.Write(sprintf('=========\n'))
+% 	logger.Write(sprintf('CPU Info:\n'))
+% 	logger.Write(sprintf('=========\n'))
+% 	pretty_print_struct(cpuinfo, [], [], logger);
+% 	logger.Write(sprintf('\n'))
 	
 	[~,systemview] = memory();
 	logger.Write(sprintf('====\n'))

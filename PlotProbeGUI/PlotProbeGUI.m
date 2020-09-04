@@ -495,26 +495,33 @@ end
 figure(handles.figure);
 a = get(gca,'xlim');
 b = get(gca,'ylim');
+set(gca, 'tag','axes1');
 
 %%%% Create new figure and use same zoom level and axes position 
 %%%% as original 
-plotprobe.handles.figureDup = figure();
+handles.figureDup = figure('name', plotprobe.dataTree.currElem.GetName(), 'NumberTitle','off');
 xlim(a);
 ylim(b);
-pos = getNewFigPos(plotprobe.handles.figureDup);
-set(plotprobe.handles.figureDup, 'position',pos);
+axis off
+pos = getNewFigPos(handles);
+set(handles.figureDup, 'position',pos);
 
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk, length(plotprobe.handles.data)+1);
 end
-
+plotprobe.handles.figureDup = handles.figureDup;
 
 
 % ---------------------------------------------
-function pos = getNewFigPos(hFig)
+function pos = getNewFigPos(handles)
+
+hFig = handles.figure;
+hFigDup = handles.figureDup;
 
 p = get(hFig,'position');
+u = get(hFig,'units');
+set(hFigDup, 'units',u, 'position',p);
 
 % Find upper right corner of figure
 pu = [p(1)+p(3), p(2)+p(4)];
@@ -525,6 +532,12 @@ c = [p(1)+(pu(1)-p(1))/2, p(2)+(pu(2)-p(2))/2];
 % determine which direction to move new figure relative 
 % to hFig based on which quadrant of the screen the center
 % of hFig appears.
+
+% Set screen units to match figure units for the purpose of calculating new
+% fig position
+u0 = get(0,'units');   % Save original screen units in order to restore later
+set(0,'units',u);
+
 scrsz = get(0,'screensize');
 if c(1)>scrsz(3)/2
     q=-1;
@@ -536,10 +549,17 @@ if c(2)>scrsz(4)/2
 else
     r=+1;
 end
-offsetX = q*scrsz(3)*.1;
+offsetX = q*scrsz(3)*.4;
 offsetY = r*scrsz(4)*.1;
 
-pos = [p(1)+offsetX p(2)+offsetY p(3) p(4)];
+% pos = [p(1)+offsetX p(2)+offsetY p(3) p(4)];
+pos = [p(1)+offsetX p(2), p(3) p(4)];
+set(0,'units',u0);
+
+% Set relative position with axes to be same in duplicate as in parent 
+haxes = findobj2(hFig, 'tag','axes1', 'flat');
+p = get(haxes,'position');
+set(gca, 'position',p)
 
 
 
@@ -610,16 +630,22 @@ for iBlk = 1:nDataBlks
     end
     
     for iFig = 1:length(hFigs)
-        % Clear axes of previous data, before redisplaying it
-        ClearAxesData(iFig);
         
-        if ishandles(hFigs(iFig))
-            figure(hFigs(iFig))
-            plotProbeAndSetProperties(handles, iBlk, iFig);
+        if iFig==1
+        
+            % Clear axes of previous data, before redisplaying it
+            ClearAxesData(iFig);
+            
+            if ishandles(hFigs(iFig))
+                figure(hFigs(iFig))
+                plotProbeAndSetProperties(handles, iBlk, iFig);
+            end
         end
+        
+        figure(hFigs(iFig))
+        
     end    
 end
-figure(hFigs(1))
 
 
 

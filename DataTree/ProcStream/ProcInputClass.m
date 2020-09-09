@@ -7,6 +7,7 @@ classdef ProcInputClass < handle
         errmargin;               % Margin of error used when seeking stims given some time point (default 1e-3)
         tIncMan;                 % Manually included/excluded time points
         mlActMan;                % Manually included/excluded channels
+        mlVis;                   % Channels which are visible or invisible in axesData
         acquired;                % Modifiable acquisition parameters initally copied from acquisition files
         stimStatus;              % Flag denoting whether stim is enabled or disabled
         stimStatusSettings;      % Values this flag can take
@@ -23,6 +24,7 @@ classdef ProcInputClass < handle
             obj.errmargin = 1e-3;
             obj.tIncMan = {};
             obj.mlActMan = {};
+            obj.mlVis = {};
             obj.misc = [];
             obj.stimStatusSettings = struct('none',0, 'incl',1, 'excl_manual',-1, 'excl_auto',-2);  % TODO: remove
             if nargin==0
@@ -206,7 +208,14 @@ classdef ProcInputClass < handle
         
         % ----------------------------------------------------------------------------------
         function ml = GetMeasListActMan(obj, iBlk)
-            ml = obj.mlActMan;            
+        if ~exist('iBlk','var')
+            iBlk = 1;
+        end
+        if ~isempty(obj.mlActMan)
+            ml = obj.mlActMan{iBlk};
+        else
+            ml = []; 
+        end
         end
 
         
@@ -217,11 +226,35 @@ classdef ProcInputClass < handle
             end
             if isempty(obj.mlActMan)
                 obj.mlActMan{iBlk} = ml;
-            elseif length(obj.mlActMan) == length(ml)
+            elseif length(obj.mlActMan{iBlk}) == length(ml)
                obj.mlActMan{iBlk} = ml; 
             end
         end
+
+        % ----------------------------------------------------------------------------------
+        function ml = GetMeasListVis(obj, iBlk)
+        if ~exist('iBlk','var')
+            iBlk = 1;
+        end
+        if ~isempty(obj.mlVis)
+            ml = obj.mlVis{iBlk};
+        else
+            ml = []; 
+        end
+        end
+
         
+        % ----------------------------------------------------------------------------------
+        function SetMeasListVis(obj, ml, iBlk)
+            if ~exist('iBlk','var')
+                iBlk = 1;
+            end
+            if isempty(obj.mlVis)
+                obj.mlVis{iBlk} = ml;
+            elseif length(obj.mlVis{iBlk}) == length(ml)
+               obj.mlVis{iBlk} = ml; 
+            end
+        end
         
         % ----------------------------------------------------------------------------------
         function n = GetDataBlocksNum(obj)

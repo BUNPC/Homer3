@@ -39,6 +39,7 @@ if strcmp(mouseevent, 'alt')
     end
     % TODO implement a more elegant setter
     maingui.dataTree.currElem.procStream.input.SetMeasListVis(ch.MeasListVis);
+    maingui.Update('PatchCallback');  % Refresh data display
     
 %%%% Mouse left click: toggle manual exclude/deactivate channel
 elseif strcmp(mouseevent, 'normal')
@@ -56,3 +57,4 @@ else
 end
 
 DisplayAxesSDG();
+

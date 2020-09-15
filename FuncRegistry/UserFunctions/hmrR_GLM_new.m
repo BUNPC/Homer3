@@ -8,9 +8,10 @@
 % This script estimates the HRF with options to specify the temporal basis
 % function type and corresponding parameters, whether or not to perform
 % simultaneous regression of short separation channels, drift order, and
-% whether or not to correct for motion artifacts. You can also choose the
-% method for solving the GLM matrix equation.
-%
+% whether or not to correct for motion artifacts. The duration and
+% amplitude of the basis functions are specified by the stim vector as per
+% the SNIRF specification. You can also choose the method for solving the
+% GLM matrix equation.
 %
 % INPUTS:
 % data - this is the concentration data with dimensions #time points x [HbO/HbR/HbT] x #channels

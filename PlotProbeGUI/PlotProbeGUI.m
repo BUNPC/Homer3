@@ -22,7 +22,7 @@ end
 
 
 % -------------------------------------------------------------
-function varargout = PlotProbeGUI_OutputFcn(hObject, eventdata, handles)
+function varargout = PlotProbeGUI_OutputFcn(~, ~, handles)
 handles.updateptr = @PlotProbeGUI_Update;
 handles.closeptr = @PlotProbeGUI_Close;
 varargout{1} = handles;
@@ -50,7 +50,7 @@ plotprobe.datatypeVals = struct('RAW',1, 'RAW_HRF',2, 'OD',4, 'OD_HRF',8, 'CONC'
 plotprobe.name = 'plotprobe';
 plotprobe.y = {};
 plotprobe.t = {};
-plotprobe.handles.data = [];
+plotprobe.handles.data = {};
 plotprobe.handles.figureDup = [];
 SetGuiControls(handles)
 
@@ -183,7 +183,7 @@ end
 
 
 % ----------------------------------------------------------------------
-function PlotProbeGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+function PlotProbeGUI_OpeningFcn(hObject, ~, handles, varargin)
 %
 %  Syntax:
 %
@@ -325,7 +325,7 @@ hold off
 
 
 % ----------------------------------------------------------------------
-function editPlotProbeAxScl_Callback(hObject, eventdata, handles)
+function editPlotProbeAxScl_Callback(hObject, ~, handles)
 global plotprobe
 
 foo = str2num( get(hObject,'string') );
@@ -348,7 +348,7 @@ end
 
 
 % ----------------------------------------------------------------------
-function pushbuttonPlotProbeYdec_Callback(hObject, eventdata, handles)
+function pushbuttonPlotProbeYdec_Callback(~, ~, handles)
 global plotprobe 
 
 hEditScl = handles.editPlotProbeAxScl;
@@ -367,7 +367,7 @@ end
 
 
 % ----------------------------------------------------------------------
-function pushbuttonPlotProbeYinc_Callback(hObject, eventdata, handles)
+function pushbuttonPlotProbeYinc_Callback(~, ~, handles)
 global plotprobe 
 
 hEditScl = handles.editPlotProbeAxScl;
@@ -386,7 +386,7 @@ end
 
 
 % ----------------------------------------------------------------------
-function pushbuttonPlotProbeXdec_Callback(hObject, eventdata, handles)
+function pushbuttonPlotProbeXdec_Callback(~, ~, handles)
 global plotprobe 
 hEditScl = handles.editPlotProbeAxScl;
 
@@ -404,7 +404,7 @@ end
 
 
 % ----------------------------------------------------------------------
-function pushbuttonPlotProbeXinc_Callback(hObject, eventdata, handles)
+function pushbuttonPlotProbeXinc_Callback(~, ~, handles)
 global plotprobe 
 
 hEditScl = handles.editPlotProbeAxScl;
@@ -423,20 +423,20 @@ end
 
 
 % ----------------------------------------------------------------------
-function radiobuttonShowTimeMarkers_Callback(hObject, evendata, handles)
+function radiobuttonShowTimeMarkers_Callback(hObject, ~, ~)
 global plotprobe
 
 plotprobe.tMarkShow = get(hObject,'value');
 if plotprobe.tMarkShow
-    set(plotprobe.handles.data(:,4:end), 'visible','on');
+    set(plotprobe.handles.data{:,4:end}, 'visible','on');
 else
-    set(plotprobe.handles.data(:,4:end), 'visible','off');    
+    set(plotprobe.handles.data{:,4:end}, 'visible','off');    
 end
 
 
 
 % ----------------------------------------------------------------------
-function editPlotProbeTimeMarkersAmp_Callback(hObject, eventdata, handles)
+function editPlotProbeTimeMarkersAmp_Callback(hObject, ~, handles)
 global plotprobe
 
 datatype     = plotprobe.datatype;
@@ -457,7 +457,7 @@ end
 
 
 % ----------------------------------------------------------------------
-function editPlotProbeTimeMarkersInt_Callback(hObject, eventdata, handles)
+function editPlotProbeTimeMarkersInt_Callback(hObject, ~, handles)
 global plotprobe
 
 t  = plotprobe.dataTree.currElem.GetTHRF();
@@ -484,7 +484,7 @@ end
 
 
 % ----------------------------------------------------------------------
-function pushbuttonPlotProbeDuplicate_Callback(hObject, eventdata, handles)
+function pushbuttonPlotProbeDuplicate_Callback(~, ~, handles) %#ok<*DEFNU>
 global plotprobe
 
 if ishandles(plotprobe.handles.figureDup)
@@ -495,26 +495,33 @@ end
 figure(handles.figure);
 a = get(gca,'xlim');
 b = get(gca,'ylim');
+set(gca, 'tag','axes1');
 
 %%%% Create new figure and use same zoom level and axes position 
 %%%% as original 
-plotprobe.handles.figureDup = figure();
+handles.figureDup = figure('name', plotprobe.dataTree.currElem.GetName(), 'NumberTitle','off');
 xlim(a);
 ylim(b);
-pos = getNewFigPos(plotprobe.handles.figureDup);
-set(plotprobe.handles.figureDup, 'position',pos);
+axis off
+pos = getNewFigPos(handles);
+set(handles.figureDup, 'position',pos);
 
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iBlk);
+    plotProbeAndSetProperties(handles, iBlk, length(plotprobe.handles.data)+1);
 end
-
+plotprobe.handles.figureDup = handles.figureDup;
 
 
 % ---------------------------------------------
-function pos = getNewFigPos(hFig)
+function pos = getNewFigPos(handles)
+
+hFig = handles.figure;
+hFigDup = handles.figureDup;
 
 p = get(hFig,'position');
+u = get(hFig,'units');
+set(hFigDup, 'units',u, 'position',p);
 
 % Find upper right corner of figure
 pu = [p(1)+p(3), p(2)+p(4)];
@@ -525,6 +532,12 @@ c = [p(1)+(pu(1)-p(1))/2, p(2)+(pu(2)-p(2))/2];
 % determine which direction to move new figure relative 
 % to hFig based on which quadrant of the screen the center
 % of hFig appears.
+
+% Set screen units to match figure units for the purpose of calculating new
+% fig position
+u0 = get(0,'units');   % Save original screen units in order to restore later
+set(0,'units',u);
+
 scrsz = get(0,'screensize');
 if c(1)>scrsz(3)/2
     q=-1;
@@ -536,15 +549,22 @@ if c(2)>scrsz(4)/2
 else
     r=+1;
 end
-offsetX = q*scrsz(3)*.1;
+offsetX = q*scrsz(3)*.4;
 offsetY = r*scrsz(4)*.1;
 
-pos = [p(1)+offsetX p(2)+offsetY p(3) p(4)];
+% pos = [p(1)+offsetX p(2)+offsetY p(3) p(4)];
+pos = [p(1)+offsetX p(2), p(3) p(4)];
+set(0,'units',u0);
+
+% Set relative position with axes to be same in duplicate as in parent 
+haxes = findobj2(hFig, 'tag','axes1', 'flat');
+p = get(haxes,'position');
+set(gca, 'position',p)
 
 
 
 % ----------------------------------------------------------------------
-function radiobuttonShowHiddenMeas_Callback(hObject, eventdata, handles)
+function radiobuttonShowHiddenMeas_Callback(hObject, ~, ~)
 global plotprobe
 plotprobe.hidMeasShow = get(hObject,'value');
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
@@ -555,7 +575,7 @@ end
 
 
 % ----------------------------------------------------------------------
-function PlotProbeGUI_Close(hObject, eventdata, handles)
+function PlotProbeGUI_Close(~, ~, ~)
 global plotprobe
 if isempty(plotprobe)
     return
@@ -586,9 +606,6 @@ SetWindowTitle(handles)
 condition = plotprobe.condition;
 datatype  = plotprobe.datatype;
 
-% Clear axes of previous data, before redisplaying it
-ClearAxesData();
-
 % Load current element data from file
 if plotprobe.dataTree.currElem.IsEmpty()
     plotprobe.dataTree.currElem.Load();
@@ -597,7 +614,10 @@ end
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 plotprobe.y = cell(nDataBlks,1);
 plotprobe.t = cell(nDataBlks,1);
-for iBlk=1:nDataBlks
+
+hFigs = [handles.figure, plotprobe.handles.figureDup];
+    
+for iBlk = 1:nDataBlks
     if datatype == plotprobe.datatypeVals.OD_HRF
         plotprobe.y{iBlk} = plotprobe.dataTree.currElem.GetDodAvg(condition, iBlk);
         plotprobe.t{iBlk} = plotprobe.dataTree.currElem.GetTHRF();
@@ -608,22 +628,45 @@ for iBlk=1:nDataBlks
         plotprobe.tMarkAmp = plotprobe.tMarkAmp/1e6;
         plotprobe.tMarkUnits = '(micro-molars)';
     end
-    plotProbeAndSetProperties(handles, iBlk);
+    
+    for iFig = 1:length(hFigs)
+        
+        if iFig==1
+        
+            % Clear axes of previous data, before redisplaying it
+            ClearAxesData(iFig);
+            
+            if ishandles(hFigs(iFig))
+                figure(hFigs(iFig))
+                plotProbeAndSetProperties(handles, iBlk, iFig);
+            end
+        end
+        
+        figure(hFigs(iFig))
+        
+    end    
 end
 
 
+
 % ----------------------------------------------------------------------
-function ClearAxesData()
+function ClearAxesData(iFig)
 global plotprobe
-if ishandles(plotprobe.handles.data)
-    delete(plotprobe.handles.data);
-    plotprobe.handles.data = [];
+if ~exist('iFig','var') || isempty(iFig)
+    iFig=1;
+end
+if isempty(plotprobe.handles.data)
+    return
+end
+if ishandles(plotprobe.handles.data{iFig})
+    delete(plotprobe.handles.data{iFig});
+    plotprobe.handles.data{iFig} = [];
 end
 
 
 
 % --------------------------------------------------------------------
-function menuItemChangeGroup_Callback(hObject, eventdata, handles)
+function menuItemChangeGroup_Callback(~, ~, ~)
 pathname = uigetdir(pwd, 'Select a NIRS data group folder');
 if pathname==0
     return;
@@ -634,7 +677,7 @@ PlotProbeGUI();
 
 
 % --------------------------------------------------------------------
-function pushbuttonExit_Callback(hObject, eventdata, handles)
+function pushbuttonExit_Callback(~, ~, handles)
 if ishandles(handles.figure)
     delete(handles.figure);
 end

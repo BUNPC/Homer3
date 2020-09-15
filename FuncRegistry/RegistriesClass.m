@@ -311,6 +311,25 @@ classdef RegistriesClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function n = GetNumUsages(obj, funcname)
+            n = [];
+            if isempty(obj)
+                return;
+            end
+            if nargin<2
+                return;
+            end
+            for ii = 1:length(obj.funcReg)
+                n = obj.funcReg(ii).GetNumUsages(funcname);
+                if n>0
+                    break;
+                end
+            end
+        end
+       
+        
+        
+        % ----------------------------------------------------------------------------------
         function Import(obj, funcpath)
             [~, fname, ext] = fileparts(funcpath);            
             if exist([obj.userfuncdir{1}, fname, ext], 'file') == 2

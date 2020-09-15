@@ -54,9 +54,7 @@ classdef FuncCallClass < handle
             if nargin==1
                 return;
             end
-            
-            reg = varargin{2};            
-            obj.AddUsageInfo(reg);
+            obj.AddUsageInfo(varargin{2});
             
         end
 
@@ -569,19 +567,26 @@ classdef FuncCallClass < handle
        
         
         % -----------------------------------------------------------------
-        function AddUsageInfo(obj, reg)
+        function AddUsageInfo(obj, arg)
             if nargin<2
                 return;
             end
-            usagename = reg.GetUsageName(obj);
-            fcallstr = reg.GetFuncCallStrDecoded(obj.name, usagename);
-            obj.AddHelpUsageStr(fcallstr);            
-            
-            if length(reg.GetUsageNames(obj.name))<2
-                usagename = '';
+            if isa(arg, 'RegistriesClass')
+                reg = arg;
+                
+                usagename = reg.GetUsageName(obj);
+                fcallstr = reg.GetFuncCallStrDecoded(obj.name, usagename);
+                obj.AddHelpUsageStr(fcallstr);
+                
+                if length(reg.GetUsageNames(obj.name))<2
+                    usagename = '';
+                end
+            elseif ischar(arg)
+                usagename = arg;
             end
             obj.SetUsageName(usagename);
         end
+        
         
         
         % ----------------------------------------------------------------------------------        

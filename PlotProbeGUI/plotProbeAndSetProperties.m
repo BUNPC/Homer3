@@ -1,8 +1,11 @@
-function plotProbeAndSetProperties(handles, iBlk)
+function plotProbeAndSetProperties(handles, iBlk, iFig)
 global plotprobe
 
 if ~exist('iBlk','var') || isempty(iBlk)
     iBlk=1;
+end
+if ~exist('iFig','var') || isempty(iFig)
+    iFig=1;
 end
 
 y        = plotprobe.y{iBlk};
@@ -16,4 +19,4 @@ SD       = plotprobe.dataTree.currElem.GetSDG();
 set(handles.textTimeMarkersAmpUnits, 'string',plotprobe.tMarkUnits);
 hData = plotProbe( y, t, SD, ch, [], axScl, tMarkInt, tMarkAmp );
 showHiddenObjs(iBlk, hData);
-plotprobe.handles.data = [plotprobe.handles.data; hData];
+plotprobe.handles.data{iFig} = hData;

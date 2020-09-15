@@ -459,12 +459,26 @@ classdef ProcStreamClass < handle
                 
         
         % ----------------------------------------------------------------------------------
-        function maxnamelen = GetMaxCallNameLength(obj)
+        function [maxnamelen, numUsages] = GetMaxCallNameLength(obj)
             maxnamelen = 0;
+            numUsages = zeros(length(obj.fcalls),1);
             for iFcall = 1:length(obj.fcalls)
-                if length(obj.fcalls(iFcall).GetUsageName()) > maxnamelen
-                    maxnamelen = length(obj.fcalls(iFcall).nameUI)+1;
+                % Look up number of usages for function associated with current function call. If it equals 1 
+                % then set length to just thew length of the function name and exclude the usage portion. 
+                % If there are multiple usages then include the whole function call name length; 
+                % that is, <function name>: <usage name>
+                numUsages(iFcall) = obj.reg.GetNumUsages(obj.fcalls(iFcall).GetName());
+                if numUsages(iFcall) > 1
+                    lenName = length(obj.fcalls(iFcall).GetUsageName());
+                else
+                    lenName = length(obj.fcalls(iFcall).GetName());
                 end
+                
+                % If current usage name string length is greater than maxnamelen then set maxnamelen 
+                % to current usage name string length 
+                if lenName > maxnamelen
+                    maxnamelen = lenName+1;
+                end                
             end
         end
         
@@ -536,10 +550,10 @@ classdef ProcStreamClass < handle
             % This pause is a workaround for a matlab bug in version
             % 7.11 for Linux, where uigetfile won't block unless there's
             % a breakpoint.
-            pause(.5);
+            pause(.1);
             [fname, pname] = uigetfile([pathname, '*.cfg'], 'Load Process Options File' );
             if fname==0
-                MessageBox( sprintf('Loading default config file.'),'Creating default config');
+                fprintf('Loading default config file.\n');
                 fname = [pathname, procStreamCfgFile];
                 autoGenDefault = true;
             else
@@ -609,7 +623,7 @@ classdef ProcStreamClass < handle
             obj.fcalls = FuncCallClass().empty();
             obj.ParseFile(fid, type);
             fclose(fid);
-            err=0;            
+            err=0;
         end
         
         

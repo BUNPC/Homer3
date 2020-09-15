@@ -73,6 +73,12 @@ flagICRegressors = 0;
 % tCCA parameters
 tCCAparams(2) = tCCAparams(2)*round(1/abs(data.time(1)-data.time(2)));% Now stepsize in sec converted to # of samples, may
 param.tau = tCCAparams(2);  %{old comment by avl: stepsize for embedding in samples (tune to sample frequency!)}
+% in case very low sampling rate cause non-integer
+if param.tau < 1
+    param.tau = 1;
+else
+    param.tau = round(param.tau);
+end
 timelag = tCCAparams(1);
 param.ct = 0;   % correlation threshold for rtcca function, set here to 0 (will be applied later)
 
@@ -139,9 +145,15 @@ if flagtCCA
             end
         end
         % AUX signals + add ss signal if it exists
-        if ~isempty(d_short)
+        if ~isempty(d_short) & exist('AUX')
             AUX = [AUX, d_short]; % this should be of the current run
+        elseif ss_ch_inx ~= 0
+            AUX = d_short;
+        else
+            msg = 'No auxiliary or short separation measurement to regress out.';
+            error(msg)
         end
+
         % zscore AUX signals
         AUX = zscore(AUX);
         

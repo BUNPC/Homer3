@@ -290,8 +290,8 @@ for iBlk=1:length(data_y)
         nB = 1;
         tbasis = zeros(ntHRF,nB,nConc);
         for iConc = 1:nConc
-            tau = paramsBasis((iConc-1)*3+1);
-            sigma = paramsBasis((iConc-1)*3+2);
+            tau = paramsBasis((iConc-1)*2+1);
+            sigma = paramsBasis((iConc-1)*2+2);
             
             tbasis(:,1,iConc) = (exp(1)*(tHRF-tau).^2/sigma^2) .* exp( -(tHRF-tau).^2/sigma^2 );
             lstNeg = find(tHRF<0);
@@ -314,8 +314,8 @@ for iBlk=1:length(data_y)
         nB = 2;
         tbasis=zeros(ntHRF,nB,nConc);
         for iConc = 1:nConc
-            tau = paramsBasis((iConc-1)*3+1);
-            sigma = paramsBasis((iConc-1)*3+2);
+            tau = paramsBasis((iConc-1)*2+1);
+            sigma = paramsBasis((iConc-1)*2+2);
             
             tbasis(:,1,iConc) = (exp(1)*(tHRF-tau).^2/sigma^2) .* exp( -(tHRF-tau).^2/sigma^2 );
             tbasis(:,2,iConc) = 2*exp(1)*( (tHRF-tau)/sigma^2 - (tHRF-tau).^3/sigma^4 ) .* exp( -(tHRF-tau).^2/sigma^2 );
@@ -338,8 +338,8 @@ for iBlk=1:length(data_y)
         tbasis=zeros(ntHRF,nB,nConc);
         for iConc = 1:nConc
             
-            p = paramsBasis((iConc-1)*3+1);
-            q = paramsBasis((iConc-1)*3+2);
+            p = paramsBasis((iConc-1)*2+1);
+            q = paramsBasis((iConc-1)*2+2);
             
             tbasis(:,1,iConc) = (tHRF/(p*q)).^p.* exp(p-tHRF/q);
             

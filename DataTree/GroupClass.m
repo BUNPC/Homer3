@@ -21,7 +21,9 @@ classdef GroupClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function obj = GroupClass(varargin)
             global logger
-
+            
+            % Some fix
+            
             obj@TreeNodeClass(varargin);
             obj.logger = InitLogger(logger);
             obj.InitVersion();

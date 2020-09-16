@@ -26,6 +26,7 @@ yAvgOut    = DataClass().empty();
 
 nDataBlks = length(yAvgRuns{1});
 nTrials_tot = cell(nDataBlks,1);
+err = zeros(nDataBlks, length(yAvgRuns));
 
 for iBlk = 1:nDataBlks
     
@@ -37,6 +38,7 @@ for iBlk = 1:nDataBlks
         
         yAvg      = yAvgRuns{iRun}(iBlk).GetDataTimeSeries('reshape');
         if isempty(yAvg)
+            err(iBlk, iRun) = -1;
             continue;
         end
         tHRF      = yAvgRuns{iRun}(iBlk).GetTime();
@@ -157,4 +159,8 @@ for iBlk = 1:nDataBlks
     end
 end
 nTrials = nTrials_tot;
-    
+
+if all(err<0)
+    MessageBox('Warning: All run input to hmrS_RunAvg.m is empty.')
+end
+

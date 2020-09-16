@@ -34,17 +34,7 @@ classdef ProcInputClass < handle
                 return;
             end
             obj.acquired = acquired.CopyMutable(copyOptions);
-            % Initialize stimStatus matrix based on acq file
-            stim = obj.acquired.GetStim();
-            obj.stimStatus = {};
-            for i = 1:length(stim)
-                data = stim(i).GetData();
-                if ~isempty(data)
-                   obj.stimStatus{i} = [data(:, 1), ones(size(data, 1), 1)]; 
-                else
-                   obj.stimStatus{i} = []; 
-                end
-            end
+            obj.InitStimStatus();
         end
         
                 
@@ -59,7 +49,15 @@ classdef ProcInputClass < handle
             if ~isempty(obj2.tIncMan)
                 obj.tIncMan = obj2.tIncMan;
             end
-            
+            if ~isempty(obj2.mlActMan)
+                obj.mlActMan = obj2.mlActMan;
+            end
+            if ~isempty(obj2.mlVis)
+                obj.mlVis = obj2.mlVis;
+            end
+            if ~isempty(obj2.stimStatus)
+                obj.stimStatus = obj2.stimStatus;
+            end
             fields = properties(obj.misc);
             for ii=1:length(fields)
                 if ~eval(sprintf('isproperty(obj2.misc, ''%s'')', fields{ii}))
@@ -270,6 +268,20 @@ classdef ProcInputClass < handle
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods  
         
+        % ----------------------------------------------------------------------------------
+        function InitStimStatus(obj)
+            % Initialize stimStatus matrix based on acq file  
+            stim = obj.acquired.GetStim();
+            obj.stimStatus = {};
+            for i = 1:length(stim)
+                data = stim(i).GetData();
+                if ~isempty(data)
+                   obj.stimStatus{i} = [data(:, 1), ones(size(data, 1), 1)]; 
+                else
+                   obj.stimStatus{i} = []; 
+                end
+            end
+        end
         
         % ----------------------------------------------------------------------------------
         function s = GetStimStatusTimeSeries(obj, t)

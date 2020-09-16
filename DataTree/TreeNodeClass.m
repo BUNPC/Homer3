@@ -16,6 +16,7 @@ classdef TreeNodeClass < handle
     properties
         outputVars
         DEBUG
+        path
     end
         
     methods
@@ -33,6 +34,8 @@ classdef TreeNodeClass < handle
             obj.procStream = ProcStreamClass();
             obj.err = 0;
             obj.CondNames = {};
+            obj.path = filesepStandard(pwd);
+            
             
             obj.InitParentAppFunc();
             
@@ -141,6 +144,15 @@ classdef TreeNodeClass < handle
                 obj.iSubj = obj2.iSubj;
                 obj.iRun = obj2.iRun;
             end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Reset(obj)
+            obj.procStream.output.Reset(obj.GetFilename);
+            delete([obj.path, obj.name, '*.txt']);
+            delete([obj.path, obj.name, '*.mat']);
+            delete([obj.path, 'tCCAfilter_*.txt'])
         end
         
         

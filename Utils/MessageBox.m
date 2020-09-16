@@ -1,4 +1,4 @@
-function MessageBox(msg, title)
+function hm = MessageBox(msg, title)
 
 if nargin<2
     title = 'MessageBox';

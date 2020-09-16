@@ -23,11 +23,12 @@
 function [yAvgOut, nTrials] = hmrG_SubjAvg(yAvgSubjs, nTrialsSubjs)
 
 yAvgOut = DataClass().empty();
+nDataBlks = length(yAvgSubjs{1});
 nTrials = [];
-
 nSubj = length(yAvgSubjs);
+err = zeros(nDataBlks, length(yAvgSubjs));
 
-for iBlk = 1:length(yAvgSubjs{1})
+for iBlk = 1:nDataBlks
     
     subjCh = [];
     nStim = 0;
@@ -39,6 +40,11 @@ for iBlk = 1:length(yAvgSubjs{1})
         yAvgOut(iBlk) = DataClass();        
         
         yAvg      = yAvgSubjs{iSubj}(iBlk).GetDataTimeSeries('reshape');
+        if isempty(yAvg)
+            err(iBlk, iSubj) = -1;
+            continue;
+        end
+        
         tHRF      = yAvgSubjs{iSubj}(iBlk).GetTime();
         nT        = nTrialsSubjs{iSubj}{iBlk};
         datatype  = yAvgSubjs{iSubj}(iBlk).GetDataTypeLabel();
@@ -47,11 +53,7 @@ for iBlk = 1:length(yAvgSubjs{1})
         elseif strcmp(datatype{1}, 'HRF dOD')
             ml    = yAvgSubjs{iSubj}(iBlk).GetMeasList();
         end
-        
-        if isempty(yAvg)
-            continue;
-        end
-        
+                
         nCond = size(nT,2);
         yAvgOut(iBlk).SetTime(tHRF);
         
@@ -162,3 +164,9 @@ for iBlk = 1:length(yAvgSubjs{1})
     end
     nTrials{iBlk} = nT;
 end
+
+
+if all(err<0)
+    MessageBox('Warning: All subject input to hmrG_SubjAvg.m is empty.')
+end
+

@@ -166,21 +166,6 @@ set(handles.menuItemExport, 'enable', val);
 set(handles.menuItemReset, 'enable', val);
 set(handles.menuItemResetGroupFolder, 'enable', val)
 
-global maingui
-ax = maingui.axesData.handles.axes;
-xlim = maingui.axesData.handles.axes.XLim;
-ylim = maingui.axesData.handles.axes.YLim;
-axes(ax);
-
-
-
-% Change plot colors so user knows to click on it
-% if strcmp(val, 'off')
-%     set(handles.axesData, 'Color', [1, 0.9, 0.9]);
-% else
-%     set(handles.axesData, 'Color', [1, 1, 1]);
-% end
-
 % --------------------------------------------------------------------
 function eventdata = MainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global maingui

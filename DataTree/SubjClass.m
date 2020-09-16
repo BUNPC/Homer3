@@ -187,12 +187,12 @@ classdef SubjClass < TreeNodeClass
             if ~exist('option','var')
                 option = 'down';
             end
-            obj.procStream.output.Reset(obj.GetFilename);
             if strcmp(option, 'down')
                 for jj=1:length(obj.runs)
                     obj.runs(jj).Reset();
                 end
             end
+            Reset@TreeNodeClass(obj);
         end
         
         

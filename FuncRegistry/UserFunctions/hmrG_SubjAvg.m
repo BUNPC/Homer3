@@ -39,6 +39,10 @@ for iBlk = 1:length(yAvgSubjs{1})
         yAvgOut(iBlk) = DataClass();        
         
         yAvg      = yAvgSubjs{iSubj}(iBlk).GetDataTimeSeries('reshape');
+        if isempty(yAvg)
+            continue;
+        end
+        
         tHRF      = yAvgSubjs{iSubj}(iBlk).GetTime();
         nT        = nTrialsSubjs{iSubj}{iBlk};
         datatype  = yAvgSubjs{iSubj}(iBlk).GetDataTypeLabel();
@@ -47,11 +51,7 @@ for iBlk = 1:length(yAvgSubjs{1})
         elseif strcmp(datatype{1}, 'HRF dOD')
             ml    = yAvgSubjs{iSubj}(iBlk).GetMeasList();
         end
-        
-        if isempty(yAvg)
-            continue;
-        end
-        
+                
         nCond = size(nT,2);
         yAvgOut(iBlk).SetTime(tHRF);
         

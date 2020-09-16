@@ -62,12 +62,12 @@ for iBlk=1:length(snirf.data)  % For each data block
                 % Check if stims are excluded by time series
                 if ~isempty(tIncAuto{iBlk})
                     if tIncAuto{iBlk}(k) == 0 
-                        status(j, 2) = -2
+                        status(j, 2) = -2;
                     end
                 end
                 if ~isempty(tIncMan{iBlk})  % Manual rejection takes precedence
                     if tIncMan{iBlk}(k) == 0
-                        status(j, 2) = -1
+                        status(j, 2) = -1;
                     end
                 end
             end            

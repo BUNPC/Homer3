@@ -5,7 +5,7 @@ dirnameApp = getAppDir();
 userfuncdir{1} = [dirnameApp, 'FuncRegistry/UserFunctions/'];
 dirs = dir([userfuncdir{1}, '*']);
 for ii = 1:length(dirs)
-    if ~dirs(ii).isdir()
+    if ~dirs(ii).isdir
         continue
     elseif strcmp(dirs(ii).name, '..') || strcmp(dirs(ii).name, '.')
         continue

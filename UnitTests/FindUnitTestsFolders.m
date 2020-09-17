@@ -8,7 +8,7 @@ dirs = mydir([rootpath, '/UnitTests/*']);
 groupFolders = cell(length(dirs),1);
 kk=1;
 for ii=1:length(dirs)
-    if ~dirs(ii).isdir()
+    if ~dirs(ii).isdir
         continue;
     end
     pathfull = [rootpath, '/UnitTests/', dirs(ii).name];

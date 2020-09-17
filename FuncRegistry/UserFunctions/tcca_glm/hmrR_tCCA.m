@@ -1,5 +1,5 @@
 % SYNTAX:
-% [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_inx, runIdxResting, tResting)
+% [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, subjIdx, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_inx, runIdxResting, tResting)
 %
 % UI NAME:
 % hmrR_tCCA
@@ -17,6 +17,7 @@
 % aux - SNIRF aux type where dataTimeCourse is aux time course data (See SNIRF Spec for more details)
 % probe - SNIRF probe type containing source/detector geometry data (See SNIRF Spec for more details)
 % runIdx - the index of the run in a multi-run session
+% subjIdx - the index of the subject in a group 
 % flagtCCA - turns the function on / off
 % tCCAparams - These are the parameters for tCCA function
 %            1 - 1 timelag [s]
@@ -41,8 +42,8 @@
 %           Only relevant when flagICRegressors = 1.
 %
 % USAGE OPTIONS:
-% hmrR_tCCA_Concentration_Data: [Aaux, rcMap] = hmrR_tCCA(dc, aux, probe, iRun, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_inx, runIdxResting, tResting)
-% hmrR_tCCA_OD_Data: [Aaux, rcMap] = hmrR_tCCA(dod, aux, probe, iRun, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_inx, runIdxResting, tResting)
+% hmrR_tCCA_Concentration_Data: [Aaux, rcMap] = hmrR_tCCA(dc, aux, probe, iRun, iSubj, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_inx, runIdxResting, tResting)
+% hmrR_tCCA_OD_Data: [Aaux, rcMap] = hmrR_tCCA(dod, aux, probe, iRun, iSubj, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_inx, runIdxResting, tResting)
 %
 %
 % PARAMETERS:
@@ -50,11 +51,11 @@
 % tCCAparams: [3 0.08 0.3]
 % tCCAaux_inx: [1 2 3 4 5 6 7 8]
 % rhoSD_ssThresh: 15.0
-% ss_ch_inx: 0
+% ss_ch_inx: [1 2 3 4 5]
 % runIdxResting: 1
 % tResting: [30 210]
 %
-function [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_inx, runIdxResting, tResting)
+function [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, subjIdx, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_inx, runIdxResting, tResting)
 
 %% COMMENTS/THOUGHTS/QUESTIONS ALEX
 % 2) Output canonical correlation coefficients as quality metric?
@@ -160,8 +161,8 @@ if flagtCCA
         param.NumOfEmb = ceil(timelag*fq / tCCAparams(2));
         
         %% DO THE TCCA WORK
-        filterFilename = sprintf('./tCCAfilter_%d_%d.txt', iBlk, chksm);
-        tCCAexists = isfile(sprintf('./tCCAfilter_%d_%d.txt', iBlk, chksm));
+        filterFilename = sprintf('./tCCAfilter_%d_%d_%d.txt', subjIdx, iBlk, chksm);
+        tCCAexists = isfile(sprintf('./tCCAfilter_%d_%d_%d.txt', subjIdx, iBlk, chksm));
         isTrainingRun = runIdxResting == runIdx;
         if ~tCCAexists && isTrainingRun
             dotCCA = 'train';

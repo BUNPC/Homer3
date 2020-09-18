@@ -41,7 +41,7 @@ global maingui
 
 tic;
 
-% This function plots the prove geometry
+% This function plots the probe geometry
 % Command line call:
 % plotAxes_SDG(guidata(gcbo),bool);
 %
@@ -59,9 +59,12 @@ bbox        = maingui.dataTree.currElem.GetSdgBbox();
 if ~ishandles(hAxes)
     return;
 end
+% Set gca to be SDG axes
 axes(hAxes);
+% Delete all channel lines drawn
 if ishandles(maingui.axesSDG.handles.ch)
     delete(maingui.axesSDG.handles.ch)
+    delete(findobj(hAxes, 'Type', 'line'))  % Prevents previously drawn lines from piling up
 end
 axis(hAxes, [bbox(1), bbox(2), bbox(3), bbox(4)]);
 %set(hAxes, 'xticklabel','', 'yticklabel','', 'xgrid','off, ygrid','off')
@@ -80,7 +83,6 @@ nSrcs       = size(SD.SrcPos,1);
 nDets       = size(SD.DetPos,1);
 
 % get mlActAuto from procResult if it exists and replace ch.MeasListActMan 
-% [iDataBlks, iCh] = maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
 nDataBlks = maingui.dataTree.currElem.GetDataBlocksNum();
 MeasList = [];
 MeasListActMan = [];
@@ -95,10 +97,10 @@ for iBlk = 1:nDataBlks
 end
 ml    = MeasList(MeasList(:,1)>0,:);
 lstML = find(ml(:,4)==1); %cw6info.displayLambda);
-lwidth = 3;
 lstIncl = find(MeasListActMan(1:length(lstML))==1);
 lstExclMan = find(MeasListActMan(1:length(lstML))==0);
 lstExclAuto = find(MeasListActAuto(1:length(lstML))==0);
+lstInvisible = find(MeasListVis(1:length(lstML))==0);
 hCh = zeros(length(lstML),1);
 
 % Draw all channels
@@ -107,14 +109,22 @@ for ii = 1:length(lstML)
     if     ismember(ii, lstIncl)
         % Draw included channel
         col = [1.00 1.00 1.00] * 0.85;
-    elseif ismember(ii,lstExclMan)
+        lstyle = '-';
+    elseif ismember(ii, lstExclMan)
         % Draw manually excluded channel
-        col = [1.00 0.85 0.85] * 1.00;
+        col = [1.00 1.00 1.00] * 0.85;
+        lstyle = '--';
     elseif ismember(ii,lstExclAuto)
         % Draw auto-excluded channel
-        col = [1.00 1.00 0.85] * 1.00;
-    end        
-    set(hCh(ii), 'color',col, 'linewidth',lwidth, 'ButtonDownFcn',bttndownfcn);
+        col = [1.00 1.00 1.00] * 0.85;
+        lstyle = ':';
+    end
+    if ismember(ii, lstInvisible)
+        lwidth = 1; 
+    else
+        lwidth = 3;
+    end
+    set(hCh(ii), 'color', col, 'linewidth', lwidth, 'ButtonDownFcn', bttndownfcn, 'linestyle', lstyle);
 end
 
 % Draw the user-selected channels
@@ -127,22 +137,35 @@ if ~isempty(iSrcDet) && iSrcDet(1,1)~=0
     iCh2 = lst2;
     
     for idx = 1:size(iSrcDet,1)
+        lwidth = 3;
         hCh(idx+ii) = line2(SD.SrcPos(iSrcDet(idx,1),:), SD.DetPos(iSrcDet(idx,2),:), [], gridsize);
+        % Attach toggle callback to the selected channels for function on
+        % second click
         set(hCh(idx+ii),'color',color(idx,:), 'ButtonDownFcn',sprintf('toggleLinesAxesSDG_ButtonDownFcn(gcbo,[%d],guidata(gcbo))',idx), 'linewidth',2);
-        if ~isempty(iCh) && (~MeasListActMan(iCh2(idx)) & ~MeasListVis(iCh2(idx)))
-            set(hCh(idx+ii),'linewidth',2, 'linestyle','-.');
-        else
-            if ~isempty(iCh) && ~MeasListActMan(iCh2(idx))
-                set(hCh(idx+ii),'linewidth',2, 'linestyle','--');
+        
+        if ~isempty(iCh)
+           
+            if ~MeasListActMan(iCh2(idx))
+                lstyle = '--'; 
+            else
+                lstyle = '-';
             end
-            if ~isempty(iCh) && ~MeasListVis(iCh2(idx))
-                set(hCh(idx+ii),'linewidth',1, 'linestyle',':');
+       
+            if ~MeasListVis(iCh2(idx))
+                lwidth = 1;
+            else
+                lwidth = 3;
             end
+            
         end
+        
+        set(hCh(idx+ii),'linewidth', lwidth, 'linestyle', lstyle);
+        
     end
+    
 end
-maingui.axesSDG.handles.ch = hCh(hCh>0);
 
+maingui.axesSDG.handles.ch = hCh;
 
 % ADD SOURCE AND DETECTOR LABELS
 hSD = zeros(nSrcs+nDets,1);

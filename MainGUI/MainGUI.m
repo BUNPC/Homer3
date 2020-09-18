@@ -90,18 +90,16 @@ uipanelProcessingType_SelectionChangeFcn([]);
 % ---------------------------------------------------------------------
 function MainGUI_EnableDisableGUI(handles, val)
 
+% Processing element panel
 set(handles.listboxGroupTree, 'enable', val);
+set(handles.listboxFilesErr, 'enable', val);
 set(handles.radiobuttonProcTypeGroup, 'enable', val);
 set(handles.radiobuttonProcTypeSubj, 'enable', val);
 set(handles.radiobuttonProcTypeRun, 'enable', val);
-set(handles.radiobuttonPlotRaw, 'enable', val);
-set(handles.radiobuttonPlotOD,  'enable', val);
-set(handles.radiobuttonPlotConc, 'enable', val);
-set(handles.checkboxPlotHRF, 'enable', val);
 set(handles.textStatus, 'enable', val);
-set(handles.listboxPlotConc, 'enable', val);
 
 % Plot window panel
+set(handles.textPanLeftRight, 'enable', val);
 set(handles.pushbuttonPanLeft, 'enable', val);
 set(handles.pushbuttonPanRight, 'enable', val);
 set(handles.pushbuttonPanLeft, 'enable', val);
@@ -112,11 +110,22 @@ set(handles.editFixRangeX, 'enable', val);
 set(handles.checkboxFixRangeY, 'enable', val);
 set(handles.editFixRangeY, 'enable', val);
 
+% Plot type selected panel
+set(handles.listboxPlotConc, 'enable', val);
+set(handles.radiobuttonPlotRaw, 'enable', val);
+set(handles.radiobuttonPlotOD,  'enable', val);
+set(handles.radiobuttonPlotConc, 'enable', val);
+set(handles.popupmenuAux, 'enable', val);
+set(handles.checkboxPlotAux, 'enable', val);
+set(handles.popupmenuConditions, 'enable', val);
+set(handles.checkboxPlotHRF, 'enable', val);
+
 % Motion artifact panel
 set(handles.checkboxShowExcludedTimeManual, 'enable', val);
 set(handles.checkboxShowExcludedTimeAuto, 'enable', val);
 set(handles.checkboxShowExcludedTimeAutoByChannel, 'enable', val);
 set(handles.checkboxExcludeTime, 'enable', val);
+set(handles.pushbuttonResetExcludedTimeCh, 'enable', val);
 
 % Control
 set(handles.pushbuttonCalcProcStream, 'enable', val);
@@ -133,7 +142,29 @@ set(handles.menuItemResetGroupFolder, 'enable', val)
 
 
 
+% ---------------------------------------------------------------------
+function MainGUI_EnableDisablePlotEditMode(handles, val)
 
+% Processing element panel
+set(handles.listboxGroupTree, 'enable', val);
+set(handles.listboxFilesErr, 'enable', val);
+set(handles.radiobuttonProcTypeGroup, 'enable', val);
+set(handles.radiobuttonProcTypeSubj, 'enable', val);
+set(handles.radiobuttonProcTypeRun, 'enable', val);
+set(handles.textStatus, 'enable', val);
+
+% Control
+set(handles.pushbuttonCalcProcStream, 'enable', val);
+set(handles.pushbuttonProcStreamOptionsGUI, 'enable', val);
+set(handles.checkboxApplyProcStreamEditToAll, 'enable', val);
+
+% Menu
+set(handles.ToolsMenu, 'enable', val);
+set(handles.ViewMenu, 'enable', val);
+set(handles.menuItemSaveGroup, 'enable', val);
+set(handles.menuItemExport, 'enable', val);
+set(handles.menuItemReset, 'enable', val);
+set(handles.menuItemResetGroupFolder, 'enable', val)
 
 % --------------------------------------------------------------------
 function eventdata = MainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -543,7 +574,7 @@ end
 
 % Set channels selection 
 SetAxesDataCh();
-
+   
 if ~isempty(maingui.plotViewOptions.ranges.X)
     axes(handles.axesData)
     xlim('auto')
@@ -705,7 +736,6 @@ LaunchChildGuiFromMenu('StimEditGUI', hObject);
 % --------------------------------------------------------------------
 function [eventdata, handles] = menuItemProcStreamEditGUI_Callback(hObject, eventdata, handles)
 LaunchChildGuiFromMenu('ProcStreamEditGUI', hObject);
-
 
 
 
@@ -1035,8 +1065,8 @@ end
 %%% Plot stim marks. This has to be done before plotting exclude time
 %%% patches because stim legend doesn't work otherwise.
 t          = procElem.GetTimeCombined();
-s          = procElem.GetStims(t);
-stimVals   = procElem.GetStimValSettings();
+s          = procElem.GetStimStatus(t);
+stimVals   = procElem.GetstimStatusSettings();
 CondColTbl = procElem.CondColTbl;
 
 % Plot included and excluded stims
@@ -1453,12 +1483,20 @@ global maingui
 
 hAxesData = maingui.axesData.handles.axes;
 
-if get(hObject, 'value')==1
+if isempty(maingui.axesSDG.iCh)  % Don't let user exclude if axesData isn't plotting anything
+    errordlg('Select a channel before manually excluding time points.', 'No channels selected');
+    set(hObject, 'value', 0);
+    return; 
+end
+
+if get(hObject, 'value') == 1 % If in exclude time mode
     zoom off
     set(hAxesData,'ButtonDownFcn', 'MainGUI(''ExcludeTime_ButtonDownFcn'',gcbo,[],guidata(gcbo))');
     set(get(hAxesData,'children'), 'ButtonDownFcn', 'MainGUI(''ExcludeTime_ButtonDownFcn'',gcbo,[],guidata(gcbo))');
+    MainGUI_EnableDisablePlotEditMode(handles, 'off');
 else
     zoom on
+    MainGUI_EnableDisablePlotEditMode(handles, 'on');
 end
 Display(handles, hObject);
 
@@ -1528,6 +1566,13 @@ end
 
 % Display excluded time and rejected stims
 Display(handles, hObject);
+
+
+
+% --------------------------------------------------------------------
+function ExcludeCh_ButtonDownFcn(hObject, eventdata, handles)
+global maingui
+disp('Exclude button down fcn');
 
 
 
@@ -1651,5 +1696,29 @@ set(handles.MainGUI, 'position', p);
 p = guiOutsideScreenBorders(handles.MainGUI);
 set(handles.MainGUI, 'units','characters', 'position',p);
 set(handles.MainGUI, 'units',u0);
+
+
+
+% -------------------------------------------------------------------------------
+function pushbuttonResetExcludedTimeCh_Callback(hObject, eventdata, handles)
+global maingui
+if isa(maingui.dataTree.currElem, 'RunClass')
+    ch = MenuBox('Are you sure you would like to re-enable all excluded channels and time points?',{'Yes','No'});
+    if ch == 2
+        return
+    end
+    maingui.dataTree.currElem.InitTincMan();
+    iCh = maingui.axesSDG.iCh;
+    iDataBlks =  maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
+    for iBlk = 1:iDataBlks
+        t = maingui.dataTree.currElem.GetTime(iBlk);
+        maingui.dataTree.currElem.StimInclude(t, iBlk);
+        maingui.dataTree.currElem.InitMlActMan(iBlk);
+    end
+    Display(handles, hObject);
+else
+    errordlg('Select a run to reset its excluded channels and time points.','No run selected');
+end
+
 
 

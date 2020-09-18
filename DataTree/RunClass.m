@@ -379,25 +379,45 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function InitMlActMan(obj, iBlk)
+            if ~exist('iBlk','var')
+                iBlk = 1;
+            end
+            ch = obj.acquired.GetMeasList(iBlk);
+            obj.procStream.input.SetMeasListActMan(ones(size(ch, 1), 1));
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function InitMlVis(obj, iBlk)
+            if ~exist('iBlk','var')
+                iBlk = 1;
+            end
+            ch = obj.acquired.GetMeasList(iBlk);
+            obj.procStream.input.SetMeasListVis(ones(size(ch, 1), 1));
+        end
+            
+        % ----------------------------------------------------------------------------------
         function ch = GetMeasList(obj, iBlk)
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk=1;
             end
-            ch                    = InitMeasLists();
+            
+            ch = struct('MeasList',[], 'MeasListVis',[], 'MeasListActMan',[], 'MeasListActAuto',[]);
             
             ch.MeasList        = obj.acquired.GetMeasList(iBlk);
             ch.MeasListActMan  = obj.procStream.GetMeasListActMan(iBlk);
             ch.MeasListActAuto = obj.procStream.GetMeasListActAuto(iBlk);
             ch.MeasListVis     = obj.procStream.GetMeasListVis(iBlk);
-            
             if isempty(ch.MeasListActMan)
-                ch.MeasListActMan  = ones(size(ch.MeasList,1),1);
+                obj.InitMlActMan();  % TODO find a more sensical place to do this
+                ch.MeasListActMan  = obj.procStream.GetMeasListActMan(iBlk);
             end
             if isempty(ch.MeasListActAuto)
                 ch.MeasListActAuto = ones(size(ch.MeasList,1),1);
             end
             if isempty(ch.MeasListVis)
-                ch.MeasListVis = ones(size(ch.MeasList,1),1);
+                obj.InitMlVis();
+                ch.MeasListVis = obj.procStream.GetMeasListVis(iBlk);
             end
             ch.MeasListAct     = bitand(ch.MeasListActMan, ch.MeasListActMan);
         end

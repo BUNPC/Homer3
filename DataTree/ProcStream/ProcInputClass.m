@@ -4,8 +4,9 @@ classdef ProcInputClass < handle
     % of acquisition data or is derived from acquisition data but not stored there. 
     %
     properties
-        tIncMan;                 % Manually include/excluded time points
-        mlActMan;                % Manually include/excluded time points
+        tIncMan;                 % Manually included/excluded time points
+        mlActMan;                % Manually included/excluded channels
+        mlVis;                   % Channels which are visible or invisible in axesData
         acquired;                % Modifiable acquisition parameters initally copied from acquisition files
         stimValSettings;         % Derived stim values 
         misc;
@@ -21,6 +22,7 @@ classdef ProcInputClass < handle
             end
             obj.tIncMan = {};
             obj.mlActMan = {};
+            obj.mlVis = {};
             obj.misc = [];
             obj.stimValSettings = struct('none',0, 'incl',1, 'excl_manual',-1, 'excl_auto',-2);
             if nargin==0
@@ -44,7 +46,12 @@ classdef ProcInputClass < handle
             if ~isempty(obj2.tIncMan)
                 obj.tIncMan = obj2.tIncMan;
             end
-            
+            if ~isempty(obj2.mlActMan)
+                obj.mlActMan = obj2.mlActMan;
+            end
+            if ~isempty(obj2.mlVis)
+                obj.mlVis = obj2.mlVis;
+            end
             fields = properties(obj.misc);
             for ii=1:length(fields)
                 if ~eval(sprintf('isproperty(obj2.misc, ''%s'')', fields{ii}))
@@ -181,10 +188,54 @@ classdef ProcInputClass < handle
        
         
         % ----------------------------------------------------------------------------------
-        function mlActMan = GetMeasListActMan(obj, iBlk)
-            mlActMan = {};            
+        function ml = GetMeasListActMan(obj, iBlk)
+        if ~exist('iBlk','var')
+            iBlk = 1;
+        end
+        if ~isempty(obj.mlActMan)
+            ml = obj.mlActMan{iBlk};
+        else
+            ml = []; 
+        end
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function SetMeasListActMan(obj, ml, iBlk)
+            if ~exist('iBlk','var')
+                iBlk = 1;
+            end
+            if isempty(obj.mlActMan)
+                obj.mlActMan{iBlk} = ml;
+            elseif length(obj.mlActMan{iBlk}) == length(ml)
+               obj.mlActMan{iBlk} = ml; 
+            end
+        end
+
+        % ----------------------------------------------------------------------------------
+        function ml = GetMeasListVis(obj, iBlk)
+        if ~exist('iBlk','var')
+            iBlk = 1;
+        end
+        if ~isempty(obj.mlVis)
+            ml = obj.mlVis{iBlk};
+        else
+            ml = []; 
+        end
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function SetMeasListVis(obj, ml, iBlk)
+            if ~exist('iBlk','var')
+                iBlk = 1;
+            end
+            if isempty(obj.mlVis)
+                obj.mlVis{iBlk} = ml;
+            elseif length(obj.mlVis{iBlk}) == length(ml)
+               obj.mlVis{iBlk} = ml; 
+            end
+        end
         
         % ----------------------------------------------------------------------------------
         function n = GetDataBlocksNum(obj)

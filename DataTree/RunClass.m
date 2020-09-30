@@ -183,6 +183,7 @@ classdef RunClass < TreeNodeClass
                     end
                 end
                 obj.acquired.Copy(R.acquired);
+                obj.CondNames = R.CondNames;
             end
         end
 
@@ -752,4 +753,3 @@ classdef RunClass < TreeNodeClass
     end  % Private methods
 
 end
-

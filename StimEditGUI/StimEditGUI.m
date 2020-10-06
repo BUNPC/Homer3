@@ -76,7 +76,6 @@ stimEdit.groupDirs = {};
 stimEdit.format = '';
 stimEdit.pos = [];
 stimEdit.updateParentGui = [];
-stimEdit.locDataTree = DataTreeClass(maingui.dataTree);
 
 cfg = ConfigFileClass();
 stimEdit.config.autoSaveAcqFiles = cfg.GetValue('Auto Save Acquisition Files');
@@ -139,6 +138,10 @@ if isempty(stimEdit.dataTree)
     EnableGuiObjects('off', hObject);
     return;
 end
+
+% Make a local copy of dataTree in this GUI 
+stimEdit.locDataTree = DataTreeClass(stimEdit.dataTree);
+
 set(get(handles.axes1,'children'), 'ButtonDownFcn', @axes1_ButtonDownFcn);
 zoom(hObject,'off');
 Update(handles);
@@ -581,11 +584,11 @@ if ~strcmpi(stimEdit.config.autoSaveAcqFiles, 'Yes')
         cfg.SetValue('Auto Save Acquisition Files', 'Yes');
         cfg.Save()
     end
-    stimEdit.dataTree.Copy(stimEdit.locDataTree);
+    stimEdit.dataTree.CopyStims(stimEdit.locDataTree);
 else
     % Otherwise auto-save 
     fprintf('StimEditGUI: auto-saving ...\n')
-    stimEdit.dataTree.Copy(stimEdit.locDataTree);
+    stimEdit.dataTree.CopyStims(stimEdit.locDataTree);
 end
 
 % Update acquisition file with new contents
@@ -607,6 +610,10 @@ Save()
 
 % -------------------------------------------------------------------
 function StimEditGUI_DeleteFcn(hObject, eventdata, handles)
+global stimEdit
+if isempty(stimEdit)
+    return;
+end
 Save()
 
 
@@ -639,6 +646,9 @@ end
 if ~ishandles(handles.figure)
     return;
 end
+idx = stimEdit.dataTree.currElem.GetIndexID();
+stimEdit.locDataTree.SetCurrElem(idx(1), idx(2), idx(3))
+
 conditions =  stimEdit.locDataTree.currElem.GetConditions();
 filename = stimEdit.locDataTree.currElem.GetName();
 [~, fname, ext] = fileparts(filename);

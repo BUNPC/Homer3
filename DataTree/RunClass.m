@@ -183,10 +183,16 @@ classdef RunClass < TreeNodeClass
                     end
                 end
                 obj.acquired.Copy(R.acquired);
-                obj.CondNames = R.CondNames;
             end
         end
 
+        
+        % --------------------------------------------------------------
+        function CopyStims(obj, obj2)
+            obj.CondNames = obj2.CondNames;
+            obj.procStream.CopyStims(obj2.procStream);
+        end
+               
         
         % ----------------------------------------------------------------------------------
         % Subjects obj1 and obj2 are considered equivalent if their names

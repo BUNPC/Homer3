@@ -87,6 +87,15 @@ classdef SubjClass < TreeNodeClass
         end
         
         
+        % --------------------------------------------------------------
+        function CopyStims(obj, obj2)
+            obj.CondNames = obj2.CondNames;
+            for ii = 1:length(obj.runs)
+                obj.runs(ii).CopyStims(obj2.runs(ii));
+            end
+        end
+               
+        
         % ----------------------------------------------------------------------------------
         % Check whether run R exists in this subject and return
         % its index if it does exist. Else return 0.

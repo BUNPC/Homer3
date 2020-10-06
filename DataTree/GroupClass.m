@@ -225,6 +225,15 @@ classdef GroupClass < TreeNodeClass
         end
 
         
+        % --------------------------------------------------------------
+        function CopyStims(obj, obj2)
+            obj.CondNames = obj2.CondNames;
+            for ii = 1:length(obj.subjs)
+                obj.subjs(ii).CopyStims(obj2.subjs(ii));
+            end
+        end
+        
+        
         
         % ----------------------------------------------------------------------------------
         function CopyFcalls(obj, varargin)

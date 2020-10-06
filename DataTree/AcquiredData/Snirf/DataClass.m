@@ -577,6 +577,10 @@ classdef DataClass < FileLoadSaveClass
             if isempty(obj)
                 obj = DataClass();
             end
+            if isempty(obj2)
+                obj = DataClass();
+                return;
+            end
             if ~isa(obj2, 'DataClass')
                 return;
             end

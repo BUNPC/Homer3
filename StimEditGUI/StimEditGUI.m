@@ -402,7 +402,7 @@ if ~isempty(iS_lst)
                             tc(tPts_idxs_select(iS_lst(1))), ...
                             tc(tPts_idxs_select(iS_lst(end))));
 else
-    menuTitleStr = sprintf('Add stim mark at t=%0.1f...', tc(tPts_idxs_select(1)));
+    menuTitleStr = sprintf('Add stim mark at  t = %0.1f  ...', tc(tPts_idxs_select(1)));
 end
 actionLst{end+1} = 'Cancel';
 nActions = length(actionLst);
@@ -657,8 +657,12 @@ end
 if ~ishandles(handles.figure)
     return;
 end
-idx = stimEdit.dataTree.currElem.GetIndexID();
-stimEdit.locDataTree.SetCurrElem(idx(1), idx(2), idx(3))
+idx1 = stimEdit.dataTree.currElem.GetIndexID();
+idx2 = stimEdit.locDataTree.currElem.GetIndexID();
+if ~all(idx1==idx2)
+    % Reload data tree into local copy if the current element has changed
+    stimEdit.locDataTree = DataTreeClass(stimEdit.dataTree);    
+end
 
 conditions =  stimEdit.locDataTree.currElem.GetConditions();
 filename = stimEdit.locDataTree.currElem.GetName();
@@ -909,6 +913,7 @@ for i = (lpf_len + 1):length(time_filt)  % Exclude LPF artifact
     end
     last = aux_filt(i);
 end
+
 
 % --------------------------------------------------------------------
 function editThresh_Callback(hObject, eventdata, handles)

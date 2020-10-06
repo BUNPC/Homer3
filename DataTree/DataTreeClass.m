@@ -25,7 +25,12 @@ classdef DataTreeClass <  handle
             obj.config              = ConfigFileClass().empty();
             obj.dirnameGroups       = {};
             obj.logger              = InitLogger(logger, 'DataTree');
-                        
+            
+            if isa(groupDirs, 'DataTreeClass')
+                   obj.Copy(groupDirs);
+                   return;
+            end
+            
             cfg = ConfigFileClass();
             obj.dataStorageScheme = cfg.GetValue('Data Storage Scheme');
             
@@ -89,6 +94,17 @@ classdef DataTreeClass <  handle
             end
         end
         
+        % --------------------------------------------------------------
+        function Copy(obj, obj2)
+            idx = obj2.currElem.GetIndexID();
+            iG = idx(1);
+            iS = idx(2);
+            iR = idx(3);
+            obj.groups = GroupClass();
+            obj.groups.Copy(obj2.groups(iG))
+            obj.groups.CondNames = obj2.groups(iG).CondNames;
+            obj.currElem = obj.groups(iG).subjs(iS).runs(iR);
+        end
         
         % --------------------------------------------------------------
         function status = FoundDataFilesInOtherFormat(obj, dataInit, kk)            

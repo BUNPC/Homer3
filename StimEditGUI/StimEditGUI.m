@@ -72,11 +72,13 @@ stimEdit.locDataTree = [];
 
 %%%% Begin parse arguments 
 
-stimEdit.status=-1;
+stimEdit.status = -1;
 stimEdit.groupDirs = {};
 stimEdit.format = '';
 stimEdit.pos = [];
 stimEdit.updateParentGui = [];
+stimEdit.newCondWarning = false;
+
 
 cfg = ConfigFileClass();
 stimEdit.config.autoSaveAcqFiles = cfg.GetValue('Auto Save Acquisition Files');
@@ -221,11 +223,8 @@ global stimEdit
 %      and runs same as if you were loading during Homer3 startup from the 
 %      acquired data.
 %
-newname = inputdlg({'New Condition Name'}, 'New Condition Name');
+newname = CreateNewConditionName();
 if isempty(newname)
-    return;
-end
-if isempty(newname{1})
     return;
 end
 
@@ -239,10 +238,11 @@ oldname = conditions{idx};
 % following line in favor of the one after it. 
 
 iG = stimEdit.locDataTree.GetCurrElemIndexID();
-stimEdit.locDataTree.groups(iG).RenameCondition(oldname, newname{1});
+stimEdit.locDataTree.groups(iG).RenameCondition(oldname, newname);
 if stimEdit.status ~= 0
     return;
 end
+
 stimEdit.locDataTree.groups(iG).SetConditions();
 set(handles.popupmenuConditions, 'string', stimEdit.locDataTree.groups(iG).GetConditions());
 Display(handles);
@@ -412,6 +412,93 @@ menu_choice = MenuBox(menuTitleStr, actionLst);
 
 
 
+
+% ------------------------------------------------
+function err = IsCondError(CondName, overrideLength)
+global stimEdit
+err = 0;
+
+if ~exist('overrideLength','var')
+    overrideLength = false;
+end
+
+iG = stimEdit.locDataTree.GetCurrElemIndexID();
+CondNamesGroup = stimEdit.locDataTree.groups(iG).GetConditions();
+if isempty(CondName)
+    err = -1;
+    return;
+end
+if iscell(CondName)
+    CondName = CondName{1};
+end
+if length(CondName) > 1 && ~overrideLength
+    msg{1} = sprintf('ERROR: Due to a bug in the latest Homer3 version '); 
+    msg{2} = sprintf('new condition names have a 1 character limit. ');
+    msg{3} = sprintf('This will be fixed in a near future Homer3 release. ');
+    msg{4} = sprintf('For now please name the new condition using only one character');
+    MessageBox([msg{:}]);
+    err = -1;
+end
+if ismember(CondName, CondNamesGroup)
+    err = -2;
+end
+
+
+
+% ------------------------------------------------
+function status = NewCondWarning()
+global stimEdit
+
+status = 0;
+
+if stimEdit.newCondWarning
+    return;
+end
+msg{1} = sprintf('WARNING: Please note that adding a new condition or renaming an exiting one ');
+msg{2} = sprintf('could change the colors of the stimuli and reorder the stim condition color legend ');
+msg{3} = sprintf('in the top right corner of the axes window.');
+q = MenuBox([msg{:}], {'Okay', 'Cancel', 'Don''t Warn Again and Proceed'});
+if q==3
+    stimEdit.newCondWarning = true;
+elseif q==2
+    status = -1;
+end
+
+
+% ------------------------------------------------
+function CondName = CreateNewConditionName(overrideLength)
+
+if ~exist('overrideLength','var')
+    overrideLength = false;
+end
+
+CondName = '';
+CondNameNew = inputdlg('','New Condition name');
+if isempty(CondNameNew)
+    return
+end
+while 1
+    err = IsCondError(CondNameNew, overrideLength);
+    if err==0
+        break;
+    end
+    if err==-1
+        CondNameNew = inputdlg('','New Condition name');
+    end
+    if err==-2
+        CondNameNew = inputdlg('Condition already exists. Choose another name.','New Condition name');
+    end
+    if isempty(CondNameNew)
+        return;
+    end
+end
+CondName = CondNameNew{1};
+if NewCondWarning() < 0
+    CondName = '';
+end
+
+
+
 % ------------------------------------------------
 function menu_choice = AddEditDelete(tPts_idxs_select, iS_lst, mode, menu_choice)
 % Usage:
@@ -463,17 +550,10 @@ end
 if isempty(iS_lst)
     % If stim added to new condition update group conditions
     if menu_choice==nCond+1
-        CondNameNew = inputdlg('','New Condition name');
-        if isempty(CondNameNew)
+        CondName = CreateNewConditionName(true);
+        if isempty(CondName)
             return;
         end
-        while ismember(CondNameNew{1}, CondNamesGroup)
-            CondNameNew = inputdlg('Condition already exists. Choose another name.','New Condition name');
-            if isempty(CondNameNew)
-                return;
-            end
-        end
-        CondName = CondNameNew{1};
     else
         CondName = CondNamesGroup{menu_choice};
     end
@@ -503,11 +583,10 @@ else
         
         % Assign new condition to edited stim
         if menu_choice==nCond+1
-            CondNameNew = inputdlg('','New Condition name');
-            if isempty(CondNameNew)
+            CondName = CreateNewConditionName(true);
+            if isempty(CondName)
                 return;
             end
-            CondName = CondNameNew{1};
         else
             CondName = CondNamesGroup{menu_choice};
         end

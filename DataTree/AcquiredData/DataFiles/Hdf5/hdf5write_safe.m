@@ -16,7 +16,11 @@ else
         if ~isempty(findstr('rw', options))
             HDF5_DatasetWrite(fname, name, val);
         else
-            hdf5write(fname, name, val, 'WriteMode','append');
+            try
+                hdf5write(fname, name, val, 'WriteMode','append');
+            catch
+                HDF5_DatasetWriteStrings(fname, name, val)                
+            end
         end
     catch
         return;

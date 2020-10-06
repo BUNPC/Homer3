@@ -131,7 +131,7 @@ classdef ChildGuiClass < handle
             handles = []; %#ok<*PROPLC>
             switch(length(a))
                 % Note that in addition to the guis known args we add as the last arg the last gui position. 
-                % We do this because even we can set the position after launching gui, it is much nices when 
+                % We do this because even if we can set the position after launching gui, it is much nices when 
                 % the gui is not seen to change position. If the position is set from within the GUI it 
                 % appears only in the position we pass it since it is invisible until the gui's open function 
                 % exits
@@ -165,10 +165,36 @@ classdef ChildGuiClass < handle
 %                     set(obj.handles.figure, 'position',[p(1),p(2),p(3),p(4)]);
 %                 end
                 obj.SetTitle();
+                
+                % Try to make sure child gui is not obscured by prent gui
+                obj.PositionFigures();
             end
         end
         
-               
+        
+        % -------------------------------------------------------------------
+        function PositionFigures(obj)
+            hp = findobj('tag', 'MainGUI');
+            if ~ishandles(hp)
+                return;
+            end
+
+            up0 = get(hp, 'units');  
+            uc0 = get(obj.handles.figure, 'units');
+            
+            set(hp, 'units', 'normalized');
+            set(obj.handles.figure, 'units', 'normalized');
+            
+            pp = get(hp, 'position');
+            pc = get(obj.handles.figure, 'position');
+
+            set(hp, 'position', [1-pp(3), pp(2), pp(3), pp(4)])
+            set(obj.handles.figure, 'position', [0, pc(2), pc(3), pc(4)])
+
+            set(hp, 'units', up0);
+            set(obj.handles.figure, 'units', uc0);
+        end
+        
         
         % -------------------------------------------------------------------
         function UpdateArgs(obj, varargin)

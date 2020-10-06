@@ -68,6 +68,7 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 stimEdit = [];
+stimEdit.locDataTree = [];
 
 %%%% Begin parse arguments 
 
@@ -255,7 +256,12 @@ figure(handles.figure);
 function axes1_ButtonDownFcn(hObject, eventdata, handles)
 global stimEdit
 
-[point1,point2] = extractButtondownPoints();
+[point1, point2, err] = extractButtondownPoints();
+if err<0
+    MessageBox('Sorry there was a malfunction in the selection. Please try selecting again ...')
+    return;
+end
+
 point1 = point1(1,1:2);              % extract x and y
 point2 = point2(1,1:2);
 p1 = min(point1,point2);
@@ -450,6 +456,7 @@ end
 if menu_choice==nActions || menu_choice==0
     return;
 end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % New stim
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -562,6 +569,10 @@ stimEdit.locDataTree.currElem.SetStimValues(icond, data(:,3));
 % -------------------------------------------------------------------
 function Save()
 global stimEdit
+
+if isempty(stimEdit.locDataTree)
+    return;
+end
 
 % If nothing changes, nothing to save, so exit
 if ~stimEdit.locDataTree.currElem.AcquiredDataModified()

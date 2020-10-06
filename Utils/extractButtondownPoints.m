@@ -1,4 +1,6 @@
-function [p1,p2] = extractButtondownPoints()
+function [p1, p2, err] = extractButtondownPoints()
+
+err = 0;
 
 p1 = get(gca,'CurrentPoint');    % button down detected
 finalRect = rbbox;                   % return figure units

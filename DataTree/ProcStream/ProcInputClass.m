@@ -63,6 +63,8 @@ classdef ProcInputClass < handle
                 eval( sprintf('obj.misc.%s = CopyHandles(obj2.misc.%s, obj.misc.%s);', fields{ii}, fields{ii}) );
             end
             if isempty(obj.acquired)
+                obj.acquired = SnirfClass();
+                obj.acquired.Copy(obj2.acquired);
                 return;
             end
             obj.acquired.Copy(obj2.acquired);
@@ -447,4 +449,3 @@ classdef ProcInputClass < handle
     end   
     
 end
-

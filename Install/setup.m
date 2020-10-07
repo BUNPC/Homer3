@@ -24,7 +24,7 @@ try
 catch ME
     close(h);
     printStack();
-    msg{1} = sprintf('Error: Could not remove old installation folder. It might be in use by other applications.\n');
+    msg{1} = sprintf('Error: Could not remove installation folder %s. It might be in use by other applications.\n', dirnameDst);
     msg{2} = sprintf('Try closing and reopening file browsers or any other applications that might be using the\n');
     msg{3} = sprintf('installation folder and then retry installation.');
     menu([msg{:}], 'OK');
@@ -47,26 +47,7 @@ fprintf('  setup_script: %s\n', platform.setup_script);
 fprintf('  dirnameApp: %s\n', platform.dirnameApp);
 fprintf('  mcrpath: %s\n', platform.mcrpath);
 
-try
-    if ispc()        
-        cmd = sprintf('IF EXIST %%userprofile%%\\desktop\\%s.lnk (del /Q /F %%userprofile%%\\desktop\\%s.lnk)', ...
-                       platform.homer3_exe{1}, platform.homer3_exe{1});
-        system(cmd);        
-    elseif islinux()
-        if exist('~/Desktop/Homer3.sh','file')
-            delete('~/Desktop/Homer3.sh');
-        end
-    elseif ismac()
-        if exist('~/Desktop/Homer3.command','file')
-            delete('~/Desktop/Homer3.command');
-        end        
-        if ~exist(platform.mcrpath,'dir') | ~exist([platform.mcrpath, '/mcr'],'dir') | ~exist([platform.mcrpath, '/runtime'],'dir')
-            menu('Error: Invalid MCR path under ~/libs/mcr. Terminating installation...\n','OK');
-        end
-    end
-catch
-    menu('Warning: Could not delete Desktop icons Homer3. They might be in use by other applications.', 'OK');
-end
+deleteShortcut(platform, dirnameSrc);
 
 pause(2);
 
@@ -96,34 +77,7 @@ copyFileToInstallation([dirnameSrc, 'FuncRegistry'],      [dirnameDst, 'FuncRegi
 copyFileToInstallation([dirnameSrc, 'SubjDataSample'], [dirnameDst, 'SubjDataSample']);
 
 % Create desktop shortcuts to Homer3
-try
-    if ispc()
-        
-        k = dirnameDst=='/';
-        dirnameDst(k)='\';
-        
-        cmd = sprintf('call "%s\\createShortcut.bat" "%s" Homer3.exe', dirnameSrc(1:end-1), dirnameDst);
-        system(cmd);
-        
-        cmd = sprintf('call "%s\\createShortcut.bat" "%s" SubjDataSample', dirnameSrc(1:end-1), dirnameDst(1:end-1));
-        system(cmd);
-        
-    elseif islinux()
-        
-        cmd = sprintf('sh %s/createShortcut.sh sh', dirnameSrc(1:end-1));        
-        system(cmd);
-        
-    elseif ismac()
-        
-        cmd = sprintf('sh %s/createShortcut.sh command', dirnameSrc(1:end-1));
-        system(cmd);
-        
-    end
-catch
-    msg{1} = sprintf('Error: Could not create Homer3 shortcuts on Desktop. Exiting installation.');
-    menu([msg{:}], 'OK');
-    return;    
-end
+createDesktopShortcut(dirnameSrc, dirnameDst);
 
 waitbar(iStep/nSteps, h); iStep = iStep+1;
 pause(2);
@@ -210,4 +164,86 @@ catch ME
     pause(5);
     rethrow(ME);
 end
+
+
+
+% --------------------------------------------------------------
+function deleteShortcut(platform, dirnameSrc)
+
+try
+    if ispc()
+        desktopPath = generateDesktopPath(dirnameSrc);
+        cmd = sprintf('IF EXIST %s\\%s.lnk (del /Q /F %s\\%s.lnk)', ...
+                       desktopPath, platform.homer3_exe{1}, desktopPath, platform.homer3_exe{1});
+        system(cmd);        
+    elseif islinux()
+        if exist('~/Desktop/Homer3.sh','file')
+            delete('~/Desktop/Homer3.sh');
+        end
+    elseif ismac()
+        if exist('~/Desktop/Homer3.command','file')
+            delete('~/Desktop/Homer3.command');
+        end        
+        if ~exist(platform.mcrpath,'dir') | ~exist([platform.mcrpath, '/mcr'],'dir') | ~exist([platform.mcrpath, '/runtime'],'dir')
+            menu('Error: Invalid MCR path under ~/libs/mcr. Terminating installation...\n','OK');
+        end
+    end
+catch
+    menu('Warning: Could not delete Desktop icons Homer3. They might be in use by other applications.', 'OK');
+end
+
+
+
+% ---------------------------------------------------------
+function desktopPath = generateDesktopPath(dirnameSrc)
+if ~exist([dirnameSrc, 'desktopPath.txt'],'file')
+    system(sprintf('call %sgenerateDesktopPath.bat', dirnameSrc));
+end
+
+if exist([dirnameSrc, 'desktopPath.txt'],'file')
+    fid = fopen([dirnameSrc, 'desktopPath.txt'],'rt');
+    line = fgetl(fid);
+    line(line=='"')='';
+    desktopPath = strtrim(line);
+    fclose(fid);
+else
+    desktopPath = sprintf('%%userprofile%%');
+end
+
+
+
+
+
+% ---------------------------------------------------------
+function createDesktopShortcut(dirnameSrc, dirnameDst)
+
+try
+    if ispc()
+        
+        k = dirnameDst=='/';
+        dirnameDst(k)='\';
+        
+        cmd = sprintf('call "%s\\createShortcut.bat" "%s" Homer3.exe', dirnameSrc(1:end-1), dirnameDst);
+        system(cmd);
+        
+        cmd = sprintf('call "%s\\createShortcut.bat" "%s" SubjDataSample', dirnameSrc(1:end-1), dirnameDst(1:end-1));
+        system(cmd);
+        
+    elseif islinux()
+        
+        cmd = sprintf('sh %s/createShortcut.sh sh', dirnameSrc(1:end-1));        
+        system(cmd);
+        
+    elseif ismac()
+        
+        cmd = sprintf('sh %s/createShortcut.sh command', dirnameSrc(1:end-1));
+        system(cmd);
+        
+    end
+catch
+    msg{1} = sprintf('Error: Could not create Homer3 shortcuts on Desktop. Exiting installation.');
+    menu([msg{:}], 'OK');
+    return;    
+end
+
 

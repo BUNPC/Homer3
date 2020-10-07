@@ -105,6 +105,10 @@ if exist([dirnameInstall, 'makefinalapp.pl'],'file')
     copyfile([dirnameInstall, 'makefinalapp.pl'], [dirnameInstall, 'homer3_install']);
 end
 
+if exist([dirnameInstall, 'generateDesktopPath.bat'],'file')
+    copyfile([dirnameInstall, 'generateDesktopPath.bat'], [dirnameInstall, 'homer3_install']);
+end
+
 if exist([dirnameApp, 'README.md'],'file')
     copyfile([dirnameApp, 'README.md'], [dirnameInstall, 'homer3_install']);
 end

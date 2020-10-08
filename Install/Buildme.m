@@ -27,7 +27,7 @@ if ~exist('flags','var')
     flags = {};
 end
 
-% Matlab compiler generates a readme file that overwrites the homer3 one
+% Matlab compiler generates a readme file that overwrites the app readme
 % that already xists. Before we start build , move readme to temp file and 
 % at end of build delete the newly generated readme and move the temp one 
 % back. 

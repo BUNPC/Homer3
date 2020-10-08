@@ -2,7 +2,9 @@ function [p1, p2, err] = extractButtondownPoints()
 
 p1 = get(gca,'CurrentPoint');    % button down detected
 finalRect = rbbox;                   % return figure units
-p2 = get(gca,'CurrentPoint');
+p2 = abs(get(gca,'CurrentPoint'));
+
+% dispSelectedPts(p1, p2, finalRect);
 
 [err, p1, p2] = errorCheck(p1, p2, finalRect);
 if err<1
@@ -60,7 +62,12 @@ if all(p1==0) & all(p2==0)
     return
 end
 
-p2 = p1 + rectSize_finalRect;
+if p1(1) <= p2(1)
+    p2 = p1 + rectSize_finalRect;
+else
+    p1 = p2 + rectSize_finalRect;
+end
+
 
 fprintf('\n');
 fprintf('Selection rectangle from finalRect    :  %0.1f\n', rectSize_finalRect);

@@ -408,7 +408,7 @@ actionLst{end+1} = 'Cancel';
 nActions = length(actionLst);
 
 % Get user's responce to menu question
-menu_choice = MenuBox(menuTitleStr, actionLst);
+menu_choice = MenuBox(menuTitleStr, actionLst, 'centerright');
 
 
 
@@ -446,7 +446,7 @@ end
 
 
 % ------------------------------------------------
-function status = NewCondWarning()
+function status = NewCondWarning(CondNameNew)
 global stimEdit
 
 status = 0;
@@ -454,8 +454,16 @@ status = 0;
 if stimEdit.newCondWarning
     return;
 end
+
+iG = stimEdit.locDataTree.GetCurrElemIndexID();
+CondNamesGroup = stimEdit.locDataTree.groups(iG).GetConditions();
+CondNamesGroupNew = sort([CondNameNew, CondNamesGroup]);
+if strcmp(CondNamesGroupNew{end}, CondNameNew)
+    return;
+end
+
 msg{1} = sprintf('WARNING: Please note that adding a new condition or renaming an exiting one ');
-msg{2} = sprintf('could change the colors of the stimuli and reorder the stim condition color legend ');
+msg{2} = sprintf('could change the colors of some stimuli and reorder the stim condition color legend ');
 msg{3} = sprintf('in the top right corner of the axes window.');
 q = MenuBox([msg{:}], {'Okay', 'Cancel', 'Don''t Warn Again and Proceed'});
 if q==3
@@ -493,7 +501,7 @@ while 1
     end
 end
 CondName = CondNameNew{1};
-if NewCondWarning() < 0
+if NewCondWarning(CondName) < 0
     CondName = '';
 end
 

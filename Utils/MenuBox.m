@@ -74,26 +74,7 @@ set(hf, 'visible','off');
 set(hf, 'units','characters');
 
 % Determine optimal position of MenuBox relative to parent GUI
-switch(lower(relativePos))
-    case 'upperleft'
-        posrel = [.2, .6];
-    case 'centerleft'
-        posrel = [.2, .3];
-    case 'lowerleft'
-        posrel = [.2, .1];
-    case 'upperright'
-        posrel = [.8, .6];
-    case 'centerright'
-        posrel = [.8, .3];
-    case 'lowerright'
-        posrel = [.8, .1];
-    case 'center'
-        posrel = [.3, .3];
-    otherwise
-        posrel = [.3, .3];
-end
-pX = posParent(1)+posrel(1)*posParent(3);
-pY = posParent(2)+posrel(2)*posParent(4);
+[pX, pY] = positionRelative(hf, posParent, relativePos);
 posBox = [pX, pY, Wfig, Hfig];
 
 if DEBUG
@@ -175,4 +156,38 @@ for ii=1:length(lines)
     end
 end
 
+
+% -------------------------------------------------------------
+function [pX, pY] = positionRelative(hf, posParent, relativePos)
+lr = .5;
+ul = 0;
+posFig = get(hf, 'position');
+
+leftSide = posParent(1);
+rightSide = posParent(1)+posParent(3);
+lowerSide = posParent(2);
+upperSide = posParent(2)+posParent(4);
+
+pX = rightSide - .5*posParent(3);
+pY = lowerSide + .25*posParent(4);
+switch(lower(relativePos))
+    case 'upperleft'
+        pX = leftSide  - lr*posFig(3);
+        pY = upperSide - ul*posFig(4);
+    case 'centerleft'
+        pX = leftSide  - lr*posFig(3);
+        pY = lowerSide + ul*posFig(4);
+    case 'lowerleft'
+        pX = leftSide  - lr*posFig(3);
+        pY = lowerSide + ul*posFig(4);
+    case 'upperright'
+        pX = rightSide  - lr*posFig(3);
+        pY = upperSide - ul*posFig(4);
+    case 'centerright'
+        pX = rightSide  - lr*posFig(3);
+        pY = lowerSide + ul*posFig(4);
+    case 'lowerright'
+        pX = rightSide  - lr*posFig(3);
+        pY = lowerSide + ul*posFig(4);
+end
 

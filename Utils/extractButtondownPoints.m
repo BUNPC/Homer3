@@ -4,10 +4,11 @@ p1 = get(gca,'CurrentPoint');    % button down detected
 finalRect = rbbox;                   % return figure units
 p2 = abs(get(gca,'CurrentPoint'));
 
-% dispSelectedPts(p1, p2, finalRect);
+fprintf('Initial ...\n');
+dispSelectedPts(p1, p2, finalRect);
 
 [err, p1, p2] = errorCheck(p1, p2, finalRect);
-if err<1
+if err<0
     dispSelectedPts(p1,p2,finalRect);
     return;
 end
@@ -23,7 +24,9 @@ while all(p1==p2)
     p2 = get(gca,'CurrentPoint');
 end
 
+fprintf('Modified ...\n');
 dispSelectedPts(p1, p2, finalRect);
+fprintf('\n');
 
 
 
@@ -53,7 +56,13 @@ axesSize_userUnits = xlim(2) - xlim(1);
 
 scalingFactor = axesSize_userUnits / axesSize_guiUnits;
 
-rectSize_finalRect    = scalingFactor * finalRect(3);
+offset = 0;
+if finalRect(1)<p(1)
+    offset = abs(finalRect(1) - p(1));
+    p2(:) = xlim(1);
+end
+rectSize_finalRect    = scalingFactor * (finalRect(3) - offset);
+% rectSize_finalRect    = scalingFactor * finalRect(3);
 rectSize_CurrentPoint = p2(1) - p1(1);
 
 if all(p1==0) & all(p2==0)
@@ -62,14 +71,21 @@ if all(p1==0) & all(p2==0)
     return
 end
 
-if p1(1) <= p2(1)
-    p2 = p1 + rectSize_finalRect;
+
+if all(p1(1)==p2(1)) & p1(1)==p1(2)
+    farSidePosX = (scalingFactor*abs(finalRect(1)-p(1)) + scalingFactor*finalRect(3));
+    nearSidePosX = scalingFactor*abs(finalRect(1)-p(1));
+    if abs(p1(1) - farSidePosX) < 1
+        p1(:,1) = p2(1) - rectSize_finalRect;
+    elseif abs(p1(1) - nearSidePosX) < 1
+        p2(:,1) = p1(1) + rectSize_finalRect;
+    end 
+elseif p1(1) <= p2(1)
+    p2(:,1) = p1(1) + rectSize_finalRect;
 else
-    p1 = p2 + rectSize_finalRect;
+    p1(:,1) = p2(1) + rectSize_finalRect;
 end
 
-
-fprintf('\n');
 fprintf('Selection rectangle from finalRect    :  %0.1f\n', rectSize_finalRect);
 fprintf('Selection rectangle from CurrentPoint :  %0.1f\n', rectSize_CurrentPoint );
 
@@ -85,15 +101,11 @@ set(gca, 'units',u);
 p = get(gca, 'position');
 xlim = get(gca, 'xlim');
 
-fprintf('\n');
-
 fprintf('axes size:  [%0.2f, %0.2f, %0.2f, %0.2f]\n', p(1), p(2), p(3), p(4));
 fprintf('axes xlim:  [%0.2f, %0.2f]\n', xlim(1), xlim(2));
 fprintf('finalRect: [%0.2f, %0.2f, %0.2f, %0.2f]\n', finalRect(1), finalRect(2), finalRect(3), finalRect(4));
 fprintf('p1:        [%0.2f, %0.2f]\n', p1(1), p1(2));
 fprintf('p2:        [%0.2f, %0.2f]\n', p2(1), p2(2));
-
-fprintf('\n');
 
 set(gca, 'units',u0);
 

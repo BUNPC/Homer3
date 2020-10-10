@@ -47,7 +47,7 @@ fprintf('  setup_script: %s\n', platform.setup_script);
 fprintf('  dirnameApp: %s\n', platform.dirnameApp);
 fprintf('  mcrpath: %s\n', platform.mcrpath);
 
-deleteShortcut(platform, dirnameSrc);
+deleteShortcuts(platform, dirnameSrc);
 
 pause(2);
 
@@ -77,13 +77,13 @@ copyFileToInstallation([dirnameSrc, 'FuncRegistry'],      [dirnameDst, 'FuncRegi
 copyFileToInstallation([dirnameSrc, 'SubjDataSample'], [dirnameDst, 'SubjDataSample']);
 
 % Create desktop shortcuts to Homer3
-createDesktopShortcut(dirnameSrc, dirnameDst);
+createDesktopShortcuts(dirnameSrc, dirnameDst);
 
 waitbar(iStep/nSteps, h); iStep = iStep+1;
 pause(2);
 
 % Check that everything was installed properly
-r = finishInstallGUI();
+finishInstallGUI();
 
 waitbar(nSteps/nSteps, h);
 close(h);
@@ -92,7 +92,7 @@ close(h);
 
 
 % -----------------------------------------------------------------
-function cleanup()
+function cleanup() %#ok<DEFNU>
 
 % Cleanup
 if ismac() || islinux()
@@ -123,9 +123,6 @@ global iStep
 if ~exist('type', 'var')
     type = 'file';
 end
-if ~exist('errtype', 'var')
-    errtype = 'Error';
-end
 
 try
     % If src is one of several possible filenames, then src to any one of
@@ -142,7 +139,7 @@ try
     assert(logical(exist(src, type)));
     
     % Check if we need to untar the file 
-    k = findstr(src,'.tar.gz');
+    k = findstr(src,'.tar.gz'); %#ok<FSTR>
     if ~isempty(k)
         untar(src,fileparts(src));
         src = src(1:k-1);
@@ -167,32 +164,6 @@ end
 
 
 
-% --------------------------------------------------------------
-function deleteShortcut(platform, dirnameSrc)
-
-try
-    if ispc()
-        desktopPath = generateDesktopPath(dirnameSrc);
-        cmd = sprintf('IF EXIST %s\\%s.lnk (del /Q /F %s\\%s.lnk)', ...
-                       desktopPath, platform.homer3_exe{1}, desktopPath, platform.homer3_exe{1});
-        system(cmd);        
-    elseif islinux()
-        if exist('~/Desktop/Homer3.sh','file')
-            delete('~/Desktop/Homer3.sh');
-        end
-    elseif ismac()
-        if exist('~/Desktop/Homer3.command','file')
-            delete('~/Desktop/Homer3.command');
-        end        
-        if ~exist(platform.mcrpath,'dir') | ~exist([platform.mcrpath, '/mcr'],'dir') | ~exist([platform.mcrpath, '/runtime'],'dir')
-            menu('Error: Invalid MCR path under ~/libs/mcr. Terminating installation...\n','OK');
-        end
-    end
-catch
-    menu('Warning: Could not delete Desktop icons Homer3. They might be in use by other applications.', 'OK');
-end
-
-
 
 % ---------------------------------------------------------
 function desktopPath = generateDesktopPath(dirnameSrc)
@@ -213,10 +184,35 @@ end
 
 
 
+% --------------------------------------------------------------
+function deleteShortcuts(platform, dirnameSrc)
+
+try
+    if ispc()
+        desktopPath = generateDesktopPath(dirnameSrc);
+        cmd = sprintf('IF EXIST %s\\%s.lnk (del /Q /F %s\\%s.lnk)', ...
+                       desktopPath, platform.homer3_exe{1}, desktopPath, platform.homer3_exe{1});
+        system(cmd);        
+    elseif islinux()
+        if exist('~/Desktop/Homer3.sh','file')
+            delete('~/Desktop/Homer3.sh');
+        end
+    elseif ismac()
+        if exist('~/Desktop/Homer3.command','file')
+            delete('~/Desktop/Homer3.command');
+        end        
+        if ~exist(platform.mcrpath,'dir') | ~exist([platform.mcrpath, '/mcr'],'dir') | ~exist([platform.mcrpath, '/runtime'],'dir') %#ok<*OR2>
+            menu('Error: Invalid MCR path under ~/libs/mcr. Terminating installation...\n','OK');
+        end
+    end
+catch
+    menu('Warning: Could not delete Desktop icons Homer3. They might be in use by other applications.', 'OK');
+end
+
+
 
 % ---------------------------------------------------------
-function createDesktopShortcut(dirnameSrc, dirnameDst)
-
+function createDesktopShortcuts(dirnameSrc, dirnameDst)
 try
     if ispc()
         

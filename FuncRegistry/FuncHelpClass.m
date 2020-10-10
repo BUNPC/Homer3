@@ -4,6 +4,8 @@ classdef FuncHelpClass < matlab.mixin.Copyable
         funcname;
         helpstr;
         sections;
+        userfuncdir;
+        config;
     end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -19,12 +21,19 @@ classdef FuncHelpClass < matlab.mixin.Copyable
             % Examples:
             %       fhelp = FuncHelpClass('hmrR_DeconvHRF_DriftSS');
             %
+            obj.userfuncdir = {};
+            obj.config = [];
+            
             if nargin==0
                 return;
             end
             obj.funcname = funcname;
+            if isdeployed()
+                obj.userfuncdir = obj.UserFuncDirs(obj);
+            end
             obj.Help();
             obj.ParseSections();
+            
         end
         
         
@@ -123,7 +132,6 @@ classdef FuncHelpClass < matlab.mixin.Copyable
             % p1: [v11,...,v1J]
             %    . . . . . . . . . .
             % pL: [vL1,...,vLJ]
-            %
             %
             if isempty(obj.helpstr)
                 return;
@@ -471,7 +479,7 @@ classdef FuncHelpClass < matlab.mixin.Copyable
         
         
         % -----------------------------------------------------------------
-        function EndPrevSection(obj, iLine)
+        function EndPrevSection(obj, iLine) %#ok<INUSD>
             fields = propnames(obj.sections);
             for ii=1:length(fields)
                 if eval( sprintf('obj.sections.%s.lines(1)>0 && obj.sections.%s.lines(2)==0', fields{ii}, fields{ii}) )
@@ -522,24 +530,40 @@ classdef FuncHelpClass < matlab.mixin.Copyable
         end
         
         
+        
         % ---------------------------------------------------------------------------------
         function Help(obj)
-            
+            funcname = '';
             if ~isdeployed()
-                func = obj.funcname;
+                funcname = [obj.funcname, '.m'];
             else
-                func = [getAppDir(), 'FuncRegistry/UserFunctions/', obj.funcname];
+                for ii = 1:length(obj.userfuncdir)
+                    if exist([obj.userfuncdir{ii}, obj.funcname, '.m'], 'file')
+                        funcname = [obj.userfuncdir{ii}, obj.funcname, '.m'];
+                    end
+                end
             end
-            if isempty(func)
+            if isempty(funcname)
                 return
             end
-            [~,~,ext] = fileparts(func);            
-            if ~strcmp(ext,'.m')
-                func = [func, '.m'];
-            end
-            obj.helpstr = str2cell_fast(help_local(func), [], 'keepblanks');
+            obj.helpstr = str2cell_fast(help_local(funcname), [], 'keepblanks');
         end
-        
+               
     end
+    
+    
+    methods (Static)
+                
+        % ----------------------------------------------------------------------------------
+        function out = UserFuncDirs(arg)
+            persistent userfuncdir;            
+            if isempty(userfuncdir)
+                userfuncdir = FindUserFuncDir(arg);
+            end
+            out = userfuncdir;
+        end
+   
+    end
+    
 end
 

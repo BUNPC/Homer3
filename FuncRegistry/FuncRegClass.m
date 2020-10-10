@@ -62,10 +62,6 @@ classdef FuncRegClass < matlab.mixin.Copyable
             obj.type = type;            
             
             % Get the parameter items from config file relevant to this class
-            obj.config = struct('InclArchivedFunctions','');
-            cfg = ConfigFileClass();
-            obj.config.InclArchivedFunctions = cfg.GetValue('Include Archived User Functions');
-
             obj.userfuncdir = FindUserFuncDir(obj);
             obj.userfuncfiles = [];
             obj.Load();

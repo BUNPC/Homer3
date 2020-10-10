@@ -68,9 +68,18 @@ for kk=1:length(data_dod)
     SignalLength = size(dod,1); % #time points of original signal
     N = ceil(log2(SignalLength)); % #of levels for the wavelet decomposition
     DataPadded = zeros(2^N,1); % data length should be power of 2
-    p = ffpath2('db2.mat');
-    fprintf('Loading %s\n', [p, '/db2.mat']);
-    load([p, '/db2.mat']);  % Load a wavelet (db2 in this case)
+    
+    % Must provide getAppDir function which 
+    if isdeployed()
+        db2path = [getAppDir(), 'db2.mat'];
+    else
+        p = ffpath2('db2.mat');
+        db2path = [p, '/db2.mat'];
+    end
+        
+    fprintf('Loading %s\n', db2path);
+    load(db2path);  % Load a wavelet (db2 in this case)
+        
     qmfilter = qmf(db2,4); % Quadrature mirror filter used for analysis
     L = 4;  % Lowest wavelet scale used in the analysis
     for ii = 1:length(lstAct)

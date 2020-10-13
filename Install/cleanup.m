@@ -10,8 +10,8 @@ if dirnameApp(end)~='/' & dirnameApp(end)~='\'
 end
 
 if ~exist('dirnameInstall','var') | isempty(dirnameInstall)
-    if exist('./INSTALL','dir')
-        dirnameInstall = [pwd, '/INSTALL'];        
+    if exist('./Install','dir')
+        dirnameInstall = [pwd, '/Install'];        
     else
         dirnameInstall = pwd;
     end

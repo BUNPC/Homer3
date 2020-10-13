@@ -428,9 +428,9 @@ global plotprobe
 
 plotprobe.tMarkShow = get(hObject,'value');
 if plotprobe.tMarkShow
-    set(plotprobe.handles.data{:,4:end}, 'visible','on');
+    set(plotprobe.handles.data{1}(:,4:end), 'visible','on');
 else
-    set(plotprobe.handles.data{:,4:end}, 'visible','off');    
+    set(plotprobe.handles.data{1}(:,4:end), 'visible','off');    
 end
 
 

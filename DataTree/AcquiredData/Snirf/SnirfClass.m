@@ -264,6 +264,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 obj.stim0     = CopyHandles(obj2.stim0);
             catch
             end
+            
+            if ~isempty(obj2.filename)
+                obj.filename = obj2.filename;
+            end
         end
         
         
@@ -654,6 +658,18 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % -------------------------------------------------------
+        function CopyStim(obj, obj2)
+            for ii = 1:length(obj2.stim)
+                if ii > length(obj.stim)
+                    obj.stim(ii) = StimClass(obj2.stim(ii));
+                else
+                    obj.stim(ii).Copy(obj2.stim(ii));
+                end
+            end
+        end        
+        
+        
+        % -------------------------------------------------------
         function changes = StimChangesMade(obj)
             
             flags = zeros(length(obj.stim), 1);
@@ -984,7 +1000,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     stimnew(ii) = StimClass(CondNames{ii});
                 end
             end
-            obj.stim = stimnew;
+            obj.stim = stimnew.copy;
         end
         
         

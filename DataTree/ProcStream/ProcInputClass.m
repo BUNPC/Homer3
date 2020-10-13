@@ -71,6 +71,13 @@ classdef ProcInputClass < handle
         end
         
         
+        % --------------------------------------------------------------
+        function CopyStims(obj, obj2)
+            obj.acquired.CopyStim(obj2.acquired);
+        end
+        
+        
+        
         % ----------------------------------------------------------------------------------
         function b = IsEmpty(obj)
             b=0;

@@ -199,7 +199,10 @@ classdef Logger < handle
             if ~strcmp(self.appname, appname)
                 return;
             end
-            fclose(self.fhandle);
+            try
+                fclose(self.fhandle);
+            catch
+            end            
             self.fhandle = -1;
         end
         
@@ -282,8 +285,8 @@ classdef Logger < handle
                 return;
             end
             try
-            if ftell(self.fhandle) > self.chapter.maxsize
-                self.ResetChapter()
+                if ftell(self.fhandle) > self.chapter.maxsize
+                    self.ResetChapter()
                 end
             catch
                 self.fhandle = -1;

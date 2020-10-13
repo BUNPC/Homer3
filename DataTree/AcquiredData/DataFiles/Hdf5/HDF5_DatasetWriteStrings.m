@@ -5,7 +5,9 @@ if ~exist(fname, 'file')
 else
     fid = H5F.open(fname,'H5F_ACC_RDWR','H5P_DEFAULT');
 end
-data = cell2str_new(data);
+if iscell(data)
+    data = cell2str_new(data);
+end
 
 filetype = H5T.copy('H5T_FORTRAN_S1'); 
 H5T.set_size(filetype, size(data,2)); 
@@ -17,7 +19,11 @@ H5T.set_size(memtype, size(data,2));
 space = H5S.create_simple(1, size(data,1), []); 
 
 % Create the dataset and write the string data to it. 
-dset = H5D.create(fid, location, filetype, space, 'H5P_DEFAULT'); 
+try
+    dset = H5D.create(fid, location, filetype, space, 'H5P_DEFAULT'); 
+catch
+    dset = H5D.open(fid, location);
+end
 
 % Transpose the data to match the layout in the H5 file to match C 
 % generated H5 file. 

@@ -21,21 +21,21 @@
        
 function index = binaraysearchnearest(x,sval)
 
-index=[];
-n=length(x);
+index = [];
+n = length(x);
 
-if sval>=x(n)
+if sval >= x(n)
     index=n;
     return;
 end
-if sval<=x(1)
+if sval <= x(1)
     index=1;
     return;
 end
 
-from=1;
-to=n;
-while from<=to
+from = 1;
+to = n-1;
+while from <= to
     mid = round((from + to)/2);    
     diff = x(mid)-sval;
     if diff==0 || abs(to-from)<=1

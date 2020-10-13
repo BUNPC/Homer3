@@ -67,6 +67,13 @@ classdef ProcStreamClass < handle
         end
         
         
+        % --------------------------------------------------------------
+        function CopyStims(obj, obj2)
+            obj.input.CopyStims(obj2.input);
+        end
+        
+        
+        
         % ----------------------------------------------------------------------------------
         function CopyFcalls(obj, obj2)
             if ~isa(obj, 'ProcStreamClass')

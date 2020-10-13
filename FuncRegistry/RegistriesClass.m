@@ -39,9 +39,6 @@ classdef RegistriesClass < handle
             obj.filename = '';
 
             % Get the parameter items from config file relevant to this class
-            obj.config = struct('InclArchivedFunctions','');
-            cfg = ConfigFileClass();
-            obj.config.InclArchivedFunctions = cfg.GetValue('Include Archived User Functions');
             obj.userfuncdir = FindUserFuncDir(obj);
             
             if strcmp(mode, 'empty')

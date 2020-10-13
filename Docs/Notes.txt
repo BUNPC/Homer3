@@ -259,3 +259,13 @@ H5D.set_extent(dset_id, size(data))
 https://www.mathworks.com/matlabcentral/answers/415137-how-do-i-replace-a-dataset-in-an-hdf5-file-with-a-smaller-dataset-without-leaving-some-values-of-th
 https://portal.hdfgroup.org/display/HDF5/H5D_SET_EXTENT
 
+
+
+
+==================================
+Oct 9, 2020
+
+Christian found issue when opening Homer3 in random folder that it cannot tell if its a valid group folder or group of groups folder and unconditionally 
+generates a groupResults.mat file. We have to add feature where Homer3 decides if a group folder is valid. A group folder is valid if it has acquistion files
+that are consiStent with each other in terms of having the same probe. 
+

@@ -9,7 +9,10 @@ for ii = 1:length(dirs)
         continue
     elseif strcmp(dirs(ii).name, '..') || strcmp(dirs(ii).name, '.')
         continue
-    elseif strcmp(dirs(ii).name, 'Archive')    
+    elseif strcmp(dirs(ii).name, 'Archive')
+        obj.config = struct('InclArchivedFunctions','');
+        cfg = ConfigFileClass();
+        obj.config.InclArchivedFunctions = cfg.GetValue('Include Archived User Functions');        
         if strcmp(obj.config.InclArchivedFunctions, 'Yes')
             userfuncdir{end+1} = fullpath([userfuncdir{1}, 'Archive/']);
         end

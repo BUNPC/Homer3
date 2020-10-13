@@ -94,17 +94,30 @@ classdef DataTreeClass <  handle
             end
         end
         
+        
         % --------------------------------------------------------------
         function Copy(obj, obj2)
             idx = obj2.currElem.GetIndexID();
             iG = idx(1);
             iS = idx(2);
             iR = idx(3);
-            obj.groups = GroupClass();
-            obj.groups.Copy(obj2.groups(iG))
-            obj.groups.CondNames = obj2.groups(iG).CondNames;
-            obj.currElem = obj.groups(iG).subjs(iS).runs(iR);
+            if isempty(obj.groups) 
+                obj.groups = GroupClass(obj2.groups(iG));
+            else
+                obj.groups(iG).Copy(obj.groups(iG))
+            end
+            obj.SetCurrElem(iG, iS, iR);
+            obj.groups(iG).SetConditions();
         end
+        
+        
+        % --------------------------------------------------------------
+        function CopyStims(obj, obj2)
+            idx = obj2.currElem.GetIndexID();
+            iG = idx(1);
+            obj.groups(iG).CopyStims(obj2.groups(iG));            
+        end
+        
         
         % --------------------------------------------------------------
         function status = FoundDataFilesInOtherFormat(obj, dataInit, kk)            

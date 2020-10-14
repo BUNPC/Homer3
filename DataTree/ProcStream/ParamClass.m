@@ -115,23 +115,44 @@ classdef ParamClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function scorefinal = Compare(obj, obj2)
-            score = [];
+            nameMaxScore   = 0.50;
+            formatMaxScore = 0.20;
+            valueMaxScore  = 0.30;
+            
+            nsteps = max(length(obj.value), length(obj2.value));
+            stepsize = valueMaxScore/nsteps;
+            maxscore = [nameMaxScore, formatMaxScore, stepsize+zeros(1,nsteps)]; 
+            
+            score = zeros(1, length(maxscore));
+            kk = 1;
+            
             if ~strcmp(obj.name, obj2.name)
                 scorefinal = 0;
                 return
             else
-                score(end+1) = 0.50;
+                score(kk) = maxscore(kk);
             end
+            kk = kk+1;
+            
             if ~strcmp(obj.format, obj2.format)
-                score(end+1) = 0;
+                score(kk) = 0;
             else
-                score(end+1) = 0.20;
+                score(kk) = maxscore(kk);
             end
-            if ~all(obj.value == obj2.value)
-                score(end+1) = 0;
-            else
-                score(end+1) = 0.30;
-            end
+            kk = kk+1;
+            
+            for ii = 1:length(obj.value)
+                if ii <= length(obj2.value)
+                    if obj.value(ii) == obj2.value(ii)
+                        score(kk) = maxscore(kk);
+                    else
+                        score(kk) = maxscore(kk)/2;
+                    end
+                else
+                    score(kk) = 0;
+                end
+                kk = kk+1;
+            end            
             scorefinal = sum(score);
         end
                 

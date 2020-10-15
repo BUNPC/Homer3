@@ -38,7 +38,7 @@ cleanup(dirnameInstall, dirnameApp);
 platform = setplatformparams();
 
 if exist([dirnameInstall, 'homer3_install'],'dir')
-    rmdir([dirnameInstall, 'homer3_install'],'s');
+    rmdir_safe([dirnameInstall, 'homer3_install']);
 end
 if exist([dirnameInstall, 'homer3_install.zip'],'file')
     delete([dirnameInstall, 'homer3_install.zip']);

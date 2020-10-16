@@ -21,10 +21,7 @@ if dirnameInstall(end)~='/' & dirnameInstall(end)~='\'
 end
 
 if exist([dirnameInstall, 'homer3_install'],'dir')
-    try
-        rmdir_safe([dirnameInstall, 'homer3_install'],'s');
-    catch
-    end
+    rmdir_safe([dirnameInstall, 'homer3_install']);
 end
 for ii=1:length(platform.homer3_exe(1))
     if exist([dirnameInstall, platform.homer3_exe{ii}],'file')==2

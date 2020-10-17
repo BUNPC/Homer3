@@ -62,9 +62,9 @@ end
 dirnameDb2DotMat = findWaveletDb2([dirnameInstall, 'homer3_install/']);
 
 % Copy files to installation package folder
-for ii=1:length(platform.homer3_exe)
-    if exist([dirnameInstall, platform.homer3_exe{ii}],'file')
-        copyfile([dirnameInstall, platform.homer3_exe{ii}], [dirnameInstall, 'homer3_install/', platform.homer3_exe{ii}]);
+for ii=1:length(platform.exename)
+    if exist([dirnameInstall, platform.exename{ii}],'file')
+        copyfile([dirnameInstall, platform.exename{ii}], [dirnameInstall, 'homer3_install/', platform.exename{ii}]);
     end
 end
 if exist([dirnameInstall, platform.setup_script],'file')==2

@@ -13,17 +13,20 @@ end
 
 platform = struct(...
     'arch','', ...
-    'homer3_exe',{{}}, ...
+    'exename',{{}}, ...
+    'exenameDesktopPath','', ...
     'setup_exe',{{}}, ...
     'setup_script','', ...
     'dirnameApp', getAppDir('isdeployed'), ...
-    'mcrpath','' ...
+    'mcrpath','', ...
+    'desktopPath',generateDesktopPath() ...
     );
 
 if ismac()
     platform.arch = 'Darwin';
-    platform.homer3_exe{1} = 'Homer3.app';
-    platform.homer3_exe{2} = 'run_Homer3.sh';
+    platform.exename{1} = 'Homer3.app';
+    platform.exename{2} = 'run_Homer3.sh';
+    platform.exenameDesktopPath = [platform.desktopPath, '/Homer3.command'];
     platform.setup_exe{1} = 'setup.app';
     platform.setup_exe{2} = 'run_setup.sh';
     platform.setup_script = 'setup.command';
@@ -31,8 +34,9 @@ if ismac()
     platform.mcrpath = [dirnameHome, 'libs/mcr'];
 elseif islinux()
     platform.arch = 'Linux';
-    platform.homer3_exe{1} = 'Homer3';
-    platform.homer3_exe{2} = 'run_Homer3.sh';
+    platform.exename{1} = 'Homer3';
+    platform.exename{2} = 'run_Homer3.sh';
+    platform.exenameDesktopPath = [platform.desktopPath, '/', platform.exename{1}];
     platform.setup_exe{1} = 'setup';
     platform.setup_exe{2} = 'run_setup.sh';
     platform.setup_script = 'setup.sh';
@@ -40,7 +44,8 @@ elseif islinux()
     platform.mcrpath = [dirnameHome, 'libs/mcr'];
 elseif ispc()
     platform.arch = 'Win';
-    platform.homer3_exe{1} = 'Homer3.exe';
+    platform.exename{1} = 'Homer3.exe';
+    platform.exenameDesktopPath = [platform.desktopPath, '/', platform.exename{1}, '.lnk'];
     platform.setup_exe{1} = 'setup.exe';
     platform.setup_exe{2} = 'installtemp';
     platform.setup_script = 'setup.bat';

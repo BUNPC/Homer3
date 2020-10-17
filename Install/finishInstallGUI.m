@@ -19,12 +19,17 @@ end
 
 
 % ---------------------------------------------------------------------------
-function msgFailure(errnum)
+function setError(errcode)
+global stats
+stats.err = bitor(stats.err, 2^errcode);
+
+
+
+% ---------------------------------------------------------------------------
+function msgFailure()
 global stats
 
 handles = stats.handles;
-
-stats.err = errnum;
 
 msgFail{1}    = sprintf('Homer3 failed to install properly. Error code %d', stats.err);
 msgFail{2}    = 'Contact jdubb@bu.edu for help with installation.';
@@ -37,9 +42,11 @@ set(hGui, 'name','Installation Error:');
 set(hMsgFinished,'string', msgFail{1});
 set(hMsgMoreInfo,'string', msgFail{2});
 
-fd = fopen([stats.dirnameApp, '.finished'], 'w');
-fprintf(fd, '%d', stats.err);
-fclose(fd);
+if ~isempty(dir([stats.dirnameApp, '.finished']))
+    fd = fopen([stats.dirnameApp, '.finished'], 'w');
+    fprintf(fd, '%d', stats.err);
+    fclose(fd);    
+end
 
 
 
@@ -58,10 +65,6 @@ elseif ismac()
     msgSuccess{2} = 'To run: Click on the Homer3.command icon on your Desktop to launch one of these applications';
 end
 
-hGui         = handles.this;
-hMsgFinished = handles.msgFinished;
-hMsgMoreInfo = handles.msgMoreInfo;
-
 set(handles.this, 'name','SUCCESS:');
 set(handles.msgFinished,'string', msgSuccess{1}, 'fontsize',14);
 set(handles.msgMoreInfo,'string', msgSuccess{2}, 'fontsize',14);
@@ -69,6 +72,8 @@ set(handles.msgMoreInfo,'string', msgSuccess{2}, 'fontsize',14);
 fd = fopen([stats.dirnameApp, '.finished'], 'w');
 fprintf(fd, '%d', stats.err);
 fclose(fd);
+
+
 
 
 % ---------------------------------------------------------------------------
@@ -84,40 +89,47 @@ stats.handles.msgFinished = handles.textFinished;
 stats.handles.msgMoreInfo = handles.textMoreInfo;
 stats.dirnameApp = getAppDir('isdeployed');
 stats.pushbuttonOKPress = false;
-stats.Homer3_exe_flag = false;
 
 fprintf('FinishInstallGUI_OpeningFcn: dirnameApp = %s\n', stats.dirnameApp);
 
-% Error checks
+platform = setplatformparams();
+
+errcode = 1;
+
 if stats.dirnameApp==0
-    msgFailure(1);
+    setError(errcode); 
 end
+errcode = errcode+1;
 
 if isempty(stats.dirnameApp)
-    msgFailure(2);
+    setError(errcode); 
 end
+errcode = errcode+1;
 
-files = dir([stats.dirnameApp, '/*']);
+files = dir([stats.dirnameApp, '*']);
 if isempty(files)
-    msgFailure(3);
+    setError(errcode); 
 end
+errcode = errcode+1;
 
-for ii=1:length(files)
-    [~, fname] = fileparts(files(ii).name);
-    if strcmp(fname, 'Homer3')
-        stats.Homer3_exe_flag = true;
-        break;
+for ii = 1:length(platform.exename)
+    if ~exist([stats.dirnameApp, platform.exename{ii}], 'file')
+        setError(errcode);
     end
+    errcode = errcode+1;
 end
 
-if stats.Homer3_exe_flag==false
-    msgFailure(4);
+if ~exist(platform.exenameDesktopPath, 'file')
+    setError(errcode); 
 end
 
+
+% Decide which message to display success or failure
 if stats.err==0
-msgSuccess();
+    msgSuccess();
+else
+    msgFailure();
 end
-
 
 
 
@@ -127,6 +139,8 @@ function varargout = finishInstallGUI_OutputFcn(hObject, eventdata, handles)
 global stats
 
 varargout{1} = stats.err;
+
+
 
 
 % ---------------------------------------------------------------------------

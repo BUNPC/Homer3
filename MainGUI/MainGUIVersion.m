@@ -33,15 +33,10 @@ end
 if isempty(hObject)
     hObject = -1;
 end
-if isempty(option)
-    option = 'inclpath';
-end
 [verstr, vernum] = version2string();
-if strcmp(option, 'inclpath')
-    title = sprintf('Homer3 (v%s) - %s', verstr);
-elseif strcmp(option, 'exclpath')
-    title = sprintf('Homer3 (v%s)', verstr);
-end
+platform = ['R', version('-release')];
+title = sprintf('Homer3 (v%s, %s)', verstr, platform);
+
 if ishandle(hObject)
     set(hObject,'name', title);
 end

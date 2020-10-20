@@ -26,7 +26,7 @@ if strcmp(cfg.GetValue('Logging'), 'off')
     logger.SetDebugLevel(logger.Null());
 end
 
-PrintSystemInfo(logger);
+PrintSystemInfo(logger, 'Homer3');
 checkForHomerUpdates();
 
 logger.Write(sprintf('Opened application config file %s\n', cfg.filename))

@@ -12,5 +12,18 @@ wspath = fileparts(which(appname));
 wspacename = [rootdir, ext];
 
 cd(currdir);
-rmdir(dummydir, 's');
+
+% When removing folders it is a sensitive moment - make sure to catch
+% exceptions signaliing failure to remove folder.
+trycount = 1;
+while trycount<10
+    try
+        rmdir(dummydir,'s');
+        break;
+    catch
+        trycount = trycount+1;
+    end
+    pause(.1);
+end
+
 

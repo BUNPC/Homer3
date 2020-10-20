@@ -16,9 +16,9 @@ dirnameInstall = pwd;
 cd(dirnameApp);
 
 Buildme('Homer3', {}, {'.git'});
-for ii=1:length(platform.homer3_exe)
-    if exist(['./',  platform.homer3_exe{ii}],'file')
-        movefile(['./',  platform.homer3_exe{ii}], dirnameInstall);
+for ii=1:length(platform.exename)
+    if exist(['./',  platform.exename{ii}],'file')
+        movefile(['./',  platform.exename{ii}], dirnameInstall);
     end
 end
 

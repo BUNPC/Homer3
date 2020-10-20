@@ -4,6 +4,9 @@
 @echo   PLEASE WAIT ... INSTALLTION WILL START IN A FEW MINUTES ...
 @echo.
 @move .\installtemp .\setup.exe
-@call .\setup.exe
+@echo.
+@echo   NOTE: In case of installation failure, refer to log file setup.log .
+@echo.
+@(call .\setup.exe  1> setup.log 2>&1) | type setup.log 
 @move .\setup.exe .\installtemp 
 

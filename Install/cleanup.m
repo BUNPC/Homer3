@@ -21,13 +21,13 @@ if dirnameInstall(end)~='/' & dirnameInstall(end)~='\'
 end
 
 if exist([dirnameInstall, 'homer3_install'],'dir')
-    rmdir([dirnameInstall, 'homer3_install'],'s');
+    rmdir_safe([dirnameInstall, 'homer3_install']);
 end
-for ii=1:length(platform.homer3_exe(1))
-    if exist([dirnameInstall, platform.homer3_exe{ii}],'file')==2
-        delete([dirnameInstall, platform.homer3_exe{ii}]);
-    elseif exist([dirnameInstall, platform.homer3_exe{ii}],'dir')==7
-        rmdir([dirnameInstall, platform.homer3_exe{ii}], 's');
+for ii=1:length(platform.exename(1))
+    if exist([dirnameInstall, platform.exename{ii}],'file')==2
+        delete([dirnameInstall, platform.exename{ii}]);
+    elseif exist([dirnameInstall, platform.exename{ii}],'dir')==7
+        rmdir_safe([dirnameInstall, platform.exename{ii}]);
     end
 end
 
@@ -35,7 +35,7 @@ for ii=1:length(platform.setup_exe)
     if exist([dirnameInstall, platform.setup_exe{ii}],'file')==2
         delete([dirnameInstall, platform.setup_exe{ii}]);
     elseif exist([dirnameInstall, platform.setup_exe{ii}],'dir')==7
-        rmdir([dirnameInstall, platform.setup_exe{ii}], 's');
+        rmdir_safe([dirnameInstall, platform.setup_exe{ii}]);
     end
 end
 if exist([dirnameInstall, 'Buildme.log'],'file')

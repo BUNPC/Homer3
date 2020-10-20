@@ -1,11 +1,28 @@
 function setup()
+global h
+global nSteps
 
+h = waitbar(0,'Installation Progress ...');
+
+main();
+
+% Check that everything was installed properly
+r = finishInstallGUI();
+
+waitbar(nSteps/nSteps, h);
+close(h);
+
+cleanup();
+
+
+
+% ------------------------------------------------------------
+function main()
 global h
 global nSteps
 global iStep
 
 
-h = waitbar(0,'Installation Progress ...');
 nSteps = 100;
 iStep = 1;
 
@@ -41,13 +58,13 @@ fprintf('=================================\n\n');
 
 fprintf('Platform params:\n');
 fprintf('  arch: %s\n', platform.arch);
-fprintf('  homer3_exe: %s\n', platform.homer3_exe{1});
+fprintf('  exename: %s\n', platform.exename{1});
 fprintf('  setup_exe: %s\n', platform.setup_exe{1});
 fprintf('  setup_script: %s\n', platform.setup_script);
 fprintf('  dirnameApp: %s\n', platform.dirnameApp);
 fprintf('  mcrpath: %s\n', platform.mcrpath);
 
-deleteShortcuts(platform, dirnameSrc);
+deleteShortcuts(platform);
 
 pause(2);
 
@@ -68,8 +85,8 @@ dirnameSrc = fullpath(dirnameSrc);
 dirnameDst = fullpath(dirnameDst);
 
 % Copy files from source folder to destination installation folder
-for ii=1:length(platform.homer3_exe)
-    copyFileToInstallation([dirnameSrc, platform.homer3_exe{ii}], [dirnameDst, platform.homer3_exe{ii}]);
+for ii=1:length(platform.exename)
+    copyFileToInstallation([dirnameSrc, platform.exename{ii}], [dirnameDst, platform.exename{ii}]);
 end
 copyFileToInstallation([dirnameSrc, 'db2.mat'],           dirnameDst);
 copyFileToInstallation([dirnameSrc, 'AppSettings.cfg'],   dirnameDst);
@@ -79,43 +96,22 @@ copyFileToInstallation([dirnameSrc, 'SubjDataSample'], [dirnameDst, 'SubjDataSam
 % Create desktop shortcuts to Homer3
 createDesktopShortcuts(dirnameSrc, dirnameDst);
 
-waitbar(iStep/nSteps, h); iStep = iStep+1;
 pause(2);
 
-% Check that everything was installed properly
-finishInstallGUI();
 
-waitbar(nSteps/nSteps, h);
-close(h);
-
-% cleanup();
 
 
 % -----------------------------------------------------------------
-function cleanup() %#ok<DEFNU>
-
-% Cleanup
-if ismac() || islinux()
-    
-    if exist('~/Desktop/homer3_install/','dir')
-        rmdir('~/Desktop/homer3_install/', 's');
-    end
-    if exist('~/Desktop/homer3_install.zip','file')
-        delete('~/Desktop/homer3_install.zip');
-    end
-    if exist('~/Downloads/homer3_install/','dir')
-        rmdir('~/Downloads/homer3_install/', 's');
-    end
-    if exist('~/Downloads/homer3_install.zip','file')
-        delete('~/Downloads/homer3_install.zip');
-    end
-    
+function cleanup()
+if ismac()
+    rmdir_safe('~/Desktop/homer3_install/');
+    rmdir_safe('~/Downloads/homer3_install/');
 end
+
 
 
 % -------------------------------------------------------------------
 function copyFileToInstallation(src, dst, type)
-
 global h
 global nSteps
 global iStep
@@ -165,48 +161,19 @@ end
 
 
 
-% ---------------------------------------------------------
-function desktopPath = generateDesktopPath(dirnameSrc)
-if ~exist([dirnameSrc, 'desktopPath.txt'],'file')
-    system(sprintf('call %sgenerateDesktopPath.bat', dirnameSrc));
-end
-
-if exist([dirnameSrc, 'desktopPath.txt'],'file')
-    fid = fopen([dirnameSrc, 'desktopPath.txt'],'rt');
-    line = fgetl(fid);
-    line(line=='"')='';
-    desktopPath = strtrim(line);
-    fclose(fid);
-else
-    desktopPath = sprintf('%%userprofile%%');
-end
-
-
-
-
 % --------------------------------------------------------------
-function deleteShortcuts(platform, dirnameSrc)
-
-try
-    if ispc()
-        desktopPath = generateDesktopPath(dirnameSrc);
-        cmd = sprintf('IF EXIST %s\\%s.lnk (del /Q /F %s\\%s.lnk)', ...
-                       desktopPath, platform.homer3_exe{1}, desktopPath, platform.homer3_exe{1});
-        system(cmd);        
-    elseif islinux()
-        if exist('~/Desktop/Homer3.sh','file')
-            delete('~/Desktop/Homer3.sh');
-        end
-    elseif ismac()
-        if exist('~/Desktop/Homer3.command','file')
-            delete('~/Desktop/Homer3.command');
-        end        
-        if ~exist(platform.mcrpath,'dir') | ~exist([platform.mcrpath, '/mcr'],'dir') | ~exist([platform.mcrpath, '/runtime'],'dir') %#ok<*OR2>
-            menu('Error: Invalid MCR path under ~/libs/mcr. Terminating installation...\n','OK');
-        end
+function deleteShortcuts(platform)
+if exist(platform.exenameDesktopPath, 'file')
+    try
+        delete(platform.exenameDesktopPath);
+    catch
     end
-catch
-    menu('Warning: Could not delete Desktop icons Homer3. They might be in use by other applications.', 'OK');
+end
+if exist([platform.desktopPath, '/Test'], 'dir')
+    try
+        rmdir([platform.desktopPath, '/Test'], 's');
+    catch
+    end
 end
 
 

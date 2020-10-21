@@ -969,7 +969,8 @@ for iBlk = iDataBlks
             end
             d = procElem.reshape_y(d, ch.MeasList);
             DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
-            xlabel('Time(s)');
+            sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
+            xlabel(['Time(s) | Sampling Rate = ' num2str(sRate) ' Hz']);
             if datatype == maingui.buttonVals.RAW
                 ylabel('Raw Units');
             elseif datatype == maingui.buttonVals.OD
@@ -983,7 +984,8 @@ for iBlk = iDataBlks
             end
             d = d * sclConc;
             DisplayDataConc(t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
-            xlabel('Time(s)');
+            sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
+            xlabel(['Time(s) | Sampling Rate = ' num2str(sRate) ' Hz']);
             if datatype == maingui.buttonVals.CONC
                 ylabel('Conc Units');
             elseif datatype == maingui.buttonVals.CONC_HRF

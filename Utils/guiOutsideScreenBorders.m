@@ -21,8 +21,11 @@ p = get(hObject,'position');
 set(0,'units','characters');
 Ps = get(0,'MonitorPositions');
 
+% To work correctly for mutiple sceens, Ps must be sorted in ascending order
+Ps = sort(Ps,'ascend')
+
 % Find which monitor GUI is in
-for ii=1:length(Ps(:,1))
+for ii = 1:size(Ps,1)
     if (p(1)+p(3)/2) < (Ps(ii,1)+Ps(ii,3))
         break;
     end

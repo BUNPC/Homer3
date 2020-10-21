@@ -255,7 +255,7 @@ if ~isempty(maingui)
     plotprobe.updateParentGui = maingui.Update;
 end
 DisplayData(handles, hObject);
-
+SetTextFilename(handles);
 
 
 % ----------------------------------------------------------------------
@@ -506,11 +506,21 @@ axis off
 pos = getNewFigPos(handles);
 set(handles.figureDup, 'position',pos);
 
+% Display name label and divider
+hdata = get(handles.textFilename);
+hdiv = get(handles.uipanelDivider);
+uicontrol('parent',handles.figureDup, 'style','text', 'string',hdata.String, 'units',hdata.Units, 'position',hdata.Position, ...
+           'backgroundcolor',hdata.BackgroundColor, 'fontsize',hdata.FontSize, 'fontweight',hdata.FontWeight);
+uipanel('parent',handles.figureDup, 'units',hdiv.Units, 'position',hdiv.Position, 'bordertype',hdiv.BorderType);
+       
+% Display data
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk, length(plotprobe.handles.data)+1);
 end
 plotprobe.handles.figureDup = handles.figureDup;
+
+
 
 
 % ---------------------------------------------
@@ -598,10 +608,12 @@ if isempty(plotprobe)
     return
 end
 
+
 ParseArgs(varargin);
 axes(handles.axes1);
 
 SetWindowTitle(handles)
+SetTextFilename(handles);
 
 condition = plotprobe.condition;
 datatype  = plotprobe.datatype;
@@ -681,5 +693,35 @@ function pushbuttonExit_Callback(~, ~, handles)
 if ishandles(handles.figure)
     delete(handles.figure);
 end
+
+
+
+% -----------------------------------------------------------
+function SetTextFilename(handles)
+global plotprobe
+
+filename = plotprobe.dataTree.currElem.GetName();
+CondNames = plotprobe.dataTree.currElem.GetConditions();
+
+[~, treeNodeName, ext] = fileparts(filename);
+if isempty(handles)
+    return;
+end
+
+if ~ishandles(handles.textFilename)
+    return;
+end
+
+if ~isempty(CondNames)
+    name = sprintf('%s,   condition: ''%s''', treeNodeName, CondNames{plotprobe.condition});
+else
+    name = sprintf('%s,   condition:  none', treeNodeName, CondNames{plotprobe.condition});
+end
+n = length(name);
+set(handles.textFilename, 'units','characters');
+p = get(handles.textFilename, 'position');
+set(handles.textFilename, 'position',[p(1), p(2), n+.50*n, p(4)]);
+set(handles.textFilename, 'units','normalized');
+set(handles.textFilename, 'string',name);
 
 

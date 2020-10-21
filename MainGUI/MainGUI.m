@@ -969,12 +969,26 @@ for iBlk = iDataBlks
             end
             d = procElem.reshape_y(d, ch.MeasList);
             DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
+            xlabel('Time(s)');
+            if datatype == maingui.buttonVals.RAW
+                ylabel('Raw Units');
+            elseif datatype == maingui.buttonVals.OD
+                ylabel('OD Units');
+            elseif datatype == maingui.buttonVals.OD_HRF
+                ylabel('OD_H_R_F Units');
+            end
         elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
             if  datatype == maingui.buttonVals.CONC_HRF
                 d = d(:,:,:,condition);
             end
             d = d * sclConc;
             DisplayDataConc(t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
+            xlabel('Time(s)');
+            if datatype == maingui.buttonVals.CONC
+                ylabel('Conc Units');
+            elseif datatype == maingui.buttonVals.CONC_HRF
+                ylabel('Conc_H_R_F Units');
+            end
         end
     end
     iColor = iColor+length(iChBlk);

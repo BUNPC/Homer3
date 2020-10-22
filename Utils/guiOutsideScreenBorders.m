@@ -22,7 +22,7 @@ set(0,'units','characters');
 Ps = get(0,'MonitorPositions');
 
 % To work correctly for mutiple sceens, Ps must be sorted in ascending order
-Ps = sort(Ps,'ascend')
+Ps = sort(Ps,'ascend');
 
 % Find which monitor GUI is in
 for ii = 1:size(Ps,1)

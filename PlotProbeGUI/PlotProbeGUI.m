@@ -254,8 +254,10 @@ if ~isempty(maingui)
     set(handles.menuItemSaveGroup,'visible','off');
     plotprobe.updateParentGui = maingui.Update;
 end
-DisplayData(handles, hObject);
+
 SetTextFilename(handles);
+DisplayData(handles, hObject);
+
 
 
 % ----------------------------------------------------------------------
@@ -702,8 +704,15 @@ global plotprobe
 
 filename = plotprobe.dataTree.currElem.GetName();
 CondNames = plotprobe.dataTree.currElem.GetConditions();
+if plotprobe.condition>length(CondNames)
+    ch = MenuBox('Selected condition does not exist. Please choose from available conditions',[CondNames, 'Cancel']);
+    if ch==length(CondNames)+1
+        return;
+    end
+    plotprobe.condition = ch;
+end
 
-[~, treeNodeName, ext] = fileparts(filename);
+[~, treeNodeName] = fileparts(filename);
 if isempty(handles)
     return;
 end
@@ -713,15 +722,18 @@ if ~ishandles(handles.textFilename)
 end
 
 if ~isempty(CondNames)
-    name = sprintf('%s,   condition: ''%s''', treeNodeName, CondNames{plotprobe.condition});
+    name = sprintf('   %s,    condition: ''%s''', treeNodeName, CondNames{plotprobe.condition});
 else
-    name = sprintf('%s,   condition:  none', treeNodeName, CondNames{plotprobe.condition});
+    name = sprintf('   %s,    condition:  none', treeNodeName, CondNames{plotprobe.condition});
 end
-n = length(name);
+n = length(name) + 0.20*length(name);
 set(handles.textFilename, 'units','characters');
 p = get(handles.textFilename, 'position');
-set(handles.textFilename, 'position',[p(1), p(2), n+.50*n, p(4)]);
+set(handles.textFilename, 'position',[p(1), p(2), n, p(4)]);
 set(handles.textFilename, 'units','normalized');
 set(handles.textFilename, 'string',name);
+
+p2 = get(handles.textFilenameFrame, 'position');
+set(handles.textFilenameFrame, 'position',[p2(1), p2(2), p2(3)*n/p(3), p2(4)]);
 
 

@@ -26,15 +26,10 @@ classdef DataTreeClass <  handle
             obj.dirnameGroups       = {};
             obj.logger              = InitLogger(logger, 'DataTree');
             
-            if isa(groupDirs, 'DataTreeClass')
-                   obj.Copy(groupDirs);
-                   return;
-            end
             
-            cfg = ConfigFileClass();
-            obj.dataStorageScheme = cfg.GetValue('Data Storage Scheme');
-            
-            %%%% Parse args
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Parse args
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
             % Arg 1: get folder of the group being loaded
             if ~exist('groupDirs','var') || isempty(groupDirs)
@@ -57,11 +52,24 @@ classdef DataTreeClass <  handle
             if ~exist('options','var')
                 options = '';
             end
-                        
+            
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Now that we have all the arguments, ready to start
+            % condtructing object
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            if isa(groupDirs, 'DataTreeClass')
+               obj.Copy(groupDirs);
+               return;
+            end
+            
+            cfg = ConfigFileClass();
+            obj.dataStorageScheme = cfg.GetValue('Data Storage Scheme');
+
             % Estimate amount of memory required and set the data storage scheme
             obj.SetDataStorageScheme(options);
             
-            obj.FindAndLoadGroups(groupDirs, fmt, procStreamCfgFile);
+            obj.FindAndLoadGroups(groupDirs, fmt, procStreamCfgFile, options);
             if obj.IsEmpty()
                 return;
             end
@@ -198,7 +206,7 @@ classdef DataTreeClass <  handle
         
         
         % --------------------------------------------------------------
-        function FindAndLoadGroups(obj, groupDirs, fmt, procStreamCfgFile)
+        function FindAndLoadGroups(obj, groupDirs, fmt, procStreamCfgFile, options)
 
             tic;            
             for kk = 1:length(groupDirs)
@@ -212,7 +220,7 @@ classdef DataTreeClass <  handle
                     obj.files    = FileClass().empty();
                     obj.filesErr = FileClass().empty();
                     
-                    dataInit = FindFiles(obj.dirnameGroups{kk}, fmt);
+                    dataInit = FindFiles(obj.dirnameGroups{kk}, fmt, options);
                     if isempty(dataInit) || dataInit.isempty()
                         return;
                     end

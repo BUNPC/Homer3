@@ -329,6 +329,9 @@ drawnow
 function EditSelectRange(t1, t2, handles)
 global stimEdit
 t = stimEdit.locDataTree.currElem.GetTime();
+if isempty(t)
+    return
+end
 if ~all(t1==t2)
     tPts_idxs_select = find(t>=t1 & t<=t2);
 else

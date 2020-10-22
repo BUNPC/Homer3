@@ -521,7 +521,7 @@ for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk, length(plotprobe.handles.data)+1);
 end
 plotprobe.handles.figureDup = handles.figureDup;
-
+rePositionGuiWithinScreen(plotprobe.handles.figureDup);
 
 
 
@@ -595,9 +595,13 @@ end
 if ~isempty(plotprobe.updateParentGui) 
 	plotprobe.updateParentGui('PlotProbeGUI');
 end
-if ishandles(plotprobe.handles.figureDup)
-    delete(plotprobe.handles.figureDup);
-end
+
+% Removed closing of duplicate figure at users' request
+% JD: Oct 22, 2020
+
+% if ishandles(plotprobe.handles.figureDup)
+%     delete(plotprobe.handles.figureDup);
+% end
 
 
 

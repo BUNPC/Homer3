@@ -8,14 +8,11 @@ end
 p = guiOutsideScreenBorders(hfig);
 
 % Apply position correcttion. NOTE: guiOutsideScreenBorders return p 
-% in chracter units, therefore temporaily change units to char to apply 
+% in normalized units, therefore temporaily change units to normalized to apply 
 % then pos correction, then change back to initial units before 
 % returning from function
-u0 = get(hfig, 'units');
-set(hfig, 'units', 'characters');
-
-% Apply correction 
-set(hfig, 'position', [p(1), p(2), p(3), p(4)]);
+uf0 = get(hfig, 'units');
+set(hfig, 'units','normalized', 'position',p);
 
 % Change units back to initial state
-set(hfig, 'units', u0);
+set(hfig, 'units', uf0);

@@ -34,7 +34,7 @@ classdef DataTreeClass <  handle
             % Arg 1: get folder of the group being loaded
             if ~exist('groupDirs','var') || isempty(groupDirs)
                 groupDirs{1} = pwd;
-            elseif ~iscell(groupDirs)
+            elseif ~isa(groupDirs, 'DataTreeClass') && ~iscell(groupDirs)
                 groupDirs = {groupDirs};
             end
             

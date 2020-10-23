@@ -1457,8 +1457,7 @@ hf = figure();
 set(hf, 'units','characters');
 p = get(hf, 'position');
 set(hf,'position',[p(1), p(2), xf*p(3), yf*p(4)]);
-p = guiOutsideScreenBorders(hf);
-set(hf, 'position', [p(1), p(2)-5, p(3), p(4)]);
+rePositionGuiWithinScreen(hf);
 
 figure(hf);
 
@@ -1690,9 +1689,7 @@ else
 end
 pause(.2)
 set(handles.MainGUI, 'position', p);
-p = guiOutsideScreenBorders(handles.MainGUI);
-set(handles.MainGUI, 'units','characters', 'position',p);
-set(handles.MainGUI, 'units',u0);
+rePositionGuiWithinScreen(handles.MainGUI);
 
 
 
@@ -1716,6 +1713,3 @@ if isa(maingui.dataTree.currElem, 'RunClass')
 else
     errordlg('Select a run to reset its excluded channels and time points.','No run selected');
 end
-
-
-

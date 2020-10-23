@@ -509,10 +509,13 @@ pos = getNewFigPos(handles);
 set(handles.figureDup, 'position',pos);
 
 % Display name label and divider
-hdata = get(handles.textFilename);
+hname = get(handles.textFilename);
+hnameFrame = get(handles.textFilenameFrame);
 hdiv = get(handles.uipanelDivider);
-uicontrol('parent',handles.figureDup, 'style','text', 'string',hdata.String, 'units',hdata.Units, 'position',hdata.Position, ...
-           'backgroundcolor',hdata.BackgroundColor, 'fontsize',hdata.FontSize, 'fontweight',hdata.FontWeight);
+uicontrol('parent',handles.figureDup, 'style','text', 'string',hnameFrame.String, 'units',hnameFrame.Units, 'position',hnameFrame.Position, ...
+           'backgroundcolor',hnameFrame.BackgroundColor, 'fontsize',hnameFrame.FontSize, 'fontweight',hnameFrame.FontWeight);
+uicontrol('parent',handles.figureDup, 'style','text', 'string',hname.String, 'units',hname.Units, 'position',hname.Position, ...
+           'backgroundcolor',hname.BackgroundColor, 'fontsize',hname.FontSize, 'fontweight',hname.FontWeight);
 uipanel('parent',handles.figureDup, 'units',hdiv.Units, 'position',hdiv.Position, 'bordertype',hdiv.BorderType);
        
 % Display data

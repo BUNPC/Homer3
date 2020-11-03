@@ -1722,3 +1722,13 @@ end
 
 
 
+
+
+% --------------------------------------------------------------------
+function menuItemExportProcessingStreamScript_Callback(hObject, eventdata, handles)
+global maingui
+fname = uiputfile('*.m', 'Export Processing Stream to Script (.m)', 'processing_stream.m');
+if fname ~= 0
+    exportProcessScript(fname, maingui.dataTree.currElem.procStream);
+end
+

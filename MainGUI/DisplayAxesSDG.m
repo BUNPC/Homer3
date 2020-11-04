@@ -106,18 +106,18 @@ hCh = zeros(length(lstML),1);
 % Draw all channels
 for ii = 1:length(lstML)
     hCh(ii) = line2(SD.SrcPos(ml(lstML(ii),1),:), SD.DetPos(ml(lstML(ii),2),:), [], gridsize);
-    if     ismember(ii, lstIncl)
-        % Draw included channel
-        col = [1.00 1.00 1.00] * 0.85;
-        lstyle = '-';
+    if ismember(ii,lstExclAuto)
+        % Draw auto-excluded channel
+        col = [1.00 0.6 0.6];
+        lstyle = '--';
     elseif ismember(ii, lstExclMan)
         % Draw manually excluded channel
         col = [1.00 1.00 1.00] * 0.85;
         lstyle = '--';
-    elseif ismember(ii,lstExclAuto)
-        % Draw auto-excluded channel
+    elseif ismember(ii, lstIncl)
+        % Draw included channel
         col = [1.00 1.00 1.00] * 0.85;
-        lstyle = ':';
+        lstyle = '-';
     end
     if ismember(ii, lstInvisible)
         lwidth = 1; 
@@ -145,7 +145,7 @@ if ~isempty(iSrcDet) && iSrcDet(1,1)~=0
         
         if ~isempty(iCh)
            
-            if ~MeasListActMan(iCh2(idx))
+            if ~MeasListActMan(iCh2(idx)) || ~MeasListActAuto(iCh2(idx))
                 lstyle = '--'; 
             else
                 lstyle = '-';

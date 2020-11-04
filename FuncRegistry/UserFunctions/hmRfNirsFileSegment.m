@@ -4,6 +4,7 @@ function hmRfNirsFileSegment()
 % data as eg [0 200; 400:900; 950:1000] in *sec*
 % Meryem A Yucel, Nov 2016
 %%%%%%%%%%%%%%%
+% Code refined for Homer3 and fNIRS files
 
 [files, pathnm] = uigetfile( '*.snirf', 'Pick the .snirf file', 'multiselect','on');
 if files==0
@@ -18,7 +19,7 @@ if ~iscell(files)
     end
 end
 
-fsn = inputdlg( 'Select the time range (in seconds) for the segment of data to save in a separate file. You can enter multiple time ranges, separated by a '';'', to save different segments to different files. For example, [0 100; 300 400]', 'Segment fNIRS file', 1 );
+fsn = inputdlg( 'Select the time range (in seconds) for the segment of data to save in a separate file. You can enter multiple time ranges, separated by a '';'', to save different segments to different files. For example, [0 100; 300 400]', 'Segment SNIRF file', 1 );
 if isempty(fsn)
     return
 end

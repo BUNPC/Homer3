@@ -971,13 +971,13 @@ for iBlk = iDataBlks
             DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
             sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
             xlabel(['Time(s) | Sampling Rate = ' num2str(sRate) ' Hz']);
-            if datatype == maingui.buttonVals.RAW
-                ylabel('Raw Units');
-            elseif datatype == maingui.buttonVals.OD
-                ylabel('OD Units');
-            elseif datatype == maingui.buttonVals.OD_HRF
-                ylabel('OD_H_R_F Units');
-            end
+%             if datatype == maingui.buttonVals.RAW
+%                 %No Unit
+%             elseif datatype == maingui.buttonVals.OD
+%                 ylabel('OD Units');
+%             elseif datatype == maingui.buttonVals.OD_HRF
+%                 ylabel('OD_H_R_F Units');
+%             end
         elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
             if  datatype == maingui.buttonVals.CONC_HRF
                 d = d(:,:,:,condition);
@@ -986,11 +986,12 @@ for iBlk = iDataBlks
             DisplayDataConc(t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
             sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
             xlabel(['Time(s) | Sampling Rate = ' num2str(sRate) ' Hz']);
-            if datatype == maingui.buttonVals.CONC
-                ylabel('Conc Units');
-            elseif datatype == maingui.buttonVals.CONC_HRF
-                ylabel('Conc_H_R_F Units');
-            end
+%             if datatype == maingui.buttonVals.CONC
+%                 ylabel('Conc Units');
+%             elseif datatype == maingui.buttonVals.CONC_HRF
+%                 ylabel('Conc_H_R_F Units');
+%             end
+            ylabel('\muM');
         end
     end
     iColor = iColor+length(iChBlk);

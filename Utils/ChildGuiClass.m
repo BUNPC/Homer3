@@ -178,19 +178,40 @@ classdef ChildGuiClass < handle
             if ~ishandles(hp)
                 return;
             end
-
-            up0 = get(hp, 'units');  
+                                                
+            % Get initial units of parent and child guis
+            us0 = get(0, 'units');  
+            up0 = get(obj.handles.figure, 'units');
             uc0 = get(obj.handles.figure, 'units');
             
+            % Normalize units of parent and child guis
+            set(0,'units','normalized');
             set(hp, 'units', 'normalized');
             set(obj.handles.figure, 'units', 'normalized');
-            
+
+            % Get positions of parent and child guis
+            % Set screen units to be same as GUI
+            ps = get(0,'MonitorPositions');            
             pp = get(hp, 'position');
             pc = get(obj.handles.figure, 'position');
 
-            set(hp, 'position', [1-pp(3), pp(2), pp(3), pp(4)])
-            set(obj.handles.figure, 'position', [0, pc(2), pc(3), pc(4)])
+            % To work correctly for mutiple sceens, Ps must be sorted in ascending order
+            ps = sort(ps,'ascend');            
+            
+            % Find which monitor parent gui is in
+            for ii = 1:size(ps,1)
+                if (pp(1)+pp(3)/2) < (ps(ii,1)+ps(ii,3))
+                    break;
+                end
+            end
+                        
+            % Re-position parent and child guis
+            set(hp, 'position', [ii-pp(3), pp(2), pp(3), pp(4)])
+            set(obj.handles.figure, 'position', [ii-1, pc(2), pc(3), pc(4)])
 
+            
+            % Reset parent and child guis' units
+            set(0, 'units', us0);
             set(hp, 'units', up0);
             set(obj.handles.figure, 'units', uc0);
         end

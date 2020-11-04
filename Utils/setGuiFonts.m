@@ -22,9 +22,9 @@ FONT_BIGGER     = 8;
 FONT_SMALLER    = 16;
 
 if ismac()
-    fs_def = 13.0;
+    fs_def = 12.0;
 elseif ispc()
-    fs_def = 10.0;
+    fs_def = 9.0;
 else
     fs_def = 11.0;
 end

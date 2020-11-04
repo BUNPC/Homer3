@@ -325,7 +325,7 @@ classdef ConfigFileClass < FileClass
         
         % -------------------------------------------------------------------------------------------------
         function val = GetValue(obj, section)
-            val = {};
+            val = '';
             if nargin<2
                 return;
             end

@@ -35,8 +35,8 @@ try
         logger.Write(sprintf('RAM Total      : Not available on this platform\n'))
         logger.Write(sprintf('RAM Free       : Not available on this platform\n'))
     end
-	logger.Write(sprintf('HD Space Total : %0.1f GB\n', hdSpaceAvail/1e9));
-	logger.Write(sprintf('HD Space Free  : %0.1f GB\n', hdSpaceTotal/1e9));
+	logger.Write(sprintf('HD Space Total : %0.1f GB\n', hdSpaceTotal/1e9));
+	logger.Write(sprintf('HD Space Free  : %0.1f GB\n', hdSpaceAvail/1e9));
 	logger.Write(sprintf('\n')) %#ok<*SPRINTFN>
 catch ME
 	logger.Write(sprintf('%s\n', ME.message));

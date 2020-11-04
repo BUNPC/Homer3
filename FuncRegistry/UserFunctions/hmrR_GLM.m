@@ -382,8 +382,8 @@ for iBlk=1:length(data_y)
 %     if flagMotionCorrect==1
 %         idxMA = find(diff(tInc)==1);  % number of motion artifacts
 %         if isempty(idxMA)
-%             nMC = 0;
-%             Amotion = [];
+            nMC = 0;
+            Amotion = [];
 %         else
 %             nMA = length(idxMA);
 %             nMC = nMA+1;

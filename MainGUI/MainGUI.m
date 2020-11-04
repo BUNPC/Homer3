@@ -968,6 +968,7 @@ for iBlk = iDataBlks
             DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
             sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
             xlabel(['Time(s) | Sampling Rate = ' num2str(sRate) ' Hz']);
+            ylabel('');
 %             if datatype == maingui.buttonVals.RAW
 %                 %No Unit
 %             elseif datatype == maingui.buttonVals.OD
@@ -988,7 +989,15 @@ for iBlk = iDataBlks
 %             elseif datatype == maingui.buttonVals.CONC_HRF
 %                 ylabel('Conc_H_R_F Units');
 %             end
-            ylabel('\muM');
+            procName = {procElem.procStream.fcalls.name};
+            idx = contains(procName, 'hmrR_OD2Conc_new');
+            ppf = procElem.procStream.fcalls(idx).paramIn.value;
+            if ppf(condition) == 1 && ~isempty(dataTree.currElem.acquired.metaDataTags.tags.LengthUnit)
+                unit = dataTree.currElem.acquired.metaDataTags.tags.LengthUnit;
+                ylabel(['\muM ' unit]);
+            else
+                ylabel('\muM');
+            end
         end
     end
     iColor = iColor+length(iChBlk);

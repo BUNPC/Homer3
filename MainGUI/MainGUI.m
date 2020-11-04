@@ -63,28 +63,6 @@ set(handles.togglebuttonMinimizeGUI, 'tooltipstring','Minimize GUI Window')
 cfg = ConfigFileClass();
 handles.menuItemUpdateCheck.Checked = cfg.GetValue('Check For Updates');
 
-% Get rid of the useless "might be unsused" warnings for GUI callbacks
-checkboxPlotHRF_Callback([]);
-checkboxApplyProcStreamEditToAll_Callback([]);
-pushbuttonCalcProcStream_Callback([]);
-listboxFilesErr_Callback([]);
-uipanelPlot_SelectionChangeFcn([]);
-menuItemProcStreamEditGUI_Callback([]);
-menuItemPlotProbeGUI_Callback([]);
-menuItemSaveGroup_Callback([]);
-menuItemViewHRFStdErr_Callback([]);
-menuItemStimEditGUI_Callback([]);
-pushbuttonProcStreamOptionsGUI_Callback([]);
-guiControls_ButtonDownFcn([]);
-axesSDG_ButtonDownFcn([]);
-popupmenuConditions_Callback([]);
-listboxPlotWavelength_Callback([]);
-listboxPlotConc_Callback([]);
-menuItemChangeGroup_Callback([]);
-menuItemExit_Callback([]);
-menuItemReset_Callback([]);
-menuCopyCurrentPlot_Callback([]);
-uipanelProcessingType_SelectionChangeFcn([]);
 
 
 % ---------------------------------------------------------------------
@@ -358,7 +336,7 @@ listboxGroupTree_Callback([], [1,1,1], handles)
 
 
 % --------------------------------------------------------------------
-function eventdata = uipanelProcessingType_SelectionChangeFcn(hObject, eventdata, handles)
+function eventdata = uipanelProcessingType_SelectionChangeFcn(hObject, eventdata, handles)  %#ok<DEFNU>
 global maingui
 
 if isempty(hObject)
@@ -443,7 +421,7 @@ Display(handles, hObject0);
 
 
 % --------------------------------------------------------------------
-function [eventdata, handles] = pushbuttonCalcProcStream_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = pushbuttonCalcProcStream_Callback(hObject, eventdata, handles) %#ok<DEFNU>
 global maingui
 if ~ishandles(hObject)
     return;
@@ -704,16 +682,34 @@ end
 
 
 % --------------------------------------------------------------------
-function LaunchChildGuiFromMenu(guiname, h)
+function LaunchChildGuiFromMenu(guiname, h, varargin)
 global maingui
 if ~ishandles(h)
     return;
+end
+if ~exist('varargin','var')
+    varargin = {};
 end
 idx = FindChildGuiIdx(guiname);
 checked = get(h,'checked');
 if strcmp(checked, 'off')
     set(h, 'checked', 'on');
-    maingui.childguis(idx).Launch();
+    
+    % Allow up to 5 parameters to be passed
+    switch(length(varargin))
+        case 0
+            maingui.childguis(idx).Launch();
+        case 1
+            maingui.childguis(idx).Launch(varargin{1});
+        case 2
+            maingui.childguis(idx).Launch(varargin{1}, varargin{2});
+        case 3
+            maingui.childguis(idx).Launch(varargin{1}, varargin{2}, varargin{3});
+        case 4
+            maingui.childguis(idx).Launch(varargin{1}, varargin{2}, varargin{3}, varargin{4});
+        case 5
+            maingui.childguis(idx).Launch(varargin{1}, varargin{2}, varargin{3}, varargin{4}, varargin{5});
+    end
 elseif strcmp(checked, 'on')
     set(h, 'checked', 'off');
     maingui.childguis(idx).Close();
@@ -722,13 +718,14 @@ end
 
 
 % --------------------------------------------------------------------
-function menuItemPlotProbeGUI_Callback(hObject, eventdata, handles)
-LaunchChildGuiFromMenu('PlotProbeGUI', hObject);
+function menuItemPlotProbeGUI_Callback(hObject, eventdata, handles) %#ok<DEFNU>
+global maingui
+LaunchChildGuiFromMenu('PlotProbeGUI', hObject, GetDatatype(handles), maingui.condition);
 
 
 
 % -------------------------------------------------------------------
-function [eventdata, handles] = menuItemStimEditGUI_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = menuItemStimEditGUI_Callback(hObject, eventdata, handles) %#ok<DEFNU>
 LaunchChildGuiFromMenu('StimEditGUI', hObject);
 
 
@@ -1477,8 +1474,7 @@ hf = figure();
 set(hf, 'units','characters');
 p = get(hf, 'position');
 set(hf,'position',[p(1), p(2), xf*p(3), yf*p(4)]);
-p = guiOutsideScreenBorders(hf);
-set(hf, 'position', [p(1), p(2)-5, p(3), p(4)]);
+rePositionGuiWithinScreen(hf);
 
 figure(hf);
 
@@ -1710,9 +1706,7 @@ else
 end
 pause(.2)
 set(handles.MainGUI, 'position', p);
-p = guiOutsideScreenBorders(handles.MainGUI);
-set(handles.MainGUI, 'units','characters', 'position',p);
-set(handles.MainGUI, 'units',u0);
+rePositionGuiWithinScreen(handles.MainGUI);
 
 
 
@@ -1736,6 +1730,3 @@ if isa(maingui.dataTree.currElem, 'RunClass')
 else
     errordlg('Select a run to reset its excluded channels and time points.','No run selected');
 end
-
-
-

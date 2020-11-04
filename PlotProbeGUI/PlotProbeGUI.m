@@ -254,6 +254,8 @@ if ~isempty(maingui)
     set(handles.menuItemSaveGroup,'visible','off');
     plotprobe.updateParentGui = maingui.Update;
 end
+
+SetTextFilename(handles);
 DisplayData(handles, hObject);
 
 
@@ -506,11 +508,24 @@ axis off
 pos = getNewFigPos(handles);
 set(handles.figureDup, 'position',pos);
 
+% Display name label and divider
+hname = get(handles.textFilename);
+hnameFrame = get(handles.textFilenameFrame);
+hdiv = get(handles.uipanelDivider);
+uicontrol('parent',handles.figureDup, 'style','text', 'string',hnameFrame.String, 'units',hnameFrame.Units, 'position',hnameFrame.Position, ...
+           'backgroundcolor',hnameFrame.BackgroundColor, 'fontsize',hnameFrame.FontSize, 'fontweight',hnameFrame.FontWeight);
+uicontrol('parent',handles.figureDup, 'style','text', 'string',hname.String, 'units',hname.Units, 'position',hname.Position, ...
+           'backgroundcolor',hname.BackgroundColor, 'fontsize',hname.FontSize, 'fontweight',hname.FontWeight);
+uipanel('parent',handles.figureDup, 'units',hdiv.Units, 'position',hdiv.Position, 'bordertype',hdiv.BorderType);
+       
+% Display data
 nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk, length(plotprobe.handles.data)+1);
 end
 plotprobe.handles.figureDup = handles.figureDup;
+rePositionGuiWithinScreen(plotprobe.handles.figureDup);
+
 
 
 % ---------------------------------------------
@@ -583,9 +598,13 @@ end
 if ~isempty(plotprobe.updateParentGui) 
 	plotprobe.updateParentGui('PlotProbeGUI');
 end
-if ishandles(plotprobe.handles.figureDup)
-    delete(plotprobe.handles.figureDup);
-end
+
+% Removed closing of duplicate figure at users' request
+% JD: Oct 22, 2020
+
+% if ishandles(plotprobe.handles.figureDup)
+%     delete(plotprobe.handles.figureDup);
+% end
 
 
 
@@ -598,10 +617,12 @@ if isempty(plotprobe)
     return
 end
 
+
 ParseArgs(varargin);
 axes(handles.axes1);
 
 SetWindowTitle(handles)
+SetTextFilename(handles);
 
 condition = plotprobe.condition;
 datatype  = plotprobe.datatype;
@@ -681,5 +702,45 @@ function pushbuttonExit_Callback(~, ~, handles)
 if ishandles(handles.figure)
     delete(handles.figure);
 end
+
+
+
+% -----------------------------------------------------------
+function SetTextFilename(handles)
+global plotprobe
+
+filename = plotprobe.dataTree.currElem.GetName();
+CondNames = plotprobe.dataTree.currElem.GetConditions();
+if plotprobe.condition>length(CondNames)
+    ch = MenuBox('Selected condition does not exist. Please choose from available conditions',[CondNames, 'Cancel']);
+    if ch==length(CondNames)+1
+        return;
+    end
+    plotprobe.condition = ch;
+end
+
+[~, treeNodeName] = fileparts(filename);
+if isempty(handles)
+    return;
+end
+
+if ~ishandles(handles.textFilename)
+    return;
+end
+
+if ~isempty(CondNames)
+    name = sprintf('   %s,    condition: ''%s''', treeNodeName, CondNames{plotprobe.condition});
+else
+    name = sprintf('   %s,    condition:  none', treeNodeName, CondNames{plotprobe.condition});
+end
+n = length(name) + 0.20*length(name);
+set(handles.textFilename, 'units','characters');
+p = get(handles.textFilename, 'position');
+set(handles.textFilename, 'position',[p(1), p(2), n, p(4)]);
+set(handles.textFilename, 'units','normalized');
+set(handles.textFilename, 'string',name);
+
+p2 = get(handles.textFilenameFrame, 'position');
+set(handles.textFilenameFrame, 'position',[p2(1), p2(2), p2(3)*n/p(3), p2(4)]);
 
 

@@ -352,8 +352,7 @@ set(h, 'units','normalized');
 % % to as these are the units used to reposition GUI later if needed
 % set(hObject, 'units','pixels');
 setGuiFonts(hObject);
-p = guiOutsideScreenBorders(hObject);
-set(handles.figure, 'position', p);
+rePositionGuiWithinScreen(hObject);
 
 figure(handles.figure);
 set(handles.pushbuttonExit, 'units','normalized');

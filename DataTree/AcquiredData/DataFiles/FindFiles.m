@@ -33,11 +33,19 @@ if nargin==1
 elseif nargin==2
     dirnameGroup = varargin{1};
     fmt = varargin{2};
+elseif nargin==3
+    dirnameGroup = varargin{1};
+    fmt = varargin{2};
+    options = varargin{3};
+    if optionExists(options, 'oneformat')
+        fmt = [fmt, 'only'];
+    end
 end
 
 if ~exist('dirnameGroup','var') || isempty(dirnameGroup)
     dirnameGroup = pwd;
 end
+
 
 if ~exist('fmt','var') || isempty(fmt)
     if ~isempty(maingui) && isstruct(maingui) && isfield(maingui,'format')
@@ -72,6 +80,12 @@ while files.isempty()
                 Nirs2Snirf(dirnameGroup);
                 files = DataFilesClass(dirnameGroup, 'snirf');
             end
+        case {'snirfonly'}
+            files = DataFilesClass(dirnameGroup, 'snirf');
+            if files.isempty()
+                files = [];
+                return;
+            end
         case {'nirs','.nirs'}
             files = DataFilesClass(dirnameGroup, 'nirs');
         otherwise
@@ -90,7 +104,10 @@ while files.isempty()
                 continue;
             end
     end
+    
     if files.isempty()
+        switch fmt
+            case {'snirf','.snirf'}
         msg{1} = sprintf('Homer3 did not find any %s data files to load in the current group folder. ', fmt);        
         msg{2} = sprintf('Do you want to select another group folder?');
         q = MenuBox([msg{:}], {'YES','NO'});
@@ -102,6 +119,9 @@ while files.isempty()
         if dirnameGroup==0
             files = DataFilesClass();
             return;
+                end
+            case {'snirfonly'}
+                files = [];
         end
     end
 end

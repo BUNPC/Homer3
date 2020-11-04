@@ -1,4 +1,4 @@
-% hmrFnirsFileDownsample()
+% snirfDownsample()
 %
 % A utility that let's you pick fNIRS files in a file dialog box that
 % are then decimated to the specified frequency using a low pass filter as
@@ -13,7 +13,7 @@
 % Add code to allow non-integer downsampling factor - Meryem Oct 2018
 % Code refined for Homer3 and fNIRS files
 
-function hmRfNirsFileDownsample()
+function snirfDownsample()
 
 [files, pathnm] = uigetfile( '*.snirf', 'Pick files to downsample', 'multiselect','on');
 

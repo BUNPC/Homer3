@@ -1,4 +1,4 @@
-function hmRfNirsFileSegment()
+function snirfSegment()
 % Description: This function divides the nirs data into segments predefined by
 % user input. User should input the time period of the segments of the nirs
 % data as eg [0 200; 400:900; 950:1000] in *sec*
@@ -55,7 +55,9 @@ for iFile = 1:length(files)
         
         snirfData.data.dataTimeSeries = snirfData.data.dataTimeSeries(round(fsn(P,1)*fs):round(fsn(P,2)*fs),:);
         snirfData.data.time = snirfData.data.time(round(fsn(P,1)*fs):round(fsn(P,2)*fs));
-        snirfData.stim.data = snirfData.stim.data(snirfData.stim.data(:,1)>fsn(P,1) & snirfData.stim.data(:,1)<fsn(P,2),:);
+        for iStim = 1:length(snirfData.stim)
+            snirfData.stim(iStim).data = snirfData.stim(iStim).data(snirfData.stim(iStim).data(:,1)>fsn(P,1) & snirfData.stim(iStim).data(:,1)<fsn(P,2),:);
+        end
         for iAux = 1:length(snirfData.aux)
             snirfData.aux(iAux).dataTimeSeries = snirfData.aux(iAux).dataTimeSeries(round(fsn(P,1)*fs):round(fsn(P,2)*fs));
             snirfData.aux(iAux).time = snirfData.aux(iAux).time(round(fsn(P,1)*fs):round(fsn(P,2)*fs));

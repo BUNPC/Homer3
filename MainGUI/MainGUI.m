@@ -1730,3 +1730,13 @@ if isa(maingui.dataTree.currElem, 'RunClass')
 else
     errordlg('Select a run to reset its excluded channels and time points.','No run selected');
 end
+
+
+% --------------------------------------------------------------------
+function menuItemSegmentSnirf_Callback(hObject, eventdata, handles)
+snirfSegment();
+
+
+% --------------------------------------------------------------------
+function menuItemDownsampleSnirf_Callback(hObject, eventdata, handles)
+snirfDownsample();

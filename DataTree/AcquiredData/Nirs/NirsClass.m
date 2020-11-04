@@ -50,15 +50,15 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             obj.Initialize();
 
             % Set base class properties not part of NIRS format 
-            obj.filename  = '';
-            obj.fileformat = 'mat';
+            obj.SetFilename('');
+            obj.SetFileFormat('mat');
             obj.errmargin = 1e-3;
             
             if nargin==0
                 return;
             end
             if nargin==2
-                obj.dataStorageScheme = varargin{2};
+                obj.SetDataStorageScheme(varargin{2});
             end
             
             if isa(varargin{1}, 'NirsClass')
@@ -70,10 +70,10 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 obj = NirsClass.empty();
                 return;
             end
-            obj.filename = filename;
+            obj.SetFilename('filename');
             
             % Conditional loading of snirf file data
-            if strcmpi(obj.dataStorageScheme, 'memory')
+            if strcmpi(obj.GetDataStorageScheme(), 'memory')
                 obj.Load(filename);
             end
         end
@@ -109,9 +109,9 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                        
             % Do some error checking            
             if ~isempty(fname)
-                obj.filename = fname;
+                obj.SetFilename(fname);
             else
-                fname = obj.filename;
+                fname = obj.GetFilename();
             end
             if exist(fname, 'file') ~= 2
                err = -1;
@@ -255,7 +255,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
 
             % If we're working off the snirf file instead of loading everything into memory
             % then we have to load stim here from file before accessing it.
-            if strcmpi(obj.dataStorageScheme, 'files')
+            if strcmpi(obj.GetDataStorageScheme(), 'files')
                 obj.LoadStims(obj.filename);
             end
             

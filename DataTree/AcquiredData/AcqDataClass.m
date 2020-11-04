@@ -71,9 +71,9 @@ classdef AcqDataClass < matlab.mixin.Copyable
         
         % -------------------------------------------------------
         function b = Error(obj)
-            if obj.err<0
+            if obj.GetError()<0
                 b = true;
-            elseif obj.err==0
+            elseif obj.GetError()==0
                 b = false;
             else
                 b = true;

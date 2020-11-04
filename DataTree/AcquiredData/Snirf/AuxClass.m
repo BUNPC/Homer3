@@ -12,7 +12,7 @@ classdef AuxClass < FileLoadSaveClass
         % -------------------------------------------------------
         function obj = AuxClass(varargin)
             % Set class properties not part of the SNIRF format
-            obj.fileformat = 'hdf5';
+            obj.SetFileFormat('hdf5');
             
             obj.timeOffset = 0;
             if nargin==1

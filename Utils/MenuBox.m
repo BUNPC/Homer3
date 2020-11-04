@@ -117,8 +117,10 @@ end
 % Need to make sure position data is saved in pixel units at end of function
 % to as these are the units used to reposition GUI later if needed
 setGuiFonts(hf);
-p = guiOutsideScreenBorders(hf);
-set(hf, 'visible','on', 'position',p);
+rePositionGuiWithinScreen(hf);
+
+% Change units back to characters
+set(hf, 'visible','on', 'units','characters');
 
 % Wait for user to respond before exiting
 t = 0;
@@ -137,6 +139,7 @@ if ishandles(hf)
 else
     selection=0;
 end
+
 
 
 % -------------------------------------------------------------

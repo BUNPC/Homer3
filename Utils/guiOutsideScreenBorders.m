@@ -12,17 +12,21 @@ function [p, b] = guiOutsideScreenBorders(hObject)
 %
 
 b = [0, 0, 0, 0];
-u0 = get(hObject, 'units');
-
-set(hObject, 'units','characters');
-p = get(hObject,'position');
+us0 = get(0, 'units');
+uf0 = get(hObject, 'units');
 
 % Set screen units to be same as GUI
-set(0,'units','characters');
+set(0,'units','normalized');
+set(hObject, 'units','normalized');
+
 Ps = get(0,'MonitorPositions');
+p = get(hObject,'position');
+
+% To work correctly for mutiple sceens, Ps must be sorted in ascending order
+Ps = sort(Ps,'ascend');
 
 % Find which monitor GUI is in
-for ii=1:length(Ps(:,1))
+for ii = 1:size(Ps,1)
     if (p(1)+p(3)/2) < (Ps(ii,1)+Ps(ii,3))
         break;
     end
@@ -62,6 +66,6 @@ if p(4)>=ScreenHeight
 end
 p = p - b;
 
-% Set the screen units back to pixels
-set(0,'units','pixels');
-set(hObject, 'units',u0);
+% Set the screen units back to initial units
+set(0,'units',us0);
+set(hObject, 'units',uf0);

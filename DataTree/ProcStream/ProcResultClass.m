@@ -162,7 +162,13 @@ classdef ProcResultClass < handle
             end
             [pname, fname] = fileparts(filename);
             if isempty(pname)
+                if exist(['./', fname, '.mat'], 'file')==2
+                    pname = '.';
+                elseif exist(['../', fname, '.mat'], 'file')==2
+                    pname = '..';
+                else
                 pname = '.';
+            end
             end
             obj.filename = [pname, '/', fname, '.mat'];
         end

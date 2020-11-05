@@ -75,9 +75,9 @@ classdef StimClass < FileLoadSaveClass
             
             % Error checking            
             if ~isempty(fileobj) && ischar(fileobj)
-                obj.filename = fileobj;
+                obj.SetFilename(fileobj);
             elseif isempty(fileobj)
-                fileobj = obj.filename;
+                fileobj = obj.GetFilename();
             end 
             if isempty(fileobj)
                err = -1;

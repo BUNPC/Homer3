@@ -280,7 +280,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Load mutable data from Snirf file here ONLY if data storage scheme is 'files'
             if strcmpi(obj.GetDataStorageScheme(), 'files')
-                obj.LoadStim(obj.filename);
+                obj.LoadStim(obj.GetFilename());
             end
             
             % Generate new instance of SnirfClass

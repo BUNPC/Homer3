@@ -77,7 +77,7 @@ classdef MeasListClass < FileLoadSaveClass
             end
             
             % Set base class properties not part of the SNIRF format
-            obj.fileformat = 'hdf5';
+            obj.SetFileFormat('hdf5');
 
         end
         

@@ -9,7 +9,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         aux
     end
     
-    properties (Access = public)
+    properties (Access = private)
         fid
         gid
         location
@@ -73,7 +73,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             obj.Initialize()
             
             % Set class properties NOT part of the SNIRF format
-            obj.fileformat = 'hdf5';
+            obj.SetFileFormat('hdf5');
             obj.location = '/nirs';
             obj.nirsdatanum = 1;
             
@@ -104,7 +104,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 % obj = SnirfClass(filename, dataStorageScheme);
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 if ischar(varargin{1})
-                    obj.filename = varargin{1};
+                    obj.SetFilename(varargin{1});
                     if nargin>1
                         % obj = SnirfClass(filename, nirsdatanum);
                         if isnumeric(varargin{2})
@@ -117,13 +117,13 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                             
                             % obj = SnirfClass(filename, dataStorageScheme);
                         elseif ischar(varargin{2})
-                            obj.dataStorageScheme = varargin{2};
+                            obj.SetDataStorageScheme(varargin{2});
                             
                         end
                     end
                     
                     % Load Snirf file here ONLY if data storage scheme is 'memory'
-                    if strcmpi(obj.dataStorageScheme, 'memory')
+                    if strcmpi(obj.GetDataStorageScheme, 'memory')
                         obj.Load(varargin{1});
                     end
                     
@@ -265,8 +265,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             catch
             end
             
-            if ~isempty(obj2.filename)
-                obj.filename = obj2.filename;
+            if ~isempty(obj2.GetFilename())
+                obj.SetFilename(obj2.GetFilename());
             end
         end
         
@@ -279,14 +279,14 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             end
             
             % Load mutable data from Snirf file here ONLY if data storage scheme is 'files'
-            if strcmpi(obj.dataStorageScheme, 'files')
-                obj.LoadStim(obj.filename);
+            if strcmpi(obj.GetDataStorageScheme(), 'files')
+                obj.LoadStim(obj.GetFilename());
             end
             
             % Generate new instance of SnirfClass
             objnew = SnirfClass();
             
-            objnew.filename = obj.filename;
+            objnew.SetFilename(obj.GetFilename);
             
             % Copy mutable properties to new object instance;
             objnew.stim = CopyHandles(obj.stim);
@@ -461,9 +461,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Error checking
             if ~isempty(fileobj) && ischar(fileobj)
-                obj.filename = fileobj;
+                obj.SetFilename(fileobj);
             elseif isempty(fileobj)
-                fileobj = obj.filename;
+                fileobj = obj.GetFilename();
             end
             if isempty(fileobj)
                 err = -1;

@@ -25,7 +25,7 @@ classdef ProbeClass < FileLoadSaveClass
         % -------------------------------------------------------
         function obj = ProbeClass(varargin)
             % Set class properties not part of the SNIRF format
-            obj.fileformat = 'hdf5';
+            obj.SetFileFormat('hdf5');
             
             % Set SNIRF fomat properties
             if nargin>0

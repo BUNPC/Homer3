@@ -67,7 +67,7 @@ classdef DataTreeClass <  handle
             obj.dataStorageScheme = cfg.GetValue('Data Storage Scheme');
 
             % Estimate amount of memory required and set the data storage scheme
-            obj.SetDataStorageScheme(options);
+            obj.SetDataStorageScheme();
             
             obj.FindAndLoadGroups(groupDirs, fmt, procStreamCfgFile, options);
             if obj.IsEmpty()
@@ -245,16 +245,13 @@ classdef DataTreeClass <  handle
         
                 
         % ---------------------------------------------------------------
-        function SetDataStorageScheme(obj, options)
+        function SetDataStorageScheme(obj)
 
-            % Force distrubited file saving scheme, regardless of initial
-            % value of obj.dataStorageScheme
-            if ~exist('options','var')
-                options = '';
-            end
-            
-            if optionExists(options, 'files')
-                obj.dataStorageScheme = 'files';
+            % If there is no config option that was used to set
+            % dataStorageScheme then try to determine from saved data 
+            % what the storage scheme is. Main user of this is AtlasViewer            
+            if isempty(obj.dataStorageScheme)
+                obj.AutoSetDataStorageScheme();
             end
             
             % Estimate memory requirement based on number of acquired files and their
@@ -271,6 +268,33 @@ classdef DataTreeClass <  handle
         end 
         
           
+        
+        % ---------------------------------------------------------------
+        function AutoSetDataStorageScheme(obj)
+            g.group = GroupClass();
+            if isvalidfile('./groupResults.mat')
+                g = load('./groupResults.mat');
+                if isa(g.group, 'GroupClass') && g.group.IsEmpty()
+                    if isvalidfile('../groupResults.mat')
+                        g = load('../groupResults.mat');
+                    end
+                end
+            elseif isvalidfile('../groupResults.mat')
+                g = load('../groupResults.mat');
+            end
+            if isa(g.group, 'GroupClass') && g.group.IsEmpty()
+                if g.group.subjs(1).runs(1).acquired.IsEmpty()
+                    obj.dataStorageScheme = 'files';
+                else
+                    obj.dataStorageScheme = 'memory';
+                end
+            else
+                obj.dataStorageScheme = 'memory';
+            end
+        end
+          
+        
+        
         % ---------------------------------------------------------------
         function LoadGroup(obj, iG, procStreamCfgFile)
             

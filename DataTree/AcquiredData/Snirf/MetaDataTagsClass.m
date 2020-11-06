@@ -9,7 +9,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
         % -------------------------------------------------------
         function obj = MetaDataTagsClass(varargin)
             % Set class properties not part of the SNIRF format
-            obj.fileformat = 'hdf5';
+            obj.SetFileFormat('hdf5');
 
             obj.tags.SubjectID = 'default';
             obj.tags.MeasurementDate = datestr(now,29);

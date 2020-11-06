@@ -42,7 +42,7 @@ classdef DataClass < FileLoadSaveClass
             %     nirs = NirsClass('./s1/neuro_run01.nirs')
             %     data = DataClass(nirs.d, nirs.t)
             % 
-            obj.fileformat = 'hdf5';
+            obj.SetFileFormat('hdf5');
             
             % Set SNIRF fomat properties
             obj.measurementList = MeasListClass().empty();

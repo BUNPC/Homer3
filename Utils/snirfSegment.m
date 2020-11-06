@@ -6,7 +6,9 @@ function snirfSegment()
 %%%%%%%%%%%%%%%
 % Code refined for Homer3 and fNIRS files
 
-[files, pathnm] = uigetfile( '*.snirf', 'Pick the .snirf file', 'multiselect','on');
+global maingui;
+fpath = maingui.dataTree.currElem.path;
+[files, pathnm] = uigetfile( '*.snirf', 'Pick the .snirf file', fpath, 'multiselect','on');
 if files==0
     return
 end

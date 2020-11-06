@@ -15,7 +15,7 @@ classdef StimClass < FileLoadSaveClass
         % -------------------------------------------------------
         function obj = StimClass(varargin)
             % Set class properties not part of the SNIRF format
-            obj.fileformat = 'hdf5';
+            obj.SetFileFormat('hdf5');
             obj.errmargin = 1e-3;
 
             if nargin==1 
@@ -75,9 +75,9 @@ classdef StimClass < FileLoadSaveClass
             
             % Error checking            
             if ~isempty(fileobj) && ischar(fileobj)
-                obj.filename = fileobj;
+                obj.SetFilename(fileobj);
             elseif isempty(fileobj)
-                fileobj = obj.filename;
+                fileobj = obj.GetFilename();
             end 
             if isempty(fileobj)
                err = -1;

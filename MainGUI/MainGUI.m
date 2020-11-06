@@ -1713,3 +1713,13 @@ if isa(maingui.dataTree.currElem, 'RunClass')
 else
     errordlg('Select a run to reset its excluded channels and time points.','No run selected');
 end
+
+
+
+% --------------------------------------------------------------------
+function menuItemExportProcessingStreamScript_Callback(hObject, eventdata, handles)
+global maingui
+fname = uiputfile('*.m', 'Export Processing Stream to Script (.m)', 'processing_stream.m');
+if fname ~= 0
+    exportProcessScript(fname, maingui.dataTree.currElem.procStream);
+end

@@ -10,7 +10,7 @@ global maingui
 iList = [];
 
 % Get the group index of current list selection
-groupIdx = maingui.dataTree.currElem.GetIndexID();
+groupIdx = maingui.dataTree.currElem(1).GetIndexID();
 iG = groupIdx(1); 
 iS = groupIdx(2); 
 iR = groupIdx(3);

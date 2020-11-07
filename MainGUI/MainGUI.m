@@ -1731,8 +1731,6 @@ else
     errordlg('Select a run to reset its excluded channels and time points.','No run selected');
 end
 
-
-<<<<<<< HEAD
 % --------------------------------------------------------------------
 function menuItemSegmentSnirf_Callback(hObject, eventdata, handles)
 global maingui;
@@ -1757,7 +1755,6 @@ for iG = 1:length(maingui.dataTree.groups)
     maingui.dataTree.ResetCurrElem();
 end
 DisplayGroupTree(handles);
-=======
 
 % --------------------------------------------------------------------
 function menuItemExportProcessingStreamScript_Callback(hObject, eventdata, handles)
@@ -1766,4 +1763,3 @@ fname = uiputfile('*.m', 'Export Processing Stream to Script (.m)', 'processing_
 if fname ~= 0
     exportProcessScript(fname, maingui.dataTree.currElem.procStream);
 end
->>>>>>> 09702016de90fb387a7a41abb0ffcfa23a357753

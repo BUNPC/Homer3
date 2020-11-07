@@ -7,8 +7,13 @@ function snirfSegment()
 % Code refined for Homer3 and fNIRS files
 
 global maingui;
-fpath = maingui.dataTree.currElem.path;
-[files, pathnm] = uigetfile( '*.snirf', 'Pick the .snirf file', fpath, 'multiselect','on');
+if isempty(maingui)
+    [files, pathnm] = uigetfile( '*.snirf', 'Pick the .snirf file', 'multiselect','on');
+else
+    fpath = maingui.dataTree.currElem.path;
+    [files, pathnm] = uigetfile( '*.snirf', 'Pick the .snirf file', fpath, 'multiselect','on');
+end
+
 if files==0
     return
 end
@@ -46,7 +51,7 @@ for iFile = 1:length(files)
        
         
     for P = 1:size(fsn,1) % loop over different parts
-        
+        snirfData = SnirfClass(files{iFile});
         if fsn(P,1)> maxT || fsn(P,2) > maxT
             errordlg('Time period (in sec) exceeds the maximum time. Please re-try.','Retry');
             return
@@ -69,7 +74,14 @@ for iFile = 1:length(files)
         snirfData.Save(snirfName);
     end
 end
- 
- 
-    
+
+% if isempty(maingui)
+%     %Nothing
+% else
+%     for iFile = 1:length(files)
+%         
+%         maingui.dataTree.
+%     end
+% end
+
 cd(wd);

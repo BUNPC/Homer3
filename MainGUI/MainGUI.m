@@ -967,15 +967,8 @@ for iBlk = iDataBlks
             d = procElem.reshape_y(d, ch.MeasList);
             DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
             sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
-            xlabel(['Time(s) | Sampling Rate = ' num2str(sRate) ' Hz']);
+            xlabel(['Time(s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
             ylabel('');
-%             if datatype == maingui.buttonVals.RAW
-%                 %No Unit
-%             elseif datatype == maingui.buttonVals.OD
-%                 ylabel('OD Units');
-%             elseif datatype == maingui.buttonVals.OD_HRF
-%                 ylabel('OD_H_R_F Units');
-%             end
         elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
             if  datatype == maingui.buttonVals.CONC_HRF
                 d = d(:,:,:,condition);
@@ -983,20 +976,15 @@ for iBlk = iDataBlks
             d = d * sclConc;
             DisplayDataConc(t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
             sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
-            xlabel(['Time(s) | Sampling Rate = ' num2str(sRate) ' Hz']);
-%             if datatype == maingui.buttonVals.CONC
-%                 ylabel('Conc Units');
-%             elseif datatype == maingui.buttonVals.CONC_HRF
-%                 ylabel('Conc_H_R_F Units');
-%             end
+            xlabel(['Time(s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
             procName = {procElem.procStream.fcalls.name};
             idx = contains(procName, 'hmrR_OD2Conc_new');
             ppf = procElem.procStream.fcalls(idx).paramIn.value;
             if ppf(condition) == 1 && ~isempty(dataTree.currElem.acquired.metaDataTags.tags.LengthUnit)
                 unit = dataTree.currElem.acquired.metaDataTags.tags.LengthUnit;
-                ylabel(['\muM ' unit]);
+                ylabel(['\muM ' unit], 'FontSize', 17);
             else
-                ylabel('\muM');
+                ylabel('\muM', 'FontSize', 17);
             end
         end
     end
@@ -1297,6 +1285,7 @@ end
 % --------------------------------------------------------------------
 function menuItemResetGroupFolder_Callback(hObject, eventdata, handles)
 resetGroupFolder();
+DisplayGroupTree(handles);
 
 
 
@@ -1743,9 +1732,25 @@ end
 
 % --------------------------------------------------------------------
 function menuItemSegmentSnirf_Callback(hObject, eventdata, handles)
+global maingui;
 snirfSegment();
+dirname = [pwd,'/'];
+maingui.dataTree = DataTreeClass(dirname,'','','files');
+for iG = 1:length(maingui.dataTree.groups)
+    maingui.dataTree.SetCurrElem(iG,0,0)
+    maingui.dataTree.ResetCurrElem();
+end
+DisplayGroupTree(handles);
 
 
 % --------------------------------------------------------------------
 function menuItemDownsampleSnirf_Callback(hObject, eventdata, handles)
+global maingui;
 snirfDownsample();
+dirname = [pwd,'/'];
+maingui.dataTree = DataTreeClass(dirname,'','','files');
+for iG = 1:length(maingui.dataTree.groups)
+    maingui.dataTree.SetCurrElem(iG,0,0)
+    maingui.dataTree.ResetCurrElem();
+end
+DisplayGroupTree(handles);

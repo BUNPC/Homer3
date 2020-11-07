@@ -16,8 +16,12 @@
 function snirfDownsample()
 
 global maingui;
-fpath = maingui.dataTree.currElem.path;
-[files, pathnm] = uigetfile( '*.snirf', 'Pick files to downsample', fpath, 'multiselect','on');
+if isempty(maingui)
+    [files, pathnm] = uigetfile( '*.snirf', 'Pick the .snirf file', 'multiselect','on');
+else
+    fpath = maingui.dataTree.currElem.path;
+    [files, pathnm] = uigetfile( '*.snirf', 'Pick files to downsample', fpath, 'multiselect','on');
+end
 
 [~,name,~] = fileparts(files); 
 

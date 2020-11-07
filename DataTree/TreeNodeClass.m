@@ -1,4 +1,4 @@
-classdef TreeNodeClass < handle
+classdef TreeNodeClass < handle & matlab.mixin.Heterogeneous
     
     properties % (Access = private)        
         name;
@@ -13,14 +13,14 @@ classdef TreeNodeClass < handle
         updateParentGui;
     end
      
-    properties
+    properties (Access = public)
         outputVars
         DEBUG
         path
+        busy
     end
-        
-    methods
-        
+
+    methods       
         
         % ---------------------------------------------------------------------------------
         function obj = TreeNodeClass(arg)
@@ -35,6 +35,7 @@ classdef TreeNodeClass < handle
             obj.err = 0;
             obj.CondNames = {};
             obj.path = filesepStandard(pwd);
+            obj.busy = 0;
             
             
             obj.InitParentAppFunc();
@@ -114,24 +115,15 @@ classdef TreeNodeClass < handle
         function objnew = copy(obj)
             switch(class(obj))
                 case 'RunClass'
-                    objnew = RunClass('copy');
+                    objnew = RunClass(obj);
                 case 'SubjClass'
-                    objnew = SubjClass('copy');
+                    objnew = SubjClass(obj);
                 case 'GroupClass'
-                    objnew = GroupClass('copy');
-                case ''
+                    objnew = GroupClass(obj');
             end
-            objnew.name = obj.name;
-            objnew.type = obj.type;
-            objnew.err = obj.err;
-            objnew.CondNames = obj.CondNames;
-            objnew.procStream.Copy(obj.procStream, obj.GetFilename);
         end
         
                
-        % ----------------------------------------------------------------------------------
-        % Copy processing params (procInut and procResult) from
-        % obj2 to obj
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2, conditional)
             if ~isempty(obj2.procStream)
@@ -626,10 +618,17 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function FreeMemorySubBranch(obj)
+            
+        end
+
+        
+        % ----------------------------------------------------------------------------------
         function FreeMemory(obj)
             if isempty(obj)
                 return
             end
+            obj.busy = 0;
             obj.FreeMemorySubBranch();
             obj.procStream.FreeMemory(obj.GetFilename);
         end
@@ -659,7 +658,6 @@ classdef TreeNodeClass < handle
             filename = obj.SaveMemorySpace(obj.name);
         end
         
-                        
     end
 
     

@@ -70,7 +70,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 obj = NirsClass.empty();
                 return;
             end
-            obj.SetFilename('filename');
+            obj.SetFilename(filename);
             
             % Conditional loading of snirf file data
             if strcmpi(obj.GetDataStorageScheme(), 'memory')
@@ -180,9 +180,9 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 
                 % Do some error checking
                 if ~isempty(fname)
-                    obj.filename = fname;
+                    obj.SetFilename(fname);
                 else
-                    fname = obj.filename;
+                    fname = obj.GetFilename();
                 end
                 if exist(fname, 'file') ~= 2
                     err = -1;
@@ -223,10 +223,10 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 fname = '';
             end
             if isempty(fname)
-                fname = obj.filename;
+                fname = obj.GetFilename();
             end
             
-            SD        = obj.SD;
+            SD        = obj.SD; %#ok<*NASGU,*PROPLC>
             s         = obj.s;
             CondNames = obj.CondNames;
             save(fname, '-mat', '-append', 'SD','s','CondNames');            
@@ -256,7 +256,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             % If we're working off the snirf file instead of loading everything into memory
             % then we have to load stim here from file before accessing it.
             if strcmpi(obj.GetDataStorageScheme(), 'files')
-                obj.LoadStims(obj.filename);
+                obj.LoadStims(obj.GetFilename());
             end
             
             % Generate new instance of NirsClass
@@ -281,7 +281,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                     jj=0;
                     kk=ii+jj;
                     condName = num2str(kk);
-                    while ~isempty(find(strcmp(condName, obj.CondNames)))
+                    while ~isempty(find(strcmp(condName, obj.CondNames))) %#ok<EFIND>
                         jj=jj+1;
                         kk=ii+jj;
                         condName = num2str(kk);

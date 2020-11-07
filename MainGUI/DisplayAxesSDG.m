@@ -52,8 +52,8 @@ iCh         = maingui.axesSDG.iCh;
 iSrcDet     = maingui.axesSDG.iSrcDet;
 color       = maingui.axesSDG.linecolor;
 
-SD          = maingui.dataTree.currElem.GetSDG();
-bbox        = maingui.dataTree.currElem.GetSdgBbox();
+SD          = maingui.dataTree.currElem(1).GetSDG();
+bbox        = maingui.dataTree.currElem(1).GetSdgBbox();
 
 % Set axes handle properties and parameters 
 if ~ishandles(hAxes)
@@ -83,13 +83,13 @@ nSrcs       = size(SD.SrcPos,1);
 nDets       = size(SD.DetPos,1);
 
 % get mlActAuto from procResult if it exists and replace ch.MeasListActMan 
-nDataBlks = maingui.dataTree.currElem.GetDataBlocksNum();
+nDataBlks = maingui.dataTree.currElem(1).GetDataBlocksNum();
 MeasList = [];
 MeasListActMan = [];
 MeasListActAuto = [];
 MeasListVis = [];
 for iBlk = 1:nDataBlks   
-    ch              = maingui.dataTree.currElem.GetMeasList(iBlk);
+    ch              = maingui.dataTree.currElem(1).GetMeasList(iBlk);
     MeasList        = [MeasList; ch.MeasList];
     MeasListActMan  = [MeasListActMan; ch.MeasListActMan];
     MeasListActAuto = [MeasListActAuto; ch.MeasListActAuto];
@@ -106,18 +106,18 @@ hCh = zeros(length(lstML),1);
 % Draw all channels
 for ii = 1:length(lstML)
     hCh(ii) = line2(SD.SrcPos(ml(lstML(ii),1),:), SD.DetPos(ml(lstML(ii),2),:), [], gridsize);
-    if     ismember(ii, lstIncl)
-        % Draw included channel
-        col = [1.00 1.00 1.00] * 0.85;
-        lstyle = '-';
+    if ismember(ii,lstExclAuto)
+        % Draw auto-excluded channel
+        col = [1.00 0.6 0.6];
+        lstyle = '--';
     elseif ismember(ii, lstExclMan)
         % Draw manually excluded channel
         col = [1.00 1.00 1.00] * 0.85;
         lstyle = '--';
-    elseif ismember(ii,lstExclAuto)
-        % Draw auto-excluded channel
+    elseif ismember(ii, lstIncl)
+        % Draw included channel
         col = [1.00 1.00 1.00] * 0.85;
-        lstyle = ':';
+        lstyle = '-';
     end
     if ismember(ii, lstInvisible)
         lwidth = 1; 
@@ -145,7 +145,7 @@ if ~isempty(iSrcDet) && iSrcDet(1,1)~=0
         
         if ~isempty(iCh)
            
-            if ~MeasListActMan(iCh2(idx))
+            if ~MeasListActMan(iCh2(idx)) || ~MeasListActAuto(iCh2(idx))
                 lstyle = '--'; 
             else
                 lstyle = '-';

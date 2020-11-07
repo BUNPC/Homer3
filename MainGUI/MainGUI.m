@@ -480,11 +480,11 @@ end
 
 if strcmp(get(hObject, 'tag'), 'radiobuttonPlotRaw')
     set(handles.checkboxPlotHRF, 'value',0);
-elseif strcmp(get(hObject, 'tag'), 'radiobuttonPlotOD') && isempty(maingui.dataTree.currElem.GetDodAvg())
+elseif strcmp(get(hObject, 'tag'), 'radiobuttonPlotOD') && isempty(maingui.dataTree.currElem(1).GetDodAvg())
     if isa(maingui.dataTree.currElem, 'RunClass')
         set(handles.checkboxPlotHRF, 'value',0);
     end
-elseif strcmp(get(hObject, 'tag'), 'radiobuttonPlotConc') && isempty(maingui.dataTree.currElem.GetDcAvg())
+elseif strcmp(get(hObject, 'tag'), 'radiobuttonPlotConc') && isempty(maingui.dataTree.currElem(1).GetDcAvg())
     if isa(maingui.dataTree.currElem, 'RunClass')
         set(handles.checkboxPlotHRF, 'value',0);
     end
@@ -517,10 +517,10 @@ if ~ishandles(hObject)
     return;
 end
 if get(hObject, 'value')==1
-    if ~isempty(maingui.dataTree.currElem.GetDcAvg())
+    if ~isempty(maingui.dataTree.currElem(1).GetDcAvg())
         set(handles.radiobuttonPlotConc, 'enable', 'on');
         set(handles.radiobuttonPlotConc, 'value', 1);
-    elseif ~isempty(maingui.dataTree.currElem.GetDodAvg())
+    elseif ~isempty(maingui.dataTree.currElem(1).GetDodAvg())
         set(handles.radiobuttonPlotOD, 'enable', 'on');
         set(handles.radiobuttonPlotOD, 'value', 1);
     end
@@ -635,7 +635,9 @@ if ~ishandles(hObject)
 end
 dataTree = maingui.dataTree;
 dataTree.ResetCurrElem();
+dataTree.Save();
 Display(handles, hObject);
+
 
 
 
@@ -748,7 +750,7 @@ global maingui
 if ~ishandles(hObject)
     return;
 end
-maingui.dataTree.currElem.Save();
+maingui.dataTree.currElem(1).Save();
 
 
 
@@ -1170,8 +1172,8 @@ end
 axes(hAxes);
 hold on;
 
-aux = maingui.dataTree.currElem.GetAuxiliary();
-t = maingui.dataTree.currElem.GetTime();
+aux = maingui.dataTree.currElem(1).GetAuxiliary();
+t = maingui.dataTree.currElem(1).GetTime();
 
 % Check if there's any aux 
 if isempty(aux) || isempty(t)
@@ -1211,17 +1213,17 @@ hold off
 function DisplayPvalues()
 global maingui
 
-pValues = maingui.dataTree.currElem.GetPvalues();
+pValues = maingui.dataTree.currElem(1).GetPvalues();
 if isempty(pValues)
     return;
 end
 
 for iBlk=1:length(pValues)
-    maingui.logger.Write(sprintf('P-Values for %s, data block %d:\n', maingui.dataTree.currElem.GetName(), iBlk));
+    maingui.logger.Write(sprintf('P-Values for %s, data block %d:\n', maingui.dataTree.currElem(1).GetName(), iBlk));
     pretty_print_matrix(pValues{iBlk});
 end
 
-% guiname = sprintf('%s P-Values', maingui.dataTree.currElem.GetName());
+% guiname = sprintf('%s P-Values', maingui.dataTree.currElem(1).GetName());
 % 
 % if ishandles(maingui.handles.pValuesFig)
 %     clf(maingui.handles.pValuesFig);
@@ -1562,16 +1564,16 @@ p1 = min(point1,point2);
 p2 = max(point1,point2);
 
 iCh = maingui.axesSDG.iCh;
-iDataBlks =  maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
+iDataBlks =  maingui.dataTree.currElem(1).GetDataBlocksIdxs(iCh);
 for iBlk=1:iDataBlks
     
     % Get and set the excuded time points in tIncMan
-    t = maingui.dataTree.currElem.GetTime(iBlk);
+    t = maingui.dataTree.currElem(1).GetTime(iBlk);
     lst = find(t>=p1(1) & t<=p2(1));
-    maingui.dataTree.currElem.SetTincMan(lst, iBlk);
+    maingui.dataTree.currElem(1).SetTincMan(lst, iBlk);
     
     % Reject all stims that fall within the excluded time
-    maingui.dataTree.currElem.StimReject(t, iBlk);
+    maingui.dataTree.currElem(1).StimReject(t, iBlk);
 
 end
 
@@ -1591,7 +1593,7 @@ disp('Exclude button down fcn');
 function menuItemExportHRF_Callback(hObject, eventdata, handles)
 global maingui
 
-out = ExportDataGUI(maingui.dataTree.currElem.name,'.txt','HRF', 'userargs');
+out = ExportDataGUI(maingui.dataTree.currElem(1).name,'.txt','HRF', 'userargs');
 if isempty(out.format) && isempty(out.datatype)
     return;
 end
@@ -1602,23 +1604,23 @@ switch(out.procElemSelect)
         procElemSelect = 'all';
     otherwise
 end
-maingui.dataTree.currElem.ExportHRF(procElemSelect);
+maingui.dataTree.currElem(1).ExportHRF(procElemSelect);
 
 
 % --------------------------------------------------------------------
 function menuItemExportSubjHRFMean_Callback(hObject, eventdata, handles)
 global maingui
 
-if  ~maingui.dataTree.currElem.IsGroup()
+if  ~maingui.dataTree.currElem(1).IsGroup()
     MessageBox('Exporting mean HRF at this time, only applies to the currently selected group. Please select a group in the Current Processing Element panel. Then rerun the export')
     return 
 end
 
-out = ExportDataGUI(maingui.dataTree.currElem.name,'.txt','Subjects HRF mean');
+out = ExportDataGUI(maingui.dataTree.currElem(1).name,'.txt','Subjects HRF mean');
 if isempty(out.datatype)
     return;
 end
-maingui.dataTree.currElem.ExportMeanHRF(out.trange);
+maingui.dataTree.currElem(1).ExportMeanHRF(out.trange);
 
 
 
@@ -1651,8 +1653,8 @@ n_channels = length(iCh);
 if n_channels > 0
     iSrcDet = maingui.axesSDG.iSrcDet;
     colors = maingui.axesSDG.linecolor;
-    d = maingui.dataTree.currElem.acquired.data.dataTimeSeries;
-    sf = maingui.dataTree.currElem.acquired.data.time(2) - maingui.dataTree.currElem.acquired.data.time(1);
+    d = maingui.dataTree.currElem(1).acquired.data.dataTimeSeries;
+    sf = maingui.dataTree.currElem(1).acquired.data.time(2) - maingui.dataTree.currElem(1).acquired.data.time(1);
     fs = 1/sf;
     try
        close(maingui.spectrumFigureHandle);
@@ -1716,13 +1718,13 @@ if isa(maingui.dataTree.currElem, 'RunClass')
     if ch == 2
         return
     end
-    maingui.dataTree.currElem.InitTincMan();
+    maingui.dataTree.currElem(1).InitTincMan();
     iCh = maingui.axesSDG.iCh;
-    iDataBlks =  maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
+    iDataBlks =  maingui.dataTree.currElem(1).GetDataBlocksIdxs(iCh);
     for iBlk = 1:iDataBlks
-        t = maingui.dataTree.currElem.GetTime(iBlk);
-        maingui.dataTree.currElem.StimInclude(t, iBlk);
-        maingui.dataTree.currElem.InitMlActMan(iBlk);
+        t = maingui.dataTree.currElem(1).GetTime(iBlk);
+        maingui.dataTree.currElem(1).StimInclude(t, iBlk);
+        maingui.dataTree.currElem(1).InitMlActMan(iBlk);
     end
     Display(handles, hObject);
 else
@@ -1730,6 +1732,7 @@ else
 end
 
 
+<<<<<<< HEAD
 % --------------------------------------------------------------------
 function menuItemSegmentSnirf_Callback(hObject, eventdata, handles)
 global maingui;
@@ -1754,3 +1757,13 @@ for iG = 1:length(maingui.dataTree.groups)
     maingui.dataTree.ResetCurrElem();
 end
 DisplayGroupTree(handles);
+=======
+
+% --------------------------------------------------------------------
+function menuItemExportProcessingStreamScript_Callback(hObject, eventdata, handles)
+global maingui
+fname = uiputfile('*.m', 'Export Processing Stream to Script (.m)', 'processing_stream.m');
+if fname ~= 0
+    exportProcessScript(fname, maingui.dataTree.currElem.procStream);
+end
+>>>>>>> 09702016de90fb387a7a41abb0ffcfa23a357753

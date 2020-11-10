@@ -6,6 +6,9 @@ function snirfSegment()
 %%%%%%%%%%%%%%%
 % Code refined for Homer3 and fNIRS files
 
+% Homer3 Note
+% Segment tool does not work for a flat file structure
+
 global maingui;
 if isempty(maingui)
     [files, pathnm] = uigetfile( '*.snirf', 'Pick the .snirf file', 'multiselect','on');
@@ -75,6 +78,8 @@ for iFile = 1:length(files)
     end
 end
 
+new_name = [files{1} '.orig'];
+movefile (files{1}, new_name);
 % if isempty(maingui)
 %     %Nothing
 % else

@@ -13,6 +13,9 @@
 % Add code to allow non-integer downsampling factor - Meryem Oct 2018
 % Code refined for Homer3 and fNIRS files
 
+% Homer3 Note
+% Downsample tool does not work for a flat file structure
+
 function snirfDownsample()
 
 global maingui;
@@ -58,7 +61,7 @@ for iFile = 1:length(files)
             end
         end
         snirfData.data.time = downsample(snirfData.data.time,fsn);
-        s_sampled = zeros(size(snirfData.data.time,1),length(snirfData.aux));
+%         s_sampled = zeros(size(snirfData.data.time,1),length(snirfData.aux));
 %         for j=1:size(snirfData.stim,2)
 %             lst_1 = snirfData.stim(j).data(:,3) == 1;
 % %             lst_1 = round(lst_1/fsn);
@@ -102,6 +105,7 @@ for iFile = 1:length(files)
     snirfData.Save(snirfName);
 end
 
-    
+new_name = [files{1} '.orig'];
+movefile (files{1}, new_name);
     
 cd(wd);

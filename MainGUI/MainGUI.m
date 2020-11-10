@@ -977,14 +977,22 @@ for iBlk = iDataBlks
             end
             d = d * sclConc;
             DisplayDataConc(t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
-            sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
-            xlabel(['Time(s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
+            if isa(dataTree.currElem, 'RunClass')
+                sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
+                xlabel(['Time(s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
+            else
+                xlabel('Time(s)', 'FontSize', 17);
+            end
             procName = {procElem.procStream.fcalls.name};
             idx = contains(procName, 'hmrR_OD2Conc_new');
-            ppf = procElem.procStream.fcalls(idx).paramIn.value;
-            if ppf(condition) == 1 && ~isempty(dataTree.currElem.acquired.metaDataTags.tags.LengthUnit)
-                unit = dataTree.currElem.acquired.metaDataTags.tags.LengthUnit;
-                ylabel(['\muM ' unit], 'FontSize', 17);
+            if ~isempty(find(idx,1))
+                ppf = procElem.procStream.fcalls(idx).paramIn.value;
+                if ppf(condition) == 1 && ~isempty(dataTree.currElem.acquired.metaDataTags.tags.LengthUnit)
+                    unit = dataTree.currElem.acquired.metaDataTags.tags.LengthUnit;
+                    ylabel(['\muM ' unit], 'FontSize', 17);
+                else
+                ylabel('\muM', 'FontSize', 17);
+                end
             else
                 ylabel('\muM', 'FontSize', 17);
             end
@@ -1735,8 +1743,7 @@ end
 function menuItemSegmentSnirf_Callback(hObject, eventdata, handles)
 global maingui;
 snirfSegment();
-dirname = [pwd,'/'];
-maingui.dataTree = DataTreeClass(dirname,'','','files');
+maingui.dataTree = DataTreeClass();
 for iG = 1:length(maingui.dataTree.groups)
     maingui.dataTree.SetCurrElem(iG,0,0)
     maingui.dataTree.ResetCurrElem();
@@ -1748,8 +1755,7 @@ DisplayGroupTree(handles);
 function menuItemDownsampleSnirf_Callback(hObject, eventdata, handles)
 global maingui;
 snirfDownsample();
-dirname = [pwd,'/'];
-maingui.dataTree = DataTreeClass(dirname,'','','files');
+maingui.dataTree = DataTreeClass();
 for iG = 1:length(maingui.dataTree.groups)
     maingui.dataTree.SetCurrElem(iG,0,0)
     maingui.dataTree.ResetCurrElem();

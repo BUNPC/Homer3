@@ -968,8 +968,12 @@ for iBlk = iDataBlks
             end
             d = procElem.reshape_y(d, ch.MeasList);
             DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
-            sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
-            xlabel(['Time(s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
+            if isa(dataTree.currElem, 'RunClass')
+                sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
+                xlabel(['Time(s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
+            else
+                xlabel('Time(s)', 'FontSize', 17);
+            end
             ylabel('');
         elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
             if  datatype == maingui.buttonVals.CONC_HRF

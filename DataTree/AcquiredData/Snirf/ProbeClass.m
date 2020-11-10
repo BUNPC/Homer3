@@ -50,7 +50,7 @@ classdef ProbeClass < FileLoadSaveClass
                         obj.detectorLabels{ii} = ['D',num2str(ii)];
                     end
                 elseif ischar(varargin{1})
-                    obj.filename = varargin{1};
+                    obj.SetFilename(varargin{1});
                     obj.Load(varargin{1});
                 end
             else
@@ -118,9 +118,9 @@ classdef ProbeClass < FileLoadSaveClass
               
             % Error checking            
             if ~isempty(fileobj) && ischar(fileobj)
-                obj.filename = fileobj;
+                obj.SetFilename(fileobj);
             elseif isempty(fileobj)
-                fileobj = obj.filename;
+                fileobj = obj.GetFilename();
             end 
             if isempty(fileobj)
                err = -1;

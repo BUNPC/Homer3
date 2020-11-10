@@ -1,5 +1,5 @@
 % SYNTAX:
-% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] = hmrR_GLM(data, stim, probe, mlActAuto, Aaux, tIncAuto, trange, rcMap, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, flagMotionCorrect )
+% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] = hmrR_GLM(data, stim, probe, mlActAuto, Aaux, tIncAuto, trange, rcMap, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder)
 %
 % UI NAME:
 % GLM_HRF_Drift_SS
@@ -68,7 +68,6 @@
 %            3. uses tCCA regressors for nuisance regression, in Aaux,
 %            mapped by rcMap, provided by hmr_tCCA()
 % driftOrder - Polynomial drift correction of this order
-% flagMotionCorrect - set to 1 to baseline correct between motion epochs indicated in tIncAuto, otherwise set to 0
 %
 %
 % OUTPUTS:
@@ -87,7 +86,7 @@
 %
 %
 % USAGE OPTIONS:
-% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, flagMotionCorrect)
+% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder)
 %
 %
 % PARAMETERS:
@@ -98,11 +97,10 @@
 % rhoSD_ssThresh: 15.0
 % flagNuisanceRMethod: 1
 % driftOrder: 3
-% flagMotionCorrect: 0
 %
 %
 function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks] = ...
-    hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, flagMotionCorrect)
+    hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder)
 
 % Init output
 data_yavg     = DataClass().empty();
@@ -381,25 +379,25 @@ for iBlk=1:length(data_y)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Expand design matrix for Motion Correction
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    if flagMotionCorrect==1
-        idxMA = find(diff(tInc)==1);  % number of motion artifacts
-        if isempty(idxMA)
+%     if flagMotionCorrect==1
+%         idxMA = find(diff(tInc)==1);  % number of motion artifacts
+%         if isempty(idxMA)
             nMC = 0;
             Amotion = [];
-        else
-            nMA = length(idxMA);
-            nMC = nMA+1;
-            Amotion = zeros(nT,nMC);
-            Amotion(1:idxMA(1),1) = 1;
-            for ii=2:nMA
-                Amotion((idxMA(ii-1)+1):idxMA(ii),ii) = 1;
-            end
-            Amotion((idxMA(nMA)+1):end,end) = 1;
-        end
-    else
-        nMC = 0;
-        Amotion = [];
-    end
+%         else
+%             nMA = length(idxMA);
+%             nMC = nMA+1;
+%             Amotion = zeros(nT,nMC);
+%             Amotion(1:idxMA(1),1) = 1;
+%             for ii=2:nMA
+%                 Amotion((idxMA(ii-1)+1):idxMA(ii),ii) = 1;
+%             end
+%             Amotion((idxMA(nMA)+1):end,end) = 1;
+%         end
+%     else
+%         nMC = 0;
+%         Amotion = [];
+%     end
     lstInc = find(tInc==1);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

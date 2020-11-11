@@ -59,7 +59,7 @@ classdef DataClass < FileLoadSaveClass
                         obj.measurementList(end+1) = MeasListClass(varargin{1}.ml(ii,:));
                     end
                 elseif isa(varargin{1}, 'char')
-                    obj.filename = varargin{1};
+                    obj.SetFilename(varargin{1});
                     obj.Load();
                 end
             elseif nargin==3
@@ -117,10 +117,10 @@ classdef DataClass < FileLoadSaveClass
             
             % Error checking            
             if ~isempty(fileobj) && ischar(fileobj)
-                obj.filename = fileobj;
+                obj.SetFilename(fileobj);
             elseif isempty(fileobj)
-                fileobj = obj.filename;
-            end 
+                fileobj = obj.GetFilename();
+            end
             if isempty(fileobj)
                err = -1;
                return;

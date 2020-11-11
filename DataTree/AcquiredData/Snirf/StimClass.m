@@ -23,7 +23,7 @@ classdef StimClass < FileLoadSaveClass
                     obj.Copy(varargin{1});
                 elseif ischar(varargin{1})
                     if exist(varargin{1}, 'file')==2
-                        obj.filename = varargin{1};
+                        obj.SetFilename(varargin{1});
                         obj.Load(varargin{1});
                     else
                         obj.name = varargin{1};
@@ -32,7 +32,7 @@ classdef StimClass < FileLoadSaveClass
                 end
             elseif nargin==2
                 if ischar(varargin{1})
-                    obj.filename = varargin{1};
+                    obj.SetFilename(varargin{1});
                     obj.Load(varargin{1}, obj.fileformat, varargin{2});
                 else
                     t        = varargin{1};
@@ -441,7 +441,7 @@ classdef StimClass < FileLoadSaveClass
             if isempty(obj)
                 return
             end
-            nbytes = sizeof(obj.name) + sizeof(obj.data) + sizeof(obj.filename) + sizeof(obj.fileformat) + sizeof(obj.supportedFomats) + 8;
+            nbytes = sizeof(obj.name) + sizeof(obj.data) + sizeof(obj.GetFilename()) + sizeof(obj.GetFileFormat()) + sizeof(obj.GetSupportedFormats()) + 8;
         end
         
     end

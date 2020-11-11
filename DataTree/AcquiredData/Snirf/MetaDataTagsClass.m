@@ -21,7 +21,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             obj.tags.SnirfDraft = '3';
             
             if nargin==1
-                obj.filename = varargin{1};
+                obj.SetFilename(varargin{1});
                 obj.Load();
             end
         end
@@ -46,10 +46,10 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
                        
             % Error checking
             if ~isempty(fileobj) && ischar(fileobj)
-                obj.filename = fileobj;
+                obj.SetFilename(fileobj);
             elseif isempty(fileobj)
-                fileobj = obj.filename;
-            end 
+                fileobj = obj.GetFilename();
+            end
             if isempty(fileobj)
                err = -1;
                return;

@@ -19,7 +19,7 @@ classdef AuxClass < FileLoadSaveClass
                 if isa(varargin{1}, 'AuxClass')
                     obj = varargin{1}.copy();
                 elseif ischar(varargin{1})
-                    obj.filename = varargin{1};
+                    obj.SetFilename(varargin{1});
                     obj.Load();
                 end
             elseif nargin==3
@@ -53,9 +53,9 @@ classdef AuxClass < FileLoadSaveClass
             
             % Error checking            
             if ~isempty(fileobj) && ischar(fileobj)
-                obj.filename = fileobj;
+                obj.SetFilename(fileobj);
             elseif isempty(fileobj)
-                fileobj = obj.filename;
+                fileobj = obj.GetFilename();
             end 
             if isempty(fileobj)
                err = -1;

@@ -676,7 +676,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Load stims from file
             snirf = SnirfClass();
-            snirf.LoadStim(obj.filename);
+            snirf.LoadStim(obj.GetFilename);
             stimFromFile = snirf.stim;
             
             % Update stims from file with edited stims
@@ -724,9 +724,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Error checking
             if ~isempty(fileobj) && ischar(fileobj)
-                obj.filename = fileobj;
+                obj.SetFilename(fileobj);
             elseif isempty(fileobj)
-                fileobj = obj.filename;
+                fileobj = obj.GetFilename();
             end
             if isempty(fileobj)
                 err = -1;

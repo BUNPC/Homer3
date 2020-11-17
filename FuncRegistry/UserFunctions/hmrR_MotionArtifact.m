@@ -1,5 +1,5 @@
 % SYNTAX:
-% tInc = hmrR_MotionArtifact(data, probe, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+% tInc = hmrR_MotionArtifact(data, probe, mlActMan, mlActAuto, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % UI NAME:
 % Motion_Artifacts
@@ -14,6 +14,8 @@
 % data: SNIRF data structure data, containing time course data
 % probe:   SNIRF data structure probe, containing probe source/detector geometry
 % mlActMan: Cell array of vectors, one for each time base in data, specifying 
+%        active/inactive channels with 1 meaning active, 0 meaning inactive
+% mlActAuto: Cell array of vectors, one for each time base in data, specifying 
 %        active/inactive channels with 1 meaning active, 0 meaning inactive
 % tIncMan: Cell array of vectors corresponding to the number of time bases in data. 
 %          tIncMan has been manually excluded. 0-excluded. 1-included. Vector same length as d.
@@ -42,7 +44,7 @@
 %       with 1's indicating data included and 0's indicate motion artifact
 %
 % USAGE OPTIONS:
-% Motion_Artifacts:  tIncAuto = hmrR_MotionArtifact(dod, probe, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+% Motion_Artifacts:  tIncAuto = hmrR_MotionArtifact(dod, probe, mlActMan, mlActAuto, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % PARAMETERS:
 % tMotion: 0.5
@@ -60,7 +62,7 @@
 % JDUBB 3/18/2019 Adapted to SNIRF format
 %
 %
-function tInc = hmrR_MotionArtifact(data, probe, mlActMan, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
+function tInc = hmrR_MotionArtifact(data, probe, mlActMan, mlActAuto, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
 
 % Init output 
 tInc = cell(length(data),1);
@@ -81,6 +83,9 @@ end
 if isempty(mlActMan)
     mlActMan = cell(length(data),1);
 end
+if isempty(mlActAuto)
+    mlActAuto = cell(length(data),1);
+end
 
 for iBlk=1:length(data)
 
@@ -100,7 +105,10 @@ for iBlk=1:length(data)
     if isempty(mlActMan{iBlk})
         mlActMan{iBlk} = ones(size(MeasList,1),1);
     end
-    MeasListAct = mlActMan{iBlk};        
+    if isempty(mlActAuto{iBlk})
+        mlActAuto{iBlk} = ones(size(MeasList,1),1);
+    end
+    MeasListAct = mlActMan{iBlk} & mlActAuto{iBlk};        
     
     % Calculate the diff of d to to set the threshold if ncssesary
     diff_d = diff(d);

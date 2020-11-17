@@ -28,17 +28,20 @@
 % Delta_OD_to_Conc: dc = hmrR_OD2Conc_new_Nirs( dod, SD, ppf )
 %
 % PARAMETERS:
-% ppf: [1.0, 1.0]
+% ppf: [1.0, 1.0, 1.0]
 %
 function dc = hmrR_OD2Conc_new_Nirs( dod, SD, ppf )
 
+dc = [];
 nWav = length(SD.Lambda);
 ml = SD.MeasList;
 
-if length(ppf)~=nWav
-    errordlg('The length of PPF must match the number of wavelengths in SD.Lambda');
-    dc = zeros(size(dod,1),3,length(find(ml(:,4)==1)));
-    return
+if length(ppf) < nWav
+    errordlg('WARNING: Data contains more than 3 wavelengths. Using PPF value of 1 for all wavelengths.');
+    ppf = ones(1, nWav);
+elseif length(ppf) > nWav
+    d = length(ppf)-nWav;
+    ppf(end-d+1:end) = [];
 end
 
 if ~isempty(find(ppf==1))

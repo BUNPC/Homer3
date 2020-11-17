@@ -12,16 +12,16 @@ if ch==2
 end
 
 iCh = maingui.axesSDG.iCh;
-iDataBlks =  maingui.dataTree.currElem(1).GetDataBlocksIdxs(iCh);
+iDataBlks =  maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
 for iBlk=1:iDataBlks
-    tInc = maingui.dataTree.currElem(1).GetTincMan(iBlk);
-    t = maingui.dataTree.currElem(1).GetTime(iBlk);
+    tInc = maingui.dataTree.currElem.GetTincMan(iBlk);
+    t = maingui.dataTree.currElem.GetTime(iBlk);
     p = TimeExcludeRanges(tInc,t);
     lst = find(t>=p(idx,1) & t<=p(idx,2));
-    maingui.dataTree.currElem(1).SetTincMan(lst, iBlk, 'include');
+    maingui.dataTree.currElem.SetTincMan(lst, iBlk, 'include');
 
     % Unreject all stims that fall within the included time
-    maingui.dataTree.currElem(1).StimInclude(t, iBlk);
+    maingui.dataTree.currElem.StimInclude(t, iBlk);
 end
 maingui.Update('PatchCallback');
 

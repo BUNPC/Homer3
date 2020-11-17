@@ -1,4 +1,4 @@
-% [tInc,tIncCh] = hmrR_MotionArtifactByChannel(data, probe, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+% [tInc,tIncCh] = hmrR_MotionArtifactByChannel(data, probe, mlActMan, mlActAuto, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % UI NAME:   
 % Motion_Artifacts_By_Channel
@@ -18,6 +18,8 @@
 % tIncMan: Cell array of vectors corresponding to the number of time bases in data. 
 %          tIncMan has been manually excluded. 0-excluded. 1-included. Vector same length as d.
 % mlActMan: Cell array of vectors, one for each time base in data, specifying 
+%        active/inactive channels with 1 meaning active, 0 meaning inactive
+% mlActAuto: Cell array of vectors, one for each time base in data, specifying 
 %        active/inactive channels with 1 meaning active, 0 meaning inactive
 % tMotion: Check for signal change indicative of a motion artifact over
 %     time range tMotion. Units of seconds.
@@ -40,7 +42,7 @@
 %       channel basis
 %
 % USAGE OPTIONS:
-% Motion_Artifacts_By_Channel:  [tIncAuto, tIncAutoCh] = hmrR_MotionArtifactByChannel(dod, probe, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+% Motion_Artifacts_By_Channel:  [tIncAuto, tIncAutoCh] = hmrR_MotionArtifactByChannel(dod, probe, mlActMan, mlActAuto, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % PARAMETERS:
 % tMotion: 0.5
@@ -59,7 +61,7 @@
 % TO DO:
 % Consider tIncMan
 
-function [tInc, tIncCh] = hmrR_MotionArtifactByChannel(data, probe, mlActMan, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
+function [tInc, tIncCh] = hmrR_MotionArtifactByChannel(data, probe, mlActMan, mlActAuto, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
 
 tInc   = cell(length(data), 1);
 tIncCh = cell(length(data), 1);
@@ -79,6 +81,9 @@ if isempty(tIncMan)
 end
 if isempty(mlActMan)
     mlActMan = cell(length(data),1);
+end
+if isempty(mlActAuto)
+    mlActAuto = cell(length(data),1);
 end
 
 for iBlk=1:length(data)
@@ -102,7 +107,10 @@ for iBlk=1:length(data)
     if isempty(mlActMan{iBlk})
         mlActMan{iBlk} = ones(size(MeasList,1),1);
     end
-    MeasListAct = mlActMan{iBlk};
+    if isempty(mlActAuto{iBlk})
+        mlActAuto{iBlk} = ones(size(MeasList,1),1);
+    end
+    MeasListAct = mlActMan{iBlk} & mlActAuto{iBlk};      
         
     % Calculate the diff of d to to set the threshold if ncssesary
     diff_d = diff(d);

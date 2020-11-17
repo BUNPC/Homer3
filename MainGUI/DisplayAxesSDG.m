@@ -52,8 +52,8 @@ iCh         = maingui.axesSDG.iCh;
 iSrcDet     = maingui.axesSDG.iSrcDet;
 color       = maingui.axesSDG.linecolor;
 
-SD          = maingui.dataTree.currElem(1).GetSDG();
-bbox        = maingui.dataTree.currElem(1).GetSdgBbox();
+SD          = maingui.dataTree.currElem.GetSDG();
+bbox        = maingui.dataTree.currElem.GetSdgBbox();
 
 % Set axes handle properties and parameters 
 if ~ishandles(hAxes)
@@ -83,13 +83,13 @@ nSrcs       = size(SD.SrcPos,1);
 nDets       = size(SD.DetPos,1);
 
 % get mlActAuto from procResult if it exists and replace ch.MeasListActMan 
-nDataBlks = maingui.dataTree.currElem(1).GetDataBlocksNum();
+nDataBlks = maingui.dataTree.currElem.GetDataBlocksNum();
 MeasList = [];
 MeasListActMan = [];
 MeasListActAuto = [];
 MeasListVis = [];
 for iBlk = 1:nDataBlks   
-    ch              = maingui.dataTree.currElem(1).GetMeasList(iBlk);
+    ch              = maingui.dataTree.currElem.GetMeasList(iBlk);
     MeasList        = [MeasList; ch.MeasList];
     MeasListActMan  = [MeasListActMan; ch.MeasListActMan];
     MeasListActAuto = [MeasListActAuto; ch.MeasListActAuto];

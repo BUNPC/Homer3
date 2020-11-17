@@ -18,7 +18,7 @@ maingui.plotViewOptions = struct('zoom',true, 'ranges',struct('X',[], 'Y',[]));
 % Set the wavelength popup menu
 % Load current element data from file
 maingui.dataTree.LoadCurrElem();
-Lambda =  maingui.dataTree.currElem(1).GetWls();
+Lambda =  maingui.dataTree.currElem.GetWls();
 strs = cell(1,length(Lambda));
 for ii=1:length(Lambda)
     strs{ii} = num2str(Lambda(ii));

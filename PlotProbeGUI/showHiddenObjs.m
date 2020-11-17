@@ -5,7 +5,7 @@ if ~exist('hData','var')
     hData = plotprobe.handles.data;
 end
 y        = plotprobe.y{iBlk};
-ch       = plotprobe.dataTree.currElem(1).GetMeasList(iBlk);
+ch       = plotprobe.dataTree.currElem.GetMeasList(iBlk);
 h        = hData;
 bit0     = plotprobe.tMarkShow;
 bit1     = plotprobe.hidMeasShow;

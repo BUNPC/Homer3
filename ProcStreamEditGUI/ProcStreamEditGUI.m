@@ -171,7 +171,7 @@ LoadProcStream(handles);
 % -------------------------------------------------------------
 function UpdateProcElem()
 global procStreamEdit
-idx = procStreamEdit.dataTree.currElem(1).GetIndexID();
+idx = procStreamEdit.dataTree.currElem.GetIndexID();
 idx(idx==0)=1;
 iG = idx(1);
 iS = idx(2);
@@ -723,7 +723,7 @@ global procStreamEdit
 if ~ishandles(hObject)
     return;
 end
-procStreamEdit.dataTree.currElem(1).Save();
+procStreamEdit.dataTree.currElem.Save();
 
 
 

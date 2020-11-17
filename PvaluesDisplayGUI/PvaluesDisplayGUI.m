@@ -128,14 +128,14 @@ global pvaluesgui
 
 figure(handles.figure);
 set(handles.uitablePvalues, 'data', [])
-set(handles.textCurrElemName, 'string',pvaluesgui.dataTree.currElem(1).GetName())
+set(handles.textCurrElemName, 'string',pvaluesgui.dataTree.currElem.GetName())
 
-pValues = pvaluesgui.dataTree.currElem(1).GetPvalues();
+pValues = pvaluesgui.dataTree.currElem.GetPvalues();
 if isempty(pValues)
     return;
 end
 for iBlk=1:length(pValues)
-    fprintf('P-Values for %s, data block %d:\n', pvaluesgui.dataTree.currElem(1).GetName(), iBlk);
+    fprintf('P-Values for %s, data block %d:\n', pvaluesgui.dataTree.currElem.GetName(), iBlk);
     pretty_print_matrix(pValues{iBlk});
 end
 set(handles.uitablePvalues, 'data',pValues{iBlk})

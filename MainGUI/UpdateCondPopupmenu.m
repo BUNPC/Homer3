@@ -13,7 +13,7 @@ end
 
 iG = maingui.dataTree.GetCurrElemIndexID();
 CondNames = maingui.dataTree.groups(iG).GetConditions();
-CondNamesCurrElem = maingui.dataTree.currElem(1).GetConditionsActive();
+CondNamesCurrElem = maingui.dataTree.currElem.GetConditionsActive();
 for jj=1:length(CondNames)
     k = find(strcmp(['-- ', CondNames{jj}], CondNamesCurrElem));
     if ~isempty(k)

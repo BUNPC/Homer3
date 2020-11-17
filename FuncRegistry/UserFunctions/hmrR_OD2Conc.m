@@ -46,6 +46,9 @@ for ii=1:length(dod)
     if length(ppf) < nWav
         errordlg('WARNING: Data contains more than 3 wavelengths. Using PPF value of 1 for all wavelengths.');
         ppf = ones(1, nWav);
+    elseif length(ppf) > nWav
+        d = length(ppf)-nWav;
+        ppf(end-d+1:end) = [];
     end
     
     if ~isempty(find(ppf==1))
@@ -68,7 +71,7 @@ for ii=1:length(dod)
         if ppf(1)~=1
             y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,1)*rho*ppf))' )';
         else
-            y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,nWav)))' )';
+            y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,1)))' )';
         end
         y2(:,k+2) = y2(:,k) + y2(:,k+1);
         dc(ii).AddChannelHbO(ml(idx1,1), ml(idx1,2));

@@ -73,8 +73,9 @@ for iFile = 1:length(files)
             snirfData.aux(iAux).time = snirfData.aux(iAux).time(round(fsn(P,1)*fs):round(fsn(P,2)*fs));
         end
         
-        snirfName = sprintf([name '_part_' num2str(P) '.snirf']);
+        snirfName = sprintf([name '_seg_' num2str(P) '.snirf']);
         snirfData.Save(snirfName);
+        msgbox(['File created with name' snirfName], 'Notification');
     end
 end
 

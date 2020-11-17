@@ -34,7 +34,7 @@ if ~iscell(files)
     end
 end
 
-fsn = inputdlg( 'Decrease the sampling rate of a sequence by', 'Downsample SNIRF files', 1 );
+fsn = inputdlg( 'Decrease the sampling rate of a sequence by a factor of', 'Downsample SNIRF files', 1 );
 fsn = str2num(fsn{1});
 
 wd = cd;
@@ -103,6 +103,7 @@ for iFile = 1:length(files)
     
     snirfName = sprintf([name '_downsample_' num2str(fsn) '.snirf']);
     snirfData.Save(snirfName);
+    msgbox(['File created with name' snirfName]);
 end
 
 new_name = [files{1} '.orig'];

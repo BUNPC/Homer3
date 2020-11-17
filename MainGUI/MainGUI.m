@@ -969,9 +969,10 @@ for iBlk = iDataBlks
             DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
             if isa(dataTree.currElem, 'RunClass')
                 sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
-                xlabel(['Time(s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
+                xlabel('Time (s)', 'FontSize', 17);
+%                 xlabel(['Time (s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
             else
-                xlabel('Time(s)', 'FontSize', 17);
+                xlabel('Time (s)', 'FontSize', 17);
             end
             ylabel('');
         elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
@@ -982,9 +983,10 @@ for iBlk = iDataBlks
             DisplayDataConc(t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
             if isa(dataTree.currElem, 'RunClass')
                 sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
-                xlabel(['Time(s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
+                xlabel('Time (s)', 'FontSize', 17);
+%                 xlabel(['Time(s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
             else
-                xlabel('Time(s)', 'FontSize', 17);
+                xlabel('Time (s)', 'FontSize', 17);
             end
             procName = {procElem.procStream.fcalls.name};
             idx = contains(procName, 'hmrR_OD2Conc_new');

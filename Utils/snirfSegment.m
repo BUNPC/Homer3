@@ -13,7 +13,7 @@ global maingui;
 if isempty(maingui)
     [files, pathnm] = uigetfile( '*.snirf', 'Pick the .snirf file', 'multiselect','on');
 else
-    fpath = maingui.dataTree.currElem.path;
+    fpath = [maingui.dataTree.currElem.path maingui.dataTree.currElem.name];
     [files, pathnm] = uigetfile( '*.snirf', 'Pick the .snirf file', fpath, 'multiselect','on');
 end
 

@@ -1749,7 +1749,7 @@ global maingui;
 snirfSegment();
 maingui.dataTree = DataTreeClass();
 for iG = 1:length(maingui.dataTree.groups)
-    maingui.dataTree.SetCurrElem(iG,0,0)
+    maingui.dataTree.SetCurrElem(iG,0,0);
     maingui.dataTree.ResetCurrElem();
 end
 DisplayGroupTree(handles);
@@ -1761,7 +1761,7 @@ global maingui;
 snirfDownsample();
 maingui.dataTree = DataTreeClass();
 for iG = 1:length(maingui.dataTree.groups)
-    maingui.dataTree.SetCurrElem(iG,0,0)
+    maingui.dataTree.SetCurrElem(iG,0,0);
     maingui.dataTree.ResetCurrElem();
 end
 DisplayGroupTree(handles);

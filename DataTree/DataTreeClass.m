@@ -20,14 +20,12 @@ classdef DataTreeClass <  handle
             global logger
             
             obj.groups              = GroupClass().empty();
+            obj.currElem            = TreeNodeClass().empty();
             obj.reg                 = RegistriesClass().empty();
             obj.config              = ConfigFileClass().empty();
             obj.dirnameGroups       = {};
             obj.logger              = InitLogger(logger, 'DataTree');
-            obj.currElem            = TreeNodeClass().empty();
-            for ii = 1:length(10)
-                obj.currElem(ii) = TreeNodeClass();
-            end
+            
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Parse args
@@ -106,11 +104,8 @@ classdef DataTreeClass <  handle
         
         
         % --------------------------------------------------------------
-        function Copy(obj, obj2, iC)
-            if ~exist('iC','var') || isempty(iC)
-                iC = 1;
-            end
-            idx = obj2.currElem(iC).GetIndexID();
+        function Copy(obj, obj2)
+            idx = obj2.currElem.GetIndexID();
             iG = idx(1);
             iS = idx(2);
             iR = idx(3);
@@ -119,19 +114,16 @@ classdef DataTreeClass <  handle
             else
                 obj.groups(iG).Copy(obj.groups(iG))
             end
-            obj.SetCurrElem(iG, iS, iR, iC);
+            obj.SetCurrElem(iG, iS, iR);
             obj.groups(iG).SetConditions();
         end
         
         
         % --------------------------------------------------------------
-        function CopyStims(obj, obj2, iC)
-            if ~exist('iC','var') || isempty(iC)
-                iC = 1;
-            end
-            idx = obj2.currElem(iC).GetIndexID();
+        function CopyStims(obj, obj2)
+            idx = obj2.currElem.GetIndexID();
             iG = idx(1);
-            obj.groups(iG).CopyStims(obj2.groups(iG));
+            obj.groups(iG).CopyStims(obj2.groups(iG));            
         end
         
         
@@ -444,17 +436,16 @@ classdef DataTreeClass <  handle
             if isempty(obj.groups)
                 return;
             end
-            err = obj.currElem(1).Load();
+            err = obj.currElem.Load();
         end
 
 
         % ----------------------------------------------------------
-        function iC = SetCurrElem(obj, iGroup, iSubj, iRun, new)
-            
-            %%%% Parse arguments
+        function SetCurrElem(obj, iGroup, iSubj, iRun)
             if isempty(obj.groups)
                 return;
             end
+            
             if nargin==1
                 iGroup = 0;
                 iSubj = 0;
@@ -463,61 +454,38 @@ classdef DataTreeClass <  handle
                 iSubj = 0;
                 iRun  = 0;
             elseif nargin==3
-                iRun  = 0;                
+                iRun  = 0;
             end
-            if ~exist('new','var')
-                new = '';
-            end
-                        
-            % We can have multiple current elements simultaneously. 
-            % Decide which current element we are setting 
-            iC = 1;            
-            if isnumeric(new)                
-                iC = new;
-            elseif strcmp(new, 'new')
-                for ii = 1:length(obj.currElem)
-                    if ~obj.busy
-                        break;
-                    end
-                end
-                iC = ii;
-            end
-                        
-            if obj.currElem(iC).IsSame(iGroup, iSubj, iRun)
+
+            if obj.currElem.IsSame(iGroup, iSubj, iRun)
                 return;
             end
             
             % Free up memory of current element before reassigning it to
-            % another node.
-            obj.currElem(iC).FreeMemory();
+            % another node. 
+            obj.currElem.FreeMemory();
             
             if iSubj==0 && iRun==0
-                obj.currElem(iC) = obj.groups(iGroup);
+                obj.currElem = obj.groups(iGroup);
             elseif iSubj>0 && iRun==0
-                obj.currElem(iC) = obj.groups(iGroup).subjs(iSubj);
+                obj.currElem = obj.groups(iGroup).subjs(iSubj);
             elseif iSubj>0 && iRun>0
-                obj.currElem(iC) = obj.groups(iGroup).subjs(iSubj).runs(iRun);
+                obj.currElem = obj.groups(iGroup).subjs(iSubj).runs(iRun);
             end
         end
 
 
         % ----------------------------------------------------------
-        function procElem = GetCurrElem(obj, iC)
-            if ~exist('iC','var') || isempty(iC)
-                iC = 1;
-            end
-            procElem = obj.currElem(iC);
+        function procElem = GetCurrElem(obj)
+            procElem = obj.currElem;
         end
 
 
         % ----------------------------------------------------------
-        function [iGroup, iSubj, iRun] = GetCurrElemIndexID(obj, iC)
-            if ~exist('iC','var') || isempty(iC)
-                iC = 1;
-            end
-            iGroup = obj.currElem(iC).iGroup;
-            iSubj = obj.currElem(iC).iSubj;
-            iRun = obj.currElem(iC).iRun;
+        function [iGroup, iSubj, iRun] = GetCurrElemIndexID(obj)
+            iGroup = obj.currElem.iGroup;
+            iSubj = obj.currElem.iSubj;
+            iRun = obj.currElem.iRun;
         end
 
 
@@ -565,21 +533,15 @@ classdef DataTreeClass <  handle
 
 
         % ----------------------------------------------------------
-        function CalcCurrElem(obj, iC)
-            if ~exist('iC','var') || isempty(iC)
-                iC = 1;
-            end
-            obj.currElem(iC).Calc();
+        function CalcCurrElem(obj)
+            obj.currElem.Calc();
         end
 
         
         % ----------------------------------------------------------
-        function ResetCurrElem(obj, iC)
-            if ~exist('iC','var') || isempty(iC)
-                iC = 1;
-            end
-            obj.currElem(iC).Reset();
-            idx = obj.currElem(iC).GetIndexID();
+        function ResetCurrElem(obj)
+            obj.currElem.Reset();
+            idx = obj.currElem.GetIndexID();
             if isa(obj.currElem, 'SubjClass')
                 obj.groups(idx(1)).Reset('up')
             elseif isa(obj.currElem, 'RunClass')

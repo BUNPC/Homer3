@@ -1,4 +1,4 @@
-classdef TreeNodeClass < handle & matlab.mixin.Heterogeneous
+classdef TreeNodeClass < handle
     
     properties % (Access = private)        
         name;
@@ -13,14 +13,14 @@ classdef TreeNodeClass < handle & matlab.mixin.Heterogeneous
         updateParentGui;
     end
      
-    properties (Access = public)
+    properties
         outputVars
         DEBUG
         path
-        busy
     end
-
-    methods       
+        
+    methods
+        
         
         % ---------------------------------------------------------------------------------
         function obj = TreeNodeClass(arg)
@@ -35,7 +35,6 @@ classdef TreeNodeClass < handle & matlab.mixin.Heterogeneous
             obj.err = 0;
             obj.CondNames = {};
             obj.path = filesepStandard(pwd);
-            obj.busy = 0;
             
             
             obj.InitParentAppFunc();
@@ -115,15 +114,24 @@ classdef TreeNodeClass < handle & matlab.mixin.Heterogeneous
         function objnew = copy(obj)
             switch(class(obj))
                 case 'RunClass'
-                    objnew = RunClass(obj);
+                    objnew = RunClass('copy');
                 case 'SubjClass'
-                    objnew = SubjClass(obj);
+                    objnew = SubjClass('copy');
                 case 'GroupClass'
-                    objnew = GroupClass(obj');
+                    objnew = GroupClass('copy');
+                case ''
             end
+            objnew.name = obj.name;
+            objnew.type = obj.type;
+            objnew.err = obj.err;
+            objnew.CondNames = obj.CondNames;
+            objnew.procStream.Copy(obj.procStream, obj.GetFilename);
         end
         
                
+        % ----------------------------------------------------------------------------------
+        % Copy processing params (procInut and procResult) from
+        % obj2 to obj
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2, conditional)
             if ~isempty(obj2.procStream)
@@ -618,17 +626,10 @@ classdef TreeNodeClass < handle & matlab.mixin.Heterogeneous
         
         
         % ----------------------------------------------------------------------------------
-        function FreeMemorySubBranch(obj)
-            
-        end
-
-        
-        % ----------------------------------------------------------------------------------
         function FreeMemory(obj)
             if isempty(obj)
                 return
             end
-            obj.busy = 0;
             obj.FreeMemorySubBranch();
             obj.procStream.FreeMemory(obj.GetFilename);
         end
@@ -658,6 +659,7 @@ classdef TreeNodeClass < handle & matlab.mixin.Heterogeneous
             filename = obj.SaveMemorySpace(obj.name);
         end
         
+                        
     end
 
     

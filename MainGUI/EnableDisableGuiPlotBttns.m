@@ -4,17 +4,17 @@ if isempty(handles)
     return
 end
 
-if ~isempty(maingui.dataTree.currElem(1).GetRawData())   
+if ~isempty(maingui.dataTree.currElem.GetRawData())   
     set(handles.radiobuttonPlotRaw, 'enable','on')
 else
     set(handles.radiobuttonPlotRaw, 'enable','off')
 end
-if ~isempty(maingui.dataTree.currElem(1).GetDod())
+if ~isempty(maingui.dataTree.currElem.GetDod())
     set(handles.radiobuttonPlotOD, 'enable','on')
 else
     set(handles.radiobuttonPlotOD, 'enable','off')
 end
-if ~isempty(maingui.dataTree.currElem(1).GetDc())
+if ~isempty(maingui.dataTree.currElem.GetDc())
     set(handles.radiobuttonPlotConc, 'enable','on')
 else
     set(handles.radiobuttonPlotConc, 'enable','off')
@@ -41,13 +41,13 @@ end
 
 iCondGrp = get(handles.popupmenuConditions, 'value'); 
 CondName = maingui.dataTree.groups(1).CondNames{iCondGrp};
-if ~isempty(maingui.dataTree.currElem(1).GetDodAvg(CondName)) || ~isempty(maingui.dataTree.currElem(1).GetDcAvg(CondName))
+if ~isempty(maingui.dataTree.currElem.GetDodAvg(CondName)) || ~isempty(maingui.dataTree.currElem.GetDcAvg(CondName))
     set(handles.checkboxPlotHRF, 'enable','on');
     if ~isa(maingui.dataTree.currElem, 'RunClass')
         set(handles.checkboxPlotHRF, 'value',1);
-        if ~isempty(maingui.dataTree.currElem(1).GetDcAvg())
+        if ~isempty(maingui.dataTree.currElem.GetDcAvg())
             set(handles.radiobuttonPlotConc, 'value',1);
-        elseif ~isempty(maingui.dataTree.currElem(1).GetDodAvg())
+        elseif ~isempty(maingui.dataTree.currElem.GetDodAvg())
             set(handles.radiobuttonPlotOD, 'value',1);
         end
     end

@@ -5,14 +5,13 @@
 % OD_to_Conc
 %
 % DESCRIPTION:
-% Convert OD to concentrations. For use with 2-wavelength data only: use
-% hmrR_OD2Conc_3 or hmrR_OD2Conc_multi for 3 or more wavelengths.
+% Convert OD to concentrations. For use with data up to 3 wavelengths.
 %
 % INPUTS:
 % dod: SNIRF.data container with the Change in OD tim course 
 % probe: SNIRF.probe container with the source/detector geometry
-% ppf: Partial path length factors for each wavelength. This is a vector of 
-%      of 2 elements, one for each wavelength.  Typical value is ~6 for each 
+% ppf: Partial path length factors for each wavelength. This is a vector of  
+%      3 elements, one for each wavelength.  Typical value is ~6 for each 
 %      wavelength if the absorption change is uniform over the volume of tissue measured. 
 %      To approximate the partial volume effect of a small localized absorption change 
 %      within an adult human head, this value could be as small as 0.1. Convention is 
@@ -28,7 +27,7 @@
 % Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, probe, ppf )
 %
 % PARAMETERS:
-% ppf: [1.0, 1.0]
+% ppf: [1.0, 1.0, 1.0]
 %
 function dc = hmrR_OD2Conc( dod, probe, ppf )
 
@@ -44,10 +43,16 @@ for ii=1:length(dod)
     ml     = dod(ii).GetMeasList();
     y      = dod(ii).GetDataTimeSeries();
     
-    if length(ppf)~=nWav
-        errordlg('The length of PPF must match the number of wavelengths in SD.Lambda');
-        dc = zeros(size(y,1),3,length(find(ml(:,4)==1)));
-        return
+    if length(ppf) < nWav
+        errordlg('WARNING: Data contains more than 3 wavelengths. Using PPF value of 1 for all wavelengths.');
+        ppf = ones(1, nWav);
+    elseif length(ppf) > nWav
+        d = length(ppf)-nWav;
+        ppf(end-d+1:end) = [];
+    end
+    
+    if ~isempty(find(ppf==1))
+        ppf = ones(size(ppf));
     end
     
     nTpts = size(y,1);
@@ -63,7 +68,11 @@ for ii=1:length(dod)
         idx1 = lst(idx);
         idx2 = find( ml(:,4)>1 & ml(:,1)==ml(idx1,1) & ml(:,2)==ml(idx1,2) );
         rho = norm(SrcPos(ml(idx1,1),:)-DetPos(ml(idx1,2),:));
-        y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,1)*rho*ppf))' )';
+        if ppf(1)~=1
+            y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,1)*rho*ppf))' )';
+        else
+            y2(:,k:k+1) = ( einv * (y(:,[idx1 idx2'])./(ones(nTpts,1)))' )';
+        end
         y2(:,k+2) = y2(:,k) + y2(:,k+1);
         dc(ii).AddChannelHbO(ml(idx1,1), ml(idx1,2));
         dc(ii).AddChannelHbR(ml(idx1,1), ml(idx1,2));

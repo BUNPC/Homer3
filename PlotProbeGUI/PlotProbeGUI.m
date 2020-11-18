@@ -264,7 +264,7 @@ DisplayData(handles, hObject);
 function SetWindowTitle(handles)
 global plotprobe
 
-windowtitlenew = sprintf('PlotProbeGUI:   %s', plotprobe.dataTree.currElem(1).GetName());
+windowtitlenew = sprintf('PlotProbeGUI:   %s', plotprobe.dataTree.currElem.GetName());
 set(handles.figure, 'name', windowtitlenew)
 
 
@@ -306,7 +306,7 @@ SetWindowTitle(handles)
 ClearAxesData();
 
 hold on
-nDataBlks = plotprobe.dataTree.currElem(1).GetDataBlocksNum();
+nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 plotprobe.y = cell(nDataBlks,1);
 plotprobe.t = cell(nDataBlks,1);
 for iBlk=1:nDataBlks
@@ -342,7 +342,7 @@ plotprobe.axScl = foo;
 ClearAxesData();
 
 set(hObject,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
-nDataBlks = plotprobe.dataTree.currElem(1).GetDataBlocksNum();
+nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk);
 end
@@ -361,7 +361,7 @@ set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 % Clear axes of previous data, before redisplaying it
 ClearAxesData();
 
-nDataBlks = plotprobe.dataTree.currElem(1).GetDataBlocksNum();
+nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk);
 end
@@ -380,7 +380,7 @@ set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 % Clear axes of previous data, before redisplaying it
 ClearAxesData();
 
-nDataBlks = plotprobe.dataTree.currElem(1).GetDataBlocksNum();
+nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk);
 end
@@ -398,7 +398,7 @@ set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 % Clear axes of previous data, before redisplaying it
 ClearAxesData();
 
-nDataBlks = plotprobe.dataTree.currElem(1).GetDataBlocksNum();
+nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk);
 end
@@ -413,7 +413,7 @@ hEditScl = handles.editPlotProbeAxScl;
 
 plotprobe.axScl(1) = plotprobe.axScl(1) + 0.1;
 set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
-nDataBlks = plotprobe.dataTree.currElem(1).GetDataBlocksNum();
+nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 
 % Clear axes of previous data, before redisplaying it
 ClearAxesData();
@@ -452,7 +452,7 @@ end
 % Clear axes of previous data, before redisplaying it
 ClearAxesData();
 
-nDataBlks = plotprobe.dataTree.currElem(1).GetDataBlocksNum();
+nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk);
 end
@@ -462,7 +462,7 @@ end
 function editPlotProbeTimeMarkersInt_Callback(hObject, ~, handles)
 global plotprobe
 
-t  = plotprobe.dataTree.currElem(1).GetTHRF();
+t  = plotprobe.dataTree.currElem.GetTHRF();
 
 foo = str2num( get(hObject,'string') );
 if length(foo)~=1
@@ -478,7 +478,7 @@ set(hObject,'string', sprintf('%0.1f ',plotprobe.tMarkInt) );
 % Clear axes of previous data, before redisplaying it
 ClearAxesData();
 
-nDataBlks = plotprobe.dataTree.currElem(1).GetDataBlocksNum();
+nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk);
 end
@@ -501,7 +501,7 @@ set(gca, 'tag','axes1');
 
 %%%% Create new figure and use same zoom level and axes position 
 %%%% as original 
-handles.figureDup = figure('name', plotprobe.dataTree.currElem(1).GetName(), 'NumberTitle','off');
+handles.figureDup = figure('name', plotprobe.dataTree.currElem.GetName(), 'NumberTitle','off');
 xlim(a);
 ylim(b);
 axis off
@@ -519,7 +519,7 @@ uicontrol('parent',handles.figureDup, 'style','text', 'string',hname.String, 'un
 uipanel('parent',handles.figureDup, 'units',hdiv.Units, 'position',hdiv.Position, 'bordertype',hdiv.BorderType);
        
 % Display data
-nDataBlks = plotprobe.dataTree.currElem(1).GetDataBlocksNum();
+nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk, length(plotprobe.handles.data)+1);
 end
@@ -582,7 +582,7 @@ set(gca, 'position',p)
 function radiobuttonShowHiddenMeas_Callback(hObject, ~, ~)
 global plotprobe
 plotprobe.hidMeasShow = get(hObject,'value');
-nDataBlks = plotprobe.dataTree.currElem(1).GetDataBlocksNum();
+nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks    
     showHiddenObjs(iBlk);
 end
@@ -628,11 +628,11 @@ condition = plotprobe.condition;
 datatype  = plotprobe.datatype;
 
 % Load current element data from file
-if plotprobe.dataTree.currElem(1).IsEmpty()
-    plotprobe.dataTree.currElem(1).Load();
+if plotprobe.dataTree.currElem.IsEmpty()
+    plotprobe.dataTree.currElem.Load();
 end
 
-nDataBlks = plotprobe.dataTree.currElem(1).GetDataBlocksNum();
+nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
 plotprobe.y = cell(nDataBlks,1);
 plotprobe.t = cell(nDataBlks,1);
 
@@ -640,12 +640,12 @@ hFigs = [handles.figure, plotprobe.handles.figureDup];
     
 for iBlk = 1:nDataBlks
     if datatype == plotprobe.datatypeVals.OD_HRF
-        plotprobe.y{iBlk} = plotprobe.dataTree.currElem(1).GetDodAvg(condition, iBlk);
-        plotprobe.t{iBlk} = plotprobe.dataTree.currElem(1).GetTHRF();
+        plotprobe.y{iBlk} = plotprobe.dataTree.currElem.GetDodAvg(condition, iBlk);
+        plotprobe.t{iBlk} = plotprobe.dataTree.currElem.GetTHRF();
         plotprobe.tMarkUnits='(AU)';
     elseif datatype == plotprobe.datatypeVals.CONC_HRF
-        plotprobe.y{iBlk} = plotprobe.dataTree.currElem(1).GetDcAvg(condition, iBlk);
-        plotprobe.t{iBlk} = plotprobe.dataTree.currElem(1).GetTHRF();
+        plotprobe.y{iBlk} = plotprobe.dataTree.currElem.GetDcAvg(condition, iBlk);
+        plotprobe.t{iBlk} = plotprobe.dataTree.currElem.GetTHRF();
         plotprobe.tMarkAmp = plotprobe.tMarkAmp/1e6;
         plotprobe.tMarkUnits = '(micro-molars)';
     end
@@ -709,8 +709,8 @@ end
 function SetTextFilename(handles)
 global plotprobe
 
-filename = plotprobe.dataTree.currElem(1).GetName();
-CondNames = plotprobe.dataTree.currElem(1).GetConditions();
+filename = plotprobe.dataTree.currElem.GetName();
+CondNames = plotprobe.dataTree.currElem.GetConditions();
 if plotprobe.condition>length(CondNames)
     ch = MenuBox('Selected condition does not exist. Please choose from available conditions',[CondNames, 'Cancel']);
     if ch==length(CondNames)+1

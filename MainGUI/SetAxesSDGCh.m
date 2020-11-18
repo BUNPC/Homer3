@@ -4,12 +4,12 @@ global maingui
 hAxesSDG = maingui.axesSDG.handles.axes;
 iCh      = maingui.axesSDG.iCh;
 iSrcDet  = maingui.axesSDG.iSrcDet;
-SD       = maingui.dataTree.currElem(1).GetSDG();
+SD       = maingui.dataTree.currElem.GetSDG();
 
-nDataBlks = maingui.dataTree.currElem(1).GetDataBlocksNum();
+nDataBlks = maingui.dataTree.currElem.GetDataBlocksNum();
 ml = [];
 for iBlk = 1:nDataBlks
-    ch = maingui.dataTree.currElem(1).GetMeasList(iBlk);
+    ch = maingui.dataTree.currElem.GetMeasList(iBlk);
     ml = [ml; ch.MeasList];
 end
 

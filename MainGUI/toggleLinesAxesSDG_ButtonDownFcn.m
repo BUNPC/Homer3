@@ -8,9 +8,9 @@ global maingui;
 hAxesSDG = maingui.axesSDG.handles.axes;
 iSrcDet  = maingui.axesSDG.iSrcDet;
 
-SD       = maingui.dataTree.currElem(1).GetSDG();
-ch       = maingui.dataTree.currElem(1).GetMeasList();
-Lambda   = maingui.dataTree.currElem(1).GetWls();
+SD       = maingui.dataTree.currElem.GetSDG();
+ch       = maingui.dataTree.currElem.GetMeasList();
+Lambda   = maingui.dataTree.currElem.GetWls();
 
 idx = eventdata;
 
@@ -38,7 +38,7 @@ if strcmp(mouseevent, 'alt')
         ch.MeasListVis(lst) = 1;
     end
     % TODO implement a more elegant setter
-    maingui.dataTree.currElem(1).procStream.input.SetMeasListVis(ch.MeasListVis);
+    maingui.dataTree.currElem.procStream.input.SetMeasListVis(ch.MeasListVis);
     maingui.Update('PatchCallback');  % Refresh data display
     
 %%%% Mouse left click: toggle manual exclude/deactivate channel
@@ -49,7 +49,7 @@ elseif strcmp(mouseevent, 'normal')
         ch.MeasListActMan(lst) = 1;
     end
     % TODO implement a more elegant setter
-    maingui.dataTree.currElem(1).procStream.input.SetMeasListActMan(ch.MeasListActMan);
+    maingui.dataTree.currElem.procStream.input.SetMeasListActMan(ch.MeasListActMan);
     
 %%%% Exit function for any other mouse event 
 else

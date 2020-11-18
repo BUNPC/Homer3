@@ -225,7 +225,7 @@ hObject = handles.figure;
 
 ResetDisplay(handles);
 
-ps = procStreamOptions.dataTree.currElem(1).procStream;
+ps = procStreamOptions.dataTree.currElem.procStream;
 
 if isempty(ps.fcalls)
     menu('Processing stream is empty. Please check the registry to see if any user functions were loaded.', 'OK');
@@ -369,7 +369,7 @@ iFcall  = eventdata(1);
 iParam = eventdata(2);
 val = str2num( get(hObject,'string') ); % need to check if it is a valid string
 
-str = dataTree.currElem(1).procStream.EditParam(iFcall, iParam, val);
+str = dataTree.currElem.procStream.EditParam(iFcall, iParam, val);
 if isempty(str)
     return;
 end
@@ -378,11 +378,11 @@ set( hObject, 'string', str);
 % Check if we should apply the param edit to all nodes of the current nodes
 % level
 if ~procStreamOptions.applyEditCurrNodeOnly
-    if dataTree.currElem(1).iSubj>0 && dataTree.currElem(1).iRun==0
+    if dataTree.currElem.iSubj>0 && dataTree.currElem.iRun==0
         for ii=1:length(dataTree.groups(iG).subjs)
             dataTree.groups(iG).subjs(ii).procStream.EditParam(iFcall, iParam, val);
         end
-    elseif dataTree.currElem(1).iSubj>0 && dataTree.currElem(1).iRun>0
+    elseif dataTree.currElem.iSubj>0 && dataTree.currElem.iRun>0
         for ii=1:length(dataTree.groups(iG).subjs)
             for jj=1:length(dataTree.groups(iG).subjs(ii).runs)
                 dataTree.groups(iG).subjs(ii).runs(jj).procStream.EditParam(iFcall, iParam, val);
@@ -462,5 +462,5 @@ global procStreamOptions
 if ~ishandles(hObject)
     return;
 end
-procStreamOptions.dataTree.currElem(1).Save();
+procStreamOptions.dataTree.currElem.Save();
 

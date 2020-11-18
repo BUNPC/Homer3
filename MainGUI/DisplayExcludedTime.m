@@ -21,15 +21,15 @@ axes(hAxes);
 hold on
 
 iCh       = maingui.axesSDG.iCh;
-iDataBlks = maingui.dataTree.currElem(1).GetDataBlocksIdxs(iCh);
+iDataBlks = maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
 tPtsExclTot = [];
 for iBlk = iDataBlks
     if strcmp(mode,'manual')
-        tInc = maingui.dataTree.currElem(1).GetTincMan(iBlk);
+        tInc = maingui.dataTree.currElem.GetTincMan(iBlk);
     elseif strcmp(mode,'auto')
-        tInc = maingui.dataTree.currElem(1).GetTincAuto(iBlk);
+        tInc = maingui.dataTree.currElem.GetTincAuto(iBlk);
     elseif strcmp(mode,'autoch')
-        tInc = maingui.dataTree.currElem(1).GetTincAutoCh(iBlk);        
+        tInc = maingui.dataTree.currElem.GetTincAutoCh(iBlk);        
     else
         continue
     end
@@ -47,7 +47,7 @@ for iBlk = iDataBlks
             break
         end
         col = setColor(mode, ii);
-        t = maingui.dataTree.currElem(1).GetTime(iBlk);
+        t = maingui.dataTree.currElem.GetTime(iBlk);
         [h, tPtsExclTot] = drawPatches(t, tInc(:, kk), tPtsExclTot, col, handles);        
         if strcmp(mode,'manual')
             for jj=1:length(h)

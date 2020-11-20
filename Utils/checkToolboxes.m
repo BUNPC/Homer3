@@ -44,9 +44,9 @@ end
 
 toolboxes = {};
 
-header{1} = sprintf('==============================================\n');
-header{2} = sprintf('List of required toolboxes for Homer3:\n');
-header{3} = sprintf('==============================================\n');
+header{1} = sprintf('==================================================\n');
+header{2} = sprintf('List of required toolboxes for Homer3 (v%s):\n', version2string);
+header{3} = sprintf('==================================================\n');
 
 % Check for presence of file which already has all the toolboxes
 if exist('./toolboxesRequired.txt', 'file')==2

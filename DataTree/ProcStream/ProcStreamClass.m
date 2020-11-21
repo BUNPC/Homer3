@@ -54,13 +54,31 @@ classdef ProcStreamClass < handle
                 obj = ProcStreamClass();
             end
             
-            for ii=1:length(obj2.fcalls)
-                obj.fcalls(ii) = FuncCallClass();
-                obj.fcalls(ii).Copy(obj2.fcalls(ii), obj.reg);
+            kk=1;
+            for ii = 1:length(obj2.fcalls)                
+                % If registry is empty, then add fcall entries unconditionally.
+                % Otherwise only include those user function calls that exist in the registry.
+                if ~isempty(obj.reg.GetUsageName(obj2.fcalls(ii)))
+                    obj.fcalls(kk) = FuncCallClass(obj2.fcalls(ii), obj.reg);
+                    kk = kk+1;
+                else
+                    fprintf('Entry \"%s\" not found in registry ...\n', obj2.fcalls(ii).GetName())
+                    fprintf('  Searching registry for equivalent or similar entry\n')
+                    temp = obj.reg.FindClosestMatch(obj2.fcalls(ii));
+                    if ~isempty(temp)
+                        fprintf('  Found similar entry: %s\n', temp.encodedStr);
+                        obj.fcalls(kk) = FuncCallClass(temp, obj.reg);
+                        kk = kk+1;
+                    else
+                        fprintf('  Found no similar entries. Discarding %s\n', section{ii})
+                    end
+                end            
             end
             
             % Delete any fcalls entries not ovewritten by the copy process
-            obj.fcalls(ii+1:end) = [];
+            if ~isempty(obj.fcalls)
+                obj.fcalls(kk+1:end) = [];
+            end
             
             obj.input.Copy(obj2.input);
             obj.output.Copy(obj2.output, filename);
@@ -1015,7 +1033,7 @@ classdef ProcStreamClass < handle
                         end
                     end
                 end
-            end            
+            end
         end
         
     end

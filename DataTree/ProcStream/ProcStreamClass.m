@@ -97,6 +97,9 @@ classdef ProcStreamClass < handle
             if ~isa(obj, 'ProcStreamClass')
                 return;
             end
+            if obj == obj2
+                return;
+            end            
             delete(obj.fcalls);
             obj.fcalls = FuncCallClass().empty();
             for ii=1:length(obj2.fcalls)
@@ -108,7 +111,7 @@ classdef ProcStreamClass < handle
         
 
         % ----------------------------------------------------------------------------------
-        function B = eq(obj, obj2)
+        function B = isequal(obj, obj2)
             B = 0;
             if isa(obj2, 'ProcStream')
                 for ii=1:length(obj.fcalls)

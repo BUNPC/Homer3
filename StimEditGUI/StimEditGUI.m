@@ -68,7 +68,10 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 stimEdit = [];
+
+% These local data trees are used for turning synchronized browsing with MainGUI on/off
 stimEdit.locDataTree = [];
+stimEdit.locDataTree2 = [];
 
 %%%% Begin parse arguments 
 
@@ -90,9 +93,13 @@ if ~isempty(maingui)
     
     % If parent gui exists disable these menu options which only make sense when
     % running this GUI standalone
-    set(handles.menuFile,'visible','off');
-    set(handles.menuItemChangeGroup,'visible','off');
-    set(handles.menuItemSaveGroup,'visible','off');
+    set(handles.menuItemChangeGroup, 'enable','off');
+    set(handles.menuItemSaveGroup, 'enable','off');
+    set(handles.menuItemSyncBrowsing, 'enable','on');
+else
+    set(handles.menuItemChangeGroup, 'enable','on');
+    set(handles.menuItemSaveGroup, 'enable','on');
+    set(handles.menuItemSyncBrowsing, 'enable','off');
 end
 
 % Group dirs argument
@@ -145,9 +152,12 @@ end
 % Make a local copy of dataTree in this GUI 
 stimEdit.locDataTree = DataTreeClass(stimEdit.dataTree);
 
+InitCurrElem(stimEdit);
+
 set(get(handles.axes1,'children'), 'ButtonDownFcn', @axes1_ButtonDownFcn);
 zoom(hObject,'off');
-Update(handles);
+Display(handles);
+SetTextFilename(handles);
 EnableGuiObjects('on', handles);
 stimEdit.status=0;
 
@@ -194,7 +204,7 @@ function uitableStimInfo_CellEditCallback(hObject, eventdata, handles)
 global stimEdit
 
 data = get(hObject,'data') ;
-conditions =  stimEdit.locDataTree.currElem.GetConditions();
+conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
 icond = GetConditionIdxFromPopupmenu(conditions, handles);
 SetStimData(icond, data);
 r=eventdata.Indices(1);
@@ -291,17 +301,17 @@ global stimEdit
 if isempty(stimEdit.dataTree)
     return;
 end
-if isempty(stimEdit.locDataTree.currElem)
+if isempty(stimEdit.dataTreeHandle.currElem)
     return;
 end
-if ~isa(stimEdit.locDataTree.currElem, 'RunClass')
+if ~isa(stimEdit.dataTreeHandle.currElem, 'RunClass')
     return;
 end
 
 % Now that we made sure legit dataTree exists, we can match up
 % the selected stims to the stims in currElem
-t = stimEdit.locDataTree.currElem.GetTimeCombined();
-s = stimEdit.locDataTree.currElem.GetStims(t);
+t = stimEdit.dataTreeHandle.currElem.GetTimeCombined();
+s = stimEdit.dataTreeHandle.currElem.GetStims(t);
 s2 = sum(abs(s(tPts_idxs_select,:)),2);
 stims_select = find(s2>=1);
 
@@ -328,7 +338,7 @@ drawnow
 % ------------------------------------------------
 function EditSelectRange(t1, t2, handles)
 global stimEdit
-t = stimEdit.locDataTree.currElem.GetTime();
+t = stimEdit.dataTreeHandle.currElem.GetTime();
 if isempty(t)
     return
 end
@@ -355,7 +365,7 @@ end
 % ------------------------------------------------
 function EditSelectTpts(tPts_select)
 global stimEdit
-t = stimEdit.locDataTree.currElem.GetTime();
+t = stimEdit.dataTreeHandle.currElem.GetTime();
 if isempty(t)
     MessageBox('Current processing element has no time course data for stim editing. In MainGUI, change current processing element to Run to edit stim marks.');
     return;
@@ -393,7 +403,7 @@ end
 
 iG = stimEdit.locDataTree.GetCurrElemIndexID();
 CondNamesGroup = stimEdit.locDataTree.groups(iG).GetConditions();
-tc             = stimEdit.locDataTree.currElem.GetTime();
+tc             = stimEdit.dataTreeHandle.currElem.GetTime();
 
 % Create menu actions list
 actionLst = CondNamesGroup;
@@ -534,7 +544,7 @@ end
 
 iG = stimEdit.locDataTree.GetCurrElemIndexID();
 CondNamesGroup = stimEdit.locDataTree.groups(iG).GetConditions();
-tc             = stimEdit.locDataTree.currElem.GetTime();
+tc             = stimEdit.dataTreeHandle.currElem.GetTime();
 nCond          = length(CondNamesGroup);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -569,7 +579,7 @@ if isempty(iS_lst)
         CondName = CondNamesGroup{menu_choice};
     end
     %%%% Add new stim to currElem's condition
-    stimEdit.locDataTree.currElem.AddStims(tc(tPts_idxs_select), CondName);
+    stimEdit.dataTreeHandle.currElem.AddStims(tc(tPts_idxs_select), CondName);
     stimEdit.status = 1;
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -582,12 +592,12 @@ else
 
         % Delete stim entry from userdata first
         % because it depends on stim.currElem.s
-        stimEdit.locDataTree.currElem.DeleteStims(tc(tPts_idxs_select));
+        stimEdit.dataTreeHandle.currElem.DeleteStims(tc(tPts_idxs_select));
 
     %%%% Toggle active/inactive stim
     elseif menu_choice==nActions-2 & nActions==nCond+4
 
-        stimEdit.locDataTree.currElem.ToggleStims(tc(tPts_idxs_select));
+        stimEdit.dataTreeHandle.currElem.ToggleStims(tc(tPts_idxs_select));
     
     %%%% Edit stim
     elseif menu_choice<=nCond+1
@@ -601,7 +611,7 @@ else
         else
             CondName = CondNamesGroup{menu_choice};
         end
-        stimEdit.locDataTree.currElem.MoveStims(tc(tPts_idxs_select), CondName);
+        stimEdit.dataTreeHandle.currElem.MoveStims(tc(tPts_idxs_select), CondName);
         
     end
     stimEdit.status = 1;
@@ -621,10 +631,10 @@ end
 if isempty(stimEdit.dataTree)
     return;
 end
-if isempty(stimEdit.locDataTree.currElem)
+if isempty(stimEdit.dataTreeHandle.currElem)
     return;
 end
-stimEdit.locDataTree.currElem.SetStimDuration(icond, duration);
+stimEdit.dataTreeHandle.currElem.SetStimDuration(icond, duration);
 
 
 % ------------------------------------------------
@@ -636,24 +646,24 @@ end
 if isempty(stimEdit.dataTree)
     return;
 end
-if isempty(stimEdit.locDataTree.currElem)
+if isempty(stimEdit.dataTreeHandle.currElem)
     return;
 end
-duration = stimEdit.locDataTree.currElem.GetStimDuration(icond);
+duration = stimEdit.dataTreeHandle.currElem.GetStimDuration(icond);
 
 
 % -------------------------------------------------------------------
 function [tpts, duration, vals] = GetStimData(icond)
 global stimEdit
-[tpts, duration, vals] = stimEdit.locDataTree.currElem.GetStimData(icond);
+[tpts, duration, vals] = stimEdit.dataTreeHandle.currElem.GetStimData(icond);
 
 
 % -------------------------------------------------------------------
 function SetStimData(icond, data)
 global stimEdit
-stimEdit.locDataTree.currElem.SetStimTpts(icond, data(:,1));
-stimEdit.locDataTree.currElem.SetStimDuration(icond, data(:,2));
-stimEdit.locDataTree.currElem.SetStimValues(icond, data(:,3));
+stimEdit.dataTreeHandle.currElem.SetStimTpts(icond, data(:,1));
+stimEdit.dataTreeHandle.currElem.SetStimDuration(icond, data(:,2));
+stimEdit.dataTreeHandle.currElem.SetStimValues(icond, data(:,3));
 
 
 % -------------------------------------------------------------------
@@ -665,17 +675,17 @@ if isempty(stimEdit.locDataTree)
 end
 
 % If nothing changes, nothing to save, so exit
-if ~stimEdit.locDataTree.currElem.AcquiredDataModified()
+if ~stimEdit.dataTreeHandle.currElem.AcquiredDataModified()
     return
 end
 
 % Check auto-save config parameter
 if ~strcmpi(stimEdit.config.autoSaveAcqFiles, 'Yes')
     % Ask user if they want to save, before changing contents of acquisition file
-    if stimEdit.locDataTree.currElem.IsRun()
-        msg = sprintf('Are you sure you want to save stimulus edits directly in the acquisition file %s?', stimEdit.locDataTree.currElem.name);
+    if stimEdit.dataTreeHandle.currElem.IsRun()
+        msg = sprintf('Are you sure you want to save stimulus edits directly in the acquisition file %s?', stimEdit.dataTreeHandle.currElem.name);
     else
-        msg = sprintf('Are you sure you want to save stimulus edits directly in acquisition files in %s?', stimEdit.locDataTree.currElem.name);
+        msg = sprintf('Are you sure you want to save stimulus edits directly in acquisition files in %s?', stimEdit.dataTreeHandle.currElem.name);
     end
     q = MenuBox(msg, {'Yes','No','Don''t ask again'});
     if q==2
@@ -693,11 +703,11 @@ else
 end
 
 % Update acquisition file with new contents
-h = waitbar_improved(0, 'Saving new stim marks to %s...', stimEdit.locDataTree.currElem.name);
+h = waitbar_improved(0, 'Saving new stim marks to %s...', stimEdit.dataTreeHandle.currElem.name);
 stimEdit.dataTree.currElem.SaveAcquiredData()
 idx = stimEdit.dataTree.currElem.GetIndexID();
 stimEdit.dataTree.groups(idx(1)).Save()    %Need to save derived data on disk for consistency (groupResults.mat)
-waitbar_improved(1, h, 'Saving new stim marks to %s...', stimEdit.locDataTree.currElem.name);
+waitbar_improved(1, h, 'Saving new stim marks to %s...', stimEdit.dataTreeHandle.currElem.name);
 if ~isempty(stimEdit.updateParentGui)
     stimEdit.updateParentGui('StimEditGUI');
 end
@@ -734,7 +744,7 @@ global stimEdit
 if ~ishandles(hObject)
     return;
 end
-stimEdit.locDataTree.currElem.Save();
+stimEdit.dataTreeHandle.currElem.Save();
 
 
 % --------------------------------------------------------------------
@@ -747,19 +757,18 @@ end
 if ~ishandles(handles.figure)
     return;
 end
-idx1 = stimEdit.dataTree.currElem.GetIndexID();
-idx2 = stimEdit.locDataTree.currElem.GetIndexID();
-if ~all(idx1==idx2)
-    % Reload data tree into local copy if the current element has changed
-    stimEdit.locDataTree = DataTreeClass(stimEdit.dataTree);    
+
+% Reload data tree into local copy if the current element has changed
+stimEdit.locDataTree.CopyCurrElem(stimEdit.dataTree, 'value');
+
+if strcmpi(get(handles.menuItemSyncBrowsing, 'checked'), 'off')
+    return;
 end
 
-conditions =  stimEdit.locDataTree.currElem.GetConditions();
-filename = stimEdit.locDataTree.currElem.GetName();
-[~, fname, ext] = fileparts(filename);
-SetTextFilename([fname, ext, ' :'], handles);
+SetTextFilename(handles);
 
 % Try to keep the same condition as old run
+conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
 [icond, conditions] = GetConditionIdxFromPopupmenu(conditions, handles);
 set(handles.popupmenuConditions, 'value',icond);
 set(handles.popupmenuConditions, 'string',conditions);
@@ -805,20 +814,39 @@ end
 
 
 % -----------------------------------------------------------
-function SetTextFilename(name, handles)
+function SetTextFilename(handles)
+global stimEdit
+
+filename = stimEdit.dataTreeHandle.currElem.GetName();
+[~, fname] = fileparts(filename);
+name = sprintf('    %s :   ', fname);
+
 if isempty(handles)
     return;
 end
-
 if ~ishandles(handles.textFilename)
     return;
 end
+set(handles.textFilename, 'units','centimeters', 'fontunits','centimeters');
+set(handles.textFilenameFrame, 'units','centimeters');
+
 n = length(name);
-set(handles.textFilename, 'units','characters');
-p = get(handles.textFilename, 'position');
-set(handles.textFilename, 'position',[p(1), p(2), n+.50*n, p(4)]);
+fs = get(handles.textFilename, 'fontsize');
+p1 = get(handles.textFilename, 'position');
+set(handles.textFilename, 'position',[p1(1), p1(2), .55*n*fs, p1(4)], 'string',name);
+
+
+% Set the border frame size and position to be relative to text box holding the name 
+p1 = get(handles.textFilename, 'position');
+p2 = get(handles.textFilenameFrame, 'position');
+set(handles.textFilename, 'position',[p2(1)+abs(p1(2)-p2(2)), p1(2), p1(3), p1(4)]);
+p1 = get(handles.textFilename, 'position');
+set(handles.textFilenameFrame, 'position',[p2(1), p2(2), p1(3)+(2*abs(p1(1)-p2(1))), p2(4)]);
+
+% Return to normalized units for textbox
 set(handles.textFilename, 'units','normalized');
-set(handles.textFilename, 'string',name);
+set(handles.textFilenameFrame, 'units','normalized');
+
 
 
 % -----------------------------------------------------------
@@ -840,26 +868,26 @@ hold(handles.axes1, 'on');
 
 % As of now this operation is undefined for non-Run nodes (i.e., Subj and Group)
 % So we clear the axes and exit
-if stimEdit.locDataTree.currElem.iRun==0
+if stimEdit.dataTreeHandle.currElem.iRun==0
     return;
 end
 
 % Load current element data from file
-if stimEdit.locDataTree.currElem.IsEmpty()
-    stimEdit.locDataTree.currElem.Load();
+if stimEdit.dataTreeHandle.currElem.IsEmpty()
+    stimEdit.dataTreeHandle.currElem.Load();
 end
 
 iG = stimEdit.locDataTree.GetCurrElemIndexID();
 CondNamesGroup = stimEdit.locDataTree.groups(iG).GetConditions();
 CondColTbl     = stimEdit.locDataTree.groups(iG).CondColTbl();
-t              = stimEdit.locDataTree.currElem.GetTimeCombined();
-s              = stimEdit.locDataTree.currElem.GetStims(t);
-stimVals       = stimEdit.locDataTree.currElem.GetStimValSettings();
+t              = stimEdit.dataTreeHandle.currElem.GetTimeCombined();
+s              = stimEdit.dataTreeHandle.currElem.GetStims(t);
+stimVals       = stimEdit.dataTreeHandle.currElem.GetStimValSettings();
 
 % Aux preview
 if get(handles.checkboxPreview, 'Value')  % If preview is enabled, plot
     iaux = handles.listboxAuxSelect.Value;
-    currAux = stimEdit.locDataTree.currElem.acquired.aux(iaux);
+    currAux = stimEdit.dataTreeHandle.currElem.acquired.aux(iaux);
     [onsets, auxFiltered, timeFiltered] = StimEditGUI_StimFromAux(currAux,...
                                                             handles.editThresh.Value,...          % Stim threshold
                                                             handles.editLPF.Value,...             % LPF window width
@@ -928,7 +956,7 @@ end
 set(handles.axes1,'xlim', [t(1), t(end)]);
 
 % Update conditions popupmenu
-set(handles.popupmenuConditions, 'string', sort(stimEdit.locDataTree.currElem.GetConditions()));
+set(handles.popupmenuConditions, 'string', sort(stimEdit.dataTreeHandle.currElem.GetConditions()));
 conditions = get(handles.popupmenuConditions, 'string');
 idx = get(handles.popupmenuConditions, 'value');
 condition = conditions{idx};
@@ -950,7 +978,7 @@ global stimEdit
 if ~exist('condition','var')
     return;
 end
-conditions =  stimEdit.locDataTree.currElem.GetConditions();
+conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
 if isempty(conditions)
     return;
 end
@@ -958,7 +986,7 @@ icond = find(strcmp(conditions, condition));
 if isempty(icond)
     return;
 end
-[tpts, duration, vals] = stimEdit.locDataTree.currElem.GetStimData(icond);
+[tpts, duration, vals] = stimEdit.dataTreeHandle.currElem.GetStimData(icond);
 if isempty(tpts)
     set(handles.uitableStimInfo, 'data',[]);
     return;
@@ -1020,7 +1048,7 @@ Display(handles);
 function pushbuttonGenerate_Callback(hObject, eventdata, handles)
 global stimEdit; 
 iaux = handles.listboxAuxSelect.Value;
-currAux = stimEdit.locDataTree.currElem.acquired.aux(iaux);
+currAux = stimEdit.dataTreeHandle.currElem.acquired.aux(iaux);
 [onsets, ~, ~] = StimEditGUI_StimFromAux(currAux,...
                                          handles.editThresh.Value,...          % Stim threshold
                                          handles.editLPF.Value,...             % LPF window width
@@ -1028,7 +1056,7 @@ currAux = stimEdit.locDataTree.currElem.acquired.aux(iaux);
 % Add stim to dataTree element
 cond = char(handles.listboxAuxSelect.String(handles.listboxAuxSelect.Value));
 for i = 1:length(onsets)
-    stimEdit.locDataTree.currElem.AddStims(onsets(i), cond);
+    stimEdit.dataTreeHandle.currElem.AddStims(onsets(i), cond);
 end
 iG = stimEdit.locDataTree.GetCurrElemIndexID();
 stimEdit.locDataTree.groups(iG).SetConditions();
@@ -1051,7 +1079,7 @@ end
 try
     % Try to populate listbox with aux channels
     global stimEdit
-    aux = stimEdit.locDataTree.currElem.acquired.aux;
+    aux = stimEdit.dataTreeHandle.currElem.acquired.aux;
     names = cell(1, length(aux));
     for i = 1:length(aux)
         names{i} = aux(i).name;
@@ -1113,4 +1141,17 @@ end
 % --------------------------------------------------------------------
 function editDuration_CreateFcn(hObject, eventdata, handles)
 val = str2double(hObject.String);
+
+
+% --------------------------------------------------------------------
+function menuItemSyncBrowsing_Callback(hObject, eventdata, handles)
+global stimEdit
+if strcmpi(get(hObject, 'checked'), 'off')
+    set(hObject, 'checked', 'on')
+    SyncBrowsing(stimEdit, 'on');
+    Update(handles);
+else
+    set(hObject, 'checked', 'off')
+    SyncBrowsing(stimEdit, 'off');
+end
 

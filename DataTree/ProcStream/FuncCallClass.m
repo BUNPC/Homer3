@@ -467,10 +467,12 @@ classdef FuncCallClass < handle
         % ----------------------------------------------------------------------------------
         function scorefinal = Compare(obj, obj2)           
             score = [];
-            if ~strcmp(obj.name, obj2.name)
-                score(end+1) = 0;
-            else
+            if strcmp(obj.name, obj2.name)
                 score(end+1) = 0.50;
+            elseif ~isempty(findstr(obj.name, obj2.name))
+                score(end+1) = 0.30;
+            else
+                score(end+1) = 0;
             end
             score(end+1) = 0.16 * obj.argOut.Compare(obj2.argOut);
             score(end+1) = 0.16 * obj.argIn.Compare(obj2.argIn);

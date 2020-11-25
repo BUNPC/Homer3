@@ -223,6 +223,10 @@ guidata(hObject, handles);
 Initialize(handles);
 plotprobe.updateParentGui = [];
 
+% These local data trees are used for turning synchronized browsing with MainGUI on/off
+plotprobe.locDataTree = [];
+plotprobe.locDataTree2 = [];
+
 % Parse GUI args
 ParseArgs(varargin);
 
@@ -236,6 +240,7 @@ plotprobe.dataTree = LoadDataTree(plotprobe.groupDirs, plotprobe.format, '', mai
 if plotprobe.dataTree.IsEmpty()
     return;
 end
+InitCurrElem(plotprobe);
 
 if length(plotprobe.y)>1
     msg{1} = sprintf('Warning: Data in this plot probe uses different Y scales for different data blocks ');
@@ -249,10 +254,17 @@ end
 % If parent gui exists disable these menu options which only make sense when 
 % running this GUI standalone
 if ~isempty(maingui)
-    set(handles.menuFile,'visible','off');
-    set(handles.menuItemChangeGroup,'visible','off');
-    set(handles.menuItemSaveGroup,'visible','off');
     plotprobe.updateParentGui = maingui.Update;
+
+    % If parent gui exists disable these menu options which only make sense when
+    % running this GUI standalone
+    set(handles.menuItemChangeGroup, 'enable','off');
+    set(handles.menuItemSaveGroup, 'enable','off');
+    set(handles.menuItemSyncBrowsing, 'enable','on');
+else
+    set(handles.menuItemChangeGroup, 'enable','on');
+    set(handles.menuItemSaveGroup, 'enable','on');
+    set(handles.menuItemSyncBrowsing, 'enable','off');
 end
 
 SetTextFilename(handles);
@@ -264,7 +276,7 @@ DisplayData(handles, hObject);
 function SetWindowTitle(handles)
 global plotprobe
 
-windowtitlenew = sprintf('PlotProbeGUI:   %s', plotprobe.dataTree.currElem.GetName());
+windowtitlenew = sprintf('PlotProbeGUI:   %s', plotprobe.dataTreeHandle.currElem.GetName());
 set(handles.figure, 'name', windowtitlenew)
 
 
@@ -293,7 +305,7 @@ axis off;
 
 condition = plotprobe.condition;
 datatype  = plotprobe.datatype;
-currElem  = plotprobe.dataTree.currElem;
+currElem  = plotprobe.dataTreeHandle.currElem;
 
 % Load current element data from file
 if currElem.IsEmpty()
@@ -306,7 +318,7 @@ SetWindowTitle(handles)
 ClearAxesData();
 
 hold on
-nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
+nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 plotprobe.y = cell(nDataBlks,1);
 plotprobe.t = cell(nDataBlks,1);
 for iBlk=1:nDataBlks
@@ -342,7 +354,7 @@ plotprobe.axScl = foo;
 ClearAxesData();
 
 set(hObject,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
-nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
+nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk);
 end
@@ -361,7 +373,7 @@ set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 % Clear axes of previous data, before redisplaying it
 ClearAxesData();
 
-nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
+nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk);
 end
@@ -380,7 +392,7 @@ set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 % Clear axes of previous data, before redisplaying it
 ClearAxesData();
 
-nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
+nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk);
 end
@@ -398,7 +410,7 @@ set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 % Clear axes of previous data, before redisplaying it
 ClearAxesData();
 
-nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
+nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk);
 end
@@ -413,7 +425,7 @@ hEditScl = handles.editPlotProbeAxScl;
 
 plotprobe.axScl(1) = plotprobe.axScl(1) + 0.1;
 set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
-nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
+nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 
 % Clear axes of previous data, before redisplaying it
 ClearAxesData();
@@ -452,7 +464,7 @@ end
 % Clear axes of previous data, before redisplaying it
 ClearAxesData();
 
-nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
+nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk);
 end
@@ -462,7 +474,7 @@ end
 function editPlotProbeTimeMarkersInt_Callback(hObject, ~, handles)
 global plotprobe
 
-t  = plotprobe.dataTree.currElem.GetTHRF();
+t  = plotprobe.dataTreeHandle.currElem.GetTHRF();
 
 foo = str2num( get(hObject,'string') );
 if length(foo)~=1
@@ -478,7 +490,7 @@ set(hObject,'string', sprintf('%0.1f ',plotprobe.tMarkInt) );
 % Clear axes of previous data, before redisplaying it
 ClearAxesData();
 
-nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
+nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk);
 end
@@ -501,7 +513,7 @@ set(gca, 'tag','axes1');
 
 %%%% Create new figure and use same zoom level and axes position 
 %%%% as original 
-handles.figureDup = figure('name', plotprobe.dataTree.currElem.GetName(), 'NumberTitle','off');
+handles.figureDup = figure('name', plotprobe.dataTreeHandle.currElem.GetName(), 'NumberTitle','off');
 xlim(a);
 ylim(b);
 axis off
@@ -519,7 +531,7 @@ uicontrol('parent',handles.figureDup, 'style','text', 'string',hname.String, 'un
 uipanel('parent',handles.figureDup, 'units',hdiv.Units, 'position',hdiv.Position, 'bordertype',hdiv.BorderType);
        
 % Display data
-nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
+nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk, length(plotprobe.handles.data)+1);
 end
@@ -582,7 +594,7 @@ set(gca, 'position',p)
 function radiobuttonShowHiddenMeas_Callback(hObject, ~, ~)
 global plotprobe
 plotprobe.hidMeasShow = get(hObject,'value');
-nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
+nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks    
     showHiddenObjs(iBlk);
 end
@@ -616,7 +628,9 @@ global plotprobe
 if isempty(plotprobe)
     return
 end
-
+if strcmpi(get(handles.menuItemSyncBrowsing, 'checked'), 'off')
+    return;
+end
 
 ParseArgs(varargin);
 axes(handles.axes1);
@@ -628,11 +642,11 @@ condition = plotprobe.condition;
 datatype  = plotprobe.datatype;
 
 % Load current element data from file
-if plotprobe.dataTree.currElem.IsEmpty()
-    plotprobe.dataTree.currElem.Load();
+if plotprobe.dataTreeHandle.currElem.IsEmpty()
+    plotprobe.dataTreeHandle.currElem.Load();
 end
 
-nDataBlks = plotprobe.dataTree.currElem.GetDataBlocksNum();
+nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 plotprobe.y = cell(nDataBlks,1);
 plotprobe.t = cell(nDataBlks,1);
 
@@ -640,12 +654,12 @@ hFigs = [handles.figure, plotprobe.handles.figureDup];
     
 for iBlk = 1:nDataBlks
     if datatype == plotprobe.datatypeVals.OD_HRF
-        plotprobe.y{iBlk} = plotprobe.dataTree.currElem.GetDodAvg(condition, iBlk);
-        plotprobe.t{iBlk} = plotprobe.dataTree.currElem.GetTHRF();
+        plotprobe.y{iBlk} = plotprobe.dataTreeHandle.currElem.GetDodAvg(condition, iBlk);
+        plotprobe.t{iBlk} = plotprobe.dataTreeHandle.currElem.GetTHRF();
         plotprobe.tMarkUnits='(AU)';
     elseif datatype == plotprobe.datatypeVals.CONC_HRF
-        plotprobe.y{iBlk} = plotprobe.dataTree.currElem.GetDcAvg(condition, iBlk);
-        plotprobe.t{iBlk} = plotprobe.dataTree.currElem.GetTHRF();
+        plotprobe.y{iBlk} = plotprobe.dataTreeHandle.currElem.GetDcAvg(condition, iBlk);
+        plotprobe.t{iBlk} = plotprobe.dataTreeHandle.currElem.GetTHRF();
         plotprobe.tMarkAmp = plotprobe.tMarkAmp/1e6;
         plotprobe.tMarkUnits = '(micro-molars)';
     end
@@ -709,8 +723,8 @@ end
 function SetTextFilename(handles)
 global plotprobe
 
-filename = plotprobe.dataTree.currElem.GetName();
-CondNames = plotprobe.dataTree.currElem.GetConditions();
+filename = plotprobe.dataTreeHandle.currElem.GetName();
+CondNames = plotprobe.dataTreeHandle.currElem.GetConditions();
 if plotprobe.condition>length(CondNames)
     ch = MenuBox('Selected condition does not exist. Please choose from available conditions',[CondNames, 'Cancel']);
     if ch==length(CondNames)+1
@@ -728,6 +742,8 @@ if ~ishandles(handles.textFilename)
     return;
 end
 
+% Set name of current processing element and the length of the text box
+% framing it
 if ~isempty(CondNames)
     name = sprintf('   %s,    condition: ''%s''', treeNodeName, CondNames{plotprobe.condition});
 else
@@ -735,12 +751,35 @@ else
 end
 n = length(name) + 0.20*length(name);
 set(handles.textFilename, 'units','characters');
-p = get(handles.textFilename, 'position');
-set(handles.textFilename, 'position',[p(1), p(2), n, p(4)]);
-set(handles.textFilename, 'units','normalized');
-set(handles.textFilename, 'string',name);
+p1 = get(handles.textFilename, 'position');
+set(handles.textFilename, 'position',[p1(1), p1(2), n, p1(4)], 'string',name);
 
+set(handles.textFilename, 'units','centimeters');
+set(handles.textFilenameFrame, 'units','centimeters');
+
+% Set the border frame size and position to be relative to text box holding the name 
+p1 = get(handles.textFilename, 'position');
 p2 = get(handles.textFilenameFrame, 'position');
-set(handles.textFilenameFrame, 'position',[p2(1), p2(2), p2(3)*n/p(3), p2(4)]);
+set(handles.textFilename, 'position',[p2(1)+abs(p1(2)-p2(2)), p1(2), p1(3), p1(4)]);
+p1 = get(handles.textFilename, 'position');
+set(handles.textFilenameFrame, 'position',[p2(1), p2(2), p1(3)+(2*abs(p1(1)-p2(1))), p2(4)]);
 
+% Return to normalized units for textbox
+set(handles.textFilename, 'units','normalized');
+set(handles.textFilenameFrame, 'units','normalized');
+
+
+
+
+% --------------------------------------------------------------------
+function menuItemSyncBrowsing_Callback(hObject, ~, handles)
+global plotprobe
+if strcmpi(get(hObject, 'checked'), 'off')
+    set(hObject, 'checked', 'on')
+    SyncBrowsing(plotprobe, 'on');
+    PlotProbeGUI_Update(handles);
+else
+    set(hObject, 'checked', 'off')
+    SyncBrowsing(plotprobe, 'off');
+end
 

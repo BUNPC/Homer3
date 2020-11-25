@@ -433,12 +433,18 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
         % ----------------------------------------------------------------------------------
         function fcall = FindClosestMatch(obj, fcall0)
             fcall = FuncCallClass().empty();
-            for ii=1:size(obj.usageoptions,1)
-                if fcall0.Compare(obj.usageoptions{ii,4}) > 50
-                    fcall = FuncCallClass(obj.usageoptions{ii,4});
-                    break;
+            maxscore = 0;
+            imaxscore = [];
+            for ii = 1:size(obj.usageoptions,1)
+                currscore = fcall0.Compare(obj.usageoptions{ii,4});
+                if  currscore > maxscore && currscore > 50
+                    maxscore = currscore;
+                    imaxscore = ii;
                 end
             end
+            if ~isempty(imaxscore)
+                fcall = FuncCallClass(obj.usageoptions{imaxscore,4});
+            end            
         end
         
         

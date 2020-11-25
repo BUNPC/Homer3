@@ -8,7 +8,7 @@ function checkForHomerUpdates()
         % If it has been a week since Homer checked for an update
          if (datetime - cfg.GetValue('Last Checked For Update') > duration(168,0,0))
 
-            url = 'http://bu.edu/neurophotonics/research/fnirs/homer3';
+            url = 'https://openfnirs.org/software/homer/homer3/';
             promptFlag = false;
 
             [s,status] = urlread(url,'timeout',4);
@@ -26,8 +26,8 @@ function checkForHomerUpdates()
             p = getParentRecursive(wb);
             p.setVisible(0);
 
-            version = regexp(s, '<a id="version">(.*?)<\/a>', 'tokens');
-            desc = regexp(s, '<p id="description">(.*?)<\/p>', 'tokens');
+            version = regexp(s, 'id="version">(.*?)<\/', 'tokens');
+            desc = regexp(s, 'id="description">(.*?)<\/', 'tokens');
             try  % Version description might not exist
                 updateTxt = [version{1}{1},': ', desc{1}{1}];
             catch
@@ -43,12 +43,11 @@ function checkForHomerUpdates()
                     'Update Available',...
                     'Yes','Remind me later','Don''t show this again',...
                     'Remind me later');
-                switch choice
-                    case 'Yes'
-                        % Open browser to update page
+                if strcmp(choice, 'Yes')
+                        web('https://github.com/BUNPC/Homer3/releases');
                         close(wb);
+                elseif strcmp(choice, 'Don''t show this again')
                         web('https://github.com/BUNPC/Homer3');
-                    case 'Don''t ask again'
                         cfg.SetValue('Check For Updates', 'off');
                 end
 

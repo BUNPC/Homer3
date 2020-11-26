@@ -43,6 +43,9 @@
 
 function h = plotProbe( y, t, SD, ch, ystd, axFactor, tStep, tAmp, tVis)
 
+EXPLODE_THRESH = 0.02;
+EXPLODE_VECTOR = [0.02, 0.08];
+
 h=[];
 
 % Get initial arg values
@@ -200,6 +203,8 @@ try
         lv=repmat({''},nCh,nDataTypes+nTSteps);
         lc=zeros(nCh,nDataTypes+nTSteps,3);
         
+        xyas = [];
+        
         for idx=1:length(lstW1)
             
             % Record line graphics properties based on the object type
@@ -207,6 +212,15 @@ try
             
             xa = (sPos(ml(lstW1(idx),1),1) + dPos(ml(lstW1(idx),2),1))/2 - axXoff;
             ya = (sPos(ml(lstW1(idx),1),2) + dPos(ml(lstW1(idx),2),2))/2 - axYoff;
+            
+            for i = 1:size(xyas, 1)
+               if sqrt((xyas(i, 1) - xa)^2 + (xyas(i, 2) - ya)^2) < EXPLODE_THRESH
+                   xa = xa + EXPLODE_VECTOR(1);
+                   ya = ya + EXPLODE_VECTOR(2);
+               end
+            end
+            
+            xyas = [xyas; [xa, ya]];
             hold on
             
             xT = xa-axWid/4 + axWid*((t-minT)/(maxT-minT))/2;

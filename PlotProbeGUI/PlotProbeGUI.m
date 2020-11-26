@@ -444,10 +444,12 @@ for iBlk=1:nDataBlks
     ml = plotprobe.dataTree.currElem.GetMeasList(iBlk);
     lst = find(ml.MeasList(:,4)==1);
     mlVis = ml.MeasListVis(lst);
-    if plotprobe.tMarkShow
-        set(plotprobe.handles.data{iBlk}(logical(mlVis), 4:end), 'visible','on');
-    else
-        set(plotprobe.handles.data{iBlk}(:,4:end), 'visible','off');    
+    if ~isempty(plotprobe.handles.data{iBlk})
+        if plotprobe.tMarkShow
+            set(plotprobe.handles.data{iBlk}(logical(mlVis), 4:end), 'visible','on');
+        else
+            set(plotprobe.handles.data{iBlk}(:,4:end), 'visible', 'off');    
+        end
     end
 end
 

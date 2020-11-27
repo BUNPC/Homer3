@@ -322,10 +322,12 @@ plotprobe.t = cell(nDataBlks,1);
 for iBlk=1:nDataBlks
     if datatype == plotprobe.datatypeVals.OD_HRF
         plotprobe.y{iBlk} = currElem.GetDodAvg(condition, iBlk);
+        plotprobe.ystd{iBlk} = plotprobe.dataTree.currElem.GetDodAvgStd(condition, iBlk);
         plotprobe.t{iBlk} = currElem.GetTHRF();
         plotprobe.tMarkUnits='(AU)';
     elseif datatype == plotprobe.datatypeVals.CONC_HRF
         plotprobe.y{iBlk} = currElem.GetDcAvg(condition, iBlk);
+        plotprobe.ystd{iBlk} = plotprobe.dataTree.currElem.GetDcAvgStd(condition, iBlk);
         plotprobe.t{iBlk} = currElem.GetTHRF();
         plotprobe.tMarkAmp = plotprobe.tMarkAmp/1e6;
         plotprobe.tMarkUnits = '(micro-molars)';
@@ -777,3 +779,13 @@ else
     SyncBrowsing(plotprobe, 'off');
 end
 
+
+
+% --------------------------------------------------------------------
+function radiobuttonShowStd_Callback(hObject, ~, handles)
+global plotprobe
+ClearAxesData();
+nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
+for iBlk=1:nDataBlks
+    plotProbeAndSetProperties(handles, iBlk);
+end

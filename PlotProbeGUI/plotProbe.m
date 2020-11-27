@@ -230,17 +230,25 @@ try
                 AvgT(:,1) = ya-axHgt/4 + axHgt*((Avg(:,lstW1(idx))-cmin)/(cmax-cmin))/2;
                 AvgT(:,2) = ya-axHgt/4 + axHgt*((Avg(:,lstW2(idx))-cmin)/(cmax-cmin))/2;
             end
-
             
-            % Plot data curves
-            h(idx,1)=plot( xT, AvgT(:,1),'color',color(1,:), 'visible',lv{idx, 1});
-            if size(AvgT,2)>1
-                h(idx,2)=plot( xT, AvgT(:,2),'color',color(2,:), 'visible',lv{idx, 2});
+            
+            if ~isempty(ystd) % Plot error bars if available
+                h(idx,1)=errorbar(xT, AvgT(:,1), ystd(:,1), 'color',color(1,:), 'visible',lv{idx,1});
+                if size(AvgT,2)>1
+                    h(idx,2)=errorbar(xT, AvgT(:,2), ystd(:,2), 'color',color(2,:), 'visible',lv{idx,2});
+                end
+                if size(AvgT,2)>2
+                    h(idx,3)=errorbar(xT, AvgT(:,3), ystd(:,3), 'color',color(3,:), 'visible',lv{idx,3});
+                end
+            else % Plot data without error bars
+                h(idx,1)=plot( xT, AvgT(:,1),'color',color(1,:), 'visible',lv{idx, 1});
+                if size(AvgT,2)>1
+                    h(idx,2)=plot( xT, AvgT(:,2),'color',color(2,:), 'visible',lv{idx, 2});
+                end
+                if size(AvgT,2)>2
+                    h(idx,3)=plot( xT, AvgT(:,3),'color',color(3,:), 'visible',lv{idx, 3});
+                end 
             end
-            if size(AvgT,2)>2
-                h(idx,3)=plot( xT, AvgT(:,3),'color',color(3,:), 'visible',lv{idx, 3});
-            end
-
             
             % Plot time markers starting with stim onset
             if length(tAmp)==1
@@ -282,37 +290,6 @@ try
                 ii=ii+1;
                 if ii-ndims(Avg)>nTSteps
                     break;
-                end
-            end
-
-            % Plot standard deviation if provided
-            if ~isempty(ystd)
-                if ndims(Avg)==3
-                    AvgT = ya-axHgt/4 + axHgt*((Avg(:,:,idx)-ystd(:,:,idx)-cmin)/(cmax-cmin))/2;
-                else
-                    AvgT(:,1) = ya-axHgt/4 + axHgt*((Avg(:,lstW1(idx))-ystd(:,lstW1(idx))-cmin)/(cmax-cmin))/2;
-                    AvgT(:,2) = ya-axHgt/4 + axHgt*((Avg(:,lstW1(idx))-ystd(:,lstW2(idx))-cmin)/(cmax-cmin))/2;
-                end
-                h(idx,1)=plot( xT, AvgT(:,1), 'linewidth',0.5,'color',color(1,:),'linestyle',':', 'visible',lv{idx,ii});
-                if size(AvgT,2)>1
-                    h(idx,2)=plot( xT, AvgT(:,2), 'linewidth',0.5,'color',color(2,:),'linestyle',':', 'visible',lv{idx,ii});
-                end
-                if size(AvgT,2)>2
-                    h(idx,3)=plot( xT, AvgT(:,3), 'linewidth',0.5,'color',color(3,:),'linestyle',':', 'visible',lv{idx,ii});
-                end
-                
-                if ndims(Avg)==3
-                    AvgT = ya-axHgt/4 + axHgt*((Avg(:,:,idx)+ystd(:,:,idx)-cmin)/(cmax-cmin))/2;
-                else
-                    AvgT(:,1) = ya-axHgt/4 + axHgt*((Avg(:,lstW1(idx))+ystd(:,lstW1(idx))-cmin)/(cmax-cmin))/2;
-                    AvgT(:,2) = ya-axHgt/4 + axHgt*((Avg(:,lstW1(idx))+ystd(:,lstW2(idx))-cmin)/(cmax-cmin))/2;
-                end
-                h(idx,1)=plot( xT, AvgT(:,1), 'linewidth',0.5,'color',color(1,:),'linestyle',':', 'visible',lv{idx,ii});
-                if size(AvgT,2)>1
-                    h(idx,2)=plot( xT, AvgT(:,2), 'linewidth',0.5,'color',color(2,:),'linestyle',':', 'visible',lv{idx,ii});
-                end
-                if size(AvgT,2)>2
-                    h(idx,3)=plot( xT, AvgT(:,3), 'linewidth',0.5,'color',color(3,:),'linestyle',':', 'visible',lv{idx,ii});
                 end
             end
             

@@ -21,15 +21,15 @@ if files==0
     return
 end
 
-[~,name,~] = fileparts(files); 
-
 if ~iscell(files)
     if files==0
         return;
     end
 end
 
-fsn = inputdlg( 'Select the time range (in seconds) for the segment of data to save in a separate file. You can enter multiple time ranges, separated by a '';'', to save different segments to different files. For example, [0 100; 300 400]', 'Segment SNIRF file', 1 );
+[~,name,~] = fileparts(files); 
+
+fsn = inputdlg( 'Select the time range (in seconds) for the segment of data to save in a separate file. You can enter multiple time ranges, separated by a '';'', to save different segments to different files. For example, [0 100; 300 400] would give you two segments of the original file from 0 to 100 and 300 to 400', 'Segment SNIRF file', 1 );
 if isempty(fsn)
     return
 end

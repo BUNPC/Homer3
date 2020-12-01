@@ -1747,6 +1747,10 @@ end
 % --------------------------------------------------------------------
 function menuItemSegmentSnirf_Callback(hObject, eventdata, handles)
 global maingui;
+if maingui.dataTree.IsFlatFileDir()
+    MessageBox('Segment Tool does not support flat file directories yet, please change to a deep directory style (using sub-directories for groups and subjects) to use the segment tool via Homer3');
+    return;
+end
 snirfSegment();
 maingui.dataTree = DataTreeClass();
 for iG = 1:length(maingui.dataTree.groups)
@@ -1759,6 +1763,10 @@ DisplayGroupTree(handles);
 % --------------------------------------------------------------------
 function menuItemDownsampleSnirf_Callback(hObject, eventdata, handles)
 global maingui;
+if maingui.dataTree.IsFlatFileDir()
+    MessageBox('Downsample Tool does not support flat file directories yet, please change to a deep directory style (using sub-directories for groups and subjects) to use the downsample tool via Homer3');
+    return;
+end
 snirfDownsample();
 maingui.dataTree = DataTreeClass();
 for iG = 1:length(maingui.dataTree.groups)

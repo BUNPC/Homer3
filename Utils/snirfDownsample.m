@@ -26,15 +26,18 @@ else
     [files, pathnm] = uigetfile( '*.snirf', 'Pick files to downsample', fpath, 'multiselect','on');
 end
 
-[~,name,~] = fileparts(files); 
-
 if ~iscell(files)
     if files==0
         return;
     end
 end
 
+[~,name,~] = fileparts(files); 
+
 fsn = inputdlg( 'Decrease the sampling rate of a sequence by a factor of', 'Downsample SNIRF files', 1 );
+if isempty(fsn)
+    return
+end
 fsn = str2num(fsn{1});
 
 wd = cd;

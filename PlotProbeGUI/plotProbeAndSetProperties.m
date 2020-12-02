@@ -10,7 +10,7 @@ end
 
 % If checkbox is checked, display std
 if handles.radiobuttonShowStd.Value & isfield(plotprobe, 'ystd')
-   ystd  = plotprobe.ystd{iBlk} ./ sqrt(plotprobe.dataTree.currElem.GetNtrials(iBlk)); 
+   ystd  = plotprobe.ystd{iBlk};
 else
    ystd  = [];
 end

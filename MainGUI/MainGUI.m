@@ -210,6 +210,10 @@ InitGuiControls(handles);
 DisplayGroupTree(handles);
 Display(handles, hObject);
 
+% Store Original X and Y Lims for AxesSDG
+maingui.axesSDG.xlim = maingui.axesSDG.handles.axes.XLim;
+maingui.axesSDG.ylim = maingui.axesSDG.handles.axes.YLim;
+
 maingui.handles = handles;
 maingui.handles.pValuesFig = [];
 
@@ -1724,3 +1728,52 @@ fname = uiputfile('*.m', 'Export Processing Stream to Script (.m)', 'processing_
 if fname ~= 0
     exportProcessScript(fname, maingui.dataTree.currElem.procStream);
 end
+
+% --------------------------------------------------------------------
+function panProbeCallback(hObject, eventdata, handles)
+axes(handles.axesSDG)
+xrange = xlim();
+% xm = mean(xrange);
+xd = xrange(2)-xrange(1);
+yrange = ylim();
+% ym = mean(yrange);
+yd = yrange(2)-yrange(1);
+if get(hObject,'string')=='<'
+    xlim( [xrange(1)-xd/5 xrange(2)-xd/5] );
+elseif get(hObject,'string')=='>'
+    xlim( [xrange(1)+xd/5 xrange(2)+xd/5] );
+elseif get(hObject,'string')=='/\'
+    ylim( [yrange(1)+yd/5 yrange(2)+yd/5] );
+elseif get(hObject,'string')=='\/'
+    ylim( [yrange(1)-yd/5 yrange(2)-yd/5] );
+end
+
+
+% --------------------------------------------------------------------
+function zoomInCallback(hObject, eventdata, handles)
+axes(handles.axesSDG)
+axes(handles.axesSDG)
+xrange = xlim();
+xd = xrange(2)-xrange(1);
+yrange = ylim();
+yd = yrange(2)-yrange(1);
+xlim( [xrange(1)+xd/5 xrange(2)-xd/5] );
+ylim( [yrange(1)+yd/5 yrange(2)-yd/5] );
+
+% --------------------------------------------------------------------
+function zoomOutCallback(hObject, eventdata, handles)
+axes(handles.axesSDG)
+axes(handles.axesSDG)
+xrange = xlim();
+xd = xrange(2)-xrange(1);
+yrange = ylim();
+yd = yrange(2)-yrange(1);
+xlim( [xrange(1)-xd/5 xrange(2)+xd/5] );
+ylim( [yrange(1)-yd/5 yrange(2)+yd/5] );
+
+% --------------------------------------------------------------------
+function resetProbeViewCallback(hObject, eventdata, handles)
+global maingui;
+axes(handles.axesSDG)
+xlim( maingui.axesSDG.xlim );
+ylim( maingui.axesSDG.ylim );

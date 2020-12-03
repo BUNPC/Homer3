@@ -175,7 +175,7 @@ if isempty(plotprobe.datatype)
     plotprobe.datatype = plotprobe.datatypeVals.CONC_HRF;
 end
 if isempty(plotprobe.condition)
-    plotprobe.condition = 1;
+    plotprobe.condition = maingui.condition;
 end
 
 

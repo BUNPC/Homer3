@@ -600,6 +600,15 @@ classdef DataTreeClass <  handle
             end
             b = false;
         end
+        
+        % ----------------------------------------------------------
+        function b = IsFlatFileDir(obj)
+            if obj.files(1).isdir
+                b = false;
+            else
+                b = true;
+            end
+        end
 
     end
     

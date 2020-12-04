@@ -393,8 +393,8 @@ classdef FuncRegClass < matlab.mixin.Copyable
                 for jj = 1:length(obj.userfuncdir)
                     file = dir([obj.userfuncdir{jj}, '/', obj.entries(ii).GetName(), '.m']);
                     if ~isempty(file)
-                        if datetime(file.date,'local','system') > lastdt
-                            lastdt = datetime(file.date,'local','system');
+                        if  datetime(regfile.date) > lastdt
+                            lastdt =  datetime(regfile.date);
                         end
                         break;
                     end

@@ -1757,8 +1757,8 @@ xrange = xlim();
 xd = xrange(2)-xrange(1);
 yrange = ylim();
 yd = yrange(2)-yrange(1);
-xlim( [xrange(1)+xd/5 xrange(2)-xd/5] );
-ylim( [yrange(1)+yd/5 yrange(2)-yd/5] );
+xlim( [xrange(1)+xd/10 xrange(2)-xd/10] );
+ylim( [yrange(1)+yd/10 yrange(2)-yd/10] );
 
 % --------------------------------------------------------------------
 function zoomOutCallback(hObject, eventdata, handles)
@@ -1768,8 +1768,8 @@ xrange = xlim();
 xd = xrange(2)-xrange(1);
 yrange = ylim();
 yd = yrange(2)-yrange(1);
-xlim( [xrange(1)-xd/5 xrange(2)+xd/5] );
-ylim( [yrange(1)-yd/5 yrange(2)+yd/5] );
+xlim( [xrange(1)-xd/10 xrange(2)+xd/10] );
+ylim( [yrange(1)-yd/10 yrange(2)+yd/10] );
 
 % --------------------------------------------------------------------
 function resetProbeViewCallback(hObject, eventdata, handles)

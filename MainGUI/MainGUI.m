@@ -971,12 +971,40 @@ for iBlk = iDataBlks
             end
             d = procElem.reshape_y(d, ch.MeasList);
             DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
+            if isa(dataTree.currElem, 'RunClass')
+                sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
+                xlabel('Time (s)', 'FontSize', 17);
+%                 xlabel(['Time (s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
+            else
+                xlabel('Time (s)', 'FontSize', 17);
+            end
+            ylabel('');
         elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
             if  datatype == maingui.buttonVals.CONC_HRF
                 d = d(:,:,:,condition);
             end
             d = d * sclConc;
             DisplayDataConc(t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
+            if isa(dataTree.currElem, 'RunClass')
+                sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
+                xlabel('Time (s)', 'FontSize', 17);
+%                 xlabel(['Time(s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
+            else
+                xlabel('Time (s)', 'FontSize', 17);
+            end
+            procName = {procElem.procStream.fcalls.name};
+            idx = contains(procName, 'hmrR_OD2Conc_new');
+            if ~isempty(find(idx,1))
+                ppf = procElem.procStream.fcalls(idx).paramIn.value;
+                if ppf(condition) == 1 && ~isempty(dataTree.currElem.acquired.metaDataTags.tags.LengthUnit)
+                    unit = dataTree.currElem.acquired.metaDataTags.tags.LengthUnit;
+                    ylabel(['\muM ' unit], 'FontSize', 17);
+                else
+                ylabel('\muM', 'FontSize', 17);
+                end
+            else
+                ylabel('\muM', 'FontSize', 17);
+            end
         end
     end
     iColor = iColor+length(iChBlk);
@@ -1276,6 +1304,7 @@ end
 % --------------------------------------------------------------------
 function menuItemResetGroupFolder_Callback(hObject, eventdata, handles)
 resetGroupFolder();
+DisplayGroupTree(handles);
 
 
 
@@ -1719,7 +1748,36 @@ else
     errordlg('Select a run to reset its excluded channels and time points.','No run selected');
 end
 
+% --------------------------------------------------------------------
+function menuItemSegmentSnirf_Callback(hObject, eventdata, handles)
+global maingui;
+if maingui.dataTree.IsFlatFileDir()
+    MessageBox('Segment Tool does not support flat file directories yet, please change to a deep directory style (using sub-directories for groups and subjects) to use the segment tool via Homer3');
+    return;
+end
+snirfSegment();
+maingui.dataTree = DataTreeClass();
+for iG = 1:length(maingui.dataTree.groups)
+    maingui.dataTree.SetCurrElem(iG,0,0);
+    maingui.dataTree.ResetCurrElem();
+end
+DisplayGroupTree(handles);
 
+
+% --------------------------------------------------------------------
+function menuItemDownsampleSnirf_Callback(hObject, eventdata, handles)
+global maingui;
+if maingui.dataTree.IsFlatFileDir()
+    MessageBox('Downsample Tool does not support flat file directories yet, please change to a deep directory style (using sub-directories for groups and subjects) to use the downsample tool via Homer3');
+    return;
+end
+snirfDownsample();
+maingui.dataTree = DataTreeClass();
+for iG = 1:length(maingui.dataTree.groups)
+    maingui.dataTree.SetCurrElem(iG,0,0);
+    maingui.dataTree.ResetCurrElem();
+end
+DisplayGroupTree(handles);
 
 % --------------------------------------------------------------------
 function menuItemExportProcessingStreamScript_Callback(hObject, eventdata, handles)

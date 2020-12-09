@@ -228,7 +228,7 @@ classdef DataTreeClass <  handle
                     end
                     obj.files = dataInit.files;
                     
-                    obj.LoadGroup(iGnew, procStreamCfgFile);
+                    obj.LoadGroup(iGnew, procStreamCfgFile, options);
                     if length(obj.groups) < iGnew
                         if obj.FoundDataFilesInOtherFormat(dataInit, kk)
                             continue;
@@ -298,10 +298,13 @@ classdef DataTreeClass <  handle
         
         
         % ---------------------------------------------------------------
-        function LoadGroup(obj, iG, procStreamCfgFile)
+        function LoadGroup(obj, iG, procStreamCfgFile, options)
             
             if ~exist('procStreamCfgFile','var')
                 procStreamCfgFile = '';
+            end
+            if ~exist('options','var')
+                options = '';
             end
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -324,14 +327,15 @@ classdef DataTreeClass <  handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Initialize procStream for all tree nodes
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.groups(iG).InitProcStream(procStreamCfgFile);
+            if ~optionExists(options, 'noloadconfig')
+            	obj.groups(iG).InitProcStream(procStreamCfgFile);
+            end
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Generate the stimulus conditions for the group tree
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.groups(iG).SetConditions();
 
-            
         end
         
         
@@ -599,6 +603,15 @@ classdef DataTreeClass <  handle
                 return;
             end
             b = false;
+        end
+        
+        % ----------------------------------------------------------
+        function b = IsFlatFileDir(obj)
+            if obj.files(1).isdir
+                b = false;
+            else
+                b = true;
+            end
         end
 
     end

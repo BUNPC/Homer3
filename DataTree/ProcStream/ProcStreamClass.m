@@ -70,7 +70,7 @@ classdef ProcStreamClass < handle
                         obj.fcalls(kk) = FuncCallClass(temp, obj.reg);
                         kk = kk+1;
                     else
-                        fprintf('  Found no similar entries. Discarding %s\n', section{ii})
+                        fprintf('  Found no similar entries. Discarding %s\n', obj2.fcalls(ii).GetName())
                     end
                 end            
             end

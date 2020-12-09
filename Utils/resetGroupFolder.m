@@ -1,5 +1,6 @@
 function resetGroupFolder(dirname, options)
 
+global maingui;
 if ~exist('dirname','var') || isempty(dirname)
     dirname = [pwd,'/'];
 end
@@ -12,10 +13,10 @@ if exist([dirname, 'groupResults.mat'],'file')
 end
 
 if isempty(findstr(options, 'nodatatree')) %#ok<*FSTR>
-    dataTree = DataTreeClass(dirname,'','','files');
-    for iG = 1:length(dataTree.groups)
-        dataTree.SetCurrElem(iG,0,0)
-        dataTree.ResetCurrElem();
+    maingui.dataTree = DataTreeClass(dirname,'','','files');
+    for iG = 1:length(maingui.dataTree.groups)
+        maingui.dataTree.SetCurrElem(iG,0,0)
+        maingui.dataTree.ResetCurrElem();
     end
 end
 

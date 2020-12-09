@@ -47,14 +47,16 @@ classdef RegistriesClass < handle
             
             % Check if saved registry exists. If so load that and exit
             if ~strcmp(mode, 'reload')
-            if exist([obj.userfuncdir{1}, 'Registry.mat'], 'file')
-                obj.filename = [obj.userfuncdir{1}, 'Registry.mat'];
-                r = load(obj.filename, 'reg');
-                if isa(r.reg, 'RegistriesClass') && ~isempty(r.reg)
-                    obj.Copy(r.reg);
-                    return;
+                if exist([obj.userfuncdir{1}, 'Registry.mat'], 'file')
+                    obj.filename = [obj.userfuncdir{1}, 'Registry.mat'];
+                    r = load(obj.filename, 'reg');
+                    if isa(r.reg, 'RegistriesClass') && ~isempty(r.reg)
+                        obj.Copy(r.reg);
+                        if obj.IsValid()
+                            return;
+                        end
+                    end
                 end
-            end
             end
 
             obj.Load();
@@ -347,7 +349,21 @@ classdef RegistriesClass < handle
             end
             obj.Reload(type);
         end
+    
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsValid(obj)
+            b = false;
+            regfile = dir([obj.userfuncdir{1}, 'Registry.mat']);
+            for ii = 1:length(obj.funcReg)
+                if obj.funcReg(ii).DateLastModified() > datetime(regfile.date,'locale','system')
+                    return;
+                end
+            end
+            b = true;
+        end
         
     end
+        
 end
 

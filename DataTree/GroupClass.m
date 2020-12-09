@@ -372,10 +372,9 @@ classdef GroupClass < TreeNodeClass
                 
                 % If proc stream input is still empty it means the loaded config
                 % did not have valid proc stream input. If that's the case we
-                % load a default proc stream input
+                % Load a default proc stream input
                 if g.procStream.IsEmpty() || s.procStream.IsEmpty() || r.procStream.IsEmpty()
                     obj.logger.Write(sprintf('Failed to load all function calls in proc stream config file. Loading default proc stream...\n'));
-                    g.CopyFcalls(procStreamGroup, 'group');
                     g.CopyFcalls(procStreamSubj, 'subj');
                     g.CopyFcalls(procStreamRun, 'run');
                     
@@ -392,14 +391,13 @@ classdef GroupClass < TreeNodeClass
                         procStreamSubj.SaveConfigFile(fname, 'subj');
                         procStreamRun.SaveConfigFile(fname, 'run');
                     end
-                else
+                    
+                % Otherwise the non-default processing stream loaded from file to this group and to first subject 
+                % disseminate it to all subjects and all runs in this group
+                else                    
                     obj.logger.Write(sprintf('Loading proc stream from %s\n', fname));
-                    procStreamGroup.Copy(g.procStream);
-                    procStreamSubj.Copy(s.procStream);
-                    procStreamRun.Copy(r.procStream);
-                    g.CopyFcalls(procStreamGroup, 'group');
-                    g.CopyFcalls(procStreamSubj, 'subj');
-                    g.CopyFcalls(procStreamRun, 'run');
+                    g.CopyFcalls(s.procStream, 'subj');
+                    g.CopyFcalls(r.procStream, 'run');
                 end
             end
         end

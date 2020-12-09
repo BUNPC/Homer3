@@ -1738,6 +1738,7 @@ xd = xrange(2)-xrange(1);
 yrange = ylim();
 % ym = mean(yrange);
 yd = yrange(2)-yrange(1);
+%Ratio can be adjusted
 if get(hObject,'string')=='<'
     xlim( [xrange(1)-xd/5 xrange(2)-xd/5] );
 elseif get(hObject,'string')=='>'

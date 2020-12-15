@@ -663,7 +663,7 @@ function SetStimData(icond, data)
 global stimEdit
 stimEdit.dataTreeHandle.currElem.SetStimTpts(icond, data(:,1));
 stimEdit.dataTreeHandle.currElem.SetStimDuration(icond, data(:,2));
-stimEdit.dataTreeHandle.currElem.SetStimValues(icond, data(:,3));
+stimEdit.dataTreeHandle.currElem.SetStimAmplitudes(icond, data(:,3));
 
 
 % -------------------------------------------------------------------

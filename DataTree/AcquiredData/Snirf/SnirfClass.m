@@ -964,7 +964,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     if ~obj.stim(ii).Exists(t(tidxs(jj)))
                         obj.stim(ii).AddStims(t(tidxs(jj)));
                     else
-                        obj.stim(ii).EditValue(t(tidxs(jj)), s(tidxs(jj),ii));
+                        obj.stim(ii).EditState(t(tidxs(jj)), s(tidxs(jj),ii));
                     end
                 end
             end
@@ -973,14 +973,38 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function s = GetStims(obj, t)
+            % Returns a .nirs style stim signal. Stim state marks are
+            % interpolated onto the time series t from their respective
+            % onset times.
             s = zeros(length(t), length(obj.stim));
             for ii=1:length(obj.stim)
-                [ts, v] = obj.stim(ii).GetStim();
-                [~, k] = nearest_point(t, ts);
+                states = obj.stim.GetStates();
+                if isempty(states)
+                   s = [];
+                   return;
+                end
+                [~, k] = nearest_point(t, states(:, 1));
                 if isempty(k)
                     continue;
                 end
-                s(k,ii) = v;
+                s(k,ii) = states(:, 2);
+            end
+        end
+        
+        
+        % ---------------------------------------------------------
+        function s = GetStimAmps(obj, t)
+            % Returns a .nirs style stim signal. Stim amplitudes are
+            % interpolated onto the time series t from their respective
+            % onset times.
+            s = zeros(length(t), length(obj.stim));
+            for ii=1:length(obj.stim)
+                data = obj.stim.GetData();
+                [~, k] = nearest_point(t, data(:, 1));
+                if isempty(k)
+                    continue;
+                end
+                s(k,ii) = data(:, 3);
             end
         end
         
@@ -1257,7 +1281,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                         end
                         
                         % If stim at time point tPts(ii) exists in stim
-                        % condition kk, then move stim from obj.stim(kk) to
+                        % condition kk, then move stim from obj.stim(kk)
+                        % toMat
+                        
                         % obj.stim(j)
                         obj.stim(j).AddStims(tPts(ii), d(k(1),2), d(k(1),3));
                         
@@ -1307,19 +1333,19 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimValues(obj, icond, vals)
-            obj.stim(icond).SetValues(vals);
+        function SetStimAmplitudes(obj, icond, amps)
+            obj.stim(icond).SetAmplitudes(amps);
         end
         
         
         
         % ----------------------------------------------------------------------------------
-        function vals = GetStimValues(obj, icond)
+        function vals = GetStimAmplitudes(obj, icond)
             if icond>length(obj.stim)
                 vals = [];
                 return;
             end
-            vals = obj.stim(icond).GetValues();
+            vals = obj.stim(icond).GetAmplitudes();
         end
         
         

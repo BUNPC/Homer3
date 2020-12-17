@@ -447,6 +447,20 @@ if ~ishandles(hObject)
     return;
 end
 
+% Check the processing stream order
+[fn_error, missing_args, prereqs] = maingui.dataTree.currElem.procStream.Check();
+if fn_error > 0
+    l1 = sprintf('The following function: %s', maingui.dataTree.currElem.procStream.fcalls(fn_error).nameUI);
+    l2 = sprintf('cannot run because of unavailable input(s) %s.', cell2str(missing_args));
+    if ~isempty(prereqs)
+       l3 = sprintf('Add one of the following prerequisite functions to the processing stream:\n%s', prereqs)
+    else
+       l3 = 'Ensure that a function which outputs the necessary inputs appears before the function in the processing stream.'; 
+    end
+    err = errordlg({l1, l2, l3}, 'Invalid Processing Stream', 'modal')
+    return;  % Don't execute if there is an error
+end
+
 MainGUI_EnableDisableGUI(handles,'off');
 
 % Save original selection in listboxGroupTree because it'll change during auto processing 
@@ -463,7 +477,6 @@ try
 catch ME
     MainGUI_EnableDisableGUI(handles,'on');
 	rethrow(ME)
-
 end
       
 % Restore original selection listboxGroupTree

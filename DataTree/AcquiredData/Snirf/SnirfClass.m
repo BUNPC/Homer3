@@ -980,7 +980,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             for ii=1:length(obj.stim)
                 states = obj.stim.GetStates();
                 if isempty(states)
-                   s = [];
                    return;
                 end
                 [~, k] = nearest_point(t, states(:, 1));

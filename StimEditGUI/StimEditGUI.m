@@ -409,7 +409,6 @@ tc             = stimEdit.dataTreeHandle.currElem.GetTime();
 actionLst = CondNamesGroup;
 actionLst{end+1} = 'New condition';
 if ~isempty(iS_lst)
-    actionLst{end+1} = 'Toggle active on/off';
     actionLst{end+1} = 'Delete';
     menuTitleStr = sprintf('Edit/Delete stim mark(s) at t=%0.1f-%0.1f to...', ...
                             tc(tPts_idxs_select(iS_lst(1))), ...
@@ -588,16 +587,10 @@ if isempty(iS_lst)
 else
     
     %%%% Delete stim
-    if menu_choice==nActions-1 & nActions==nCond+4
-
+    if menu_choice==nActions-1 & nActions==nCond+3
         % Delete stim entry from userdata first
         % because it depends on stim.currElem.s
         stimEdit.dataTreeHandle.currElem.DeleteStims(tc(tPts_idxs_select));
-
-    %%%% Toggle active/inactive stim
-    elseif menu_choice==nActions-2 & nActions==nCond+4
-
-        stimEdit.dataTreeHandle.currElem.ToggleStims(tc(tPts_idxs_select));
     
     %%%% Edit stim
     elseif menu_choice<=nCond+1

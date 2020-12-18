@@ -28,7 +28,7 @@ end
 
 % Get the input and output file names 
 [pname, fname] = fileparts(infile);
-pname = convertToStandardPath(pname);
+pname = filesepStandard(pname);
 outfile = [pname, fname, '.snirf'];
 
 % Load .nirs file

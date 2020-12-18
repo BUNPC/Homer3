@@ -977,8 +977,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % interpolated onto the time series t from their respective
             % onset times.
             s = zeros(length(t), length(obj.stim));
-            for ii=1:length(obj.stim)
-                states = obj.stim.GetStates();
+            for i=1:length(obj.stim)
+                states = obj.stim(i).GetStates();
                 if isempty(states)
                    return;
                 end
@@ -986,7 +986,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 if isempty(k)
                     continue;
                 end
-                s(k,ii) = states(:, 2);
+                s(k,i) = states(:, 2);
             end
         end
         

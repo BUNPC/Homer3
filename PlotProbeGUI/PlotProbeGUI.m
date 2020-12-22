@@ -66,8 +66,6 @@ plotprobe.tMarkInt    = str2num(get(handles.editPlotProbeTimeMarkersInt, 'string
 plotprobe.tMarkAmp    = str2num(get(handles.editPlotProbeTimeMarkersAmp, 'string'));
 plotprobe.tMarkShow   = get(handles.radiobuttonShowTimeMarkers, 'value');
 plotprobe.tMarkUnits  = str2num(get(handles.textTimeMarkersAmpUnits, 'string'));
-plotprobe.hidMeasShow = get(handles.radiobuttonShowHiddenMeas, 'value');
- 
 
 
 % ----------------------------------------------------------------------
@@ -177,7 +175,7 @@ if isempty(plotprobe.datatype)
     plotprobe.datatype = plotprobe.datatypeVals.CONC_HRF;
 end
 if isempty(plotprobe.condition)
-    plotprobe.condition = 1;
+    plotprobe.condition = maingui.condition;
 end
 
 
@@ -324,10 +322,12 @@ plotprobe.t = cell(nDataBlks,1);
 for iBlk=1:nDataBlks
     if datatype == plotprobe.datatypeVals.OD_HRF
         plotprobe.y{iBlk} = currElem.GetDodAvg(condition, iBlk);
+        plotprobe.ystd{iBlk} = plotprobe.dataTree.currElem.GetDodAvgStd(condition, iBlk);
         plotprobe.t{iBlk} = currElem.GetTHRF();
         plotprobe.tMarkUnits='(AU)';
     elseif datatype == plotprobe.datatypeVals.CONC_HRF
         plotprobe.y{iBlk} = currElem.GetDcAvg(condition, iBlk);
+        plotprobe.ystd{iBlk} = plotprobe.dataTree.currElem.GetDcAvgStd(condition, iBlk);
         plotprobe.t{iBlk} = currElem.GetTHRF();
         plotprobe.tMarkAmp = plotprobe.tMarkAmp/1e6;
         plotprobe.tMarkUnits = '(micro-molars)';
@@ -441,10 +441,18 @@ function radiobuttonShowTimeMarkers_Callback(hObject, ~, ~)
 global plotprobe
 
 plotprobe.tMarkShow = get(hObject,'value');
-if plotprobe.tMarkShow
-    set(plotprobe.handles.data{1}(:,4:end), 'visible','on');
-else
-    set(plotprobe.handles.data{1}(:,4:end), 'visible','off');    
+nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
+for iBlk=1:nDataBlks
+    ml = plotprobe.dataTree.currElem.GetMeasList(iBlk);
+    lst = find(ml.MeasList(:,4)==1);
+    mlVis = ml.MeasListVis(lst);
+    if ~isempty(plotprobe.handles.data{iBlk})
+        if plotprobe.tMarkShow
+            set(plotprobe.handles.data{iBlk}(logical(mlVis), 4:end), 'visible','on');
+        else
+            set(plotprobe.handles.data{iBlk}(:,4:end), 'visible', 'off');    
+        end
+    end
 end
 
 
@@ -587,18 +595,6 @@ set(0,'units',u0);
 haxes = findobj2(hFig, 'tag','axes1', 'flat');
 p = get(haxes,'position');
 set(gca, 'position',p)
-
-
-
-% ----------------------------------------------------------------------
-function radiobuttonShowHiddenMeas_Callback(hObject, ~, ~)
-global plotprobe
-plotprobe.hidMeasShow = get(hObject,'value');
-nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
-for iBlk=1:nDataBlks    
-    showHiddenObjs(iBlk);
-end
-
 
 
 % ----------------------------------------------------------------------
@@ -783,3 +779,13 @@ else
     SyncBrowsing(plotprobe, 'off');
 end
 
+
+
+% --------------------------------------------------------------------
+function radiobuttonShowStd_Callback(hObject, ~, handles)
+global plotprobe
+ClearAxesData();
+nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
+for iBlk=1:nDataBlks
+    plotProbeAndSetProperties(handles, iBlk);
+end

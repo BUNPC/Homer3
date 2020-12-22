@@ -206,7 +206,7 @@ global stimEdit
 data = get(hObject,'data') ;
 conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
 icond = GetConditionIdxFromPopupmenu(conditions, handles);
-SetStimData(icond, data);
+stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).SetData(data);
 r=eventdata.Indices(1);
 c=eventdata.Indices(2);
 if c==2
@@ -979,17 +979,18 @@ icond = find(strcmp(conditions, condition));
 if isempty(icond)
     return;
 end
-[tpts, duration, vals] = stimEdit.dataTreeHandle.currElem.GetStimData(icond);
-if isempty(tpts)
+stimdata = stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).GetData();
+if isempty(stimdata)
     set(handles.uitableStimInfo, 'data',[]);
     return;
 end
+labels = stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).GetDataLabels();
+tpts = stimdata(:, 1);
 [~,idx] = sort(tpts);
-data = zeros(length(tpts),3);
-data(:,1) = tpts(idx);
-data(:,2) = duration(idx);
-data(:,3) = vals(idx);
-set(handles.uitableStimInfo, 'data',data);
+stimdata_sorted = stimdata(idx, :);
+set(handles.uitableStimInfo, 'data', stimdata_sorted);
+set(handles.uitableStimInfo, 'ColumnName', labels);
+set(handles.uitableStimInfo, 'ColumnEditable', logical(ones(1, size(stimdata_sorted, 2))));
 
 
 % --------------------------------------------------------------------
@@ -1148,3 +1149,7 @@ else
     SyncBrowsing(stimEdit, 'off');
 end
 
+
+
+% --------------------------------------------------------------------
+function uitableStimInfo_ButtonDownFcn(hObject, eventdata, handles)

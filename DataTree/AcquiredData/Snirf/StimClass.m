@@ -3,6 +3,7 @@ classdef StimClass < FileLoadSaveClass
     properties
         name
         data
+        dataLabels
         states  % Stim marks enabled/disabled. Not part of SNIRF
     end
    
@@ -28,20 +29,22 @@ classdef StimClass < FileLoadSaveClass
                     else
                         obj.name = varargin{1};
                         obj.data = [];
+                        obj.dataLabels = {'Onset', 'Duration', 'Amplitude'};
                     end
                 end
             elseif nargin==2
                 if ischar(varargin{1})
                     obj.SetFilename(varargin{1});
                     obj.Load(varargin{1}, obj.fileformat, varargin{2});
+                    % Note that states are not loaded from file
                 else
                     t        = varargin{1};
                     CondName = varargin{2};
                     obj.name = CondName;
                     for ii=1:length(t)
                         obj.data(end+1,:) = [t(ii), 10, 1];
-                        obj.states(end+1,:) = [t(ii), 1];
                     end
+                    obj.dataLabels = {'Onset', 'Duration', 'Amplitude'};
                 end
             elseif nargin==3
                 s        = varargin{1};
@@ -49,12 +52,14 @@ classdef StimClass < FileLoadSaveClass
                 CondName = varargin{3};
                 obj.name = CondName;
                 k = s>0 | s==-1 | s==-2;  % Include stim marks with these values
-                obj.data = [t(k), 5*ones(length(t(k)),1), ones(length(t(k)),1)];
+                obj.data = [t(k), 10*ones(length(t(k)),1), ones(length(t(k)),1)];
             elseif nargin==0
                 obj.name = '';
                 obj.data = [];
+                obj.dataLabels = {'Onset', 'Duration', 'Amplitude'};
             end
-            obj.updateStates();
+            obj.SortTpts();
+            obj.updateStates();  % Generates enabled states to match the data array
         end
         
         
@@ -92,7 +97,8 @@ classdef StimClass < FileLoadSaveClass
                 
                 % Load datasets
                 obj.name   = HDF5_DatasetLoad(gid, 'name');
-                obj.data   = HDF5_DatasetLoad(gid, 'data', [], '2D');                
+                obj.data   = HDF5_DatasetLoad(gid, 'data', [], '2D');
+                obj.dataLabels   = HDF5_DatasetLoad(gid, 'dataLabels', {});
                 if all(obj.data(:)==0)
                     obj.data = [];
                 end
@@ -151,6 +157,7 @@ classdef StimClass < FileLoadSaveClass
             end
             hdf5write_safe(fileobj, [location, '/name'], obj.name);
             hdf5write_safe(fileobj, [location, '/data'], obj.data, 'w');
+            hdf5write_safe(fileobj, [location, '/dataLabels'], obj.dataLabels, 'w');
         end
         
         
@@ -158,6 +165,7 @@ classdef StimClass < FileLoadSaveClass
         function Copy(obj, obj2)
             obj.name = obj2.name;
             obj.data = obj2.data;
+            obj.dataLabels = obj2.dataLabels;
             obj.states = obj2.states;
         end
         
@@ -182,30 +190,29 @@ classdef StimClass < FileLoadSaveClass
         end
     
         function updateStates(obj)
-            % Generate a state list compatible with the data array
+            % Generate or regenerate a state list compatible with the data
+            % array. Match up existing states with new list of time points
             if isempty(obj.data)
                 return;
+            elseif size(obj.states, 1) == size(obj.data, 1)
+                obj.states(:, 1) = obj.data(:, 1);
+                return;
             end
-            if isempty(obj.states)
-                obj.states = ones(size(obj.data, 1), 2);
-                for i=1:size(obj.data, 1)
-                    obj.states(i, 1) = obj.data(i,1);
+            old = obj.states;
+            obj.states = ones(size(obj.data, 1), 2);
+            for i=1:size(obj.data, 1)  % For each data row
+                if ~isempty(old)
+                    k = find(abs(obj.data(i,1) - old(:, 1)) < obj.errmargin);
+                else
+                    k = []; 
                 end
-            else
-                for i=1:size(obj.states, 1)
-                    if isempty(find(abs(obj.data(:,1) - obj.states(i,1)) <  obj.errmargin ))
-                        % If there is a state val for a nonexistant stim,
-                        % remove it
-                        obj.states(i,:) = [];
-                    end
-                end
-                for i=1:size(obj.data, 1)
-                   if isempty(find(abs(obj.states(:,1) - obj.data(i,1)) <  obj.errmargin ))
-                       % If there is no state val for a data row, add one
-                       obj.states(end+1,:) = [obj.data(i,1), 1]; 
-                   end
+                if isempty(k) % If old state not there, generate new one
+                    obj.states(i, :) = [obj.data(i, 1), 1];
+                else % Get old state if it exists 
+                   obj.states(i, :) = old(k, :);
                 end
             end
+            disp(obj.states)
         end
     end
     
@@ -227,6 +234,7 @@ classdef StimClass < FileLoadSaveClass
         % -------------------------------------------------------
         function SetData(obj, val)
             obj.data = val;
+            obj.updateStates();
         end
         
         % -------------------------------------------------------
@@ -237,11 +245,21 @@ classdef StimClass < FileLoadSaveClass
         % -------------------------------------------------------
         function SetStates(obj, states)
             obj.states = states;
+            obj.updateStates();
         end
         
         % -------------------------------------------------------
         function val = GetStates(obj)
             val = obj.states;
+        end
+        
+        function SetDataLabels(obj, dataLabels)
+            obj.dataLabels = dataLabels;
+        end
+        
+        % -------------------------------------------------------
+        function val = GetDataLabels(obj)
+            val = obj.dataLabels;
         end
         
     end
@@ -269,17 +287,32 @@ classdef StimClass < FileLoadSaveClass
 
         
         % ----------------------------------------------------------------------------------
-        function AddStims(obj, tPts, duration, amp)
+        function AddStims(obj, tPts, duration, amp, more)
+            % Add one or more stims to with a given duration, amplitude, and additional
+            % column data given by more
             if ~exist('duration','var')
                 duration = 10;
             end
             if ~exist('amp','var')
                 amp = 1;
             end
-            for ii=1:length(tPts)
-                if ~obj.Exists(tPts(ii))
-                    obj.data(end+1,:) = [tPts(ii), duration, amp];
-                    obj.states(end+1,:) = [tPts(ii), 1];
+            if ~exist('more', 'var') | isempty(more)
+               more = zeros(size(obj.data, 2) - 3) 
+            end
+            if ~isempty(obj.data)
+                if ~isempty(more) & length(more) > (size(obj.data, 2) - 3)
+                    obj.data(:, end+length(more)) = 0;  % Pad to accomodate additional data columns 
+                end
+                for i=1:length(tPts)
+                    if ~obj.Exists(tPts(i))
+                        obj.data(end+1,:) = [tPts(i), duration, amp, more];
+                        obj.states(end+1,:) = [tPts(i), 1];
+                    end
+                end 
+            else  % If this stim is being added to an empty condition
+                for i=1:length(tPts)
+                    obj.data = [tPts(i), duration, amp, more];
+                    obj.states = [tPts(i), 1];
                 end
             end
         end
@@ -333,6 +366,7 @@ classdef StimClass < FileLoadSaveClass
                 return;
             end
             obj.data(k,1) = tPts;
+            obj.SortTpts();
         end
 
         
@@ -454,7 +488,7 @@ classdef StimClass < FileLoadSaveClass
             end
             
             % Find all stims for any conditions which match the time points and 
-            % flip their statuses
+            % flip their states
             k = [];
             for ii=1:length(tPts)
                 k = [k, find( abs(obj.states(:,1)-tPts(ii)) < obj.errmargin )];
@@ -482,7 +516,20 @@ classdef StimClass < FileLoadSaveClass
             b = false;
         end
         
-                
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SortTpts(obj)
+            try
+                [~, idx] = sort(obj.data(:, 1));
+                obj.data = obj.data(idx, :);
+                obj.states = obj.states(idx, :);
+            catch  % Index error
+               return; 
+            end
+        end
+           
+        
         % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
             nbytes = 0;

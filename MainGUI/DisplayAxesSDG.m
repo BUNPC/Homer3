@@ -53,7 +53,13 @@ iSrcDet     = maingui.axesSDG.iSrcDet;
 color       = maingui.axesSDG.linecolor;
 
 SD          = maingui.dataTree.currElem.GetSDG();
-bbox        = maingui.dataTree.currElem.GetSdgBbox();
+
+if isfield(maingui.axesSDG, 'xlim')
+    xbox        = maingui.axesSDG.xlim;
+    ybox        = maingui.axesSDG.ylim;
+else
+    bbox        = maingui.dataTree.currElem.GetSdgBbox();
+end
 
 % Set axes handle properties and parameters 
 if ~ishandles(hAxes)
@@ -66,7 +72,11 @@ if ishandles(maingui.axesSDG.handles.ch)
     delete(maingui.axesSDG.handles.ch)
     delete(findobj(hAxes, 'Type', 'line'))  % Prevents previously drawn lines from piling up
 end
-axis(hAxes, [bbox(1), bbox(2), bbox(3), bbox(4)]);
+if isfield(maingui.axesSDG, 'xlim')
+    axis(hAxes, [xbox(1), xbox(2), ybox(1), ybox(2)]);
+else
+    axis(hAxes, [bbox(1), bbox(2), bbox(3), bbox(4)]);
+end
 %set(hAxes, 'xticklabel','', 'yticklabel','', 'xgrid','off, ygrid','off')
 set(hAxes, 'xticklabel','')
 bttndownfcn = get(hAxes,'ButtonDownFcn');

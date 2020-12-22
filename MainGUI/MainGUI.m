@@ -973,10 +973,10 @@ for iBlk = iDataBlks
             DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
             if isa(dataTree.currElem, 'RunClass')
                 sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
-                xlabel('Time (s)', 'FontSize', 17);
+                xlabel('Time (s)', 'FontSize', 11);
 %                 xlabel(['Time (s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
             else
-                xlabel('Time (s)', 'FontSize', 17);
+                xlabel('Time (s)', 'FontSize', 11);
             end
             ylabel('');
         elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
@@ -987,10 +987,10 @@ for iBlk = iDataBlks
             DisplayDataConc(t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
             if isa(dataTree.currElem, 'RunClass')
                 sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
-                xlabel('Time (s)', 'FontSize', 17);
+                xlabel('Time (s)', 'FontSize', 11);
 %                 xlabel(['Time(s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
             else
-                xlabel('Time (s)', 'FontSize', 17);
+                xlabel('Time (s)', 'FontSize', 11);
             end
             procName = {procElem.procStream.fcalls.name};
             idx = contains(procName, 'hmrR_OD2Conc_new');
@@ -1000,10 +1000,10 @@ for iBlk = iDataBlks
                     unit = dataTree.currElem.acquired.metaDataTags.tags.LengthUnit;
                     ylabel(['\muM ' unit], 'FontSize', 17);
                 else
-                ylabel('\muM', 'FontSize', 17);
+                ylabel('\muM', 'FontSize', 11);
                 end
             else
-                ylabel('\muM', 'FontSize', 17);
+                ylabel('\muM', 'FontSize', 11);
             end
         end
     end
@@ -1789,6 +1789,7 @@ end
 
 % --------------------------------------------------------------------
 function panProbeCallback(hObject, eventdata, handles)
+global maingui;
 axes(handles.axesSDG)
 xrange = xlim();
 % xm = mean(xrange);
@@ -1799,17 +1800,22 @@ yd = yrange(2)-yrange(1);
 %Ratio can be adjusted
 if get(hObject,'string')=='<'
     xlim( [xrange(1)-xd/5 xrange(2)-xd/5] );
+    maingui.axesSDG.xlim = [xrange(1)-xd/5 xrange(2)-xd/5];
 elseif get(hObject,'string')=='>'
     xlim( [xrange(1)+xd/5 xrange(2)+xd/5] );
+    maingui.axesSDG.xlim = [xrange(1)+xd/5 xrange(2)+xd/5];
 elseif get(hObject,'string')=='/\'
     ylim( [yrange(1)+yd/5 yrange(2)+yd/5] );
+    maingui.axesSDG.ylim = [yrange(1)+yd/5 yrange(2)+yd/5];
 elseif get(hObject,'string')=='\/'
     ylim( [yrange(1)-yd/5 yrange(2)-yd/5] );
+    maingui.axesSDG.ylim = [yrange(1)-yd/5 yrange(2)-yd/5];
 end
 
 
 % --------------------------------------------------------------------
 function zoomInCallback(hObject, eventdata, handles)
+global maingui;
 axes(handles.axesSDG)
 axes(handles.axesSDG)
 xrange = xlim();
@@ -1818,9 +1824,13 @@ yrange = ylim();
 yd = yrange(2)-yrange(1);
 xlim( [xrange(1)+xd/10 xrange(2)-xd/10] );
 ylim( [yrange(1)+yd/10 yrange(2)-yd/10] );
+% Store X and Y Lims for AxesSDG
+maingui.axesSDG.xlim = [xrange(1)+xd/10 xrange(2)-xd/10];
+maingui.axesSDG.ylim = [yrange(1)+yd/10 yrange(2)-yd/10];
 
 % --------------------------------------------------------------------
 function zoomOutCallback(hObject, eventdata, handles)
+global maingui;
 axes(handles.axesSDG)
 axes(handles.axesSDG)
 xrange = xlim();
@@ -1829,10 +1839,15 @@ yrange = ylim();
 yd = yrange(2)-yrange(1);
 xlim( [xrange(1)-xd/10 xrange(2)+xd/10] );
 ylim( [yrange(1)-yd/10 yrange(2)+yd/10] );
+maingui.axesSDG.xlim = [xrange(1)-xd/10 xrange(2)+xd/10];
+maingui.axesSDG.ylim = [yrange(1)-yd/10 yrange(2)+yd/10];
 
 % --------------------------------------------------------------------
 function resetProbeViewCallback(hObject, eventdata, handles)
 global maingui;
 axes(handles.axesSDG)
-xlim( maingui.axesSDG.xlim );
-ylim( maingui.axesSDG.ylim );
+bbox = maingui.dataTree.currElem.GetSdgBbox();
+xlim( bbox(1:2) );
+ylim( bbox(3:4) );
+maingui.axesSDG.xlim = bbox(1:2);
+maingui.axesSDG.ylim = bbox(3:4);

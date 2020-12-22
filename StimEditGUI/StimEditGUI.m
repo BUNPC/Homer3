@@ -985,6 +985,9 @@ if isempty(stimdata)
     return;
 end
 labels = stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).GetDataLabels();
+if isempty(labels)
+   labels = {'Onset', 'Duration', 'Amplitude'}; 
+end
 tpts = stimdata(:, 1);
 [~,idx] = sort(tpts);
 stimdata_sorted = stimdata(idx, :);

@@ -1240,59 +1240,43 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Find the destination condition to move stims (among the time pts in tPts)
             % to
-            j = [];
+            idx_dst = [];
             for ii=1:length(obj.stim)
                 if strcmp(condition, obj.stim(ii).GetName())
-                    j=ii;
+                    idx_dst=ii;
                     break;
                 end
             end
             
             % If no destination condition found among existing conditions,
             % then create a new condition to move stims to
-            if isempty(j)
-                j = length(obj.stim)+1;
+            if isempty(idx_dst)
+                idx_dst = length(obj.stim)+1;
                 
                 % Otherwise we have a new condition to which to add the stims.
-                obj.stim(j) = StimClass([], condition);
+                obj.stim(idx_dst) = StimClass([], condition);
                 obj.SortStims();
                 
                 % Recalculate j after sort
                 for ii=1:length(obj.stim)
                     if strcmp(condition, obj.stim(ii).GetName())
-                        j=ii;
+                        idx_dst=ii;
                         break;
                     end
                 end
             end
             
-            % Find all stims for any conditions which match the time points.
-            for ii=1:length(tPts)
-                for kk=1:length(obj.stim)
-                    d = obj.stim(kk).GetData();
-                    if isempty(d)
-                        continue;
-                    end
-                    k = find(d(:,1)==tPts(ii));
-                    if ~isempty(k)
-                        if kk==j
-                            continue;
-                        end
-                        
-                        % If stim at time point tPts(ii) exists in stim
-                        % condition kk, then move stim from obj.stim(kk)
-                        % toMat
-                        
-                        % obj.stim(j)
-                        obj.stim(j).AddStims(tPts(ii), d(k(1),2), d(k(1),3));
-                        
-                        % After moving stim from obj.stim(kk) to
-                        % obj.stim(j), delete it from obj.stim(kk)
-                        d(k(1),:)=[];
-                        obj.stim(kk).SetData(d);
-                        
-                        % Move on to next time point
-                        break;
+            for i=1:length(obj.stim)
+                data = obj.stim(i).GetData();
+                for j=1:size(data, 1)
+                    onset = data(j, 1);
+                    if onset > min(tPts) & onset < max(tPts)
+                        % Delete the stim from its condition and add it to selected dst
+                        duration = data(j, 2);
+                        amplitude = data(j, 3);
+                        more = data(j, 4:end);
+                        obj.stim(i).DeleteStims(onset);
+                        obj.stim(idx_dst).AddStims(onset, duration, amplitude, more);
                     end
                 end
             end

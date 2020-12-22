@@ -153,7 +153,7 @@ classdef ExportTable < handle
             end
             close(h);
             
-            if isfile_private([obj.pathname, obj.filename, '.xls'])
+            if ispathvalid([obj.pathname, obj.filename, '.xls'],'file')
                 delete([obj.pathname, obj.filename, '.xls']);
             end
             try

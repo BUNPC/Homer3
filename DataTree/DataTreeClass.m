@@ -228,6 +228,14 @@ classdef DataTreeClass <  handle
                     end
                     obj.files = dataInit.files;
                     
+                    % Print file and folder numbers stats
+                    nfolders = length(dataInit.files)-dataInit.nfiles;
+                    if nfolders==0
+                        nfolders = 1;
+                    end
+                    obj.logger.Write(sprintf('DataTreeClass.FindAndLoadGroups: Found %d data files in %d folders\n', ...
+                            dataInit.nfiles, nfolders));
+                    
                     obj.LoadGroup(iGnew, procStreamCfgFile, options);
                     if length(obj.groups) < iGnew
                         if obj.FoundDataFilesInOtherFormat(dataInit, kk)
@@ -238,10 +246,8 @@ classdef DataTreeClass <  handle
                     end
                 end
                 
-            end
-            
-            obj.logger.Write(sprintf('Loaded data set in %0.1f seconds\n', toc));            
-            
+            end           
+            obj.logger.Write(sprintf('Loaded data set in %0.1f seconds\n', toc));
         end
         
         

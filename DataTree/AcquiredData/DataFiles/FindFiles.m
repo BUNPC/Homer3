@@ -1,4 +1,4 @@
-function [files, dirnameGroup] = FindFiles(varargin)
+function files = FindFiles(varargin)
 
 % Syntax:
 %
@@ -62,22 +62,27 @@ while files.isempty()
     switch fmt
         case {'snirf','.snirf'}
             files = DataFilesClass(dirnameGroup, 'snirf');
-            if files.isempty()
-                files = DataFilesClass(dirnameGroup, 'nirs');
-                if ~files.isempty()
-                    if files.config.RegressionTestActive
-                        q = 1;
-                    else                        
-                        msg{1} = sprintf('Homer3 did not find any .snirf files in the current folder but did find .nirs files. ');
-                        msg{2} = sprintf('Do you want to convert .nirs files to .snirf format and load them?');
-                        q = MenuBox([msg{:}], {'YES','NO'}, 'center');
-                    end
-                    if q==2
-                        files = [];
-                        return;
-                    end
+            filesSrc = DataFilesClass(dirnameGroup, 'nirs');           
+            if ~filesSrc.isempty()
+                nfolders = length(filesSrc.files)-filesSrc.nfiles;
+                if nfolders==0
+                    nfolders = 1;
                 end
-                Nirs2Snirf(dirnameGroup);
+                fprintf('FindFiles: Found %d .nirs data files in %d folders\n', filesSrc.nfiles, nfolders);
+            end
+            
+            % Search for source acquisition files in .nirs format which have not
+            % been converted to .snirf. 
+            found = files.ConvertedFrom(filesSrc);
+            if ~all(found)
+                q = GetOptionsForIncompleteDataSet(files, filesSrc);
+                if q==2
+                    if files.isempty()
+                        files = [];
+                    end
+                    return;
+                end
+                Nirs2Snirf(dirnameGroup, filesSrc.files(~found));
                 files = DataFilesClass(dirnameGroup, 'snirf');
             end
         case {'snirfonly'}
@@ -124,6 +129,32 @@ while files.isempty()
                 files = [];
         end
     end
+end
+
+
+
+% ----------------------------------------------------------------------------
+function  q = GetOptionsForIncompleteDataSet(files, filesSrc)
+if files.config.RegressionTestActive
+    q = 1;
+elseif  files.isempty()
+    msg{1} = sprintf('Homer3 did not find any .snirf files in the current folder but did find %d .nirs files. ', filesSrc.nfiles);
+    msg{2} = sprintf('Do you want to convert .nirs files to .snirf format and load them?');
+    q = MenuBox([msg{:}], {'YES','NO'}, 'center');
+else
+    if files.nfiles>1
+        s = 'have';
+    else
+        s = 'has';
+    end
+    if filesSrc.nfiles-files.nfiles>1
+        msg{1} = sprintf('Homer3 found %d .nirs files which have not been converted to .snirf format and %d that %s. ', filesSrc.nfiles-files.nfiles, files.nfiles, s);
+        msg{2} = sprintf('Do you want to convert the remaining %d .nirs files to .snirf format?', filesSrc.nfiles-files.nfiles);
+    else
+        msg{1} = sprintf('Homer3 found %d .nirs file which has not been converted to .snirf format and %d that %s. ', filesSrc.nfiles-files.nfiles, files.nfiles, s);
+        msg{2} = sprintf('Do you want to convert the remaining .nirs file to .snirf format?');
+    end
+    q = MenuBox([msg{:}], {'YES','NO'}, 'center');
 end
 
 

@@ -25,7 +25,7 @@ for ii=1:length(nirsfiles)
     
     % Convert sample .nirs file to SNIRF file (*.snirf) 
     [pname,fname,ext] = fileparts([examplesDir, nirsfiles(ii).name]);
-    pname = convertToStandardPath(pname);
+    pname = filesepStandard(pname);
     fprintf('Converting %s to %s\n', [pname, fname, ext], [pname, fname, '.snirf']);
     [snirf_saved, snirf_loaded] = snirf_load_save([pname, nirsfiles(ii).name]);
     

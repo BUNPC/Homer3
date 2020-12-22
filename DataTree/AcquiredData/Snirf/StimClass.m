@@ -212,7 +212,6 @@ classdef StimClass < FileLoadSaveClass
                    obj.states(i, :) = old(k, :);
                 end
             end
-            disp(obj.states)
         end
     end
     
@@ -297,7 +296,7 @@ classdef StimClass < FileLoadSaveClass
                 amp = 1;
             end
             if ~exist('more', 'var') | isempty(more)
-               more = zeros(size(obj.data, 2) - 3) 
+               more = zeros(size(obj.data, 2) - 3);
             end
             if ~isempty(obj.data)
                 if ~isempty(more) & length(more) > (size(obj.data, 2) - 3)

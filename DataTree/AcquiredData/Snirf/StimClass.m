@@ -136,33 +136,11 @@ classdef StimClass < FileLoadSaveClass
             
             hdf5write_safe(fileobj, [location, '/name'], obj.name);
             
-%             data_loc = [location, '/data']
-%             
-%             % Write stim metadata column attribute
-%             metadataAttribute = {'meta_col_1_id'};
-%             s = '';
-%             for i = 1:length(metadataAttribute)
-%                s = [s, metadataAttribute{i}, ','];  % Format as .csv 
-%             end
-%             f = H5F.open(fileobj, 'H5F_ACC_RDWR','H5P_DEFAULT');
-%             o = H5O.open(f, data_loc, 'H5P_DEFAULT');
-%             try
-%                 a = H5A.open(o, 'metadataColNames','H5P_DEFAULT');
-%             catch
-%                H5F.create(o, 'metadataColNames', 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
-%             end
-%             h5writeatt(fileobj, data_loc, 'metadataColNames', s, 'TextEncoding', 'UTF-8');
-%             H5A.close(a);
-%             H5O.close(o);
-%             H5F.close(f);
-%  
-%             obj.data = [obj.data, zeros(size(obj.data, 1), 1)];
-            
             % Since this is a writable writeable parameter AFTER it's creation, we 
             % call hdf5write_safe with the 'rw' option
             hdf5write_safe(fileobj, [location, '/data'], obj.data, 'rw:2D');
+            hdf5write_safe(fileobj, [location, '/dataLabels'], obj.dataLabels, 'rw');
         end
-        
         
                 
         % -------------------------------------------------------

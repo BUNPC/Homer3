@@ -952,8 +952,16 @@ set(handles.axes1,'xlim', [t(1), t(end)]);
 set(handles.popupmenuConditions, 'string', sort(stimEdit.dataTreeHandle.currElem.GetConditions()));
 conditions = get(handles.popupmenuConditions, 'string');
 idx = get(handles.popupmenuConditions, 'value');
-condition = conditions{idx};
-SetUitableStimInfo(condition, handles);
+if ~isempty(conditions)
+    set(handles.popupmenuConditions, 'enable', 'on');
+    condition = conditions{idx};
+else  % If no stim conditions at all, disable display and prevent crash
+    conditions = {' '};
+    condition = ' ';
+    set(handles.popupmenuConditions, 'enable', 'off');
+    set(handles.popupmenuConditions, 'string', conditions);
+end
+SetUitableStimInfo(condition, handles); 
 
 
 % -----------------------------------------------------------

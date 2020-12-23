@@ -19,9 +19,6 @@ for iBlk=1:iDataBlks
     p = TimeExcludeRanges(tInc,t);
     lst = find(t>=p(idx,1) & t<=p(idx,2));
     maingui.dataTree.currElem.SetTincMan(lst, iBlk, 'include');
-
-    % Unreject all stims that fall within the included time
-    maingui.dataTree.currElem.StimInclude(t, iBlk);
 end
 maingui.Update('PatchCallback');
 

@@ -51,16 +51,18 @@ for i = 1:length(stim)
 end
 
 for i = 1:length(stim)
-    stim(i).states(:, 2) = -2;  % Manually disable all stims
-    for j = 1:size(stim(i), 1)
-        % If stim criterion is within threshold
-        if stim(i).data(j, stimDataColIdx) > threshold(1) & stim(i).data(j, stimDataColIdx) < threshold(2)
-            if logic
-                stim(i).states(j, 2) = 1;
-            end
-        else
-            if ~logic
-                stim(i).states(j, 2) = 1; 
+    if ~isempty(stim(i).data)
+        stim(i).states(:, 2) = -2;  % Automatically disable all stims
+        for j = 1:size(stim(i), 1)
+            % If stim criterion is within threshold
+            if stim(i).data(j, stimDataColIdx) > threshold(1) & stim(i).data(j, stimDataColIdx) < threshold(2)
+                if logic
+                    stim(i).states(j, 2) = 1;
+                end
+            else
+                if ~logic
+                    stim(i).states(j, 2) = 1; 
+                end
             end
         end
     end

@@ -253,7 +253,12 @@ classdef StimClass < FileLoadSaveClass
         end
         
         function SetDataLabels(obj, dataLabels)
-            obj.dataLabels = dataLabels;
+            if length(dataLabels) < size(obj.data, 2)
+               for i = 1:size(obj.data, 2) - length(dataLabels)
+                  dataLabels{end + 1} = ''; 
+               end
+            end
+            obj.dataLabels = dataLabels(1:size(obj.data, 2));
         end
         
         % -------------------------------------------------------

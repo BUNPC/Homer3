@@ -18,8 +18,9 @@ classdef RunClass < TreeNodeClass
             % Example 1:
             %   run1     = RunClass('./s1/neuro_run01.nirs',1,1,1);
             %   run1copy = RunClass(run1);
-            %
-            obj@TreeNodeClass(varargin);
+            %           
+            obj@TreeNodeClass(varargin);            
+            
             obj.type  = 'run';
             if nargin==0
                 obj.name  = '';
@@ -121,7 +122,7 @@ classdef RunClass < TreeNodeClass
             end
             
             if obj.acquired.Error() > 0
-                fprintf('     **** Warning: %s failed to load.\n', obj.name);
+                obj.logger.Write(sprintf('     **** Warning: %s failed to load.\n', obj.name));
                 return;
             else
                 %fprintf('    Loaded file %s to run.\n', obj.name);                
@@ -159,7 +160,7 @@ classdef RunClass < TreeNodeClass
         function b = AcquiredDataModified(obj)
             b = obj.procStream.AcquiredDataModified();
             if b
-                fprintf('Acquisition data for run %s has been modified\n', obj.name);
+                obj.logger.Write(sprintf('Acquisition data for run %s has been modified\n', obj.name));
             end
         end
 
@@ -168,13 +169,14 @@ classdef RunClass < TreeNodeClass
         % Copy processing params (procInut and procResult) from
         % N2 to N1 if N1 and N2 are same nodes
         % ----------------------------------------------------------------------------------
-        function Copy(obj, R, conditional)
+        function Copy(obj, obj2, conditional)
             if nargin==3 && strcmp(conditional, 'conditional')
-                if obj == R
-                    obj.Copy@TreeNodeClass(R, 'conditional');
+                if obj.Mismatch(obj2)
+                    return
                 end
+                obj.Copy@TreeNodeClass(obj2, 'conditional');
             else
-                obj.Copy@TreeNodeClass(R);
+                obj.Copy@TreeNodeClass(obj2);
                 if isempty(obj.acquired)
                     if obj.IsNirs()
                         obj.acquired = NirsClass();
@@ -182,7 +184,7 @@ classdef RunClass < TreeNodeClass
                         obj.acquired = SnirfClass();
                     end
                 end
-                obj.acquired.Copy(R.acquired);
+                obj.acquired.Copy(obj2.acquired);
             end
         end
 
@@ -299,8 +301,8 @@ classdef RunClass < TreeNodeClass
             obj.procStream.Calc(obj.GetFilename);
 
             if obj.DEBUG
-                fprintf('Completed processing stream for group %d, subject %d, run %d\n', obj.iGroup, obj.iSubj, obj.iRun);
-                fprintf('\n')
+                obj.logger.Write(sprintf('Completed processing stream for group %d, subject %d, run %d\n', obj.iGroup, obj.iSubj, obj.iRun));
+                obj.logger.Write('\n')
             end            
         end
 

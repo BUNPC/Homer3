@@ -642,14 +642,15 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 if ~flags(ii)
                     % We have new stimulus condition added
                     if ~obj.stim(ii).IsEmpty()
-                        snirfFile.stim(jj+1) = StimClass(obj.stim(ii));
+                        snirfFile.stim(end+1) = StimClass(obj.stim(ii));
+                        flags(ii) = 1;
                     end
                 end
             end
             
             % If stims were edited then update snirf file with new stims
             changes = sum(flags);
-            if changes
+            if changes > 0
                 snirfFile.SaveStim(fileobj);
             end
             stimFromFile = snirfFile.stim;

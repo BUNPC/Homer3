@@ -163,11 +163,11 @@ classdef ProcInputClass < handle
         function inputs = GetProcInputs(obj)
             % Get name of each property available from GetVars
             inputs = {};
-            p = properties(obj);
+            p = propnames(obj);
             % Get name of each property
             for i = 1:size(p)
                inputs{end+1} = p{i}; %#ok<AGROW>
-               pi = properties(obj.(p{i}));
+               pi = propnames(obj.(p{i}));
                % Get name of each sub-property (properties of misc, acquired)
                for j = 1:size(pi)
                   inputs{end+1} = pi{j};  %#ok<AGROW>

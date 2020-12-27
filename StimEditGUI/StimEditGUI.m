@@ -688,12 +688,12 @@ if ~strcmpi(stimEdit.config.autoSaveAcqFiles, 'Yes')
         cfg.SetValue('Auto Save Acquisition Files', 'Yes');
         cfg.Save()
     end
-    stimEdit.dataTree.CopyStims(stimEdit.locDataTree);
 else
     % Otherwise auto-save 
     fprintf('StimEditGUI: auto-saving ...\n')
-    stimEdit.dataTree.CopyStims(stimEdit.locDataTree);
 end
+
+stimEdit.dataTree.CopyStims(stimEdit.locDataTree);
 
 % Update acquisition file with new contents
 h = waitbar_improved(0, 'Saving new stim marks to %s...', stimEdit.dataTreeHandle.currElem.name);
@@ -1164,3 +1164,27 @@ end
 
 % --------------------------------------------------------------------
 function uitableStimInfo_ButtonDownFcn(hObject, eventdata, handles)
+
+
+
+% --------------------------------------------------------------------
+function pushbuttonEditColumns_Callback(hObject, eventdata, handles)
+global stimEdit
+conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
+icond = GetConditionIdxFromPopupmenu(conditions, handles);
+name = 'Rename columns';
+if size(stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).data, 2) > 3
+    rename_prompt = {};
+    defaults = {};
+    for i = 4:length(handles.uitableStimInfo.ColumnName)
+        rename_prompt{end+1} = ['Rename column ', num2str(i)];
+        defaults{end+1} = handles.uitableStimInfo.ColumnName{i};
+    end
+    options.Resize = 'on';
+    options.WindowStyle = 'modal';
+    options.Interpreter = 'tex';
+    A = inputdlg(rename_prompt, name, 1, defaults, options);
+else
+    errordlg('There are no additional data columns to rename!', 'No columns to rename')
+end
+

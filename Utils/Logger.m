@@ -84,6 +84,9 @@ classdef Logger < handle
         
         % -------------------------------------------------
         function Write(self, s, options, hwait)
+            if s(end)~=sprintf('\n')
+                s = sprintf('%s\n', s);
+            end
             if ~exist('options','var')
                 options = [];
             end

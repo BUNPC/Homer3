@@ -7,6 +7,7 @@ classdef StimClass < FileLoadSaveClass
         states  % Stim marks enabled/disabled. Not part of SNIRF
     end
    
+    % Properties not part of the SNIRF spec. These parameters aren't loaded or saved to files
     properties (Access = private)
         errmargin  % Margin for interpolating onset times. Not part of SNIRF
     end    
@@ -148,6 +149,7 @@ classdef StimClass < FileLoadSaveClass
             hdf5write_safe(fileobj, [location, '/dataLabels'], obj.dataLabels, 'rw');
         end
         
+        
                 
         % -------------------------------------------------------
         function Update(obj, fileobj, location)
@@ -214,6 +216,7 @@ classdef StimClass < FileLoadSaveClass
             end
         end
     end
+    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Public Set/Get methods

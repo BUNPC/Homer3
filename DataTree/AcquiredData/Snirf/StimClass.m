@@ -18,7 +18,7 @@ classdef StimClass < FileLoadSaveClass
         function obj = StimClass(varargin)
             % Set class properties not part of the SNIRF format
             obj.SetFileFormat('hdf5');
-            obj.errmargin = 1e-3;
+            obj.errmargin = 1e-2;
             obj.states = [];
             if nargin==1 
                 if isa(varargin{1}, 'StimClass')
@@ -480,10 +480,9 @@ classdef StimClass < FileLoadSaveClass
             j = [];
             for ii=1:length(tPts)
                 k = [k, find( abs(obj.data(:,1)-tPts(ii)) < obj.errmargin )];
-                j = [j, find( abs(obj.states(:,1)-tPts(ii)) < obj.errmargin )];
             end
             obj.data(k,:) = [];
-            obj.states(j,:) = [];
+            obj.states(k,:) = [];
         end
         
         

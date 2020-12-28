@@ -1,6 +1,6 @@
 function selection = MenuBox(msg, bttns, relativePos, textLineWidth, options)
 global bttnIds
-bttnIds = [0,0];
+bttnIds = 0;
 
 DEBUG=0;
 DEBUG2=0;
@@ -277,7 +277,7 @@ end
 function checkboxes = getCheckboxes(options)
 
 checkboxes = {};
-if ~optionExists(options, 'dontaskagain')
+if ~optionExists(options, 'dontAskAgainOptions')
     return;
 end
 checkboxes = { ...

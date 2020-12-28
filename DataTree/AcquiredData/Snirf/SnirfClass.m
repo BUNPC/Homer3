@@ -14,7 +14,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         gid
         location
         nirsdatanum
-        nirs_tb;
+        nirs_tb
         stim0
     end
     
@@ -235,6 +235,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % -------------------------------------------------------
         function Initialize(obj)
+            Initialize@AcqDataClass(obj)
+            
             obj.formatVersion = '1.0';
             obj.metaDataTags   = MetaDataTagsClass().empty();
             obj.data           = DataClass().empty();
@@ -245,12 +247,16 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             obj.stim0          = StimClass().empty();
         end
         
+               
         
         % -------------------------------------------------------
         function err = Copy(obj, obj2)
             err=0;
             if ~isa(obj2, 'SnirfClass')
                 err=1;
+                return;
+            end
+            if obj.Mismatch(obj2)
                 return;
             end
             obj.formatVersion = obj2.formatVersion;
@@ -265,7 +271,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             catch
             end
             
-            if ~isempty(obj2.GetFilename())
+            if ~isempty(obj2.GetFilename()) && isempty(obj.GetFilename())
                 obj.SetFilename(obj2.GetFilename());
             end
         end
@@ -341,7 +347,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             formatVersionFile = str2double(formatVersionFile);
             formatVersionCurr = str2double(obj.formatVersion);
             if formatVersionFile < formatVersionCurr
-                fprintf('Warning: Current SNIRF version is %0.1f. Cannot load older version (%0.1f) file. Backward compatibility not yet implemented ...\n', formatVersionCurr, formatVersionFile)
+                obj.logger.Write(sprintf('Warning: Current SNIRF version is %0.1f. Cannot load older version (%0.1f) file. Backward compatibility not yet implemented ...\n', ...
+                    formatVersionCurr, formatVersionFile));
                 err = -2;
                 return
             end

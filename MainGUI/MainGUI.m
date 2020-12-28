@@ -1520,6 +1520,7 @@ if get(hObject, 'value') == 1 % If in exclude time mode
     set(hAxesData,'ButtonDownFcn', 'MainGUI(''ExcludeTime_ButtonDownFcn'',gcbo,[],guidata(gcbo))');
     set(get(hAxesData,'children'), 'ButtonDownFcn', 'MainGUI(''ExcludeTime_ButtonDownFcn'',gcbo,[],guidata(gcbo))');
     set(handles.checkboxExcludeStims, 'enable', 'off')
+    set(handles.checkboxShowExcludedTimeManual, 'value', 1)  % Ensure changes are visible
     MainGUI_EnableDisablePlotEditMode(handles, 'off');
 else
     zoom on

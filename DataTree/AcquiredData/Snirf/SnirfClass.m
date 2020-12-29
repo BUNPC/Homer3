@@ -401,7 +401,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     obj.stim(ii).delete();
                     obj.stim(ii) = [];
                     if ii==1
-                        err = -1;
+                        err = 1;  % Absence of optional field raises error > 0
                     end
                     break;
                 end
@@ -447,7 +447,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     obj.aux(ii).delete();
                     obj.aux(ii) = [];
                     if ii==1
-                        err = -1;
+                        err = 1;  % Error code for no optional field is > 0
                     end
                     break;
                 end
@@ -490,43 +490,40 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 % Open group
                 [obj.gid, obj.fid] = HDF5_GroupOpen(fileobj, '/');
                 
-                if obj.SetLocation() < 0
-                    err = -1;
-                    return
-                end
                 
+                if obj.SetLocation() < 0 & err == 0
+                    err = -1;
+                end
+
                 %%%% Load formatVersion
-                if obj.LoadFormatVersion() < 0
+                if obj.LoadFormatVersion() < 0 & err == 0
                     err = -2;
                 end
-                
+
                 %%%% Load metaDataTags
-                if obj.LoadMetaDataTags(obj.fid) < 0
+                if obj.LoadMetaDataTags(obj.fid) < 0 & err == 0
                     err = -3;
                 end
-                
+
                 %%%% Load data
-                if obj.LoadData(obj.fid) < 0
+                if obj.LoadData(obj.fid) < 0 & err == 0
                     err = -4;
                 end
-                
+
                 %%%% Load stim
-                if obj.LoadStim(obj.fid)
+                if obj.LoadStim(obj.fid) < 0 & err == 0
                     err = -5;
                 end
-                
+
                 %%%% Load probe
-                if obj.LoadProbe(obj.fid)
+                if obj.LoadProbe(obj.fid) < 0 & err == 0
                     err = -6;
                 end
-                
-                %%%% Load aux. This is an optional field, therefore error must 
-                %%%% be less then -1 (-1 means aux is not in SNIRF file) to be 
-                %%%% error for whole SNIRF file
-                if obj.LoadAux(obj.fid)<-1
+
+                %%%% Load aux. This is an optional field
+                if obj.LoadAux(obj.fid) < 0 & err == 0
                     err = -7;
                 end
-                
                 
                 % Close group
                 HDF5_GroupClose(fileobj, obj.gid, obj.fid);
@@ -537,7 +534,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 
             end
             
-            if obj.fid>0
+            if obj.fid > 0
                 H5F.close(obj.fid);
             end
             

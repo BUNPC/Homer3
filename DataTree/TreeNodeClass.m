@@ -673,7 +673,7 @@ classdef TreeNodeClass < handle
             end
             status = 1;
                         
-            configFileOptions =  MenuBox('',{},[],[], 'dontaskagain');
+            configFileOptions =  MenuBox('',{},[],[], 'dontAskAgainOptions');
             choices = { ...
                 sprintf('Continue Loading'); ...
                 sprintf('Quit Loading'); ...
@@ -691,9 +691,12 @@ classdef TreeNodeClass < handle
                 status = 0;
                 return;
             end
-            selection = MenuBox([msg{:}], choices, [], [], 'dontaskagain');
+            selection = MenuBox([msg{:}], choices, [], [], 'dontAskAgainOptions');
             if selection(1)==1
                 status = 0;
+            end
+            if length(selection)<2
+                selection(2)=0;
             end
             
             % Find out if config value does not equal current selection. If

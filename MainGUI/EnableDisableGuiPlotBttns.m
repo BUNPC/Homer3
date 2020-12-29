@@ -52,6 +52,9 @@ if ~isempty(maingui.dataTree.groups(1).CondNames) > 0  % If there is stim
                 set(handles.radiobuttonPlotOD, 'value',1);
             end
         end
+    else
+        set(handles.checkboxPlotHRF, 'enable','off');
+        set(handles.checkboxPlotHRF, 'value',0);        
     end
 elseif raw_enable && raw_checked
     set(handles.checkboxPlotHRF, 'enable','off');

@@ -401,7 +401,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     obj.stim(ii).delete();
                     obj.stim(ii) = [];
                     if ii==1
-                        err = -1;
+                        err = 1;  % Absence of optional field raises error > 0
                     end
                     break;
                 end

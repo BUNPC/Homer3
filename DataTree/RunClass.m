@@ -122,7 +122,16 @@ classdef RunClass < TreeNodeClass
             end
             
             if obj.acquired.Error() > 0
-                obj.logger.Write(sprintf('     **** Warning: %s failed to load.\n', obj.name));
+                msgs = {
+                    'MATLAB could not load the file.'
+                    'file ''formatVersion'' is invalid.'
+                    'file ''metaDataTags'' is invalid.'
+                    'file ''data'' is invalid.'
+                    'file ''stim'' is invalid.'
+                    'file ''probe'' is invalid.'
+                    'file ''aux'' is invalid.'
+                    };
+                obj.logger.Write(sprintf('     **** Warning: %s failed to load: %s\n', obj.name, msgs{abs(obj.acquired.GetError())}));
                 return;
             else
                 %fprintf('    Loaded file %s to run.\n', obj.name);                

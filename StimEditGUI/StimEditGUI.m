@@ -886,7 +886,12 @@ if get(handles.checkboxPreview, 'Value')  % If preview is enabled, plot
                                                             handles.editLPF.Value,...             % LPF window width
                                                             handles.radiobuttonRisingEdge.Value); % rising vs falling
     % Plot selected aux signal after applying filter
-    auxPlot = plot(timeFiltered + currAux.timeOffset, auxFiltered, 'k-');  % TODO is this what timeOffset is for?
+    if isempty(currAux.timeOffset)
+       offset = 0; 
+    else
+       offset = currAux.timeOffset;
+    end
+    auxPlot = plot(timeFiltered + offset, auxFiltered, 'k-');  % TODO is this what timeOffset is for?
     auxPlot.Color(4) = 0.5;  % Stim opacity
     % Plot stim preview
     yy = get(handles.axes1, 'ylim');

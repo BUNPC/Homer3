@@ -443,14 +443,6 @@ end
 if iscell(CondName)
     CondName = CondName{1};
 end
-if length(CondName) > 1 && ~overrideLength
-    msg{1} = sprintf('ERROR: Due to a bug in the latest Homer3 version '); 
-    msg{2} = sprintf('new condition names have a 1 character limit. ');
-    msg{3} = sprintf('This will be fixed in a near future Homer3 release. ');
-    msg{4} = sprintf('For now please name the new condition using only one character');
-    MessageBox([msg{:}]);
-    err = -1;
-end
 if ismember(CondName, CondNamesGroup)
     err = -2;
 end

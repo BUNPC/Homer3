@@ -191,6 +191,10 @@ bttnIds(1) = str2num(get(hObject, 'tag'));
 function checkboxDontAskOptions_Callback(hObject, ~, hf)
 global bttnIds
 
+if ~isvalid(hf)
+   return 
+end
+
 hb = get(hf, 'children');
 checkboxId = [];
 if ishandles(hObject)

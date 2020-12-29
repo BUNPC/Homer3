@@ -993,7 +993,7 @@ for iBlk = iDataBlks
                 xlabel('Time (s)', 'FontSize', 11);
             end
             procName = {procElem.procStream.fcalls.name};
-            idx = contains(procName, 'hmrR_OD2Conc_new');
+            idx = contains(procName, 'hmrR_OD2Conc');
             if ~isempty(find(idx,1))
                 ppf = procElem.procStream.fcalls(idx).paramIn.value;
                 if ppf(condition) == 1 && ~isempty(dataTree.currElem.acquired.metaDataTags.tags.LengthUnit)

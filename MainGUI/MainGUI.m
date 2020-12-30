@@ -246,11 +246,11 @@ end
 if isempty(maingui)
     return;
 end
+if isfield(maingui,'logger') && ~isempty(maingui.logger)
+    maingui.logger.Close();
+end
 if isempty(maingui.dataTree)
     return;
-end
-if ~isempty(maingui.logger)
-    maingui.logger.Close('MainGUI');
 end
 
 % Delete Child GUIs before deleted the dataTree that all GUIs use.

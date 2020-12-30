@@ -746,8 +746,8 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SD = GetSDG(obj)
-            SD = obj.subjs(1).GetSDG();
+        function SD = GetSDG(obj,option)
+            SD = obj.subjs(1).GetSDG(option);
         end
         
         

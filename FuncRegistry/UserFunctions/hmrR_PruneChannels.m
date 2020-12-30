@@ -20,7 +20,8 @@
 %      active channel
 % SDrange - will prune channels with a source-detector separation <
 %           SDrange(1) or > SDrange(2)
-% reset - reset previously pruned channels (automatic and manual)
+% reset - If reset = 1 then previously pruned channels (automatic and
+%           manual) will be reset
 %
 % OUTPUTS:
 % mlAct - cell array of all data blocks - each data block is an array

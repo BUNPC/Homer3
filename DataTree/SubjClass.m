@@ -371,26 +371,26 @@ classdef SubjClass < TreeNodeClass
     methods
         
         % ----------------------------------------------------------------------------------
-        function SetSDG(obj)
-            obj.SD = obj.runs(1).GetSDG();
+        function SetSDG(obj,option)
+            obj.SD = obj.runs(1).GetSDG(option);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function SD = GetSDG(obj)
-            SD = obj.runs(1).GetSDG();
+        function SD = GetSDG(obj,option)
+            SD = obj.runs(1).GetSDG(option);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function srcpos = GetSrcPos(obj)
-            srcpos = obj.runs(1).GetSrcPos();
+        function srcpos = GetSrcPos(obj,option)
+            srcpos = obj.runs(1).GetSrcPos(option);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function detpos = GetDetPos(obj)
-            detpos = obj.runs(1).GetDetPos();
+        function detpos = GetDetPos(obj,option)
+            detpos = obj.runs(1).GetDetPos(option);
         end
         
         

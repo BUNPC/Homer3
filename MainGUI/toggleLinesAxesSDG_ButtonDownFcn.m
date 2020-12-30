@@ -8,7 +8,7 @@ global maingui;
 hAxesSDG = maingui.axesSDG.handles.axes;
 iSrcDet  = maingui.axesSDG.iSrcDet;
 
-SD       = maingui.dataTree.currElem.GetSDG();
+SD       = maingui.dataTree.currElem.GetSDG('2D');
 ch       = maingui.dataTree.currElem.GetMeasList();
 Lambda   = maingui.dataTree.currElem.GetWls();
 

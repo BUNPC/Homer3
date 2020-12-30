@@ -22,13 +22,13 @@ classdef AcqDataClass < matlab.mixin.Copyable
         datamat   = GetDataTimeSeries(obj, options, iBlk)
         
         % ---------------------------------------------------------
-        SD        = GetSDG(obj)
+        SD        = GetSDG(obj,option)
 
         % ---------------------------------------------------------
-        srcpos    = GetSrcPos(obj)
+        srcpos    = GetSrcPos(obj,option)
 
         % ---------------------------------------------------------
-        detpos    = GetDetPos(obj)
+        detpos    = GetDetPos(obj,option)
         
         % ---------------------------------------------------------
         ml        = GetMeasList(obj, iBlk)
@@ -106,7 +106,7 @@ classdef AcqDataClass < matlab.mixin.Copyable
         
         % ---------------------------------------------------------
         function bbox = GetSdgBbox(obj)
-            optpos = [obj.GetSrcPos(); obj.GetDetPos()];
+            optpos = [obj.GetSrcPos('2D'); obj.GetDetPos('2D')];
             
             xmax = max(optpos(:,1));
             ymax = max(optpos(:,2));

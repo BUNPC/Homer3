@@ -405,7 +405,7 @@ classdef SubjClass < TreeNodeClass
             if exist('option','var')
                 detpos = obj.runs(1).GetDetPos(option);
             else
-                detpos = obj.runs(1).();
+                detpos = obj.runs(1).GetDetPos();
             end
         end
         

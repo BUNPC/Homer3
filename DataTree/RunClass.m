@@ -388,7 +388,7 @@ classdef RunClass < TreeNodeClass
        
         
         % ----------------------------------------------------------------------------------
-        function SD = (obj,option)
+        function SD = GetSDG(obj,option)
             SD.Lambda  = obj.acquired.GetWls();
             if exist('option','var')
                 SD.SrcPos  = obj.acquired.GetSrcPos(option);

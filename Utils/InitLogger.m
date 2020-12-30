@@ -7,4 +7,6 @@ if ~exist('logger','var') || isempty(logger)
         options = [];
     end
     logger = Logger(appname, options);
+elseif ~logger.IsOpen()
+    logger.Open();
 end

@@ -26,14 +26,13 @@ c.SetValue('Include Archived User Functions','No');
 
 toc(t_local);
 
+CleanUp()
+
 
 
 % ---------------------------------------------------
 function userInterrupt_Callback(standalone)
 fprintf('UnitTestsAll cleaning\n')
 userInterrupt(standalone)
-
-
-
 
 

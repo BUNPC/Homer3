@@ -63,6 +63,8 @@ procStreamStyle=[];
 
 toc(t_local);
 
+logger.Close('UnitTestsAll_Snirf');
+
 
 
 % ---------------------------------------------------

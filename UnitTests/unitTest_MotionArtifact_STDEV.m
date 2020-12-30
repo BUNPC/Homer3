@@ -29,7 +29,7 @@ end
 if ~exist('newval','var')
     newval = [];
 end
-logger = InitLogger(logger);
+logger = InitLogger(logger, 'unitTest_MotionArtifact_STDEV');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -103,7 +103,7 @@ end
 % Clean up before exiting
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 logger.Write('\n');
-logger.Close();
+logger.Close('unitTest_MotionArtifact_STDEV');
 
 dataTree.groups(1).Reset();
 

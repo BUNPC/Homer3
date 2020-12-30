@@ -103,6 +103,7 @@ set(handles.checkboxShowExcludedTimeManual, 'enable', val);
 set(handles.checkboxShowExcludedTimeAuto, 'enable', val);
 set(handles.checkboxShowExcludedTimeAutoByChannel, 'enable', val);
 set(handles.checkboxExcludeTime, 'enable', val);
+set(handles.checkboxExcludeStims,'enable', val);
 set(handles.pushbuttonResetExcludedTimeCh, 'enable', val);
 
 % Control

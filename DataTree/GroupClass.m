@@ -747,7 +747,11 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function SD = GetSDG(obj,option)
-            SD = obj.subjs(1).GetSDG(option);
+            if exist('option','var')
+                SD = obj.subjs(1).GetSDG(option);
+            else
+                SD = obj.subjs(1).GetSDG();
+            end
         end
         
         

@@ -1029,20 +1029,33 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 return;
             end
             SD.Lambda = obj.probe.GetWls();
-            SD.SrcPos = obj.probe.GetSrcPos(option);
-            SD.DetPos = obj.probe.GetDetPos(option);
+            if exist('option','var')
+                SD.SrcPos = obj.probe.GetSrcPos(option);
+                SD.DetPos = obj.probe.GetDetPos(option);
+            else
+                SD.SrcPos = obj.probe.GetSrcPos();
+                SD.DetPos = obj.probe.GetDetPos();
+            end
         end
         
         
         % ---------------------------------------------------------
         function srcpos = GetSrcPos(obj,option)
-            srcpos = obj.probe.GetSrcPos(option);
+            if exist('option','var')
+                srcpos = obj.probe.GetSrcPos(option);
+            else
+                srcpos = obj.probe.GetSrcPos();
+            end
         end
         
         
         % ---------------------------------------------------------
         function detpos = GetDetPos(obj,option)
-            detpos = obj.probe.GetDetPos(option);
+            if exist('option','var')
+                detpos = obj.probe.GetDetPos(option);
+            else
+                detpos = obj.probe.GetDetPos();
+            end
         end
         
         
@@ -1140,8 +1153,13 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 return;
             end
             SD.Lambda   = obj.probe.GetWls();
-            SD.SrcPos   = obj.probe.GetSrcPos(option);
-            SD.DetPos   = obj.probe.GetDetPos(option);
+            if exist('option','var')
+                SD.SrcPos   = obj.probe.GetSrcPos(option);
+                SD.DetPos   = obj.probe.GetDetPos(option);
+            else
+                SD.SrcPos   = obj.probe.GetSrcPos();
+                SD.DetPos   = obj.probe.GetDetPos();
+            end
             SD.MeasList = obj.data(iBlk).GetMeasList();
             SD.MeasListAct = ones(size(SD.MeasList,1),1);
         end

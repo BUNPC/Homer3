@@ -372,25 +372,41 @@ classdef SubjClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function SetSDG(obj,option)
-            obj.SD = obj.runs(1).GetSDG(option);
+            if exist('option','var')
+                obj.SD = obj.runs(1).GetSDG(option);
+            else
+                obj.SD = obj.runs(1).GetSDG();
+            end
         end
         
         
         % ----------------------------------------------------------------------------------
         function SD = GetSDG(obj,option)
-            SD = obj.runs(1).GetSDG(option);
+            if exist('option','var')
+                SD = obj.runs(1).GetSDG(option);
+            else
+                SD = obj.runs(1).GetSDG();
+            end
         end
         
         
         % ----------------------------------------------------------------------------------
         function srcpos = GetSrcPos(obj,option)
-            srcpos = obj.runs(1).GetSrcPos(option);
+            if exist('option','var')
+                srcpos = obj.runs(1).GetSrcPos(option);
+            else
+                srcpos = obj.runs(1).GetSrcPos();
+            end
         end
         
         
         % ----------------------------------------------------------------------------------
         function detpos = GetDetPos(obj,option)
-            detpos = obj.runs(1).GetDetPos(option);
+            if exist('option','var')
+                detpos = obj.runs(1).GetDetPos(option);
+            else
+                detpos = obj.runs(1).();
+            end
         end
         
         

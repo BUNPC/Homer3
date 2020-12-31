@@ -22,7 +22,7 @@ end
 if ~exist('dirname','var')
     return;
 end
-logger = InitLogger(logger);
+logger = InitLogger(logger, 'unitTest_DefaultProcStream');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -95,7 +95,7 @@ end
 % Clean up before exiting
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 logger.Write('\n');
-logger.Close();
+logger.Close('unitTest_DefaultProcStream');
 
 dataTree.groups(1).Reset();
 

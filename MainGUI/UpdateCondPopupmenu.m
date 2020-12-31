@@ -20,6 +20,12 @@ for jj=1:length(CondNames)
         CondNames{jj} = ['-- ', CondNames{jj}];
     end
 end
+if isempty(CondNames)
+   CondNames = {' '};
+   set(handles.popupmenuConditions, 'enable', 'off');
+else
+    set(handles.popupmenuConditions, 'enable', 'on');
+end
 set(handles.popupmenuConditions, 'string', CondNames);
 maingui.condition = get(handles.popupmenuConditions, 'value');
 

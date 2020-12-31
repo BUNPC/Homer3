@@ -28,7 +28,7 @@ end
 if ~exist('newval','var')
     newval = [];
 end
-logger = InitLogger(logger);
+logger = InitLogger(logger, 'unitTest_BandpassFilt_LPF');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -103,7 +103,7 @@ end
 % Clean up before exiting
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 logger.Write('\n');
-logger.Close();
+logger.Close('unitTest_BandpassFilt_LPF');
 
 dataTree.groups(1).Reset();
 

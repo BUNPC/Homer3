@@ -16,7 +16,7 @@ DEBUG=false;
 snirf = SnirfClass().empty();
 
 if ~exist('dirname','var') || isempty(dirname)
-    dirname = convertToStandardPath(pwd);
+    dirname = filesepStandard(pwd);
 end
 if ~exist('nirsfiles0','var') || isempty(nirsfiles0)
     nirsfiles0 = DataFilesClass(dirname,'nirs').files;
@@ -39,16 +39,22 @@ elseif isa(nirsfiles0, 'FileClass')
     nirsfiles = nirsfiles0;
 end
 
-h = waitbar_improved(0,'Converting .nirs files to .snirf ...');
+fprintf('\n');
+
+h = waitbar_improved(0, sprintf('Converting %d .nirs files to .snirf ...', length(nirsfiles)));
 for ii=1:length(nirsfiles)
     if nirsfiles(ii).isdir
         continue;
     end
-    [pname,fname,ext] = fileparts([nirsfiles(ii).pathfull, '/', nirsfiles(ii).name]);
-    fprintf('Converting %s to %s\n', [pname,'/',fname,ext], [pname,'/',fname,'.snirf']);
+    [pname, fname, ext] = fileparts([nirsfiles(ii).pathfull, '/', nirsfiles(ii).name]);
+    
+    src = filesepStandard([pname,'/',fname, ext]);
+    dst = filesepStandard([pname,'/',fname,'.snirf'], 'nameonly');
+    
+    fprintf('Converting %s to %s\n', src, dst);
     waitbar_improved(ii/length(nirsfiles), h, sprintf('Converting %s to SNIRF: %d of %d', nirsfiles(ii).name, ii, length(nirsfiles)));
 
-    nirs = load([pname,'/',fname,ext],'-mat');
+    nirs = load(src,'-mat');
     
     if DEBUG==false
         snirf(ii) = SnirfClass(nirs);
@@ -56,9 +62,11 @@ for ii=1:length(nirsfiles)
         snirf(ii) = SnirfClass(nirs, ntimebases);
     end
     
-    snirf(ii).Save([pname,'/',fname,'.snirf']);
+    snirf(ii).Save(dst);
     if replace
-        delete([pname,'/',fname,ext]);
+        delete(src);
     end
 end
 close(h);
+
+fprintf('\n');

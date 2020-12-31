@@ -341,7 +341,7 @@ classdef FuncCallClass < handle
                             end
                         end
                         pvalue = str2num(textstr{ii+2});                       
-                        obj.paramIn(end+1) = ParamClass(pname, pformat, pvalue);
+                        obj.paramIn(end+1) = ParamClass(pname, pformat, pvalue, pvalue);
                         obj.GetParamHelp(length(obj.paramIn));
                         flag = 2;
                     end

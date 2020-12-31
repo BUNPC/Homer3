@@ -202,8 +202,20 @@ classdef ProcStreamClass < handle
             if isempty(obj.fcalls(iFcall).paramIn)
                 return;
             end
-            obj.fcalls(iFcall).paramIn(iParam).value = val;
+            if isprop(obj.fcalls(iFcall).paramIn(iParam), 'default')
+               default = obj.fcalls(iFcall).paramIn(iParam).default;
+               if ~isempty(default)
+                   in = val;
+                   val = obj.fcalls(iFcall).paramIn(iParam).default;
+                   if length(in) > length(default)
+                       val(1:length(default)) = in(1:length(default));
+                   else
+                       val(1:length(in)) = in;                       
+                   end
+               end
+            end
             str = sprintf(obj.fcalls(iFcall).paramIn(iParam).format, val);
+            obj.fcalls(iFcall).paramIn(iParam).value = val;
         end
 
 
@@ -550,6 +562,9 @@ classdef ProcStreamClass < handle
             
             % Processing stream begins with inputs available
             available = obj.input.GetProcInputs();
+            % Inputs which are usually optional or defined elsewhere
+            extras = {'iRun' 'iSubj' 'iGroup' 'mlActAuto', 'tIncAuto'}
+            available = [available, extras];
             
             % For all fcalls
             for i = 1:length(obj.fcalls)

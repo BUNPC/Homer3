@@ -1,5 +1,5 @@
 % SYNTAX:
-% mlAct = hmrR_PruneChannels(data, probe, mlActMan, tInc, dRange, SNRthresh, SDrange, reset)
+% mlAct = hmrR_PruneChannels(data, probe, mlActMan, tInc, dRange, SNRthresh, SDrange)
 %
 % UI NAME:
 % Prune_Channels
@@ -20,8 +20,6 @@
 %      active channel
 % SDrange - will prune channels with a source-detector separation <
 %           SDrange(1) or > SDrange(2)
-% reset - If reset = 1 then previously pruned channels (automatic and
-%           manual) will be reset
 %
 % OUTPUTS:
 % mlAct - cell array of all data blocks - each data block is an array
@@ -29,25 +27,24 @@
 %         specifying active/inactive status. (# of data blocks x # of Channels)
 %
 % USAGE OPTIONS:
-% Prune_Channels: mlActAuto = hmrR_PruneChannels(data, probe, mlActMan, tIncMan, dRange, SNRthresh, SDrange, reset)
+% Prune_Channels: mlActAuto = hmrR_PruneChannels(data, probe, mlActMan, tIncMan, dRange, SNRthresh, SDrange)
 %
 % PARAMETERS:
 % dRange: [1e4, 1e7]
 % SNRthresh: 2
 % SDrange: [0.0, 45.0]
-% reset: 0
 %
 % TO DO:
 % consider Conc as well as wavelength data
 %
-function mlAct = hmrR_PruneChannels(data, probe, mlActMan, tIncMan, dRange, SNRthresh, SDrange, resetFlag)
+function mlAct = hmrR_PruneChannels(data, probe, mlActMan, tIncMan, dRange, SNRthresh, SDrange)
 
 % Init output 
 mlAct = cell(length(data),1);
 
 % Check input args
 if nargin<7
-    disp( 'USAGE: hmrR_PruneChannels(data, probe, mlActMan, tIncMan, dRange, SNRthresh, SDrange, resetFlag)' )
+    disp( 'USAGE: hmrR_PruneChannels(data, probe, mlActMan, tIncMan, dRange, SNRthresh, SDrange)' )
     return
 end
 if isempty(tIncMan)

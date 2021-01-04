@@ -550,6 +550,9 @@ classdef ProcStreamClass < handle
             
             % Processing stream begins with inputs available
             available = obj.input.GetProcInputs();
+            % Inputs which are usually optional or defined elsewhere
+            extras = {'iRun' 'iSubj' 'iGroup' 'mlActAuto', 'tIncAuto'}
+            available = [available, extras];
             
             % For all fcalls
             for i = 1:length(obj.fcalls)

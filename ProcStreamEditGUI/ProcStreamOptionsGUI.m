@@ -368,7 +368,8 @@ iG = dataTree.GetCurrElemIndexID();
 
 iFcall  = eventdata(1);
 iParam = eventdata(2);
-param = dataTree.currElem.procStream.fcalls(iFcall).paramIn(iParam);
+fcall = dataTree.currElem.procStream.fcalls(iFcall);
+param = fcall.paramIn(iParam);
 val = str2num(get(hObject,'string'));
 
 % If str2num fails or user entered wrong number of params
@@ -377,10 +378,22 @@ if (~isempty(hObject.String) && isempty(val)) || (length(val) > count(param.GetF
     return;
 end
 
+% Edit the parameter
 str = dataTree.currElem.procStream.EditParam(iFcall, iParam, val);
 if isempty(str)
+    set(hObject, 'string', sprintf(param.GetFormat(), hObject.Value));  % Restore og value
     return;
 end
+
+% Check for param errchk function associated with this fcall
+errmsg = fcall.CheckParams();
+if ~isempty(errmsg)
+    set(hObject, 'string', sprintf(param.GetFormat(), hObject.Value));  % Restore og value
+    dataTree.currElem.procStream.EditParam(iFcall, iParam, hObject.Value);  % Restore param in datatree too
+    errordlg(errmsg, 'Invalid parameters', 'modal');
+    return;
+end
+
 set(hObject, 'string', str);
 set(hObject, 'value', str2num(str));  % Actually update the value
 

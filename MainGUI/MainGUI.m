@@ -433,6 +433,17 @@ end
 
 MainGUI_EnableDisableGUI(handles,'off');
 
+% Check for errchk functions
+fcalls = maingui.dataTree.currElem.procStream.fcalls;
+for iFcall = 1:length(fcalls)
+   errmsg = fcalls(iFcall).CheckParams();
+   if ~isempty(errmsg)
+       errordlg(errmsg, 'Invalid parameters', 'modal');
+       MainGUI_EnableDisableGUI(handles,'on');
+       return
+   end
+end
+
 % Save original selection in listboxGroupTree because it'll change during auto processing 
 val0 = get(handles.listboxGroupTree, 'value');
 

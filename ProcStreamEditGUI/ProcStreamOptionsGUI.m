@@ -339,6 +339,7 @@ for k = 1:nFcalls
         eval( sprintf(' fcn = @(hObject,eventdata)ProcStreamOptionsGUI(''edit_Callback'',hObject,[%d %d],guidata(hObject));',k,j) );
         h(end+1,:) = uicontrol(hObject, 'style','edit', 'horizontalalignment','left', 'units','characters', 'position',p(end,:), ...
                                         'string',fcalls(k).GetParamValStr(j), ...
+                                        'value',str2num(fcalls(k).GetParamValStr(j)), ...  % Store current value
                                         'horizontalalignment','center', ...
                                         'Callback',fcn);
     end
@@ -367,13 +368,21 @@ iG = dataTree.GetCurrElemIndexID();
 
 iFcall  = eventdata(1);
 iParam = eventdata(2);
-val = str2num( get(hObject,'string') ); % need to check if it is a valid string
+param = dataTree.currElem.procStream.fcalls(iFcall).paramIn(iParam);
+val = str2num(get(hObject,'string'));
+
+% If str2num fails or user entered wrong number of params
+if (~isempty(hObject.String) && isempty(val)) || (length(val) > count(param.GetFormat(), '%'))
+    set(hObject, 'string', sprintf(param.GetFormat(), hObject.Value));  % Restore og value
+    return;
+end
 
 str = dataTree.currElem.procStream.EditParam(iFcall, iParam, val);
 if isempty(str)
     return;
 end
-set( hObject, 'string', str);
+set(hObject, 'string', str);
+set(hObject, 'value', str2num(str));  % Actually update the value
 
 % Check if we should apply the param edit to all nodes of the current nodes
 % level

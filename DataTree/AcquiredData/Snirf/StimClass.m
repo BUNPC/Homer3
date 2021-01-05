@@ -54,6 +54,8 @@ classdef StimClass < FileLoadSaveClass
                 obj.name = CondName;
                 k = s>0 | s==-1 | s==-2;  % Include stim marks with these values
                 obj.data = [t(k), 10*ones(length(t(k)),1), ones(length(t(k)),1)];
+                obj.states = [t(k) s(k)];
+                obj.dataLabels = {'Onset', 'Duration', 'Amplitude'};
             elseif nargin==0
                 obj.name = '';
                 obj.data = [];

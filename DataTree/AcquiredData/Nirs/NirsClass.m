@@ -439,7 +439,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                
         
         % ---------------------------------------------------------
-        function SD = GetSDG(obj)
+        function SD = GetSDG(obj, option)
             SD = obj.SD;
         end
         
@@ -498,13 +498,13 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 
         
         % ---------------------------------------------------------
-        function srcpos = GetSrcPos(obj)
+        function srcpos = GetSrcPos(obj,option)
             srcpos = obj.SD.SrcPos;
         end
         
         
         % ---------------------------------------------------------
-        function detpos = GetDetPos(obj)
+        function detpos = GetDetPos(obj,option)
             detpos = obj.SD.DetPos;
         end
         

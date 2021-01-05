@@ -22,7 +22,7 @@ axScl    = plotprobe.axScl;
 tMarkAmp = plotprobe.tMarkAmp;
 tMarkVis = plotprobe.tMarkShow;
 ch       = plotprobe.dataTree.currElem.GetMeasList(iBlk);
-SD       = plotprobe.dataTree.currElem.GetSDG();
+SD       = plotprobe.dataTree.currElem.GetSDG('2D');
 
 
 set(handles.textTimeMarkersAmpUnits, 'string',plotprobe.tMarkUnits);

@@ -1020,7 +1020,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function SD = GetSDG(obj)
+        function SD = GetSDG(obj,option)
             SD = [];
             if isempty(obj)
                 return;
@@ -1029,20 +1029,33 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 return;
             end
             SD.Lambda = obj.probe.GetWls();
-            SD.SrcPos = obj.probe.GetSrcPos();
-            SD.DetPos = obj.probe.GetDetPos();
+            if exist('option','var')
+                SD.SrcPos = obj.probe.GetSrcPos(option);
+                SD.DetPos = obj.probe.GetDetPos(option);
+            else
+                SD.SrcPos = obj.probe.GetSrcPos();
+                SD.DetPos = obj.probe.GetDetPos();
+            end
         end
         
         
         % ---------------------------------------------------------
-        function srcpos = GetSrcPos(obj)
-            srcpos = obj.probe.GetSrcPos();
+        function srcpos = GetSrcPos(obj,option)
+            if exist('option','var')
+                srcpos = obj.probe.GetSrcPos(option);
+            else
+                srcpos = obj.probe.GetSrcPos();
+            end
         end
         
         
         % ---------------------------------------------------------
-        function detpos = GetDetPos(obj)
-            detpos = obj.probe.GetDetPos();
+        function detpos = GetDetPos(obj,option)
+            if exist('option','var')
+                detpos = obj.probe.GetDetPos(option);
+            else
+                detpos = obj.probe.GetDetPos();
+            end
         end
         
         
@@ -1128,7 +1141,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function SD = Get_SD(obj, iBlk)
+        function SD = Get_SD(obj, iBlk, option)
             SD = [];
             if isempty(obj.probe)
                 return;
@@ -1140,8 +1153,13 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 return;
             end
             SD.Lambda   = obj.probe.GetWls();
-            SD.SrcPos   = obj.probe.GetSrcPos();
-            SD.DetPos   = obj.probe.GetDetPos();
+            if exist('option','var')
+                SD.SrcPos   = obj.probe.GetSrcPos(option);
+                SD.DetPos   = obj.probe.GetDetPos(option);
+            else
+                SD.SrcPos   = obj.probe.GetSrcPos();
+                SD.DetPos   = obj.probe.GetDetPos();
+            end
             SD.MeasList = obj.data(iBlk).GetMeasList();
             SD.MeasListAct = ones(size(SD.MeasList,1),1);
         end
@@ -1435,7 +1453,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % Load probe and extract .nirs-style SD structure
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             fprintf('    Probe (.nirs-style display):\n');
-            SD = obj.GetSDG();
+            SD = obj.GetSDG('2D');
             pretty_print_struct(SD, 8, 1);
             fprintf('\n');
             

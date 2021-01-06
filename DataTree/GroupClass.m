@@ -4,7 +4,6 @@ classdef GroupClass < TreeNodeClass
         version;
         versionStr;
         subjs;
-        logger
     end
     
     properties % (Access = private)
@@ -19,10 +18,8 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function obj = GroupClass(varargin)
-            global logger
-
             obj@TreeNodeClass(varargin);
-            obj.logger = InitLogger(logger);
+
             obj.InitVersion();
 
             if nargin<3 || ~strcmp(varargin{3}, 'noprint')
@@ -205,17 +202,20 @@ classdef GroupClass < TreeNodeClass
             % 
             % Conversly unconditional copy copies all properties in the runs under this group
             if nargin==3 && strcmp(conditional, 'conditional')
-                if strcmp(obj.name,obj2.name)
-                    for i=1:length(obj.subjs)
-                        j = obj.existSubj(i,obj2);
-                        if (j>0)
-                            obj.subjs(i).Copy(obj2.subjs(j), 'conditional');
-                        end
-                    end
-                    if obj == obj2
-                        obj.Copy@TreeNodeClass(obj2, 'conditional');
-                    end
+                if obj.Mismatch(obj2)
+                    return
                 end
+                for i = 1:length(obj.subjs)
+                    j = obj.existSubj(i,obj2);
+                    if j>0
+                        obj.subjs(i).Copy(obj2.subjs(j), 'conditional');
+                    elseif i<=length(obj2.subjs)
+                        obj.subjs(i).Copy(obj2.subjs(i), 'conditional');
+                    else
+                        obj.subjs(i).Mismatch();
+                    end
+                end                
+                obj.Copy@TreeNodeClass(obj2, 'conditional');
             else
                 for i=1:length(obj2.subjs)
                     obj.subjs(i) = SubjClass(obj2.subjs(i));
@@ -746,8 +746,12 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SD = GetSDG(obj)
-            SD = obj.subjs(1).GetSDG();
+        function SD = GetSDG(obj,option)
+            if exist('option','var')
+                SD = obj.subjs(1).GetSDG(option);
+            else
+                SD = obj.subjs(1).GetSDG();
+            end
         end
         
         

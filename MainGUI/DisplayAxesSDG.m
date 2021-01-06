@@ -52,8 +52,14 @@ iCh         = maingui.axesSDG.iCh;
 iSrcDet     = maingui.axesSDG.iSrcDet;
 color       = maingui.axesSDG.linecolor;
 
-SD          = maingui.dataTree.currElem.GetSDG();
-bbox        = maingui.dataTree.currElem.GetSdgBbox();
+SD          = maingui.dataTree.currElem.GetSDG('2D');
+
+if isfield(maingui.axesSDG, 'xlim')
+    xbox        = maingui.axesSDG.xlim;
+    ybox        = maingui.axesSDG.ylim;
+else
+    bbox        = maingui.dataTree.currElem.GetSdgBbox();
+end
 
 % Set axes handle properties and parameters 
 if ~ishandles(hAxes)
@@ -66,7 +72,11 @@ if ishandles(maingui.axesSDG.handles.ch)
     delete(maingui.axesSDG.handles.ch)
     delete(findobj(hAxes, 'Type', 'line'))  % Prevents previously drawn lines from piling up
 end
-axis(hAxes, [bbox(1), bbox(2), bbox(3), bbox(4)]);
+if isfield(maingui.axesSDG, 'xlim')
+    axis(hAxes, [xbox(1), xbox(2), ybox(1), ybox(2)]);
+else
+    axis(hAxes, [bbox(1), bbox(2), bbox(3), bbox(4)]);
+end
 %set(hAxes, 'xticklabel','', 'yticklabel','', 'xgrid','off, ygrid','off')
 set(hAxes, 'xticklabel','')
 bttndownfcn = get(hAxes,'ButtonDownFcn');
@@ -173,13 +183,13 @@ if isempty(maingui.axesSDG.handles.SD)
     for idx1 = 1:nSrcs
         if ~isempty(find(MeasList(:,1)==idx1)) %#ok<*EFIND>
             hSD(idx1) = text( SD.SrcPos(idx1,1), SD.SrcPos(idx1,2), sprintf('%d', idx1), 'fontsize',fs, 'fontweight','bold', 'color','r' );
-            set(hSD(idx1), 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
+            set(hSD(idx1), 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol, 'Clipping', 'on');
         end
     end
     for idx2 = 1:nDets
         if ~isempty(find(MeasList(:,2)==idx2))
             hSD(idx2+idx1) = text( SD.DetPos(idx2,1), SD.DetPos(idx2,2), sprintf('%d', idx2), 'fontsize',fs, 'fontweight','bold', 'color','b' );
-            set(hSD(idx2+idx1), 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
+            set(hSD(idx2+idx1), 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol, 'Clipping', 'on');
         end
     end
     maingui.axesSDG.handles.SD = hSD;

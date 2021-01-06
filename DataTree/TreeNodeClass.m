@@ -1,6 +1,6 @@
 classdef TreeNodeClass < handle
     
-    properties % (Access = private)        
+    properties % (Access = private)
         name;
         type;
         iGroup;
@@ -9,21 +9,25 @@ classdef TreeNodeClass < handle
         iFile;
         procStream;
         err;
-        CondNames;        
+        CondNames;
         updateParentGui;
     end
-     
+    
     properties
         outputVars
         DEBUG
         path
+        logger
     end
-        
-    methods
-        
+    
+    methods        
         
         % ---------------------------------------------------------------------------------
         function obj = TreeNodeClass(arg)
+            global logger
+
+            obj.logger = InitLogger(logger);
+
             obj.DEBUG = 0;
             
             obj.name = '';
@@ -34,9 +38,8 @@ classdef TreeNodeClass < handle
             obj.procStream = ProcStreamClass();
             obj.err = 0;
             obj.CondNames = {};
-            obj.path = filesepStandard(pwd);
-            
-            
+            obj.path = filesepStandard(pwd);            
+                        
             obj.InitParentAppFunc();
             
             % If this constructor is called from this class' copy method,
@@ -56,7 +59,7 @@ classdef TreeNodeClass < handle
                 end
             end
             obj.CondColTbl('init');
-                                   
+            obj.GroupDataLoadWarnings();            
         end
         
     end
@@ -174,7 +177,7 @@ classdef TreeNodeClass < handle
         % ----------------------------------------------------------------------------------
         function InitParentAppFunc(obj)
             global maingui
-            if ~isempty(maingui)
+            if isfield(maingui, 'Update')
                 obj.updateParentGui = maingui.Update;
             end
         end
@@ -659,7 +662,57 @@ classdef TreeNodeClass < handle
             filename = obj.SaveMemorySpace(obj.name);
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function status = Mismatch(obj, obj2)
+            status = 0;
+            if exist('obj2','var')                
+                if obj == obj2
+                    return
+                end
+            end
+            status = 1;
                         
+            configFileOptions =  MenuBox('',{},[],[], 'dontAskAgainOptions');
+            choices = { ...
+                sprintf('Continue Loading'); ...
+                sprintf('Quit Loading'); ...
+            };
+        
+            if exist('obj2','var')
+                msg{1} = sprintf('WARNING: Saved data for %s "%s" does not match this group folder. ', obj.type, obj.name);
+                msg{2} = sprintf('Are you sure this saved data belongs to this group folder?');
+            else
+                msg{1} = sprintf('WARNING: The %s "%s" does not match the saved group data. ', obj.type, obj.name);
+                msg{2} = sprintf('Are you sure the saved data belongs to this group folder?');
+            end
+            obj.logger.Write([msg{:}])
+            if strcmp(obj.GroupDataLoadWarnings, configFileOptions{1})
+                status = 0;
+                return;
+            end
+            selection = MenuBox([msg{:}], choices, [], [], 'dontAskAgainOptions');
+            if selection(1)==1
+                status = 0;
+            end
+            if length(selection)<2
+                selection(2)=0;
+            end
+            
+            % Find out if config value does not equal current selection. If
+            % not then reset config value
+            if selection(2)>0
+                if ~strcmp(obj.GroupDataLoadWarnings, configFileOptions{selection(2)})
+                    % Overwrite config value
+                    cfg = ConfigFileClass();
+                    cfg.SetValue('Group Data Loading Warnings', configFileOptions{selection(2)});
+                    cfg.Save();
+                    obj.GroupDataLoadWarnings()
+                end
+            end
+                        
+        end
+                
     end
 
     
@@ -710,6 +763,19 @@ classdef TreeNodeClass < handle
         end
    
                 
+        % --------------------------------------------------------------------------------
+        function out = GroupDataLoadWarnings()
+            persistent v;
+            if ~exist('arg','var')
+                cfg = ConfigFileClass();
+                v = cfg.GetValue('Group Data Loading Warnings');
+            elseif exist('arg','var')
+                v = arg;
+            end
+            out = v;
+        end
+        
+        
     end
     
 end

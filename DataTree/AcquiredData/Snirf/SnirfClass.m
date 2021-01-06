@@ -14,7 +14,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         gid
         location
         nirsdatanum
-        nirs_tb;
+        nirs_tb
         stim0
     end
     
@@ -235,6 +235,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % -------------------------------------------------------
         function Initialize(obj)
+            Initialize@AcqDataClass(obj)
+            
             obj.formatVersion = '1.0';
             obj.metaDataTags   = MetaDataTagsClass().empty();
             obj.data           = DataClass().empty();
@@ -245,12 +247,16 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             obj.stim0          = StimClass().empty();
         end
         
+               
         
         % -------------------------------------------------------
         function err = Copy(obj, obj2)
             err=0;
             if ~isa(obj2, 'SnirfClass')
                 err=1;
+                return;
+            end
+            if obj.Mismatch(obj2)
                 return;
             end
             obj.formatVersion = obj2.formatVersion;
@@ -265,7 +271,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             catch
             end
             
-            if ~isempty(obj2.GetFilename())
+            if ~isempty(obj2.GetFilename()) && isempty(obj.GetFilename())
                 obj.SetFilename(obj2.GetFilename());
             end
         end
@@ -341,7 +347,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             formatVersionFile = str2double(formatVersionFile);
             formatVersionCurr = str2double(obj.formatVersion);
             if formatVersionFile < formatVersionCurr
-                fprintf('Warning: Current SNIRF version is %0.1f. Cannot load older version (%0.1f) file. Backward compatibility not yet implemented ...\n', formatVersionCurr, formatVersionFile)
+                obj.logger.Write(sprintf('Warning: Current SNIRF version is %0.1f. Cannot load older version (%0.1f) file. Backward compatibility not yet implemented ...\n', ...
+                    formatVersionCurr, formatVersionFile));
                 err = -2;
                 return
             end
@@ -394,7 +401,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     obj.stim(ii).delete();
                     obj.stim(ii) = [];
                     if ii==1
-                        err = -1;
+                        err = 1;  % Absence of optional field raises error > 0
                     end
                     break;
                 end
@@ -440,7 +447,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     obj.aux(ii).delete();
                     obj.aux(ii) = [];
                     if ii==1
-                        err = -1;
+                        err = 1;  % Error code for no optional field is > 0
                     end
                     break;
                 end
@@ -483,43 +490,40 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 % Open group
                 [obj.gid, obj.fid] = HDF5_GroupOpen(fileobj, '/');
                 
-                if obj.SetLocation() < 0
-                    err = -1;
-                    return
-                end
                 
+                if obj.SetLocation() < 0 & err == 0
+                    err = -1;
+                end
+
                 %%%% Load formatVersion
-                if obj.LoadFormatVersion() < 0
+                if obj.LoadFormatVersion() < 0 & err == 0
                     err = -2;
                 end
-                
+
                 %%%% Load metaDataTags
-                if obj.LoadMetaDataTags(obj.fid) < 0
+                if obj.LoadMetaDataTags(obj.fid) < 0 & err == 0
                     err = -3;
                 end
-                
+
                 %%%% Load data
-                if obj.LoadData(obj.fid) < 0
+                if obj.LoadData(obj.fid) < 0 & err == 0
                     err = -4;
                 end
-                
+
                 %%%% Load stim
-                if obj.LoadStim(obj.fid)
+                if obj.LoadStim(obj.fid) < 0 & err == 0
                     err = -5;
                 end
-                
+
                 %%%% Load probe
-                if obj.LoadProbe(obj.fid)
+                if obj.LoadProbe(obj.fid) < 0 & err == 0
                     err = -6;
                 end
-                
-                %%%% Load aux. This is an optional field, therefore error must 
-                %%%% be less then -1 (-1 means aux is not in SNIRF file) to be 
-                %%%% error for whole SNIRF file
-                if obj.LoadAux(obj.fid)<-1
+
+                %%%% Load aux. This is an optional field
+                if obj.LoadAux(obj.fid) < 0 & err == 0
                     err = -7;
                 end
-                
                 
                 % Close group
                 HDF5_GroupClose(fileobj, obj.gid, obj.fid);
@@ -530,7 +534,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 
             end
             
-            if obj.fid>0
+            if obj.fid > 0
                 H5F.close(obj.fid);
             end
             
@@ -642,14 +646,15 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 if ~flags(ii)
                     % We have new stimulus condition added
                     if ~obj.stim(ii).IsEmpty()
-                        snirfFile.stim(jj+1) = StimClass(obj.stim(ii));
+                        snirfFile.stim(end+1) = StimClass(obj.stim(ii));
+                        flags(ii) = 1;
                     end
                 end
             end
             
             % If stims were edited then update snirf file with new stims
             changes = sum(flags);
-            if changes
+            if changes > 0
                 snirfFile.SaveStim(fileobj);
             end
             stimFromFile = snirfFile.stim;
@@ -1015,7 +1020,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function SD = GetSDG(obj)
+        function SD = GetSDG(obj,option)
             SD = [];
             if isempty(obj)
                 return;
@@ -1024,20 +1029,33 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 return;
             end
             SD.Lambda = obj.probe.GetWls();
-            SD.SrcPos = obj.probe.GetSrcPos();
-            SD.DetPos = obj.probe.GetDetPos();
+            if exist('option','var')
+                SD.SrcPos = obj.probe.GetSrcPos(option);
+                SD.DetPos = obj.probe.GetDetPos(option);
+            else
+                SD.SrcPos = obj.probe.GetSrcPos();
+                SD.DetPos = obj.probe.GetDetPos();
+            end
         end
         
         
         % ---------------------------------------------------------
-        function srcpos = GetSrcPos(obj)
-            srcpos = obj.probe.GetSrcPos();
+        function srcpos = GetSrcPos(obj,option)
+            if exist('option','var')
+                srcpos = obj.probe.GetSrcPos(option);
+            else
+                srcpos = obj.probe.GetSrcPos();
+            end
         end
         
         
         % ---------------------------------------------------------
-        function detpos = GetDetPos(obj)
-            detpos = obj.probe.GetDetPos();
+        function detpos = GetDetPos(obj,option)
+            if exist('option','var')
+                detpos = obj.probe.GetDetPos(option);
+            else
+                detpos = obj.probe.GetDetPos();
+            end
         end
         
         
@@ -1123,7 +1141,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function SD = Get_SD(obj, iBlk)
+        function SD = Get_SD(obj, iBlk, option)
             SD = [];
             if isempty(obj.probe)
                 return;
@@ -1135,8 +1153,13 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 return;
             end
             SD.Lambda   = obj.probe.GetWls();
-            SD.SrcPos   = obj.probe.GetSrcPos();
-            SD.DetPos   = obj.probe.GetDetPos();
+            if exist('option','var')
+                SD.SrcPos   = obj.probe.GetSrcPos(option);
+                SD.DetPos   = obj.probe.GetDetPos(option);
+            else
+                SD.SrcPos   = obj.probe.GetSrcPos();
+                SD.DetPos   = obj.probe.GetDetPos();
+            end
             SD.MeasList = obj.data(iBlk).GetMeasList();
             SD.MeasListAct = ones(size(SD.MeasList,1),1);
         end
@@ -1430,7 +1453,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % Load probe and extract .nirs-style SD structure
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             fprintf('    Probe (.nirs-style display):\n');
-            SD = obj.GetSDG();
+            SD = obj.GetSDG('2D');
             pretty_print_struct(SD, 8, 1);
             fprintf('\n');
             

@@ -210,6 +210,10 @@ InitGuiControls(handles);
 DisplayGroupTree(handles);
 Display(handles, hObject);
 
+% Store Original X and Y Lims for AxesSDG
+maingui.axesSDG.xlim = maingui.axesSDG.handles.axes.XLim;
+maingui.axesSDG.ylim = maingui.axesSDG.handles.axes.YLim;
+
 maingui.handles = handles;
 maingui.handles.pValuesFig = [];
 
@@ -242,11 +246,11 @@ end
 if isempty(maingui)
     return;
 end
+if isfield(maingui,'logger') && ~isempty(maingui.logger)
+    maingui.logger.Close();
+end
 if isempty(maingui.dataTree)
     return;
-end
-if ~isempty(maingui.logger)
-    maingui.logger.Close('MainGUI');
 end
 
 % Delete Child GUIs before deleted the dataTree that all GUIs use.
@@ -967,12 +971,40 @@ for iBlk = iDataBlks
             end
             d = procElem.reshape_y(d, ch.MeasList);
             DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
+            if isa(dataTree.currElem, 'RunClass')
+                sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
+                xlabel('Time (s)', 'FontSize', 11);
+%                 xlabel(['Time (s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
+            else
+                xlabel('Time (s)', 'FontSize', 11);
+            end
+            ylabel('');
         elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
             if  datatype == maingui.buttonVals.CONC_HRF
                 d = d(:,:,:,condition);
             end
             d = d * sclConc;
             DisplayDataConc(t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
+            if isa(dataTree.currElem, 'RunClass')
+                sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
+                xlabel('Time (s)', 'FontSize', 11);
+%                 xlabel(['Time(s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
+            else
+                xlabel('Time (s)', 'FontSize', 11);
+            end
+            procName = {procElem.procStream.fcalls.name};
+            idx = contains(procName, 'hmrR_OD2Conc');
+            if ~isempty(find(idx,1))
+                ppf = procElem.procStream.fcalls(idx).paramIn.value;
+                if ppf(condition) == 1 && ~isempty(dataTree.currElem.acquired.metaDataTags.tags.LengthUnit)
+                    unit = dataTree.currElem.acquired.metaDataTags.tags.LengthUnit;
+                    ylabel(['\muM ' unit], 'FontSize', 17);
+                else
+                ylabel('\muM', 'FontSize', 11);
+                end
+            else
+                ylabel('\muM', 'FontSize', 11);
+            end
         end
     end
     iColor = iColor+length(iChBlk);
@@ -1272,6 +1304,7 @@ end
 % --------------------------------------------------------------------
 function menuItemResetGroupFolder_Callback(hObject, eventdata, handles)
 resetGroupFolder();
+DisplayGroupTree(handles);
 
 
 
@@ -1715,7 +1748,36 @@ else
     errordlg('Select a run to reset its excluded channels and time points.','No run selected');
 end
 
+% --------------------------------------------------------------------
+function menuItemSegmentSnirf_Callback(hObject, eventdata, handles)
+global maingui;
+if maingui.dataTree.IsFlatFileDir()
+    MessageBox('Segment Tool does not support flat file directories yet, please change to a deep directory style (using sub-directories for groups and subjects) to use the segment tool via Homer3');
+    return;
+end
+snirfSegment();
+maingui.dataTree = DataTreeClass();
+for iG = 1:length(maingui.dataTree.groups)
+    maingui.dataTree.SetCurrElem(iG,0,0);
+    maingui.dataTree.ResetCurrElem();
+end
+DisplayGroupTree(handles);
 
+
+% --------------------------------------------------------------------
+function menuItemDownsampleSnirf_Callback(hObject, eventdata, handles)
+global maingui;
+if maingui.dataTree.IsFlatFileDir()
+    MessageBox('Downsample Tool does not support flat file directories yet, please change to a deep directory style (using sub-directories for groups and subjects) to use the downsample tool via Homer3');
+    return;
+end
+snirfDownsample();
+maingui.dataTree = DataTreeClass();
+for iG = 1:length(maingui.dataTree.groups)
+    maingui.dataTree.SetCurrElem(iG,0,0);
+    maingui.dataTree.ResetCurrElem();
+end
+DisplayGroupTree(handles);
 
 % --------------------------------------------------------------------
 function menuItemExportProcessingStreamScript_Callback(hObject, eventdata, handles)
@@ -1724,3 +1786,68 @@ fname = uiputfile('*.m', 'Export Processing Stream to Script (.m)', 'processing_
 if fname ~= 0
     exportProcessScript(fname, maingui.dataTree.currElem.procStream);
 end
+
+% --------------------------------------------------------------------
+function panProbeCallback(hObject, eventdata, handles)
+global maingui;
+axes(handles.axesSDG)
+xrange = xlim();
+% xm = mean(xrange);
+xd = xrange(2)-xrange(1);
+yrange = ylim();
+% ym = mean(yrange);
+yd = yrange(2)-yrange(1);
+%Ratio can be adjusted
+if get(hObject,'string')=='<'
+    xlim( [xrange(1)-xd/5 xrange(2)-xd/5] );
+    maingui.axesSDG.xlim = [xrange(1)-xd/5 xrange(2)-xd/5];
+elseif get(hObject,'string')=='>'
+    xlim( [xrange(1)+xd/5 xrange(2)+xd/5] );
+    maingui.axesSDG.xlim = [xrange(1)+xd/5 xrange(2)+xd/5];
+elseif get(hObject,'string')=='/\'
+    ylim( [yrange(1)+yd/5 yrange(2)+yd/5] );
+    maingui.axesSDG.ylim = [yrange(1)+yd/5 yrange(2)+yd/5];
+elseif get(hObject,'string')=='\/'
+    ylim( [yrange(1)-yd/5 yrange(2)-yd/5] );
+    maingui.axesSDG.ylim = [yrange(1)-yd/5 yrange(2)-yd/5];
+end
+
+
+% --------------------------------------------------------------------
+function zoomInCallback(hObject, eventdata, handles)
+global maingui;
+axes(handles.axesSDG)
+axes(handles.axesSDG)
+xrange = xlim();
+xd = xrange(2)-xrange(1);
+yrange = ylim();
+yd = yrange(2)-yrange(1);
+xlim( [xrange(1)+xd/10 xrange(2)-xd/10] );
+ylim( [yrange(1)+yd/10 yrange(2)-yd/10] );
+% Store X and Y Lims for AxesSDG
+maingui.axesSDG.xlim = [xrange(1)+xd/10 xrange(2)-xd/10];
+maingui.axesSDG.ylim = [yrange(1)+yd/10 yrange(2)-yd/10];
+
+% --------------------------------------------------------------------
+function zoomOutCallback(hObject, eventdata, handles)
+global maingui;
+axes(handles.axesSDG)
+axes(handles.axesSDG)
+xrange = xlim();
+xd = xrange(2)-xrange(1);
+yrange = ylim();
+yd = yrange(2)-yrange(1);
+xlim( [xrange(1)-xd/10 xrange(2)+xd/10] );
+ylim( [yrange(1)-yd/10 yrange(2)+yd/10] );
+maingui.axesSDG.xlim = [xrange(1)-xd/10 xrange(2)+xd/10];
+maingui.axesSDG.ylim = [yrange(1)-yd/10 yrange(2)+yd/10];
+
+% --------------------------------------------------------------------
+function resetProbeViewCallback(hObject, eventdata, handles)
+global maingui;
+axes(handles.axesSDG)
+bbox = maingui.dataTree.currElem.GetSdgBbox();
+xlim( bbox(1:2) );
+ylim( bbox(3:4) );
+maingui.axesSDG.xlim = bbox(1:2);
+maingui.axesSDG.ylim = bbox(3:4);

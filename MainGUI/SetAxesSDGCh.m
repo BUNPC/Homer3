@@ -4,7 +4,7 @@ global maingui
 hAxesSDG = maingui.axesSDG.handles.axes;
 iCh      = maingui.axesSDG.iCh;
 iSrcDet  = maingui.axesSDG.iSrcDet;
-SD       = maingui.dataTree.currElem.GetSDG();
+SD       = maingui.dataTree.currElem.GetSDG('2D');
 
 nDataBlks = maingui.dataTree.currElem.GetDataBlocksNum();
 ml = [];

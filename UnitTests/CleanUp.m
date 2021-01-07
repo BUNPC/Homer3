@@ -1,5 +1,6 @@
 function CleanUp(standalone, start)
 global DEBUG1
+global QUICK_TEST
 global procStreamStyle
 global testidx;
 global logger
@@ -28,6 +29,7 @@ clear DEBUG1 testidx procStreamStyle
 DEBUG1=[];
 testidx=[];
 procStreamStyle=[];
+QUICK_TEST = [0,0];
 
 reg = RegistriesClass('empty');
 reg.DeleteSaved();
@@ -69,8 +71,6 @@ c = ConfigFileClass();
 if c.BackupExists()
     c.Restore()
 else
-    c.SetValue('Regression Test Active','true');
-    c.SetValue('Include Archived User Functions','Yes');
     c.Save('backup');
 end
 

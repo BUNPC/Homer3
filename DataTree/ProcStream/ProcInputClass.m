@@ -321,7 +321,7 @@ classdef ProcInputClass < handle
         function [tpts, duration, vals] = GetStimData(obj, icond)
             tpts     = obj.GetStimTpts(icond);
             duration = obj.GetStimDuration(icond);
-            vals     = obj.GetStimValues(icond);
+            vals     = obj.GetStimAmplitudes(icond);
         end
         
     
@@ -356,17 +356,17 @@ classdef ProcInputClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimValues(obj, icond, vals)
-            obj.acquired.SetStimValues(icond, vals);
+        function SetStimAmplitudes(obj, icond, vals)
+            obj.acquired.SetStimAmplitudes(icond, vals);
         end
         
     
         % ----------------------------------------------------------------------------------
-        function vals = GetStimValues(obj, icond)
+        function vals = GetStimAmplitudes(obj, icond)
             if ~exist('icond','var')
                 icond=1;
             end
-            vals = obj.acquired.GetStimValues(icond);
+            vals = obj.acquired.GetStimAmplitudes(icond);
         end
         
         

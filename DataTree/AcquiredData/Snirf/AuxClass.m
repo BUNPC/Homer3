@@ -30,14 +30,12 @@ classdef AuxClass < FileLoadSaveClass
                 obj.name = '';
                 obj.dataTimeSeries = [];
                 obj.time = [];
-            end
-            
+            end                        
         end
         
         
         % -------------------------------------------------------
         function err = LoadHdf5(obj, fileobj, location)
-            err = 0;
             
             % Arg 1
             if ~exist('fileobj','var') || (ischar(fileobj) && ~exist(fileobj,'file'))
@@ -51,7 +49,7 @@ classdef AuxClass < FileLoadSaveClass
                 location = ['/',location];
             end
             
-            % Error checking            
+            % Error checking for file existence
             if ~isempty(fileobj) && ischar(fileobj)
                 obj.SetFilename(fileobj);
             elseif isempty(fileobj)
@@ -63,23 +61,35 @@ classdef AuxClass < FileLoadSaveClass
             end
             
             %%%%%%%%%%%% Ready to load from file
-            try
+            try               
                 % Open group
                 [gid, fid] = HDF5_GroupOpen(fileobj, location);
-                if gid<0
-                    err = -1;
+                
+                % Absence of optional aux field raises error > 0
+                if gid.double < 0
+                    err = 1;
                     return;
                 end
-
+                
                 obj.name            = HDF5_DatasetLoad(gid, 'name');
                 obj.dataTimeSeries  = HDF5_DatasetLoad(gid, 'dataTimeSeries');
                 obj.time            = HDF5_DatasetLoad(gid, 'time');
                 obj.timeOffset      = HDF5_DatasetLoad(gid, 'timeOffset');
 
+                err = obj.ErrorCheck();
+                
                 % Close group
                 HDF5_GroupClose(fileobj, gid, fid);
+                
             catch
-                err = -2;
+                
+                if gid.double > 0
+                    % If optional aux field exists BUT is in some way invalid it raises error < 0
+                    err = -6;
+                else
+                    err = 1;
+                end
+                
             end
         end
 
@@ -179,6 +189,50 @@ classdef AuxClass < FileLoadSaveClass
                 return
             end
             nbytes = sizeof(obj.name) + sizeof(obj.dataTimeSeries) + sizeof(obj.time) + sizeof(obj.timeOffset);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsEmpty(obj)
+            b = true;
+            if isempty(obj)
+                return
+            end
+            if isempty(obj.name)
+                return
+            end
+            if isempty(obj.dataTimeSeries)
+                return
+            end
+            if isempty(obj.time)
+                return
+            end
+            if length(obj.dataTimeSeries) ~= length(obj.time)
+                return
+            end
+            b = false;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function err = ErrorCheck(obj)
+            err = 0;
+            if isempty(obj.name)
+                err = -1;
+                return
+            end
+            if isempty(obj.dataTimeSeries)
+                err = -2;
+                return
+            end
+            if isempty(obj.time)
+                err = -3;
+                return
+            end
+            if length(obj.dataTimeSeries) ~= length(obj.time)
+                err = -4;
+                return
+            end
         end
         
         

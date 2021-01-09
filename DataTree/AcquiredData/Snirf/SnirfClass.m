@@ -128,10 +128,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     end
                     
                     
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                    % obj = SnirfClass(dotnirs);
-                    % obj = SnirfClass(dotnirs, numdatabllocks);
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % obj = SnirfClass(dotnirs);
+                % obj = SnirfClass(dotnirs, numdatabllocks);
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 elseif isstruct(varargin{1}) || isa(varargin{1}, 'NirsClass')
                     
                     % obj = SnirfClass(dotnirs);
@@ -143,30 +143,40 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     end
                     dotnirs = varargin{1};
                     obj.GenSimulatedTimeBases(dotnirs, tfactors);
+                    
+                    % Required fields
                     for ii=1:length(tfactors)
                         obj.data(ii) = DataClass(obj.nirs_tb(ii).d, obj.nirs_tb(ii).t(:), obj.nirs_tb(ii).SD.MeasList);
                     end
+                    obj.probe      = ProbeClass(dotnirs.SD);
                     
-                    for ii=1:size(dotnirs.s,2)
-                        if isfield(dotnirs, 'CondNames')
-                            obj.stim(ii) = StimClass(dotnirs.s(:,ii), dotnirs.t(:), dotnirs.CondNames{ii});
-                        else
-                            obj.stim(ii) = StimClass(dotnirs.s(:,ii), dotnirs.t(:), num2str(ii));
+                    
+                    % Optional fields
+                    if isfield(dotnirs,'s')
+                        for ii=1:size(dotnirs.s,2)
+                            if isfield(dotnirs, 'CondNames')
+                                obj.stim(ii) = StimClass(dotnirs.s(:,ii), dotnirs.t(:), dotnirs.CondNames{ii});
+                            else
+                                obj.stim(ii) = StimClass(dotnirs.s(:,ii), dotnirs.t(:), num2str(ii));
+                            end
                         end
                     end
-                    obj.probe      = ProbeClass(dotnirs.SD);
-                    for ii=1:size(dotnirs.aux,2)
-                        obj.aux(ii) = AuxClass(dotnirs.aux(:,ii), dotnirs.t(:), sprintf('aux%d',ii));
+                    if isfield(dotnirs,'aux')
+                        for ii=1:size(dotnirs.aux,2)
+                            obj.aux(ii) = AuxClass(dotnirs.aux(:,ii), dotnirs.t(:), sprintf('aux%d',ii));
+                        end
                     end
                     
-                    % Add metadatatags
+                    % Add required field metadatatags that has no .nirs
+                    % equivalent 
                     obj.metaDataTags   = MetaDataTagsClass();
+
                     
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                    % obj = SnirfClass(data, stim);
-                    % obj = SnirfClass(data, stim, probe);
-                    % obj = SnirfClass(data, stim, probe, aux);
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % obj = SnirfClass(data, stim);
+                % obj = SnirfClass(data, stim, probe);
+                % obj = SnirfClass(data, stim, probe, aux);
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 elseif isa(varargin{1}, 'DataClass')
                     
                     % obj = SnirfClass(data, stim);
@@ -189,12 +199,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     
                 end
                 
-                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                % Between 5 and 6 arguments covers the following syntax variants
-                %
-                % obj = SnirfClass(d, t, SD, aux, s);
-                % obj = SnirfClass(d, t, SD, aux, s, CondNames);
-                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Between 5 and 6 arguments covers the following syntax variants
+            %
+            % obj = SnirfClass(d, t, SD, aux, s);
+            % obj = SnirfClass(d, t, SD, aux, s, CondNames);
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             elseif nargin>4
                 
                 % obj = SnirfClass(d, t, SD, aux, s);
@@ -244,7 +254,17 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             obj.probe          = ProbeClass().empty();
             obj.aux            = AuxClass().empty();
             
-            obj.stim0          = StimClass().empty();
+            % Initialize non-SNIRF variables
+            obj.stim0          = StimClass().empty();            
+            obj.errmsgs = {
+                'MATLAB could not load the file.'
+                '''formatVersion'' is invalid.'
+                '''metaDataTags'' is invalid.'
+                '''data'' is invalid.'
+                '''stim'' is invalid.'
+                '''probe'' is invalid.'
+                '''aux'' is invalid.'
+                };
         end
         
                
@@ -397,12 +417,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 if ii > length(obj.stim)
                     obj.stim(ii) = StimClass;
                 end
-                if obj.stim(ii).LoadHdf5(fileobj, [obj.location, '/stim', num2str(ii)]) < 0
+                err = obj.stim(ii).LoadHdf5(fileobj, [obj.location, '/stim', num2str(ii)]);
+                if err ~= 0
                     obj.stim(ii).delete();
                     obj.stim(ii) = [];
-                    if ii==1
-                        err = 1;  % Absence of optional field raises error > 0
-                    end
                     break;
                 end
                 ii=ii+1;
@@ -415,7 +433,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 if ii > length(obj.stim0)
                     obj.stim0(ii) = StimClass;
                 end
-                if obj.stim0(ii).LoadHdf5(fileobj, [obj.location, '/stim0', num2str(ii)]) < 0
+                if obj.stim0(ii).LoadHdf5(fileobj, [obj.location, '/stim0', num2str(ii)]) ~= 0
                     obj.stim0(ii).delete();
                     obj.stim0(ii) = [];
                     break;
@@ -443,12 +461,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 if ii > length(obj.aux)
                     obj.aux(ii) = AuxClass;
                 end
-                if obj.aux(ii).LoadHdf5(fileobj, [obj.location, '/aux', num2str(ii)]) < 0
+                err = obj.aux(ii).LoadHdf5(fileobj, [obj.location, '/aux', num2str(ii)]);
+                if err ~= 0
                     obj.aux(ii).delete();
                     obj.aux(ii) = [];
-                    if ii==1
-                        err = 1;  % Error code for no optional field is > 0
-                    end
                     break;
                 end
                 ii=ii+1;
@@ -479,6 +495,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Don't reload if not empty
             if ~obj.IsEmpty()
+                err = obj.GetError();     % preserve error state if exiting early
                 return;
             end
             
@@ -491,37 +508,46 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 [obj.gid, obj.fid] = HDF5_GroupOpen(fileobj, '/');
                 
                 
-                if obj.SetLocation() < 0 & err == 0
+                if obj.SetLocation() < 0 && err == 0
                     err = -1;
                 end
-
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % NOTE: Optional fields have positive error codes if they are
+                % missing, but negative error codes if they're not missing but 
+                % invalid
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                
                 %%%% Load formatVersion
-                if obj.LoadFormatVersion() < 0 & err == 0
+                if obj.LoadFormatVersion() < 0 && err == 0
                     err = -2;
                 end
 
                 %%%% Load metaDataTags
-                if obj.LoadMetaDataTags(obj.fid) < 0 & err == 0
-                    err = -3;
+                if obj.LoadMetaDataTags(obj.fid) < 0 && err == 0
+                    % Here a positive return value means that invalid data meta tags 
+                    % should NOT be a show stopper if we can help it, if the reste of the data 
+                    % is valid. So just let user know they're invalid with a warning.
+                    err = 3;
                 end
 
                 %%%% Load data
-                if obj.LoadData(obj.fid) < 0 & err == 0
+                if obj.LoadData(obj.fid) < 0 && err == 0
                     err = -4;
                 end
 
                 %%%% Load stim
-                if obj.LoadStim(obj.fid) < 0 & err == 0
+                if obj.LoadStim(obj.fid) < 0 && err == 0
                     err = -5;
                 end
 
                 %%%% Load probe
-                if obj.LoadProbe(obj.fid) < 0 & err == 0
+                if obj.LoadProbe(obj.fid) < 0 && err == 0
                     err = -6;
                 end
 
                 %%%% Load aux. This is an optional field
-                if obj.LoadAux(obj.fid) < 0 & err == 0
+                if obj.LoadAux(obj.fid) < 0 && err == 0
                     err = -7;
                 end
                 
@@ -795,6 +821,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             end
             B = true;
         end
+        
     end
     
     
@@ -933,6 +960,19 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             aux = struct('names',{{}}, 'data', obj.aux);
             aux.names = obj.GetAuxNames();
             aux.data = obj.GetAuxDataMatrix();
+        end
+        
+        
+        % ---------------------------------------------------------
+        function t = GetAuxiliaryTime(obj)
+            t = [];
+            if isempty(obj.aux)
+                return;
+            end
+            if obj.aux(1).IsEmpty()
+                return;
+            end
+            t = obj.aux(1).GetTime();
         end
         
         

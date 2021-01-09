@@ -145,6 +145,8 @@ set(handles.menuItemExport, 'enable', val);
 set(handles.menuItemReset, 'enable', val);
 set(handles.menuItemResetGroupFolder, 'enable', val)
 
+
+
 % --------------------------------------------------------------------
 function eventdata = MainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global maingui
@@ -973,9 +975,7 @@ for iBlk = iDataBlks
             d = procElem.reshape_y(d, ch.MeasList);
             DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
             if isa(dataTree.currElem, 'RunClass')
-                sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
                 xlabel('Time (s)', 'FontSize', 11);
-%                 xlabel(['Time (s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
             else
                 xlabel('Time (s)', 'FontSize', 11);
             end
@@ -987,9 +987,7 @@ for iBlk = iDataBlks
             d = d * sclConc;
             DisplayDataConc(t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
             if isa(dataTree.currElem, 'RunClass')
-                sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
                 xlabel('Time (s)', 'FontSize', 11);
-%                 xlabel(['Time(s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
             else
                 xlabel('Time (s)', 'FontSize', 11);
             end
@@ -1054,7 +1052,7 @@ UpdateChildGuis(handles);
 
 
 % -------------------------------------------------------------------------
-function flag = myZoom_callback(obj, event_obj)
+function flag = myZoom_callback(obj, ~)
 if strcmpi( get(obj,'Tag'), 'axesData')
     flag = 0;
 else
@@ -1191,7 +1189,7 @@ axes(hAxes);
 hold on;
 
 aux = maingui.dataTree.currElem.GetAuxiliary();
-t = maingui.dataTree.currElem.GetTime();
+t = maingui.dataTree.currElem.GetAuxiliaryTime();
 
 % Check if there's any aux 
 if isempty(aux) || isempty(t)

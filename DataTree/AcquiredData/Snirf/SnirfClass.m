@@ -261,9 +261,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 '''formatVersion'' is invalid.'
                 '''metaDataTags'' is invalid.'
                 '''data'' is invalid.'
-                '''stim'' is invalid.'
+                '''stim'' is invalid and could not be loaded'
                 '''probe'' is invalid.'
-                '''aux'' is invalid.'
+                '''aux'' is invalid and could not be loaded'
                 };
         end
         
@@ -538,7 +538,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
 
                 %%%% Load stim
                 if obj.LoadStim(obj.fid) < 0 && err == 0
-                    err = -5;
+                    % Optional field: even if invalid we still want to be
+                    % able to work with the rest of the data. Only log
+                    % warning
+                    err = 5;
                 end
 
                 %%%% Load probe
@@ -548,7 +551,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
 
                 %%%% Load aux. This is an optional field
                 if obj.LoadAux(obj.fid) < 0 && err == 0
-                    err = -7;
+                    % Optional field: even if invalid we still want to be
+                    % able to work with the rest of the data. Only log
+                    % warning
+                    err = 7;
                 end
                 
                 % Close group

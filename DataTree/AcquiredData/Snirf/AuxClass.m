@@ -6,13 +6,20 @@ classdef AuxClass < FileLoadSaveClass
         time
         timeOffset
     end
-    
+
+    % Properties not part of the SNIRF spec. These parameters aren't loaded or saved to files
+    properties (Access = private)
+        debuglevel
+    end    
+
     methods
         
         % -------------------------------------------------------
         function obj = AuxClass(varargin)
             % Set class properties not part of the SNIRF format
             obj.SetFileFormat('hdf5');
+
+            obj.debuglevel = DebugLevel('none');
             
             obj.timeOffset = 0;
             if nargin==1
@@ -112,6 +119,10 @@ classdef AuxClass < FileLoadSaveClass
                 fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end     
+            
+            if obj.debuglevel.Get() == obj.debuglevel.SimulateBadData()
+                obj.SimulateBadData();
+            end
             
             hdf5write_safe(fileobj, [location, '/name'], obj.name);
             hdf5write_safe(fileobj, [location, '/dataTimeSeries'], obj.dataTimeSeries);
@@ -235,6 +246,11 @@ classdef AuxClass < FileLoadSaveClass
             end
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function SimulateBadData(obj)
+            obj.dataTimeSeries(end,:) = [];
+        end
         
     end
     

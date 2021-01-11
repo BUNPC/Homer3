@@ -10,6 +10,7 @@ classdef StimClass < FileLoadSaveClass
     % Properties not part of the SNIRF spec. These parameters aren't loaded or saved to files
     properties (Access = private)
         errmargin  % Margin for interpolating onset times. Not part of SNIRF
+        debuglevel
     end    
     
     methods
@@ -20,6 +21,8 @@ classdef StimClass < FileLoadSaveClass
             obj.SetFileFormat('hdf5');
             obj.errmargin = 1e-2;
             obj.states = [];
+            obj.debuglevel = DebugLevel('None');
+            
             if nargin==1 
                 if isa(varargin{1}, 'StimClass')
                     obj.Copy(varargin{1});
@@ -154,9 +157,13 @@ classdef StimClass < FileLoadSaveClass
                 H5F.close(fid);
             end
             
-            hdf5write_safe(fileobj, [location, '/name'], obj.name);
+            if obj.debuglevel.Get() == obj.debuglevel.SimulateBadData()
+                obj.SimulateBadData();
+            end
             
-            % Since this is a writable writeable parameter AFTER it's creation, we 
+            hdf5write_safe(fileobj, [location, '/name'], obj.name);
+                        
+            % Since this is a writable writeable parameter AFTER it's creation, we
             % call hdf5write_safe with the 'rw' option
             hdf5write_safe(fileobj, [location, '/data'], obj.data, 'rw:2D');
             hdf5write_safe(fileobj, [location, '/dataLabels'], obj.dataLabels, 'rw');
@@ -236,6 +243,11 @@ classdef StimClass < FileLoadSaveClass
         % ----------------------------------------------------------------------------------
         function err = ErrorCheck(obj)
             err = 0;
+            
+            % According to SNIRF spec, stim data is invalid if it has > 0 AND < 3 columns
+            if isempty(obj.data)
+                return;
+            end
             if size(obj.data, 2)<3
                 err = -2;
                 return;
@@ -572,6 +584,14 @@ classdef StimClass < FileLoadSaveClass
             end
             nbytes = sizeof(obj.states) + sizeof(obj.name) + sizeof(obj.data) + sizeof(obj.GetFilename()) + sizeof(obj.GetFileFormat()) + sizeof(obj.GetSupportedFormats()) + 8;
         end
+
+               
+        % ----------------------------------------------------------------------------------
+        function SimulateBadData(obj)
+            onsets = 10:20.2:100;
+            obj.data = [onsets(:), zeros(length(onsets),1)];
+        end
+        
         
     end
     

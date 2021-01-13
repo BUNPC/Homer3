@@ -23,6 +23,7 @@ if standalone
     % Ctrl-C and have it automatically do the cleanup that the test would normally
     % do if it ran to completion
     cleanupObj = onCleanup(@()userInterrupt_Callback(standalone));
+    configureAppSettings();
 end
 
 [lpf, std] = getUserOptionsVals();
@@ -71,3 +72,10 @@ fprintf('UnitTestsAll_Nirs cleaning\n')
 userInterrupt(standalone)
 
 
+
+% ---------------------------------------------------
+function configureAppSettings()
+c.SetValue('Regression Test Active','true');
+c.SetValue('Include Archived User Functions','Yes');
+c.SetValue('Default Processing Stream Style','NIRS');
+c.Save();

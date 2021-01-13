@@ -7,7 +7,7 @@ global logger
 
 t_local = tic;
 
-if ~exist('standalone','var') 
+if ~exist('standalone','var')
     standalone = true;
 end
 
@@ -24,6 +24,7 @@ if standalone
     % Ctrl-C and have it automatically do the cleanup that the test would normally
     % do if it ran to completion
     cleanupObj = onCleanup(@()userInterrupt_Callback(standalone));
+    configureAppSettings()
 end
 
 [lpf, std] = getUserOptionsVals();
@@ -76,5 +77,9 @@ userInterrupt(standalone)
 
 
 
-
-
+% ---------------------------------------------------
+function configureAppSettings()
+c = ConfigFileClass();
+c.SetValue('Regression Test Active','true');
+c.SetValue('Default Processing Stream Style','SNIRF');
+c.Save();

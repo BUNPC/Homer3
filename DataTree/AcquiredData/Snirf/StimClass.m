@@ -10,6 +10,7 @@ classdef StimClass < FileLoadSaveClass
     % Properties not part of the SNIRF spec. These parameters aren't loaded or saved to files
     properties (Access = private)
         errmargin  % Margin for interpolating onset times. Not part of SNIRF
+        debuglevel
     end    
     
     methods
@@ -20,6 +21,8 @@ classdef StimClass < FileLoadSaveClass
             obj.SetFileFormat('hdf5');
             obj.errmargin = 1e-2;
             obj.states = [];
+            obj.debuglevel = DebugLevel('None');
+            
             if nargin==1 
                 if isa(varargin{1}, 'StimClass')
                     obj.Copy(varargin{1});
@@ -68,7 +71,6 @@ classdef StimClass < FileLoadSaveClass
         
         % -------------------------------------------------------
         function err = LoadHdf5(obj, fileobj, location)
-            err = 0;
             
             % Arg 1
             if ~exist('fileobj','var') || (ischar(fileobj) && ~exist(fileobj,'file'))
@@ -82,7 +84,7 @@ classdef StimClass < FileLoadSaveClass
                 location = ['/',location];
             end
             
-            % Error checking            
+            % Error checking for file existence
             if ~isempty(fileobj) && ischar(fileobj)
                 obj.SetFilename(fileobj);
             elseif isempty(fileobj)
@@ -97,6 +99,12 @@ classdef StimClass < FileLoadSaveClass
                 
                 % Open group
                 [gid, fid] = HDF5_GroupOpen(fileobj, location);
+
+                % Absence of optional aux field raises error > 0
+                if gid.double < 0
+                    err = 1;
+                    return;
+                end
                 
                 % Load datasets
                 obj.name   = HDF5_DatasetLoad(gid, 'name');
@@ -106,16 +114,22 @@ classdef StimClass < FileLoadSaveClass
                     obj.data = [];
                 end
                 
+                err = obj.ErrorCheck();
+
                 % Close group
                 HDF5_GroupClose(fileobj, gid, fid);
                 
-            catch ME
+                obj.updateStates();
                 
-                err = -1;
-                return
+            catch
+                
+                if gid.double > 0
+                    err = -2;
+                else
+                    err = 1;
+                end
                 
             end
-            obj.updateStates();
         end
         
         
@@ -143,9 +157,13 @@ classdef StimClass < FileLoadSaveClass
                 H5F.close(fid);
             end
             
-            hdf5write_safe(fileobj, [location, '/name'], obj.name);
+            if obj.debuglevel.Get() == obj.debuglevel.SimulateBadData()
+                obj.SimulateBadData();
+            end
             
-            % Since this is a writable writeable parameter AFTER it's creation, we 
+            hdf5write_safe(fileobj, [location, '/name'], obj.name);
+                        
+            % Since this is a writable writeable parameter AFTER it's creation, we
             % call hdf5write_safe with the 'rw' option
             hdf5write_safe(fileobj, [location, '/data'], obj.data, 'rw:2D');
             hdf5write_safe(fileobj, [location, '/dataLabels'], obj.dataLabels, 'rw');
@@ -192,7 +210,9 @@ classdef StimClass < FileLoadSaveClass
             end
             B = true;
         end
-    
+        
+        
+        % -------------------------------------------------------
         function updateStates(obj)
             % Generate or regenerate a state list compatible with the data
             % array. Match up existing states with new list of time points
@@ -206,17 +226,35 @@ classdef StimClass < FileLoadSaveClass
             obj.states = ones(size(obj.data, 1), 2);
             for i=1:size(obj.data, 1)  % For each data row
                 if ~isempty(old)
-                    k = find(abs(obj.data(i,1) - old(:, 1)) < obj.errmargin);
+                    k = find(abs(obj.data(i, 1) - old(:, 1)) < obj.errmargin);
                 else
                     k = []; 
                 end
                 if isempty(k) % If old state not there, generate new one
                     obj.states(i, :) = [obj.data(i, 1), 1];
                 else % Get old state if it exists 
-                   obj.states(i, :) = old(k, :);
+                    obj.states(i, :) = old(k, :);
                 end
             end
         end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function err = ErrorCheck(obj)
+            err = 0;
+            
+            % According to SNIRF spec, stim data is invalid if it has > 0 AND < 3 columns
+            if isempty(obj.data)
+                return;
+            end
+            if size(obj.data, 2)<3
+                err = -2;
+                return;
+            end
+        end
+        
+                
     end
     
     
@@ -546,6 +584,14 @@ classdef StimClass < FileLoadSaveClass
             end
             nbytes = sizeof(obj.states) + sizeof(obj.name) + sizeof(obj.data) + sizeof(obj.GetFilename()) + sizeof(obj.GetFileFormat()) + sizeof(obj.GetSupportedFormats()) + 8;
         end
+
+               
+        % ----------------------------------------------------------------------------------
+        function SimulateBadData(obj)
+            onsets = 10:20.2:100;
+            obj.data = [onsets(:), zeros(length(onsets),1)];
+        end
+        
         
     end
     

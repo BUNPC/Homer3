@@ -1,5 +1,9 @@
 classdef AcqDataClass < matlab.mixin.Copyable
        
+    properties (Access = private)
+        logger
+    end
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % These methods must be implemented in any derived class
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -18,13 +22,13 @@ classdef AcqDataClass < matlab.mixin.Copyable
         datamat   = GetDataTimeSeries(obj, options, iBlk)
         
         % ---------------------------------------------------------
-        SD        = GetSDG(obj)
+        SD        = GetSDG(obj,option)
 
         % ---------------------------------------------------------
-        srcpos    = GetSrcPos(obj)
+        srcpos    = GetSrcPos(obj,option)
 
         % ---------------------------------------------------------
-        detpos    = GetDetPos(obj)
+        detpos    = GetDetPos(obj,option)
         
         % ---------------------------------------------------------
         ml        = GetMeasList(obj, iBlk)
@@ -70,6 +74,13 @@ classdef AcqDataClass < matlab.mixin.Copyable
     methods
         
         % -------------------------------------------------------
+        function Initialize(obj)
+            global logger
+            obj.logger = InitLogger(logger);
+        end
+        
+        
+        % -------------------------------------------------------
         function b = Error(obj)
             if obj.GetError()<0
                 b = true;
@@ -95,7 +106,7 @@ classdef AcqDataClass < matlab.mixin.Copyable
         
         % ---------------------------------------------------------
         function bbox = GetSdgBbox(obj)
-            optpos = [obj.GetSrcPos(); obj.GetDetPos()];
+            optpos = [obj.GetSrcPos('2D'); obj.GetDetPos('2D')];
             
             xmax = max(optpos(:,1));
             ymax = max(optpos(:,2));
@@ -174,6 +185,40 @@ classdef AcqDataClass < matlab.mixin.Copyable
         end
         
                 
+        % ----------------------------------------------------------------------------------
+        function b = equal(obj, obj2)
+            b = true;
+            if isempty(obj.GetFilename)
+                return;
+            end
+            if isempty(obj2.GetFilename)
+                return;
+            end
+            [~, fname1, ext1] = fileparts(obj.GetFilename);
+            [~, fname2, ext2] = fileparts(obj2.GetFilename);            
+            if ~strcmpi([fname1, ext1], [fname2, ext2])
+                b = false;
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function status = Mismatch(obj, obj2)
+            status = 0;
+            msg = {};
+            if ~exist('obj2','var')
+                return;
+            end
+            if ~obj.equal(obj2)
+                [~, fname, ext] = fileparts(obj.GetFilename);
+                msg{1} = sprintf('WARNING: The acquisition file "%s" does not match the derived data in this group folder. ', [fname, ext]);
+                msg{2} = sprintf('Are you sure this acquisition file belongs in this group folder?');
+                obj.logger.Write([msg{:}])
+            end
+        end
+        
+        
+        
     end
     
 end

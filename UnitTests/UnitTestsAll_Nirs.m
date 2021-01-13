@@ -1,12 +1,13 @@
 function status = UnitTestsAll_Nirs(standalone)
 global DEBUG1
+global QUICK_TEST
 global procStreamStyle
 global testidx;
 global logger
 
 t_local = tic;
 
-if ~exist('standalone','var') 
+if ~exist('standalone','var')
     standalone = true;
 end
 
@@ -17,15 +18,14 @@ procStreamStyle = 'nirs';
 CleanUp(standalone);
 logger = InitLogger(logger, 'UnitTestsAll_Nirs');
 
-if standalone 
+if standalone
     % System test runs for a long time. We want to be able to interrupt it with
-    % Ctrl-C and have it automatically do the cleanup that the test would normally 
+    % Ctrl-C and have it automatically do the cleanup that the test would normally
     % do if it ran to completion
     cleanupObj = onCleanup(@()userInterrupt_Callback(standalone));
 end
 
-lpf = [00.30, 00.70, 01.00];
-std = [05.00, 10.00, 15.00, 20.00];
+[lpf, std] = getUserOptionsVals();
 
 groupFolders = FindUnitTestsFolders();
 nGroups = length(groupFolders);
@@ -33,12 +33,16 @@ status = zeros(4, nGroups);
 for ii=1:nGroups
     irow = 1;
     status(irow,ii) = unitTest_DefaultProcStream('.nirs',  groupFolders{ii});  irow=irow+1;
-    for jj=1:length(lpf)
-        status(irow,ii) = unitTest_BandpassFilt_LPF('.nirs',  groupFolders{ii}, lpf(jj));  irow=irow+1;
+    
+    if ~QUICK_TEST(2)
+        for jj=1:length(lpf)
+            status(irow,ii) = unitTest_BandpassFilt_LPF('.nirs',  groupFolders{ii}, lpf(jj));  irow=irow+1;
+        end
+        for kk=1:length(std)
+            status(irow,ii) = unitTest_MotionArtifact_STDEV('.nirs',  groupFolders{ii}, std(kk));  irow=irow+1;
+        end
     end
-    for kk=1:length(std)
-        status(irow,ii) = unitTest_MotionArtifact_STDEV('.nirs',  groupFolders{ii}, std(kk));  irow=irow+1;
-    end
+    
 end
 logger.Write('\n');
 
@@ -56,6 +60,8 @@ end
 logger.Write('\n');
 
 toc(t_local)
+
+logger.Close('UnitTestsAll_Nirs');
 
 
 

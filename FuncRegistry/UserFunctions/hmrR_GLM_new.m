@@ -8,8 +8,10 @@
 % This script estimates the HRF with options to specify the temporal basis
 % function type and corresponding parameters, whether or not to perform
 % simultaneous regression of short separation channels, drift order, and
-% whether or not to correct for motion artifacts. You can also choose the
-% method for solving the GLM matrix equation.
+% whether or not to correct for motion artifacts. The duration and
+% amplitude of the basis functions are specified by the stim vector as per
+% the SNIRF specification. You can also choose the method for solving the
+% GLM matrix equation.
 %
 %
 % INPUTS:
@@ -47,14 +49,14 @@
 %               idxBasis=1 [stdev step] where stdev is the width of the
 %                  gaussian and step is the temporal spacing between
 %                  consecutive gaussians
-%               idxBasis=2. [tau sigma T] applied to both HbO and HbR
-%                  or [tau1 sigma1 T1 tau2 sigma2 T2]
+%               idxBasis=2 [tau sigma] applied to both HbO and HbR
+%                  or [tau1 sigma1 tau2 sigma2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
-%               idxBasis=3 [tau sigma T] applied to both HbO and HbR
-%                  or [tau1 sigma1 T1 tau2 sigma2 T2]
+%               idxBasis=3 [tau sigma] applied to both HbO and HbR
+%                  or [tau1 sigma1 tau2 sigma2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
-%               idxBasis=4 [p q T] applied to both HbO and HbR
-%                  or [p1 q1 T1 p2 q2 T2]
+%               idxBasis=4 [p q] applied to both HbO and HbR
+%                  or [p1 q1 p2 q2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
 % rhoSD_ssThresh - max distance for a short separation measurement. Set =0
 %          if you do not want to regress the short separation measurements.
@@ -93,7 +95,7 @@
 % trange: [-2.0, 20.0]
 % glmSolveMethod: 1
 % idxBasis: 2
-% paramsBasis: [0.1 3.0 10.0 1.8 3.0 10.0], maxnum: 6
+% paramsBasis: [0.1 3.0 1.8 3.0] maxnum: 4
 % rhoSD_ssThresh: 15.0
 % flagNuisanceRMethod: 1
 % driftOrder: 3
@@ -124,8 +126,9 @@ end
 % GetStims method to convert stim to the s vector that this function needs.
 snirf = SnirfClass(data_y, stim);
 t = snirf.GetTimeCombined();
-s = snirf.GetStims(t);
-nTrials = repmat({zeros(1, size(s,2))}, length(data_y), 1);
+stimStates = snirf.GetStims(t);
+stimAmps = snirf.GetStimAmps(t)
+nTrials = repmat({zeros(1, size(stimStates,2))}, length(data_y), 1);
 
 for iBlk=1:length(data_y)
     
@@ -220,21 +223,33 @@ for iBlk=1:length(data_y)
     end
     
     %%%%%%%%%%%%%%%%
-    % Prune good stim
+    % Prune good stim, generate onset matrix
     %%%%%%%%%%%%%%%%
-    % handle case of conditions with 0 trials
-    lstCond = find(sum(s>0,1)>0);
-    nCond = length(lstCond); %size(s,2);
-    onset = zeros(nT,nCond);
+    % Get only indices of conditions with any stimStates that are 1
+    lstCond = find(sum(stimStates == 1, 1) > 0);
+    nCond = length(lstCond); % size(stimStates,2);
     nTrials{iBlk} = zeros(nCond,1);
+    onset = zeros(nT, nCond);
     for iCond = 1:nCond
-        lstT = find(s(:,lstCond(iCond))==1);
-        lstp = find((lstT+nPre)>=1 & (lstT+nPost)<=nTpts);
+        lstT = find(stimStates(:, lstCond(iCond)) == 1);  % Indices of stims enabled (== 1)
+        lstp = find((lstT+nPre) >= 1 & (lstT+nPost) <= nTpts);  % Indices of stims not clipped by signal
         lst = lstT(lstp);
         nTrials{iBlk}(iCond) = length(lst);
-        onset(lst+nPre,iCond) = 1;
+        % Generate basis boxcars of stim amplitude and duration
+        starts = lst+nPre;
+        durations = stim(iCond).data(:, 2);
+        amplitudes = stim(iCond).data(:, 3);
+        for i = 1:length(starts)
+            if idxBasis == 1  % Gaussian has no duration T (yet)
+               pulse_duration = 1; 
+            else
+               pulse_duration = round(durations(i) / dt); 
+            end
+            pulse = (amplitudes(i) / pulse_duration) * ones(pulse_duration, 1);
+            onset(starts(i):starts(i) + pulse_duration - 1, iCond) = pulse;
+        end
     end
-    
+     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Construct the basis functions
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -243,27 +258,26 @@ for iBlk=1:length(data_y)
         gms = paramsBasis(1);
         gstd = paramsBasis(2);
         
-        nB = floor((trange(2)-trange(1))/gms)-1;
+        nB = floor((trange(2)-trange(1)) / gms) - 1;
         tbasis = zeros(ntHRF,nB);
         for b=1:nB
             tbasis(:,b) = exp(-(tHRF-(trange(1)+b*gms)).^2/(2*gstd.^2));
-            tbasis(:,b) = tbasis(:,b)./max(tbasis(:,b)); %normalize to 1
+            tbasis(:,b) = tbasis(:,b)./max(tbasis(:,b));
         end
         
     elseif idxBasis==2
         % Modified Gamma
-        if length(paramsBasis)==3
+        if length(paramsBasis)==2
             nConc = 1;
-        elseif length(paramsBasis)==6
+        else
             nConc = 2;
         end
-        
+            
         nB = 1;
         tbasis = zeros(ntHRF,nB,nConc);
         for iConc = 1:nConc
-            tau = paramsBasis((iConc-1)*3+1);
-            sigma = paramsBasis((iConc-1)*3+2);
-            T = paramsBasis((iConc-1)*3+3);
+            tau = paramsBasis((iConc-1)*2+1);
+            sigma = paramsBasis((iConc-1)*2+2);
             
             tbasis(:,1,iConc) = (exp(1)*(tHRF-tau).^2/sigma^2) .* exp( -(tHRF-tau).^2/sigma^2 );
             lstNeg = find(tHRF<0);
@@ -273,28 +287,21 @@ for iBlk=1:length(data_y)
                 tbasis(1:round((tau-tHRF(1))/dt),1,iConc) = 0;
             end
             
-            if T>0
-                for ii=1:nB
-                    foo = conv(tbasis(:,ii,iConc),ones(round(T/dt),1)) / round(T/dt);
-                    tbasis(:,ii,iConc) = foo(1:ntHRF,1);
-                end
-            end
         end
         
     elseif idxBasis==3
         % Modified Gamma and Derivative
-        if length(paramsBasis)==3
+        if length(paramsBasis)==2
             nConc = 1;
-        elseif length(paramsBasis)==6
+        else
             nConc = 2;
         end
         
         nB = 2;
         tbasis=zeros(ntHRF,nB,nConc);
         for iConc = 1:nConc
-            tau = paramsBasis((iConc-1)*3+1);
-            sigma = paramsBasis((iConc-1)*3+2);
-            T = paramsBasis((iConc-1)*3+3);
+            tau = paramsBasis((iConc-1)*2+1);
+            sigma = paramsBasis((iConc-1)*2+2);
             
             tbasis(:,1,iConc) = (exp(1)*(tHRF-tau).^2/sigma^2) .* exp( -(tHRF-tau).^2/sigma^2 );
             tbasis(:,2,iConc) = 2*exp(1)*( (tHRF-tau)/sigma^2 - (tHRF-tau).^3/sigma^4 ) .* exp( -(tHRF-tau).^2/sigma^2 );
@@ -303,19 +310,13 @@ for iBlk=1:length(data_y)
                 tbasis(1:round((tau-tHRF(1))/dt),1:2,iConc) = 0;
             end
             
-            if T>0
-                for ii=1:nB
-                    foo = conv(tbasis(:,ii,iConc),ones(round(T/dt),1)) / round(T/dt);
-                    tbasis(:,ii,iConc) = foo(1:ntHRF,1);
-                end
-            end
         end
         
     elseif idxBasis==4
         % AFNI Gamma function
-        if length(paramsBasis)==3
+        if length(paramsBasis)==2
             nConc = 1;
-        elseif length(paramsBasis)==6
+        else
             nConc = 2;
         end
         
@@ -323,16 +324,11 @@ for iBlk=1:length(data_y)
         tbasis=zeros(ntHRF,nB,nConc);
         for iConc = 1:nConc
             
-            p = paramsBasis((iConc-1)*3+1);
-            q = paramsBasis((iConc-1)*3+2);
-            T = paramsBasis((iConc-1)*3+3);
+            p = paramsBasis((iConc-1)*2+1);
+            q = paramsBasis((iConc-1)*2+2);
             
             tbasis(:,1,iConc) = (tHRF/(p*q)).^p.* exp(p-tHRF/q);
             
-            if T>0
-                foo = conv(tbasis(:,1,iConc),ones(round(T/dt),1)) / round(T/dt);
-                tbasis(:,1,iConc) = foo(1:ntHRF,1);
-            end
         end
         
     end
@@ -354,7 +350,6 @@ for iBlk=1:length(data_y)
                 end
                 clmn = clmn(1:nT);
                 dA(:,iC,iConc) = clmn;
-                beta_label{b + (iCond-1)*nB} = ['Cond' num2str(iCond)]; 
             end
         end
     end
@@ -377,69 +372,21 @@ for iBlk=1:length(data_y)
         nAux = 0;
     end
     
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Expand design matrix for Motion Correction
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     if flagMotionCorrect==1
-%         idxMA = find(diff(tInc)==1);  % number of motion artifacts
-%         if isempty(idxMA)
-            nMC = 0;
-            Amotion = [];
-%         else
-%             nMA = length(idxMA);
-%             nMC = nMA+1;
-%             Amotion = zeros(nT,nMC);
-%             Amotion(1:idxMA(1),1) = 1;
-%             for ii=2:nMA
-%                 Amotion((idxMA(ii-1)+1):idxMA(ii),ii) = 1;
-%             end
-%             Amotion((idxMA(nMA)+1):end,end) = 1;
-%         end
-%     else
-%         nMC = 0;
-%         Amotion = [];
-%     end
+    nMC = 0;
+    Amotion = [];
     lstInc = find(tInc==1);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Final design matrix
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    dummy = size(beta_label,2);
-
     switch flagNuisanceRMethod
         case {0,1,2} % short separation
             for iConc=1:2
                 A(:,:,iConc)=[dA(:,:,iConc) xDrift Aaux Amotion];
-                
-                if iConc == 1 
-                    for ixDrift = 1:size(xDrift,2)
-                        beta_label{ixDrift + dummy} = ['xDrift'];
-                    end
-                    dummy = size(beta_label,2);
-                    for iAaux = 1:size(Aaux,2)
-                        beta_label{iAaux + dummy} = ['Aux'];
-                    end
-                    dummy = size(beta_label,2);
-                    for iAmotion = 1:size(Amotion,2)
-                        beta_label{ixDrift + dummy} = ['Motion'];
-                    end
-                end
-                
             end
         case 3 % tCCA regressor design matrix without Aaux (will be put in in the loop below)
             for iConc=1:2
                 A(:,:,iConc)=[dA(:,:,iConc) xDrift Amotion];
-                
-                if iConc == 1 
-                    for ixDrift = 1:size(xDrift,2) 
-                        beta_label{ixDrift + dummy} = ['Drift'];
-                    end
-                    dummy = size(beta_label,2);
-                    for iAmotion = 1:size(Amotion,2)
-                        beta_label{ixDrift + dummy} = ['Motion'];
-                    end
-                end 
-                
             end
     end
     
@@ -497,64 +444,24 @@ for iBlk=1:length(data_y)
                 % lstML = find(iNearestSS==mlSSlst(iSS));
                 Ass = y(:,conc,mlSSlst(iSS));
                 At = [A(:,:,conc) Ass];
-                
-                if iSS == 1 && conc == 1
-                    dummy = size(beta_label,2); 
-                    for iAss = 1:size(Ass,2)
-                        beta_label{iAss + dummy} = ['ShortSep'];
-                    end 
-                end
-                
             elseif flagNuisanceRMethod==1
                 lstML = find(iNearestSS(:,conc)==mlSSlst(iSS) & mlAct(lstMLtmp)==1);
                 % lstML = find(iNearestSS(:,conc)==mlSSlst(iSS));
                 Ass = y(:,conc,mlSSlst(iSS));
                 At = [A(:,:,conc) Ass];
-                
-                if iSS == 1 && conc == 1
-                    dummy = size(beta_label,2);
-                    for iAss = 1:size(Ass,2)
-                        beta_label{iAss + dummy} = ['ShortSep'];
-                    end
-                end
-                
             elseif flagNuisanceRMethod==2
                 lstML = lstMLtmp(find(mlAct(lstMLtmp)==1));
                 % lstML = 1:size(y,3);
                 Ass = mean(y(:,conc,lstSS),3);
                 At = [A(:,:,conc) Ass];
-                
-                if iSS == 1 && conc == 1
-                    dummy = size(beta_label,2);
-                    for iAss = 1:size(Ass,2)
-                        beta_label{iAss + dummy} = ['ShortSep'];
-                    end
-                end
-                
             elseif flagNuisanceRMethod==3
                 if ischar(rcMap{iBlk}) % no channel map: use all tCCA regressors for one group of all channels
                     lstML = lstMLtmp(find(mlAct(lstMLtmp)==1));
                     At = [A(:,:,conc) Aaux];
-                    
-                    if iSS == 1 && conc == 1
-                        dummy = size(beta_label,2);
-                        for iAaux = 1:size(Aaux,2)
-                            beta_label{iAaux + dummy} = ['Aux'];
-                        end
-                    end
-                    
                 elseif iscell(rcMap{iBlk}) % channel map: each single regressor corresponds to one channel (nCH groups)
                     lstML = lstMLtmp(find(mlAct(rcMap{iBlk}{conc,iSS})==1));
                     Atcca = Aaux{iBlk}(:,rcMap{conc,iSS});
                     At = [A(:,:,conc) Atcca];
-                    
-                    if iSS == 1 && conc == 1
-                        dummy = size(beta_label,2);
-                        for iAtcca = 1:size(Atcca,2)
-                            beta_label{iAtcca + dummy} = ['tCCA regressor'];
-                        end
-                    end
-                    
                 end
             end
             
@@ -574,19 +481,19 @@ for iBlk=1:length(data_y)
                     yresid = zeros(size(y));
                     
                     foo = nTrials{iBlk};
-                    nTrials{iBlk} = zeros(1,size(s,2));
+                    nTrials{iBlk} = zeros(1,size(stimAmps,2));
                     nTrials{iBlk}(lstCond) = foo;
                     
                     foo = yavg;
-                    yavg = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
+                    yavg = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
                     yavg(:,:,:,lstCond) = foo;
                     
                     foo = yavgstd;
-                    yavgstd = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
+                    yavgstd = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
                     yavgstd(:,:,:,lstCond) = foo;
                     
                     foo = ysum2;
-                    ysum2 = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
+                    ysum2 = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
                     ysum2(:,:,:,lstCond) = foo;
                     
                     beta = [];
@@ -642,12 +549,11 @@ for iBlk=1:length(data_y)
                 if glmSolveMethod==1 %  OLS  ~flagUseTed
                     pAinvAinvD = diag(pinvA*pinvA');
                     yest(:,lstML,conc) = At * foo(:,lstML,conc);
-                    yvar(1,lstML,conc) = sum((squeeze(y(:,conc,lstML))-yest(:,lstML,conc)).^2)./(size(y,1)-1); % check this against eq(53) in Ye2009
+                    yvar(1,lstML,conc) = std(squeeze(y(:,conc,lstML))-yest(:,lstML,conc),[],1).^2; % check this against eq(53) in Ye2009
                     for iCh = 1:length(lstML)
                         bvar(:,lstML(iCh),conc) = yvar(1,lstML(iCh),conc) * pAinvAinvD;
-                        tval(:,lstML(iCh),conc) =  foo(:,lstML(iCh),conc)./sqrt(bvar(:,lstML(iCh),conc)); 
-                        pval(:,lstML(iCh),conc) = 1-tcdf(abs(tval(:,lstML(iCh),conc)),(size(y,1)-1));   
                         for iCond=1:nCond
+                            %                yavgstd(:,lstML(iCh),conc,iCond) = diag(tbasis*diag(bvar([1:nB]+(iCond-1)*nB,lstML(iCh),conc))*tbasis').^0.5;
                             if size(tbasis,3)==1
                                 yavgstd(:,lstML(iCh),conc,iCond) = diag(tbasis*diag(bvar([1:nB]+(iCond-1)*nB,lstML(iCh),conc))*tbasis').^0.5;
                             else
@@ -694,33 +600,33 @@ for iBlk=1:length(data_y)
     tb = permute(tb,[1 3 2 4]);
     
     if nPre<0
-        for iCond = 1:size(yavg,4)
+        for iConc = 1:size(yavg,2)
             for iCh = 1:size(yavg,3)
-                for iHb = 1:size(yavg,2)
-                    yavg(:,iHb,iCh,iCond) = yavg(:,iHb,iCh,iCond) - ones(size(yavg,1),1)*mean(yavg(1:(-nPre),iHb,iCh,iCond),1);
+                for iCond = 1:size(yavg,4)
+                    yavg(:,iConc,iCh,iCond) = yavg(:,iConc,iCh,iCond) - ones(size(yavg,1),1)*mean(yavg(1:(-nPre),iConc,iCh,iCond),1);
                 end
             end
         end
     end
     
     foo = nTrials{iBlk};
-    nTrials{iBlk} = zeros(1,size(s,2));
+    nTrials{iBlk} = zeros(1,size(stimAmps,2));
     nTrials{iBlk}(lstCond) = foo;
     
     foo = yavg;
-    yavg = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
+    yavg = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
     yavg(:,:,:,lstCond) = foo;
     
     foo = yavgstd;
-    yavgstd = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
+    yavgstd = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
     yavgstd(:,:,:,lstCond) = foo;
     
     foo = ysum2;
-    ysum2 = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
+    ysum2 = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
     ysum2(:,:,:,lstCond) = foo;
     
     foo = tb;
-    beta = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
+    beta = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
     beta(:,:,:,lstCond) = foo;
     
     %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -728,9 +634,9 @@ for iBlk=1:length(data_y)
     %%%%%%%%%%%%%%%%%%%%%%%%%
     
     % Add the channels describing the data
-	for iCond = 1:size(yavg,4)
+    for iHb = 1:size(yavg,2)
         for iCh = 1:size(yavg,3)
-            for iHb = 1:size(yavg,2)
+            for iCond = 1:size(yavg,4)
                 data_yavg(iBlk).AddChannelHb(ml(iCh,1), ml(iCh,2), iHb, iCond);
                 data_yavgstd(iBlk).AddChannelHb(ml(iCh,1), ml(iCh,2), iHb, iCond);
                 data_ysum2(iBlk).AddChannelHb(ml(iCh,1), ml(iCh,2), iHb, iCond);
@@ -755,11 +661,6 @@ for iBlk=1:length(data_y)
     % Set other data blocks
     beta_blks{iBlk} = beta;
     yR_blks{iBlk}   = yR;
-    
-    % stats struct
-    hmrstats.beta_label = beta_label; % 
-    hmrstats.tval = tval;
-    hmrstats.pval = pval; 
 
 end
 

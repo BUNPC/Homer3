@@ -1,12 +1,12 @@
 classdef NirsClass < AcqDataClass & FileLoadSaveClass
     
     properties
-        SD;
-        t;
-        s;
-        d;
-        aux;
-        CondNames;
+        SD
+        t
+        s
+        d
+        aux
+        CondNames
     end    
 
     % Properties not part of the NIRS format. These parameters aren't loaded or saved to nirs files
@@ -34,15 +34,15 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             % 
             %           NirsClass with properties:
             % 
-            %                      SD: [1×1 struct]
-            %                       t: [12698×1 double]
-            %                       s: [12698×2 double]
-            %                       d: [12698×18 double]
-            %                     aux: [12698×1 double]
+            %                      SD: [1ï¿½1 struct]
+            %                       t: [12698ï¿½1 double]
+            %                       s: [12698ï¿½2 double]
+            %                       d: [12698ï¿½18 double]
+            %                     aux: [12698ï¿½1 double]
             %               CondNames: {'1'  '2'}
             %                filename: './s1/neuro_run01.nirs'
             %              fileformat: 'mat'
-            %         supportedFomats: [1×1 struct]
+            %         supportedFomats: [1ï¿½1 struct]
             %                     err: 0
             %
             
@@ -81,6 +81,8 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         % -------------------------------------------------------
         function Initialize(obj)
+            Initialize@AcqDataClass(obj);
+
             obj.SD        = struct([]);
             obj.t         = [];
             obj.s         = [];
@@ -238,6 +240,9 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             err=0;
             if ~isa(obj2, 'NirsClass')
                 err=1;
+                return;
+            end
+            if obj.Mismatch(obj2)
                 return;
             end
             obj.SD         = obj2.SD;
@@ -434,7 +439,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                
         
         % ---------------------------------------------------------
-        function SD = GetSDG(obj)
+        function SD = GetSDG(obj, option)
             SD = obj.SD;
         end
         
@@ -493,13 +498,13 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 
         
         % ---------------------------------------------------------
-        function srcpos = GetSrcPos(obj)
+        function srcpos = GetSrcPos(obj,option)
             srcpos = obj.SD.SrcPos;
         end
         
         
         % ---------------------------------------------------------
-        function detpos = GetDetPos(obj)
+        function detpos = GetDetPos(obj,option)
             detpos = obj.SD.DetPos;
         end
         
@@ -681,13 +686,13 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 
                 
         % ----------------------------------------------------------------------------------
-        function SetStimValues(obj, icond, vals)
+        function SetStimAmplitudes(obj, icond, vals)
             return;
         end
         
         
         % ----------------------------------------------------------------------------------
-        function vals = GetStimValues(obj, icond)
+        function vals = GetStimAmplitudes(obj, icond)
             vals = [];
         end
         

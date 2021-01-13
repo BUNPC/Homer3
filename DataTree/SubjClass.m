@@ -3,6 +3,7 @@ classdef SubjClass < TreeNodeClass
     properties % (Access = private)
         runs;
     end
+       
     
     methods
                 
@@ -57,32 +58,35 @@ classdef SubjClass < TreeNodeClass
         % Copy processing params (procInut and procResult) from
         % S to obj if obj and S are equivalent nodes
         % ----------------------------------------------------------------------------------
-        function Copy(obj, S, conditional)
+        function Copy(obj, obj2, conditional)
             % Copy SubjClass object obj2 to SubjClass object obj. Conditional option applies 
             % only to all the runs under this group. If == 'conditional' ONLY derived data, 
             % that is, only from procStream but NOT from acquired data is copied for all the runs. 
             % 
             % Conversly unconditional copy copies all properties in the runs under this subject
             if nargin==3 && strcmp(conditional, 'conditional')
-                if strcmp(obj.name, S.name)
-                    for i=1:length(obj.runs)
-                        j = obj.existRun(i,S);
-                        if (j>0)
-                            obj.runs(i).Copy(S.runs(j), 'conditional');
-                        end
-                    end
-                    if obj == S
-                        obj.Copy@TreeNodeClass(S, 'conditional');
+                if obj.Mismatch(obj2)
+                    return
+                end
+                for i = 1:length(obj.runs)
+                    j = obj.existRun(i,obj2);
+                    if (j>0)
+                        obj.runs(i).Copy(obj2.runs(j), 'conditional');
+                    elseif i<=length(obj2.runs)
+                        obj.runs(i).Copy(obj2.runs(i), 'conditional');
+                    else
+                        obj.Mismatch();
                     end
                 end
+                obj.Copy@TreeNodeClass(obj2, 'conditional');
             else
                 if nargin<3
                     conditional = '';
                 end
-                for i=1:length(S.runs)
-                    obj.runs(i) = RunClass(S.runs(i), conditional);
+                for i=1:length(obj2.runs)
+                    obj.runs(i) = RunClass(obj2.runs(i), conditional);
                 end
-                obj.Copy@TreeNodeClass(S);
+                obj.Copy@TreeNodeClass(obj2);
             end
         end
         
@@ -165,7 +169,7 @@ classdef SubjClass < TreeNodeClass
                 jj = length(obj.runs)+1;
                 run.SetIndexID(obj.iGroup, obj.iSubj, jj);
                 obj.runs(jj) = run;
-                fprintf('     Added run %s to subject %s.\n', obj.runs(jj).GetFileName, obj.GetName);
+                obj.logger.Write(sprintf('     Added run %s to subject %s.\n', obj.runs(jj).GetFileName, obj.GetName));
             end
             
             % If subject has only one run AND the run file name is not formatted according to the standard Homer 
@@ -265,7 +269,7 @@ classdef SubjClass < TreeNodeClass
             end
                         
             if obj.DEBUG
-                fprintf('Calculating processing stream for group %d, subject %d\n', obj.iGroup, obj.iSubj)
+                obj.logger.Write(sprintf('Calculating processing stream for group %d, subject %d\n', obj.iGroup, obj.iSubj));
             end
             
             % Calculate all runs in this session and generate common tHRF
@@ -367,26 +371,42 @@ classdef SubjClass < TreeNodeClass
     methods
         
         % ----------------------------------------------------------------------------------
-        function SetSDG(obj)
-            obj.SD = obj.runs(1).GetSDG();
+        function SetSDG(obj,option)
+            if exist('option','var')
+                obj.SD = obj.runs(1).GetSDG(option);
+            else
+                obj.SD = obj.runs(1).GetSDG();
+            end
         end
         
         
         % ----------------------------------------------------------------------------------
-        function SD = GetSDG(obj)
-            SD = obj.runs(1).GetSDG();
+        function SD = GetSDG(obj,option)
+            if exist('option','var')
+                SD = obj.runs(1).GetSDG(option);
+            else
+                SD = obj.runs(1).GetSDG();
+            end
         end
         
         
         % ----------------------------------------------------------------------------------
-        function srcpos = GetSrcPos(obj)
-            srcpos = obj.runs(1).GetSrcPos();
+        function srcpos = GetSrcPos(obj,option)
+            if exist('option','var')
+                srcpos = obj.runs(1).GetSrcPos(option);
+            else
+                srcpos = obj.runs(1).GetSrcPos();
+            end
         end
         
         
         % ----------------------------------------------------------------------------------
-        function detpos = GetDetPos(obj)
-            detpos = obj.runs(1).GetDetPos();
+        function detpos = GetDetPos(obj,option)
+            if exist('option','var')
+                detpos = obj.runs(1).GetDetPos(option);
+            else
+                detpos = obj.runs(1).GetDetPos();
+            end
         end
         
         

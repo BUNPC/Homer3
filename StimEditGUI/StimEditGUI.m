@@ -206,7 +206,7 @@ global stimEdit
 data = get(hObject,'data') ;
 conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
 icond = GetConditionIdxFromPopupmenu(conditions, handles);
-SetStimData(icond, data);
+stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).SetData(data);
 r=eventdata.Indices(1);
 c=eventdata.Indices(2);
 if c==2
@@ -409,7 +409,6 @@ tc             = stimEdit.dataTreeHandle.currElem.GetTime();
 actionLst = CondNamesGroup;
 actionLst{end+1} = 'New condition';
 if ~isempty(iS_lst)
-    actionLst{end+1} = 'Toggle active on/off';
     actionLst{end+1} = 'Delete';
     menuTitleStr = sprintf('Edit/Delete stim mark(s) at t=%0.1f-%0.1f to...', ...
                             tc(tPts_idxs_select(iS_lst(1))), ...
@@ -443,14 +442,6 @@ if isempty(CondName)
 end
 if iscell(CondName)
     CondName = CondName{1};
-end
-if length(CondName) > 1 && ~overrideLength
-    msg{1} = sprintf('ERROR: Due to a bug in the latest Homer3 version '); 
-    msg{2} = sprintf('new condition names have a 1 character limit. ');
-    msg{3} = sprintf('This will be fixed in a near future Homer3 release. ');
-    msg{4} = sprintf('For now please name the new condition using only one character');
-    MessageBox([msg{:}]);
-    err = -1;
 end
 if ismember(CondName, CondNamesGroup)
     err = -2;
@@ -588,16 +579,10 @@ if isempty(iS_lst)
 else
     
     %%%% Delete stim
-    if menu_choice==nActions-1 & nActions==nCond+4
-
+    if menu_choice==nActions-1 & nActions==nCond+3
         % Delete stim entry from userdata first
         % because it depends on stim.currElem.s
         stimEdit.dataTreeHandle.currElem.DeleteStims(tc(tPts_idxs_select));
-
-    %%%% Toggle active/inactive stim
-    elseif menu_choice==nActions-2 & nActions==nCond+4
-
-        stimEdit.dataTreeHandle.currElem.ToggleStims(tc(tPts_idxs_select));
     
     %%%% Edit stim
     elseif menu_choice<=nCond+1
@@ -663,7 +648,7 @@ function SetStimData(icond, data)
 global stimEdit
 stimEdit.dataTreeHandle.currElem.SetStimTpts(icond, data(:,1));
 stimEdit.dataTreeHandle.currElem.SetStimDuration(icond, data(:,2));
-stimEdit.dataTreeHandle.currElem.SetStimValues(icond, data(:,3));
+stimEdit.dataTreeHandle.currElem.SetStimAmplitudes(icond, data(:,3));
 
 
 % -------------------------------------------------------------------
@@ -695,12 +680,12 @@ if ~strcmpi(stimEdit.config.autoSaveAcqFiles, 'Yes')
         cfg.SetValue('Auto Save Acquisition Files', 'Yes');
         cfg.Save()
     end
-    stimEdit.dataTree.CopyStims(stimEdit.locDataTree);
 else
     % Otherwise auto-save 
     fprintf('StimEditGUI: auto-saving ...\n')
-    stimEdit.dataTree.CopyStims(stimEdit.locDataTree);
 end
+
+stimEdit.dataTree.CopyStims(stimEdit.locDataTree);
 
 % Update acquisition file with new contents
 h = waitbar_improved(0, 'Saving new stim marks to %s...', stimEdit.dataTreeHandle.currElem.name);
@@ -893,7 +878,12 @@ if get(handles.checkboxPreview, 'Value')  % If preview is enabled, plot
                                                             handles.editLPF.Value,...             % LPF window width
                                                             handles.radiobuttonRisingEdge.Value); % rising vs falling
     % Plot selected aux signal after applying filter
-    auxPlot = plot(timeFiltered + currAux.timeOffset, auxFiltered, 'k-');  % TODO is this what timeOffset is for?
+    if isempty(currAux.timeOffset)
+       offset = 0; 
+    else
+       offset = currAux.timeOffset;
+    end
+    auxPlot = plot(timeFiltered + offset, auxFiltered, 'k-');  % TODO is this what timeOffset is for?
     auxPlot.Color(4) = 0.5;  % Stim opacity
     % Plot stim preview
     yy = get(handles.axes1, 'ylim');
@@ -959,8 +949,16 @@ set(handles.axes1,'xlim', [t(1), t(end)]);
 set(handles.popupmenuConditions, 'string', sort(stimEdit.dataTreeHandle.currElem.GetConditions()));
 conditions = get(handles.popupmenuConditions, 'string');
 idx = get(handles.popupmenuConditions, 'value');
-condition = conditions{idx};
-SetUitableStimInfo(condition, handles);
+if ~isempty(conditions)
+    set(handles.popupmenuConditions, 'enable', 'on');
+    condition = conditions{idx};
+else  % If no stim conditions at all, disable display and prevent crash
+    conditions = {' '};
+    condition = ' ';
+    set(handles.popupmenuConditions, 'enable', 'off');
+    set(handles.popupmenuConditions, 'string', conditions);
+end
+SetUitableStimInfo(condition, handles); 
 
 
 % -----------------------------------------------------------
@@ -986,17 +984,21 @@ icond = find(strcmp(conditions, condition));
 if isempty(icond)
     return;
 end
-[tpts, duration, vals] = stimEdit.dataTreeHandle.currElem.GetStimData(icond);
-if isempty(tpts)
+stimdata = stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).GetData();
+if isempty(stimdata)
     set(handles.uitableStimInfo, 'data',[]);
     return;
 end
+labels = stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).GetDataLabels();
+if isempty(labels)
+   labels = {'Onset', 'Duration', 'Amplitude'}; 
+end
+tpts = stimdata(:, 1);
 [~,idx] = sort(tpts);
-data = zeros(length(tpts),3);
-data(:,1) = tpts(idx);
-data(:,2) = duration(idx);
-data(:,3) = vals(idx);
-set(handles.uitableStimInfo, 'data',data);
+stimdata_sorted = stimdata(idx, :);
+set(handles.uitableStimInfo, 'data', stimdata_sorted);
+set(handles.uitableStimInfo, 'ColumnName', labels);
+set(handles.uitableStimInfo, 'ColumnEditable', logical(ones(1, size(stimdata_sorted, 2))));
 
 
 % --------------------------------------------------------------------
@@ -1153,5 +1155,33 @@ if strcmpi(get(hObject, 'checked'), 'off')
 else
     set(hObject, 'checked', 'off')
     SyncBrowsing(stimEdit, 'off');
+end
+
+
+
+% --------------------------------------------------------------------
+function uitableStimInfo_ButtonDownFcn(hObject, eventdata, handles)
+
+
+
+% --------------------------------------------------------------------
+function pushbuttonEditColumns_Callback(hObject, eventdata, handles)
+global stimEdit
+conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
+icond = GetConditionIdxFromPopupmenu(conditions, handles);
+name = 'Rename columns';
+if size(stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).data, 2) > 3
+    rename_prompt = {};
+    defaults = {};
+    for i = 4:length(handles.uitableStimInfo.ColumnName)
+        rename_prompt{end+1} = ['Rename column ', num2str(i)];
+        defaults{end+1} = handles.uitableStimInfo.ColumnName{i};
+    end
+    options.Resize = 'on';
+    options.WindowStyle = 'modal';
+    options.Interpreter = 'tex';
+    A = inputdlg(rename_prompt, name, 1, defaults, options);
+else
+    errordlg('There are no additional data columns to rename!', 'No columns to rename')
 end
 

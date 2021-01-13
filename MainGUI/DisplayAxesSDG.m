@@ -52,7 +52,7 @@ iCh         = maingui.axesSDG.iCh;
 iSrcDet     = maingui.axesSDG.iSrcDet;
 color       = maingui.axesSDG.linecolor;
 
-SD          = maingui.dataTree.currElem.GetSDG();
+SD          = maingui.dataTree.currElem.GetSDG('2D');
 
 if isfield(maingui.axesSDG, 'xlim')
     xbox        = maingui.axesSDG.xlim;

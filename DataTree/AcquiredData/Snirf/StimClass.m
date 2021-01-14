@@ -113,7 +113,9 @@ classdef StimClass < FileLoadSaveClass
                 if all(obj.data(:)==0)
                     obj.data = [];
                 end
-                
+                if isempty(obj.dataLabels)
+                    obj.dataLabels = {'Onset', 'Duration', 'Amplitude'};
+                end
                 err = obj.ErrorCheck();
 
                 % Close group
@@ -290,11 +292,14 @@ classdef StimClass < FileLoadSaveClass
             obj.updateStates();
         end
         
+        
         % -------------------------------------------------------
         function val = GetStates(obj)
             val = obj.states;
         end
+
         
+        % -------------------------------------------------------
         function SetDataLabels(obj, dataLabels)
             if length(dataLabels) < size(obj.data, 2)
                for i = 1:size(obj.data, 2) - length(dataLabels)
@@ -304,9 +309,10 @@ classdef StimClass < FileLoadSaveClass
             obj.dataLabels = dataLabels(1:size(obj.data, 2));
         end
         
+        
         % -------------------------------------------------------
         function val = GetDataLabels(obj)
-            val = obj.dataLabels;
+            val = obj.dataLabels;            
         end
         
     end

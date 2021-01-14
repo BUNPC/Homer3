@@ -638,12 +638,6 @@ duration = stimEdit.dataTreeHandle.currElem.GetStimDuration(icond);
 
 
 % -------------------------------------------------------------------
-function [tpts, duration, vals] = GetStimData(icond)
-global stimEdit
-[tpts, duration, vals] = stimEdit.dataTreeHandle.currElem.GetStimData(icond);
-
-
-% -------------------------------------------------------------------
 function SetStimData(icond, data)
 global stimEdit
 stimEdit.dataTreeHandle.currElem.SetStimTpts(icond, data(:,1));
@@ -984,21 +978,25 @@ icond = find(strcmp(conditions, condition));
 if isempty(icond)
     return;
 end
-stimdata = stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).GetData();
-if isempty(stimdata)
-    set(handles.uitableStimInfo, 'data',[]);
+
+labels = stimEdit.dataTreeHandle.currElem.GetStimDataLabels(icond);
+stimdata = stimEdit.dataTreeHandle.currElem.GetStimData(icond);
+if length(labels) ~= size(stimdata,2)
     return;
 end
-labels = stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).GetDataLabels();
-if isempty(labels)
-   labels = {'Onset', 'Duration', 'Amplitude'}; 
+if ~isempty(stimdata)
+    [tpts, idx] = sort(stimdata(:,1));
+    stimdata_sorted = stimdata(idx,:);
+else
+    tpts = [];
+    stimdata_sorted = [];
 end
-tpts = stimdata(:, 1);
-[~,idx] = sort(tpts);
-stimdata_sorted = stimdata(idx, :);
-set(handles.uitableStimInfo, 'data', stimdata_sorted);
-set(handles.uitableStimInfo, 'ColumnName', labels);
-set(handles.uitableStimInfo, 'ColumnEditable', logical(ones(1, size(stimdata_sorted, 2))));
+editable = logical(ones(1, length(tpts)));  %#ok<LOGL>
+set(handles.uitableStimInfo, ...
+    'data', stimdata_sorted, ...
+    'ColumnName', labels, ...
+    'ColumnEditable', editable);
+
 
 
 % --------------------------------------------------------------------

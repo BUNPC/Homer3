@@ -1367,6 +1367,18 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
+        function val = GetStimData(obj, icond)
+            val = obj.stim(icond).GetData();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function val = GetStimDataLabels(obj, icond)
+            val = obj.stim(icond).GetDataLabels();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function SetStimDuration(obj, icond, duration)
             obj.stim(icond).SetDuration(duration);
         end

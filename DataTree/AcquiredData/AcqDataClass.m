@@ -200,6 +200,18 @@ classdef AcqDataClass < matlab.mixin.Copyable
         
                 
         % ----------------------------------------------------------------------------------
+        function data = GetStimData(~, ~)
+            data = [];
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function val = GetStimDataLabels(~, ~)
+            val = {};
+        end
+                        
+        
+        % ----------------------------------------------------------------------------------
         function b = equal(obj, obj2)
             b = true;
             if isempty(obj.GetFilename)

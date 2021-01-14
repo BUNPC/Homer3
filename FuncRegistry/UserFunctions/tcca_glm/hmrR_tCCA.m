@@ -62,6 +62,10 @@
 % runIdxResting: 1
 % tResting: [30 210]
 %
+% PREREQUISITES:
+% For the hmrR_tCCA_Concentration_Data Usage Option, use Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, probe, ppf )
+% For the hmrR_tCCA_OD_Data Usage Option, use Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
+%
 function [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, subjIdx, mlActMan, mlActAuto, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_on, runIdxResting, tResting)
 
 %% COMMENTS/THOUGHTS/QUESTIONS ALEX

@@ -63,6 +63,9 @@
 % maxIter: 5 
 % turnon: 1
 %
+% PREREQUISITES:
+% Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
+%
 function [data_dN, tInc, svs, nSV, tInc0] = hmrR_MotionCorrectPCArecurse(data_d, probe, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh, nSV, maxIter, turnon)
 
 nBlks = length(data_d);

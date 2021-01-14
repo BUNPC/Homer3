@@ -30,7 +30,10 @@
 % PARAMETERS:
 % trange: [-2.0, 20.0]
 %
-
+% PREREQUISITES:
+% For the Block_Average_on_Concentration_Data Usage Option, use Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, probe, ppf )
+% For the Block_Average_on_Delta_OD_Data Usage Option, use Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
+%
 function [data_avg, data_std, nTrials, data_sum2, yTrials] = hmrR_BlockAvg( data, stim, trange )
 
 % Initialize outputs;

@@ -997,7 +997,7 @@ for iBlk = iDataBlks
                 ppf = procElem.procStream.fcalls(idx).paramIn.value;
                 if ppf(condition) == 1 && ~isempty(dataTree.currElem.acquired.metaDataTags.tags.LengthUnit)
                     unit = dataTree.currElem.acquired.metaDataTags.tags.LengthUnit;
-                    ylabel(['\muM ' unit], 'FontSize', 17);
+                    ylabel(['\muM ' unit], 'FontSize', 11);
                 else
                 ylabel('\muM', 'FontSize', 11);
                 end

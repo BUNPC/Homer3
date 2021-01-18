@@ -279,25 +279,8 @@ classdef DataTreeClass <  handle
         
         % ---------------------------------------------------------------
         function AutoSetDataStorageScheme(obj)
-            g.group = GroupClass();
-            if isvalidfile('./groupResults.mat')
-                g = load('./groupResults.mat');
-                if isa(g.group, 'GroupClass') && g.group.IsEmpty()
-                    if isvalidfile('../groupResults.mat')
-                        g = load('../groupResults.mat');
-                    end
-                end
-            elseif isvalidfile('../groupResults.mat')
-                g = load('../groupResults.mat');
-            end
-            if isa(g.group, 'GroupClass') && g.group.IsEmpty()
-                if g.group.subjs(1).runs(1).acquired.IsEmpty()
-                    obj.dataStorageScheme = 'files';
-                else
-                    obj.dataStorageScheme = 'memory';
-                end
-            else
-                obj.dataStorageScheme = 'memory';
+            if isempty(obj.dataStorageScheme)
+                obj.dataStorageScheme = 'files';
             end
         end
           

@@ -10,11 +10,12 @@ else
 end
 
 logger = InitLogger(logger, 'SystemInfo');
+platform = ['R', version('-release')];
 
 if isempty(vstr)
-    logger.Write(sprintf('Running %s\n\n', appname));
+    logger.Write(sprintf('Running %s %s\n\n', appname, platform));
 else
-    logger.Write(sprintf('Running %s v%s\n\n', appname, vstr));
+    logger.Write(sprintf('Running %s v%s, %s\n\n', appname, vstr, platform));
 end
 
 logger.Write(sprintf('============\n'))

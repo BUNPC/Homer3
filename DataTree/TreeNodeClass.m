@@ -473,12 +473,16 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function [tpts, duration, vals] = GetStimData(~, ~)
-            tpts     = [];
-            duration = [];
-            vals     = [];
+        function data = GetStimData(~, ~)
+            data = [];
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function val = GetStimDataLabels(~, ~)
+            val = {};
+        end
+                        
         
         % ----------------------------------------------------------------------------------
         function newname = ErrCheckNewCondName(obj, newname)
@@ -579,6 +583,12 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function t = GetTime(~, ~)
+            t = [];
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function t = GetAuxiliaryTime(~, ~)
             t = [];
         end
 

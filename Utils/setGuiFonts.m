@@ -53,9 +53,9 @@ font_uipanel   = initFont(font_uicontrol.size-1,'bold',fc);
 font_uibttngrp = font_uipanel;
 font_axes      = initFont(font_uicontrol.size+4,'normal',[]);
 if ispc()
-    font_listbox   = initFont(font_uicontrol.size,'normal',[]);
-elseif ismac()
-    font_listbox   = initFont(font_uicontrol.size+1,'normal',[]);
+    font_listbox = initFont(font_uicontrol.size,'normal',[]);
+elseif ismac() || isunix()
+    font_listbox = initFont(font_uicontrol.size+1,'normal',[]);
 end
 
 

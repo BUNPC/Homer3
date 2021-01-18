@@ -3,6 +3,9 @@ classdef AcqDataClass < matlab.mixin.Copyable
     properties (Access = private)
         logger
     end
+    properties (Access = public)
+        errmsgs
+    end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % These methods must be implemented in any derived class
@@ -81,14 +84,25 @@ classdef AcqDataClass < matlab.mixin.Copyable
         
         
         % -------------------------------------------------------
-        function b = Error(obj)
-            if obj.GetError()<0
-                b = true;
-            elseif obj.GetError()==0
-                b = false;
-            else
-                b = true;
+        function err = Error(obj)
+            err = obj.GetError();
+        end
+        
+        
+        % ---------------------------------------------------------
+        function msg = GetErrorMsg(obj)
+            msg = '';
+            if isempty(obj)
+                msg = 'AcqDataClass object is empty';
+                return;
             end
+            if isempty(obj.errmsgs)
+                return;
+            end
+            if ~obj.GetError()
+                return;
+            end
+            msg = obj.errmsgs{abs(obj.GetError())};
         end
         
         
@@ -185,6 +199,18 @@ classdef AcqDataClass < matlab.mixin.Copyable
         end
         
                 
+        % ----------------------------------------------------------------------------------
+        function data = GetStimData(~, ~)
+            data = [];
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function val = GetStimDataLabels(~, ~)
+            val = {};
+        end
+                        
+        
         % ----------------------------------------------------------------------------------
         function b = equal(obj, obj2)
             b = true;

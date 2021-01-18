@@ -36,12 +36,37 @@
 
 function [yavg, ystd, tHRF, nTrials, ysum2, yTrials] = hmrR_BlockAvg_Nirs( y, s, t, trange )
 
+
+yavg = [];
+ystd = [];
+tHRF = [];
+nTrials = [];
+ysum2 = [];
+yTrials = [];
+
+% Basic error checks before we proceed
+if nargin<4
+    return;
+end
+if isempty(y)
+    return;
+end
+if isempty(s)
+    return;
+end
+if isempty(t)
+    return;
+end
+if isempty(trange)
+    return;
+end
+
 ndim = ndims(y);
 dt = t(2)-t(1);
 nPre = round(trange(1)/dt);
 nPost = round(trange(2)/dt);
 nTpts = size(y,1);
-tHRF = [nPre*dt:dt:nPost*dt];
+tHRF = nPre*dt:dt:nPost*dt;
 
 for iS = 1:size(s,2)
     lstS = find(s(:,iS)==1);

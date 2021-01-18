@@ -128,10 +128,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     end
                     
                     
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                    % obj = SnirfClass(dotnirs);
-                    % obj = SnirfClass(dotnirs, numdatabllocks);
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % obj = SnirfClass(dotnirs);
+                % obj = SnirfClass(dotnirs, numdatabllocks);
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 elseif isstruct(varargin{1}) || isa(varargin{1}, 'NirsClass')
                     
                     % obj = SnirfClass(dotnirs);
@@ -143,30 +143,40 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     end
                     dotnirs = varargin{1};
                     obj.GenSimulatedTimeBases(dotnirs, tfactors);
+                    
+                    % Required fields
                     for ii=1:length(tfactors)
                         obj.data(ii) = DataClass(obj.nirs_tb(ii).d, obj.nirs_tb(ii).t(:), obj.nirs_tb(ii).SD.MeasList);
                     end
+                    obj.probe      = ProbeClass(dotnirs.SD);
                     
-                    for ii=1:size(dotnirs.s,2)
-                        if isfield(dotnirs, 'CondNames')
-                            obj.stim(ii) = StimClass(dotnirs.s(:,ii), dotnirs.t(:), dotnirs.CondNames{ii});
-                        else
-                            obj.stim(ii) = StimClass(dotnirs.s(:,ii), dotnirs.t(:), num2str(ii));
+                    
+                    % Optional fields
+                    if isfield(dotnirs,'s')
+                        for ii=1:size(dotnirs.s,2)
+                            if isfield(dotnirs, 'CondNames')
+                                obj.stim(ii) = StimClass(dotnirs.s(:,ii), dotnirs.t(:), dotnirs.CondNames{ii});
+                            else
+                                obj.stim(ii) = StimClass(dotnirs.s(:,ii), dotnirs.t(:), num2str(ii));
+                            end
                         end
                     end
-                    obj.probe      = ProbeClass(dotnirs.SD);
-                    for ii=1:size(dotnirs.aux,2)
-                        obj.aux(ii) = AuxClass(dotnirs.aux(:,ii), dotnirs.t(:), sprintf('aux%d',ii));
+                    if isfield(dotnirs,'aux')
+                        for ii=1:size(dotnirs.aux,2)
+                            obj.aux(ii) = AuxClass(dotnirs.aux(:,ii), dotnirs.t(:), sprintf('aux%d',ii));
+                        end
                     end
                     
-                    % Add metadatatags
+                    % Add required field metadatatags that has no .nirs
+                    % equivalent 
                     obj.metaDataTags   = MetaDataTagsClass();
+
                     
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                    % obj = SnirfClass(data, stim);
-                    % obj = SnirfClass(data, stim, probe);
-                    % obj = SnirfClass(data, stim, probe, aux);
-                    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % obj = SnirfClass(data, stim);
+                % obj = SnirfClass(data, stim, probe);
+                % obj = SnirfClass(data, stim, probe, aux);
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 elseif isa(varargin{1}, 'DataClass')
                     
                     % obj = SnirfClass(data, stim);
@@ -189,12 +199,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     
                 end
                 
-                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                % Between 5 and 6 arguments covers the following syntax variants
-                %
-                % obj = SnirfClass(d, t, SD, aux, s);
-                % obj = SnirfClass(d, t, SD, aux, s, CondNames);
-                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Between 5 and 6 arguments covers the following syntax variants
+            %
+            % obj = SnirfClass(d, t, SD, aux, s);
+            % obj = SnirfClass(d, t, SD, aux, s, CondNames);
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             elseif nargin>4
                 
                 % obj = SnirfClass(d, t, SD, aux, s);
@@ -244,7 +254,17 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             obj.probe          = ProbeClass().empty();
             obj.aux            = AuxClass().empty();
             
-            obj.stim0          = StimClass().empty();
+            % Initialize non-SNIRF variables
+            obj.stim0          = StimClass().empty();            
+            obj.errmsgs = {
+                'MATLAB could not load the file.'
+                '''formatVersion'' is invalid.'
+                '''metaDataTags'' is invalid.'
+                '''data'' is invalid.'
+                '''stim'' is invalid and could not be loaded'
+                '''probe'' is invalid.'
+                '''aux'' is invalid and could not be loaded'
+                };
         end
         
                
@@ -397,12 +417,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 if ii > length(obj.stim)
                     obj.stim(ii) = StimClass;
                 end
-                if obj.stim(ii).LoadHdf5(fileobj, [obj.location, '/stim', num2str(ii)]) < 0
+                err = obj.stim(ii).LoadHdf5(fileobj, [obj.location, '/stim', num2str(ii)]);
+                if err ~= 0
                     obj.stim(ii).delete();
                     obj.stim(ii) = [];
-                    if ii==1
-                        err = 1;  % Absence of optional field raises error > 0
-                    end
                     break;
                 end
                 ii=ii+1;
@@ -415,7 +433,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 if ii > length(obj.stim0)
                     obj.stim0(ii) = StimClass;
                 end
-                if obj.stim0(ii).LoadHdf5(fileobj, [obj.location, '/stim0', num2str(ii)]) < 0
+                if obj.stim0(ii).LoadHdf5(fileobj, [obj.location, '/stim0', num2str(ii)]) ~= 0
                     obj.stim0(ii).delete();
                     obj.stim0(ii) = [];
                     break;
@@ -443,12 +461,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 if ii > length(obj.aux)
                     obj.aux(ii) = AuxClass;
                 end
-                if obj.aux(ii).LoadHdf5(fileobj, [obj.location, '/aux', num2str(ii)]) < 0
+                err = obj.aux(ii).LoadHdf5(fileobj, [obj.location, '/aux', num2str(ii)]);
+                if err ~= 0
                     obj.aux(ii).delete();
                     obj.aux(ii) = [];
-                    if ii==1
-                        err = 1;  % Error code for no optional field is > 0
-                    end
                     break;
                 end
                 ii=ii+1;
@@ -479,6 +495,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Don't reload if not empty
             if ~obj.IsEmpty()
+                err = obj.GetError();     % preserve error state if exiting early
                 return;
             end
             
@@ -491,38 +508,53 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 [obj.gid, obj.fid] = HDF5_GroupOpen(fileobj, '/');
                 
                 
-                if obj.SetLocation() < 0 & err == 0
+                if obj.SetLocation() < 0 && err == 0
                     err = -1;
                 end
-
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % NOTE: Optional fields have positive error codes if they are
+                % missing, but negative error codes if they're not missing but 
+                % invalid
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                
                 %%%% Load formatVersion
-                if obj.LoadFormatVersion() < 0 & err == 0
+                if obj.LoadFormatVersion() < 0 && err == 0
                     err = -2;
                 end
 
                 %%%% Load metaDataTags
-                if obj.LoadMetaDataTags(obj.fid) < 0 & err == 0
-                    err = -3;
+                if obj.LoadMetaDataTags(obj.fid) < 0 && err == 0
+                    % Here a positive return value means that invalid data meta tags 
+                    % should NOT be a show stopper if we can help it, if the reste of the data 
+                    % is valid. So just let user know they're invalid with a warning.
+                    err = 3;
                 end
 
                 %%%% Load data
-                if obj.LoadData(obj.fid) < 0 & err == 0
+                if obj.LoadData(obj.fid) < 0 && err == 0
                     err = -4;
                 end
 
                 %%%% Load stim
-                if obj.LoadStim(obj.fid) < 0 & err == 0
-                    err = -5;
+                if obj.LoadStim(obj.fid) < 0 && err == 0
+                    % Optional field: even if invalid we still want to be
+                    % able to work with the rest of the data. Only log
+                    % warning
+                    err = 5;
                 end
 
                 %%%% Load probe
-                if obj.LoadProbe(obj.fid) < 0 & err == 0
+                if obj.LoadProbe(obj.fid) < 0 && err == 0
                     err = -6;
                 end
 
                 %%%% Load aux. This is an optional field
-                if obj.LoadAux(obj.fid) < 0 & err == 0
-                    err = -7;
+                if obj.LoadAux(obj.fid) < 0 && err == 0
+                    % Optional field: even if invalid we still want to be
+                    % able to work with the rest of the data. Only log
+                    % warning
+                    err = 7;
                 end
                 
                 % Close group
@@ -795,6 +827,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             end
             B = true;
         end
+        
     end
     
     
@@ -937,6 +970,19 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
+        function t = GetAuxiliaryTime(obj)
+            t = [];
+            if isempty(obj.aux)
+                return;
+            end
+            if obj.aux(1).IsEmpty()
+                return;
+            end
+            t = obj.aux(1).GetTime();
+        end
+        
+        
+        % ---------------------------------------------------------
         function ml = GetMeasList(obj, iBlk)
             ml = [];
             if ~exist('iBlk','var') || isempty(iBlk)
@@ -969,7 +1015,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     if ~obj.stim(ii).Exists(t(tidxs(jj)))
                         obj.stim(ii).AddStims(t(tidxs(jj)));
                     else
-                        obj.stim(ii).EditValue(t(tidxs(jj)), s(tidxs(jj),ii));
+                        obj.stim(ii).EditState(t(tidxs(jj)), s(tidxs(jj),ii));
                     end
                 end
             end
@@ -978,14 +1024,35 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function s = GetStims(obj, t)
+            % Returns a .nirs style stim signal. Stim state marks are
+            % interpolated onto the time series t from their respective
+            % onset times.
+            s = zeros(length(t), length(obj.stim));
+            for i=1:length(obj.stim)
+                states = obj.stim(i).GetStates();
+                if ~isempty(states)
+                    [~, k] = nearest_point(t, states(:, 1));
+                    if ~isempty(k)
+                        s(k,i) = states(:, 2);
+                    end
+                end
+            end
+        end
+        
+        
+        % ---------------------------------------------------------
+        function s = GetStimAmps(obj, t)
+            % Returns a .nirs style stim signal. Stim amplitudes are
+            % interpolated onto the time series t from their respective
+            % onset times.
             s = zeros(length(t), length(obj.stim));
             for ii=1:length(obj.stim)
-                [ts, v] = obj.stim(ii).GetStim();
-                [~, k] = nearest_point(t, ts);
+                data = obj.stim.GetData();
+                [~, k] = nearest_point(t, data(:, 1));
                 if isempty(k)
                     continue;
                 end
-                s(k,ii) = v;
+                s(k,ii) = data(:, 3);
             end
         end
         
@@ -1240,57 +1307,43 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Find the destination condition to move stims (among the time pts in tPts)
             % to
-            j = [];
+            idx_dst = [];
             for ii=1:length(obj.stim)
                 if strcmp(condition, obj.stim(ii).GetName())
-                    j=ii;
+                    idx_dst=ii;
                     break;
                 end
             end
             
             % If no destination condition found among existing conditions,
             % then create a new condition to move stims to
-            if isempty(j)
-                j = length(obj.stim)+1;
+            if isempty(idx_dst)
+                idx_dst = length(obj.stim)+1;
                 
                 % Otherwise we have a new condition to which to add the stims.
-                obj.stim(j) = StimClass([], condition);
+                obj.stim(idx_dst) = StimClass([], condition);
                 obj.SortStims();
                 
                 % Recalculate j after sort
                 for ii=1:length(obj.stim)
                     if strcmp(condition, obj.stim(ii).GetName())
-                        j=ii;
+                        idx_dst=ii;
                         break;
                     end
                 end
             end
             
-            % Find all stims for any conditions which match the time points.
-            for ii=1:length(tPts)
-                for kk=1:length(obj.stim)
-                    d = obj.stim(kk).GetData();
-                    if isempty(d)
-                        continue;
-                    end
-                    k = find(d(:,1)==tPts(ii));
-                    if ~isempty(k)
-                        if kk==j
-                            continue;
-                        end
-                        
-                        % If stim at time point tPts(ii) exists in stim
-                        % condition kk, then move stim from obj.stim(kk) to
-                        % obj.stim(j)
-                        obj.stim(j).AddStims(tPts(ii), d(k(1),2), d(k(1),3));
-                        
-                        % After moving stim from obj.stim(kk) to
-                        % obj.stim(j), delete it from obj.stim(kk)
-                        d(k(1),:)=[];
-                        obj.stim(kk).SetData(d);
-                        
-                        % Move on to next time point
-                        break;
+            for i=1:length(obj.stim)
+                data = obj.stim(i).GetData();
+                for j=1:size(data, 1)
+                    onset = data(j, 1);
+                    if onset > min(tPts) & onset < max(tPts)
+                        % Delete the stim from its condition and add it to selected dst
+                        duration = data(j, 2);
+                        amplitude = data(j, 3);
+                        more = data(j, 4:end);
+                        obj.stim(i).DeleteStims(onset);
+                        obj.stim(idx_dst).AddStims(onset, duration, amplitude, more);
                     end
                 end
             end
@@ -1314,6 +1367,18 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
+        function val = GetStimData(obj, icond)
+            val = obj.stim(icond).GetData();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function val = GetStimDataLabels(obj, icond)
+            val = obj.stim(icond).GetDataLabels();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function SetStimDuration(obj, icond, duration)
             obj.stim(icond).SetDuration(duration);
         end
@@ -1330,19 +1395,19 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimValues(obj, icond, vals)
-            obj.stim(icond).SetValues(vals);
+        function SetStimAmplitudes(obj, icond, amps)
+            obj.stim(icond).SetAmplitudes(amps);
         end
         
         
         
         % ----------------------------------------------------------------------------------
-        function vals = GetStimValues(obj, icond)
+        function vals = GetStimAmplitudes(obj, icond)
             if icond>length(obj.stim)
                 vals = [];
                 return;
             end
-            vals = obj.stim(icond).GetValues();
+            vals = obj.stim(icond).GetAmplitudes();
         end
         
         

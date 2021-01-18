@@ -103,6 +103,7 @@ set(handles.checkboxShowExcludedTimeManual, 'enable', val);
 set(handles.checkboxShowExcludedTimeAuto, 'enable', val);
 set(handles.checkboxShowExcludedTimeAutoByChannel, 'enable', val);
 set(handles.checkboxExcludeTime, 'enable', val);
+set(handles.checkboxExcludeStims,'enable', val);
 set(handles.pushbuttonResetExcludedTimeCh, 'enable', val);
 
 % Control
@@ -143,6 +144,8 @@ set(handles.menuItemSaveGroup, 'enable', val);
 set(handles.menuItemExport, 'enable', val);
 set(handles.menuItemReset, 'enable', val);
 set(handles.menuItemResetGroupFolder, 'enable', val)
+
+
 
 % --------------------------------------------------------------------
 function eventdata = MainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
@@ -839,7 +842,7 @@ end
 hObject = DisplayData(handles, hObject);
 DisplayAxesSDG();
 
-if get(handles.checkboxExcludeTime, 'value')==1
+if get(handles.checkboxExcludeTime, 'value') == 1 | get(handles.checkboxExcludeStims, 'value') == 1
     zoom off
 else
     zoom on
@@ -972,9 +975,7 @@ for iBlk = iDataBlks
             d = procElem.reshape_y(d, ch.MeasList);
             DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
             if isa(dataTree.currElem, 'RunClass')
-                sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
                 xlabel('Time (s)', 'FontSize', 11);
-%                 xlabel(['Time (s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
             else
                 xlabel('Time (s)', 'FontSize', 11);
             end
@@ -986,9 +987,7 @@ for iBlk = iDataBlks
             d = d * sclConc;
             DisplayDataConc(t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
             if isa(dataTree.currElem, 'RunClass')
-                sRate = 1/mean(diff(dataTree.currElem.acquired.data.time));
                 xlabel('Time (s)', 'FontSize', 11);
-%                 xlabel(['Time(s) | f_s = ' num2str(sRate) ' Hz'], 'FontSize', 17);
             else
                 xlabel('Time (s)', 'FontSize', 11);
             end
@@ -998,7 +997,7 @@ for iBlk = iDataBlks
                 ppf = procElem.procStream.fcalls(idx).paramIn.value;
                 if ppf(condition) == 1 && ~isempty(dataTree.currElem.acquired.metaDataTags.tags.LengthUnit)
                     unit = dataTree.currElem.acquired.metaDataTags.tags.LengthUnit;
-                    ylabel(['\muM ' unit], 'FontSize', 17);
+                    ylabel(['\muM ' unit], 'FontSize', 11);
                 else
                 ylabel('\muM', 'FontSize', 11);
                 end
@@ -1053,7 +1052,7 @@ UpdateChildGuis(handles);
 
 
 % -------------------------------------------------------------------------
-function flag = myZoom_callback(obj, event_obj)
+function flag = myZoom_callback(obj, ~)
 if strcmpi( get(obj,'Tag'), 'axesData')
     flag = 0;
 else
@@ -1190,7 +1189,7 @@ axes(hAxes);
 hold on;
 
 aux = maingui.dataTree.currElem.GetAuxiliary();
-t = maingui.dataTree.currElem.GetTime();
+t = maingui.dataTree.currElem.GetAuxiliaryTime();
 
 % Check if there's any aux 
 if isempty(aux) || isempty(t)
@@ -1523,41 +1522,39 @@ if get(hObject, 'value') == 1 % If in exclude time mode
     zoom off
     set(hAxesData,'ButtonDownFcn', 'MainGUI(''ExcludeTime_ButtonDownFcn'',gcbo,[],guidata(gcbo))');
     set(get(hAxesData,'children'), 'ButtonDownFcn', 'MainGUI(''ExcludeTime_ButtonDownFcn'',gcbo,[],guidata(gcbo))');
+    set(handles.checkboxExcludeStims, 'enable', 'off')
+    set(handles.checkboxShowExcludedTimeManual, 'value', 1)  % Ensure changes are visible
     MainGUI_EnableDisablePlotEditMode(handles, 'off');
 else
     zoom on
+    set(handles.checkboxExcludeStims, 'enable', 'on')
     MainGUI_EnableDisablePlotEditMode(handles, 'on');
 end
 Display(handles, hObject);
 
 
-
 % --------------------------------------------------------------------
-function checkboxShowExcludedTimeManual_Callback(hObject, eventdata, handles)
+function checkboxExcludeStims_Callback(hObject, eventdata, handles)
+global maingui
 
-if get(hObject, 'value')==1
-    set(handles.checkboxShowExcludedTimeAuto, 'value',0) 
-    set(handles.checkboxShowExcludedTimeAutoByChannel, 'value',0) 
+hAxesData = maingui.axesData.handles.axes;
+
+if isempty(maingui.axesSDG.iCh)  % Don't let user exclude if axesData isn't plotting anything
+    errordlg('Select a channel before manually excluding stims.', 'No channels selected');
+    set(hObject, 'value', 0);
+    return; 
 end
-Display(handles, hObject);
 
-
-% --------------------------------------------------------------------
-function checkboxShowExcludedTimeAuto_Callback(hObject, eventdata, handles)
-
-if get(hObject, 'value')==1
-    set(handles.checkboxShowExcludedTimeManual, 'value',0) 
-    set(handles.checkboxShowExcludedTimeAutoByChannel, 'value',0) 
-end
-Display(handles, hObject);
-
-
-% --------------------------------------------------------------------
-function checkboxShowExcludedTimeAutoByChannel_Callback(hObject, eventdata, handles)
-
-if get(hObject, 'value')==1
-    set(handles.checkboxShowExcludedTimeManual, 'value',0) 
-    set(handles.checkboxShowExcludedTimeAuto, 'value',0) 
+if get(hObject, 'value') == 1 % If in exclude time mode
+    zoom off
+    set(hAxesData,'ButtonDownFcn', 'MainGUI(''ExcludeStims_ButtonDownFcn'',gcbo,[],guidata(gcbo))');
+    set(get(hAxesData,'children'), 'ButtonDownFcn', 'MainGUI(''ExcludeStims_ButtonDownFcn'',gcbo,[],guidata(gcbo))');
+    set(handles.checkboxExcludeTime, 'enable', 'off')
+    MainGUI_EnableDisablePlotEditMode(handles, 'off');
+else
+    zoom on
+    set(handles.checkboxExcludeTime, 'enable', 'on')
+    MainGUI_EnableDisablePlotEditMode(handles, 'on');
 end
 Display(handles, hObject);
 
@@ -1588,22 +1585,68 @@ for iBlk=1:iDataBlks
     t = maingui.dataTree.currElem.GetTime(iBlk);
     lst = find(t>=p1(1) & t<=p2(1));
     maingui.dataTree.currElem.SetTincMan(lst, iBlk);
-    
-    % Reject all stims that fall within the excluded time
-    maingui.dataTree.currElem.StimReject(t, iBlk);
 
 end
 
-% Display excluded time and rejected stims
+% Display excluded time
 Display(handles, hObject);
 
 
+% --------------------------------------------------------------------
+function ExcludeStims_ButtonDownFcn(hObject, eventdata, handles)
+global maingui
+
+if ~strcmp(get(hObject,'type'),'axes')
+    return;
+end
+
+point1 = get(hObject,'CurrentPoint');
+finalRect = rbbox;
+point2 = get(hObject,'CurrentPoint');
+point1 = point1(1,1:2);
+point2 = point2(1,1:2);
+p1 = min(point1,point2);
+p2 = max(point1,point2);
+
+iCh = maingui.axesSDG.iCh;
+iDataBlks =  maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
+for iBlk=1:iDataBlks
+    t = maingui.dataTree.currElem.GetTime(iBlk);
+    idx = find(t>=p1(1) & t<=p2(1));
+    tPts = t(idx);
+    maingui.dataTree.currElem.ToggleStims(tPts, maingui.condition);
+end
+Display(handles, hObject);
+
 
 % --------------------------------------------------------------------
-function ExcludeCh_ButtonDownFcn(hObject, eventdata, handles)
-global maingui
-disp('Exclude button down fcn');
+function checkboxShowExcludedTimeManual_Callback(hObject, eventdata, handles)
 
+if get(hObject, 'value')==1
+    set(handles.checkboxShowExcludedTimeAuto, 'value',0) 
+    set(handles.checkboxShowExcludedTimeAutoByChannel, 'value',0) 
+end
+Display(handles, hObject);
+
+
+% --------------------------------------------------------------------
+function checkboxShowExcludedTimeAuto_Callback(hObject, eventdata, handles)
+
+if get(hObject, 'value')==1
+    set(handles.checkboxShowExcludedTimeManual, 'value',0) 
+    set(handles.checkboxShowExcludedTimeAutoByChannel, 'value',0) 
+end
+Display(handles, hObject);
+
+
+% --------------------------------------------------------------------
+function checkboxShowExcludedTimeAutoByChannel_Callback(hObject, eventdata, handles)
+
+if get(hObject, 'value')==1
+    set(handles.checkboxShowExcludedTimeManual, 'value',0) 
+    set(handles.checkboxShowExcludedTimeAuto, 'value',0) 
+end
+Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
@@ -1731,7 +1774,7 @@ rePositionGuiWithinScreen(handles.MainGUI);
 function pushbuttonResetExcludedTimeCh_Callback(hObject, eventdata, handles)
 global maingui
 if isa(maingui.dataTree.currElem, 'RunClass')
-    ch = MenuBox('Are you sure you would like to re-enable all excluded channels and time points?',{'Yes','No'});
+    ch = MenuBox('Are you sure you would like to re-enable all excluded channels, stims, and time points?',{'Yes','No'});
     if ch == 2
         return
     end

@@ -1382,13 +1382,17 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function [tpts, duration, vals] = GetStimData(obj, icond)
-            tpts     = obj.GetStimTpts(icond);
-            duration = obj.GetStimDuration(icond);
-            vals     = obj.GetStimValues(icond);
+        function data = GetStimData(obj, icond)
+            data = obj.input.GetStimData(icond);
         end
         
     
+        % ----------------------------------------------------------------------------------
+        function val = GetStimDataLabels(obj, icond)
+            val = obj.input.GetStimDataLabels(icond);
+        end
+        
+        
         % ----------------------------------------------------------------------------------
         function SetStimTpts(obj, icond, tpts)
             obj.input.SetStimTpts(icond, tpts);
@@ -1420,17 +1424,26 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimValues(obj, icond, vals)
-            obj.input.SetStimValues(icond, vals);
+        function SetStimAmplitudes(obj, icond, vals)
+            obj.input.SetStimAmplitudes(icond, vals);
         end
         
     
         % ----------------------------------------------------------------------------------
-        function vals = GetStimValues(obj, icond)
+        function vals = GetStimAmplitudes(obj, icond)
             if ~exist('icond','var')
                 icond=1;
             end
-            vals = obj.input.GetStimValues(icond);
+            vals = obj.input.GetStimAmplitudes(icond);
+        end
+                       
+        
+        % ----------------------------------------------------------------------------------
+        function vals = GetAmplitudes(obj, icond)
+            if ~exist('icond','var')
+                icond=1;
+            end
+            vals = obj.input.GetStimAmplitudes(icond);
         end
                        
         

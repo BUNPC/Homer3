@@ -57,12 +57,17 @@ end
 positionGUI(hFig, 0.15, 0.05, 0.80, 0.90)
 setGuiFonts(hFig);
 
+% Clear axes
+cla(handles.axesSDG)
+cla(handles.axesData)
+
 set(handles.togglebuttonMinimizeGUI, 'tooltipstring','Minimize GUI Window')
 
 % Set checkForUpdates checkbox based on config setting
 cfg = ConfigFileClass();
 handles.menuItemUpdateCheck.Checked = cfg.GetValue('Check For Updates');
 
+MainGUI_EnableDisableGUI(handles, 'off')
 
 
 % ---------------------------------------------------------------------
@@ -76,17 +81,25 @@ set(handles.radiobuttonProcTypeSubj, 'enable', val);
 set(handles.radiobuttonProcTypeRun, 'enable', val);
 set(handles.textStatus, 'enable', val);
 
-% Plot window panel
+% Data plot panel
 set(handles.textPanLeftRight, 'enable', val);
-set(handles.pushbuttonPanLeft, 'enable', val);
-set(handles.pushbuttonPanRight, 'enable', val);
-set(handles.pushbuttonPanLeft, 'enable', val);
-set(handles.pushbuttonResetView, 'enable', val);
-set(handles.pushbuttonPanLeft, 'enable', val);
+set(handles.pushbuttonDataPanLeft, 'enable', val);
+set(handles.pushbuttonDataPanRight, 'enable', val);
+set(handles.pushbuttonDataResetView, 'enable', val);
 set(handles.checkboxFixRangeX, 'enable', val);
 set(handles.editFixRangeX, 'enable', val);
 set(handles.checkboxFixRangeY, 'enable', val);
 set(handles.editFixRangeY, 'enable', val);
+
+% Probe display panel
+set(handles.pushbuttonProbePanLeft, 'enable', val);
+set(handles.pushbuttonProbePanRight, 'enable', val);
+set(handles.pushbuttonProbePanUp, 'enable', val);
+set(handles.pushbuttonProbePanDown, 'enable', val);
+set(handles.pushbuttonProbeZoomIn, 'enable', val);
+set(handles.pushbuttonProbeZoomOut, 'enable', val);
+set(handles.pushbuttonProbeResetView, 'enable', val);
+set(handles.textPanDisplay, 'enable', val);
 
 % Plot type selected panel
 set(handles.listboxPlotConc, 'enable', val);
@@ -699,28 +712,21 @@ if ~exist('varargin','var')
     varargin = {};
 end
 idx = FindChildGuiIdx(guiname);
-checked = get(h,'checked');
-if strcmp(checked, 'off')
-    set(h, 'checked', 'on');
-    
-    % Allow up to 5 parameters to be passed
-    switch(length(varargin))
-        case 0
-            maingui.childguis(idx).Launch();
-        case 1
-            maingui.childguis(idx).Launch(varargin{1});
-        case 2
-            maingui.childguis(idx).Launch(varargin{1}, varargin{2});
-        case 3
-            maingui.childguis(idx).Launch(varargin{1}, varargin{2}, varargin{3});
-        case 4
-            maingui.childguis(idx).Launch(varargin{1}, varargin{2}, varargin{3}, varargin{4});
-        case 5
-            maingui.childguis(idx).Launch(varargin{1}, varargin{2}, varargin{3}, varargin{4}, varargin{5});
-    end
-elseif strcmp(checked, 'on')
-    set(h, 'checked', 'off');
-    maingui.childguis(idx).Close();
+
+% Allow up to 5 parameters to be passed
+switch(length(varargin))
+    case 0
+        maingui.childguis(idx).Launch();
+    case 1
+        maingui.childguis(idx).Launch(varargin{1});
+    case 2
+        maingui.childguis(idx).Launch(varargin{1}, varargin{2});
+    case 3
+        maingui.childguis(idx).Launch(varargin{1}, varargin{2}, varargin{3});
+    case 4
+        maingui.childguis(idx).Launch(varargin{1}, varargin{2}, varargin{3}, varargin{4});
+    case 5
+        maingui.childguis(idx).Launch(varargin{1}, varargin{2}, varargin{3}, varargin{4}, varargin{5});
 end
 
 
@@ -1334,7 +1340,7 @@ DisplayGroupTree(handles);
 
 
 % --------------------------------------------------------------------
-function pushbuttonPanLeft_Callback(hObject, eventdata, handles)
+function pushbuttonDataPanLeft_Callback(hObject, eventdata, handles)
 global maingui
 procElem = maingui.dataTree.currElem;
 iCh0     = maingui.axesSDG.iCh;
@@ -1376,13 +1382,13 @@ end
 
 
 % --------------------------------------------------------------------
-function pushbuttonPanRight_Callback(hObject, eventdata, handles)
-pushbuttonPanLeft_Callback(hObject, eventdata, handles)
+function pushbuttonDataPanRight_Callback(hObject, eventdata, handles)
+pushbuttonDataPanLeft_Callback(hObject, eventdata, handles)
 
 
 
 % --------------------------------------------------------------------
-function pushbuttonResetView_Callback(hObject, eventdata, handles)
+function pushbuttonDataResetView_Callback(hObject, eventdata, handles)
 global maingui
 set(handles.checkboxFixRangeX, 'value',0);
 set(handles.checkboxFixRangeY, 'value',0);

@@ -250,6 +250,16 @@ classdef SubjClass < TreeNodeClass
             obj.outputVars.nTrialsRuns{r.iRun}   = r.procStream.output.GetVar('nTrials');
             obj.outputVars.stimRuns{r.iRun}      = r.GetVar('stim');
             
+            % a) Find all variables needed by proc stream
+            args = obj.procStream.GetInputArgs();
+
+            % b) Find these variables in this run
+            for ii = 1:length(args)
+                if ~eval( sprintf('isproperty(obj.outputVars, ''%s'')', args{ii}) )
+                    eval( sprintf('obj.outputVars.%s = obj.GetVar(args{ii});', args{ii}) );
+                end
+            end
+            
             % Free run memory 
             r.FreeMemory()
         end

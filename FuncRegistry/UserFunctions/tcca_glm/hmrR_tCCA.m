@@ -146,8 +146,11 @@ if flagtCCA
         end
         lstSS = lst(find(rhoSD<=rhoSD_ssThresh &  MeasListAct(lst)==1)); %#ok<*FNDSB>
         lstLS = lst(find(rhoSD>rhoSD_ssThresh & MeasListAct(lst)==1));
-        if length(lstSS) == 0
-           errordlg('No short separation channels fall within rhoSD_ssThresh!');
+
+        % Changed from "if ss_ch_inx ~= 0" which generated an error sometimes to the following
+		% JD - Jan 15, 2020
+        if all(ss_ch_inx > 0)
+            lstSS = lstSS(ss_ch_on);
         end
         
         

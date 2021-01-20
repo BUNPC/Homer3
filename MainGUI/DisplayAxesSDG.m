@@ -66,7 +66,6 @@ if ~ishandles(hAxes)
     return;
 end
 % Set gca to be SDG axes
-cla(hAxes);
 axes(hAxes);
 % Delete all channel lines drawn
 if ishandles(maingui.axesSDG.handles.ch)

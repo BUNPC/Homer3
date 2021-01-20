@@ -449,8 +449,8 @@ end
 
 % Check the processing stream order
 [fn_error, missing_args, prereqs] = maingui.dataTree.currElem.procStream.Check();
-if fn_error > 0
-    l1 = sprintf('The following function: %s', maingui.dataTree.currElem.procStream.fcalls(fn_error).nameUI);
+if isa(fn_error, 'FuncCallClass')
+    l1 = sprintf('The following function: %s', fn_error.nameUI);
     l2 = sprintf('cannot run because of unavailable input(s) %s.', cell2str(missing_args));
     if ~isempty(prereqs)
        l3 = sprintf('Add one of the following prerequisite functions to the processing stream:\n%s', prereqs)

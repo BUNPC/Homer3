@@ -551,7 +551,7 @@ classdef ProcStreamClass < handle
             % Processing stream begins with inputs available
             available = obj.input.GetProcInputs();
             % Inputs which are usually optional or defined elsewhere
-            extras = {'iRun' 'iSubj' 'iGroup' 'mlActAuto', 'tIncAuto', 'Aaux', 'rcMap'}
+            extras = {'iRun' 'iSubj' 'iGroup' 'mlActAuto', 'tIncAuto', 'Aaux', 'rcMap'};
             available = [available, extras];
             
             % For all fcalls
@@ -562,12 +562,16 @@ classdef ProcStreamClass < handle
                 % Check that each input is available
                 for j = 1:length(inputs)
                     if ~any(strcmp(available, inputs{j}))
-                       fn_error = i;
+                       fn_error = obj.fcalls(i);
                        missing_args{end+1} = inputs{j};
                     end
                 end
                 
-                if fn_error > 0
+                if isa(fn_error, 'FuncCallClass')
+                    entry = obj.reg.GetEntryByName(fn_error.name);
+                    if isfield(entry.help.sections, 'prerequisites')
+                       prereqs = strtrim(entry.help.sections.prerequisites.str); 
+                    end
                    return; 
                 end
                 

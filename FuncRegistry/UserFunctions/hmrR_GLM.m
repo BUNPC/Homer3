@@ -110,6 +110,7 @@ data_ysum2    = DataClass().empty();
 data_yresid   = DataClass().empty();
 beta_blks     = cell(length(data_y),1);
 yR_blks       = cell(length(data_y),1);
+beta_label = [];
 
 % Check input args
 if isempty(tIncAuto)

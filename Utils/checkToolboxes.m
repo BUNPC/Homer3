@@ -1,11 +1,11 @@
-function [r, toolboxes] = checkToolboxes(options)
+function [r, toolboxes] = checkToolboxes(appname, options)
 % 
 % Syntax:
-%   [r, toolboxes] = checkToolboxes()
-%   [r, toolboxes] = checkToolboxes(options)
+%   [r, toolboxes] = checkToolboxes(appname)
+%   [r, toolboxes] = checkToolboxes(appname, options)
 %
 % Description:
-%   Checks if toolboxes required by Homer3 application in the current
+%   Checks if toolboxes required by application in the current
 %   folder are installed. It returns 1 if all required toolboxes are
 %   installed, 0 if some or all required toolboxes are not installed, and -1
 %   if the operation to discover which toolboxes are needed and whether they are 
@@ -27,10 +27,13 @@ function [r, toolboxes] = checkToolboxes(options)
 %
 % Examples:
 %
-%   [r, toolboxes] = checkToolboxes()
-%   [r, toolboxes] = checkToolboxes('regeneratelist')
+%   [r, toolboxes] = checkToolboxes('Homer3')
+%   [r, toolboxes] = checkToolboxes('AtlasViewerGUI','regeneratelist')
 %
 if nargin==0
+    return;
+end
+if nargin==1
     options = '';
 end
 
@@ -45,7 +48,7 @@ end
 toolboxes = {};
 
 header{1} = sprintf('==================================================\n');
-header{2} = sprintf('List of required toolboxes for Homer3 (v%s):\n', version2string);
+header{2} = sprintf('List of required toolboxes for %s (v%s):\n', appname, version2string);
 header{3} = sprintf('==================================================\n');
 
 % Check for presence of file which already has all the toolboxes
@@ -98,7 +101,7 @@ end
 
 exclList = {};
 
-% Change curr folder to Homer3
+% Change curr folder to application root folder
 currdir = pwd;
 cd(strcat(pwd,'\Utils'));
 if ~exist('dirnameApp','var') || isempty(dirnameApp)
@@ -109,7 +112,7 @@ if dirnameApp(length(dirnameApp))~='/' && dirnameApp(length(dirnameApp))~='\'
 end
 cd(dirnameApp);
 
-% Find all the .m files for Homer3
+% Find all the .m files for application
 files = findDotMFiles('.', exclList);
 nFiles = length(files);
 
@@ -117,10 +120,10 @@ hwait = waitbar(0, sprintf('Checking toolboxes for %d source files', nFiles));
 for ii=1:nFiles
     fprintf('Checking ''%s'' for required toolboxes ...\n', files{ii});
     
-    % Searching for Homer3 toolboxes takes a long time, so it was done
+    % Searching for application toolboxes takes a long time, so it was done
     % beforehand and is already included in toolboxes.
     [~,f,~] = fileparts(files{ii});
-    if strcmp(f, 'Homer3')
+    if strcmp(f, appname)
         continue;
     end
     

@@ -213,7 +213,7 @@ classdef DataTreeClass <  handle
             tic;            
             for kk = 1:length(groupDirs)
                 
-                obj.dirnameGroups{kk} = convertToStandardPath(groupDirs{kk});
+                obj.dirnameGroups{kk} = filesepStandard(groupDirs{kk},'full');
 
                 iGnew = length(obj.groups)+1;
                 

@@ -15,7 +15,7 @@ logger = Logger('Homer3');
 logger.CurrTime();
 
 if ~exist('groupDirs','var') || isempty(groupDirs)
-    groupDirs = convertToStandardPath(pwd);
+    groupDirs = filesepStandard(pwd);
 end
 if ~exist('inputFileFormat','var') || isempty(inputFileFormat)
     inputFileFormat = '.snirf';

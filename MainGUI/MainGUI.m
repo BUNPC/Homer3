@@ -72,7 +72,7 @@ MainGUI_EnableDisableGUI(handles, 'off')
 
 % ---------------------------------------------------------------------
 function MainGUI_EnableDisableGUI(handles, val)
-
+   
 % Processing element panel
 set(handles.listboxGroupTree, 'enable', val);
 set(handles.listboxFilesErr, 'enable', val);
@@ -169,7 +169,7 @@ startuptimer = tic;
 maingui = [];
 
 if isempty(varargin)
-    maingui.groupDirs = convertToStandardPath({pwd});
+    maingui.groupDirs = filepathStandard({pwd});
 else
     maingui.groupDirs = varargin{1};
 end

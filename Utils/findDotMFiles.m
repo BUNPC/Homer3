@@ -39,7 +39,7 @@ for ii=1:length(files)
         if exclFlag==true
             continue;
         end
-        dotmfiles{end+1} = sprintf('%s%s%s', pwd, filesep, files(ii).name);
+        dotmfiles{end+1} = filesepStandard(sprintf('%s%s%s', pwd, filesep, files(ii).name), 'nameonly');
     elseif files(ii).isdir && ~iscurrdir(files(ii)) && ~isparentdir(files(ii))
         dotmfiles = [dotmfiles, findDotMFiles(files(ii).name, exclList)];
     end

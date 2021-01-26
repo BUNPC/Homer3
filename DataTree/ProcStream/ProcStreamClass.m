@@ -552,9 +552,9 @@ classdef ProcStreamClass < handle
                 procStreamCfgFile = '';
             end
             if ~exist('pathname','var')
-                pathname = convertToStandardPath(pwd);
+                pathname = filesepStandard(pwd);
             else
-                pathname = convertToStandardPath(pathname);
+                pathname = filesepStandard(pathname, 'full');
             end
             
             % If procStream config filename wasn't passed down as an argument, check the 

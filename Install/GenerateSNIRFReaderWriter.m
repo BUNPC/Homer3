@@ -22,7 +22,7 @@ copyFiles([dirnameUtils, 'propnames.m'],       [dirnameInstall, 'snirf_homer3/Ut
 copyFiles([dirnameUtils, 'CopyHandles.m'],     [dirnameInstall, 'snirf_homer3/Utils']);
 copyFiles([dirnameUtils, 'strtrim_improve.m'], [dirnameInstall, 'snirf_homer3/Utils']);
 copyFiles([dirnameUtils, 'fullpath.m'],        [dirnameInstall, 'snirf_homer3']);
-copyFiles([dirnameUtils, 'convertToStandardPath.m'], [dirnameInstall, 'snirf_homer3/Utils']);
+copyFiles([dirnameUtils, 'filesepStandard.m'], [dirnameInstall, 'snirf_homer3/Utils']);
 copyFiles([dirnameUtils, 'cell2str_new.m'], [dirnameInstall, 'snirf_homer3/Utils']);
 copyFiles([dirnameApp, 'AcqDataClass.m'],      [dirnameInstall, 'snirf_homer3']);
 copyFiles([dirnameApp, 'README.md'],           [dirnameInstall, 'snirf_homer3']);

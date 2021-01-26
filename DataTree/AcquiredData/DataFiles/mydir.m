@@ -17,7 +17,7 @@ for ii=1:length(dirs)
     foo = FileClass(dirs(ii));
     if ~foo.IsEmpty()
         files(kk) = foo;
-        files(kk).pathfull = convertToStandardPath(fileparts(fullpath(str)));
+        files(kk).pathfull = filesepStandard(fileparts(str),'full');
         kk=kk+1;
     end
 end

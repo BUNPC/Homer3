@@ -169,7 +169,7 @@ startuptimer = tic;
 maingui = [];
 
 if isempty(varargin)
-    maingui.groupDirs = filepathStandard({pwd});
+    maingui.groupDirs = filesepStandard({pwd});
 else
     maingui.groupDirs = varargin{1};
 end

@@ -85,7 +85,7 @@ end
 % Group dirs argument
 if isempty(procStreamEdit.groupDirs)
     if length(varargin)<1
-        procStreamEdit.groupDirs = filepathStandard({pwd});
+        procStreamEdit.groupDirs = filesepStandard({pwd});
     elseif ischar(varargin{1})
         procStreamEdit.groupDirs = varargin{1};
     end

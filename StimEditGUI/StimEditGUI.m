@@ -105,7 +105,7 @@ end
 % Group dirs argument
 if isempty(stimEdit.groupDirs)
     if length(varargin)<1
-        stimEdit.groupDirs = filepathStandard({pwd});
+        stimEdit.groupDirs = filesepStandard({pwd});
     elseif ischar(varargin{1})
         stimEdit.groupDirs = varargin{1};
     end

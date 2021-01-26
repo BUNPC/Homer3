@@ -758,9 +758,11 @@ for iBlk=1:length(data_y)
     yR_blks{iBlk}   = yR;
     
     % stats struct
-    hmrstats.beta_label = beta_label; % 
-    hmrstats.tval = tval;
-    hmrstats.pval = pval; 
+    if glmSolveMethod == 1 %  for OLS only now
+        hmrstats.beta_label = beta_label;
+        hmrstats.tval = tval;
+        hmrstats.pval = pval;
+    end
 
 end
 

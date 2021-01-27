@@ -1210,6 +1210,7 @@ if isempty(aux.names)
 end
 
 % Enable aux gui objects and set their values based on the aux values
+set(handles.popupmenuAux, 'string', aux.names);
 onoff = get(handles.checkboxPlotAux, 'value');
 if onoff==0
     return;
@@ -1220,7 +1221,6 @@ set(handles.popupmenuAux, 'enable','on');
 if iAux==0
     set(handles.popupmenuAux, 'value',1);
 end
-set(handles.popupmenuAux, 'string',aux.names);
 
 hold on
 data = aux.data(:,iAux)-min(aux.data(:,iAux));

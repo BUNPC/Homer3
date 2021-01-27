@@ -10,7 +10,6 @@ function [r, toolboxes] = checkToolboxes(appname, options)
 %   installed, 0 if some or all required toolboxes are not installed, and -1
 %   if the operation to discover which toolboxes are needed and whether they are 
 %   installed failed     
-
 %   It first checks for the presense of the toolboxesRequired.txt file
 %   for the list of required toolboxes to check for. If this file
 %   does not exist, then it prompts the user to generate this file.

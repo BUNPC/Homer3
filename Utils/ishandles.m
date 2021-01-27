@@ -1,7 +1,14 @@
 function b = ishandles(h)
 
+b = false;
 if isempty(h)
-    b = 0;
+    return;
 else
-    b = ishandle(h);
+    for ii=1:length(h(:))
+        if ~ishandle(h(ii))
+            return;
+        end
+    end
 end
+b = true;
+

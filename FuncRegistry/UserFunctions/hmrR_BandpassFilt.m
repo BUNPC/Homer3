@@ -10,7 +10,7 @@
 % INPUT:
 % data - SNIRF data type containing data time course to filter, time vector, and channels.
 % hpf - high pass filter frequency (Hz)
-%       Typical value is 0 to 0.02.
+%       Typical value is 0 to 0.01.
 % lpf - low pass filter frequency (Hz)
 %       Typical value is 0.5 to 3.
 %
@@ -22,7 +22,7 @@
 % Bandpass_Filter_Auxiliary: aux = hmrR_BandpassFilt(aux, hpf, lpf)
 %
 % PARAMETERS:
-% hpf: [0.010]
+% hpf: [0.000]
 % lpf: [0.500]
 
 function [data2, ylpf] = hmrR_BandpassFilt( data, hpf, lpf )

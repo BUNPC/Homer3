@@ -25,7 +25,7 @@ for ii=1:length(intensity)
     d = intensity(ii).GetDataTimeSeries();
     
     % Optional (user prompt): Adding dc offset if intensity (d) has negative values
-    if ~isempty(d<=0)
+    if ~isempty(d(d<=0))
         quest = {'Intensity signal has negative values. If you would like to add a dc offset, please click YES. If you would like to proceed with negative values, hit CANCEL.'};
         dlgtitle = 'Warning';
         btn1 = 'YES';

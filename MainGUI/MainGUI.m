@@ -1010,7 +1010,7 @@ for iBlk = iDataBlks
             if ~isempty(find(idx,1))
                 if strcmp(procElem.type, 'run')
                     ppf = procElem.procStream.fcalls(idx).paramIn.value;
-                    if ppf(condition) == 1 && ~isempty(dataTree.currElem.acquired.metaDataTags.tags.LengthUnit)
+                    if ppf(iWl) == 1 && ~isempty(dataTree.currElem.acquired.metaDataTags.tags.LengthUnit)
                         unit = dataTree.currElem.acquired.metaDataTags.tags.LengthUnit;
                         ylabel(['\muM ' unit], 'FontSize', 11);
                     else
@@ -1018,7 +1018,7 @@ for iBlk = iDataBlks
                     end
                 elseif strcmp(procElem.type, 'subj')
                     ppf = procElem.runs(1).procStream.fcalls(idx).paramIn.value;
-                    if ppf(condition) == 1 && ~isempty(dataTree.currElem.runs(1).acquired.metaDataTags.tags.LengthUnit)
+                    if ppf(iWl) == 1 && ~isempty(dataTree.currElem.runs(1).acquired.metaDataTags.tags.LengthUnit)
                         unit = dataTree.currElem.runs(1).acquired.metaDataTags.tags.LengthUnit;
                         ylabel(['\muM ' unit], 'FontSize', 11);
                     else
@@ -1026,7 +1026,7 @@ for iBlk = iDataBlks
                     end
                 else
                     ppf = procElem.subjs(1).runs(1).procStream.fcalls(idx).paramIn.value;
-                    if ppf(condition) == 1 && ~isempty(dataTree.currElem.subjs(1).runs(1).acquired.metaDataTags.tags.LengthUnit)
+                    if ppf(iWl) == 1 && ~isempty(dataTree.currElem.subjs(1).runs(1).acquired.metaDataTags.tags.LengthUnit)
                         unit = dataTree.currElem.subjs(1).runs(1).acquired.metaDataTags.tags.LengthUnit;
                         ylabel(['\muM ' unit], 'FontSize', 11);
                     else

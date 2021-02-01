@@ -72,7 +72,7 @@ MainGUI_EnableDisableGUI(handles, 'off')
 
 % ---------------------------------------------------------------------
 function MainGUI_EnableDisableGUI(handles, val)
-
+   
 % Processing element panel
 set(handles.listboxGroupTree, 'enable', val);
 set(handles.listboxFilesErr, 'enable', val);
@@ -169,7 +169,7 @@ startuptimer = tic;
 maingui = [];
 
 if isempty(varargin)
-    maingui.groupDirs = convertToStandardPath({pwd});
+    maingui.groupDirs = filesepStandard({pwd});
 else
     maingui.groupDirs = varargin{1};
 end
@@ -1236,6 +1236,7 @@ if isempty(aux.names)
 end
 
 % Enable aux gui objects and set their values based on the aux values
+set(handles.popupmenuAux, 'string', aux.names);
 onoff = get(handles.checkboxPlotAux, 'value');
 if onoff==0
     return;
@@ -1246,7 +1247,6 @@ set(handles.popupmenuAux, 'enable','on');
 if iAux==0
     set(handles.popupmenuAux, 'value',1);
 end
-set(handles.popupmenuAux, 'string',aux.names);
 
 hold on
 data = aux.data(:,iAux)-min(aux.data(:,iAux));

@@ -1,24 +1,20 @@
-function cleanup(dirnameInstall, dirnameApp)
-
+function cleanup(dirnameInstall, dirnameApp, options)
 platform = setplatformparams();
-
-if ~exist('dirnameApp','var') | isempty(dirnameApp)
-    dirnameApp = ffpath('setpaths.m');
-end
-if dirnameApp(end)~='/' & dirnameApp(end)~='\'
-    dirnameApp(end+1)='/';
-end
 
 if ~exist('dirnameInstall','var') | isempty(dirnameInstall)
     if exist('./Install','dir')
-        dirnameInstall = [pwd, '/Install'];        
+        dirnameInstall = filesepStandard([pwd, '/Install']);
     else
-        dirnameInstall = pwd;
+        dirnameInstall = filesepStandard(pwd);
     end
 end
-if dirnameInstall(end)~='/' & dirnameInstall(end)~='\'
-    dirnameInstall(end+1)='/';
+if ~exist('dirnameApp','var') | isempty(dirnameApp)
+    dirnameApp = getAppDir();
 end
+if ~exist('options','var')
+    options = 'end';
+end
+
 
 if exist([dirnameInstall, 'homer3_install'],'dir')
     rmdir_safe([dirnameInstall, 'homer3_install']);
@@ -30,6 +26,15 @@ for ii=1:length(platform.exename(1))
         rmdir_safe([dirnameInstall, platform.exename{ii}]);
     end
 end
+if ispathvalid([dirnameApp, 'requiredMCRProducts.txt'])
+    delete([dirnameApp, 'requiredMCRProducts.txt']);
+end
+if ispathvalid([dirnameInstall, 'requiredMCRProducts.txt'])
+    delete([dirnameInstall, 'requiredMCRProducts.txt']);
+end
+if ispathvalid([dirnameInstall, 'desktopPath.txt'])
+    delete([dirnameInstall, 'desktopPath.txt']);
+end
 
 for ii=1:length(platform.setup_exe)
     if exist([dirnameInstall, platform.setup_exe{ii}],'file')==2
@@ -38,11 +43,13 @@ for ii=1:length(platform.setup_exe)
         rmdir_safe([dirnameInstall, platform.setup_exe{ii}]);
     end
 end
-if exist([dirnameInstall, 'Buildme.log'],'file')
-    delete([dirnameInstall, 'Buildme.log']);
-end
-if exist([dirnameApp, 'Buildme.log'],'file')
-    delete([dirnameApp, 'Buildme.log']);
+if optionExists(options,'start')
+    if exist([dirnameInstall, 'Buildme.log'],'file')
+        delete([dirnameInstall, 'Buildme.log']);
+    end
+    if exist([dirnameApp, 'Buildme.log'],'file')
+        delete([dirnameApp, 'Buildme.log']);
+    end
 end
 if exist([dirnameInstall, 'mccExcludedFiles.log'],'file')
     delete([dirnameInstall, 'mccExcludedFiles.log']);

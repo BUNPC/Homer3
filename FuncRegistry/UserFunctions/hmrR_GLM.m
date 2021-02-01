@@ -50,6 +50,7 @@
 %               idxBasis=2. [tau sigma T] applied to both HbO and HbR
 %                  or [tau1 sigma1 T1 tau2 sigma2 T2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
+%                  default: 0.1 3.0 10.0 1.8 3.0 10.0
 %               idxBasis=3 [tau sigma T] applied to both HbO and HbR
 %                  or [tau1 sigma1 T1 tau2 sigma2 T2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
@@ -92,8 +93,8 @@
 % PARAMETERS:
 % trange: [-2.0, 20.0]
 % glmSolveMethod: 1
-% idxBasis: 2
-% paramsBasis: [0.1 3.0 10.0 1.8 3.0 10.0], maxnum: 6
+% idxBasis: 1
+% paramsBasis: [1.0 1.0 0.0 0.0 0.0 0.0], maxnum: 6
 % rhoSD_ssThresh: 15.0
 % flagNuisanceRMethod: 1
 % driftOrder: 3
@@ -110,6 +111,7 @@ data_ysum2    = DataClass().empty();
 data_yresid   = DataClass().empty();
 beta_blks     = cell(length(data_y),1);
 yR_blks       = cell(length(data_y),1);
+beta_label = [];
 
 % Check input args
 if isempty(tIncAuto)
@@ -757,9 +759,11 @@ for iBlk=1:length(data_y)
     yR_blks{iBlk}   = yR;
     
     % stats struct
-    hmrstats.beta_label = beta_label; % 
-    hmrstats.tval = tval;
-    hmrstats.pval = pval; 
+    if glmSolveMethod == 1 %  for OLS only now
+        hmrstats.beta_label = beta_label;
+        hmrstats.tval = tval;
+        hmrstats.pval = pval;
+    end
 
 end
 

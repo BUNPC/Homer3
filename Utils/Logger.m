@@ -38,7 +38,14 @@ classdef Logger < handle
                 end
             end
             
-            self.Open();
+            try
+                self.fhandle = fopen(self.filename, 'wt');
+            catch ME
+                fprintf('Failed to open log file.\n');
+                fprintf('    %s\n', ME.message);
+                fprintf('    Will print output only to console\n');
+                self.fhandle = -1;
+            end
             
             self.options = struct(...
                 'NULL',-1, ...

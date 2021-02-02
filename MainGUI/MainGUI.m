@@ -997,15 +997,41 @@ for iBlk = iDataBlks
             else
                 xlabel('Time (s)', 'FontSize', 11);
             end
-            procName = {procElem.procStream.fcalls.name};
-            idx = contains(procName, 'hmrR_OD2Conc');
+            if strcmp(procElem.type, 'run')
+                procName = {procElem.procStream.fcalls.name};
+                idx = contains(procName, 'hmrR_OD2Conc');
+            elseif strcmp(procElem.type, 'subj')
+                procName = {procElem.runs(1).procStream.fcalls.name};
+                idx = contains(procName, 'hmrR_OD2Conc');
+            else
+                procName = {procElem.subjs(1).runs(1).procStream.fcalls.name};
+                idx = contains(procName, 'hmrR_OD2Conc');
+            end
             if ~isempty(find(idx,1))
-                ppf = procElem.procStream.fcalls(idx).paramIn.value;
-                if ppf(condition) == 1 && ~isempty(dataTree.currElem.acquired.metaDataTags.tags.LengthUnit)
-                    unit = dataTree.currElem.acquired.metaDataTags.tags.LengthUnit;
-                    ylabel(['\muM ' unit], 'FontSize', 11);
+                if strcmp(procElem.type, 'run')
+                    ppf = procElem.procStream.fcalls(idx).paramIn.value;
+                    if ppf(iWl) == 1 && ~isempty(dataTree.currElem.acquired.metaDataTags.tags.LengthUnit)
+                        unit = dataTree.currElem.acquired.metaDataTags.tags.LengthUnit;
+                        ylabel(['\muM ' unit], 'FontSize', 11);
+                    else
+                        ylabel('\muM', 'FontSize', 11);
+                    end
+                elseif strcmp(procElem.type, 'subj')
+                    ppf = procElem.runs(1).procStream.fcalls(idx).paramIn.value;
+                    if ppf(iWl) == 1 && ~isempty(dataTree.currElem.runs(1).acquired.metaDataTags.tags.LengthUnit)
+                        unit = dataTree.currElem.runs(1).acquired.metaDataTags.tags.LengthUnit;
+                        ylabel(['\muM ' unit], 'FontSize', 11);
+                    else
+                        ylabel('\muM', 'FontSize', 11);
+                    end
                 else
-                ylabel('\muM', 'FontSize', 11);
+                    ppf = procElem.subjs(1).runs(1).procStream.fcalls(idx).paramIn.value;
+                    if ppf(iWl) == 1 && ~isempty(dataTree.currElem.subjs(1).runs(1).acquired.metaDataTags.tags.LengthUnit)
+                        unit = dataTree.currElem.subjs(1).runs(1).acquired.metaDataTags.tags.LengthUnit;
+                        ylabel(['\muM ' unit], 'FontSize', 11);
+                    else
+                        ylabel('\muM', 'FontSize', 11);
+                    end
                 end
             else
                 ylabel('\muM', 'FontSize', 11);

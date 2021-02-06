@@ -103,6 +103,7 @@ set(handles.textPanDisplay, 'enable', val);
 
 % Plot type selected panel
 set(handles.listboxPlotConc, 'enable', val);
+set(handles.listboxPlotWavelength, 'enable', val);
 set(handles.radiobuttonPlotRaw, 'enable', val);
 set(handles.radiobuttonPlotOD,  'enable', val);
 set(handles.radiobuttonPlotConc, 'enable', val);

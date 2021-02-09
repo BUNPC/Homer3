@@ -1,23 +1,12 @@
-function configSetting
+function configSettingsGUI
     global cfgSet
     
-    [files, pathnm] = uigetfile( '*.cfg', 'Pick the .cfg file', 'multiselect','off');
-    
-    if ~iscell(files)
-        if files==0
-            return;
-        end
-    end
-    
-    [~,name,~] = fileparts(files);
-    
-    wd = cd;
-    cd(pathnm)
-    
-    cfgSet = ConfigFileClass([pathnm files]);
+    cfgSet = ConfigFileClass();
     
     f = figure('NumberTitle','off');
     f.Name = 'App Setting Config GUI';
+    set(f, 'MenuBar', 'none');
+    set(f, 'ToolBar', 'none');
     
     param = cell(length(cfgSet.sections),1);
     for i = 1:length(cfgSet.sections)
@@ -181,7 +170,6 @@ function configSetting
               'Position', [0.625 0.25 0.25 0.5]);
     c{nAdj+1}.Callback = @cfgExit;
 
-    cd(wd)
 %     clear cfgSet
 end
     
@@ -199,6 +187,7 @@ end
     function cfgSave(~,~)
       global cfgSet
       cfgSet.Save();
+      close;
     end
     
     % -------------------------------------------------------------

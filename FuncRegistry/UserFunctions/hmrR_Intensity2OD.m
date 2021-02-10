@@ -36,11 +36,11 @@ for ii=1:length(intensity)
             case 'YES'
                 for j = 1:size(d,2)
                     foo = d(:,j);
-                    if ~isempty(foo<0)
+                    if ~isempty(find(foo<0))
                         d(:,j) = foo + abs(min(foo));
                         foo = d(:,j);
                     end
-                    if ~isempty(foo == 0)
+                    if ~isempty(find(foo == 0))
                         d(:,j) = foo + min(foo(foo > 0));
                     end
                 end

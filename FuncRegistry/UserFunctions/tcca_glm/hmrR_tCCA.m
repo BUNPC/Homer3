@@ -175,10 +175,12 @@ if flagtCCA
             end
         end
         % AUX signals + add ss signal if it exists
-        if ~isempty(d_short) & exist('AUX') & ss_ch_on == 1
-            AUX = [AUX, d_short]; % this should be of the current run
-        elseif ss_ch_on ~= 0
+        if exist('AUX') & ss_ch_on == 1 & ~isempty(d_short)
+            AUX = [AUX, d_short]; 
+        elseif ~exist('AUX') & ss_ch_on == 1 & ~isempty(d_short)
             AUX = d_short;
+        elseif exist('AUX') & ss_ch_on == 0 
+            AUX = AUX;
         else
             msg = 'No auxiliary or short separation measurement to regress out.';
             error(msg)

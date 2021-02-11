@@ -1,5 +1,5 @@
 % SYNTAX:
-% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R] = hmrR_GLM(data, stim, probe, mlActAuto, Aaux, tIncAuto, trange, rcMap, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder)
+% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R, hmrstats] = hmrR_GLM(data, stim, probe, mlActAuto, Aaux, tIncAuto, trange, rcMap, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 %
 % UI NAME:
 % GLM_HRF_Drift_SS
@@ -69,7 +69,9 @@
 %            3. uses tCCA regressors for nuisance regression, in Aaux,
 %            mapped by rcMap, provided by hmr_tCCA()
 % driftOrder - Polynomial drift correction of this order
-%
+% c_vector - Contrast vector, has values 1, -1 or 0. E.g. to contrast cond
+%           2 to cond 3 in an experimental paradigm with four conditions, c_vector is
+%           [0 1 -1 0]
 %
 % OUTPUTS:
 % yavg - the averaged results
@@ -84,10 +86,10 @@
 %           (#coefficients x HbX x #Channels x #conditions)
 % R - the correlation coefficient of the GLM fit to the data
 %     (#Channels x HbX)
-%
+% hmrstats - outputs t and pvalues for GLM
 %
 % USAGE OPTIONS:
-% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder)
+% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R, hmrstats] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 %
 %
 % PARAMETERS:
@@ -98,10 +100,10 @@
 % rhoSD_ssThresh: 15.0
 % flagNuisanceRMethod: 1
 % driftOrder: 3
+% c_vector: 0
 %
-%
-function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks] = ...
-    hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder)
+function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks, hmrstats] = ...
+    hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 
 % Init output
 data_yavg     = DataClass().empty();
@@ -112,6 +114,7 @@ data_yresid   = DataClass().empty();
 beta_blks     = cell(length(data_y),1);
 yR_blks       = cell(length(data_y),1);
 beta_label = [];
+hmrstats = [];
 
 % Check input args
 if isempty(tIncAuto)
@@ -356,7 +359,7 @@ for iBlk=1:length(data_y)
                 end
                 clmn = clmn(1:nT);
                 dA(:,iC,iConc) = clmn;
-                beta_label{b + (iCond-1)*nB} = ['Cond' num2str(iCond)]; 
+                beta_label{b + (iCond-1)*nB} = ['Cond' num2str(iCond)];
             end
         end
     end
@@ -382,38 +385,38 @@ for iBlk=1:length(data_y)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Expand design matrix for Motion Correction
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     if flagMotionCorrect==1
-%         idxMA = find(diff(tInc)==1);  % number of motion artifacts
-%         if isempty(idxMA)
-            nMC = 0;
-            Amotion = [];
-%         else
-%             nMA = length(idxMA);
-%             nMC = nMA+1;
-%             Amotion = zeros(nT,nMC);
-%             Amotion(1:idxMA(1),1) = 1;
-%             for ii=2:nMA
-%                 Amotion((idxMA(ii-1)+1):idxMA(ii),ii) = 1;
-%             end
-%             Amotion((idxMA(nMA)+1):end,end) = 1;
-%         end
-%     else
-%         nMC = 0;
-%         Amotion = [];
-%     end
+    %     if flagMotionCorrect==1
+    %         idxMA = find(diff(tInc)==1);  % number of motion artifacts
+    %         if isempty(idxMA)
+    nMC = 0;
+    Amotion = [];
+    %         else
+    %             nMA = length(idxMA);
+    %             nMC = nMA+1;
+    %             Amotion = zeros(nT,nMC);
+    %             Amotion(1:idxMA(1),1) = 1;
+    %             for ii=2:nMA
+    %                 Amotion((idxMA(ii-1)+1):idxMA(ii),ii) = 1;
+    %             end
+    %             Amotion((idxMA(nMA)+1):end,end) = 1;
+    %         end
+    %     else
+    %         nMC = 0;
+    %         Amotion = [];
+    %     end
     lstInc = find(tInc==1);
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Final design matrix
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     dummy = size(beta_label,2);
-
+    
     switch flagNuisanceRMethod
         case {0,1,2} % short separation
             for iConc=1:2
                 A(:,:,iConc)=[dA(:,:,iConc) xDrift Aaux Amotion];
                 
-                if iConc == 1 
+                if iConc == 1
                     for ixDrift = 1:size(xDrift,2)
                         beta_label{ixDrift + dummy} = ['xDrift'];
                     end
@@ -432,15 +435,15 @@ for iBlk=1:length(data_y)
             for iConc=1:2
                 A(:,:,iConc)=[dA(:,:,iConc) xDrift Amotion];
                 
-                if iConc == 1 
-                    for ixDrift = 1:size(xDrift,2) 
+                if iConc == 1
+                    for ixDrift = 1:size(xDrift,2)
                         beta_label{ixDrift + dummy} = ['Drift'];
                     end
                     dummy = size(beta_label,2);
                     for iAmotion = 1:size(Amotion,2)
                         beta_label{ixDrift + dummy} = ['Motion'];
                     end
-                end 
+                end
                 
             end
     end
@@ -501,10 +504,10 @@ for iBlk=1:length(data_y)
                 At = [A(:,:,conc) Ass];
                 
                 if iSS == 1 && conc == 1
-                    dummy = size(beta_label,2); 
+                    dummy = size(beta_label,2);
                     for iAss = 1:size(Ass,2)
                         beta_label{iAss + dummy} = ['ShortSep'];
-                    end 
+                    end
                 end
                 
             elseif flagNuisanceRMethod==1
@@ -646,9 +649,32 @@ for iBlk=1:length(data_y)
                     yest(:,lstML,conc) = At * foo(:,lstML,conc);
                     yvar(1,lstML,conc) = sum((squeeze(y(:,conc,lstML))-yest(:,lstML,conc)).^2)./(size(y,1)-1); % check this against eq(53) in Ye2009
                     for iCh = 1:length(lstML)
+                        
+                        % GLM stats for each condition
                         bvar(:,lstML(iCh),conc) = yvar(1,lstML(iCh),conc) * pAinvAinvD;
-                        tval(:,lstML(iCh),conc) =  foo(:,lstML(iCh),conc)./sqrt(bvar(:,lstML(iCh),conc)); 
-                        pval(:,lstML(iCh),conc) = 1-tcdf(abs(tval(:,lstML(iCh),conc)),(size(y,1)-1));   
+                        tval(:,lstML(iCh),conc) =  foo(:,lstML(iCh),conc)./sqrt(bvar(:,lstML(iCh),conc));
+                        pval(:,lstML(iCh),conc) = 1-tcdf(abs(tval(:,lstML(iCh),conc)),(size(y,1)-1));
+                        %
+                        
+                        % GLM stats for contrast between conditions, given a c_vector exists
+                        if nCond > 1
+                            if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond)
+                                
+                                if ~exist('cv_extended') == 1
+                                    cv_dummy = [];
+                                    for m = 1:nCond
+                                        cv_dummy = [cv_dummy ones(1,nB)*c_vector(m)];
+                                    end
+                                    cv_extended = [cv_dummy zeros(1,size(beta_label,2)-size(cv_dummy,2))];
+                                end
+                                
+                                tval_contrast(:,lstML(iCh),conc) = cv_extended * foo(:,lstML(iCh),conc)./sqrt(cv_extended * (pinvA*pinvA') * yvar(:,lstML(iCh),conc) * cv_extended');
+                                pval_contrast(:,lstML(iCh),conc) = 1-tcdf(abs(tval_contrast(:,lstML(iCh),conc)),(size(y,1)-1));
+                            end
+                        end
+                        %
+                        
+                        
                         for iCond=1:nCond
                             if size(tbasis,3)==1
                                 yavgstd(:,lstML(iCh),conc,iCond) = diag(tbasis*diag(bvar([1:nB]+(iCond-1)*nB,lstML(iCh),conc))*tbasis').^0.5;
@@ -730,7 +756,7 @@ for iBlk=1:length(data_y)
     %%%%%%%%%%%%%%%%%%%%%%%%%
     
     % Add the channels describing the data
-	for iCond = 1:size(yavg,4)
+    for iCond = 1:size(yavg,4)
         for iCh = 1:size(yavg,3)
             for iHb = 1:size(yavg,2)
                 data_yavg(iBlk).AddChannelHb(ml(iCh,1), ml(iCh,2), iHb, iCond);
@@ -759,11 +785,18 @@ for iBlk=1:length(data_y)
     yR_blks{iBlk}   = yR;
     
     % stats struct
-    if glmSolveMethod == 1 %  for OLS only now
+    if glmSolveMethod == 1 %  for OLS only for now
+        % GLM stats for each condition 
         hmrstats.beta_label = beta_label;
         hmrstats.tval = tval;
         hmrstats.pval = pval;
+        hmrstats.ml = ml;
+        % GLM stats for contrast between conditions, if c_vector exists
+        if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond) && nCond>1
+            hmrstats.tval_contrast = tval_contrast;
+            hmrstats.pval_contrast = pval_contrast;
+            hmrstats.contrast = c_vector;
+        end
     end
-
+    
 end
-

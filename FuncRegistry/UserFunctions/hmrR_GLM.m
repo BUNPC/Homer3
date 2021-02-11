@@ -657,18 +657,20 @@ for iBlk=1:length(data_y)
                         %
                         
                         % GLM stats for contrast between conditions, given a c_vector exists
-                        if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond)
-                            
-                            if ~exist('cv_extended') == 1
-                            cv_dummy = [];
-                            for m = 1:nCond
-                                cv_dummy = [cv_dummy ones(1,nB)*c_vector(m)];
+                        if nCond > 1
+                            if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond)
+                                
+                                if ~exist('cv_extended') == 1
+                                    cv_dummy = [];
+                                    for m = 1:nCond
+                                        cv_dummy = [cv_dummy ones(1,nB)*c_vector(m)];
+                                    end
+                                    cv_extended = [cv_dummy zeros(1,size(beta_label,2)-size(cv_dummy,2))];
+                                end
+                                
+                                tval_contrast(:,lstML(iCh),conc) = cv_extended * foo(:,lstML(iCh),conc)./sqrt(cv_extended * (pinvA*pinvA') * yvar(:,lstML(iCh),conc) * cv_extended');
+                                pval_contrast(:,lstML(iCh),conc) = 1-tcdf(abs(tval_contrast(:,lstML(iCh),conc)),(size(y,1)-1));
                             end
-                            cv_extended = [cv_dummy zeros(1,size(beta_label,2)-size(cv_dummy,2))];
-                            end
-                            
-                            tval_contrast(:,lstML(iCh),conc) = cv_extended * foo(:,lstML(iCh),conc)./sqrt(cv_extended * (pinvA*pinvA') * yvar(:,lstML(iCh),conc) * cv_extended');
-                            pval_contrast(:,lstML(iCh),conc) = 1-tcdf(abs(tval_contrast(:,lstML(iCh),conc)),(size(y,1)-1));
                         end
                         %
                         
@@ -790,7 +792,7 @@ for iBlk=1:length(data_y)
         hmrstats.pval = pval;
         hmrstats.ml = ml;
         % GLM stats for contrast between conditions, if c_vector exists
-        if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond)
+        if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond) && nCond>1
             hmrstats.tval_contrast = tval_contrast;
             hmrstats.pval_contrast = pval_contrast;
             hmrstats.contrast = c_vector;

@@ -1927,3 +1927,7 @@ xlim( bbox(1:2) );
 ylim( bbox(3:4) );
 maingui.axesSDG.xlim = bbox(1:2);
 maingui.axesSDG.ylim = bbox(3:4);
+
+% --------------------------------------------------------------------
+function menuItemAppConfigGUI_Callback(hObject, eventdata, handles)
+configSettingsGUI();

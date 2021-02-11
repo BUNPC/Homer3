@@ -10,7 +10,7 @@ classdef ConfigFileClass < FileClass
         % ----------------------------------------------------
         function obj = ConfigFileClass(filename0)
             obj.linestr = '';
-            obj.sections = struct('name','','val','');
+            obj.sections = struct('name','','val','','param','');
             obj.filename = '';
             
             % Error checks
@@ -74,18 +74,18 @@ classdef ConfigFileClass < FileClass
             %
             % Rule 2:
             % =======
-            % % name1
+            % % name1 # param1
             % % END
             %
             % Rule 3:
             % =======
-            % % name1
+            % % name1 # param1
             % val11
             % % END
             %
             % Rule 4:
             % =======
-            % % name1
+            % % name1 # param1
             % val11
             % val12
             % ....
@@ -94,13 +94,13 @@ classdef ConfigFileClass < FileClass
             %
             % Rule 5:
             % =======
-            % % name1
+            % % name1 # param1
             % val11
             % val12
             % ....
             % val1M
             %
-            % % name2
+            % % name2 # param2
             % val21
             % val22
             % ....
@@ -108,7 +108,7 @@ classdef ConfigFileClass < FileClass
             %
             %  .....
             %
-            % % nameN
+            % % nameN # paramN
             % valN1
             % valN2
             % ....
@@ -138,6 +138,7 @@ classdef ConfigFileClass < FileClass
                     end
                 end
                 name = obj.getSectionNameFromLine();
+                param = obj.getSectionParamFromLine();
                 
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 %%%% Find next parameter's value %%%%
@@ -171,6 +172,7 @@ classdef ConfigFileClass < FileClass
                 %%%% Assign name/value pair to next param %%%%
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 obj.sections(iP).name = name;
+                obj.sections(iP).param = param;
                 obj.sections(iP).val = val;
                 
                 
@@ -200,7 +202,13 @@ classdef ConfigFileClass < FileClass
             end
             fprintf(obj.fid, '\n');
             for ii=1:length(obj.sections)
-                fprintf(obj.fid, '%% %s\n', obj.sections(ii).name);
+                if iscell(obj.sections(ii).param) && all(~cellfun(@isempty,obj.sections(ii).param))
+                    fprintf(obj.fid, '%% %s # %s\n', obj.sections(ii).name, strjoin(obj.sections(ii).param,', '));
+                elseif iscell(obj.sections(ii).param) && all(cellfun(@isempty,obj.sections(ii).param))
+                    fprintf(obj.fid, '%% %s #\n', obj.sections(ii).name);
+                else
+                    fprintf(obj.fid, '%% %s\n', obj.sections(ii).name);
+                end
                 for jj=1:length(obj.sections(ii).val)
                     fprintf(obj.fid, '%s\n', obj.sections(ii).val{jj});
                 end
@@ -297,10 +305,42 @@ classdef ConfigFileClass < FileClass
                 ii=ii+1;
             end
             jj=ii;
-            while jj<length(obj.linestr) && (obj.linestr(jj)~=sprintf('\n') || obj.linestr(jj)~=sprintf('\r'))
+            while jj<length(obj.linestr) && (obj.linestr(jj)~=newline || obj.linestr(jj)~=sprintf('\r')) && ~strcmp(obj.linestr(jj),'#')
                 jj=jj+1;
             end
+            if strcmp(obj.linestr(jj),'#')
+                jj = jj-2;
+            end
             name = strtrim_improve(obj.linestr(ii:jj));
+        end
+        
+        
+        % -------------------------------------------------------------------------------------------------
+        function param = getSectionParamFromLine(obj)
+            param = '';
+            if isempty(obj.linestr)
+                return;
+            end
+            
+            ii=1;
+            while ii<length(obj.linestr) && obj.linestr(ii)~='#'
+                ii=ii+1;
+            end
+            while ii<length(obj.linestr) && ~isalnum(obj.linestr(ii))
+                ii=ii+1;
+            end
+            jj=ii;
+            while jj<length(obj.linestr) && (obj.linestr(jj)~=newline || obj.linestr(jj)~=sprintf('\r'))
+                jj=jj+1;
+            end
+            if ii == jj && strcmp(obj.linestr(ii),'#')
+                param = cell(1,1);
+            elseif ii == jj
+                param = [];
+            else
+                param = strtrim_improve(obj.linestr(ii:jj));
+                param = split(param,', ');
+            end
         end
         
         
@@ -316,7 +356,7 @@ classdef ConfigFileClass < FileClass
                 ii=ii+1;
             end
             jj=ii;
-            while jj<length(obj.linestr) && (obj.linestr(jj)~=sprintf('\n') || obj.linestr(jj)~=sprintf('\r'))
+            while jj<length(obj.linestr) && (obj.linestr(jj)~=newline || obj.linestr(jj)~=sprintf('\r'))
                 jj=jj+1;
             end
             val = obj.linestr(ii:jj);

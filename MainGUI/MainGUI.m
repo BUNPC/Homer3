@@ -26,6 +26,7 @@ end
 
 % ---------------------------------------------------------------------
 function MainGUI_Init(handles, args)
+global maingui
 
 % Set the figure renderer. Some renderers aren't compatible
 % with certain OSs or graphics cards. MainGUI uses the figure renderer
@@ -68,6 +69,12 @@ cfg = ConfigFileClass();
 handles.menuItemUpdateCheck.Checked = cfg.GetValue('Check For Updates');
 
 MainGUI_EnableDisableGUI(handles, 'off')
+
+% For GUI unit testing we collect all the and object handles and function handles 
+% to their callbacks 
+if ~isempty(maingui.unitTest)
+    maingui.unitTest.Initialize(handles, @UnitTestInit);
+end
 
 
 % ---------------------------------------------------------------------
@@ -169,6 +176,7 @@ global logger
 startuptimer = tic;
 maingui = [];
 
+% Extract arguments
 if isempty(varargin)
     maingui.groupDirs = filesepStandard({pwd});
 else
@@ -179,14 +187,22 @@ if length(varargin)<2
 else
     maingui.format = varargin{2};
 end
+if length(varargin)<3
+    maingui.unitTest = [];
+else
+    maingui.unitTest = varargin{3};
+end
 
+maingui.logger = InitLogger(logger, 'MainGUI');
 if ~iscell(maingui.groupDirs)
     maingui.groupDirs = {maingui.groupDirs};
 end
-maingui.logger = InitLogger(logger, 'MainGUI');
-
 for ii=1:length(maingui.groupDirs)
     maingui.logger.CurrTime(sprintf('MainGUI:  Will load group folder #%d - %s\n', ii, maingui.groupDirs{ii}));
+end
+procStreamFile = '';
+if ~isempty(maingui.unitTest)
+    procStreamFile = maingui.unitTest.GetProcStreamFile();
 end
 
 maingui.gid = 1;
@@ -217,10 +233,14 @@ maingui.childguis(4) = ChildGuiClass('PlotProbeGUI');
 maingui.childguis(5) = ChildGuiClass('PvaluesDisplayGUI');
 
 % Load date files into group tree object
-maingui.dataTree  = LoadDataTree(maingui.groupDirs, maingui.format);
+maingui.dataTree  = LoadDataTree(maingui.groupDirs, maingui.format, procStreamFile);
 if maingui.dataTree.IsEmpty()
     return;
 end
+if ~isempty(maingui.unitTest)
+    maingui.dataTree.ResetAll();
+end
+
 InitGuiControls(handles);
 
 % Display data from currently selected processing element
@@ -232,7 +252,6 @@ maingui.axesSDG.xlim = maingui.axesSDG.handles.axes.XLim;
 maingui.axesSDG.ylim = maingui.axesSDG.handles.axes.YLim;
 
 maingui.handles = handles;
-maingui.handles.pValuesFig = [];
 
 % Set path in GUI window title
 s = get(hObject,'name');
@@ -249,7 +268,8 @@ MainGUI_EnableDisableGUI(handles,'on');
 
 % --------------------------------------------------------------------
 function varargout = MainGUI_OutputFcn(hObject, eventdata, handles)
-varargout{1} = handles.output;
+global maingui
+varargout{1} = maingui.unitTest;
 
 
 
@@ -563,16 +583,21 @@ end
 % --------------------------------------------------------------------
 function [eventdata, handles] = axesSDG_ButtonDownFcn(hObject, eventdata, handles)
 global maingui
+
 if ~ishandles(hObject)
     return;
 end
+if ~exist('eventdata','var')
+    eventdata = [];
+end
+
 dataTree = maingui.dataTree;
 if dataTree.IsEmpty()
     return;
 end
 
 % Set channels selection 
-SetAxesDataCh();
+SetAxesDataCh(handles, eventdata);
    
 if ~isempty(maingui.plotViewOptions.ranges.X)
     axes(handles.axesData)
@@ -621,7 +646,6 @@ global maingui
 if ~ishandles(hObject)
     return;
 end
-
 fmt = maingui.format;
 
 % Change directory
@@ -631,7 +655,9 @@ if pathnm==0
 end
 cd(pathnm);
 hGui=get(get(hObject,'parent'),'parent');
-MainGUI_DeleteFcn(hGui,[],handles);
+if isempty(maingui.unitTest)
+    MainGUI_DeleteFcn(hGui,[],handles);
+end
 
 % restart
 MainGUI(pathnm, fmt, 'userargs');
@@ -846,13 +872,13 @@ if maingui.dataTree.LoadCurrElem() < 0
     return;
 end
 
+DisplayAxesSDG(handles);
 hObject = DisplayData(handles, hObject);
-DisplayAxesSDG();
 
 if get(handles.checkboxExcludeTime, 'value') == 1 | get(handles.checkboxExcludeStims, 'value') == 1
-    zoom off
+    zoom(handles.axesData, 'off')
 else
-    zoom on
+    zoom(handles.axesData, 'on')
 end
 
 
@@ -863,11 +889,12 @@ function hObject = DisplayData(handles, hObject, hAxes)
 global maingui
 
 if nargin<3
-    hAxes = maingui.axesData.handles.axes;
+    hAxes = handles.axesData;
 end
 if ~ishandles(hAxes)
     return;
 end
+hf = get(hAxes,'parent');
 
 % Some callbacks which call DisplayData serve double duty as called functions 
 % from other callbacks which in turn call DisplayData. To avoid double or
@@ -888,14 +915,13 @@ procElem = dataTree.currElem;
 EnableDisableGuiPlotBttns(handles);
 
 axes(hAxes)
-cla;
-legend off
+cla(hAxes);
+legend(hAxes, 'off')
 set(hAxes,'ygrid','on');
 
-
 % Initilaize the axes labels
-xlabel('');
-ylabel('');
+xlabel(hAxes, '');
+ylabel(hAxes, '');
 
 
 linecolor  = maingui.axesData.linecolor;
@@ -960,22 +986,22 @@ for iBlk = iDataBlks
     
     %%% Plot data
     if ~isempty(d)
-        xx = xlim();
-        yy = ylim();
+        xx = xlim(hAxes);
+        yy = ylim(hAxes);
         if strcmpi(get(hAxes,'ylimmode'),'manual')
             flagReset = 0;
         else
             flagReset = 1;
         end
-        hold on
+        hold(hAxes, 'on');
         
         % Set the axes ranges
         if flagReset==1
             set(hAxes,'xlim',[t(1), t(end)]);
             set(hAxes,'ylimmode','auto');
         else
-            xlim(xx);
-            ylim(yy);
+            set(hAxes,'xlim',xx);
+            set(hAxes,'ylim',yy);
         end
         
         linecolors = linecolor(iColor:iColor+length(iChBlk)-1,:);
@@ -986,27 +1012,27 @@ for iBlk = iDataBlks
                 d = d(:,:,condition);
             end
             d = procElem.reshape_y(d, ch.MeasList);
-            DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
+            DisplayDataRawOrOD(hAxes, t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
 
             % Set the x-axis label
-            xlabel('Time (s)', 'FontSize', 11);
+            xlabel(hAxes, 'Time (s)', 'FontSize', 11);
         elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
             if  datatype == maingui.buttonVals.CONC_HRF
                 d = d(:,:,:,condition);
             end
             d = d * sclConc;
-            DisplayDataConc(t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
+            DisplayDataConc(hAxes, t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
             
             % Set the x-axis label
-            xlabel('Time (s)', 'FontSize', 11);
+            xlabel(hAxes, 'Time (s)', 'FontSize', 11);
 
             % Set the y-axis label
             ppf  		= procElem.GetVar('ppf');
             lengthUnit 	= procElem.GetVar('LengthUnit');
             if any(ppf==1) && ~isempty(lengthUnit)
-                ylabel(['\muM ' lengthUnit], 'FontSize', 11);
+                ylabel(hAxes, ['\muM ' lengthUnit], 'FontSize', 11);
             else
-                ylabel('\muM', 'FontSize', 11);
+                ylabel(hAxes, '\muM', 'FontSize', 11);
             end
         end
     end
@@ -1015,23 +1041,23 @@ end
 
 % Set Zoom on/off
 if maingui.plotViewOptions.zoom == true
-    h=zoom;
+    h = zoom(hf);
     set(h,'ButtonDownFilter',@myZoom_callback);
     set(h,'enable','on')
 else
-    zoom off;
+    zoom(hf,'off');
 end
 
 % Set data window X and Y borders
 if ~isempty(maingui.plotViewOptions.ranges.Y)
-    ylim(maingui.plotViewOptions.ranges.Y);
+    ylim(hAxes, maingui.plotViewOptions.ranges.Y);
 else
-    ylim('auto')
+    ylim(hAxes, 'auto')
 end
 if ~isempty(maingui.plotViewOptions.ranges.X)
-    xlim(maingui.plotViewOptions.ranges.X);
+    xlim(hAxes, maingui.plotViewOptions.ranges.X);
 else
-    xlim('auto')
+    xlim(hAxes, 'auto')
     if ~isempty(t)
         set(hAxes, 'xlim',[t(1), t(end)]);
     end
@@ -1074,15 +1100,11 @@ procElem = dataTree.currElem;
 if ~strcmp(procElem.type, 'run')
     return;
 end
-
-if nargin<2
-    hAxes = maingui.axesData.handles.axes;
-end
 if ~ishandles(hAxes)
     return;
 end
 axes(hAxes);
-hold on;
+hold(hAxes,'on');
 
 datatype = GetDatatype(handles);
 if datatype == maingui.buttonVals.RAW_HRF
@@ -1118,7 +1140,7 @@ for iCond = 1:size(s,2)
         elseif s(iS(ii),iCond) == stimVals.incl
             linestyle = '-';
         end
-        hl = plot(t(iS(ii))*[1 1], yrange, linestyle);
+        hl = plot(hAxes, t(iS(ii))*[1 1], yrange, linestyle);
         set(hl, 'linewidth',1.5);
         set(hl, 'color',CondColTbl(iCond,:));
     end
@@ -1129,14 +1151,14 @@ for iCond = 1:size(s,2)
         % We don't want dashed lines appearing in legend, so
         % we draw invisible solid stims over all stims to
         % trick the legend into only showing solid lines.
-        hLg(kk) = plot(t(iS(1))*[1 1],yrange,'-', 'linewidth',4, 'visible','off');
+        hLg(kk) = plot(hAxes, t(iS(1))*[1 1],yrange,'-', 'linewidth',4, 'visible','off');
         set(hLg(kk),'color',CondColTbl(iCond,:));
         idxLg(kk) = iCond;
         kk=kk+1;
     end
 end
-DisplayCondLegend(hLg, idxLg);
-hold off
+DisplayCondLegend(hLg, idxLg, hAxes);
+hold(hAxes, 'off')
 set(hAxes,'ygrid','on');
                 
                 
@@ -1148,14 +1170,11 @@ global maingui
 dataTree = maingui.dataTree;
 procElem = dataTree.currElem;
 
-if nargin<3
-    hAxes = maingui.axesData.handles.axes;
-end
 if ~ishandles(hAxes)
     return;
 end
 axes(hAxes);
-hold on;
+hold(hAxes, 'on');
 
 if isempty(hLg)
     return;    
@@ -1166,7 +1185,7 @@ end
 [idxLg, k] = sort(idxLg);
 CondNames = procElem.CondNames;
 if ishandles(hLg)
-    legend(hLg(k), CondNames(idxLg));
+    legend(hAxes, hLg(k), CondNames(idxLg));
 end
 
 
@@ -1190,7 +1209,7 @@ if ~ishandles(hAxes)
     return;
 end
 axes(hAxes);
-hold on;
+hold(hAxes, 'on');
 
 aux = maingui.dataTree.currElem.GetAuxiliary();
 t = maingui.dataTree.currElem.GetAuxiliaryTime();
@@ -1220,13 +1239,13 @@ if iAux==0
     set(handles.popupmenuAux, 'value',1);
 end
 
-hold on
+hold(hAxes, 'on');
 data = aux.data(:,iAux)-min(aux.data(:,iAux));
 r = ylim();
 yrange = [r(1) - (r(2)-r(1)), r(1)];
-h = plot(t, yrange(1)+(yrange(2)-yrange(1)) * (data/(max(data)-min(data))), 'k');
+h = plot(hAxes, t, yrange(1)+(yrange(2)-yrange(1)) * (data/(max(data)-min(data))), 'k');
 set(h,'linewidth',1);
-hold off
+hold(hAxes, 'off');
 
 
 % ----------------------------------------------------------------------------------
@@ -1242,17 +1261,6 @@ for iBlk=1:length(pValues)
     maingui.logger.Write(sprintf('P-Values for %s, data block %d:\n', maingui.dataTree.currElem.GetName(), iBlk));
     pretty_print_matrix(pValues{iBlk});
 end
-
-% guiname = sprintf('%s P-Values', maingui.dataTree.currElem.GetName());
-% 
-% if ishandles(maingui.handles.pValuesFig)
-%     clf(maingui.handles.pValuesFig);
-% else
-%     maingui.handles.pValuesFig = figure('toolbar','none', 'menubar','none', 'name',guiname, 'numbertitle','off');
-% end
-% ht = uitable('parent',maingui.handles.pValuesFig, 'units','normalized', 'position',[.2,.2,.5,.5]);
-% set(ht, 'data', pValues{iBlk})
-% 
 
 
 
@@ -1298,8 +1306,8 @@ switch(guiname)
             listboxGroupTree_Callback([], [iGroup, iSubj, iRun], maingui.handles);
         end
     case 'PatchCallback'
-        Display(maingui.handles, maingui.handles.axesData);  % Redisplay data axes since stims might have edited        
-        
+        % Redisplay data axes since stims might have edited
+        Display(maingui.handles, maingui.handles.axesData);
 end
 
 
@@ -1902,3 +1910,38 @@ maingui.axesSDG.ylim = bbox(3:4);
 % --------------------------------------------------------------------
 function menuItemAppConfigGUI_Callback(hObject, eventdata, handles)
 configSettingsGUI();
+
+
+% ------------------------------------------
+function callbacks = UnitTestInit(handles) %#ok<DEFNU,STOUT>
+fields = propnames(handles);
+for ii = 1:length(fields)
+    callbackName = '';
+    
+    if ~exist([fields{ii}, '_Callback']) %#ok<*EXIST>
+        if ~exist([fields{ii}, '_ButtonDownFcn']) %#ok<*EXIST>
+            if ~exist(fields{ii})
+                continue;
+            end
+        end
+    end
+    
+    if exist([fields{ii}, '_Callback']) %#ok<*EXIST>
+        callbackName = [fields{ii}, '_Callback'];
+    elseif exist([fields{ii}, '_ButtonDownFcn']) %#ok<*EXIST>
+        callbackName = [fields{ii}, '_ButtonDownFcn'];
+    elseif exist(fields{ii}) %#ok<*EXIST>
+        callbackName = fields{ii};
+    end
+    if isempty(callbackName)
+        continue;
+    end
+    eval(sprintf('callbacks.%s = @%s;', fields{ii}, callbackName))
+end
+
+% Override
+callbacks.radiobuttonProcTypeGroup = @uipanelProcessingType_SelectionChangeFcn;
+callbacks.radiobuttonProcTypeSubj = @uipanelProcessingType_SelectionChangeFcn;
+callbacks.radiobuttonProcTypeRun = @uipanelProcessingType_SelectionChangeFcn;
+
+

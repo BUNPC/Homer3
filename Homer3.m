@@ -1,7 +1,7 @@
-function Homer3(groupDirs, inputFileFormat)
+function unitTest = Homer3(groupDirs, inputFileFormat, unitTest)
 
 %  Syntax:
-%       Homer3(groupDirs, inputFileFormat)
+%       unitTest = Homer3(groupDirs, inputFileFormat)
 %   
 %  Examples:
 %
@@ -10,9 +10,6 @@ function Homer3(groupDirs, inputFileFormat)
 %
 
 global logger
-logger = Logger('Homer3');
-
-logger.CurrTime();
 
 if ~exist('groupDirs','var') || isempty(groupDirs)
     groupDirs = filesepStandard(pwd);
@@ -20,15 +17,24 @@ end
 if ~exist('inputFileFormat','var') || isempty(inputFileFormat)
     inputFileFormat = '.snirf';
 end
-cfg = ConfigFileClass();
+if ~exist('unitTest','var')
+    unitTest = [];
+end
 
+if isempty(unitTest)
+    logger = Logger('Homer3');
+elseif unitTest.IsEmpty()
+    logger = InitLogger(logger);
+else
+    return;
+end
+logger.CurrTime();
+cfg = ConfigFileClass();
 if strcmp(cfg.GetValue('Logging'), 'off')
     logger.SetDebugLevel(logger.Null());
 end
-
 PrintSystemInfo(logger, 'Homer3');
 checkForHomerUpdates();
-
 logger.Write(sprintf('Opened application config file %s\n', cfg.filename))
 gdir = cfg.GetValue('Last Group Folder');
 if isempty(gdir)
@@ -38,11 +44,11 @@ if isempty(gdir)
 end
 
 try
-    MainGUI(groupDirs, inputFileFormat, logger, 'userargs');
+    unitTest = MainGUI(groupDirs, inputFileFormat, unitTest, 'userargs');    
 catch ME
     % Clean up in case of error make sure all open file handles are closed 
     % so we don't leave the application in a bad state
-    logger.Close()
-    rethrow(ME)
+    logger.Close();
+    rethrow(ME);
 end
 

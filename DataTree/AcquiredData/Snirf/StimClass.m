@@ -203,12 +203,23 @@ classdef StimClass < FileLoadSaveClass
             
             % Dimensions matter so dimensions must equal
             if ~all(size(obj.data)==size(obj2.data))
-                return;
+                if ~isempty(obj.data) || ~isempty(obj2.data)
+                    return;
+                end
             end
             
             % Now check contents
             if ~all(obj.data(:)==obj2.data(:))
                 return;
+            end
+            
+            if length(obj.dataLabels) ~= length(obj2.dataLabels)
+                return;
+            end
+            for ii = 1:length(obj.dataLabels)
+                if ~strcmp(obj.dataLabels{ii}, obj2.dataLabels{ii})
+                    return;
+                end
             end
             B = true;
         end
@@ -363,9 +374,9 @@ classdef StimClass < FileLoadSaveClass
                     end
                 end 
             else  % If this stim is being added to an empty condition
-                for i=1:length(tPts)
-                    obj.data = [tPts(i), duration, amp, more];
-                    obj.states = [tPts(i), 1];
+                for i = 1:length(tPts)
+                    obj.data(i,:) = [tPts(i), duration, amp, more];
+                    obj.states(i,:) = [tPts(i), 1];
                 end
             end
         end

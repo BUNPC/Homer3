@@ -37,7 +37,7 @@ end
 
 
 % Set argument defaults
-dirname = filesepStandard(pwd,'full');
+dirname = filesepStandard(pwd);
 format = supportedFormats{1};
 datafiles0 = [];
 options = 'delete';

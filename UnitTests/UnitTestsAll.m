@@ -8,6 +8,7 @@ CleanUp(true);
 cleanupObj = onCleanup(@()userInterrupt_Callback(true));
 
 logger = Logger('UnitTestsAll');
+
 c = ConfigFileClass();
 c.SetValue('Regression Test Active','true');
 
@@ -19,6 +20,7 @@ UnitTestsAll_Nirs(false);
 c.SetValue('Default Processing Stream Style','SNIRF');
 c.Save();
 UnitTestsAll_Snirf(false);
+UnitTestsAll_MainGUI(false)
 
 toc(t_local);
 

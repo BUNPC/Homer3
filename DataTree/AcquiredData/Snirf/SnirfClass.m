@@ -903,6 +903,19 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             val = obj.metaDataTags.Get();
         end
         
+        % ---------------------------------------------------------
+        function val = GetLengthUnit(obj)
+            val = [];
+            if isempty(obj)
+                return;
+            end
+            if isempty(obj.metaDataTags)
+                return;
+            end
+            tag = obj.metaDataTags.Get('LengthUnit');
+            val = tag.value;
+        end
+        
     end
     
     

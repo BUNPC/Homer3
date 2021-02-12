@@ -1242,8 +1242,20 @@ classdef ProcStreamClass < handle
                 varval = obj.input.GetVar(varname, iBlk);
                 if isempty(varval)
                     varval = obj.output.GetVar(varname, iBlk);
-                end                
+                end
             end
+            
+            % Search function call chain as well if the requested variable 
+            % is acually a user-settable parameter
+            if isempty(varval)
+                for ii = 1:length(obj.fcalls)
+                    varval = obj.fcalls(ii).GetVar(varname);
+                    if ~isempty(varval)
+                        break;
+                    end
+                end
+            end
+            
         end
         
         

@@ -892,6 +892,12 @@ cla;
 legend off
 set(hAxes,'ygrid','on');
 
+
+% Initilaize the axes labels
+xlabel('');
+ylabel('');
+
+
 linecolor  = maingui.axesData.linecolor;
 linestyle  = maingui.axesData.linestyle;
 datatype   = GetDatatype(handles);
@@ -981,59 +987,24 @@ for iBlk = iDataBlks
             end
             d = procElem.reshape_y(d, ch.MeasList);
             DisplayDataRawOrOD(t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
-            if isa(dataTree.currElem, 'RunClass')
-                xlabel('Time (s)', 'FontSize', 11);
-            else
-                xlabel('Time (s)', 'FontSize', 11);
-            end
-            ylabel('');
+
+            % Set the x-axis label
+            xlabel('Time (s)', 'FontSize', 11);
         elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
             if  datatype == maingui.buttonVals.CONC_HRF
                 d = d(:,:,:,condition);
             end
             d = d * sclConc;
             DisplayDataConc(t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
-            if isa(dataTree.currElem, 'RunClass')
-                xlabel('Time (s)', 'FontSize', 11);
-            else
-                xlabel('Time (s)', 'FontSize', 11);
-            end
-            if strcmp(procElem.type, 'run')
-                procName = {procElem.procStream.fcalls.name};
-                idx = contains(procName, 'hmrR_OD2Conc');
-            elseif strcmp(procElem.type, 'subj')
-                procName = {procElem.runs(1).procStream.fcalls.name};
-                idx = contains(procName, 'hmrR_OD2Conc');
-            else
-                procName = {procElem.subjs(1).runs(1).procStream.fcalls.name};
-                idx = contains(procName, 'hmrR_OD2Conc');
-            end
-            if ~isempty(find(idx,1))
-                if strcmp(procElem.type, 'run')
-                    ppf = procElem.procStream.fcalls(idx).paramIn.value;
-                    if ppf(iWl) == 1 && ~isempty(dataTree.currElem.acquired.metaDataTags.tags.LengthUnit)
-                        unit = dataTree.currElem.acquired.metaDataTags.tags.LengthUnit;
-                        ylabel(['\muM ' unit], 'FontSize', 11);
-                    else
-                        ylabel('\muM', 'FontSize', 11);
-                    end
-                elseif strcmp(procElem.type, 'subj')
-                    ppf = procElem.runs(1).procStream.fcalls(idx).paramIn.value;
-                    if ppf(iWl) == 1 && ~isempty(dataTree.currElem.runs(1).acquired.metaDataTags.tags.LengthUnit)
-                        unit = dataTree.currElem.runs(1).acquired.metaDataTags.tags.LengthUnit;
-                        ylabel(['\muM ' unit], 'FontSize', 11);
-                    else
-                        ylabel('\muM', 'FontSize', 11);
-                    end
-                else
-                    ppf = procElem.subjs(1).runs(1).procStream.fcalls(idx).paramIn.value;
-                    if ppf(iWl) == 1 && ~isempty(dataTree.currElem.subjs(1).runs(1).acquired.metaDataTags.tags.LengthUnit)
-                        unit = dataTree.currElem.subjs(1).runs(1).acquired.metaDataTags.tags.LengthUnit;
-                        ylabel(['\muM ' unit], 'FontSize', 11);
-                    else
-                        ylabel('\muM', 'FontSize', 11);
-                    end
-                end
+            
+            % Set the x-axis label
+            xlabel('Time (s)', 'FontSize', 11);
+
+            % Set the y-axis label
+            ppf  		= procElem.GetVar('ppf');
+            lengthUnit 	= procElem.GetVar('LengthUnit');
+            if any(ppf==1) && ~isempty(lengthUnit)
+                ylabel(['\muM ' lengthUnit], 'FontSize', 11);
             else
                 ylabel('\muM', 'FontSize', 11);
             end

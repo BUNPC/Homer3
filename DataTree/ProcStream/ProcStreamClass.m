@@ -43,6 +43,9 @@ classdef ProcStreamClass < handle
         
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2, filename)
+            if isempty(obj.config.procStreamCfgFile)
+                return;
+            end
             if ~isa(obj, 'ProcStreamClass')
                 return;
             end

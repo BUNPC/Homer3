@@ -1,25 +1,19 @@
 function Buildme_Homer3(dirnameApp)
-
 platform = setplatformparams();
-
+currdir = pwd;
 if ~exist('dirnameApp','var') | isempty(dirnameApp)
-    dirnameApp = ffpath('setpaths.m');
-    if exist('./Install','dir')
-        cd('./Install');
-    end
+    dirnameApp = ffpath('Homer3.m');
 end
-if dirnameApp(end)~='/' & dirnameApp(end)~='\'
-    dirnameApp(end+1)='/';
+if exist(dirnameApp,'dir')
+    cd(dirnameApp);
 end
-
-dirnameInstall = pwd;
-cd(dirnameApp);
-
-Buildme('Homer3', {}, {'.git'});
+Buildme('Homer3', {}, {'.git','setpaths.m','getpaths.m'});
 for ii=1:length(platform.exename)
     if exist(['./',  platform.exename{ii}],'file')
-        movefile(['./',  platform.exename{ii}], dirnameInstall);
+        movefile(['./',  platform.exename{ii}], currdir);
     end
 end
-
-cd(dirnameInstall);
+if ispathvalid('./Buildme.log','file')
+    movefile('./Buildme.log',currdir);
+end
+cd(currdir);

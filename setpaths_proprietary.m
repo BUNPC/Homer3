@@ -1,6 +1,6 @@
 function setpaths_proprietary()
 
-r = checkToolboxes();
+r = checkToolboxes('Homer3');
 
 fprintf('\n');
 if all(r==1)

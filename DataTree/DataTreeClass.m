@@ -213,7 +213,7 @@ classdef DataTreeClass <  handle
             tic;            
             for kk = 1:length(groupDirs)
                 
-                obj.dirnameGroups{kk} = convertToStandardPath(groupDirs{kk});
+                obj.dirnameGroups{kk} = filesepStandard(groupDirs{kk},'full');
 
                 iGnew = length(obj.groups)+1;
                 
@@ -575,6 +575,14 @@ classdef DataTreeClass <  handle
             elseif isa(obj.currElem, 'RunClass')
                 obj.groups(idx(1)).Reset('up')
                 obj.groups(idx(1)).subjs(idx(2)).Reset('up')
+            end
+        end
+        
+        
+        % ----------------------------------------------------------
+        function ResetAll(obj)
+            for ii = 1:length(obj.groups)
+                obj.groups(ii).Reset()
             end
         end
         

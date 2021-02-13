@@ -5,9 +5,6 @@ global procStreamStyle
 global testidx;
 global logger
 
-% Close all guis
-close all force
-
 if ~exist('standalone','var') || isempty(standalone)
     standalone = true;
 end
@@ -23,46 +20,30 @@ end
 if start
     delete(logger)
     logger=[];
+    close all force
+    fclose all;
 end
 clear DEBUG1 testidx procStreamStyle
 
 DEBUG1=[];
 testidx=[];
 procStreamStyle=[];
-QUICK_TEST = [0,0];
-
-reg = RegistriesClass('empty');
-reg.DeleteSaved();
+QUICK_TEST = [0,1];
 
 groupFolders = FindUnitTestsFolders();
-rootpath = fileparts(which('Homer3.m'));
+rootpath = filesepStandard(fileparts(which('Homer3.m')));
 
-% Clean up after ourselves; delete all non versioned files and 
+% Clean up after ourselves; delete non-versioned acquisition files and
 % try to SVN revert all changes if project is under version control
-fprintf('\n');
-for ii=1:length(groupFolders)
-    fprintf('Deleting %s\n', [rootpath, '/', groupFolders{ii}, '/groupResults.mat']);
-    if exist([rootpath, '/', groupFolders{ii}, '/groupResults.mat'], 'file')
-        delete([rootpath, '/', groupFolders{ii}, '/groupResults.mat']);
+if ~start
+    fprintf('\n');
+    for ii = 1:length(groupFolders)
+        pname = filesepStandard([rootpath, groupFolders{ii}]);
+        fprintf('   Deleting %s*.snirf files ...\n', pname);
+        DeleteDataFiles(pname, '.snirf');
     end
-
-    fprintf('Deleting %s\n', [rootpath, '/', groupFolders{ii}, '/*.snirf']);
-    delete([rootpath, '/', groupFolders{ii}, '/*.snirf']);
-
-    dirs = mydir([rootpath, '/', groupFolders{ii}, '/*']);
-    for jj=1:length(dirs)
-        if ~dirs(jj).isdir
-            continue;
-        end
-        files = mydir([rootpath, '/', groupFolders{ii}, '/', dirs(jj).name, '/*.snirf']);
-        if isempty(files)
-            continue
-        end
-        fprintf('Deleting %s\n', [rootpath, '/', groupFolders{ii}, '/', dirs(jj).name, '/*.snirf']);
-        delete([rootpath, '/', groupFolders{ii}, '/', dirs(jj).name, '/*.snirf']);
-    end
+    fprintf('\n');
 end
-fprintf('\n');
 
 fclose all;
 

@@ -1,5 +1,5 @@
 % SYNTAX:
-% [data_dN, tInc, svs, nSV, tInc0] = hmrR_MotionCorrectPCArecurse(data_d, probe, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh, nSV, maxIter, turnon)
+% [data_dN, tInc, svs, nSV, tInc0] = hmrR_MotionCorrectPCArecurse(data_d, probe, mlActMan, mlActAuto, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh, nSV, maxIter, turnon)
 %
 %
 % UI NAME:
@@ -18,6 +18,8 @@
 % sd: Source Detector Structure. The active data channels are indicated in
 %     SD.MeasListAct.
 % mlActMan: Cell array of vectors, one for each time base in data, specifying
+%        active/inactive channels with 1 meaning active, 0 meaning inactive
+% mlActAuto: Cell array of vectors, one for each time base in data, specifying
 %        active/inactive channels with 1 meaning active, 0 meaning inactive
 % tIncMan: Data that has been manually excluded. 0-excluded. 1-included.
 %          Vector same length as d.
@@ -52,7 +54,7 @@
 %       artifacts
 %
 % USAGE OPTIONS:
-% Motion_Correct_PCA_Recurse:  [dod, tInc, svs, nSV, tInc0] = hmrR_MotionCorrectPCArecurse(dod, probe, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh, nSV, maxIter, turnon)
+% Motion_Correct_PCA_Recurse:  [dod, tInc, svs, nSV, tInc0] = hmrR_MotionCorrectPCArecurse(dod, probe, mlActMan, mlActAuto, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh, nSV, maxIter, turnon)
 %
 % PARAMETERS:
 % tMotion: 0.5
@@ -66,7 +68,8 @@
 % PREREQUISITES:
 % Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
 %
-function [data_dN, tInc, svs, nSV, tInc0] = hmrR_MotionCorrectPCArecurse(data_d, probe, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh, nSV, maxIter, turnon)
+
+function [data_dN, tInc, svs, nSV, tInc0] = hmrR_MotionCorrectPCArecurse(data_d, probe, mlActMan,  mlActAuto, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh, nSV, maxIter, turnon)
 
 nBlks = length(data_d);
 for iBlk=1:nBlks
@@ -83,6 +86,9 @@ tInc0   = tIncMan;
 if isempty(mlActMan)
     mlActMan = cell(nBlks,1);
 end
+if isempty(mlActAuto)
+    mlActAuto = cell(nBlks,1);
+end
 if isempty(tIncMan)
     tIncMan = cell(nBlks,1);
 end
@@ -97,7 +103,8 @@ tIncMerged = cell(1,1);
 for iBlk=1:nBlks
     data_dN(iBlk) = DataClass(data_d(iBlk));
     
-    tInc(iBlk) = hmrR_MotionArtifact(data_d(iBlk), probe, mlActMan(iBlk), tIncMan(iBlk), tMotion, tMask, STDEVthresh, AMPthresh);
+    tInc(iBlk) = hmrR_MotionArtifact(data_d(iBlk), probe, mlActMan(iBlk),  mlActAuto(iBlk), tIncMan(iBlk), tMotion, tMask, STDEVthresh, AMPthresh);
+
     tInc0{iBlk} = tInc{iBlk};
     
     ii=0;
@@ -105,7 +112,7 @@ for iBlk=1:nBlks
         ii=ii+1;
         tIncMerged{1} = min([tInc{iBlk}, tIncMan{iBlk}], [], 2);
         [data_dN(iBlk), svs_ii, nSV(iBlk)] = hmrR_MotionCorrectPCA(data_d(iBlk), mlActMan(iBlk), tIncMerged, nSV(iBlk));
-        tInc(iBlk) = hmrR_MotionArtifact(data_dN(iBlk), probe, mlActMan(iBlk), tIncMan(iBlk), tMotion, tMask, STDEVthresh, AMPthresh);
+        tInc(iBlk) = hmrR_MotionArtifact(data_dN(iBlk), probe, mlActMan(iBlk), mlActAuto(iBlk), tIncMan(iBlk), tMotion, tMask, STDEVthresh, AMPthresh);
         data_d(iBlk).Copy(data_dN(iBlk));
         svs{iBlk}(:,ii) = svs_ii{1};
     end

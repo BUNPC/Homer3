@@ -43,6 +43,9 @@ classdef ProcStreamClass < handle
         
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2, filename)
+            if isempty(obj.config.procStreamCfgFile)
+                return;
+            end
             if ~isa(obj, 'ProcStreamClass')
                 return;
             end
@@ -598,9 +601,9 @@ classdef ProcStreamClass < handle
                 procStreamCfgFile = '';
             end
             if ~exist('pathname','var')
-                pathname = convertToStandardPath(pwd);
+                pathname = filesepStandard(pwd);
             else
-                pathname = convertToStandardPath(pathname);
+                pathname = filesepStandard(pathname, 'full');
             end
             
             % If procStream config filename wasn't passed down as an argument, check the 
@@ -1285,8 +1288,20 @@ classdef ProcStreamClass < handle
                 varval = obj.input.GetVar(varname, iBlk);
                 if isempty(varval)
                     varval = obj.output.GetVar(varname, iBlk);
-                end                
+                end
             end
+            
+            % Search function call chain as well if the requested variable 
+            % is acually a user-settable parameter
+            if isempty(varval)
+                for ii = 1:length(obj.fcalls)
+                    varval = obj.fcalls(ii).GetVar(varname);
+                    if ~isempty(varval)
+                        break;
+                    end
+                end
+            end
+            
         end
         
         

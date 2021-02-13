@@ -370,7 +370,21 @@ classdef SubjClass < TreeNodeClass
                 end
             end
         end
-                
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function varval = GetVar(obj, varname)
+            % First call the common code for all levels
+            varval = obj.GetVar@TreeNodeClass(varname);
+            
+            % Now call the subject specific part
+            if isempty(varval)
+                varval = obj.runs(1).GetVar(varname);
+            end            
+        end
+        
+               
     end
     
     

@@ -107,7 +107,7 @@ classdef ProcInputClass < handle
                 eval(sprintf('varval = obj.%s;', varname));
             elseif isproperty(obj.misc, varname)
                 eval(sprintf('varval = obj.misc.%s;', varname));
-            else
+            elseif ~isempty(obj.acquired)
                 varval = obj.acquired.GetVar(varname);
             end
             if ~isempty(varval) && exist('iBlk','var')

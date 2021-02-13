@@ -621,6 +621,22 @@ classdef FuncCallClass < handle
             end
             nbytes = sum(nbytes);
         end
+
+        
+        % ----------------------------------------------------------------------------------        
+        function val = GetVar(obj, name)
+            val = [];
+            if isempty(obj)
+                return;
+            end
+            for ii = 1:length(obj.paramIn)
+                if strcmp(name, obj.paramIn(ii).GetName())
+                    val = obj.paramIn(ii).GetValue();
+                    break;
+                end
+            end
+        end
+        
         
     end
 

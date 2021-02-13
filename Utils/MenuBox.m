@@ -1,4 +1,23 @@
 function selection = MenuBox(msg, bttns, relativePos, textLineWidth, options)
+
+%
+% SYNTAX:
+%
+%   selection = MenuBox(msg, bttns)
+%   selection = MenuBox(msg, bttns, relativePos)
+%   selection = MenuBox(msg, bttns, relativePos, textLineWidth)
+%   selection = MenuBox(msg, bttns, relativePos, textLineWidth, options)
+%
+% EXAMPLES:
+%
+%   q = MenuBox('Please select option',{'option1','option2','option3'});
+%   q = MenuBox('Please select option',{'option1','option2','option3'}, 'lowerleft');
+%   q = MenuBox('Please select option',{'option1','option2','option3'}, 'upperright',80);
+%   q = MenuBox('Please select option',{'option1','option2','option3'},[],[],sprintf('dontAskAgain'));
+%   q = MenuBox('Please select option',{'option1','option2','option3'},'centerright',[],sprintf('dontAskAgainOptions'));
+%   q = MenuBox('Please select option',{'option1','option2','option3'},[],75,sprintf('dontAskAgain'));
+%
+
 global bttnIds
 bttnIds = 0;
 
@@ -281,12 +300,17 @@ end
 function checkboxes = getCheckboxes(options)
 
 checkboxes = {};
-if ~optionExists(options, 'dontAskAgainOptions')
+if ~optionExists(options, 'dontAskAgainOptions') && ~optionExists(options, 'dontAskAgain')
     return;
 end
-checkboxes = { ...
-    sprintf('don''t ask again');  ...
-    sprintf('ask every time'); ...
-    % sprintf('ask once at start of next session'); ...
-};
-
+if optionExists(options, 'dontAskAgainOptions')
+    checkboxes = { ...
+        sprintf('don''t ask again');  ...
+        sprintf('ask every time'); ...
+        % sprintf('ask once at start of next session'); ...
+        };
+else
+    checkboxes = { ...
+        sprintf('don''t ask again');  ...
+        };
+end

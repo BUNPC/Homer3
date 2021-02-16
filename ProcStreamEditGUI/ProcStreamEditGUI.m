@@ -524,7 +524,12 @@ end
 % First get the user selection of proc stream function calls from the proc stream listbox 
 % (listboxFuncProcStream) and load them into the procElem for all panels.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-for iPanel=1:length(procElem)    
+for iPanel=1:length(procElem)
+    if isa(procElem{iPanel}, 'RunClass')  % Validate procstream order at run level only
+       if procstreamOrderCheckDlg(procElem{iPanel}) == -1
+          return; 
+       end
+    end
     % Save current proc stream in a temp variable - we will copy the aram
     % values for any func call which reappears in the new proc stream
     procStreamPrev = ProcStreamClass();

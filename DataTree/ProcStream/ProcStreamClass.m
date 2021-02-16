@@ -539,55 +539,8 @@ classdef ProcStreamClass < handle
             delete(obj.fcalls);
             obj.fcalls = FuncCallClass().empty();
         end
-        
-        
-        % -----------------------------------------------------------------
-        function [fn_error, missing_args, prereqs] = Check(obj)
-            % Returns index of processing stream function which is missing
-            % an argument, and a cell array of the missing arguments. 
-            % fn_error is 0 if there are no errors.
-            
-            missing_args = {};
-            fn_error = 0;
-            prereqs = '';
-            
-            % Processing stream begins with inputs available
-            available = obj.input.GetProcInputs();
-            % Inputs which are usually optional or defined elsewhere
-            extras = {'iRun' 'iSubj' 'iGroup' 'mlActAuto', 'tIncAuto', 'Aaux', 'rcMap'};
-            available = [available, extras];
-            
-            % For all fcalls
-            for i = 1:length(obj.fcalls)
-                
-                inputs = obj.fcalls(i).GetInputs();
-                
-                % Check that each input is available
-                for j = 1:length(inputs)
-                    if ~any(strcmp(available, inputs{j}))
-                       fn_error = obj.fcalls(i);
-                       missing_args{end+1} = inputs{j};
-                    end
-                end
-                
-                if isa(fn_error, 'FuncCallClass')
-                    entry = obj.reg.GetEntryByName(fn_error.name);
-                    if isfield(entry.help.sections, 'prerequisites')
-                       prereqs = strtrim(entry.help.sections.prerequisites.str); 
-                    end
-                   return; 
-                end
-                
-                % Add outputs of the function to available list
-                outputs = obj.fcalls(i).GetOutputs();
-                for j = 1:length(outputs)
-                   available{end + 1} = outputs{j}; 
-                end
-            end
-        end
-                
-    end
     
+    end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Methods for loading / saving proc stream config file.

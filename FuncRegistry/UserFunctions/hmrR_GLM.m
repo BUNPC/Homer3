@@ -91,7 +91,6 @@
 % USAGE OPTIONS:
 % GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R, hmrstats] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 %
-%
 % PARAMETERS:
 % trange: [-2.0, 20.0]
 % glmSolveMethod: 1
@@ -102,12 +101,9 @@
 % driftOrder: 3
 % c_vector: 0
 %
-%
 % PREREQUISITES:
 % Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, probe, ppf )
-%
-function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks] = ...
-    hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder)
+
 function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks, hmrstats] = ...
     hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 
@@ -521,19 +517,51 @@ for iBlk=1:length(data_y)
                 % lstML = find(iNearestSS(:,conc)==mlSSlst(iSS));
                 Ass = y(:,conc,mlSSlst(iSS));
                 At = [A(:,:,conc) Ass];
+                
+                if iSS == 1 && conc == 1
+                    dummy = size(beta_label,2);
+                    for iAss = 1:size(Ass,2)
+                        beta_label{iAss + dummy} = ['ShortSep'];
+                    end
+                end
+                
             elseif flagNuisanceRMethod==2
                 lstML = lstMLtmp(find(mlAct(lstMLtmp)==1));
                 % lstML = 1:size(y,3);
                 Ass = mean(y(:,conc,lstSS),3);
                 At = [A(:,:,conc) Ass];
+                
+                if iSS == 1 && conc == 1
+                    dummy = size(beta_label,2);
+                    for iAss = 1:size(Ass,2)
+                        beta_label{iAss + dummy} = ['ShortSep'];
+                    end
+                end
+                
             elseif flagNuisanceRMethod==3
                 if ischar(rcMap{iBlk}) % no channel map: use all tCCA regressors for one group of all channels
                     lstML = lstMLtmp(find(mlAct(lstMLtmp)==1));
                     At = [A(:,:,conc) Aaux];
+                    
+                    if iSS == 1 && conc == 1
+                        dummy = size(beta_label,2);
+                        for iAaux = 1:size(Aaux,2)
+                            beta_label{iAaux + dummy} = ['Aux'];
+                        end
+                    end
+                    
                 elseif iscell(rcMap{iBlk}) % channel map: each single regressor corresponds to one channel (nCH groups)
                     lstML = lstMLtmp(find(mlAct(rcMap{iBlk}{conc,iSS})==1));
                     Atcca = Aaux{iBlk}(:,rcMap{conc,iSS});
                     At = [A(:,:,conc) Atcca];
+                    
+                    if iSS == 1 && conc == 1
+                        dummy = size(beta_label,2);
+                        for iAtcca = 1:size(Atcca,2)
+                            beta_label{iAtcca + dummy} = ['tCCA regressor'];
+                        end
+                    end
+                    
                 end
             end
             
@@ -621,7 +649,7 @@ for iBlk=1:length(data_y)
                 if glmSolveMethod==1 %  OLS  ~flagUseTed
                     pAinvAinvD = diag(pinvA*pinvA');
                     yest(:,lstML,conc) = At * foo(:,lstML,conc);
-                    yvar(1,lstML,conc) = std(squeeze(y(:,conc,lstML))-yest(:,lstML,conc),[],1).^2; % check this against eq(53) in Ye2009
+                    yvar(1,lstML,conc) = sum((squeeze(y(:,conc,lstML))-yest(:,lstML,conc)).^2)./(size(y,1)-1); % check this against eq(53) in Ye2009
                     for iCh = 1:length(lstML)
                         
                         % GLM stats for each condition
@@ -650,7 +678,6 @@ for iBlk=1:length(data_y)
                         
                         
                         for iCond=1:nCond
-                            %                yavgstd(:,lstML(iCh),conc,iCond) = diag(tbasis*diag(bvar([1:nB]+(iCond-1)*nB,lstML(iCh),conc))*tbasis').^0.5;
                             if size(tbasis,3)==1
                                 yavgstd(:,lstML(iCh),conc,iCond) = diag(tbasis*diag(bvar([1:nB]+(iCond-1)*nB,lstML(iCh),conc))*tbasis').^0.5;
                             else

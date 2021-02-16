@@ -790,7 +790,12 @@ classdef RunClass < TreeNodeClass
                 if isa(fn_error, 'FuncCallClass')
                     entry = obj.procStream.reg.GetEntryByName(fn_error.name);
                     if isfield(entry.help.sections, 'prerequisites')
-                       prereqs = strtrim(entry.help.sections.prerequisites.str); 
+                       prereqs_list = splitlines(entry.help.sections.prerequisites.str);
+                       for k = 1:length(prereqs_list)
+                           if ~isempty(prereqs_list{k})
+                               prereqs = [prereqs, sprintf('\n'), strtrim(prereqs_list{k})];
+                           end
+                       end
                     end
                    return; 
                 end

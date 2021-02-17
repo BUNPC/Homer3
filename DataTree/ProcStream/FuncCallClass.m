@@ -341,7 +341,8 @@ classdef FuncCallClass < handle
                             end
                         end
                         pvalue = str2num(textstr{ii+2});                       
-                        obj.paramIn(end+1) = ParamClass(pname, pformat, pvalue);
+                        % Save default values in ParamClass
+                        obj.paramIn(end+1) = ParamClass(pname, pformat, pvalue, pvalue);
                         obj.GetParamHelp(length(obj.paramIn));
                         flag = 2;
                     end
@@ -481,10 +482,12 @@ classdef FuncCallClass < handle
         % ----------------------------------------------------------------------------------
         function scorefinal = Compare(obj, obj2)           
             score = [];
-            if ~strcmp(obj.name, obj2.name)
-                score(end+1) = 0;
-            else
+            if strcmp(obj.name, obj2.name)
                 score(end+1) = 0.50;
+            elseif ~isempty(findstr(obj.name, obj2.name))
+                score(end+1) = 0.30;
+            else
+                score(end+1) = 0;
             end
             score(end+1) = 0.16 * obj.argOut.Compare(obj2.argOut);
             score(end+1) = 0.16 * obj.argIn.Compare(obj2.argIn);
@@ -618,6 +621,28 @@ classdef FuncCallClass < handle
                 end
             end
             nbytes = sum(nbytes);
+        end
+
+        % ----------------------------------------------------------------------------------        
+        function errmsg = CheckParams(obj)
+            errmsg = '';
+            paramValStr = '';
+            if exist([obj.name, '_errchk'], 'file')  % If errchk fn is on path
+                for i = 1:length(obj.paramIn)  % Assemble list of args
+                   paramValStr = [paramValStr, obj.paramIn(i).GetFormattedValue()]; %#ok<AGROW>
+                   if i < length(obj.paramIn)
+                       paramValStr = [paramValStr, ',']; %#ok<AGROW>
+                   end
+                end
+                % Call the errchk function which returns a non-empty string
+                % if there is an error
+                eval(['errmsg = ', obj.name, '_errchk(', paramValStr, ')']);
+                if ~isempty(errmsg)
+                   errmsg = [obj.name, ': ', errmsg];
+                end
+            else
+               return;
+            end
         end
         
     end

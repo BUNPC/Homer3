@@ -57,6 +57,8 @@ logger.Write('\n');
 
 toc(t_local)
 
+logger.Close('UnitTestsAll_Nirs');
+
 
 
 % ---------------------------------------------------

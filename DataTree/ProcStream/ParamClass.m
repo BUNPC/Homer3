@@ -3,6 +3,7 @@ classdef ParamClass < matlab.mixin.Copyable
     properties
         name
         value
+        default
         format
         help
     end
@@ -27,6 +28,11 @@ classdef ParamClass < matlab.mixin.Copyable
                 obj.name   = varargin{1};
                 obj.format = varargin{2};
                 obj.value  = varargin{3};
+            elseif nargin==4
+                obj.name   = varargin{1};
+                obj.format = varargin{2};
+                obj.value  = varargin{3};
+                obj.default = varargin{4};
             end
         end
         
@@ -75,6 +81,15 @@ classdef ParamClass < matlab.mixin.Copyable
             end
         end
         
+        % ----------------------------------------------------------------------------------
+        function str = GetFormattedValue(obj)
+            valstr = sprintf(obj.format, obj.value);
+            if length(obj.value) > 1
+                str = ['[', valstr, ']'];
+            else
+                str = valstr;
+            end
+        end
         
         % ----------------------------------------------------------------------------------
         function val = GetName(obj)
@@ -90,7 +105,12 @@ classdef ParamClass < matlab.mixin.Copyable
         function val = GetFormat(obj)
             val = obj.format;
         end
-                
+
+        % ----------------------------------------------------------------------------------
+        function val = GetDefault(obj)
+            val = obj.default;
+        end
+        
         % ----------------------------------------------------------------------------------
         function str = Encode(obj)
             str = '';

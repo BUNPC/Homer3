@@ -54,13 +54,31 @@ classdef ProcStreamClass < handle
                 obj = ProcStreamClass();
             end
             
-            for ii=1:length(obj2.fcalls)
-                obj.fcalls(ii) = FuncCallClass();
-                obj.fcalls(ii).Copy(obj2.fcalls(ii), obj.reg);
+            kk=1;
+            for ii = 1:length(obj2.fcalls)                
+                % If registry is empty, then add fcall entries unconditionally.
+                % Otherwise only include those user function calls that exist in the registry.
+                if ~isempty(obj.reg.GetUsageName(obj2.fcalls(ii)))
+                    obj.fcalls(kk) = FuncCallClass(obj2.fcalls(ii), obj.reg);
+                    kk = kk+1;
+                else
+                    fprintf('Entry \"%s\" not found in registry ...\n', obj2.fcalls(ii).GetName())
+                    fprintf('  Searching registry for equivalent or similar entry\n')
+                    temp = obj.reg.FindClosestMatch(obj2.fcalls(ii));
+                    if ~isempty(temp)
+                        fprintf('  Found similar entry: %s\n', temp.encodedStr);
+                        obj.fcalls(kk) = FuncCallClass(temp, obj.reg);
+                        kk = kk+1;
+                    else
+                        fprintf('  Found no similar entries. Discarding %s\n', obj2.fcalls(ii).GetName())
+                    end
+                end            
             end
             
             % Delete any fcalls entries not ovewritten by the copy process
-            obj.fcalls(ii+1:end) = [];
+            if ~isempty(obj.fcalls)
+                obj.fcalls(kk+1:end) = [];
+            end
             
             obj.input.Copy(obj2.input);
             obj.output.Copy(obj2.output, filename);
@@ -79,6 +97,9 @@ classdef ProcStreamClass < handle
             if ~isa(obj, 'ProcStreamClass')
                 return;
             end
+            if obj == obj2
+                return;
+            end            
             delete(obj.fcalls);
             obj.fcalls = FuncCallClass().empty();
             for ii=1:length(obj2.fcalls)
@@ -90,7 +111,7 @@ classdef ProcStreamClass < handle
         
 
         % ----------------------------------------------------------------------------------
-        function B = eq(obj, obj2)
+        function B = isequal(obj, obj2)
             B = 0;
             if isa(obj2, 'ProcStream')
                 for ii=1:length(obj.fcalls)
@@ -169,6 +190,7 @@ classdef ProcStreamClass < handle
         % ----------------------------------------------------------------------------------
         function str = EditParam(obj, iFcall, iParam, val)
             str = '';
+            param = obj.fcalls(iFcall).paramIn(iParam);
             if isempty(iFcall)
                 return;
             end
@@ -181,8 +203,20 @@ classdef ProcStreamClass < handle
             if isempty(obj.fcalls(iFcall).paramIn)
                 return;
             end
-            obj.fcalls(iFcall).paramIn(iParam).value = val;
-            str = sprintf(obj.fcalls(iFcall).paramIn(iParam).format, val);
+            if isprop(param, 'default')
+               default = param.default;
+               if ~isempty(default)
+                   in = val;
+                   val = param.default;
+                   if length(in) > length(default)
+                       val(1:length(default)) = in(1:length(default));
+                   else
+                       val(1:length(in)) = in;                       
+                   end
+               end
+            end
+            str = sprintf(param.format, val);
+            param.value = val;
         end
 
 
@@ -1054,7 +1088,7 @@ classdef ProcStreamClass < handle
                         end
                     end
                 end
-            end            
+            end
         end
         
     end

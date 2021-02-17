@@ -19,18 +19,15 @@ function pathname = filesepStandard(pathname0, options)
 %
 %
 
-pathname = [];
+pathname = '';
 
 if ~exist('options', 'var')
     options = '';
 end
 if ~optionExists(options,'nameonly')
-    if ~isdir_private(pathname0) && ~isfile_private(pathname0)
+    if ~ispathvalid(pathname0)
         return
     end
-end
-if ~ischar(pathname0)
-    return
 end
 
 idxs = [];

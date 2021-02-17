@@ -223,6 +223,19 @@ classdef ProbeClass < FileLoadSaveClass
         % -------------------------------------------------------
         function B = eq(obj, obj2)
             B = false;
+            if isempty(obj) && ~isempty(obj2)
+                return;
+            end
+            if isempty(obj) && ~isempty(obj2)
+                return;
+            end
+            if ~isempty(obj) && isempty(obj2)
+                return;
+            end
+            if isempty(obj) && isempty(obj2)
+                b = true;
+                return;
+            end
             if ~all(obj.wavelengths(:)==obj2.wavelengths(:))
                 return;
             end

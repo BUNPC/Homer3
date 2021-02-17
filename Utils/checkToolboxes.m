@@ -82,7 +82,7 @@ end
 msg{1} = sprintf('Unable to find required toolbox list for the current Matlab release. ');
 msg{2} = sprintf('Do you want to run toolbox discovery to determine which are required? ');
 msg{3} = sprintf('(It takes 5-10 minutes).');
-q = MenuBox([msg{:}], {'YES','NO'});
+q = MenuBox(msg, {'YES','NO'});
 if q==2
     r = -1;
     return;
@@ -91,7 +91,7 @@ elseif q==1
     msg{2} = sprintf('used by your code unless they are already installed on your computer. '); 
     msg{3} = sprintf('Please make sure that this operation is performed in a Matlab installation with '); 
     msg{4} = sprintf('a full suite (or at least nearly-full suite) of toolboxes. Do you want to proceed?\n');
-    q = MenuBox([msg{:}], {'YES','NO'});
+    q = MenuBox(msg, {'YES','NO'});
     if q==2
         r = -1;
         return;

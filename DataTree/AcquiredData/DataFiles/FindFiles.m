@@ -115,7 +115,7 @@ while files.isempty()
             case {'snirf','.snirf'}
         msg{1} = sprintf('Homer3 did not find any %s data files to load in the current group folder. ', fmt);        
         msg{2} = sprintf('Do you want to select another group folder?');
-        q = MenuBox([msg{:}], {'YES','NO'});
+        q = MenuBox(msg, {'YES','NO'});
         if q==2
             files = DataFilesClass();
             return;
@@ -140,7 +140,7 @@ if files.config.RegressionTestActive
 elseif  files.isempty()
     msg{1} = sprintf('Homer3 did not find any .snirf files in the current folder but did find %d .nirs files. ', filesSrc.nfiles);
     msg{2} = sprintf('Do you want to convert .nirs files to .snirf format and load them?');
-    q = MenuBox([msg{:}], {'YES','NO'}, 'center');
+    q = MenuBox(msg, {'YES','NO'}, 'center');
 else
     if files.nfiles>1
         s = 'have';
@@ -154,7 +154,7 @@ else
         msg{1} = sprintf('Homer3 found %d .nirs file which has not been converted to .snirf format and %d that %s. ', filesSrc.nfiles-files.nfiles, files.nfiles, s);
         msg{2} = sprintf('Do you want to convert the remaining .nirs file to .snirf format?');
     end
-    q = MenuBox([msg{:}], {'YES','NO'}, 'center');
+    q = MenuBox(msg, {'YES','NO'}, 'center');
 end
 
 

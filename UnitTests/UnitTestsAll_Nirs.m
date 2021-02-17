@@ -7,6 +7,8 @@ global logger
 
 t_local = tic;
 
+reg = RegistriesClass('reset');
+
 if ~exist('standalone','var')
     standalone = true;
 end

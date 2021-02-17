@@ -44,6 +44,10 @@ classdef RegistriesClass < handle
             if strcmp(mode, 'empty')
                 return;
             end
+            if strcmp(mode, 'reset')
+                obj.DeleteSaved();
+                return;
+            end
             
             % Check if saved registry exists. If so load that and exit
             if ~strcmp(mode, 'reload')

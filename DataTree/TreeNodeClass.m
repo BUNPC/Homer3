@@ -701,7 +701,7 @@ classdef TreeNodeClass < handle
                 status = 0;
                 return;
             end
-            selection = MenuBox([msg{:}], choices, [], [], 'dontAskAgainOptions');
+            selection = MenuBox(msg, choices, [], [], 'dontAskAgainOptions');
             if selection(1)==1
                 status = 0;
             end
@@ -721,6 +721,13 @@ classdef TreeNodeClass < handle
                 end
             end
                         
+        end
+        
+        
+        % ------------------------------------------------------------
+        function val = GetError(obj)
+            val = obj.err;
+            
         end
                 
     end

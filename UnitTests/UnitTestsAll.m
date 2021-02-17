@@ -3,6 +3,7 @@ global logger
 
 t_local = tic;
 
+
 CleanUp(true);
 
 cleanupObj = onCleanup(@()userInterrupt_Callback(true));

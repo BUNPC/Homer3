@@ -662,6 +662,7 @@ if ~ishandles(hObject)
     return;
 end
 fmt = maingui.format;
+unitTest = maingui.unitTest;
 
 % Change directory
 pathnm = uigetdir( cd, 'Pick the new directory' );
@@ -675,7 +676,7 @@ if isempty(maingui.unitTest)
 end
 
 % restart
-MainGUI(pathnm, fmt, 'userargs');
+MainGUI(pathnm, fmt, unitTest, 'userargs');
 
 
 

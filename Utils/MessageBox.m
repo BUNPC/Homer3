@@ -1,11 +1,19 @@
-function hm = MessageBox(msg, title)
+function hm = MessageBox(msg, title, options)
 
 if nargin<2
     title = 'MessageBox';
 end
+if ~exist('options','var')
+    options = '';
+end
+ 
 
 % Display message box
 hm = msgbox(msg, title);
+
+if optionExists(options, 'nowait')
+    return
+end
 
 % Wait for user to respond before exiting
 t = 0;

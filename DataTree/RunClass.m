@@ -73,7 +73,7 @@ classdef RunClass < TreeNodeClass
         function err = Load(obj, dirname)
             err = 0;
             if nargin==1 || isempty(dirname)
-                dirname = convertToStandardPath('.');
+                dirname = filesepStandard(pwd);
             end
             err1 = obj.LoadDerivedData();
             err2 = obj.LoadAcquiredData(dirname);            
@@ -101,7 +101,7 @@ classdef RunClass < TreeNodeClass
                 return;
             end
             if ~exist('dirname','var') || isempty(dirname)
-                dirname = convertToStandardPath('.');
+                dirname = filesepStandard(pwd);
             end
             
             if isempty(obj.SaveMemorySpace(obj.name))
@@ -121,18 +121,11 @@ classdef RunClass < TreeNodeClass
                 obj.acquired.Load([dirname, obj.name]);
             end
             
-            if obj.acquired.Error() > 0
-                msgs = {
-                    'MATLAB could not load the file.'
-                    'file ''formatVersion'' is invalid.'
-                    'file ''metaDataTags'' is invalid.'
-                    'file ''data'' is invalid.'
-                    'file ''stim'' is invalid.'
-                    'file ''probe'' is invalid.'
-                    'file ''aux'' is invalid.'
-                    };
-                obj.logger.Write(sprintf('     **** Warning: %s failed to load: %s\n', obj.name, msgs{abs(obj.acquired.GetError())}));
+            if obj.acquired.Error() < 0
+                obj.logger.Write( sprintf('     **** Error: "%s" failed to load - %s\n', obj.name, obj.acquired.GetErrorMsg()) );
                 return;
+            elseif obj.acquired.Error() > 0
+                obj.logger.Write( sprintf('     **** Warning: %s in file "%s"\n', obj.acquired.GetErrorMsg(), obj.name) );
             else
                 %fprintf('    Loaded file %s to run.\n', obj.name);                
             end
@@ -352,6 +345,12 @@ classdef RunClass < TreeNodeClass
             
             
         % ----------------------------------------------------------------------------------
+        function t = GetAuxiliaryTime(obj)
+            t = obj.acquired.GetAuxiliaryTime();
+        end
+
+        
+        % ----------------------------------------------------------------------------------
         function d = GetRawData(obj, iBlk)
             if nargin<2
                 iBlk = 1;
@@ -388,10 +387,15 @@ classdef RunClass < TreeNodeClass
        
         
         % ----------------------------------------------------------------------------------
-        function SD = GetSDG(obj)
+        function SD = GetSDG(obj,option)
             SD.Lambda  = obj.acquired.GetWls();
-            SD.SrcPos  = obj.acquired.GetSrcPos();
-            SD.DetPos  = obj.acquired.GetDetPos();
+            if exist('option','var')
+                SD.SrcPos  = obj.acquired.GetSrcPos(option);
+                SD.DetPos  = obj.acquired.GetDetPos(option);
+            else
+                SD.SrcPos  = obj.acquired.GetSrcPos();
+                SD.DetPos  = obj.acquired.GetDetPos();
+            end
         end
         
         
@@ -637,13 +641,17 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function [tpts, duration, vals] = GetStimData(obj, icond)
-            tpts     = obj.GetStimTpts(icond);
-            duration = obj.GetStimDuration(icond);
-            vals     = obj.GetStimValues(icond);
+        function data = GetStimData(obj, icond)
+            data = obj.procStream.GetStimData(icond);
         end
         
     
+        % ----------------------------------------------------------------------------------
+        function val = GetStimDataLabels(obj, icond)
+            val = obj.procStream.GetStimDataLabels(icond);
+        end
+        
+        
         % ----------------------------------------------------------------------------------
         function SetStimTpts(obj, icond, tpts)
             obj.procStream.SetStimTpts(icond, tpts);
@@ -675,17 +683,17 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimValues(obj, icond, vals)
-            obj.procStream.SetStimValues(icond, vals);
+        function SetStimAmplitudes(obj, icond, vals)
+            obj.procStream.SetStimAmplitudes(icond, vals);
         end
         
     
         % ----------------------------------------------------------------------------------
-        function vals = GetStimValues(obj, icond)
+        function vals = GetStimAmplitudes(obj, icond)
             if ~exist('icond','var')
                 icond=1;
             end
-            vals = obj.procStream.GetStimValues(icond);
+            vals = obj.procStream.GetStimAmplitudes(icond);
         end
         
         

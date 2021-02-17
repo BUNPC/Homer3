@@ -213,7 +213,7 @@ classdef DataTreeClass <  handle
             tic;            
             for kk = 1:length(groupDirs)
                 
-                obj.dirnameGroups{kk} = convertToStandardPath(groupDirs{kk});
+                obj.dirnameGroups{kk} = filesepStandard(groupDirs{kk},'full');
 
                 iGnew = length(obj.groups)+1;
                 
@@ -279,25 +279,8 @@ classdef DataTreeClass <  handle
         
         % ---------------------------------------------------------------
         function AutoSetDataStorageScheme(obj)
-            g.group = GroupClass();
-            if isvalidfile('./groupResults.mat')
-                g = load('./groupResults.mat');
-                if isa(g.group, 'GroupClass') && g.group.IsEmpty()
-                    if isvalidfile('../groupResults.mat')
-                        g = load('../groupResults.mat');
-                    end
-                end
-            elseif isvalidfile('../groupResults.mat')
-                g = load('../groupResults.mat');
-            end
-            if isa(g.group, 'GroupClass') && g.group.IsEmpty()
-                if g.group.subjs(1).runs(1).acquired.IsEmpty()
-                    obj.dataStorageScheme = 'files';
-                else
-                    obj.dataStorageScheme = 'memory';
-                end
-            else
-                obj.dataStorageScheme = 'memory';
+            if isempty(obj.dataStorageScheme)
+                obj.dataStorageScheme = 'files';
             end
         end
           
@@ -592,6 +575,14 @@ classdef DataTreeClass <  handle
             elseif isa(obj.currElem, 'RunClass')
                 obj.groups(idx(1)).Reset('up')
                 obj.groups(idx(1)).subjs(idx(2)).Reset('up')
+            end
+        end
+        
+        
+        % ----------------------------------------------------------
+        function ResetAll(obj)
+            for ii = 1:length(obj.groups)
+                obj.groups(ii).Reset()
             end
         end
         

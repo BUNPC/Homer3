@@ -31,7 +31,7 @@ classdef FuncCallClass < handle
             %        argOut.str: 'dod'
             %         argIn.str: '(dod,t'
             %          paramIn: [1x2 ParamClass]
-            %             help: '  Perform a bandpass filter…'
+            %             help: '  Perform a bandpass filterï¿½'
             %
             obj.name       = '';
             obj.nameUI     = '';
@@ -256,7 +256,7 @@ classdef FuncCallClass < handle
             %        argOut: 'dod'
             %         argIn.str: '(dod,t'
             %       paramIn: [1x2 ParamClass]
-            %          help: '  Perform a bandpass filter…'
+            %          help: '  Perform a bandpass filterï¿½'
             %   
             obj.err = 0;            
             if nargin<2
@@ -644,6 +644,21 @@ classdef FuncCallClass < handle
                return;
             end
         end
+        
+        % ----------------------------------------------------------------------------------        
+        function val = GetVar(obj, name)
+            val = [];
+            if isempty(obj)
+                return;
+            end
+            for ii = 1:length(obj.paramIn)
+                if strcmp(name, obj.paramIn(ii).GetName())
+                    val = obj.paramIn(ii).GetValue();
+                    break;
+                end
+            end
+        end
+        
         
     end
 

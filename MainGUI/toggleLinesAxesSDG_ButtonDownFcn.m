@@ -5,10 +5,10 @@ function toggleLinesAxesSDG_ButtonDownFcn(hObject, eventdata, handles)
 
 global maingui;
 
-hAxesSDG = maingui.axesSDG.handles.axes;
+hAxesSDG = handles.axesSDG;
 iSrcDet  = maingui.axesSDG.iSrcDet;
 
-SD       = maingui.dataTree.currElem.GetSDG();
+SD       = maingui.dataTree.currElem.GetSDG('2D');
 ch       = maingui.dataTree.currElem.GetMeasList();
 Lambda   = maingui.dataTree.currElem.GetWls();
 
@@ -56,5 +56,5 @@ else
     return;
 end
 
-DisplayAxesSDG();
+DisplayAxesSDG(handles);
 

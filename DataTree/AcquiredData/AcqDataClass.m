@@ -3,6 +3,9 @@ classdef AcqDataClass < matlab.mixin.Copyable
     properties (Access = private)
         logger
     end
+    properties (Access = public)
+        errmsgs
+    end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % These methods must be implemented in any derived class
@@ -22,13 +25,13 @@ classdef AcqDataClass < matlab.mixin.Copyable
         datamat   = GetDataTimeSeries(obj, options, iBlk)
         
         % ---------------------------------------------------------
-        SD        = GetSDG(obj)
+        SD        = GetSDG(obj,option)
 
         % ---------------------------------------------------------
-        srcpos    = GetSrcPos(obj)
+        srcpos    = GetSrcPos(obj,option)
 
         % ---------------------------------------------------------
-        detpos    = GetDetPos(obj)
+        detpos    = GetDetPos(obj,option)
         
         % ---------------------------------------------------------
         ml        = GetMeasList(obj, iBlk)
@@ -81,14 +84,25 @@ classdef AcqDataClass < matlab.mixin.Copyable
         
         
         % -------------------------------------------------------
-        function b = Error(obj)
-            if obj.GetError()<0
-                b = true;
-            elseif obj.GetError()==0
-                b = false;
-            else
-                b = true;
+        function err = Error(obj)
+            err = obj.GetError();
+        end
+        
+        
+        % ---------------------------------------------------------
+        function msg = GetErrorMsg(obj)
+            msg = '';
+            if isempty(obj)
+                msg = 'AcqDataClass object is empty';
+                return;
             end
+            if isempty(obj.errmsgs)
+                return;
+            end
+            if ~obj.GetError()
+                return;
+            end
+            msg = obj.errmsgs{abs(obj.GetError())};
         end
         
         
@@ -106,7 +120,7 @@ classdef AcqDataClass < matlab.mixin.Copyable
         
         % ---------------------------------------------------------
         function bbox = GetSdgBbox(obj)
-            optpos = [obj.GetSrcPos(); obj.GetDetPos()];
+            optpos = [obj.GetSrcPos('2D'); obj.GetDetPos('2D')];
             
             xmax = max(optpos(:,1));
             ymax = max(optpos(:,2));
@@ -185,6 +199,18 @@ classdef AcqDataClass < matlab.mixin.Copyable
         end
         
                 
+        % ----------------------------------------------------------------------------------
+        function data = GetStimData(~, ~)
+            data = [];
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function val = GetStimDataLabels(~, ~)
+            val = {};
+        end
+                        
+        
         % ----------------------------------------------------------------------------------
         function b = equal(obj, obj2)
             b = true;

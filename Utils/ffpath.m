@@ -29,7 +29,7 @@ function pth = ffpath(fname)
 if nargin<1
     error('The function requires one input argument (file name)')
 end
-pth = pwd;
+pth = filesepStandard(pwd);
 if exist([pth '/' fname],'file')
     return
 end % fname found in current dir

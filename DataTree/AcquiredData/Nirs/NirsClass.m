@@ -34,15 +34,15 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             % 
             %           NirsClass with properties:
             % 
-            %                      SD: [1×1 struct]
-            %                       t: [12698×1 double]
-            %                       s: [12698×2 double]
-            %                       d: [12698×18 double]
-            %                     aux: [12698×1 double]
+            %                      SD: [1x1 struct]
+            %                       t: [12698x1 double]
+            %                       s: [12698x2 double]
+            %                       d: [12698x18 double]
+            %                     aux: [12698x1 double]
             %               CondNames: {'1'  '2'}
             %                filename: './s1/neuro_run01.nirs'
             %              fileformat: 'mat'
-            %         supportedFomats: [1×1 struct]
+            %         supportedFomats: [1x1 struct]
             %                     err: 0
             %
             
@@ -89,6 +89,19 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             obj.d         = [];
             obj.aux       = [];
             obj.CondNames = {};
+            
+            
+            % Initialize non-.nirs variables
+            obj.errmsgs = {
+                'MATLAB could not load the file.'
+                '''d'' is invalid.'
+                '''t'' is invalid.'
+                '''SD'' is invalid.'
+                '''aux'' is invalid.'
+                '''s'' is invalid.'
+                'error unknown.'
+                };
+            
         end
         
         
@@ -101,80 +114,10 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function err = LoadMat(obj, fname, params)
+        function err = LoadMat(obj, fname, ~)
             err = 0;
-            
-            % Arg 1
-            if ~exist('fname','var') || ~exist(fname,'file')
-                fname = '';
-            end
-                       
-            % Do some error checking            
-            if ~isempty(fname)
-                obj.SetFilename(fname);
-            else
-                fname = obj.GetFilename();
-            end
-            if exist(fname, 'file') ~= 2
-               err = -1;
-               return;
-            end
-            
-            % Don't reload if not empty
-            if ~obj.IsEmpty()
-               return;
-            end                        
-                        
-            warning('off', 'MATLAB:load:variableNotFound');
-            fdata = load(fname,'-mat', 'SD','t','d','s','aux','CondNames');
-            
-            % Mandatory fields
-            if isproperty(fdata,'d')
-                obj.d = fdata.d;
-                if isempty(obj.d)
-                    err = -2;
-                end
-            else
-                err = -2;
-            end
-            if isproperty(fdata,'t')
-                obj.t = fdata.t;
-                if ~isempty(obj.t)
-                    obj.errmargin = min(diff(obj.t))/10;
-                else
-                    err = -3;                
-                end
-            else
-                err = -3;
-            end
-            if isproperty(fdata,'SD')
-                obj.SetSD(fdata.SD);
-                if isempty(obj.SD)
-                    err = -4;
-                end
-            else
-                err = -4;
-            end
-            
-            
-            % Optional fields
-            if isproperty(fdata,'aux')
-                obj.aux = fdata.aux;
-            else
-                obj.aux = [];
-            end            
-            if obj.LoadStims(fname, fdata)<0 
-                err = -4;
-            end            
-        end
-        
-        
-        
-        % ---------------------------------------------------------
-        function err = LoadStims(obj, fname, fdata)
-            err = 0;
-            
-            if ~exist('fdata','var') || isempty(fdata)
+
+            try 
                 % Arg 1
                 if ~exist('fname','var') || ~exist(fname,'file')
                     fname = '';
@@ -193,21 +136,136 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 
                 % Don't reload if not empty
                 if ~obj.IsEmpty()
+                    err = obj.GetError();     % preserve error state if exiting early
                     return;
                 end
                 
                 warning('off', 'MATLAB:load:variableNotFound');
-                fdata = load(fname,'-mat', 's','CondNames');
-            end
-               
+                fdata = load(fname,'-mat', 'SD','t','d','s','aux','CondNames');
+                
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % NOTE: Optional fields have positive error codes if they are
+                % missing, but negative error codes if they're not missing but
+                % invalid
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                
+                
+                % Mandatory fields
+                err = obj.LoadRawData(fdata, err);
+                err = obj.LoadTime(fdata, err);
+                err = obj.LoadProbeMeasList(fdata, err);
+                                
+                % Optional fields
+                err = obj.LoadAux(fdata, err);
+                err = obj.LoadStims(fdata, err);
+                
+            catch
+                
+                
+                
+            end            
+            warning('on', 'MATLAB:load:variableNotFound');
             
-            if isproperty(fdata,'s')
-                obj.s = fdata.s;
-            else
-                obj.s = [];
+        end
+        
+        
+        
+        % ---------------------------------------------------------
+        function err = LoadRawData(obj, fdata, err)
+            if isproperty(fdata,'d')
+                obj.d = fdata.d;
+                if isempty(obj.d) && err == 0
+                    err = -2;
+                end
+            elseif err == 0
+                err = -2;
+            end
+        end
+        
+        
+        % ---------------------------------------------------------
+        function err = LoadTime(obj, fdata, err)
+            if isproperty(fdata,'t')
+                obj.t = fdata.t;
+                if ~isempty(obj.t)
+                    obj.errmargin = min(diff(obj.t))/10;
+                elseif err == 0
+                    err = -3;
+                end
+            elseif err == 0
+                err = -3;
+            end
+            if length(fdata.t) ~= size(fdata.d,1) && err == 0
+                err = -3;
+            end            
+        end
+        
+                
+        % ---------------------------------------------------------
+        function err = LoadProbeMeasList(obj, fdata, err)
+            if isproperty(fdata,'SD')
+                obj.SetSD(fdata.SD);
+                if isempty(obj.SD) && err == 0
+                    err = -4;
+                end
+            elseif err == 0
+                err = -4;
+            end
+        end
+        
+        
+        % ---------------------------------------------------------
+        function err = LoadAux(obj, fdata, err)
+            if isproperty(fdata,'aux')
+                obj.aux = fdata.aux;
+            elseif err==0
+                err = 5;
+            end
+        end
+       
+        
+                
+        % ---------------------------------------------------------
+        function err = LoadStims(obj, fdata, err)                        
+            if ischar(fdata)
+                fname = fdata;
+                
+                % Do some error checking
+                if ~isempty(fname)
+                    obj.SetFilename(fname);
+                else
+                    fname = obj.GetFilename();
+                end
+                if exist(fname, 'file') ~= 2
+                    err = -1;
+                    return;
+                end                              
+                warning('off', 'MATLAB:load:variableNotFound');
+                fdata = load(fname,'-mat', 's','CondNames','t');
+            end
+        
+            if ~isproperty(fdata,'s')
+                if err==0 
+                    err = 6; 
+                end
+                return;
+            end
+            
+            obj.s = fdata.s;
+            if size(fdata.s,1) ~= size(fdata.t)
+                if err==0 
+                    err = -6; 
+                end
+                return;
             end
             if isproperty(fdata,'CondNames')
                 obj.CondNames = fdata.CondNames;
+                if size(fdata.s,1) ~= length(fdata.CondNames)
+                    if err==0
+                        err = -6;
+                    end
+                    return;
+                end
             else
                 obj.InitCondNames();
             end
@@ -261,7 +319,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             % If we're working off the snirf file instead of loading everything into memory
             % then we have to load stim here from file before accessing it.
             if strcmpi(obj.GetDataStorageScheme(), 'files')
-                obj.LoadStims(obj.GetFilename());
+                obj.LoadStims(obj.GetFilename(), 0);
             end
             
             % Generate new instance of NirsClass
@@ -439,7 +497,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                
         
         % ---------------------------------------------------------
-        function SD = GetSDG(obj)
+        function SD = GetSDG(obj, option)
             SD = obj.SD;
         end
         
@@ -498,13 +556,13 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 
         
         % ---------------------------------------------------------
-        function srcpos = GetSrcPos(obj)
+        function srcpos = GetSrcPos(obj,option)
             srcpos = obj.SD.SrcPos;
         end
         
         
         % ---------------------------------------------------------
-        function detpos = GetDetPos(obj)
+        function detpos = GetDetPos(obj,option)
             detpos = obj.SD.DetPos;
         end
         
@@ -534,6 +592,16 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             ich={ich};
         end
 
+        
+        % ---------------------------------------------------------
+        function t = GetAuxiliaryTime(obj)
+            t = [];
+            if isempty(obj.aux)
+                return;
+            end
+            t = obj.t;
+        end
+        
     end
     
     
@@ -686,13 +754,13 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 
                 
         % ----------------------------------------------------------------------------------
-        function SetStimValues(obj, icond, vals)
+        function SetStimAmplitudes(obj, icond, vals)
             return;
         end
         
         
         % ----------------------------------------------------------------------------------
-        function vals = GetStimValues(obj, icond)
+        function vals = GetStimAmplitudes(obj, icond)
             vals = [];
         end
         

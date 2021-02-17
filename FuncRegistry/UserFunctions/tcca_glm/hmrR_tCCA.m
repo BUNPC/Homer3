@@ -6,7 +6,7 @@
 %
 % DESCRIPTION:
 % This script generates regressors using the regularized temporally embedded
-% Canonical Correlation Anlaysis described in detail in von Lühmann et al. (2020), NeuroImage. 
+% Canonical Correlation Anlaysis described in detail in von Lühmann et al. (2020), NeuroImage.
 % If you use this method, please use the following CITATION:
 % von Lühmann, Alexander, et al. "Improved physiological noise regression
 % in fNIRS: A multimodal extension of the General Linear Model using temporally
@@ -17,10 +17,10 @@
 % aux - SNIRF aux type where dataTimeCourse is aux time course data (See SNIRF Spec for more details)
 % probe - SNIRF probe type containing source/detector geometry data (See SNIRF Spec for more details)
 % runIdx - the index of the run in a multi-run session
-% subjIdx - the index of the subject in a group 
-% mlActMan: Cell array of vectors, one for each time base in data, specifying 
+% subjIdx - the index of the subject in a group
+% mlActMan: Cell array of vectors, one for each time base in data, specifying
 %        active/inactive channels with 1 meaning active, 0 meaning inactive
-% mlActAuto: Cell array of vectors, one for each time base in data, specifying 
+% mlActAuto: Cell array of vectors, one for each time base in data, specifying
 %        active/inactive channels with 1 meaning active, 0 meaning inactive
 % flagtCCA - turns the function on / off
 % tCCAparams - These are the parameters for tCCA function
@@ -43,8 +43,8 @@
 %
 % OUTPUTS:
 % Aaux - A matrix of auxilliary regressors (#time points x #Aux regressors)
-% rcMap - Currently always empty or "all". 
-%           Under development: Will also provide an array of cells (1 x #fNIRS channels) 
+% rcMap - Currently always empty or "all".
+%           Under development: Will also provide an array of cells (1 x #fNIRS channels)
 %           containing aux regressor indices for individual regressor-channel mapping.
 %           Only relevant when flagICRegressors = 1.
 %
@@ -119,12 +119,12 @@ if flagtCCA
         datatype = data(iBlk).GetDataTypeLabel();  % Get the input data type
         t        = data(iBlk).GetTime();
         ml       = data(iBlk).GetMeasListSrcDetPairs();
-
+        
         
         fq = 1/(t(2)-t(1));
         
         
-% get  a list of active channels
+        % get  a list of active channels
         if isempty(mlActMan{iBlk})
             mlActMan{iBlk} = ones(size(ml,1)*2,1);
         end
@@ -132,7 +132,7 @@ if flagtCCA
             mlActAuto{iBlk} = ones(size(ml,1)*2,1);
         end
         MeasListAct = mlActMan{iBlk} & mlActAuto{iBlk};
-         
+        
         
         
         
@@ -146,9 +146,7 @@ if flagtCCA
         end
         lstSS = lst(find(rhoSD<=rhoSD_ssThresh &  MeasListAct(lst)==1)); %#ok<*FNDSB>
         lstLS = lst(find(rhoSD>rhoSD_ssThresh & MeasListAct(lst)==1));
-        if length(lstSS) == 0
-           errordlg('No short separation channels fall within rhoSD_ssThresh!');
-        end
+        
         
         
         %% get long and short separation data
@@ -177,15 +175,17 @@ if flagtCCA
             end
         end
         % AUX signals + add ss signal if it exists
-        if ~isempty(d_short) & exist('AUX') & ss_ch_on == 1
-            AUX = [AUX, d_short]; % this should be of the current run
-        elseif ss_ch_on ~= 0
+        if exist('AUX') & ss_ch_on == 1 & ~isempty(d_short)
+            AUX = [AUX, d_short]; 
+        elseif ~exist('AUX') & ss_ch_on == 1 & ~isempty(d_short)
             AUX = d_short;
+        elseif exist('AUX') & ss_ch_on == 0 
+            AUX = AUX;
         else
             msg = 'No auxiliary or short separation measurement to regress out.';
             error(msg)
         end
-
+        
         % zscore AUX signals
         AUX = zscore(AUX);
         
@@ -208,8 +208,8 @@ if flagtCCA
                 %% if the tCCAfilter variable is not existing, learn and save it (this is the training/resting run)
                 %       Columns of the tCCA filter matrix correspond to common regressors
                 %       for all channels in descending order ranked by canonical correlation coefficient
-                %       number of embeddings. If flagICRegressors = 1 (currently N/A), 
-                %       each column corresponds to an indiviudal channel regressor. 
+                %       number of embeddings. If flagICRegressors = 1 (currently N/A),
+                %       each column corresponds to an indiviudal channel regressor.
                 
                 % cut data to selected time window before training
                 % warning if resting segment is shorter than 1min

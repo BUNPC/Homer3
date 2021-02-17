@@ -1,4 +1,4 @@
-function [h, p1, p2] = line2(p1, p2, k, gridsize)
+function [h, p1, p2] = line2(p1, p2, k, gridsize, hAxes)
 
 %
 % Usage: 
@@ -46,6 +46,10 @@ function [h, p1, p2] = line2(p1, p2, k, gridsize)
 p1_0 = p1;
 p2_0 = p2;
 
+if ~exist('hAxes', 'var')
+    hAxes = gca;
+end
+
 if isempty(k)
     len_edge = dist3(p1_0, p2_0);
     
@@ -73,6 +77,5 @@ end
 
 p1 = points_on_line(p1_0, p2_0, percent_offset/100);
 p2 = points_on_line(p2_0, p1_0, percent_offset/100);
-h = line([p1(1), p2(1)], [p1(2), p2(2)]);
-
+h = line(hAxes, [p1(1), p2(1)], [p1(2), p2(2)]);
 

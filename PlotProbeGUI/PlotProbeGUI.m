@@ -158,7 +158,7 @@ end
 % obtain values either from parent gui or assign default value
 if isempty(maingui)
     if isempty(plotprobe.groupDirs)
-        plotprobe.groupDirs = convertToStandardPath({pwd});
+        plotprobe.groupDirs = filesepStandard({pwd});
     end
     if isempty(plotprobe.format)
         plotprobe.format = 'snirf';

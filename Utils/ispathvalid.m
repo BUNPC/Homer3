@@ -7,13 +7,19 @@ b = false;
 if ~exist('type','var')
     type = '';
 end
-if strcmp(type,'file')
-    if isdir_private(p)
-        return;
-    end
+if ~ischar(type)
+    return;
 end
-if strcmp(type,'dir')
-    if isfile_private(p)
+if ~isempty(type)
+    if strcmp(type,'file')
+        if isdir_private(p)
+            return;
+        end
+    elseif strcmp(type,'dir')
+        if isfile_private(p)
+            return;
+        end
+    else
         return;
     end
 end

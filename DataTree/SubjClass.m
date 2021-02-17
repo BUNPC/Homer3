@@ -250,6 +250,16 @@ classdef SubjClass < TreeNodeClass
             obj.outputVars.nTrialsRuns{r.iRun}   = r.procStream.output.GetVar('nTrials');
             obj.outputVars.stimRuns{r.iRun}      = r.GetVar('stim');
             
+            % a) Find all variables needed by proc stream
+            args = obj.procStream.GetInputArgs();
+
+            % b) Find these variables in this run
+            for ii = 1:length(args)
+                if ~eval( sprintf('isproperty(obj.outputVars, ''%s'')', args{ii}) )
+                    eval( sprintf('obj.outputVars.%s = obj.GetVar(args{ii});', args{ii}) );
+                end
+            end
+            
             % Free run memory 
             r.FreeMemory()
         end
@@ -360,7 +370,21 @@ classdef SubjClass < TreeNodeClass
                 end
             end
         end
-                
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function varval = GetVar(obj, varname)
+            % First call the common code for all levels
+            varval = obj.GetVar@TreeNodeClass(varname);
+            
+            % Now call the subject specific part
+            if isempty(varval)
+                varval = obj.runs(1).GetVar(varname);
+            end            
+        end
+        
+               
     end
     
     
@@ -371,26 +395,42 @@ classdef SubjClass < TreeNodeClass
     methods
         
         % ----------------------------------------------------------------------------------
-        function SetSDG(obj)
-            obj.SD = obj.runs(1).GetSDG();
+        function SetSDG(obj,option)
+            if exist('option','var')
+                obj.SD = obj.runs(1).GetSDG(option);
+            else
+                obj.SD = obj.runs(1).GetSDG();
+            end
         end
         
         
         % ----------------------------------------------------------------------------------
-        function SD = GetSDG(obj)
-            SD = obj.runs(1).GetSDG();
+        function SD = GetSDG(obj,option)
+            if exist('option','var')
+                SD = obj.runs(1).GetSDG(option);
+            else
+                SD = obj.runs(1).GetSDG();
+            end
         end
         
         
         % ----------------------------------------------------------------------------------
-        function srcpos = GetSrcPos(obj)
-            srcpos = obj.runs(1).GetSrcPos();
+        function srcpos = GetSrcPos(obj,option)
+            if exist('option','var')
+                srcpos = obj.runs(1).GetSrcPos(option);
+            else
+                srcpos = obj.runs(1).GetSrcPos();
+            end
         end
         
         
         % ----------------------------------------------------------------------------------
-        function detpos = GetDetPos(obj)
-            detpos = obj.runs(1).GetDetPos();
+        function detpos = GetDetPos(obj,option)
+            if exist('option','var')
+                detpos = obj.runs(1).GetDetPos(option);
+            else
+                detpos = obj.runs(1).GetDetPos();
+            end
         end
         
         

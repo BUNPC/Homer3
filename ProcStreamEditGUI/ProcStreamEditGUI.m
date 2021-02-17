@@ -510,21 +510,11 @@ iGroupPanel = procStreamEdit.iGroupPanel;
 iSubjPanel  = procStreamEdit.iSubjPanel;
 iRunPanel   = procStreamEdit.iRunPanel;
 
-if isempty(listPsUsage)
-    MessageBox('Processing stream is empty. Please load or create a processing stream before saving it.');
-    return;
-end
-
-q = MenuBox('Save to current processing stream or config file?',{'Current processing stream','Config file','Cancel'});
-if q==3
-    return;
-end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % First get the user selection of proc stream function calls from the proc stream listbox 
 % (listboxFuncProcStream) and load them into the procElem for all panels.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-for iPanel=1:length(procElem)    
+for iPanel=1:length(procElem)
     % Save current proc stream in a temp variable - we will copy the aram
     % values for any func call which reappears in the new proc stream
     procStreamPrev = ProcStreamClass();
@@ -548,6 +538,21 @@ for iPanel=1:length(procElem)
         CopyParamValues(fcall, procStreamPrev.fcalls);
         procElem{iPanel}.procStream.Add(fcall);
     end
+    if isa(procElem{iPanel}, 'RunClass')  % Validate procstream order at run level only
+       if procstreamOrderCheckDlg(procElem{iPanel}) == -1
+          return; 
+       end
+    end
+end
+
+if isempty(listPsUsage)
+    MessageBox('Processing stream is empty. Please load or create a processing stream before saving it.');
+    return;
+end
+
+q = MenuBox('Save to current processing stream or config file?',{'Current processing stream','Config file','Cancel'});
+if q==3
+    return;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -32,6 +32,8 @@
 % p: 0.99
 % turnon: 1
 %
+% PREREQUISITES:
+% Motion_Artifact_By_Channel: [tIncAuto, tIncAutoCh] = hmrR_MotionArtifactByChannel(dod, probe, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 % 
 % LOG:
 % created 01-26-2012, J. Selb

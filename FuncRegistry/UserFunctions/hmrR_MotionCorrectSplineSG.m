@@ -31,6 +31,9 @@
 % turnon: 1
 %
 % 
+% PREREQUISITES:
+% Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
+%
 % LOG:
 % Sahar Jahani, October 2017
 % Added turn on/off option Meryem Nov 2017

@@ -736,6 +736,19 @@ classdef GroupClass < TreeNodeClass
             ExportTable(obj.name, 'HRF mean', tblcells);
         end
         
+        
+        
+        % ----------------------------------------------------------------------------------
+        function varval = GetVar(obj, varname)
+            % First call the common code for all levels
+            varval = obj.GetVar@TreeNodeClass(varname);
+            
+            % Now call the group specific part
+            if isempty(varval)
+                varval = obj.subjs(1).GetVar(varname);
+            end            
+        end
+        
     end  % Public Save/Load methods
         
     

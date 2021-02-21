@@ -65,7 +65,7 @@ end
 % obtain values either from parent gui or assign default value
 if isempty(maingui)
     if isempty(pvaluesgui.groupDirs)
-        pvaluesgui.groupDirs = convertToStandardPath({pwd});
+        pvaluesgui.groupDirs = filesepStandard({pwd});
     end
     if isempty(pvaluesgui.format)
         pvaluesgui.format = 'snirf';

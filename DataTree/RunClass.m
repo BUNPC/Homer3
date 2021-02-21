@@ -73,7 +73,7 @@ classdef RunClass < TreeNodeClass
         function err = Load(obj, dirname)
             err = 0;
             if nargin==1 || isempty(dirname)
-                dirname = convertToStandardPath('.');
+                dirname = filesepStandard(pwd);
             end
             err1 = obj.LoadDerivedData();
             err2 = obj.LoadAcquiredData(dirname);            
@@ -101,7 +101,7 @@ classdef RunClass < TreeNodeClass
                 return;
             end
             if ~exist('dirname','var') || isempty(dirname)
-                dirname = convertToStandardPath('.');
+                dirname = filesepStandard(pwd);
             end
             
             if isempty(obj.SaveMemorySpace(obj.name))

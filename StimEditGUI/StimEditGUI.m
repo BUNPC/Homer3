@@ -63,6 +63,9 @@ function StimEditGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global stimEdit
 global maingui
 
+waitmsg = 'Please wait a few seconds while GUI loads ...';
+h = waitbar(0, waitmsg); nsteps = 5;  istep = 1;
+
 % Choose default command line output for StimEditGUI
 handles.output = hObject;
 guidata(hObject, handles);
@@ -105,7 +108,7 @@ end
 % Group dirs argument
 if isempty(stimEdit.groupDirs)
     if length(varargin)<1
-        stimEdit.groupDirs = convertToStandardPath({pwd});
+        stimEdit.groupDirs = filesepStandard({pwd});
     elseif ischar(varargin{1})
         stimEdit.groupDirs = varargin{1};
     end
@@ -139,20 +142,29 @@ else
     set(hObject, 'units','characters');
 end
 
+waitbar(istep/nsteps, h, waitmsg); istep = istep+1;
+
 stimEdit.version = get(hObject, 'name');
 stimEdit.dataTree = LoadDataTree(stimEdit.groupDirs, stimEdit.format, '', maingui);
 if stimEdit.dataTree.IsEmpty()
+    close(h);
     return;
 end
 if isempty(stimEdit.dataTree)
     EnableGuiObjects('off', hObject);
+    close(h);
     return;
 end
+waitbar(istep/nsteps, h, waitmsg); istep = istep+1;
 
 % Make a local copy of dataTree in this GUI 
 stimEdit.locDataTree = DataTreeClass(stimEdit.dataTree);
 
+waitbar(istep/nsteps, h, waitmsg); istep = istep+1;
+
 InitCurrElem(stimEdit);
+
+waitbar(istep/nsteps, h, waitmsg); istep = istep+1;
 
 set(get(handles.axes1,'children'), 'ButtonDownFcn', @axes1_ButtonDownFcn);
 zoom(hObject,'off');
@@ -160,6 +172,9 @@ Display(handles);
 SetTextFilename(handles);
 EnableGuiObjects('on', handles);
 stimEdit.status=0;
+
+waitbar(1, h, waitmsg);
+close(h);
 
 
 % --------------------------------------------------------------------
@@ -661,10 +676,11 @@ end
 % Check auto-save config parameter
 if ~strcmpi(stimEdit.config.autoSaveAcqFiles, 'Yes')
     % Ask user if they want to save, before changing contents of acquisition file
+    msg{1} = sprintf('PLEASE NOTE:  Your stim edits will be saved directly to the acquisition file %s if you select ''Yes''.  ', stimEdit.dataTreeHandle.currElem.name);
     if stimEdit.dataTreeHandle.currElem.IsRun()
-        msg = sprintf('Are you sure you want to save stimulus edits directly in the acquisition file %s?', stimEdit.dataTreeHandle.currElem.name);
+        msg{2} = sprintf('Are you sure you want to modify the original acquisition file? ');
     else
-        msg = sprintf('Are you sure you want to save stimulus edits directly in acquisition files in %s?', stimEdit.dataTreeHandle.currElem.name);
+        msg{2} = sprintf('Are you sure you want to modify the original acquisition files? ');
     end
     q = MenuBox(msg, {'Yes','No','Don''t ask again'});
     if q==2
@@ -703,6 +719,24 @@ function StimEditGUI_DeleteFcn(hObject, eventdata, handles)
 global stimEdit
 if isempty(stimEdit)
     return;
+end
+cfg = ConfigFileClass();
+if strcmp(cfg.GetValue('Stim Edit GUI Save Warnings'), sprintf('don''t ask again'))
+    return;
+end
+
+if stimEdit.dataTreeHandle.currElem.AcquiredDataModified()
+    q = MenuBox('There are unsaved changes to stims or conditions in the current element. Do you want to save your edits?', ...
+        {'Yes','No'}, [], [], 'dontAskAgain');
+    
+    if q(2)==1 
+        cfg.SetValue('Stim Edit GUI Save Warnings', sprintf('don''t ask again'));
+        cfg.Save();
+    end
+    if q(1)==2
+        % Exit GUI without saving changes
+        return
+    end
 end
 Save()
 

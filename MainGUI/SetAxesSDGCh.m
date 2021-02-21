@@ -1,7 +1,11 @@
-function SetAxesSDGCh(handles)
+function SetAxesSDGCh(handles, eventdata)
 global maingui
 
-hAxesSDG = maingui.axesSDG.handles.axes;
+if ~exist('eventdata','var')
+    eventdata = [];
+end
+
+hAxesSDG = handles.axesSDG;
 iCh      = maingui.axesSDG.iCh;
 iSrcDet  = maingui.axesSDG.iSrcDet;
 SD       = maingui.dataTree.currElem.GetSDG('2D');
@@ -27,7 +31,7 @@ if strcmp(mouseevent,'extend') && nDataBlks>1
     return;
 end
 
-pos = get(hAxesSDG, 'currentpoint');
+pos = GetAxesSDGCurrentPoint(handles, eventdata);
 
 % Find the closest optode
 rmin = ( (pos(1,1)-SD.SrcPos(1,1))^2 + (pos(1,2)-SD.SrcPos(1,2))^2 )^0.5 ;
@@ -86,3 +90,37 @@ end
 maingui.axesSDG.iCh     = iCh;
 maingui.axesSDG.iSrcDet = iSrcDet;
 
+
+
+function pos = GetAxesSDGCurrentPoint(handles, eventdata)
+if ~exist('eventdata','var')
+    eventdata = [];
+end
+if isempty(eventdata)
+    pos = get(handles.axesSDG, 'currentpoint');
+elseif isa(eventdata, 'matlab.graphics.eventdata.Hit')
+    pos = get(handles.axesSDG, 'currentpoint');
+else    
+    %     hCh = findChannel(handles.axesSDG);
+    %     if isempty(hCh)
+    %         return;
+    %     end
+    %     xdata = get(hCh, 'xdata');
+    %     ydata = get(hCh, 'ydata');
+    %     pos = [xdata(1) + ((xdata(2)-xdata(1))/2), ydata(1) + ((ydata(2)-ydata(1))/2)];
+    pos = eventdata;
+end
+
+
+
+% ------------------------------------------------------------
+% Find channel to click on artificially
+function hCh = findChannel(haxes)
+hCh = [];
+hc = get(haxes, 'children');
+for ii = 1:length(hc)
+    if strcmpi(hc(ii).type, 'line')
+        hCh = hc(ii);
+        return;
+    end
+end

@@ -37,7 +37,7 @@ end
 
 
 % Set argument defaults
-dirname = convertToStandardPath(pwd);
+dirname = filesepStandard(pwd);
 format = supportedFormats{1};
 datafiles0 = [];
 options = 'delete';
@@ -45,16 +45,16 @@ options = 'delete';
 
 % Parse arguments
 if nargin==1
-    dirname = convertToStandardPath(varargin{1});
+    dirname = filesepStandard(varargin{1},'full');
 elseif nargin==2
-    dirname = convertToStandardPath(varargin{1});
+    dirname = filesepStandard(varargin{1},'full');
     if ischar(varargin{2})
         format = varargin{2};
     else
         datafiles0 = varargin{2};
     end
 elseif nargin==3
-    dirname = convertToStandardPath(varargin{1});
+    dirname = filesepStandard(varargin{1}, 'full');
     if ischar(varargin{2})
         format = varargin{2};
     else

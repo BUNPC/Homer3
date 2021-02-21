@@ -22,7 +22,7 @@ classdef DataFilesClass < handle
             if nargin>0
                 obj.pathnm = varargin{1};
             end
-            obj.pathnm = convertToStandardPath(obj.pathnm);
+            obj.pathnm = filesepStandard(obj.pathnm,'full');
 
             if nargin>1
                 obj.type = varargin{2};

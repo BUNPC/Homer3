@@ -41,7 +41,7 @@ try
 catch ME
     close(h);
     printStack();
-    msg{1} = sprintf('Error: Could not remove installation folder %s. It might be in use by other applications.\n', dirnameDst);
+    msg{1} = sprintf('Error: Could not remove old installation folder %s. It might be in use by other applications.\n', dirnameDst);
     msg{2} = sprintf('Try closing and reopening file browsers or any other applications that might be using the\n');
     msg{3} = sprintf('installation folder and then retry installation.');
     menu([msg{:}], 'OK');

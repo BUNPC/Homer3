@@ -38,7 +38,14 @@ classdef Logger < handle
                 end
             end
             
-            self.Open();
+            try
+                self.fhandle = fopen(self.filename, 'wt');
+            catch ME
+                fprintf('Failed to open log file.\n');
+                fprintf('    %s\n', ME.message);
+                fprintf('    Will print output only to console\n');
+                self.fhandle = -1;
+            end
             
             self.options = struct(...
                 'NULL',-1, ...
@@ -77,9 +84,33 @@ classdef Logger < handle
         
         % -------------------------------------------------
         function Write(self, s, options, hwait)
+            if ~exist('options','var')
+                options = [];
+            end
+            if ~exist('hwait','var')
+                hwait = [];
+            end
             if s(end)~=sprintf('\n')
                 s = sprintf('%s\n', s);
             end
+            self.WriteStr(s, options, hwait)
+        end
+        
+        
+        % -------------------------------------------------
+        function WriteNoNewline(self, s, options, hwait)
+            if ~exist('options','var')
+                options = [];
+            end
+            if ~exist('hwait','var')
+                hwait = [];
+            end
+            self.WriteStr(s, options, hwait)
+        end
+        
+        
+        % -------------------------------------------------
+        function WriteStr(self, s, options, hwait)
             if ~exist('options','var')
                 options = [];
             end

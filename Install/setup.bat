@@ -1,7 +1,7 @@
 @echo off
 @echo.
 @echo.
-@echo   PLEASE WAIT ... INSTALLTION WILL START IN A FEW MINUTES ...
+@echo   PLEASE WAIT ... INSTALLATION WILL START IN A FEW MINUTES ...
 @echo.
 @move .\installtemp .\setup.exe
 @echo.

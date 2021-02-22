@@ -416,11 +416,9 @@ classdef FuncCallClass < handle
                 if length(obj.paramIn) ~= length(obj2.paramIn)
                     return;
                 end
-                for ii=1:length(obj.paramIn)
-                    if obj.paramIn(ii) ~= obj2.paramIn(ii)
-                        return;
-                    end
-                end
+%               Must have the same number of params, but their individual
+%               lengths can differ
+
             elseif isstruct(obj2)
                 % Name 
                 k = find(obj.name=='_');

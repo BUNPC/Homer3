@@ -372,8 +372,8 @@ fcall = dataTree.currElem.procStream.fcalls(iFcall);
 param = fcall.paramIn(iParam);
 val = str2num(get(hObject,'string'));
 
-% If str2num fails or user entered wrong number of params
-if (~isempty(hObject.String) && isempty(val)) || (length(val) > count(param.GetFormat(), '%'))
+% If str2num fails or user entered no params
+if (~isempty(hObject.String) && isempty(val)) || isempty(val)
     set(hObject, 'string', sprintf(param.GetFormat(), hObject.Value));  % Restore og value
     return;
 end

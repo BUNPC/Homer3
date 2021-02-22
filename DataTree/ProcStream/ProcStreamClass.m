@@ -192,6 +192,7 @@ classdef ProcStreamClass < handle
         
         % ----------------------------------------------------------------------------------
         function str = EditParam(obj, iFcall, iParam, val)
+            % Returns "" if the edit is rejected or the string 
             str = '';
             param = obj.fcalls(iFcall).paramIn(iParam);
             if isempty(iFcall)
@@ -206,20 +207,8 @@ classdef ProcStreamClass < handle
             if isempty(obj.fcalls(iFcall).paramIn)
                 return;
             end
-            if isprop(param, 'default')
-               default = param.default;
-               if ~isempty(default)
-                   in = val;
-                   val = param.default;
-                   if length(in) > length(default)
-                       val(1:length(default)) = in(1:length(default));
-                   else
-                       val(1:length(in)) = in;                       
-                   end
-               end
-            end
+            param.Edit(val);
             str = sprintf(param.format, val);
-            param.value = val;
         end
 
 

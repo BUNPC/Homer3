@@ -2,9 +2,9 @@ classdef ParamClass < matlab.mixin.Copyable
     
     properties
         name
-        value
-        default
-        format
+        value       % Current value of parameter
+        default     % Default value loaded from the function helpstring
+        format      % printf-format string for scalar(s) in value
         help
     end
     
@@ -12,11 +12,11 @@ classdef ParamClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function obj = ParamClass(varargin)
+            % FuncCallClass's Encode handles ParamClass construction
             obj.name   = '';
             obj.value  = [];
             obj.format = '';
             obj.help   = '';
-            
             if nargin==0
                 return;
             elseif nargin==1
@@ -83,6 +83,8 @@ classdef ParamClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function str = GetFormattedValue(obj)
+            % Returns the string version of the value using the format
+            % property, including brackets for arrays
             valstr = sprintf(obj.format, obj.value);
             if length(obj.value) > 1
                 str = ['[', valstr, ']'];
@@ -109,6 +111,17 @@ classdef ParamClass < matlab.mixin.Copyable
         % ----------------------------------------------------------------------------------
         function val = GetDefault(obj)
             val = obj.default;
+        end
+
+        % ----------------------------------------------------------------------------------
+        function err = Edit(obj, val)
+            % Assign a new value to the parameter, affecting both the value
+            % and format
+            obj.value = val;
+            eachformat = strsplit(obj.format);
+            formatlen = length(val);
+            obj.format = strtrim(repmat([eachformat{1}, ' '], 1, formatlen));
+            err = 0;  % Error checking i.e. max length
         end
         
         % ----------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-function DisplayDataConc(t, d, dStd, hbType, ch, chLst, nTrials, condition, linecolor, linestyle)
+function DisplayDataConc(hAxes, t, d, dStd, hbType, ch, chLst, nTrials, condition, linecolor, linestyle)
 
 % Parse args
 if ~exist('t','var')
@@ -44,7 +44,7 @@ end
 for iHb=1:length(hbType)
     for ii=length(ch(chLst)):-1:1
         dHbMl = squeeze(d(:, hbType(iHb), ch(chLst(ii))));
-        h     = plot(t, dHbMl);
+        h     = plot(hAxes, t, dHbMl);
         
         % fprintf('Plotting channel: %d, color: [%0.1f, %0.1f, %0.1f]\n', chLst(ii), linecolor(chLst(ii),:));
         set(h, 'color', linecolor(chLst(ii),:));
@@ -55,7 +55,7 @@ for iHb=1:length(hbType)
             dHbMlStd    = squeeze(dStd( :, hbType(iHb), ch(chLst(ii)) ));
             dHbMlStdErr = dHbMlStd./sqrt(nTrials(condition));
             idx         = [1:10:length(t)];
-            h2          = errorbar(t(idx), dHbMl(idx), dHbMlStdErr(idx),'.');
+            h2          = errorbar(hAxes, t(idx), dHbMl(idx), dHbMlStdErr(idx),'.');
             set(h2,'color',linecolor(chLst(ii),:));
         end
     end

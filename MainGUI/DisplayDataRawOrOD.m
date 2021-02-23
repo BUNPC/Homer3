@@ -1,4 +1,4 @@
-function DisplayDataRawOrOD(t, d, dStd, wl, ch, chLst, nTrials, condition, linecolor, linestyle)
+function DisplayDataRawOrOD(hAxes, t, d, dStd, wl, ch, chLst, nTrials, condition, linecolor, linestyle)
 
 % Parse args
 if ~exist('t','var')
@@ -44,7 +44,7 @@ linewidth = [2,2,2,2,2,2];
 for iWl=1:length(wl)
     for ii=1:length(ch(chLst))
         dWlMl = squeeze(d( :, ch(chLst(ii)), wl(iWl)));
-        h     = plot(t,dWlMl);
+        h     = plot(hAxes, t, dWlMl);
         
         set(h, 'color',  linecolor(chLst(ii),:));
         set(h, 'linestyle', linestyle{wl(iWl)});
@@ -54,7 +54,7 @@ for iWl=1:length(wl)
             dWlMlStd    = squeeze(dStd( :, ch(chLst(ii)), wl(iWl)));
             dWlMlStdErr = dWlMlStd./sqrt(nTrials(condition));
             idx         = 1:10:length(t);
-            h2          = errorbar(t(idx), dWlMl(idx), dWlMlStdErr(idx),'.');
+            h2          = errorbar(hAxes, t(idx), dWlMl(idx), dWlMlStdErr(idx),'.');
             set(h2,'color',linecolor(chLst(ii),:));
         end
     end

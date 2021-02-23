@@ -90,6 +90,33 @@ classdef Logger < handle
             if ~exist('hwait','var')
                 hwait = [];
             end
+            if s(end)~=sprintf('\n')
+                s = sprintf('%s\n', s);
+            end
+            self.WriteStr(s, options, hwait)
+        end
+        
+        
+        % -------------------------------------------------
+        function WriteNoNewline(self, s, options, hwait)
+            if ~exist('options','var')
+                options = [];
+            end
+            if ~exist('hwait','var')
+                hwait = [];
+            end
+            self.WriteStr(s, options, hwait)
+        end
+        
+        
+        % -------------------------------------------------
+        function WriteStr(self, s, options, hwait)
+            if ~exist('options','var')
+                options = [];
+            end
+            if ~exist('hwait','var')
+                hwait = [];
+            end
             options = self.Filter(options);
             
             if options == self.options.NULL
@@ -189,10 +216,32 @@ classdef Logger < handle
         
         
         % -------------------------------------------------
+        function Open(self)
+            try
+                self.fhandle = fopen(self.filename, 'wt');
+            catch ME
+                fprintf('Failed to open log file.\n');
+                fprintf('    %s\n', ME.message);
+                fprintf('    Will print output only to console\n');
+                self.fhandle = -1;
+            end
+        end
+        
+                
+        % -------------------------------------------------
         function Close(self, appname)
             if ~exist('appname','var') || isempty(appname)
                 appname = self.appname;
-            end            
+            end
+            
+            % If appname is passed and does not equal the associated log
+            % filename then it's not meant to closed in this call so exit 
+            % without closing file handle
+            [~, fname] = fileparts(self.filename);
+            if ~strcmp(appname, fname)
+                return;
+            end
+            
             if self.fhandle < 0
                 return;
             end            
@@ -290,6 +339,15 @@ classdef Logger < handle
                 end
             catch
                 self.fhandle = -1;
+            end
+        end
+    
+        
+        % ---------------------------------------------------------------
+        function b = IsOpen(self)
+            b = true;
+            if self.fhandle < 0
+                b = false; 
             end
         end
         

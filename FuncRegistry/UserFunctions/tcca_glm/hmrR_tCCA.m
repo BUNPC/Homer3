@@ -1,12 +1,12 @@
 % SYNTAX:
-% [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, subjIdx, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_inx, runIdxResting, tResting)
+% [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, subjIdx, mlActMan, mlActAuto, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_on, runIdxResting, tResting)
 %
 % UI NAME:
 % hmrR_tCCA
 %
 % DESCRIPTION:
 % This script generates regressors using the regularized temporally embedded
-% Canonical Correlation Anlaysis described in detail in von Lühmann et al. (2020), NeuroImage. 
+% Canonical Correlation Anlaysis described in detail in von Lühmann et al. (2020), NeuroImage.
 % If you use this method, please use the following CITATION:
 % von Lühmann, Alexander, et al. "Improved physiological noise regression
 % in fNIRS: A multimodal extension of the General Linear Model using temporally
@@ -17,7 +17,11 @@
 % aux - SNIRF aux type where dataTimeCourse is aux time course data (See SNIRF Spec for more details)
 % probe - SNIRF probe type containing source/detector geometry data (See SNIRF Spec for more details)
 % runIdx - the index of the run in a multi-run session
-% subjIdx - the index of the subject in a group 
+% subjIdx - the index of the subject in a group
+% mlActMan: Cell array of vectors, one for each time base in data, specifying
+%        active/inactive channels with 1 meaning active, 0 meaning inactive
+% mlActAuto: Cell array of vectors, one for each time base in data, specifying
+%        active/inactive channels with 1 meaning active, 0 meaning inactive
 % flagtCCA - turns the function on / off
 % tCCAparams - These are the parameters for tCCA function
 %            1 - 1 timelag [s]
@@ -31,21 +35,22 @@
 %          if you do not want to regress the short separation measurements.
 %          Follows the static estimate procedure described in Gagnon et al (2011).
 %          NeuroImage, 56(3), 1362?1371.
-% ss_ch_inx - short separation channel index, starts from one ends with the
-% total number of short separation channels
+% ss_ch_on - Include short separation channels in tCCA, on (1) off (0)
+% NOTE Please include hmrR_prune_channel function to remove noisy short
+% separation channels
 % runIdxResting - resting state run index
 % tResting - start/stop time [s] to use from resting data for tCCA training
 %
 % OUTPUTS:
 % Aaux - A matrix of auxilliary regressors (#time points x #Aux regressors)
-% rcMap - Currently always empty or "all". 
-%           Under development: Will also provide an array of cells (1 x #fNIRS channels) 
+% rcMap - Currently always empty or "all".
+%           Under development: Will also provide an array of cells (1 x #fNIRS channels)
 %           containing aux regressor indices for individual regressor-channel mapping.
 %           Only relevant when flagICRegressors = 1.
 %
 % USAGE OPTIONS:
-% hmrR_tCCA_Concentration_Data: [Aaux, rcMap] = hmrR_tCCA(dc, aux, probe, iRun, iSubj, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_inx, runIdxResting, tResting)
-% hmrR_tCCA_OD_Data: [Aaux, rcMap] = hmrR_tCCA(dod, aux, probe, iRun, iSubj, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_inx, runIdxResting, tResting)
+% hmrR_tCCA_Concentration_Data: [Aaux, rcMap] = hmrR_tCCA(dc, aux, probe, iRun, iSubj, mlActMan, mlActAuto, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_on, runIdxResting, tResting)
+% hmrR_tCCA_OD_Data: [Aaux, rcMap] = hmrR_tCCA(dod, aux, probe, iRun, iSubj, mlActMan, mlActAuto, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_on, runIdxResting, tResting)
 %
 %
 % PARAMETERS:
@@ -53,11 +58,11 @@
 % tCCAparams: [3 0.08 0.3]
 % tCCAaux_inx: [1 1 1 1 0 0 0 0]
 % rhoSD_ssThresh: 15.0
-% ss_ch_inx: [1 2 3 4 5]
+% ss_ch_on: 1
 % runIdxResting: 1
 % tResting: [30 210]
 %
-function [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, subjIdx, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_inx, runIdxResting, tResting)
+function [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, subjIdx, mlActMan, mlActAuto, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_on, runIdxResting, tResting)
 
 %% COMMENTS/THOUGHTS/QUESTIONS ALEX
 % 2) Output canonical correlation coefficients as quality metric?
@@ -89,8 +94,17 @@ param.ct = 0;   % correlation threshold for rtcca function, set here to 0 (will 
 % correlation used outside of the rtcca function
 ctr = tCCAparams(3);
 
-%checksum for tCCA filter file
+% checksum for tCCA filter file
 chksm = int16(7*flagICRegressors + sum(11*tCCAparams(:)) + sum(13*tCCAaux_inx(:)) + 17*rhoSD_ssThresh + 19*runIdxResting + sum(23*tResting(:)));
+
+% initialize active channel list
+if isempty(mlActMan)
+    mlActMan = cell(length(data),1);
+end
+if isempty(mlActAuto)
+    mlActAuto = cell(length(data),1);
+end
+
 
 if flagtCCA
     
@@ -106,7 +120,21 @@ if flagtCCA
         t        = data(iBlk).GetTime();
         ml       = data(iBlk).GetMeasListSrcDetPairs();
         
+        
         fq = 1/(t(2)-t(1));
+        
+        
+        % get  a list of active channels
+        if isempty(mlActMan{iBlk})
+            mlActMan{iBlk} = ones(size(ml,1)*2,1);
+        end
+        if isempty(mlActAuto{iBlk})
+            mlActAuto{iBlk} = ones(size(ml,1)*2,1);
+        end
+        MeasListAct = mlActMan{iBlk} & mlActAuto{iBlk};
+        
+        
+        
         
         %% find the list of short and long distance channels
         lst = 1:size(ml,1);
@@ -116,15 +144,10 @@ if flagtCCA
             rhoSD(iML) = sum((SrcPos(ml(lst(iML),1),:) - DetPos(ml(lst(iML),2),:)).^2).^0.5;
             posM(iML,:) = (SrcPos(ml(lst(iML),1),:) + DetPos(ml(lst(iML),2),:)) / 2;
         end
-        lstSS = lst(find(rhoSD<=rhoSD_ssThresh)); %#ok<*FNDSB>
-        lstLS = lst(find(rhoSD>rhoSD_ssThresh));
-        if length(lstSS) == 0
-           errordlg('No short separation channels fall within rhoSD_ssThresh!');
-        end
+        lstSS = lst(find(rhoSD<=rhoSD_ssThresh &  MeasListAct(lst)==1)); %#ok<*FNDSB>
+        lstLS = lst(find(rhoSD>rhoSD_ssThresh & MeasListAct(lst)==1));
         
-        if ss_ch_inx ~= 0
-            lstSS = lstSS(ss_ch_inx);
-        end
+        
         
         %% get long and short separation data
         if strncmp(datatype{1}, 'Hb', 2)
@@ -152,15 +175,17 @@ if flagtCCA
             end
         end
         % AUX signals + add ss signal if it exists
-        if ~isempty(d_short) & exist('AUX')
-            AUX = [AUX, d_short]; % this should be of the current run
-        elseif ss_ch_inx ~= 0
+        if exist('AUX') & ss_ch_on == 1 & ~isempty(d_short)
+            AUX = [AUX, d_short]; 
+        elseif ~exist('AUX') & ss_ch_on == 1 & ~isempty(d_short)
             AUX = d_short;
+        elseif exist('AUX') & ss_ch_on == 0 
+            AUX = AUX;
         else
             msg = 'No auxiliary or short separation measurement to regress out.';
             error(msg)
         end
-
+        
         % zscore AUX signals
         AUX = zscore(AUX);
         
@@ -183,8 +208,8 @@ if flagtCCA
                 %% if the tCCAfilter variable is not existing, learn and save it (this is the training/resting run)
                 %       Columns of the tCCA filter matrix correspond to common regressors
                 %       for all channels in descending order ranked by canonical correlation coefficient
-                %       number of embeddings. If flagICRegressors = 1 (currently N/A), 
-                %       each column corresponds to an indiviudal channel regressor. 
+                %       number of embeddings. If flagICRegressors = 1 (currently N/A),
+                %       each column corresponds to an indiviudal channel regressor.
                 
                 % cut data to selected time window before training
                 % warning if resting segment is shorter than 1min

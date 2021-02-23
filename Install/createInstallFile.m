@@ -3,36 +3,23 @@ function createInstallFile(options)
 if ~exist('options','var') | isempty(options)
     options = 'all';
 end
-if exist('./Install','dir')
-    cd('./Install');
-end
 
 % Find installation path and add it to matlab search paths
-dirnameInstall = fileparts(which('createInstallFile.m'));
-if isempty(dirnameInstall)
-    m1 = sprintf('Cannot create installation package.\n');
-    menu([m1],'OK');
-    return;
-end
-[pp,fs] = getpathparts(dirnameInstall);
-dirnameApp = buildpathfrompathparts(pp(1:end-1), fs(1:end-1,:));
+dirnameApp = getAppDir;
 if isempty(dirnameApp)
-    m1 = sprintf('Cannot create installation package.\n');
-    menu([m1],'OK');
+    MessageBox('Cannot create installation package. Could not find root application folder.');
     return;
 end
-if dirnameInstall(end)~='/' & dirnameInstall(end)~='\'
-    dirnameInstall(end+1)='/';
-end
-if dirnameApp(end)~='/' & dirnameApp(end)~='\'
-    dirnameApp(end+1)='/';
+dirnameInstall = filesepStandard(fileparts(which('createInstallFile.m')));
+if isempty(dirnameInstall)
+    MessageBox('Cannot create installation package. Could not find root installation folder.');
+    return;
 end
 addpath(dirnameInstall, '-end')
-
 cd(dirnameInstall);
 
 % Start with a clean slate
-cleanup(dirnameInstall, dirnameApp);
+cleanup(dirnameInstall, dirnameApp, 'start');
 
 % Set the executable names based on the platform type
 platform = setplatformparams();
@@ -50,8 +37,8 @@ mkdir([dirnameInstall, 'homer3_install/SubjDataSample']);
 
 % Generate executables
 if ~strcmp(options, 'nobuild')
-	Buildme_Setup(pwd);
-	Buildme_Homer3(dirnameApp);
+	Buildme_Setup();
+	Buildme_Homer3();
     if islinux()
         perl('./makesetup.pl','./run_setup.sh','./setup.sh');
     elseif ismac()

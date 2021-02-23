@@ -1,11 +1,33 @@
-function [selection, hf] = MenuBox(msg, bttns, relativePos, textLineWidth)
-global bttnId
-bttnId = [];
+function selection = MenuBox(msg, bttns, relativePos, textLineWidth, options)
+
+%
+% SYNTAX:
+%
+%   selection = MenuBox(msg, bttns)
+%   selection = MenuBox(msg, bttns, relativePos)
+%   selection = MenuBox(msg, bttns, relativePos, textLineWidth)
+%   selection = MenuBox(msg, bttns, relativePos, textLineWidth, options)
+%
+% EXAMPLES:
+%
+%   q = MenuBox('Please select option',{'option1','option2','option3'});
+%   q = MenuBox('Please select option',{'option1','option2','option3'}, 'lowerleft');
+%   q = MenuBox('Please select option',{'option1','option2','option3'}, 'upperright',80);
+%   q = MenuBox('Please select option',{'option1','option2','option3'},[],[],sprintf('dontAskAgain'));
+%   q = MenuBox('Please select option',{'option1','option2','option3'},'centerright',[],sprintf('dontAskAgainOptions'));
+%   q = MenuBox('Please select option',{'option1','option2','option3'},[],75,sprintf('dontAskAgain'));
+%
+
+global bttnIds
+bttnIds = 0;
 
 DEBUG=0;
 DEBUG2=0;
 
 % Parse args 
+if iscell(msg)
+    msg = [msg{:}];
+end
 if ~exist('bttns','var') || isempty(bttns)
     bttns = {'OK'};
 elseif exist('bttns','var') && ischar(bttns)
@@ -16,6 +38,9 @@ if ~exist('relativePos','var') || isempty(relativePos)
 end
 if ~exist('textLineWidth','var') || isempty(textLineWidth)
     textLineWidth = 70;
+end
+if ~exist('options','var')
+    options = '';
 end
 
 title = 'MENU';
@@ -28,8 +53,17 @@ for ii=1:length(bttns)
 end
 bttnstrlenmin = 7;
 
-nchar     = length(msg);
-nbttns    = length(bttns);
+% Syntax for special call of MenuBox to ONLY get back the selection of
+% "ask/don't ask" checkbox strings, then exit function
+checkboxes  = getCheckboxes(options);
+if isempty(msg)
+    selection = checkboxes;
+    return;
+end
+
+nchar        = length(msg);
+ncheckboxes  = length(checkboxes);
+nbttns       = length(bttns)+ncheckboxes;
 if bttnstrlenmax<bttnstrlenmin
     Wbttn = 2.1*bttnstrlenmin;
 else
@@ -101,6 +135,7 @@ end
 hb = zeros(nbttns,1); 
 p  = zeros(nbttns,4);
 TextPos = get(ht, 'position');
+
 for k = 1:nbttns
     Ypfk = TextPos(2) - k*(Hbttn+vertgap);
     p(k,:) = [2*a, Ypfk, Wbttn, Hbttn];
@@ -109,22 +144,38 @@ for k = 1:nbttns
         fprintf('%d) %s:   p1 = [%0.1f, %0.1f, %0.1f, %0.1f]\n', k, bttns{k}, p(k,1), p(k,2), p(k,3), p(k,4));
     end
     
-    % Draw function call divider for clarity
-    hb(k) = uicontrol('parent',hf, 'style','pushbutton', 'string',bttns{k}, 'units','characters', 'position',p(k,:), ...
-                      'tag',sprintf('%d', k), 'callback',@pushbuttonGroup_Callback);
+    if k > (nbttns-ncheckboxes)
+        if k-(nbttns-ncheckboxes)==1
+            val = 1;
+        else
+            val = 0;
+        end
+        hb(k) = uicontrol('parent',hf, 'style','checkbox', 'string',checkboxes{k-(nbttns-ncheckboxes)}, 'units','characters', ...
+            'position',[p(k,1), p(k,2), 2*length(checkboxes{k-(nbttns-ncheckboxes)}), p(k,4)], 'value',val, ...
+            'tag',sprintf('%d', k-(nbttns-ncheckboxes)), 'callback',{@checkboxDontAskOptions_Callback, hf});
+    else
+        hb(k) = uicontrol('parent',hf, 'style','pushbutton', 'string',bttns{k}, 'units','characters', 'position',p(k,:), ...
+            'tag',sprintf('%d', k), 'callback',@pushbuttonGroup_Callback);
+    end
 end
+
+
 
 % Need to make sure position data is saved in pixel units at end of function
 % to as these are the units used to reposition GUI later if needed
 setGuiFonts(hf);
-rePositionGuiWithinScreen(hf);
+p = guiOutsideScreenBorders(hf);
+
+% Change units temporarily to normalized to apply the repositiong because 
+% guiOutsideScreenBorders uses normalized units
+set(hf, 'visible','on', 'units','normalized', 'position',p);
 
 % Change units back to characters
-set(hf, 'visible','on', 'units','characters');
+set(hf, 'units','characters');
 
 % Wait for user to respond before exiting
 t = 0;
-while isempty(bttnId) && ishandles(hf)
+while bttnIds(1)==0 && ishandles(hf)
     t=t+1;
     pause(.2);
     if mod(t,30)==0
@@ -132,7 +183,13 @@ while isempty(bttnId) && ishandles(hf)
     end
 end
 
-selection = bttnId;
+% Call this callback in case default is preselected in the code, that way
+% we make sure that if one of the checkboxes is preselected not by user
+% action but by code, that we detect that. 
+checkboxDontAskOptions_Callback([], [], hf)
+
+% Assign button selctions to function output
+selection = bttnIds;
 
 if ishandles(hf)
     delete(hf);
@@ -143,9 +200,52 @@ end
 
 
 % -------------------------------------------------------------
-function pushbuttonGroup_Callback(hObject, eventdata, handles)
-global bttnId
-bttnId = str2num(get(hObject, 'tag'));
+function pushbuttonGroup_Callback(hObject, eventdata, hb)
+global bttnIds
+bttnIds(1) = str2num(get(hObject, 'tag'));
+
+
+
+% -------------------------------------------------------------
+function checkboxDontAskOptions_Callback(hObject, ~, hf)
+global bttnIds
+
+if ~isvalid(hf)
+   return 
+end
+
+hb = get(hf, 'children');
+checkboxId = [];
+if ishandles(hObject)
+checkboxId = str2num(get(hObject, 'tag'));
+if ~get(hObject, 'value')
+    bttnIds(2) = 0;
+    return;
+end
+else
+    for ii = 1:length(hb)
+        if strcmp(get(hb(ii), 'style'),'checkbox')
+            if get(hb(ii), 'value')
+                checkboxId = str2num(get(hb(ii), 'tag'));
+                break;
+            end
+        end
+    end
+end
+
+if isempty(checkboxId)
+    return;
+end
+
+bttnIds(2) = checkboxId;
+
+for ii = 1:length(hb)
+    if strcmp(get(hb(ii), 'style'),'checkbox')
+        if checkboxId ~= str2num(get(hb(ii), 'tag')) %#ok<*ST2NM>
+            set(hb(ii), 'value',0);
+        end
+    end
+end
 
 
 
@@ -194,3 +294,23 @@ switch(lower(relativePos))
         pY = lowerSide + ul*posFig(4);
 end
 
+
+
+% -------------------------------------------------------------
+function checkboxes = getCheckboxes(options)
+
+checkboxes = {};
+if ~optionExists(options, 'dontAskAgainOptions') && ~optionExists(options, 'dontAskAgain')
+    return;
+end
+if optionExists(options, 'dontAskAgainOptions')
+    checkboxes = { ...
+        sprintf('don''t ask again');  ...
+        sprintf('ask every time'); ...
+        % sprintf('ask once at start of next session'); ...
+        };
+else
+    checkboxes = { ...
+        sprintf('don''t ask again');  ...
+        };
+end

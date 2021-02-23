@@ -161,14 +161,33 @@ classdef ProcResultClass < handle
                 return;
             end
             [pname, fname] = fileparts(filename);
+
+            % Set the containing folder name 
             if isempty(pname)
-                if exist(['./', fname, '.mat'], 'file')==2
-                    pname = '.';
-                elseif exist(['../', fname, '.mat'], 'file')==2
-                    pname = '..';
+                % See if folder corresponding to saved output exists. If it
+                % does then set it to be same as the .mat filename (without
+                % the extension)
+                rootdir = '';
+                if exist(['./', fname], 'dir')==7
+                    rootdir = fname;
+                    
+                    % Next 3 lines are for backwards compatibility: if the saved output 
+                    % for subject is stored in the group instead of subject folder as was 
+                    % done in previous versions of this code, then move saved file to 
+                    % subject folder
+                    if exist(['./', fname, '.mat'], 'file')==2
+                        movefile(['./', fname, '.mat'], ['./', rootdir, '/', fname, '.mat']);
+                    end
+                end
+                
+                % Set the containing folder name 
+                if exist(['./', rootdir, '/', fname, '.mat'], 'file')==2
+                    pname = ['./', rootdir];
+                elseif exist(['../', rootdir, '/', fname, '.mat'], 'file')==2
+                    pname = ['../', rootdir];
                 else
-                pname = '.';
-            end
+                    pname = ['./', rootdir]; 
+                end
             end
             obj.filename = [pname, '/', fname, '.mat'];
         end
@@ -198,13 +217,15 @@ classdef ProcResultClass < handle
             
             % If file name is not an empty string, save results to file and free memory
             % to save memory space
-            if ~isempty(obj.filename)
-                save(obj.filename, '-mat', 'output');
-                
-                % Free memory for this object
-                if ~isempty(findstr('freememory', options)) %#ok<FSTR>
-                    obj.FreeMemory();
-                end
+            if isempty(obj.filename)
+                return;
+            end
+            
+            save(obj.filename, '-mat', 'output');
+            
+            % Free memory for this object
+            if ~isempty(findstr('freememory', options)) %#ok<FSTR>
+                obj.FreeMemory();
             end
         end
         
@@ -243,7 +264,7 @@ classdef ProcResultClass < handle
         end
         
         
-        
+                
         % ----------------------------------------------------------------------------------
         function FreeMemory(obj, filename)            
             if ~exist('filename','var')
@@ -872,6 +893,6 @@ classdef ProcResultClass < handle
         end
         
     end
-        
+    
 end
 

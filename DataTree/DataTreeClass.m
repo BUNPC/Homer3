@@ -168,7 +168,7 @@ classdef DataTreeClass <  handle
                 msg{3} = sprintf('Do you want to rename the .%s files to names with a .old extension, delete them or cancel? ', format0);
                 msg{2} = sprintf('NOTE: Renaming or deleting the .%s files will allow Homer3 to regenerate them from .%s file later.', ...
                     format0, dataInit.type);
-                q = MenuBox([msg{:}], {'Rename (Recommended)','Delete','CANCEL'}, [], 90);
+                q = MenuBox(msg, {'Rename (Recommended)','Delete','CANCEL'}, [], 90);
                 if q==1
                     DeleteDataFiles(obj.dirnameGroups, format0, 'move')
                     status = true;
@@ -187,11 +187,11 @@ classdef DataTreeClass <  handle
     
             %             msg{1} = sprintf('Could not load any of the requested files in the group folder %s. ', obj.dirnameGroups);
             %             msg{2} = sprintf('Do you want to select another group folder?');
-            %             q = MenuBox([msg{:}], {'YES','NO'});
+            %             q = MenuBox(msg, {'YES','NO'});
                         
             msg{1} = sprintf('Could not load any of the requested files in the group folder %s. ', obj.dirnameGroups);
             msg{2} = sprintf('Do you want to select another group folder?');
-            q = MenuBox([msg{:}], {'YES','NO'}, [], 110);
+            q = MenuBox(msg, {'YES','NO'}, [], 110);
             if q==2
                 obj.logger.Write(sprintf('Skipping group folder %s...\n', obj.dirnameGroups));
                 obj.dirnameGroups = 0;
@@ -213,7 +213,7 @@ classdef DataTreeClass <  handle
             tic;            
             for kk = 1:length(groupDirs)
                 
-                obj.dirnameGroups{kk} = convertToStandardPath(groupDirs{kk});
+                obj.dirnameGroups{kk} = filesepStandard(groupDirs{kk},'full');
 
                 iGnew = length(obj.groups)+1;
                 
@@ -228,7 +228,15 @@ classdef DataTreeClass <  handle
                     end
                     obj.files = dataInit.files;
                     
-                    obj.LoadGroup(iGnew, procStreamCfgFile);
+                    % Print file and folder numbers stats
+                    nfolders = length(dataInit.files)-dataInit.nfiles;
+                    if nfolders==0
+                        nfolders = 1;
+                    end
+                    obj.logger.Write(sprintf('DataTreeClass.FindAndLoadGroups: Found %d data files in %d folders\n', ...
+                            dataInit.nfiles, nfolders));
+                    
+                    obj.LoadGroup(iGnew, procStreamCfgFile, options);
                     if length(obj.groups) < iGnew
                         if obj.FoundDataFilesInOtherFormat(dataInit, kk)
                             continue;
@@ -238,10 +246,8 @@ classdef DataTreeClass <  handle
                     end
                 end
                 
-            end
-            
-            obj.logger.Write(sprintf('Loaded data set in %0.1f seconds\n', toc));            
-            
+            end           
+            obj.logger.Write(sprintf('Loaded data set in %0.1f seconds\n', toc));
         end
         
         
@@ -273,35 +279,21 @@ classdef DataTreeClass <  handle
         
         % ---------------------------------------------------------------
         function AutoSetDataStorageScheme(obj)
-            g.group = GroupClass();
-            if isvalidfile('./groupResults.mat')
-                g = load('./groupResults.mat');
-                if isa(g.group, 'GroupClass') && g.group.IsEmpty()
-                    if isvalidfile('../groupResults.mat')
-                        g = load('../groupResults.mat');
-                    end
-                end
-            elseif isvalidfile('../groupResults.mat')
-                g = load('../groupResults.mat');
-            end
-            if isa(g.group, 'GroupClass') && g.group.IsEmpty()
-                if g.group.subjs(1).runs(1).acquired.IsEmpty()
-                    obj.dataStorageScheme = 'files';
-                else
-                    obj.dataStorageScheme = 'memory';
-                end
-            else
-                obj.dataStorageScheme = 'memory';
+            if isempty(obj.dataStorageScheme)
+                obj.dataStorageScheme = 'files';
             end
         end
           
         
         
         % ---------------------------------------------------------------
-        function LoadGroup(obj, iG, procStreamCfgFile)
+        function LoadGroup(obj, iG, procStreamCfgFile, options)
             
             if ~exist('procStreamCfgFile','var')
                 procStreamCfgFile = '';
+            end
+            if ~exist('options','var')
+                options = '';
             end
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -324,14 +316,15 @@ classdef DataTreeClass <  handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Initialize procStream for all tree nodes
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.groups(iG).InitProcStream(procStreamCfgFile);
+            if ~optionExists(options, 'noloadconfig')
+            	obj.groups(iG).InitProcStream(procStreamCfgFile);
+            end
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Generate the stimulus conditions for the group tree
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.groups(iG).SetConditions();
 
-            
         end
         
         
@@ -587,6 +580,14 @@ classdef DataTreeClass <  handle
         
         
         % ----------------------------------------------------------
+        function ResetAll(obj)
+            for ii = 1:length(obj.groups)
+                obj.groups(ii).Reset()
+            end
+        end
+        
+        
+        % ----------------------------------------------------------
         function b = IsEmpty(obj)
             b = true;
             if isempty(obj)
@@ -599,6 +600,15 @@ classdef DataTreeClass <  handle
                 return;
             end
             b = false;
+        end
+        
+        % ----------------------------------------------------------
+        function b = IsFlatFileDir(obj)
+            if obj.files(1).isdir
+                b = false;
+            else
+                b = true;
+            end
         end
 
     end

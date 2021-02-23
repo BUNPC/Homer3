@@ -43,6 +43,9 @@ classdef ProcStreamClass < handle
         
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2, filename)
+            if isempty(obj.config.procStreamCfgFile)
+                return;
+            end
             if ~isa(obj, 'ProcStreamClass')
                 return;
             end
@@ -54,13 +57,31 @@ classdef ProcStreamClass < handle
                 obj = ProcStreamClass();
             end
             
-            for ii=1:length(obj2.fcalls)
-                obj.fcalls(ii) = FuncCallClass();
-                obj.fcalls(ii).Copy(obj2.fcalls(ii), obj.reg);
+            kk=1;
+            for ii = 1:length(obj2.fcalls)                
+                % If registry is empty, then add fcall entries unconditionally.
+                % Otherwise only include those user function calls that exist in the registry.
+                if ~isempty(obj.reg.GetUsageName(obj2.fcalls(ii)))
+                    obj.fcalls(kk) = FuncCallClass(obj2.fcalls(ii), obj.reg);
+                    kk = kk+1;
+                else
+                    fprintf('Entry \"%s\" not found in registry ...\n', obj2.fcalls(ii).GetName())
+                    fprintf('  Searching registry for equivalent or similar entry\n')
+                    temp = obj.reg.FindClosestMatch(obj2.fcalls(ii));
+                    if ~isempty(temp)
+                        fprintf('  Found similar entry: %s\n', temp.encodedStr);
+                        obj.fcalls(kk) = FuncCallClass(temp, obj.reg);
+                        kk = kk+1;
+                    else
+                        fprintf('  Found no similar entries. Discarding %s\n', obj2.fcalls(ii).GetName())
+                    end
+                end            
             end
             
             % Delete any fcalls entries not ovewritten by the copy process
-            obj.fcalls(ii+1:end) = [];
+            if ~isempty(obj.fcalls)
+                obj.fcalls(kk+1:end) = [];
+            end
             
             obj.input.Copy(obj2.input);
             obj.output.Copy(obj2.output, filename);
@@ -79,6 +100,9 @@ classdef ProcStreamClass < handle
             if ~isa(obj, 'ProcStreamClass')
                 return;
             end
+            if obj == obj2
+                return;
+            end            
             delete(obj.fcalls);
             obj.fcalls = FuncCallClass().empty();
             for ii=1:length(obj2.fcalls)
@@ -90,7 +114,7 @@ classdef ProcStreamClass < handle
         
 
         % ----------------------------------------------------------------------------------
-        function B = eq(obj, obj2)
+        function B = isequal(obj, obj2)
             B = 0;
             if isa(obj2, 'ProcStream')
                 for ii=1:length(obj.fcalls)
@@ -570,9 +594,9 @@ classdef ProcStreamClass < handle
                 procStreamCfgFile = '';
             end
             if ~exist('pathname','var')
-                pathname = convertToStandardPath(pwd);
+                pathname = filesepStandard(pwd);
             else
-                pathname = convertToStandardPath(pathname);
+                pathname = filesepStandard(pathname, 'full');
             end
             
             % If procStream config filename wasn't passed down as an argument, check the 
@@ -1054,7 +1078,7 @@ classdef ProcStreamClass < handle
                         end
                     end
                 end
-            end            
+            end
         end
         
     end
@@ -1257,8 +1281,20 @@ classdef ProcStreamClass < handle
                 varval = obj.input.GetVar(varname, iBlk);
                 if isempty(varval)
                     varval = obj.output.GetVar(varname, iBlk);
-                end                
+                end
             end
+            
+            % Search function call chain as well if the requested variable 
+            % is acually a user-settable parameter
+            if isempty(varval)
+                for ii = 1:length(obj.fcalls)
+                    varval = obj.fcalls(ii).GetVar(varname);
+                    if ~isempty(varval)
+                        break;
+                    end
+                end
+            end
+            
         end
         
         
@@ -1400,13 +1436,17 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function [tpts, duration, vals] = GetStimData(obj, icond)
-            tpts     = obj.GetStimTpts(icond);
-            duration = obj.GetStimDuration(icond);
-            vals     = obj.GetStimValues(icond);
+        function data = GetStimData(obj, icond)
+            data = obj.input.GetStimData(icond);
         end
         
     
+        % ----------------------------------------------------------------------------------
+        function val = GetStimDataLabels(obj, icond)
+            val = obj.input.GetStimDataLabels(icond);
+        end
+        
+        
         % ----------------------------------------------------------------------------------
         function SetStimTpts(obj, icond, tpts)
             obj.input.SetStimTpts(icond, tpts);
@@ -1438,17 +1478,26 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimValues(obj, icond, vals)
-            obj.input.SetStimValues(icond, vals);
+        function SetStimAmplitudes(obj, icond, vals)
+            obj.input.SetStimAmplitudes(icond, vals);
         end
         
     
         % ----------------------------------------------------------------------------------
-        function vals = GetStimValues(obj, icond)
+        function vals = GetStimAmplitudes(obj, icond)
             if ~exist('icond','var')
                 icond=1;
             end
-            vals = obj.input.GetStimValues(icond);
+            vals = obj.input.GetStimAmplitudes(icond);
+        end
+                       
+        
+        % ----------------------------------------------------------------------------------
+        function vals = GetAmplitudes(obj, icond)
+            if ~exist('icond','var')
+                icond=1;
+            end
+            vals = obj.input.GetStimAmplitudes(icond);
         end
                        
         

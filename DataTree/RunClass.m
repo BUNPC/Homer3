@@ -18,8 +18,9 @@ classdef RunClass < TreeNodeClass
             % Example 1:
             %   run1     = RunClass('./s1/neuro_run01.nirs',1,1,1);
             %   run1copy = RunClass(run1);
-            %
-            obj@TreeNodeClass(varargin);
+            %           
+            obj@TreeNodeClass(varargin);            
+            
             obj.type  = 'run';
             if nargin==0
                 obj.name  = '';
@@ -72,7 +73,7 @@ classdef RunClass < TreeNodeClass
         function err = Load(obj, dirname)
             err = 0;
             if nargin==1 || isempty(dirname)
-                dirname = convertToStandardPath('.');
+                dirname = filesepStandard(pwd);
             end
             err1 = obj.LoadDerivedData();
             err2 = obj.LoadAcquiredData(dirname);            
@@ -100,7 +101,7 @@ classdef RunClass < TreeNodeClass
                 return;
             end
             if ~exist('dirname','var') || isempty(dirname)
-                dirname = convertToStandardPath('.');
+                dirname = filesepStandard(pwd);
             end
             
             if isempty(obj.SaveMemorySpace(obj.name))
@@ -120,9 +121,11 @@ classdef RunClass < TreeNodeClass
                 obj.acquired.Load([dirname, obj.name]);
             end
             
-            if obj.acquired.Error() > 0
-                fprintf('     **** Warning: %s failed to load.\n', obj.name);
+            if obj.acquired.Error() < 0
+                obj.logger.Write( sprintf('     **** Error: "%s" failed to load - %s\n', obj.name, obj.acquired.GetErrorMsg()) );
                 return;
+            elseif obj.acquired.Error() > 0
+                obj.logger.Write( sprintf('     **** Warning: %s in file "%s"\n', obj.acquired.GetErrorMsg(), obj.name) );
             else
                 %fprintf('    Loaded file %s to run.\n', obj.name);                
             end
@@ -159,7 +162,7 @@ classdef RunClass < TreeNodeClass
         function b = AcquiredDataModified(obj)
             b = obj.procStream.AcquiredDataModified();
             if b
-                fprintf('Acquisition data for run %s has been modified\n', obj.name);
+                obj.logger.Write(sprintf('Acquisition data for run %s has been modified\n', obj.name));
             end
         end
 
@@ -168,13 +171,14 @@ classdef RunClass < TreeNodeClass
         % Copy processing params (procInut and procResult) from
         % N2 to N1 if N1 and N2 are same nodes
         % ----------------------------------------------------------------------------------
-        function Copy(obj, R, conditional)
+        function Copy(obj, obj2, conditional)
             if nargin==3 && strcmp(conditional, 'conditional')
-                if obj == R
-                    obj.Copy@TreeNodeClass(R, 'conditional');
+                if obj.Mismatch(obj2)
+                    return
                 end
+                obj.Copy@TreeNodeClass(obj2, 'conditional');
             else
-                obj.Copy@TreeNodeClass(R);
+                obj.Copy@TreeNodeClass(obj2);
                 if isempty(obj.acquired)
                     if obj.IsNirs()
                         obj.acquired = NirsClass();
@@ -182,7 +186,7 @@ classdef RunClass < TreeNodeClass
                         obj.acquired = SnirfClass();
                     end
                 end
-                obj.acquired.Copy(R.acquired);
+                obj.acquired.Copy(obj2.acquired);
             end
         end
 
@@ -299,8 +303,8 @@ classdef RunClass < TreeNodeClass
             obj.procStream.Calc(obj.GetFilename);
 
             if obj.DEBUG
-                fprintf('Completed processing stream for group %d, subject %d, run %d\n', obj.iGroup, obj.iSubj, obj.iRun);
-                fprintf('\n')
+                obj.logger.Write(sprintf('Completed processing stream for group %d, subject %d, run %d\n', obj.iGroup, obj.iSubj, obj.iRun));
+                obj.logger.Write('\n')
             end            
         end
 
@@ -341,6 +345,12 @@ classdef RunClass < TreeNodeClass
             
             
         % ----------------------------------------------------------------------------------
+        function t = GetAuxiliaryTime(obj)
+            t = obj.acquired.GetAuxiliaryTime();
+        end
+
+        
+        % ----------------------------------------------------------------------------------
         function d = GetRawData(obj, iBlk)
             if nargin<2
                 iBlk = 1;
@@ -377,10 +387,15 @@ classdef RunClass < TreeNodeClass
        
         
         % ----------------------------------------------------------------------------------
-        function SD = GetSDG(obj)
+        function SD = GetSDG(obj,option)
             SD.Lambda  = obj.acquired.GetWls();
-            SD.SrcPos  = obj.acquired.GetSrcPos();
-            SD.DetPos  = obj.acquired.GetDetPos();
+            if exist('option','var')
+                SD.SrcPos  = obj.acquired.GetSrcPos(option);
+                SD.DetPos  = obj.acquired.GetDetPos(option);
+            else
+                SD.SrcPos  = obj.acquired.GetSrcPos();
+                SD.DetPos  = obj.acquired.GetDetPos();
+            end
         end
         
         
@@ -626,13 +641,17 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function [tpts, duration, vals] = GetStimData(obj, icond)
-            tpts     = obj.GetStimTpts(icond);
-            duration = obj.GetStimDuration(icond);
-            vals     = obj.GetStimValues(icond);
+        function data = GetStimData(obj, icond)
+            data = obj.procStream.GetStimData(icond);
         end
         
     
+        % ----------------------------------------------------------------------------------
+        function val = GetStimDataLabels(obj, icond)
+            val = obj.procStream.GetStimDataLabels(icond);
+        end
+        
+        
         % ----------------------------------------------------------------------------------
         function SetStimTpts(obj, icond, tpts)
             obj.procStream.SetStimTpts(icond, tpts);
@@ -664,17 +683,17 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimValues(obj, icond, vals)
-            obj.procStream.SetStimValues(icond, vals);
+        function SetStimAmplitudes(obj, icond, vals)
+            obj.procStream.SetStimAmplitudes(icond, vals);
         end
         
     
         % ----------------------------------------------------------------------------------
-        function vals = GetStimValues(obj, icond)
+        function vals = GetStimAmplitudes(obj, icond)
             if ~exist('icond','var')
                 icond=1;
             end
-            vals = obj.procStream.GetStimValues(icond);
+            vals = obj.procStream.GetStimAmplitudes(icond);
         end
         
         

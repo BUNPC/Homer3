@@ -13,12 +13,9 @@ end
 % Patch in some versions of matlab messes up the renderer, that is it changes the 
 % renderer property. Therefore we save current renderer before patch to
 % restore it to what it was to pre-patch time. 
-renderer = get(gcf, 'renderer');
-if nargin<5
-    hAxes = handles.axesData;
-end 
+renderer = get(get(hAxes, 'parent'), 'renderer');
 axes(hAxes);
-hold on
+hold(hAxes,'on');
 
 iCh       = maingui.axesSDG.iCh;
 iDataBlks = maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
@@ -46,7 +43,7 @@ for iBlk = iDataBlks
         if ii>size(tInc,2)
             break
         end
-        col = setColor(mode, ii);
+        col = setColor(hAxes, mode, ii);
         t = maingui.dataTree.currElem.GetTime(iBlk);
         [h, tPtsExclTot] = drawPatches(t, tInc(:, kk), tPtsExclTot, col, handles);        
         if strcmp(mode,'manual')
@@ -58,8 +55,8 @@ for iBlk = iDataBlks
 end
 
 % Restore previous renderer
-hold off
-set(gcf, 'renderer', renderer);
+hold(hAxes,'off');
+set(get(hAxes,'parent'), 'renderer', renderer);
 
 
 
@@ -78,7 +75,7 @@ if ~isempty(tInc)
     p = TimeExcludeRanges(tInc,t);
     yy = GetAxesYRangeForStimPlot(handles.axesData);
     for ii=1:size(p,1)
-        h(ii) = patch([p(ii,1) p(ii,2) p(ii,2) p(ii,1) p(ii,1)], [yy(1) yy(1) yy(2) yy(2) yy(1)], col, ...
+        h(ii) = patch(handles.axesData, [p(ii,1) p(ii,2) p(ii,2) p(ii,1) p(ii,1)], [yy(1) yy(1) yy(2) yy(2) yy(1)], col, ...
                       'facealpha',0.3, 'edgecolor','none');
     end
     tPtsExclTot = [tPtsExclTot(:)', tPtsExcl(:)'];
@@ -87,12 +84,12 @@ end
 
 
 % -------------------------------------------------------------------------
-function col = setColor(mode, iCh)
+function col = setColor(hAxes, mode, iCh)
 global maingui
 
 % Set patches color based on figure renderer
 
-if strcmp(get(gcf,'renderer'),'zbuffer')
+if strcmp(get(get(hAxes, 'parent'),'renderer'),'zbuffer')
     if strcmp(mode,'auto')
         col=[1.0 0.1 0.1];
     elseif strcmp(mode,'autoch')

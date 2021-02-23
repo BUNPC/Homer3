@@ -36,8 +36,9 @@
 
 
 % --------------------------------------------------------------------
-function DisplayAxesSDG(hAxes)
+function DisplayAxesSDG(handles)
 global maingui
+global UNIT_TEST
 
 tic;
 
@@ -45,28 +46,46 @@ tic;
 % Command line call:
 % plotAxes_SDG(guidata(gcbo),bool);
 %
-if nargin<1
-    hAxes   = maingui.axesSDG.handles.axes;
+if nargin==0
+    return;
+end
+if ~ishandles(handles)
+    hAxes = handles.axesSDG;
+else
+    hAxes = handles;    
 end
 iCh         = maingui.axesSDG.iCh;
 iSrcDet     = maingui.axesSDG.iSrcDet;
 color       = maingui.axesSDG.linecolor;
 
-SD          = maingui.dataTree.currElem.GetSDG();
-bbox        = maingui.dataTree.currElem.GetSdgBbox();
+SD          = maingui.dataTree.currElem.GetSDG('2D');
+
+if isfield(maingui.axesSDG, 'xlim')
+    xbox        = maingui.axesSDG.xlim;
+    ybox        = maingui.axesSDG.ylim;
+else
+    bbox        = maingui.dataTree.currElem.GetSdgBbox();
+end
 
 % Set axes handle properties and parameters 
 if ~ishandles(hAxes)
     return;
 end
+
 % Set gca to be SDG axes
 axes(hAxes);
+
 % Delete all channel lines drawn
 if ishandles(maingui.axesSDG.handles.ch)
     delete(maingui.axesSDG.handles.ch)
     delete(findobj(hAxes, 'Type', 'line'))  % Prevents previously drawn lines from piling up
 end
-axis(hAxes, [bbox(1), bbox(2), bbox(3), bbox(4)]);
+if isfield(maingui.axesSDG, 'xlim')
+    axis(hAxes, [xbox(1), xbox(2), ybox(1), ybox(2)]);
+else
+    axis(hAxes, [bbox(1), bbox(2), bbox(3), bbox(4)]);
+end
+
 %set(hAxes, 'xticklabel','', 'yticklabel','', 'xgrid','off, ygrid','off')
 set(hAxes, 'xticklabel','')
 bttndownfcn = get(hAxes,'ButtonDownFcn');
@@ -105,7 +124,7 @@ hCh = zeros(length(lstML),1);
 
 % Draw all channels
 for ii = 1:length(lstML)
-    hCh(ii) = line2(SD.SrcPos(ml(lstML(ii),1),:), SD.DetPos(ml(lstML(ii),2),:), [], gridsize);
+    hCh(ii) = line2(SD.SrcPos(ml(lstML(ii),1),:), SD.DetPos(ml(lstML(ii),2),:), [], gridsize, hAxes);
     if ismember(ii,lstExclAuto)
         % Draw auto-excluded channel
         col = [1.00 0.6 0.6];
@@ -138,7 +157,7 @@ if ~isempty(iSrcDet) && iSrcDet(1,1)~=0
     
     for idx = 1:size(iSrcDet,1)
         lwidth = 3;
-        hCh(idx+ii) = line2(SD.SrcPos(iSrcDet(idx,1),:), SD.DetPos(iSrcDet(idx,2),:), [], gridsize);
+        hCh(idx+ii) = line2(SD.SrcPos(iSrcDet(idx,1),:), SD.DetPos(iSrcDet(idx,2),:), [], gridsize, hAxes);
         % Attach toggle callback to the selected channels for function on
         % second click
         set(hCh(idx+ii),'color',color(idx,:), 'ButtonDownFcn',sprintf('toggleLinesAxesSDG_ButtonDownFcn(gcbo,[%d],guidata(gcbo))',idx), 'linewidth',2);
@@ -173,13 +192,13 @@ if isempty(maingui.axesSDG.handles.SD)
     for idx1 = 1:nSrcs
         if ~isempty(find(MeasList(:,1)==idx1)) %#ok<*EFIND>
             hSD(idx1) = text( SD.SrcPos(idx1,1), SD.SrcPos(idx1,2), sprintf('%d', idx1), 'fontsize',fs, 'fontweight','bold', 'color','r' );
-            set(hSD(idx1), 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
+            set(hSD(idx1), 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol, 'Clipping', 'on');
         end
     end
     for idx2 = 1:nDets
         if ~isempty(find(MeasList(:,2)==idx2))
             hSD(idx2+idx1) = text( SD.DetPos(idx2,1), SD.DetPos(idx2,2), sprintf('%d', idx2), 'fontsize',fs, 'fontweight','bold', 'color','b' );
-            set(hSD(idx2+idx1), 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol);
+            set(hSD(idx2+idx1), 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol, 'Clipping', 'on');
         end
     end
     maingui.axesSDG.handles.SD = hSD;
@@ -188,7 +207,9 @@ else
 end
 
 % Turn off zoom but only for SDG axes
-h=zoom;
-setAllowAxesZoom(h, hAxes, 0);
+h = zoom(hAxes);
+if isempty(UNIT_TEST) || ~UNIT_TEST
+    setAllowAxesZoom(h, hAxes, 0);
+end
 
 % fprintf('DisplayAxesSDG: Elapsed Time - %0.3f\n', toc);

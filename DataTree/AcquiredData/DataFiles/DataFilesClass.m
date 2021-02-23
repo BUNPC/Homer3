@@ -7,7 +7,7 @@ classdef DataFilesClass < handle
         errmsg;
         pathnm;
         config;
-        
+        nfiles;
     end
     
     methods
@@ -17,11 +17,12 @@ classdef DataFilesClass < handle
             obj.type = '';
             obj.pathnm = pwd;
             skipconfigfile = false;
+            obj.nfiles = 0;
             
             if nargin>0
                 obj.pathnm = varargin{1};
             end
-            obj.pathnm = convertToStandardPath(obj.pathnm);
+            obj.pathnm = filesepStandard(obj.pathnm,'full');
 
             if nargin>1
                 obj.type = varargin{2};
@@ -71,10 +72,9 @@ classdef DataFilesClass < handle
         % ----------------------------------------------------
         function findDataSet(obj, type)
             obj.files = mydir([obj.pathnm, '/*.', type]);
-            if isempty( obj.files )
-                
-                % If there are no .nirs files in current dir, don't give up yet - check
-                % the subdirs for .nirs files.
+            if isempty( obj.files )                
+                % If there are no data files in current dir, don't give up yet - check
+                % the subdirs for data files.
                 dirs = mydir(obj.pathnm);
                 for ii=1:length(dirs)
                     if dirs(ii).isdir && ...
@@ -93,9 +93,12 @@ classdef DataFilesClass < handle
                                 foos(jj).name         = [dirs(ii).name, '/', foos(jj).name];
                                 foos(jj).map2group    = struct('iGroup',0, 'iSubj',0, 'iRun',0);
                                 foos(jj).pathfull     = dirs(ii).pathfull;
+                                if ~foos(jj).isdir
+                                    obj.nfiles = obj.nfiles+1;
+                                end
                             end
                             
-                            % Add .nirs file from current subdir to files struct
+                            % Add file from current subdir to files struct
                             if isempty(obj.files)
                                 obj.files = dirs(ii);
                             else
@@ -106,9 +109,10 @@ classdef DataFilesClass < handle
                     end
                 end
             else
-                for ii=1:length(obj.files)
+                for ii = 1:length(obj.files)
                     obj.files(ii).pathfull = obj.pathnm;
                 end
+                obj.nfiles = obj.nfiles+length(obj.files);
             end
         end
         
@@ -152,5 +156,26 @@ classdef DataFilesClass < handle
             end
         end
        
+        
+                
+        % ----------------------------------------------------------
+        function found = ConvertedFrom(obj, src)
+            found = zeros(length(src.files), 1);
+            for ii = 1:length(src.files)
+                if src.files(ii).isdir
+                    found(ii) = -1;
+                    continue;
+                end
+                [ps, fs] = fileparts(src.files(ii).name);
+                for jj = 1:length(obj.files)
+                    [pd, fd] = fileparts(obj.files(jj).name);
+                    if strcmp(filesepStandard([ps,'/',fs], 'nameonly'), filesepStandard([pd,'/',fd], 'nameonly'))
+                        found(ii) = 1;
+                        break;
+                    end
+                end
+            end
+        end
+        
     end
 end

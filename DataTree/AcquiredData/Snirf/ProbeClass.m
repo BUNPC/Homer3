@@ -35,8 +35,8 @@ classdef ProbeClass < FileLoadSaveClass
                     obj.wavelengthsEmission  = [];
                     obj.sourcePos2D  = SD.SrcPos;
                     obj.detectorPos2D  = SD.DetPos;
-                    obj.sourcePos3D  = [];
-                    obj.detectorPos3D  = [];
+                    obj.sourcePos3D  = SD.SrcPos;
+                    obj.detectorPos3D  = SD.DetPos;
                     obj.frequencies  = 1;
                     obj.timeDelays  = 0;
                     obj.timeDelayWidths  = 0;
@@ -137,8 +137,8 @@ classdef ProbeClass < FileLoadSaveClass
                 obj.sourcePos2D               = HDF5_DatasetLoad(gid, 'sourcePos2D', [], '2D');
                 obj.detectorPos2D             = HDF5_DatasetLoad(gid, 'detectorPos2D', [], '2D');
                 obj.landmarkPos2D             = HDF5_DatasetLoad(gid, 'landmarkPos2D', [], '2D');
-                obj.sourcePos3D               = HDF5_DatasetLoad(gid, 'sourcePos3D', [], '2D');
-                obj.detectorPos3D             = HDF5_DatasetLoad(gid, 'detectorPos3D', [], '2D');
+                obj.sourcePos3D               = HDF5_DatasetLoad(gid, 'sourcePos3D', [], '3D');
+                obj.detectorPos3D             = HDF5_DatasetLoad(gid, 'detectorPos3D', [], '3D');
                 obj.frequencies               = HDF5_DatasetLoad(gid, 'frequencies');
                 obj.timeDelays                 = HDF5_DatasetLoad(gid, 'timeDelays');
                 obj.timeDelayWidths            = HDF5_DatasetLoad(gid, 'timeDelayWidths');
@@ -162,6 +162,21 @@ classdef ProbeClass < FileLoadSaveClass
             % Call method to change future current and future versions of
             % SNIRF data to Homer3 compatible structure
             obj.ForwardCompatibility();
+            
+            % for Homer3 usage, add 3D positions if they are empty
+            if isempty(obj.sourcePos3D)
+                obj.sourcePos3D = obj.sourcePos2D;
+                if size(obj.sourcePos3D,2)<3
+                    obj.sourcePos3D(:,3) = 0;
+                end
+            end
+            
+            if isempty(obj.detectorPos3D)
+                obj.detectorPos3D = obj.detectorPos2D;
+                if size(obj.detectorPos3D,2)<3
+                    obj.detectorPos3D(:,3) = 0;
+                end
+            end
             
         end
 
@@ -189,6 +204,8 @@ classdef ProbeClass < FileLoadSaveClass
             hdf5write_safe(fileobj, [location, '/wavelengthsEmission'], obj.wavelengthsEmission);
             hdf5write_safe(fileobj, [location, '/sourcePos2D'], obj.sourcePos2D(:,1:2), 'rw:2D');
             hdf5write_safe(fileobj, [location, '/detectorPos2D'], obj.detectorPos2D(:,1:2), 'rw:2D');
+            hdf5write_safe(fileobj, [location, '/sourcePos3D'], obj.sourcePos3D, 'rw:3D');
+            hdf5write_safe(fileobj, [location, '/detectorPos3D'], obj.detectorPos3D, 'rw:3D');
             hdf5write_safe(fileobj, [location, '/frequencies'], obj.frequencies);
             hdf5write_safe(fileobj, [location, '/timeDelays'], obj.timeDelays);
             hdf5write_safe(fileobj, [location, '/timeDelayWidths'], obj.timeDelayWidths);
@@ -209,20 +226,47 @@ classdef ProbeClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function srcpos = GetSrcPos(obj)
-            srcpos = obj.sourcePos2D;
+        function srcpos = GetSrcPos(obj,flag2d)
+            if ~exist('flag2d','var')
+                flag2d = 0;
+            end
+            if flag2d==0
+                srcpos = obj.sourcePos3D;
+            else
+                srcpos = obj.sourcePos2D;
+            end                
         end
         
         
         % ---------------------------------------------------------
-        function detpos = GetDetPos(obj)
-            detpos = obj.detectorPos2D;
+        function detpos = GetDetPos(obj,flag2d)
+            if ~exist('flag2d','var')
+                flag2d = 0;
+            end
+            if flag2d==0
+                detpos = obj.detectorPos3D;
+            else
+                detpos = obj.detectorPos2D;
+            end                
         end
         
         
         % -------------------------------------------------------
         function B = eq(obj, obj2)
             B = false;
+            if isempty(obj) && ~isempty(obj2)
+                return;
+            end
+            if isempty(obj) && ~isempty(obj2)
+                return;
+            end
+            if ~isempty(obj) && isempty(obj2)
+                return;
+            end
+            if isempty(obj) && isempty(obj2)
+                b = true;
+                return;
+            end
             if ~all(obj.wavelengths(:)==obj2.wavelengths(:))
                 return;
             end
@@ -233,6 +277,12 @@ classdef ProbeClass < FileLoadSaveClass
                 return;
             end
             if ~all(obj.detectorPos2D(:)==obj2.detectorPos2D(:))
+                return;
+            end
+            if ~all(obj.sourcePos3D(:)==obj2.sourcePos3D(:))
+                return;
+            end
+            if ~all(obj.detectorPos3D(:)==obj2.detectorPos3D(:))
                 return;
             end
             if ~all(obj.frequencies(:)==obj2.frequencies(:))

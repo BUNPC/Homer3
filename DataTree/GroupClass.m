@@ -4,7 +4,6 @@ classdef GroupClass < TreeNodeClass
         version;
         versionStr;
         subjs;
-        logger
     end
     
     properties % (Access = private)
@@ -19,10 +18,8 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function obj = GroupClass(varargin)
-            global logger
-
             obj@TreeNodeClass(varargin);
-            obj.logger = InitLogger(logger);
+
             obj.InitVersion();
 
             if nargin<3 || ~strcmp(varargin{3}, 'noprint')
@@ -205,17 +202,20 @@ classdef GroupClass < TreeNodeClass
             % 
             % Conversly unconditional copy copies all properties in the runs under this group
             if nargin==3 && strcmp(conditional, 'conditional')
-                if strcmp(obj.name,obj2.name)
-                    for i=1:length(obj.subjs)
-                        j = obj.existSubj(i,obj2);
-                        if (j>0)
-                            obj.subjs(i).Copy(obj2.subjs(j), 'conditional');
-                        end
-                    end
-                    if obj == obj2
-                        obj.Copy@TreeNodeClass(obj2, 'conditional');
-                    end
+                if obj.Mismatch(obj2)
+                    return
                 end
+                for i = 1:length(obj.subjs)
+                    j = obj.existSubj(i,obj2);
+                    if j>0
+                        obj.subjs(i).Copy(obj2.subjs(j), 'conditional');
+                    elseif i<=length(obj2.subjs)
+                        obj.subjs(i).Copy(obj2.subjs(i), 'conditional');
+                    else
+                        obj.subjs(i).Mismatch();
+                    end
+                end                
+                obj.Copy@TreeNodeClass(obj2, 'conditional');
             else
                 for i=1:length(obj2.subjs)
                     obj.subjs(i) = SubjClass(obj2.subjs(i));
@@ -372,10 +372,9 @@ classdef GroupClass < TreeNodeClass
                 
                 % If proc stream input is still empty it means the loaded config
                 % did not have valid proc stream input. If that's the case we
-                % load a default proc stream input
+                % Load a default proc stream input
                 if g.procStream.IsEmpty() || s.procStream.IsEmpty() || r.procStream.IsEmpty()
                     obj.logger.Write(sprintf('Failed to load all function calls in proc stream config file. Loading default proc stream...\n'));
-                    g.CopyFcalls(procStreamGroup, 'group');
                     g.CopyFcalls(procStreamSubj, 'subj');
                     g.CopyFcalls(procStreamRun, 'run');
                     
@@ -392,14 +391,13 @@ classdef GroupClass < TreeNodeClass
                         procStreamSubj.SaveConfigFile(fname, 'subj');
                         procStreamRun.SaveConfigFile(fname, 'run');
                     end
-                else
+                    
+                % Otherwise the non-default processing stream loaded from file to this group and to first subject 
+                % disseminate it to all subjects and all runs in this group
+                else                    
                     obj.logger.Write(sprintf('Loading proc stream from %s\n', fname));
-                    procStreamGroup.Copy(g.procStream);
-                    procStreamSubj.Copy(s.procStream);
-                    procStreamRun.Copy(r.procStream);
-                    g.CopyFcalls(procStreamGroup, 'group');
-                    g.CopyFcalls(procStreamSubj, 'subj');
-                    g.CopyFcalls(procStreamRun, 'run');
+                    g.CopyFcalls(s.procStream, 'subj');
+                    g.CopyFcalls(r.procStream, 'run');
                 end
             end
         end
@@ -738,6 +736,19 @@ classdef GroupClass < TreeNodeClass
             ExportTable(obj.name, 'HRF mean', tblcells);
         end
         
+        
+        
+        % ----------------------------------------------------------------------------------
+        function varval = GetVar(obj, varname)
+            % First call the common code for all levels
+            varval = obj.GetVar@TreeNodeClass(varname);
+            
+            % Now call the group specific part
+            if isempty(varval)
+                varval = obj.subjs(1).GetVar(varname);
+            end            
+        end
+        
     end  % Public Save/Load methods
         
     
@@ -748,8 +759,12 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SD = GetSDG(obj)
-            SD = obj.subjs(1).GetSDG();
+        function SD = GetSDG(obj,option)
+            if exist('option','var')
+                SD = obj.subjs(1).GetSDG(option);
+            else
+                SD = obj.subjs(1).GetSDG();
+            end
         end
         
         

@@ -44,7 +44,7 @@
 %                Defaults: p=8.6 q=0.547
 %                The peak is at time p*q.  The FWHM is about 2.3*sqrt(p)*q.
 % paramsBasis - Parameters for the basis function depends on idxBasis
-%               idxBasis=1 [stdev step] where stdev is the width of the
+%               idxBasis=1 [stdev step ~ ~ ~ ~] where stdev is the width of the
 %                  gaussian and step is the temporal spacing between
 %                  consecutive gaussians
 %               idxBasis=2. [tau sigma T] applied to both HbO and HbR
@@ -259,11 +259,7 @@ for iBlk=1:length(data_y)
         
     elseif idxBasis==2
         % Modified Gamma
-        if length(paramsBasis)==3
-            nConc = 1;
-        elseif length(paramsBasis)==6
-            nConc = 2;
-        end
+        nConc = 2;
         
         nB = 1;
         tbasis = zeros(ntHRF,nB,nConc);

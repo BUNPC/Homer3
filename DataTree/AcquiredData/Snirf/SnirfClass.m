@@ -1276,17 +1276,18 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
     methods
         
         % ----------------------------------------------------------------------------------
-        function AddStims(obj, tPts, condition)
+        function AddStims(obj, tPts, condition, duration, amp, more)
             % Try to find existing condition to which to add stims.
             for ii=1:length(obj.stim)
                 if strcmp(condition, obj.stim(ii).GetName())
-                    obj.stim(ii).AddStims(tPts);
+                    obj.stim(ii).AddStims(tPts, duration, amp, more);
                     return;
                 end
             end
             
             % Otherwise we have a new condition to which to add the stims.
-            obj.stim(end+1) = StimClass(tPts, condition);
+            obj.stim(end+1) = StimClass(condition);
+            obj.stim(end).AddStims(tPts, duration, amp, more);
             obj.SortStims();
         end
         
@@ -1305,6 +1306,22 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % Find all stims for any conditions which match the time points.
             for ii=1:length(obj.stim)
                 obj.stim(ii).ToggleStims(tPts);
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function AddStimColumn(obj, name, initValue)
+            for i=1:length(obj.stim)
+                obj.stim(i).AddStimColumn(name, initValue);
+            end
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function DeleteStimColumn(obj, idx)
+            for i=1:length(obj.stim)
+                obj.stim(i).DeleteStimColumn(idx);
             end
         end
         
@@ -1392,8 +1409,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimDuration(obj, icond, duration)
-            obj.stim(icond).SetDuration(duration);
+        function SetStimDuration(obj, icond, duration, tpts)
+            obj.stim(icond).SetDuration(duration, tpts);
         end
         
         
@@ -1408,8 +1425,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimAmplitudes(obj, icond, amps)
-            obj.stim(icond).SetAmplitudes(amps);
+        function SetStimAmplitudes(obj, icond, amps, tpts)
+            obj.stim(icond).SetAmplitudes(amps, tpts);
         end
         
         

@@ -287,14 +287,14 @@ classdef ProcInputClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function AddStims(obj, tPts, condition)
+        function AddStims(obj, tPts, condition, duration, amp, more)
             if isempty(tPts)
                 return;
             end
             if isempty(condition)
                 return;
             end
-            obj.acquired.AddStims(tPts, condition);
+            obj.acquired.AddStims(tPts, condition, duration, amp, more);
         end
 
         
@@ -335,6 +335,23 @@ classdef ProcInputClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function AddStimColumn(obj, name, initValue)
+            if ~exist('name', 'var')
+                return;
+            end
+            obj.acquired.AddStimColumn(name, initValue);
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function DeleteStimColumn(obj, idx)
+            if ~exist('idx', 'var') || idx <= 3
+                return;
+            end
+            obj.acquired.DeleteStimColumn(idx);
+        end
+        
+        % ----------------------------------------------------------------------------------
         function data = GetStimData(obj, icond)
             data = obj.acquired.GetStimData(icond);
         end
@@ -362,8 +379,8 @@ classdef ProcInputClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimDuration(obj, icond, duration)
-            obj.acquired.SetStimDuration(icond, duration);
+        function SetStimDuration(obj, icond, duration, tpts)
+            obj.acquired.SetStimDuration(icond, duration, tpts);
         end
         
     
@@ -377,8 +394,8 @@ classdef ProcInputClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimAmplitudes(obj, icond, vals)
-            obj.acquired.SetStimAmplitudes(icond, vals);
+        function SetStimAmplitudes(obj, icond, vals, tpts)
+            obj.acquired.SetStimAmplitudes(icond, vals, tpts);
         end
         
     

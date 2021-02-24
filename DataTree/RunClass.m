@@ -593,14 +593,14 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function AddStims(obj, tPts, condition)
+        function AddStims(obj, tPts, condition, duration, amp, more)
             if isempty(tPts)
                 return;
             end
             if isempty(condition)
                 return;
             end
-            obj.procStream.AddStims(tPts, condition);
+            obj.procStream.AddStims(tPts, condition, duration, amp, more);
         end
 
         
@@ -639,6 +639,21 @@ classdef RunClass < TreeNodeClass
             obj.procStream.MoveStims(tPts, condition);
         end
         
+        % ----------------------------------------------------------------------------------
+        function AddStimColumn(obj, name, initValue)
+            if ~exist('name', 'var')
+                return;
+            end
+            obj.procStream.AddStimColumn(name, initValue);
+        end
+
+        % ----------------------------------------------------------------------------------
+        function DeleteStimColumn(obj, idx)
+            if ~exist('idx', 'var') || idx <= 3
+                return;
+            end
+            obj.procStream.DeleteStimColumn(idx);
+        end
         
         % ----------------------------------------------------------------------------------
         function data = GetStimData(obj, icond)
@@ -668,8 +683,8 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimDuration(obj, icond, duration)
-            obj.procStream.SetStimDuration(icond, duration);
+        function SetStimDuration(obj, icond, duration, tpts)
+            obj.procStream.SetStimDuration(icond, duration, tpts);
         end
         
     
@@ -683,8 +698,8 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimAmplitudes(obj, icond, vals)
-            obj.procStream.SetStimAmplitudes(icond, vals);
+        function SetStimAmplitudes(obj, icond, amps, tpts)
+            obj.procStream.SetStimAmplitudes(icond, amps, tpts);
         end
         
     

@@ -32,6 +32,9 @@
 % PARAMETERS:
 % nSV: 0.0
 %
+% PREREQUISITES:
+% Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
+%
 function [data_dN, svs, nSV] = hmrR_MotionCorrectPCA(data_d,  mlActMan, tIncMan, nSV)
 
 % Init output 

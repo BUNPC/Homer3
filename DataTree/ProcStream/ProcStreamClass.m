@@ -539,9 +539,8 @@ classdef ProcStreamClass < handle
             delete(obj.fcalls);
             obj.fcalls = FuncCallClass().empty();
         end
-                        
-    end
     
+    end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Methods for loading / saving proc stream config file.

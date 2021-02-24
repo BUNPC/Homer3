@@ -59,14 +59,15 @@ classdef ArgClass < matlab.mixin.Copyable
             if size(args,1) > 1
                 args = args';
             end
-            if args{1}(1)=='[' || args{1}(1)=='('
-                args{1}(1) = '';
-            end
-            if args{end}(end)==']'
-                args{end}(end) = '';
+            if size(args, 1) > 0
+                if args{1}(1)=='[' || args{1}(1)=='('
+                    args{1}(1) = '';
+                end
+                if args{end}(end)==']'
+                    args{end}(end) = '';
+                end 
             end
         end        
-        
     end
 end
 

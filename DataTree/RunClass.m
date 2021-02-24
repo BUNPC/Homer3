@@ -758,6 +758,56 @@ classdef RunClass < TreeNodeClass
         end
     
     
+        % -----------------------------------------------------------------
+        function [fn_error, missing_args, prereqs] = CheckProcStreamOrder(obj)
+            % Returns index of processing stream function which is missing
+            % an argument, and a cell array of the missing arguments. 
+            % fn_error is 0 if there are no errors.
+            
+            missing_args = {};
+            fn_error = 0;
+            prereqs = '';
+            
+            % Processing stream begins with inputs available
+            available = obj.procStream.input.GetProcInputs();
+            % Inputs which are usually optional or defined elsewhere
+            extras = {'iRun' 'iSubj' 'iGroup' 'mlActAuto', 'tIncAuto', 'Aaux', 'rcMap'};
+            available = [available, extras];
+            
+            % For all fcalls
+            for i = 1:length(obj.procStream.fcalls)
+                
+                inputs = obj.procStream.fcalls(i).GetInputs();
+                
+                % Check that each input is available
+                for j = 1:length(inputs)
+                    if ~any(strcmp(available, inputs{j}))
+                       fn_error = obj.procStream.fcalls(i);
+                       missing_args{end+1} = inputs{j};
+                    end
+                end
+                
+                if isa(fn_error, 'FuncCallClass')
+                    entry = obj.procStream.reg.GetEntryByName(fn_error.name);
+                    if isfield(entry.help.sections, 'prerequisites')
+                       prereqs_list = splitlines(entry.help.sections.prerequisites.str);
+                       for k = 1:length(prereqs_list)
+                           if ~isempty(prereqs_list{k})
+                               prereqs = [prereqs, sprintf('\n'), strtrim(prereqs_list{k})];
+                           end
+                       end
+                    end
+                   return; 
+                end
+                
+                % Add outputs of the function to available list
+                outputs = obj.procStream.fcalls(i).GetOutputs();
+                for j = 1:length(outputs)
+                   available{end + 1} = outputs{j}; 
+                end
+            end
+        end
+        
         % ----------------------------------------------------------------------------------
         function ExportHRF(obj, ~, iBlk)
             if ~exist('iBlk','var') || isempty(iBlk)

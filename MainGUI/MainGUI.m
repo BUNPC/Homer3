@@ -468,6 +468,11 @@ if ~ishandles(hObject)
     return;
 end
 
+% Check the processing stream order
+if procstreamOrderCheckDlg(maingui.dataTree.currElem) == -1
+   return 
+end
+
 MainGUI_EnableDisableGUI(handles,'off');
 
 % Save original selection in listboxGroupTree because it'll change during auto processing 
@@ -484,7 +489,6 @@ try
 catch ME
     MainGUI_EnableDisableGUI(handles,'on');
 	rethrow(ME)
-
 end
       
 % Restore original selection listboxGroupTree

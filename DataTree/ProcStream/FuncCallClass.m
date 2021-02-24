@@ -184,6 +184,20 @@ classdef FuncCallClass < handle
         
         
         
+        % ------------------------------------------------------------
+        function inputs = GetInputs(obj)
+           inputs = obj.argIn.Extract(); 
+        end
+        
+        
+        
+        % ------------------------------------------------------------
+        function outputs = GetOutputs(obj)
+           outputs = obj.argOut.Extract(); 
+        end
+            
+        
+        
         % ----------------------------------------------------------------------------------
         function SetUsageName(obj, usagename)
             if nargin<2

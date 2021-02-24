@@ -91,7 +91,6 @@
 % USAGE OPTIONS:
 % GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R, hmrstats] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 %
-%
 % PARAMETERS:
 % trange: [-2.0, 20.0]
 % glmSolveMethod: 1
@@ -102,6 +101,9 @@
 % driftOrder: 3
 % c_vector: 0
 %
+% PREREQUISITES:
+% Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, probe, ppf )
+
 function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks, hmrstats] = ...
     hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 

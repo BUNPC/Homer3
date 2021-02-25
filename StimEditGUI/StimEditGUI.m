@@ -238,7 +238,7 @@ figure(handles.figure);
 
 
 %---------------------------------------------------------------------------
-function pushbuttonRenameCondition_Callback(hObject, eventdata, handles)
+function menuItemRenameCondition_Callback(hObject, eventdata, handles)
 global stimEdit
 
 % Function to rename a condition. Important to remeber that changing the
@@ -251,15 +251,22 @@ global stimEdit
 %      and runs same as if you were loading during Homer3 startup from the 
 %      acquired data.
 %
+
+% Get the name of the condition you want to rename
+conditions = get(handles.popupmenuConditions, 'string');
+[index, tf] = listdlg('PromptString', {'Rename which condition?', 'This action is applied to all runs and cannot be undone!'},...
+        'SelectionMode', 'single', 'ListString', conditions);
+if isempty(index)
+   return 
+else
+   idx = index; 
+end
+oldname = conditions{idx};
+
 newname = CreateNewConditionName();
 if isempty(newname)
     return;
 end
-
-% Get the name of the condition you want to rename
-conditions = get(handles.popupmenuConditions, 'string');
-idx = get(handles.popupmenuConditions, 'value');
-oldname = conditions{idx};
 
 % NOTE: for now any renaming of a condition is global to avoid complexity
 % in keeping the condition colors straight. Therefore we comment out the 
@@ -274,9 +281,7 @@ end
 stimEdit.locDataTree.groups(iG).SetConditions();
 set(handles.popupmenuConditions, 'string', stimEdit.locDataTree.groups(iG).GetConditions());
 Display(handles);
-% if ~isempty(stimEdit.updateParentGui)
-%     stimEdit.updateParentGui('StimEditGUI');
-% end
+
 figure(handles.figure);
 
 
@@ -1202,6 +1207,8 @@ global stimEdit
 conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
 icond = GetConditionIdxFromPopupmenu(conditions, handles);
 name = 'Rename columns';
+rename_prompt = {};
+defaults = {};
 if size(stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).data, 2) > 3
     for i = 4:length(handles.uitableStimInfo.ColumnName)
         rename_prompt{end+1} = ['Rename column ', num2str(i)];
@@ -1211,6 +1218,10 @@ if size(stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).d
     options.WindowStyle = 'modal';
     options.Interpreter = 'tex';
     A = inputdlg(rename_prompt, name, 1, defaults, options);
+    for i = 1:length(A)
+        stimEdit.dataTreeHandle.currElem.RenameStimColumn(defaults{i}, A{i});
+    end
+    Display(handles);
 else
     errordlg('There are no additional data columns to rename!', 'No columns to rename')
 end
@@ -1287,6 +1298,5 @@ else
 end
 stimEdit.dataTreeHandle.currElem.AddStimColumn(name, value);
 Display(handles);
-
 
 

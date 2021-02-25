@@ -1325,6 +1325,15 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             end
         end
         
+        % ----------------------------------------------------------------------------------
+        function RenameStimColumn(obj, oldname, newname)
+            if ~exist('oldname', 'var') || ~exist('newname', 'var')
+                return;
+            end
+            for i=1:length(obj.stim)
+                obj.stim(i).RenameStimColumn(oldname, newname);
+            end
+        end
         
         % ----------------------------------------------------------------------------------
         function MoveStims(obj, tPts, condition)

@@ -1452,6 +1452,13 @@ classdef ProcStreamClass < handle
             obj.input.DeleteStimColumn(idx);
         end
         
+        % ----------------------------------------------------------------------------------
+        function RenameStimColumn(obj, oldname, newname)
+            if ~exist('oldname', 'var') || ~exist('newname', 'var')
+                return;
+            end
+            obj.input.RenameStimColumn(oldname, newname);
+        end
         
         % ----------------------------------------------------------------------------------
         function data = GetStimData(obj, icond)

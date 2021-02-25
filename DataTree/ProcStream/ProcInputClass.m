@@ -352,6 +352,14 @@ classdef ProcInputClass < handle
         end
         
         % ----------------------------------------------------------------------------------
+        function RenameStimColumn(obj, oldname, newname)
+            if ~exist('oldname', 'var') || ~exist('newname', 'var')
+                return;
+            end
+            obj.acquired.RenameStimColumn(oldname, newname);
+        end
+        
+        % ----------------------------------------------------------------------------------
         function data = GetStimData(obj, icond)
             data = obj.acquired.GetStimData(icond);
         end

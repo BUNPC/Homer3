@@ -599,6 +599,20 @@ classdef StimClass < FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
+        function RenameStimColumn(obj, oldname, newname)
+            if ~exist('oldname', 'var') || ~exist('newname', 'var')
+                return;
+            end
+            for i = 1:length(obj.dataLabels)
+                if strcmp(oldname, obj.dataLabels{i})
+                   obj.dataLabels{i} = newname;
+                end
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
         function b = IsEmpty(obj)
             b = true;
             if isempty(obj)

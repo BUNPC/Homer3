@@ -656,6 +656,14 @@ classdef RunClass < TreeNodeClass
         end
         
         % ----------------------------------------------------------------------------------
+        function RenameStimColumn(obj, oldname, newname)
+            if ~exist('oldname', 'var') || ~exist('newname', 'var')
+                return;
+            end
+            obj.procStream.RenameStimColumn(oldname, newname);
+        end
+        
+        % ----------------------------------------------------------------------------------
         function data = GetStimData(obj, icond)
             data = obj.procStream.GetStimData(icond);
         end

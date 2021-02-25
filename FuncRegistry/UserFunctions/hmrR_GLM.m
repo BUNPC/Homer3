@@ -44,7 +44,7 @@
 %                Defaults: p=8.6 q=0.547
 %                The peak is at time p*q.  The FWHM is about 2.3*sqrt(p)*q.
 % paramsBasis - Parameters for the basis function depends on idxBasis
-%               idxBasis=1 [stdev step] where stdev is the width of the
+%               idxBasis=1 [stdev step ~ ~ ~ ~] where stdev is the width of the
 %                  gaussian and step is the temporal spacing between
 %                  consecutive gaussians
 %               idxBasis=2. [tau sigma T] applied to both HbO and HbR
@@ -91,7 +91,6 @@
 % USAGE OPTIONS:
 % GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R, hmrstats] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 %
-%
 % PARAMETERS:
 % trange: [-2.0, 20.0]
 % glmSolveMethod: 1
@@ -102,6 +101,9 @@
 % driftOrder: 3
 % c_vector: 0
 %
+% PREREQUISITES:
+% Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, probe, ppf )
+
 function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks, hmrstats] = ...
     hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 
@@ -257,11 +259,7 @@ for iBlk=1:length(data_y)
         
     elseif idxBasis==2
         % Modified Gamma
-        if length(paramsBasis)==3
-            nConc = 1;
-        elseif length(paramsBasis)==6
-            nConc = 2;
-        end
+        nConc = 2;
         
         nB = 1;
         tbasis = zeros(ntHRF,nB,nConc);

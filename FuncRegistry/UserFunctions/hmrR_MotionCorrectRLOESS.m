@@ -22,6 +22,9 @@
 % span: 0.02
 % turnon: 1
 %
+% PREREQUISITES:
+% Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
+%
 % LOG:
 %
 function data_dod = hmrR_MotionCorrectRLOESS(data_dod, span, turnon)

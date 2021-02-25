@@ -52,6 +52,9 @@
 % STDEVthresh: 50.0
 % AMPthresh: 5.0
 %
+% PREREQUISITES:
+% Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity ), Prune_Channels: mlActAuto = hmrR_PruneChannels(data, probe, mlActMan, tIncMan, dRange, SNRthresh, SDrange, reset)
+%
 % LOG:
 % K. Perdue
 % kperdue@nmr.mgh.harvard.edu

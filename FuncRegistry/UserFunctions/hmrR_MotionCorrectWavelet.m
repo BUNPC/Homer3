@@ -34,6 +34,9 @@
 % iqr: 1.50
 % turnon: 1
 %
+% PREREQUISITES:
+% Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
+%
 % LOG:
 % Script by Behnam Molavi bmolavi@ece.ubc.ca adapted for Homer2 by RJC
 % modified 10/17/2012 by S. Brigadoi

@@ -59,6 +59,7 @@ iSrcDet     = maingui.axesSDG.iSrcDet;
 color       = maingui.axesSDG.linecolor;
 
 SD          = maingui.dataTree.currElem.GetSDG('2D');
+bbox        = [];
 
 if isfield(maingui.axesSDG, 'xlim')
     xbox        = maingui.axesSDG.xlim;
@@ -69,6 +70,9 @@ end
 
 % Set axes handle properties and parameters 
 if ~ishandles(hAxes)
+    return;
+end
+if isempty(bbox)
     return;
 end
 

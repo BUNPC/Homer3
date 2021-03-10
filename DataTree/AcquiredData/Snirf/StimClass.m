@@ -27,7 +27,10 @@ classdef StimClass < FileLoadSaveClass
                 if isa(varargin{1}, 'StimClass')
                     obj.Copy(varargin{1});
                 elseif ischar(varargin{1})
-                    if exist(varargin{1}, 'file')==2
+                    % NOTE: exist can fail to work properly for the purposes of local group folder,
+                    % if file name in question is somewhere (anywhere!) in the search path. Theerfore 
+                    % we replace exist with our own function. 
+                    if ispathvalid(varargin{1}, 'file')
                         obj.SetFilename(varargin{1});
                         obj.Load(varargin{1});
                     else
@@ -73,7 +76,7 @@ classdef StimClass < FileLoadSaveClass
         function err = LoadHdf5(obj, fileobj, location)
             
             % Arg 1
-            if ~exist('fileobj','var') || (ischar(fileobj) && ~exist(fileobj,'file'))
+            if ~exist('fileobj','var') || (ischar(fileobj) && ~ispathvalid(fileobj,'file'))
                 fileobj = '';
             end
                         
@@ -154,7 +157,7 @@ classdef StimClass < FileLoadSaveClass
                 location = ['/',location];
             end
 
-            if ~exist(fileobj, 'file')
+            if ~ispathvalid(fileobj, 'file')
                 fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end
@@ -175,7 +178,7 @@ classdef StimClass < FileLoadSaveClass
                 
         % -------------------------------------------------------
         function Update(obj, fileobj, location)
-            if ~exist(fileobj, 'file')
+            if ~ispathvalid(fileobj, 'file')
                 fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end

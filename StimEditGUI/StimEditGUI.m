@@ -1046,6 +1046,9 @@ global stimEdit
 % Adds stims at onsets to given condition with amplitude and duration
 % from dialog
 stimdata = stimValueDialog();
+if isempty(stimdata)
+   return 
+end
 dur = stimdata(1);
 amp = stimdata(2);
 if length(stimdata) > 2
@@ -1243,6 +1246,9 @@ options.WindowStyle = 'modal';
 options.Interpreter = 'tex';
 while isempty(datarow)
     A = inputdlg(labels, name, 1, defaults, options);
+    if isempty(A)
+       return; 
+    end
     for i = 1:length(A)
         val = str2num(A{i}); %#ok<ST2NM>
         if ~isempty(val)

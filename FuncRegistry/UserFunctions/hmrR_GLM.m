@@ -608,15 +608,17 @@ for iBlk=1:length(data_y)
                     ytmp = y(lstInc,conc,lstML);
                     for chanIdx=1:length(lstML)
                         ytmp2 = y(lstInc,conc,lstML(chanIdx));
-                        [dmoco, beta, tstat, pval, sigma, CovB, dfe, w, P, f] = ar_glm_final(squeeze(ytmp2),At(lstInc,:));
+                        [dmoco, beta, tstat, pval0, sigma, CovB, dfe, w, P, f] = ar_glm_final(squeeze(ytmp2),At(lstInc,:));
                         foo(:,lstML(chanIdx),conc)=beta;
-                        ytmp(:,1,chanIdx) = dmoco;
-                        
-                        %We also need to keep my version of "Yvar" and "Bvar"
+                        ytmp(:,1,chanIdx) = dmoco; %We also need to keep my version of "Yvar" and "Bvar"                    
                         
                         yvar(:,lstML(chanIdx),conc)=sigma.^2;
                         bvar(:,lstML(chanIdx),conc)=diag(CovB);  %Note-  I am only keeping the diag terms.  This lets you test if beta != 0,
                         %but in the future the HOMER-2 code needs to be modified to keep the entire cov-beta matrix which you need to test between conditions e.g. if beta(1) ~= beta(2)
+                   
+                        % GLM stats for each condition
+                        tval(:,lstML(chanIdx),conc) = tstat;
+                        pval(:,lstML(chanIdx),conc) = pval0;
                     end
                 end
                 
@@ -795,6 +797,12 @@ for iBlk=1:length(data_y)
             hmrstats.pval_contrast = pval_contrast;
             hmrstats.contrast = c_vector;
         end
+    elseif glmSolveMethod == 2 %  for AR 
+                % GLM stats for each condition 
+        hmrstats.beta_label = beta_label;
+        hmrstats.tval = tval;
+        hmrstats.pval = pval;
+        hmrstats.ml = ml;        
     end
     
 end

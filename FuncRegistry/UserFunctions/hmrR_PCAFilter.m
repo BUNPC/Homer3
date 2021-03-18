@@ -39,6 +39,10 @@
 % PARAMETERS:
 % nSV: 0.00
 %
+% PREREQUISITES:
+% For the PCA_Filter_Concentration_Data Usage Option, use Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, probe, ppf )
+% For the PCA_Filter_Delta_OD Usage Option, use Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
+%
 function [data_yc, svs, nSV] = hmrR_PCAFilter( data_y, mlAct, tInc, nSV )
 
 data_yc = DataClass().empty();

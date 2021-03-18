@@ -50,6 +50,9 @@
 % STDEVthresh: 50.0
 % AMPthresh: 5.00
 %
+% PREREQUISITES:
+% Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
+%
 % LOG:
 % K. Perdue
 % kperdue@nmr.mgh.harvard.edu

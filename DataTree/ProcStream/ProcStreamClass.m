@@ -192,7 +192,9 @@ classdef ProcStreamClass < handle
         
         % ----------------------------------------------------------------------------------
         function str = EditParam(obj, iFcall, iParam, val)
+            % Returns "" if the edit is rejected or the string 
             str = '';
+            param = obj.fcalls(iFcall).paramIn(iParam);
             if isempty(iFcall)
                 return;
             end
@@ -205,8 +207,8 @@ classdef ProcStreamClass < handle
             if isempty(obj.fcalls(iFcall).paramIn)
                 return;
             end
-            obj.fcalls(iFcall).paramIn(iParam).value = val;
-            str = sprintf(obj.fcalls(iFcall).paramIn(iParam).format, val);
+            param.Edit(val);
+            str = sprintf(param.format, val);
         end
 
 
@@ -539,9 +541,8 @@ classdef ProcStreamClass < handle
             delete(obj.fcalls);
             obj.fcalls = FuncCallClass().empty();
         end
-                        
-    end
     
+    end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Methods for loading / saving proc stream config file.

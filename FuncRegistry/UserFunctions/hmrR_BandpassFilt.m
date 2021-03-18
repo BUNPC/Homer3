@@ -24,6 +24,9 @@
 % PARAMETERS:
 % hpf: [0.000]
 % lpf: [0.500]
+%
+% PREREQUISITES:
+% Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
 
 function [data2, ylpf] = hmrR_BandpassFilt( data, hpf, lpf )
 if isa(data, 'DataClass')

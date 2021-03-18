@@ -120,7 +120,12 @@ classdef AcqDataClass < matlab.mixin.Copyable
         
         % ---------------------------------------------------------
         function bbox = GetSdgBbox(obj)
+            bbox = [];
+            
             optpos = [obj.GetSrcPos('2D'); obj.GetDetPos('2D')];
+            if isempty(optpos)
+                return
+            end
             
             xmax = max(optpos(:,1));
             ymax = max(optpos(:,2));

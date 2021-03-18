@@ -468,7 +468,23 @@ if ~ishandles(hObject)
     return;
 end
 
+% Check the processing stream order
+if procstreamOrderCheckDlg(maingui.dataTree.currElem) == -1
+   return 
+end
+
 MainGUI_EnableDisableGUI(handles,'off');
+
+% Check for errchk functions
+fcalls = maingui.dataTree.currElem.procStream.fcalls;
+for iFcall = 1:length(fcalls)
+   errmsg = fcalls(iFcall).CheckParams();
+   if ~isempty(errmsg)
+       errordlg(errmsg, 'Invalid parameters', 'modal');
+       MainGUI_EnableDisableGUI(handles,'on');
+       return
+   end
+end
 
 % Save original selection in listboxGroupTree because it'll change during auto processing 
 val0 = get(handles.listboxGroupTree, 'value');
@@ -484,7 +500,6 @@ try
 catch ME
     MainGUI_EnableDisableGUI(handles,'on');
 	rethrow(ME)
-
 end
       
 % Restore original selection listboxGroupTree

@@ -750,7 +750,7 @@ classdef TreeNodeClass < handle
             if ~strcmp(arg,'init')
                 return
             end
-            tbl = distinguishable_colors(20);
+            tbl = distinguishable_colors(128);
         end
    
         

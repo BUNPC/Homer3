@@ -1189,13 +1189,6 @@ else
     SyncBrowsing(stimEdit, 'off');
 end
 
-
-
-% --------------------------------------------------------------------
-function uitableStimInfo_ButtonDownFcn(hObject, eventdata, handles)
-
-
-
 % --------------------------------------------------------------------
 function pushbuttonEditColumns_Callback(hObject, eventdata, handles)
 global stimEdit
@@ -1217,3 +1210,25 @@ else
     errordlg('There are no additional data columns to rename!', 'No columns to rename')
 end
 
+
+% --------------------------------------------------------------------
+function CSV_Write_Callback(hObject, eventdata, handles)
+% hObject    handle to CSV_Write (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global stimEdit
+conds = stimEdit.locDataTree.currElem.GetConditions();
+for i = 1:length(conds)
+    stimData{:,i} = stimEdit.locDataTree.currElem.GetStimData(i);
+    stimLabels{:,i} = stimEdit.locDataTree.currElem.GetStimDataLabels(i);
+end
+StimCSV_Write(conds,stimLabels,stimData);
+
+
+% --------------------------------------------------------------------
+function CSV_Read_Callback(hObject, eventdata, handles)
+% hObject    handle to CSV_Read (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global stimEdit
+stimEdit.locDataTree.currElem.acquired.stim = StimCSV_Reader();

@@ -26,7 +26,8 @@
 % plot_on: 0
 %
 % PREREQUISITES:
-% Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, ppf )
+% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R, hmrstats] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
+
 
 function [cc, ml, cc_thresh] = hmrR_CrossCorrelation(data, cc_thresh, plot_on)
 

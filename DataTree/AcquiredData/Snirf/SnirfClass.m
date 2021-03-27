@@ -1288,6 +1288,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % Otherwise we have a new condition to which to add the stims.
             obj.stim(end+1) = StimClass(condition);
             obj.stim(end).AddStims(tPts, duration, amp, more);
+            obj.stim(end).SetDataLabels(obj.stim(1).GetDataLabels)
             obj.SortStims();
         end
         

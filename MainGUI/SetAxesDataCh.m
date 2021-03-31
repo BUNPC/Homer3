@@ -1,5 +1,9 @@
-function SetAxesDataCh()
+function SetAxesDataCh(handles, eventdata)
+
+if ~exist('eventdata','var')
+    eventdata = [];
+end
 
 % Find which channels were selected from axesSDG
-SetAxesSDGCh();
+SetAxesSDGCh(handles, eventdata);
 

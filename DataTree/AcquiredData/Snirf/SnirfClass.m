@@ -519,12 +519,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 
                 %%%% Load formatVersion
-                if obj.LoadFormatVersion() < 0 && err == 0
+                if obj.LoadFormatVersion() < 0 && err >= 0
                     err = -2;
                 end
 
                 %%%% Load metaDataTags
-                if obj.LoadMetaDataTags(obj.fid) < 0 && err == 0
+                if obj.LoadMetaDataTags(obj.fid) < 0 && err >= 0
                     % Here a positive return value means that invalid data meta tags 
                     % should NOT be a show stopper if we can help it, if the reste of the data 
                     % is valid. So just let user know they're invalid with a warning.
@@ -532,12 +532,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 end
 
                 %%%% Load data
-                if obj.LoadData(obj.fid) < 0 && err == 0
+                if obj.LoadData(obj.fid) < 0 && err >= 0
                     err = -4;
                 end
 
                 %%%% Load stim
-                if obj.LoadStim(obj.fid) < 0 && err == 0
+                if obj.LoadStim(obj.fid) < 0 && err >= 0
                     % Optional field: even if invalid we still want to be
                     % able to work with the rest of the data. Only log
                     % warning
@@ -545,12 +545,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 end
 
                 %%%% Load probe
-                if obj.LoadProbe(obj.fid) < 0 && err == 0
+                if obj.LoadProbe(obj.fid) < 0 && err >= 0
                     err = -6;
                 end
 
                 %%%% Load aux. This is an optional field
-                if obj.LoadAux(obj.fid) < 0 && err == 0
+                if obj.LoadAux(obj.fid) < 0 && err >= 0
                     % Optional field: even if invalid we still want to be
                     % able to work with the rest of the data. Only log
                     % warning
@@ -901,6 +901,19 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 return;
             end
             val = obj.metaDataTags.Get();
+        end
+        
+        % ---------------------------------------------------------
+        function val = GetLengthUnit(obj)
+            val = [];
+            if isempty(obj)
+                return;
+            end
+            if isempty(obj.metaDataTags)
+                return;
+            end
+            tag = obj.metaDataTags.Get('LengthUnit');
+            val = tag.value;
         end
         
     end

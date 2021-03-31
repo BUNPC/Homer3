@@ -62,6 +62,10 @@
 % runIdxResting: 1
 % tResting: [30 210]
 %
+% PREREQUISITES:
+% For the hmrR_tCCA_Concentration_Data Usage Option, use Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, probe, ppf )
+% For the hmrR_tCCA_OD_Data Usage Option, use Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
+%
 function [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, subjIdx, mlActMan, mlActAuto, flagtCCA, tCCAparams, tCCAaux_inx, rhoSD_ssThresh, ss_ch_on, runIdxResting, tResting)
 
 %% COMMENTS/THOUGHTS/QUESTIONS ALEX
@@ -175,10 +179,12 @@ if flagtCCA
             end
         end
         % AUX signals + add ss signal if it exists
-        if ~isempty(d_short) & exist('AUX') & ss_ch_on == 1
-            AUX = [AUX, d_short]; % this should be of the current run
-        elseif ss_ch_on ~= 0
+        if exist('AUX') & ss_ch_on == 1 & ~isempty(d_short)
+            AUX = [AUX, d_short]; 
+        elseif ~exist('AUX') & ss_ch_on == 1 & ~isempty(d_short)
             AUX = d_short;
+        elseif exist('AUX') & ss_ch_on == 0 
+            AUX = AUX;
         else
             msg = 'No auxiliary or short separation measurement to regress out.';
             error(msg)

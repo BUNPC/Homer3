@@ -43,6 +43,9 @@ classdef ProcStreamClass < handle
         
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2, filename)
+            if isempty(obj.config.procStreamCfgFile)
+                return;
+            end
             if ~isa(obj, 'ProcStreamClass')
                 return;
             end
@@ -189,7 +192,9 @@ classdef ProcStreamClass < handle
         
         % ----------------------------------------------------------------------------------
         function str = EditParam(obj, iFcall, iParam, val)
+            % Returns "" if the edit is rejected or the string 
             str = '';
+            param = obj.fcalls(iFcall).paramIn(iParam);
             if isempty(iFcall)
                 return;
             end
@@ -202,8 +207,8 @@ classdef ProcStreamClass < handle
             if isempty(obj.fcalls(iFcall).paramIn)
                 return;
             end
-            obj.fcalls(iFcall).paramIn(iParam).value = val;
-            str = sprintf(obj.fcalls(iFcall).paramIn(iParam).format, val);
+            param.Edit(val);
+            str = sprintf(param.format, val);
         end
 
 
@@ -536,9 +541,8 @@ classdef ProcStreamClass < handle
             delete(obj.fcalls);
             obj.fcalls = FuncCallClass().empty();
         end
-                        
-    end
     
+    end
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Methods for loading / saving proc stream config file.
@@ -1239,8 +1243,20 @@ classdef ProcStreamClass < handle
                 varval = obj.input.GetVar(varname, iBlk);
                 if isempty(varval)
                     varval = obj.output.GetVar(varname, iBlk);
-                end                
+                end
             end
+            
+            % Search function call chain as well if the requested variable 
+            % is acually a user-settable parameter
+            if isempty(varval)
+                for ii = 1:length(obj.fcalls)
+                    varval = obj.fcalls(ii).GetVar(varname);
+                    if ~isempty(varval)
+                        break;
+                    end
+                end
+            end
+            
         end
         
         

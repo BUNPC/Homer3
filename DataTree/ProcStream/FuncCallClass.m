@@ -31,7 +31,7 @@ classdef FuncCallClass < handle
             %        argOut.str: 'dod'
             %         argIn.str: '(dod,t'
             %          paramIn: [1x2 ParamClass]
-            %             help: '  Perform a bandpass filter…'
+            %             help: '  Perform a bandpass filterï¿½'
             %
             obj.name       = '';
             obj.nameUI     = '';
@@ -184,6 +184,20 @@ classdef FuncCallClass < handle
         
         
         
+        % ------------------------------------------------------------
+        function inputs = GetInputs(obj)
+           inputs = obj.argIn.Extract(); 
+        end
+        
+        
+        
+        % ------------------------------------------------------------
+        function outputs = GetOutputs(obj)
+           outputs = obj.argOut.Extract(); 
+        end
+            
+        
+        
         % ----------------------------------------------------------------------------------
         function SetUsageName(obj, usagename)
             if nargin<2
@@ -242,7 +256,7 @@ classdef FuncCallClass < handle
             %        argOut: 'dod'
             %         argIn.str: '(dod,t'
             %       paramIn: [1x2 ParamClass]
-            %          help: '  Perform a bandpass filter…'
+            %          help: '  Perform a bandpass filterï¿½'
             %   
             obj.err = 0;            
             if nargin<2
@@ -327,7 +341,8 @@ classdef FuncCallClass < handle
                             end
                         end
                         pvalue = str2num(textstr{ii+2});                       
-                        obj.paramIn(end+1) = ParamClass(pname, pformat, pvalue);
+                        % Save default values in ParamClass
+                        obj.paramIn(end+1) = ParamClass(pname, pformat, pvalue, pvalue);
                         obj.GetParamHelp(length(obj.paramIn));
                         flag = 2;
                     end
@@ -401,11 +416,9 @@ classdef FuncCallClass < handle
                 if length(obj.paramIn) ~= length(obj2.paramIn)
                     return;
                 end
-                for ii=1:length(obj.paramIn)
-                    if obj.paramIn(ii) ~= obj2.paramIn(ii)
-                        return;
-                    end
-                end
+%               Must have the same number of params, but their individual
+%               lengths can differ
+
             elseif isstruct(obj2)
                 % Name 
                 k = find(obj.name=='_');
@@ -607,6 +620,43 @@ classdef FuncCallClass < handle
             end
             nbytes = sum(nbytes);
         end
+
+        % ----------------------------------------------------------------------------------        
+        function errmsg = CheckParams(obj)
+            errmsg = '';
+            paramValStr = '';
+            if exist([obj.name, '_errchk'], 'file')  % If errchk fn is on path
+                for i = 1:length(obj.paramIn)  % Assemble list of args
+                   paramValStr = [paramValStr, obj.paramIn(i).GetFormattedValue()]; %#ok<AGROW>
+                   if i < length(obj.paramIn)
+                       paramValStr = [paramValStr, ',']; %#ok<AGROW>
+                   end
+                end
+                % Call the errchk function which returns a non-empty string
+                % if there is an error
+                eval(['errmsg = ', obj.name, '_errchk(', paramValStr, ')']);
+                if ~isempty(errmsg)
+                   errmsg = [obj.name, ': ', errmsg];
+                end
+            else
+               return;
+            end
+        end
+        
+        % ----------------------------------------------------------------------------------        
+        function val = GetVar(obj, name)
+            val = [];
+            if isempty(obj)
+                return;
+            end
+            for ii = 1:length(obj.paramIn)
+                if strcmp(name, obj.paramIn(ii).GetName())
+                    val = obj.paramIn(ii).GetValue();
+                    break;
+                end
+            end
+        end
+        
         
     end
 

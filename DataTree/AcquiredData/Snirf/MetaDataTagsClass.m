@@ -161,9 +161,16 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function tags = Get(obj)
+        function tags = Get(obj, name)
+            if ~exist('name', 'var')
+                name = '';
+            end
             fields = propnames(obj.tags);
-            tags = repmat(struct('key','','value',[]),length(fields),1);
+            k = find(strcmp(fields, name));
+            if ~isempty(k)
+                fields = fields(k);
+            end
+            tags = repmat(struct('key','','value',[]), length(fields), 1);
             for ii=1:length(fields)
                 eval(sprintf('tags(ii).key = ''%s'';', fields{ii}));
                 eval(sprintf('tags(ii).value = obj.tags.%s;', fields{ii}));

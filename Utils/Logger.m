@@ -84,9 +84,33 @@ classdef Logger < handle
         
         % -------------------------------------------------
         function Write(self, s, options, hwait)
+            if ~exist('options','var')
+                options = [];
+            end
+            if ~exist('hwait','var')
+                hwait = [];
+            end
             if s(end)~=sprintf('\n')
                 s = sprintf('%s\n', s);
             end
+            self.WriteStr(s, options, hwait)
+        end
+        
+        
+        % -------------------------------------------------
+        function WriteNoNewline(self, s, options, hwait)
+            if ~exist('options','var')
+                options = [];
+            end
+            if ~exist('hwait','var')
+                hwait = [];
+            end
+            self.WriteStr(s, options, hwait)
+        end
+        
+        
+        % -------------------------------------------------
+        function WriteStr(self, s, options, hwait)
             if ~exist('options','var')
                 options = [];
             end

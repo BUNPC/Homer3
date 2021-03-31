@@ -24,6 +24,9 @@
 % PARAMETERS:
 % hpf: [0.000]
 % lpf: [0.500]
+%
+% PREREQUISITES:
+% Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
 
 function [data2, ylpf] = hmrR_BandpassFilt( data, hpf, lpf )
 if isa(data, 'DataClass')
@@ -39,6 +42,7 @@ for ii=1:length(data)
         data2(ii) = AuxClass(data(ii));
     end
     y = data2(ii).GetDataTimeSeries();
+    y2 = y;
     fs = data2(ii).GetTime();
     
     % convert t to fs
@@ -47,36 +51,41 @@ for ii=1:length(data)
         fs = 1/(fs(2)-fs(1));
     end
     
-    % low pass filter
-    FilterType = 1;
-    FilterOrder = 3;
-    %[fa,fb]=butter(FilterOrder,lpf*2/fs);
-    if FilterType==1 | FilterType==5
-        [fb,fa] = MakeFilter(FilterType,FilterOrder,fs,lpf,'low');
-    elseif FilterType==4
-        %    [fb,fa] = MakeFilter(FilterType,FilterOrder,fs,lpf,'low',Filter_Rp,Filter_Rs);
-    else
-        %    [fb,fa] = MakeFilter(FilterType,FilterOrder,fs,lpf,'low',Filter_Rp);
+    % Check for NaN
+    if max(max(isnan(y)))
+       warning('Input to hmrR_BandpassFilt contains NaN values. Add hmrR_PreprocessIntensity_NAN to the processing stream.');
+       return
     end
-    ylpf = filtfilt(fb,fa,double(y));
+    % Check for finite values
+    if max(max(isinf(y)))
+       warning('Input to hmrR_BandpassFilt must be finite.');
+       return
+    end
+
+    % Check that cutoff < nyquist
+    if lpf / (fs / 2) > 1 || hpf / (fs / 2) > 1
+        warning(['hmrR_BandpassFilt cutoff cannot exceed the folding frequency of the data with sample rate ', num2str(fs), ' hz.']);
+        return
+    end
+    
+    % low pass filter
+    lpf_norm = lpf / (fs / 2);
+    if lpf_norm > 0  % No lowpass if filter is 
+        FilterOrder = 3;
+        [z, p, k] = butter(FilterOrder, lpf_norm, 'low');
+        [sos, g] = zp2sos(z, p, k);
+        y2 = filtfilt(sos, g, double(y)); 
+    end
     
     % high pass filter
-    FilterType = 1;
-    FilterOrder = 5;
-    if FilterType==1 | FilterType==5
-        [fb,fa] = MakeFilter(FilterType,FilterOrder,fs,hpf,'high');
-    elseif FilterType==4
-        %    [fb,fa] = MakeFilter(FilterType,FilterOrder,fs,hpf,'high',Filter_Rp,Filter_Rs);
-    else
-        %    [fb,fa] = MakeFilter(FilterType,FilterOrder,fs,hpf,'high',Filter_Rp);
+    hpf_norm = hpf / (fs / 2);
+    if hpf_norm > 0
+        FilterOrder = 5;
+        [z, p, k] = butter(FilterOrder, hpf_norm, 'high');
+        [sos, g] = zp2sos(z, p, k);
+        y2 = filtfilt(sos, g, y2);
     end
     
-    if FilterType~=5
-        y2=filtfilt(fb,fa,ylpf);
-    else
-        y2 = ylpf;
-    end
     data2(ii).SetDataTimeSeries(y2);
     
 end
-

@@ -2,8 +2,9 @@ classdef ParamClass < matlab.mixin.Copyable
     
     properties
         name
-        value
-        format
+        value       % Current value of parameter
+        default     % Default value loaded from the function helpstring
+        format      % printf-format string for scalar(s) in value
         help
     end
     
@@ -11,11 +12,11 @@ classdef ParamClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function obj = ParamClass(varargin)
+            % FuncCallClass's Encode handles ParamClass construction
             obj.name   = '';
             obj.value  = [];
             obj.format = '';
             obj.help   = '';
-            
             if nargin==0
                 return;
             elseif nargin==1
@@ -27,6 +28,11 @@ classdef ParamClass < matlab.mixin.Copyable
                 obj.name   = varargin{1};
                 obj.format = varargin{2};
                 obj.value  = varargin{3};
+            elseif nargin==4
+                obj.name   = varargin{1};
+                obj.format = varargin{2};
+                obj.value  = varargin{3};
+                obj.default = varargin{4};
             end
         end
         
@@ -75,6 +81,17 @@ classdef ParamClass < matlab.mixin.Copyable
             end
         end
         
+        % ----------------------------------------------------------------------------------
+        function str = GetFormattedValue(obj)
+            % Returns the string version of the value using the format
+            % property, including brackets for arrays
+            valstr = sprintf(obj.format, obj.value);
+            if length(obj.value) > 1
+                str = ['[', valstr, ']'];
+            else
+                str = valstr;
+            end
+        end
         
         % ----------------------------------------------------------------------------------
         function val = GetName(obj)
@@ -90,7 +107,23 @@ classdef ParamClass < matlab.mixin.Copyable
         function val = GetFormat(obj)
             val = obj.format;
         end
-                
+
+        % ----------------------------------------------------------------------------------
+        function val = GetDefault(obj)
+            val = obj.default;
+        end
+
+        % ----------------------------------------------------------------------------------
+        function err = Edit(obj, val)
+            % Assign a new value to the parameter, affecting both the value
+            % and format
+            obj.value = val;
+            eachformat = strsplit(obj.format);
+            formatlen = length(val);
+            obj.format = strtrim(repmat([eachformat{1}, ' '], 1, formatlen));
+            err = 0;  % Error checking i.e. max length
+        end
+        
         % ----------------------------------------------------------------------------------
         function str = Encode(obj)
             str = '';

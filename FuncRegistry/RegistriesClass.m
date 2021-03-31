@@ -44,6 +44,10 @@ classdef RegistriesClass < handle
             if strcmp(mode, 'empty')
                 return;
             end
+            if strcmp(mode, 'reset')
+                obj.DeleteSaved();
+                return;
+            end
             
             % Check if saved registry exists. If so load that and exit
             if ~strcmp(mode, 'reload')
@@ -361,6 +365,19 @@ classdef RegistriesClass < handle
                 end
             end
             b = true;
+        end
+        
+
+        % ----------------------------------------------------------------------------------
+        function entry = GetEntryByName(obj, entry_name)
+            entry = [];
+            for i=1:size(obj.funcReg, 2)
+                for j=1:size(obj.funcReg(i).entries, 2)
+                    if strcmp(obj.funcReg(i).entries(j).name, entry_name) || strcmp(obj.funcReg(i).entries(j).uiname, entry_name)
+                        entry = obj.funcReg(i).entries(j);
+                    end
+                end
+            end
         end
         
     end

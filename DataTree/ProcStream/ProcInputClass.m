@@ -107,7 +107,7 @@ classdef ProcInputClass < handle
                 eval(sprintf('varval = obj.%s;', varname));
             elseif isproperty(obj.misc, varname)
                 eval(sprintf('varval = obj.misc.%s;', varname));
-            else
+            elseif ~isempty(obj.acquired)
                 varval = obj.acquired.GetVar(varname);
             end
             if ~isempty(varval) && exist('iBlk','var')
@@ -157,6 +157,23 @@ classdef ProcInputClass < handle
         % ----------------------------------------------------------------------------------
         function b = AcquiredDataModified(obj)
             b = obj.acquired.DataModified();
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function inputs = GetProcInputs(obj)
+            % Get name of each property available from GetVars
+            inputs = {};
+            p = propnames(obj);
+            % Get name of each property
+            for i = 1:size(p)
+               inputs{end+1} = p{i}; %#ok<AGROW>
+               pi = propnames(obj.(p{i}));
+               % Get name of each sub-property (properties of misc, acquired)
+               for j = 1:size(pi)
+                  inputs{end+1} = pi{j};  %#ok<AGROW>
+               end
+            end
+            
         end
         
     end

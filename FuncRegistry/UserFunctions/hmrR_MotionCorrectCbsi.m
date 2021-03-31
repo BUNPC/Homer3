@@ -27,6 +27,9 @@
 % PARAMETERS:
 % turnon: 1
 %
+% PREREQUISITES:
+% Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, probe, ppf )
+%
 % LOG:
 % created 10-17-2012, S. Brigadoi
 %

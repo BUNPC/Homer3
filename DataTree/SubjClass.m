@@ -370,7 +370,21 @@ classdef SubjClass < TreeNodeClass
                 end
             end
         end
-                
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function varval = GetVar(obj, varname)
+            % First call the common code for all levels
+            varval = obj.GetVar@TreeNodeClass(varname);
+            
+            % Now call the subject specific part
+            if isempty(varval)
+                varval = obj.runs(1).GetVar(varname);
+            end            
+        end
+        
+               
     end
     
     
@@ -548,6 +562,18 @@ classdef SubjClass < TreeNodeClass
             end
         end
         
+        % ----------------------------------------------------------------------------------
+        function [fn_error, missing_args, prereqs] = CheckProcStreamOrder(obj)
+            missing_args = {};
+            fn_error = 0;
+            prereqs = '';
+            for i = 1:length(obj.runs)
+                [fn_error, missing_args, prereqs] = obj.runs(i).CheckProcStreamOrder;
+                if ~isempty(missing_args)
+                    return
+                end
+            end
+        end
         
         % ----------------------------------------------------------------------------------
         function ExportHRF(obj, procElemSelect, iBlk)

@@ -736,6 +736,19 @@ classdef GroupClass < TreeNodeClass
             ExportTable(obj.name, 'HRF mean', tblcells);
         end
         
+        
+        
+        % ----------------------------------------------------------------------------------
+        function varval = GetVar(obj, varname)
+            % First call the common code for all levels
+            varval = obj.GetVar@TreeNodeClass(varname);
+            
+            % Now call the group specific part
+            if isempty(varval)
+                varval = obj.subjs(1).GetVar(varname);
+            end            
+        end
+        
     end  % Public Save/Load methods
         
     
@@ -853,6 +866,19 @@ classdef GroupClass < TreeNodeClass
             for ii=1:length(obj.subjs)
                 obj.subjs(ii).SetConditions(obj.CondNames);
             end            
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function [fn_error, missing_args, prereqs] = CheckProcStreamOrder(obj)
+            missing_args = {};
+            fn_error = 0;
+            prereqs = '';
+            for i = 1:length(obj.subjs)
+                [fn_error, missing_args, prereqs] = obj.subjs(i).CheckProcStreamOrder;
+                if ~isempty(missing_args)
+                    return
+                end
+            end
         end
         
         

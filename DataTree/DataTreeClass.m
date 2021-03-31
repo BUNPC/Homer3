@@ -168,7 +168,7 @@ classdef DataTreeClass <  handle
                 msg{3} = sprintf('Do you want to rename the .%s files to names with a .old extension, delete them or cancel? ', format0);
                 msg{2} = sprintf('NOTE: Renaming or deleting the .%s files will allow Homer3 to regenerate them from .%s file later.', ...
                     format0, dataInit.type);
-                q = MenuBox([msg{:}], {'Rename (Recommended)','Delete','CANCEL'}, [], 90);
+                q = MenuBox(msg, {'Rename (Recommended)','Delete','CANCEL'}, [], 90);
                 if q==1
                     DeleteDataFiles(obj.dirnameGroups, format0, 'move')
                     status = true;
@@ -187,11 +187,11 @@ classdef DataTreeClass <  handle
     
             %             msg{1} = sprintf('Could not load any of the requested files in the group folder %s. ', obj.dirnameGroups);
             %             msg{2} = sprintf('Do you want to select another group folder?');
-            %             q = MenuBox([msg{:}], {'YES','NO'});
+            %             q = MenuBox(msg, {'YES','NO'});
                         
             msg{1} = sprintf('Could not load any of the requested files in the group folder %s. ', obj.dirnameGroups);
             msg{2} = sprintf('Do you want to select another group folder?');
-            q = MenuBox([msg{:}], {'YES','NO'}, [], 110);
+            q = MenuBox(msg, {'YES','NO'}, [], 110);
             if q==2
                 obj.logger.Write(sprintf('Skipping group folder %s...\n', obj.dirnameGroups));
                 obj.dirnameGroups = 0;
@@ -575,6 +575,14 @@ classdef DataTreeClass <  handle
             elseif isa(obj.currElem, 'RunClass')
                 obj.groups(idx(1)).Reset('up')
                 obj.groups(idx(1)).subjs(idx(2)).Reset('up')
+            end
+        end
+        
+        
+        % ----------------------------------------------------------
+        function ResetAll(obj)
+            for ii = 1:length(obj.groups)
+                obj.groups(ii).Reset()
             end
         end
         

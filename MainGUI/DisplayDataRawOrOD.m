@@ -47,7 +47,7 @@ for iWl=1:length(wl)
         h     = plot(hAxes, t, dWlMl);
         
         set(h, 'color',  linecolor(chLst(ii),:));
-        set(h, 'linestyle', linestyle{wl(iWl)});
+        set(h, 'linestyle', linestyle{iWl});
         set(h, 'linewidth', linewidth(wl(iWl)));
         
         if ~isempty(dStd)

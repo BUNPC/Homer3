@@ -29,6 +29,8 @@
 % PARAMETERS:
 % ppf: [1.0, 1.0, 1.0]
 %
+% PREREQUISITES:
+% Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
 function dc = hmrR_OD2Conc( dod, probe, ppf )
 
 dc = DataClass().empty();

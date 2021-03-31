@@ -63,12 +63,16 @@ SD          = maingui.dataTree.currElem.GetSDG('2D');
 if isfield(maingui.axesSDG, 'xlim')
     xbox        = maingui.axesSDG.xlim;
     ybox        = maingui.axesSDG.ylim;
+    bbox        = [xbox(1), xbox(2), ybox(1), ybox(2)];
 else
     bbox        = maingui.dataTree.currElem.GetSdgBbox();
 end
 
 % Set axes handle properties and parameters 
 if ~ishandles(hAxes)
+    return;
+end
+if length(bbox)<4
     return;
 end
 
@@ -80,11 +84,7 @@ if ishandles(maingui.axesSDG.handles.ch)
     delete(maingui.axesSDG.handles.ch)
     delete(findobj(hAxes, 'Type', 'line'))  % Prevents previously drawn lines from piling up
 end
-if isfield(maingui.axesSDG, 'xlim')
-    axis(hAxes, [xbox(1), xbox(2), ybox(1), ybox(2)]);
-else
-    axis(hAxes, [bbox(1), bbox(2), bbox(3), bbox(4)]);
-end
+axis(hAxes, [bbox(1), bbox(2), bbox(3), bbox(4)]);
 
 %set(hAxes, 'xticklabel','', 'yticklabel','', 'xgrid','off, ygrid','off')
 set(hAxes, 'xticklabel','')

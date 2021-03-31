@@ -8,7 +8,6 @@
 % Excludes stims that fall within the time points identified as
 % motion artifacts from HRF calculation.
 %
-%
 % INPUT:
 % data:     SNIRF data object    
 % stim:     SNIRF stim object
@@ -35,6 +34,10 @@
 % PARAMETERS:
 % tRange: [-5.0, 10.0]
 %
+% PREREQUISITES:
+% Motion_Artifact: tIncAuto = hmrR_MotionArtifact(dod, probe, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh), Motion_Artifact_By_Channel: [tIncAuto, tIncAutoCh] = hmrR_MotionArtifactByChannel(dod, probe, mlActMan, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+%
+
 function [stim, tRange] = hmrR_StimRejection(data, stim, tIncAuto, tIncMan, tRange)
 
 if isempty(tIncAuto)

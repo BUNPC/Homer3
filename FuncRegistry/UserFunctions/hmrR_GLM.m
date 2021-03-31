@@ -44,7 +44,7 @@
 %                Defaults: p=8.6 q=0.547
 %                The peak is at time p*q.  The FWHM is about 2.3*sqrt(p)*q.
 % paramsBasis - Parameters for the basis function depends on idxBasis
-%               idxBasis=1 [stdev step] where stdev is the width of the
+%               idxBasis=1 [stdev step ~ ~ ~ ~] where stdev is the width of the
 %                  gaussian and step is the temporal spacing between
 %                  consecutive gaussians
 %               idxBasis=2. [tau sigma T] applied to both HbO and HbR
@@ -91,7 +91,6 @@
 % USAGE OPTIONS:
 % GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R, hmrstats] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 %
-%
 % PARAMETERS:
 % trange: [-2.0, 20.0]
 % glmSolveMethod: 1
@@ -102,6 +101,9 @@
 % driftOrder: 3
 % c_vector: 0
 %
+% PREREQUISITES:
+% Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, probe, ppf )
+
 function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks, hmrstats] = ...
     hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 
@@ -257,11 +259,7 @@ for iBlk=1:length(data_y)
         
     elseif idxBasis==2
         % Modified Gamma
-        if length(paramsBasis)==3
-            nConc = 1;
-        elseif length(paramsBasis)==6
-            nConc = 2;
-        end
+        nConc = 2;
         
         nB = 1;
         tbasis = zeros(ntHRF,nB,nConc);
@@ -610,15 +608,17 @@ for iBlk=1:length(data_y)
                     ytmp = y(lstInc,conc,lstML);
                     for chanIdx=1:length(lstML)
                         ytmp2 = y(lstInc,conc,lstML(chanIdx));
-                        [dmoco, beta, tstat, pval, sigma, CovB, dfe, w, P, f] = ar_glm_final(squeeze(ytmp2),At(lstInc,:));
+                        [dmoco, beta, tstat, pval0, sigma, CovB, dfe, w, P, f] = ar_glm_final(squeeze(ytmp2),At(lstInc,:));
                         foo(:,lstML(chanIdx),conc)=beta;
-                        ytmp(:,1,chanIdx) = dmoco;
-                        
-                        %We also need to keep my version of "Yvar" and "Bvar"
+                        ytmp(:,1,chanIdx) = dmoco; %We also need to keep my version of "Yvar" and "Bvar"                    
                         
                         yvar(:,lstML(chanIdx),conc)=sigma.^2;
                         bvar(:,lstML(chanIdx),conc)=diag(CovB);  %Note-  I am only keeping the diag terms.  This lets you test if beta != 0,
                         %but in the future the HOMER-2 code needs to be modified to keep the entire cov-beta matrix which you need to test between conditions e.g. if beta(1) ~= beta(2)
+                   
+                        % GLM stats for each condition
+                        tval(:,lstML(chanIdx),conc) = tstat;
+                        pval(:,lstML(chanIdx),conc) = pval0;
                     end
                 end
                 
@@ -797,6 +797,12 @@ for iBlk=1:length(data_y)
             hmrstats.pval_contrast = pval_contrast;
             hmrstats.contrast = c_vector;
         end
+    elseif glmSolveMethod == 2 %  for AR 
+                % GLM stats for each condition 
+        hmrstats.beta_label = beta_label;
+        hmrstats.tval = tval;
+        hmrstats.pval = pval;
+        hmrstats.ml = ml;        
     end
     
 end

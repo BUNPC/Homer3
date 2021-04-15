@@ -203,7 +203,9 @@ if isempty(maingui.axesSDG.handles.SD) || (maingui.axesSDG.handles.axes ~= hAxes
             set(hSD(idx2+idx1), 'ButtonDownFcn',get(hAxes,'ButtonDownFcn'), 'horizontalalignment','center', 'edgecolor',edgecol, 'Clipping', 'on');
         end
     end
-    maingui.axesSDG.handles.SD = hSD;
+    if (maingui.axesSDG.handles.axes == hAxes)
+        maingui.axesSDG.handles.SD = hSD;
+    end
 else
     uistack(nonzeros(maingui.axesSDG.handles.SD),'top')
 end

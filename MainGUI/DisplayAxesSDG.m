@@ -80,7 +80,7 @@ end
 axes(hAxes);
 
 % Delete all channel lines drawn
-if ishandles(maingui.axesSDG.handles.ch)
+if ishandles(maingui.axesSDG.handles.ch) && (maingui.axesSDG.handles.axes == hAxes)
     delete(maingui.axesSDG.handles.ch)
     delete(findobj(hAxes, 'Type', 'line'))  % Prevents previously drawn lines from piling up
 end
@@ -184,11 +184,13 @@ if ~isempty(iSrcDet) && iSrcDet(1,1)~=0
     
 end
 
-maingui.axesSDG.handles.ch = hCh;
+if (maingui.axesSDG.handles.axes == hAxes)
+    maingui.axesSDG.handles.ch = hCh;
+end
 
 % ADD SOURCE AND DETECTOR LABELS
 hSD = zeros(nSrcs+nDets,1);
-if isempty(maingui.axesSDG.handles.SD)
+if isempty(maingui.axesSDG.handles.SD) || (maingui.axesSDG.handles.axes ~= hAxes)
     for idx1 = 1:nSrcs
         if ~isempty(find(MeasList(:,1)==idx1)) %#ok<*EFIND>
             hSD(idx1) = text( SD.SrcPos(idx1,1), SD.SrcPos(idx1,2), sprintf('%d', idx1), 'fontsize',fs, 'fontweight','bold', 'color','r' );

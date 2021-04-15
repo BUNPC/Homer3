@@ -72,21 +72,23 @@ for iBlk = 1:nDataBlks
                     continue;
                 end
                 
+                lstPass = find(~isnan(squeeze(mean(yAvg(:,1,:,iC),1))) == 1);
+                
                 if iSubj==1 | iC>nStim
-                    for iCh = 1:nCh
+                    for iPass=1:length(lstPass)
                         for iHb=1:3
                             % Make sure 3rd arg to interp1 is column vector to guarauntee interp1 output is column vector
                             % which matches grp1 dimensions when adding the two.
-                            grp1(:,iHb,iCh,iC) = interp1(tHRF, yAvg(:,iHb,iCh,iC), tHRF(:));
+                            grp1(:,iHb,lstPass(iPass),iC) = interp1(tHRF, yAvg(:,iHb,lstPass(iPass),iC), tHRF(:));
                         end
                     end
                     nStim = iC;
                 else
-                    for iCh = 1:size(yAvg,3)
+                    for iPass=1:length(lstPass)
                         for iHb=1:3
                             % Make sure 3rd arg to interp1 is column vector to guarauntee interp1 output is column vector
                             % which matches grp1 dimensions when adding the two.
-                            grp1(:,iHb,iCh,iC) = grp1(:, iHb, iCh, iC) + interp1(tHRF, yAvg(:,iHb,iCh,iC), tHRF(:));
+                            grp1(:,iHb,lstPass(iPass),iC) = grp1(:, iHb, lstPass(iPass), iC) + interp1(tHRF, yAvg(:,iHb,lstPass(iPass),iC), tHRF(:));
                         end
                     end
                 end

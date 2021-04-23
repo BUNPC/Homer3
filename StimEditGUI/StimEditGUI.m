@@ -986,9 +986,11 @@ set(handles.popupmenuConditions, 'string', sort(stimEdit.dataTreeHandle.currElem
 conditions = get(handles.popupmenuConditions, 'string');
 idx = get(handles.popupmenuConditions, 'value');
 if ~isempty(conditions)
+    enableDisableButtons(handles, 'on')
     set(handles.popupmenuConditions, 'enable', 'on');
     condition = conditions{idx};
 else  % If no stim conditions at all, disable display and prevent crash
+    enableDisableButtons('off')
     conditions = {' '};
     condition = ' ';
     set(handles.popupmenuConditions, 'enable', 'off');
@@ -1023,10 +1025,7 @@ end
 
 labels = stimEdit.dataTreeHandle.currElem.GetStimDataLabels(icond);
 stimdata = stimEdit.dataTreeHandle.currElem.GetStimData(icond);
-% If no data labels from SNIRF file, generate defaults
-if length(labels) ~= size(stimdata,2)
-    return;
-end
+
 if ~isempty(stimdata)
     [tpts, idx] = sort(stimdata(:,1));
     stimdata_sorted = stimdata(idx,:);
@@ -1281,6 +1280,14 @@ if size(stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).d
 else
     errordlg('There are no additional data columns to delete!', 'No columns to delete')
 end
+
+
+% --------------------------------------------------------------------
+function enableDisableButtons(handles, enable)
+handles.pushbuttonAddColumn.Enable = enable;
+handles.pushbuttonDeleteColumn.Enable = enable;
+handles.pushbuttonEditColumns.Enable = enable;
+
 
 % --------------------------------------------------------------------
 function pushbuttonAddColumn_Callback(hObject, eventdata, handles)

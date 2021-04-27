@@ -986,9 +986,11 @@ set(handles.popupmenuConditions, 'string', sort(stimEdit.dataTreeHandle.currElem
 conditions = get(handles.popupmenuConditions, 'string');
 idx = get(handles.popupmenuConditions, 'value');
 if ~isempty(conditions)
+    enableDisableButtons(handles, 'on')
     set(handles.popupmenuConditions, 'enable', 'on');
     condition = conditions{idx};
 else  % If no stim conditions at all, disable display and prevent crash
+    enableDisableButtons('off')
     conditions = {' '};
     condition = ' ';
     set(handles.popupmenuConditions, 'enable', 'off');
@@ -1023,10 +1025,6 @@ end
 
 labels = stimEdit.dataTreeHandle.currElem.GetStimDataLabels(icond);
 stimdata = stimEdit.dataTreeHandle.currElem.GetStimData(icond);
-% If no data labels from SNIRF file, generate defaults
-if length(labels) ~= size(stimdata,2)
-    return;
-end
 if ~isempty(stimdata)
     [tpts, idx] = sort(stimdata(:,1));
     stimdata_sorted = stimdata(idx,:);
@@ -1229,7 +1227,6 @@ else
     errordlg('There are no additional data columns to rename!', 'No columns to rename')
 end
 
-
 % --------------------------------------------------------------------
 function datarow = stimValueDialog()
 global stimEdit
@@ -1283,6 +1280,14 @@ else
     errordlg('There are no additional data columns to delete!', 'No columns to delete')
 end
 
+
+% --------------------------------------------------------------------
+function enableDisableButtons(handles, enable)
+handles.pushbuttonAddColumn.Enable = enable;
+handles.pushbuttonDeleteColumn.Enable = enable;
+handles.pushbuttonEditColumns.Enable = enable;
+
+
 % --------------------------------------------------------------------
 function pushbuttonAddColumn_Callback(hObject, eventdata, handles)
 global stimEdit
@@ -1307,45 +1312,3 @@ stimEdit.dataTreeHandle.currElem.AddStimColumn(name, value);
 Display(handles);
 
 
-
-
-% --------------------------------------------------------------------
-function StimCSV_Read_Callback(hObject, eventdata, handles)
-% hObject    handle to StimCSV_Read (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-global stimEdit
-[conds,labels,stimData] = StimCSV_Reader();
-for j = 1:length(labels{1})
-    stimEdit.dataTreeHandle.currElem.AddStimColumn(labels{1}{j},1);
-end
-for i = 1:length(stimData)
-    onsets = str2double(stimData{i}(:,1));
-    dur = str2double(stimData{i}(:,2));
-    amp = str2double(stimData{i}(:,3));
-    if size(stimData{i},2) > 3
-        other = str2double(stimData{i}(:,4:end));
-    else
-        other = [];
-    end
-    for k = 1:size(stimData{i},1)
-        stimEdit.dataTreeHandle.currElem.AddStims(onsets(k), conds{i}{1}, dur(k), amp(k), other(k,:));
-    end
-end
-iG = stimEdit.locDataTree.GetCurrElemIndexID();
-stimEdit.locDataTree.groups(iG).SetConditions();
-Display(handles);
-
-
-% --------------------------------------------------------------------
-function StimCSV_Write_Callback(hObject, eventdata, handles)
-% hObject    handle to CSV_Write (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-global stimEdit
-conds = stimEdit.dataTreeHandle.currElem.GetConditions();
-for i = 1:length(conds)
-    stimData{:,i} = stimEdit.dataTreeHandle.currElem.GetStimData(i);
-    stimLabels{:,i} = stimEdit.dataTreeHandle.currElem.GetStimDataLabels(i);
-end
-StimCSV_Write(conds,stimLabels,stimData);

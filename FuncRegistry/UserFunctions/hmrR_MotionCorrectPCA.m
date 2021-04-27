@@ -1,5 +1,5 @@
 % SYNTAX:
-% [data_d, svs, nSV] = hmrR_MotionCorrectPCA(data_d, mlActMan, tIncMan, nSV)
+% [data_d, svs, nSV] = hmrR_MotionCorrectPCA(data_d, mlActMan, mlActAuto, tIncMan, tIncAuto, nSV)
 %
 % UI NAME:
 % Motion_Correct_PCA
@@ -11,8 +11,13 @@
 %
 % INPUTS
 % data_d:  SNIRF object containing data matrix, timepoints x sd pairs
-% mlActMan: Active data channels are indicated mlActMan.
+% mlActMan: Cell array of vectors, one for each time base in data, specifying 
+%        active/inactive channels with 1 meaning active, 0 meaning inactive
+% mlActAuto: Cell array of vectors, one for each time base in data, specifying 
+%        active/inactive channels with 1 meaning active, 0 meaning inactive
 % tIncMan: Cell array for eqach data block with vectors of length time points
+%          where 1's indicating data included and 0's indicating motion artifact
+% tIncAuto: Cell array for eqach data block with vectors of length time points
 %          where 1's indicating data included and 0's indicating motion artifact
 % nSV: Cell array for each data block with the number of principal components to remove
 %      from each data block. If this number is less than 1, then the filter removes the first n
@@ -27,7 +32,7 @@
 %
 %
 % USAGE OPTIONS:
-% Motion_Correct_PCA:  [dod, svs, nSV] = hmrR_MotionCorrectPCA(dod, mlActMan, tIncMan, nSV)
+% Motion_Correct_PCA:  [dod, svs, nSV] = hmrR_MotionCorrectPCA(dod, mlActMan, mlActAuto, tIncMan, tIncAuto, nSV)
 %
 % PARAMETERS:
 % nSV: 0.0
@@ -35,7 +40,7 @@
 % PREREQUISITES:
 % Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
 %
-function [data_dN, svs, nSV] = hmrR_MotionCorrectPCA(data_d,  mlActMan, tIncMan, nSV)
+function [data_dN, svs, nSV] = hmrR_MotionCorrectPCA(data_d,  mlActMan, mlActAuto, tIncMan, tIncAuto, nSV)
 
 % Init output 
 data_dN = DataClass.empty();
@@ -48,8 +53,14 @@ end
 if isempty(tIncMan)
     tIncMan = cell(length(data_d),1);
 end
+if isempty(tIncAuto)
+    tIncAuto = cell(length(data_d),1);
+end
 if isempty(mlActMan)
     mlActMan = cell(length(data_d),1);
+end
+if isempty(mlActAuto)
+    mlActAuto = cell(length(data_d),1);
 end
 
 for iBlk=1:length(data_d)
@@ -60,11 +71,19 @@ for iBlk=1:length(data_d)
     if isempty(mlActMan{iBlk})
         mlActMan{iBlk} = ones(size(MeasList,1),1);
     end
-    mlAct = mlActMan{iBlk};
+    if isempty(mlActAuto{iBlk})  
+        mlActAuto{iBlk} = ones(size(MeasList,1),1);
+    end
+    
+    mlAct = mlActMan{iBlk} & mlActAuto{iBlk};
+
     if isempty(tIncMan{iBlk})
         tIncMan{iBlk} = ones(size(d,1),1);
     end
-    tInc = tIncMan{iBlk};
+    if isempty(tIncAuto{iBlk})
+        tIncAuto{iBlk} = ones(size(d,1),1);
+    end
+    tInc = tIncMan{iBlk} & tIncAuto{iBlk};
     
     lstNoInc = find(tInc==0);
     lstAct = find(mlAct==1);

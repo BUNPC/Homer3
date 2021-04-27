@@ -581,12 +581,8 @@ classdef StimClass < FileLoadSaveClass
             if ~exist('initValue', 'var')
                initValue = 0; 
             end
-            if ~any(strcmp(obj.dataLabels,name))
-                obj.dataLabels{end + 1} = name;
-                obj.data(:, end + 1) = initValue * ones(size(obj.data, 1), 1);
-            else
-                % Nothing
-            end
+            obj.dataLabels{end + 1} = name;
+            obj.data(:, end + 1) = initValue * ones(size(obj.data, 1), 1);
         end
 
         

@@ -72,7 +72,7 @@ for iBlk=1:length(data_dod)
     end
     MeasListAct = mlAct{iBlk};
     if isempty(tIncCh{iBlk})
-        tIncCh{iBlk} = ones(size(dod,1),1);
+        tIncCh{iBlk} = ones(size(dod));
     end
     
     lstAct = find(MeasListAct==1);

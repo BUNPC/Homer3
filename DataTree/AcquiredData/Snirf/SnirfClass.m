@@ -1061,11 +1061,13 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             s = zeros(length(t), length(obj.stim));
             for ii=1:length(obj.stim)
                 data = obj.stim.GetData();
-                [~, k] = nearest_point(t, data(:, 1));
-                if isempty(k)
-                    continue;
+                if ~isempty(data)
+                    [~, k] = nearest_point(t, data(:, 1));
+                    if isempty(k)
+                        continue;
+                    end
+                    s(k,ii) = data(:, 3);
                 end
-                s(k,ii) = data(:, 3);
             end
         end
         
@@ -1288,7 +1290,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % Otherwise we have a new condition to which to add the stims.
             obj.stim(end+1) = StimClass(condition);
             obj.stim(end).AddStims(tPts, duration, amp, more);
-            obj.stim(end).SetDataLabels(obj.stim(1).GetDataLabels)
             obj.SortStims();
         end
         

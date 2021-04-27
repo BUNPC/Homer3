@@ -99,7 +99,6 @@ if turnon==0
     return;
 end
 
-tIncMerged = cell(1,1);
 for iBlk=1:nBlks
     data_dN(iBlk) = DataClass(data_d(iBlk));
     
@@ -110,8 +109,7 @@ for iBlk=1:nBlks
     ii=0;
     while length(find(tInc{iBlk}==0))>0 & ii<maxIter
         ii=ii+1;
-        tIncMerged{1} = min([tInc{iBlk}, tIncMan{iBlk}], [], 2);
-        [data_dN(iBlk), svs_ii, nSV(iBlk)] = hmrR_MotionCorrectPCA(data_d(iBlk), mlActMan(iBlk), tIncMerged, nSV(iBlk));
+        [data_dN(iBlk), svs_ii, nSV(iBlk)] = hmrR_MotionCorrectPCA(data_d(iBlk), mlActMan(iBlk), mlActAuto(iBlk), tIncMan(iBlk), tInc(iBlk), nSV(iBlk));
         tInc(iBlk) = hmrR_MotionArtifact(data_dN(iBlk), probe, mlActMan(iBlk), mlActAuto(iBlk), tIncMan(iBlk), tMotion, tMask, STDEVthresh, AMPthresh);
         data_d(iBlk).Copy(data_dN(iBlk));
         svs{iBlk}(:,ii) = svs_ii{1};

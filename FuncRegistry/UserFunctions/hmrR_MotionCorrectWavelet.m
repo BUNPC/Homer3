@@ -1,5 +1,5 @@
 % SYNTAX:
-% data_dod = hmrR_MotionCorrectWavelet(data_dod, mlAct, iqr, turnon)
+% data_dod = hmrR_MotionCorrectWavelet(data_dod, mlActMan, mlActAuto, iqr, turnon)
 %
 % UI NAME:
 % Wavelet_Motion_Correction
@@ -15,7 +15,9 @@
 %
 % INPUTS:
 % data_dod - SNIRF data structure data, containing delta_OD data
-% mlAct - Cell array of vectors, one for each time base in data_dod, specifying 
+% mlActMan - Cell array of vectors, one for each time base in data_dod, specifying 
+%            active/inactive channels with 1 meaning active, 0 meaning inactive.
+% mlActAuto - Cell array of vectors, one for each time base in data_dod, specifying 
 %            active/inactive channels with 1 meaning active, 0 meaning inactive.
 % iqr -      parameter used to compute the statistics (iqr = 1.5 is 1.5 times the
 %            interquartile range and is usually used to detect outliers). 
@@ -28,7 +30,7 @@
 %            size as dod (Channels that are not in the active ml remain unchanged)
 %
 % USAGE OPTIONS:
-% Wavelet_Motion_Correction:  dod = hmrR_MotionCorrectWavelet(dod, mlAct, iqr, turnon)
+% Wavelet_Motion_Correction:  dod = hmrR_MotionCorrectWavelet(dod, mlActMan, mlActAuto, iqr, turnon)
 %
 % PARAMETERS:
 % iqr: 1.50
@@ -42,7 +44,7 @@
 % modified 10/17/2012 by S. Brigadoi
 % modified 03/27/2019 by J. Dubb
 %
-function data_dod = hmrR_MotionCorrectWavelet(data_dod, mlAct, iqr, turnon)
+function data_dod = hmrR_MotionCorrectWavelet(data_dod, mlActMan, mlActAuto, iqr, turnon)
 
 if ~exist('turnon','var')
    turnon = 1;
@@ -53,8 +55,11 @@ end
 if turnon==0
     return;
 end
-if isempty(mlAct)
-    mlAct = cell(length(data_dod),1);
+if isempty(mlActMan)
+    mlActMan = cell(length(data_dod),1);
+end
+if isempty(mlActAuto)
+    mlActAuto = cell(length(data_dod),1);
 end
 
 for kk=1:length(data_dod)
@@ -62,10 +67,15 @@ for kk=1:length(data_dod)
     dod         = data_dod(kk).GetDataTimeSeries();
     dodWavelet  = dod;
     MeasList    = data_dod(kk).GetMeasList();   
-    if isempty(mlAct{kk})
-        mlAct{kk} = ones(size(MeasList,1),1);
+    
+    if isempty(mlActMan{kk})
+        mlActMan{kk} = ones(size(MeasList,1),1);
     end
-    MeasListAct = mlAct{kk};
+    if isempty(mlActAuto{kk})
+        mlActAuto{kk} = ones(size(MeasList,1),1);
+    end
+    
+    MeasListAct = mlActMan{kk} & mlActAuto{kk};
     
     lstAct = find(MeasListAct==1);
     SignalLength = size(dod,1); % #time points of original signal

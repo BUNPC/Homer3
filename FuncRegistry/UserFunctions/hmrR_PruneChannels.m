@@ -1,5 +1,5 @@
 % SYNTAX:
-% mlAct = hmrR_PruneChannels(data, probe, mlActMan, tInc, dRange, SNRthresh, SDrange)
+% mlActAuto = hmrR_PruneChannels(data, probe, mlActMan, tInc, dRange, SNRthresh, SDrange)
 %
 % UI NAME:
 % Prune_Channels
@@ -37,10 +37,10 @@
 % TO DO:
 % consider Conc as well as wavelength data
 %
-function mlAct = hmrR_PruneChannels(data, probe, mlActMan, tIncMan, dRange, SNRthresh, SDrange)
+function mlActAuto = hmrR_PruneChannels(data, probe, mlActMan, tIncMan, dRange, SNRthresh, SDrange)
 
 % Init output 
-mlAct = cell(length(data),1);
+mlActAuto = cell(length(data),1);
 
 % Check input args
 if nargin<7
@@ -98,6 +98,6 @@ for iBlk=1:length(data)
     % update MeasListAct
     MeasListAct(find(chanList==0)) = 0;
     
-    mlAct{iBlk} = MeasListAct;
+    mlActAuto{iBlk} = MeasListAct;
 end
 

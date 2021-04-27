@@ -14,7 +14,7 @@ function errmsg = hmrR_GLM_errchk(trange, glmSolveMethod, idxBasis, paramsBasis,
        errmsg = 'Select a valid basis function (0-4)';
        return
     elseif glmSolveMethod > 2 || glmSolveMethod < 1
-       errmsg = 'Select a valid solve method (1-2)'
+       errmsg = 'Select a valid solve method (1-2)';
        return
     end
 end

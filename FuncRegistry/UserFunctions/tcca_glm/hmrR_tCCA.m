@@ -29,8 +29,7 @@
 %            3 - 3 ctr if <1  correlation threshold, if =>1 number of regressors.
 %                   Redundant if flagICRegressors = 1;
 % tCCAaux_inx -  Indices of the aux channels to be used to generate
-% regressors. 0 for the indices of unused aux channels, 1 for included
-% aux channels.
+% regressors.
 % rhoSD_ssThresh - max distance for a short separation measurement. Set =0
 %          if you do not want to regress the short separation measurements.
 %          Follows the static estimate procedure described in Gagnon et al (2011).
@@ -56,7 +55,7 @@
 % PARAMETERS:
 % flagtCCA: 1
 % tCCAparams: [3 0.08 0.3]
-% tCCAaux_inx: [1 1 1 1 0 0 0 0]
+% tCCAaux_inx: [1 2 3 4]
 % rhoSD_ssThresh: 15.0
 % ss_ch_on: 1
 % runIdxResting: 1
@@ -74,7 +73,6 @@ function [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, subjIdx, mlActMan, 
 %%
 
 %% flags and tCCA settings
-tCCAaux_inx = find(tCCAaux_inx); % Convert flags to list of indices
 flags.pcaf =  [0 0]; % no pca of X or AUX
 % flags.shrink = true; % perform shrinkage in the CCA
 flags.shrink = false;  % JD: set to false because rtcca generate error, "Undefined function or variable 'cshrink'".

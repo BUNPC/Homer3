@@ -5,15 +5,19 @@
 % GLM_HRF_Drift_SS
 %
 % DESCRIPTION:
-% This script estimates the HRF with options to specify the temporal basis
-% function type and corresponding parameters, whether or not to perform
-% simultaneous regression of short separation channels, drift order, and
-% whether or not to correct for motion artifacts. You can also choose the
-% method for solving the GLM matrix equation.
+% This script estimates HRF at the session level. It concatenates run level
+% design matrices and estimates a common HRF regressor(s) for each condition
+% while estimating separate regressors for the rest of model (e.g. drift).
+% As the run level GLM, it estimates the HRF with options to specify the
+% temporal basis function type and corresponding parameters, whether or not
+% to perform simultaneous regression of short separation channels, drift
+% order, and whether or not to correct for motion artifacts. You can also 
+% choose the method for solving the GLM matrix equation.
 %
 %
 % INPUTS:
-% data - this is the concentration data with dimensions #time points x [HbO/HbR/HbT] x #channels
+% dcRuns - this is the concentration data with dimensions #time points x
+%          [HbO/HbR/HbT] x #channels for each run
 % stim - stimulation vector (# time points x #conditions)=1 at stim onset otherwise =0
 % probe - source detector stucture (units should be consistent with rhoSD_ssThresh)
 % mlActAuto -

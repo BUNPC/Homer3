@@ -249,6 +249,12 @@ classdef SubjClass < TreeNodeClass
             obj.outputVars.mlActRuns{r.iRun}     = r.procStream.output.GetVar('mlActAuto');
             obj.outputVars.nTrialsRuns{r.iRun}   = r.procStream.output.GetVar('nTrials');
             obj.outputVars.stimRuns{r.iRun}      = r.GetVar('stim');
+            obj.outputVars.dcRuns{r.iRun}       = r.procStream.output.GetVar('dc');
+            obj.outputVars.AauxRuns{r.iRun}      = r.procStream.output.GetVar('Aaux');
+            obj.outputVars.tIncAutoRuns{r.iRun}  = r.procStream.output.GetVar('tIncAuto');
+            obj.outputVars.rcMapRuns{r.iRun}     = r.procStream.output.GetVar('rcMap');
+
+            
             
             % a) Find all variables needed by proc stream
             args = obj.procStream.GetInputArgs();

@@ -413,6 +413,11 @@ switch(proclevel)
         maingui.dataTree.SetCurrElem(iGroup, iSubj, iRun);
 end
 [iGroup, iSubj, iRun] = maingui.dataTree.GetCurrElemIndexID();
+if iRun == 0
+    set(handles.menuItemPowerSpectrum, 'enable', 'off')
+else
+    set(handles.menuItemPowerSpectrum, 'enable', 'on')
+end
 listboxGroupTree_Callback([], [iGroup,iSubj,iRun], handles)
 Display(handles, hObject);
 
@@ -1741,8 +1746,13 @@ n_channels = length(iCh);
 if n_channels > 0
     iSrcDet = maingui.axesSDG.iSrcDet;
     colors = maingui.axesSDG.linecolor;
-    d = maingui.dataTree.currElem.acquired.data.dataTimeSeries;
-    sf = maingui.dataTree.currElem.acquired.data.time(2) - maingui.dataTree.currElem.acquired.data.time(1);
+    d = maingui.dataTree.currElem.GetDataTimeSeries();
+    t = maingui.dataTree.currElem.GetTime();
+    if isempty(t)
+        msgbox('Power Spectrum Plot Tool unavailable for subject and group class');
+        return;
+    end
+    sf = t(2)-t(1);
     fs = 1/sf;
     try
        close(maingui.spectrumFigureHandle);
@@ -1973,8 +1983,13 @@ n_channels = length(iCh);
 if n_channels > 0
     iSrcDet = maingui.axesSDG.iSrcDet;
     colors = maingui.axesSDG.linecolor;
-    d = maingui.dataTree.currElem.acquired.data.dataTimeSeries;
-    sf = maingui.dataTree.currElem.acquired.data.time(2) - maingui.dataTree.currElem.acquired.data.time(1);
+    d = maingui.dataTree.currElem.GetDataTimeSeries();
+    t = maingui.dataTree.currElem.GetTime();
+    if isempty(t)
+        msgbox('Power Spectrum Plot Tool unavailable for subject and group class');
+        return;
+    end
+    sf = t(2)-t(1);
     fs = 1/sf;
     try
        close(maingui.spectrumFigureHandle);

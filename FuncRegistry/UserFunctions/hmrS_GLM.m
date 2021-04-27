@@ -736,11 +736,12 @@ for iBlk=1:length(data_y)
                                     for m = 1:nCond
                                         cv_dummy = [cv_dummy ones(1,nB)*c_vector(m)];
                                     end
-                                    cv_extended = [cv_dummy zeros(1,size(beta_label,2)-size(cv_dummy,2))];
+                                    cv_extended = [cv_dummy zeros(1,size(At,2)-size(cv_dummy,2))];
                                 end
                                 
                                 tval_contrast(:,lstML(iCh),conc) = cv_extended * foo(:,lstML(iCh),conc)./sqrt(cv_extended * (pinvA*pinvA') * yvar(:,lstML(iCh),conc) * cv_extended');
                                 pval_contrast(:,lstML(iCh),conc) = 1-tcdf(abs(tval_contrast(:,lstML(iCh),conc)),(size(y,1)-1));
+                           
                             end
                         end
                         %

@@ -11,7 +11,7 @@
 % As the run level GLM, it estimates the HRF with options to specify the
 % temporal basis function type and corresponding parameters, whether or not
 % to perform simultaneous regression of short separation channels, drift
-% order, and whether or not to correct for motion artifacts. You can also 
+% order, and whether or not to correct for motion artifacts. You can also
 % choose the method for solving the GLM matrix equation.
 %
 %
@@ -112,7 +112,7 @@ function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, 
     hmrS_GLM(dcRuns, stimRuns, probe, mlActRuns, AauxRuns, tIncAutoRuns, rcMapRuns, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 
 % Concatenate runs
-% concatenate y 
+% concatenate y
 foo_y = dcRuns{1}.dataTimeSeries;
 foo_t = dcRuns{1}.time;
 sz(1) = size(dcRuns{1}.dataTimeSeries,1);
@@ -133,7 +133,7 @@ for j = 1:size(stimRuns{1},2)
     
     foo_stim_data = stimRuns{1}(j).data; % get data from the first run
     foo_stim_states = stimRuns{1}(j).states;
-        for i = 1:size(dcRuns,2)-1  % concatenate data from other runs to first run
+    for i = 1:size(dcRuns,2)-1  % concatenate data from other runs to first run
         foo_stim_data = cat(1,foo_stim_data,stimRuns{i+1}(j).data);
         foo_stim_states = cat(1,foo_stim_states,stimRuns{i+1}(j).states);
     end
@@ -625,7 +625,7 @@ for iBlk=1:length(data_y)
                 end
             end
             
-            % concetanted final At for session: get separate regressor fore the aux for each run 
+            % concetanted final At for session: get separate regressor fore the aux for each run
             naux = (size(At,2)-size(dA,2));
             fooAt = zeros(size(At,1),naux*size(dcRuns,2));
             
@@ -685,14 +685,14 @@ for iBlk=1:length(data_y)
                     ytmp = y(lstInc,conc,lstML);
                     for chanIdx=1:length(lstML)
                         ytmp2 = y(lstInc,conc,lstML(chanIdx));
-                        [dmoco, beta, tstat, pval, sigma, CovB, dfe, w, P, f] = ar_glm_final(squeeze(ytmp2),At(lstInc,:));
+                        [dmoco, beta, tstat(:,lstML(chanIdx),conc), pval(:,lstML(chanIdx),conc), sigma, CovB(:,:,lstML(chanIdx),conc), dfe, w, P, f] = ar_glm_final(squeeze(ytmp2),At(lstInc,:));
                         foo(:,lstML(chanIdx),conc)=beta;
                         ytmp(:,1,chanIdx) = dmoco;
                         
                         %We also need to keep my version of "Yvar" and "Bvar"
                         
                         yvar(:,lstML(chanIdx),conc)=sigma.^2;
-                        bvar(:,lstML(chanIdx),conc)=diag(CovB);  %Note-  I am only keeping the diag terms.  This lets you test if beta != 0,
+                        bvar(:,lstML(chanIdx),conc)=diag(CovB(:,:,lstML(chanIdx),conc));  %Note-  I am only keeping the diag terms.  This lets you test if beta != 0,
                         %but in the future the HOMER-2 code needs to be modified to keep the entire cov-beta matrix which you need to test between conditions e.g. if beta(1) ~= beta(2)
                     end
                 end
@@ -742,10 +742,8 @@ for iBlk=1:length(data_y)
                                     end
                                     cv_extended = [cv_dummy zeros(1,size(At,2)-size(cv_dummy,2))];
                                 end
-                                
                                 tval_contrast(:,lstML(iCh),conc) = cv_extended * foo(:,lstML(iCh),conc)./sqrt(cv_extended * (pinvA*pinvA') * yvar(:,lstML(iCh),conc) * cv_extended');
                                 pval_contrast(:,lstML(iCh),conc) = 1-tcdf(abs(tval_contrast(:,lstML(iCh),conc)),(size(y,1)-1));
-                           
                             end
                         end
                         %
@@ -765,6 +763,22 @@ for iBlk=1:length(data_y)
                     
                     yest(:,lstML,conc) = At * foo(:,lstML,conc);
                     for iCh = 1:length(lstML)
+                        % GLM stats for contrast between conditions, given a c_vector exists
+                        if nCond > 1
+                            if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond)
+                                
+                                if ~exist('cv_extended') == 1
+                                    cv_dummy = [];
+                                    for m = 1:nCond
+                                        cv_dummy = [cv_dummy ones(1,nB)*c_vector(m)];
+                                    end
+                                    cv_extended = [cv_dummy zeros(1,size(At,2)-size(cv_dummy,2))];
+                                end
+                                tval_contrast(:,lstML(iCh),conc) = cv_extended * foo(:,lstML(iCh),conc)./sqrt(cv_extended * squeeze(CovB(:,:,lstML(chanIdx),conc))* cv_extended');
+                                pval_contrast(:,lstML(iCh),conc) = 1-tcdf(abs(tval_contrast(:,lstML(iCh),conc)),(size(y,1)-1));
+                            end
+                        end
+                        %
                         for iCond=1:nCond
                             if size(tbasis,3)==1
                                 yavgstd(:,lstML(iCh),conc,iCond) = diag(tbasis*diag(bvar([1:nB]+(iCond-1)*nB,lstML(iCh),conc))*tbasis').^0.5;
@@ -861,18 +875,24 @@ for iBlk=1:length(data_y)
     yR_blks{iBlk}   = yR;
     
     % stats struct
-    if glmSolveMethod == 1 %  for OLS only for now
-        % GLM stats for each condition 
+    if glmSolveMethod == 1 % for OLS
+        % GLM stats for each condition
         hmrstats.beta_label = beta_label;
         hmrstats.tval = tval;
         hmrstats.pval = pval;
         hmrstats.ml = ml;
-        % GLM stats for contrast between conditions, if c_vector exists
-        if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond) && nCond>1
-            hmrstats.tval_contrast = tval_contrast;
-            hmrstats.pval_contrast = pval_contrast;
-            hmrstats.contrast = c_vector;
-        end
+    else                   % for iWLS
+        hmrstats.beta_label = beta_label;
+        hmrstats.tval = tstat;
+        hmrstats.pval = pval;
+        hmrstats.ml = ml;
+    end
+    
+    % GLM stats for contrast between conditions, if c_vector exists
+    if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond) && nCond>1
+        hmrstats.tval_contrast = tval_contrast;
+        hmrstats.pval_contrast = pval_contrast;
+        hmrstats.contrast = c_vector;
     end
     
 end

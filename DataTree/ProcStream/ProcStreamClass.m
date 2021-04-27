@@ -1350,14 +1350,14 @@ classdef ProcStreamClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function AddStims(obj, tPts, condition)
+        function AddStims(obj, tPts, condition, duration, amp, more)
             if isempty(tPts)
                 return;
             end
             if isempty(condition)
                 return;
             end
-            obj.input.AddStims(tPts, condition);
+            obj.input.AddStims(tPts, condition, duration, amp, more);
         end
 
         
@@ -1398,6 +1398,31 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function AddStimColumn(obj, name, initValue)
+            if ~exist('name', 'var')
+                return;
+            end
+            obj.input.AddStimColumn(name, initValue);
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function DeleteStimColumn(obj, idx)
+            if ~exist('idx', 'var') || idx <= 3
+                return;
+            end
+            obj.input.DeleteStimColumn(idx);
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function RenameStimColumn(obj, oldname, newname)
+            if ~exist('oldname', 'var') || ~exist('newname', 'var')
+                return;
+            end
+            obj.input.RenameStimColumn(oldname, newname);
+        end
+        
+        % ----------------------------------------------------------------------------------
         function data = GetStimData(obj, icond)
             data = obj.input.GetStimData(icond);
         end
@@ -1425,8 +1450,8 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimDuration(obj, icond, duration)
-            obj.input.SetStimDuration(icond, duration);
+        function SetStimDuration(obj, icond, duration, tpts)
+            obj.input.SetStimDuration(icond, duration, tpts);
         end
         
     
@@ -1440,8 +1465,8 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimAmplitudes(obj, icond, vals)
-            obj.input.SetStimAmplitudes(icond, vals);
+        function SetStimAmplitudes(obj, icond, vals, tpts)
+            obj.input.SetStimAmplitudes(icond, vals, tpts);
         end
         
     

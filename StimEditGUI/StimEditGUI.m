@@ -1312,3 +1312,44 @@ stimEdit.dataTreeHandle.currElem.AddStimColumn(name, value);
 Display(handles);
 
 
+
+% --------------------------------------------------------------------
+function StimCSV_Read_Callback(hObject, eventdata, handles)
+% hObject    handle to StimCSV_Read (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global stimEdit
+[conds,labels,stimData] = StimCSV_Reader();
+for j = 1:length(labels{1})
+    stimEdit.dataTreeHandle.currElem.AddStimColumn(labels{1}{j},1);
+end
+for i = 1:length(stimData)
+    onsets = str2double(stimData{i}(:,1));
+    dur = str2double(stimData{i}(:,2));
+    amp = str2double(stimData{i}(:,3));
+    if size(stimData{i},2) > 3
+        other = str2double(stimData{i}(:,4:end));
+    else
+        other = [];
+    end
+    for k = 1:size(stimData{i},1)
+        stimEdit.dataTreeHandle.currElem.AddStims(onsets(k), conds{i}{1}, dur(k), amp(k), other(k,:));
+    end
+end
+iG = stimEdit.locDataTree.GetCurrElemIndexID();
+stimEdit.locDataTree.groups(iG).SetConditions();
+Display(handles);
+
+
+% --------------------------------------------------------------------
+function StimCSV_Write_Callback(hObject, eventdata, handles)
+% hObject    handle to CSV_Write (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global stimEdit
+conds = stimEdit.dataTreeHandle.currElem.GetConditions();
+for i = 1:length(conds)
+    stimData{:,i} = stimEdit.dataTreeHandle.currElem.GetStimData(i);
+    stimLabels{:,i} = stimEdit.dataTreeHandle.currElem.GetStimDataLabels(i);
+end
+StimCSV_Write(conds,stimLabels,stimData);

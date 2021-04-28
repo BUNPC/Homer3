@@ -413,6 +413,11 @@ switch(proclevel)
         maingui.dataTree.SetCurrElem(iGroup, iSubj, iRun);
 end
 [iGroup, iSubj, iRun] = maingui.dataTree.GetCurrElemIndexID();
+if iRun == 0
+    set(handles.menuItemPowerSpectrum, 'enable', 'off')
+else
+    set(handles.menuItemPowerSpectrum, 'enable', 'on')
+end
 listboxGroupTree_Callback([], [iGroup,iSubj,iRun], handles)
 Display(handles, hObject);
 
@@ -1741,8 +1746,13 @@ n_channels = length(iCh);
 if n_channels > 0
     iSrcDet = maingui.axesSDG.iSrcDet;
     colors = maingui.axesSDG.linecolor;
-    d = maingui.dataTree.currElem.acquired.data.dataTimeSeries;
-    sf = maingui.dataTree.currElem.acquired.data.time(2) - maingui.dataTree.currElem.acquired.data.time(1);
+    d = maingui.dataTree.currElem.GetDataTimeSeries();
+    t = maingui.dataTree.currElem.GetTime();
+    if isempty(t)
+        msgbox('Power Spectrum Plot Tool unavailable for subject and group class');
+        return;
+    end
+    sf = t(2)-t(1);
     fs = 1/sf;
     try
        close(maingui.spectrumFigureHandle);
@@ -1961,3 +1971,46 @@ callbacks.radiobuttonProcTypeSubj = @uipanelProcessingType_SelectionChangeFcn;
 callbacks.radiobuttonProcTypeRun = @uipanelProcessingType_SelectionChangeFcn;
 
 
+
+% --------------------------------------------------------------------
+function menuItemPowerSpectrum_Loglog_Callback(hObject, eventdata, handles)
+% hObject    handle to menuItemPowerSpectrum (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global maingui;
+iCh = maingui.axesSDG.iCh;
+n_channels = length(iCh);
+if n_channels > 0
+    iSrcDet = maingui.axesSDG.iSrcDet;
+    colors = maingui.axesSDG.linecolor;
+    d = maingui.dataTree.currElem.GetDataTimeSeries();
+    t = maingui.dataTree.currElem.GetTime();
+    if isempty(t)
+        msgbox('Power Spectrum Plot Tool unavailable for subject and group class');
+        return;
+    end
+    sf = t(2)-t(1);
+    fs = 1/sf;
+    try
+       close(maingui.spectrumFigureHandle);
+    catch
+    end
+    maingui.spectrumFigureHandle = figure('NumberTitle', 'off', 'Name', 'PSD of selected channels');
+    n = 3;
+    m = ceil(n_channels / n);
+    for i = 1:n_channels
+        % 100 sec window with 50% overlap
+        window = floor(100 / sf);
+        overlap = window / 2;
+        bins = 2048;
+        [pxx,f] = pwelch(d(:,iCh(i)), window, overlap, bins, fs);
+        subplot(m,n,i);
+        semilogx(f, 10*log10(pxx), 'Color', colors(i,:));
+        title([num2str(iSrcDet(i,1)), ' \rightarrow ', num2str(iSrcDet(i,2))]);
+        xlim([0,fs/2]);
+        xlabel(sprintf('Frequency (Hz)'));
+        ylabel(sprintf('PSD (dB)\n'));
+    end
+else
+    errordlg('Cannot calculate power spectra with no channels selected.', 'No channels selected'); 
+end

@@ -1061,11 +1061,13 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             s = zeros(length(t), length(obj.stim));
             for ii=1:length(obj.stim)
                 data = obj.stim.GetData();
-                [~, k] = nearest_point(t, data(:, 1));
-                if isempty(k)
-                    continue;
+                if ~isempty(data)
+                    [~, k] = nearest_point(t, data(:, 1));
+                    if isempty(k)
+                        continue;
+                    end
+                    s(k,ii) = data(:, 3);
                 end
-                s(k,ii) = data(:, 3);
             end
         end
         

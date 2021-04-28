@@ -171,6 +171,9 @@ zoom(hObject,'off');
 Display(handles);
 SetTextFilename(handles);
 EnableGuiObjects('on', handles);
+
+stimEdit.handles = handles;
+
 stimEdit.status=0;
 
 waitbar(1, h, waitmsg);
@@ -235,7 +238,7 @@ figure(handles.figure);
 
 
 %---------------------------------------------------------------------------
-function pushbuttonRenameCondition_Callback(hObject, eventdata, handles)
+function menuItemRenameCondition_Callback(hObject, eventdata, handles)
 global stimEdit
 
 % Function to rename a condition. Important to remeber that changing the
@@ -248,15 +251,22 @@ global stimEdit
 %      and runs same as if you were loading during Homer3 startup from the 
 %      acquired data.
 %
+
+% Get the name of the condition you want to rename
+conditions = get(handles.popupmenuConditions, 'string');
+[index, tf] = listdlg('PromptString', {'Rename which condition?', 'This action is applied to all runs and cannot be undone!'},...
+        'SelectionMode', 'single', 'ListString', conditions);
+if isempty(index)
+   return 
+else
+   idx = index; 
+end
+oldname = conditions{idx};
+
 newname = CreateNewConditionName();
 if isempty(newname)
     return;
 end
-
-% Get the name of the condition you want to rename
-conditions = get(handles.popupmenuConditions, 'string');
-idx = get(handles.popupmenuConditions, 'value');
-oldname = conditions{idx};
 
 % NOTE: for now any renaming of a condition is global to avoid complexity
 % in keeping the condition colors straight. Therefore we comment out the 
@@ -271,9 +281,7 @@ end
 stimEdit.locDataTree.groups(iG).SetConditions();
 set(handles.popupmenuConditions, 'string', stimEdit.locDataTree.groups(iG).GetConditions());
 Display(handles);
-% if ~isempty(stimEdit.updateParentGui)
-%     stimEdit.updateParentGui('StimEditGUI');
-% end
+
 figure(handles.figure);
 
 
@@ -585,7 +593,7 @@ if isempty(iS_lst)
         CondName = CondNamesGroup{menu_choice};
     end
     %%%% Add new stim to currElem's condition
-    stimEdit.dataTreeHandle.currElem.AddStims(tc(tPts_idxs_select), CondName);
+    StimEditGUI_AddStims(CondName, tc(tPts_idxs_select));
     stimEdit.status = 1;
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -978,9 +986,11 @@ set(handles.popupmenuConditions, 'string', sort(stimEdit.dataTreeHandle.currElem
 conditions = get(handles.popupmenuConditions, 'string');
 idx = get(handles.popupmenuConditions, 'value');
 if ~isempty(conditions)
+    enableDisableButtons(handles, 'on')
     set(handles.popupmenuConditions, 'enable', 'on');
     condition = conditions{idx};
 else  % If no stim conditions at all, disable display and prevent crash
+    enableDisableButtons('off')
     conditions = {' '};
     condition = ' ';
     set(handles.popupmenuConditions, 'enable', 'off');
@@ -1015,9 +1025,7 @@ end
 
 labels = stimEdit.dataTreeHandle.currElem.GetStimDataLabels(icond);
 stimdata = stimEdit.dataTreeHandle.currElem.GetStimData(icond);
-if length(labels) ~= size(stimdata,2)
-    return;
-end
+
 if ~isempty(stimdata)
     [tpts, idx] = sort(stimdata(:,1));
     stimdata_sorted = stimdata(idx,:);
@@ -1031,40 +1039,58 @@ set(handles.uitableStimInfo, ...
     'ColumnName', labels, ...
     'ColumnEditable', editable);
 
+% --------------------------------------------------------------------
+function StimEditGUI_AddStims(condition, onsets, duration, amplitude)
+global stimEdit
+% Adds stims at onsets to given condition with amplitude and duration
+% from dialog
+stimdata = stimValueDialog();
+if isempty(stimdata)
+   return 
+end
+dur = stimdata(1);
+amp = stimdata(2);
+if length(stimdata) > 2
+    other = stimdata(3:end);
+else
+    other = [];
+end
+stimEdit.dataTreeHandle.currElem.AddStims(onsets, condition, dur, amp, other);
 
 
 % --------------------------------------------------------------------
-function [onsets, aux_filt, time_filt] = StimEditGUI_StimFromAux(currElemAux, thresh, lpf_len, rising_edge)
+function [onsets, aux_filt_t, time_filt_t] = StimEditGUI_StimFromAux(currElemAux, thresh, lpf_len, rising_edge)
 T = currElemAux.time(2) - currElemAux.time(1);  % Aux sample period
 moving_avg_filter = ones(lpf_len,1) / lpf_len;
 auxMax = max(currElemAux.dataTimeSeries);
 auxMin = min(currElemAux.dataTimeSeries);
 % Apply filter
 if lpf_len > 0
-   aux_filt = filter(moving_avg_filter, 1, currElemAux.dataTimeSeries);
-   time_filt = currElemAux.time - T*(lpf_len/2);  % Remove group delay induced by LPF
-   aux_filt(aux_filt > auxMax) = auxMax;
-   aux_filt(aux_filt < auxMin) = auxMin;
+   aux_filt_t = filter(moving_avg_filter, 1, currElemAux.dataTimeSeries);
+   time_filt_t = currElemAux.time - T*(lpf_len/2);  % Remove group delay induced by LPF
+   aux_filt_t(aux_filt_t > auxMax) = auxMax;
+   aux_filt_t(aux_filt_t < auxMin) = auxMin;
 else
-   aux_filt = currElemAux.dataTimeSeries;
-   time_filt = currElemAux.time;
+   aux_filt_t = currElemAux.dataTimeSeries;
+   time_filt_t = currElemAux.time;
 end
 onsets = [];
 last = currElemAux.dataTimeSeries(1);
 % Naive search for threshold crossings
-for i = (lpf_len + 1):length(time_filt)  % Exclude LPF artifact
-    next = aux_filt(i);
+for i = (lpf_len + 1):length(time_filt_t)  % Exclude LPF artifact
+    next = aux_filt_t(i);
     if rising_edge
         if ((last <= thresh) && (next > thresh))
-           onsets = [onsets, time_filt(i) + currElemAux.timeOffset];  %#ok<*AGROW>
+           onsets = [onsets, time_filt_t(i) + currElemAux.timeOffset];  %#ok<*AGROW>
         end
     else
         if ((last >= thresh) && (next < thresh))
-            onsets = [onsets, time_filt(i) + currElemAux.timeOffset];
+            onsets = [onsets, time_filt_t(i) + currElemAux.timeOffset];
         end
     end
-    last = aux_filt(i);
+    last = aux_filt_t(i);
 end
+return
 
 
 % --------------------------------------------------------------------
@@ -1087,16 +1113,13 @@ currAux = stimEdit.dataTreeHandle.currElem.acquired.aux(iaux);
                                          handles.editThresh.Value,...          % Stim threshold
                                          handles.editLPF.Value,...             % LPF window width
                                          handles.radiobuttonRisingEdge.Value); % rising vs falling
-% Add stim to dataTree element
-cond = char(handles.listboxAuxSelect.String(handles.listboxAuxSelect.Value));
+tc = stimEdit.dataTreeHandle.currElem.GetTime();
+onsets_idx = [];
 for i = 1:length(onsets)
-    stimEdit.dataTreeHandle.currElem.AddStims(onsets(i), cond);
+   onsets_idx = [onsets_idx, find(abs(tc - onsets(i)) < 1e-2)];
 end
-iG = stimEdit.locDataTree.GetCurrElemIndexID();
-stimEdit.locDataTree.groups(iG).SetConditions();
-% if ~isempty(stimEdit.updateParentGui)
-%     stimEdit.updateParentGui('StimEditGUI', 'close');
-% end
+AddEditDelete(onsets_idx);
+
 Display(handles);
     
 
@@ -1163,21 +1186,6 @@ hObject.Value = floor(str2double(hObject.String));
 
 
 % --------------------------------------------------------------------
-function editDuration_Callback(hObject, eventdata, handles)
-val = str2double(hObject.String);
-if isnan(val)
-   set(hObject ,'String', hObject.Value);
-else
-    hObject.Value = val;
-end
-
-
-% --------------------------------------------------------------------
-function editDuration_CreateFcn(hObject, eventdata, handles)
-val = str2double(hObject.String);
-
-
-% --------------------------------------------------------------------
 function menuItemSyncBrowsing_Callback(hObject, eventdata, handles)
 global stimEdit
 if strcmpi(get(hObject, 'checked'), 'off')
@@ -1190,10 +1198,9 @@ else
 end
 
 
-
 % --------------------------------------------------------------------
 function uitableStimInfo_ButtonDownFcn(hObject, eventdata, handles)
-
+% Pass
 
 
 % --------------------------------------------------------------------
@@ -1202,9 +1209,9 @@ global stimEdit
 conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
 icond = GetConditionIdxFromPopupmenu(conditions, handles);
 name = 'Rename columns';
+rename_prompt = {};
+defaults = {};
 if size(stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).data, 2) > 3
-    rename_prompt = {};
-    defaults = {};
     for i = 4:length(handles.uitableStimInfo.ColumnName)
         rename_prompt{end+1} = ['Rename column ', num2str(i)];
         defaults{end+1} = handles.uitableStimInfo.ColumnName{i};
@@ -1213,7 +1220,96 @@ if size(stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).d
     options.WindowStyle = 'modal';
     options.Interpreter = 'tex';
     A = inputdlg(rename_prompt, name, 1, defaults, options);
+    for i = 1:length(A)
+        stimEdit.dataTreeHandle.currElem.RenameStimColumn(defaults{i}, A{i});
+    end
+    Display(handles);
 else
     errordlg('There are no additional data columns to rename!', 'No columns to rename')
 end
+
+% --------------------------------------------------------------------
+function datarow = stimValueDialog()
+global stimEdit
+datarow = [];
+name = 'Values for new stims';
+labels = stimEdit.handles.uitableStimInfo.ColumnName(2:end);  % First entry is onset
+defaults = {'10.0', '1.0'};
+if length(labels) > 2
+    for i = 1:length(labels) - 2
+            defaults{end+1} = '0.0';
+    end
+end
+options.Resize = 'on';
+options.WindowStyle = 'modal';
+options.Interpreter = 'tex';
+while isempty(datarow)
+    A = inputdlg(labels, name, 1, defaults, options);
+    if isempty(A)
+       return; 
+    end
+    for i = 1:length(A)
+        val = str2num(A{i}); %#ok<ST2NM>
+        if ~isempty(val)
+            datarow = [datarow, val];
+        else
+           datarow = [];
+           break;
+        end
+    end
+end
+
+% --------------------------------------------------------------------
+function pushbuttonDeleteColumn_Callback(hObject, eventdata, handles)
+global stimEdit
+conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
+icond = GetConditionIdxFromPopupmenu(conditions, handles);
+if size(stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).data, 2) > 3
+    options.Resize = 'on';
+    options.WindowStyle = 'modal';
+    options.Interpreter = 'tex';
+    colDataLabels = handles.uitableStimInfo.ColumnName(4:end);
+    [index, tf] = listdlg('PromptString', {'Delete which column?', '(This cannot be undone)'},...
+        'SelectionMode', 'single', 'ListString', colDataLabels);
+    idx = 3 + index;
+    if length(idx) > 1
+       return 
+    end
+    stimEdit.dataTreeHandle.currElem.DeleteStimColumn(idx);
+    Display(handles);
+else
+    errordlg('There are no additional data columns to delete!', 'No columns to delete')
+end
+
+
+% --------------------------------------------------------------------
+function enableDisableButtons(handles, enable)
+handles.pushbuttonAddColumn.Enable = enable;
+handles.pushbuttonDeleteColumn.Enable = enable;
+handles.pushbuttonEditColumns.Enable = enable;
+
+
+% --------------------------------------------------------------------
+function pushbuttonAddColumn_Callback(hObject, eventdata, handles)
+global stimEdit
+conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
+icond = GetConditionIdxFromPopupmenu(conditions, handles);
+options.Resize = 'on';
+options.WindowStyle = 'modal';
+options.Interpreter = 'tex';
+col_idx = length(handles.uitableStimInfo.ColumnName) + 1;
+defaults = {['stimdata', num2str(col_idx)], '0.0'};
+A = inputdlg({'Column name', 'Initial column value'}, 'New column name', 1, defaults, options);
+if isempty(A)
+   return 
+end
+name = A{1};
+if isempty(A{2})
+   value = '0.0'; 
+else
+   value = str2num(A{2}); % Should be char?
+end
+stimEdit.dataTreeHandle.currElem.AddStimColumn(name, value);
+Display(handles);
+
 

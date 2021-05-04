@@ -248,7 +248,7 @@ classdef SubjClass < TreeNodeClass
             obj.outputVars.tHRFRuns{r.iRun}      = r.procStream.output.GetTHRF();
             obj.outputVars.mlActRuns{r.iRun}     = r.procStream.output.GetVar('mlActAuto');
             obj.outputVars.nTrialsRuns{r.iRun}   = r.procStream.output.GetVar('nTrials');
-            obj.outputVars.stimRuns{r.iRun}      = r.GetVar('stim');
+            obj.outputVars.stimRuns{r.iRun}      = r.procStream.output.misc.stim;
             obj.outputVars.dcRuns{r.iRun}       = r.procStream.output.GetVar('dc');
             obj.outputVars.AauxRuns{r.iRun}      = r.procStream.output.GetVar('Aaux');
             obj.outputVars.tIncAutoRuns{r.iRun}  = r.procStream.output.GetVar('tIncAuto');

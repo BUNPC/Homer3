@@ -1,16 +1,15 @@
-function status = compareDcAvg(group_h2, datatype)
+function status = compareDcAvg(group_h2, dataTree, datatype)
 global DEBUG1
 DEBUG1=0;
 
 status = 0;
-if ~exist('./groupResults.mat','file')
-    return;
-end
 if ~exist('datatype','var')
     datatype = 'dcAvg';
 end
 
-group_h3 = load('./groupResults.mat');
+dataTreeFile = [dataTree.groups(1).path, dataTree.groups(1).outputDirname, dataTree.groups(1).outputFilename];
+
+group_h3 = load(dataTreeFile);
 if isempty(group_h3)
     return;
 end

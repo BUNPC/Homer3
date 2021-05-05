@@ -66,7 +66,7 @@ s = zeros(length(groupResults_h2), 2);
 for iG=1:length(groupResults_h2)
     group_h2 = load(groupResults_h2(iG).name);
     [~, groupResults_h2(iG).pathfull] = fileparts(groupResults_h2(iG).pathfull);
-    s(iG,1) = compareDcAvg(group_h2, 'dcAvg');
+    s(iG,1) = compareDcAvg(group_h2, dataTree, 'dcAvg');
     s(iG,2) = compareProcStreams(dataTree, groupResults_h2(iG));
     
     msgs = MatchMessages(sum(s(iG,:)));

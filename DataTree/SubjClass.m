@@ -234,6 +234,19 @@ classdef SubjClass < TreeNodeClass
             
         
         % ----------------------------------------------------------------------------------
+        function CreateOutputDir(obj)
+            if ispathvalid([obj.pathOutputAlt, obj.outputDirname, obj.name])
+                return;
+            end
+            if ~ispathvalid([obj.pathOutputAlt, obj.name])
+                return;
+            end
+            mkdir([obj.pathOutputAlt, obj.outputDirname, obj.name]);
+        end
+            
+
+        
+        % ----------------------------------------------------------------------------------
         function LoadVars(obj, r, tHRF_common)
             % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
             % all runs. Use smallest tHRF as the common one.

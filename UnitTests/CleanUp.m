@@ -19,15 +19,17 @@ end
 % Clear global variables
 if start
     delete(logger)
-    logger=[];
+    logger = [];
     close all force
     fclose all;
+    reg = RegistriesClass();
+    reg.DeleteSaved();
 end
 clear DEBUG1 testidx procStreamStyle
 
-DEBUG1=[];
-testidx=[];
-procStreamStyle=[];
+DEBUG1 = [];
+testidx = [];
+procStreamStyle = [];
 QUICK_TEST = [0,1];
 
 groupFolders = FindUnitTestsFolders();

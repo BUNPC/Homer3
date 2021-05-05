@@ -374,6 +374,9 @@ classdef ConfigFileClass < FileClass
             end
             for ii=1:length(obj.sections)
                 if strcmp(obj.sections(ii).name, section)
+                    if isempty(obj.sections(ii).val)
+                        return;
+                    end
                     val = obj.sections(ii).val{1};
                 end
             end

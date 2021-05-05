@@ -67,7 +67,7 @@ if ischar(pathname0)
     end
     
     % Add traling separator only for directory path names 
-    if isdir_private(pathname0)
+    if isdir_private(pathname0) || optionExists(options, 'dir')
         if pathname0(end) ~= '/'
             pathname0(end+1) = '/';
         end

@@ -85,7 +85,7 @@ class ProbeClass(ErrorClass):
         self.frequencies  = np.array(fid.get(location + '/frequencies'))
         self.timeDelay  = 0
         self.timeDelayWidth  = 0
-        self.momentOrder = []
+        self.momentOrders = []
         self.correlationTimeDelay = 0
         self.correlationTimeDelayWidth = 0
         self.sourceLabels = np.array(fid.get(location + '/sourceLabels'))
@@ -107,7 +107,7 @@ class ProbeClass(ErrorClass):
         sys.stdout.write('  frequencies = %s\n'% self.frequencies)
         sys.stdout.write('  timeDelay = %s\n'% self.timeDelay)
         sys.stdout.write('  timeDelayWidth = %s\n'% self.timeDelayWidth)
-        sys.stdout.write('  momentOrder = %s\n'% self.momentOrder)
+        sys.stdout.write('  momentOrders = %s\n'% self.momentOrders)
         sys.stdout.write('  correlationTimeDelay = %s\n'% self.correlationTimeDelay)
         sys.stdout.write('  correlationTimeDelayWidth = %s\n'% self.correlationTimeDelayWidth)
         sys.stdout.write('  sourceLabels = %s\n'% self.sourceLabels)

@@ -140,21 +140,33 @@ data_y.time = foo_t;
 data_y.measurementList = dcRuns{1}.measurementList;
 
 % concatenate stims
-stim.name = stimRuns{1}.name;
-
 for j = 1:size(stimRuns{1},2) % across conditions
+    
+    if isempty(stimRuns{1}(j).data) == 1
+        stimRuns{1}(j).data = [0 0 0];
+        stimRuns{1}(j).states = [0 0];
+    end
     
     foo_stim_data = stimRuns{1}(j).data; % get data from the first run
     foo_stim_states = stimRuns{1}(j).states;
     
     for i = 1:size(dcRuns,2)-1  % across runs: concatenate data from other runs to first run
+       
+        if isempty(stimRuns{i+1}(j).data) == 1
+            stimRuns{i+1}(j).data = [0 0 0];
+            stimRuns{i+1}(j).states = [0 0];
+        end  
+        
         % update time on stim object
         stimRuns{i+1}(j).data(:,1) = stimRuns{i+1}(j).data(:,1) + max_t(i) + dt_foo;
         stimRuns{i+1}(j).states(:,1) = stimRuns{i+1}(j).states(:,1) + max_t(i) + dt_foo;
         % concatenate
         foo_stim_data = cat(1,foo_stim_data,stimRuns{i+1}(j).data);
         foo_stim_states = cat(1,foo_stim_states,stimRuns{i+1}(j).states);
+        
     end
+    
+    stim(j).name = stimRuns{1}(j).name;
     stim(j).data =  foo_stim_data;
     stim(j).states =  foo_stim_states;
     

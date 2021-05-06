@@ -33,13 +33,13 @@
 % idxBasis - this specifies the type of basis function to use for the HRF
 %            1. a consecutive sequence of gaussian functions
 %            2. a modified gamma function convolved with a square-wave of
-%                duration T. Set T=0 for no convolution.
+%                duration given by the stim marker.
 %                The modified gamma function is
 %                (exp(1)*(t-tau).^2/sigma^2) .* exp(-(tHRF-tau).^2/sigma^2)
 %            3. a modified gamma function and its derivative convolved
-%                with a square-wave of duration T. Set T=0 for no convolution.
+%                with a square-wave of duration given by the stim marker.
 %			 4.  GAM function from 3dDeconvolve AFNI convolved with
-%                a square-wave of duration T. Set T=0 for no convolution.
+%                a square-wave of duration given by the stim marker.
 % 			         (t/(p*q))^p * exp(p-t/q)
 %                Defaults: p=8.6 q=0.547
 %                The peak is at time p*q.  The FWHM is about 2.3*sqrt(p)*q.
@@ -47,15 +47,14 @@
 %               idxBasis=1 [stdev step ~ ~ ~ ~] where stdev is the width of the
 %                  gaussian and step is the temporal spacing between
 %                  consecutive gaussians
-%               idxBasis=2. [tau sigma T] applied to both HbO and HbR
-%                  or [tau1 sigma1 T1 tau2 sigma2 T2]
+%               idxBasis=2. [tau sigma] applied to both HbO and HbR
+%                  or [tau1 sigma1 tau2 sigma2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
-%                  default: 0.1 3.0 10.0 1.8 3.0 10.0
-%               idxBasis=3 [tau sigma T] applied to both HbO and HbR
-%                  or [tau1 sigma1 T1 tau2 sigma2 T2]
+%               idxBasis=3 [tau sigma] applied to both HbO and HbR
+%                  or [tau1 sigma1 tau2 sigma2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
-%               idxBasis=4 [p q T] applied to both HbO and HbR
-%                  or [p1 q1 T1 p2 q2 T2]
+%               idxBasis=4 [p q] applied to both HbO and HbR
+%                  or [p1 q1 p2 q2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
 % rhoSD_ssThresh - max distance for a short separation measurement. Set =0
 %          if you do not want to regress the short separation measurements.

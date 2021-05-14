@@ -653,9 +653,10 @@ for iBlk=1:length(data_y)
             fooAt = zeros(size(At,1),naux*size(dcRuns,2));
             
             fooAt(1:size(dcRuns{1}.dataTimeSeries,1),1:naux) =  At(1:size(dcRuns{1}.dataTimeSeries,1),size(dA,2)+1:end);
-            
+            fooAtsz = size(dcRuns{1}.dataTimeSeries,1);
             for i = 1:size(dcRuns,2)-1
-                fooAt(size(dcRuns{i}.dataTimeSeries,1)+1:size(dcRuns{i}.dataTimeSeries,1)+size(dcRuns{i+1}.dataTimeSeries,1),naux+1:naux*(i+1)) =  At(size(dcRuns{i}.dataTimeSeries,1)+1:size(dcRuns{i}.dataTimeSeries,1)+size(dcRuns{i+1}.dataTimeSeries,1),size(dA,2)+1:end);
+                fooAt(fooAtsz+1:fooAtsz+size(dcRuns{i+1}.dataTimeSeries,1),i*naux+1:naux*(i+1)) =  At(fooAtsz+1:fooAtsz+size(dcRuns{i+1}.dataTimeSeries,1),size(dA,2)+1:end);
+                fooAtsz = fooAtsz + size(dcRuns{i+1}.dataTimeSeries,1);
             end
             
             At = [At(:,1:size(dA,2)) fooAt];

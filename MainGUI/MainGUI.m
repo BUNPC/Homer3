@@ -238,7 +238,7 @@ if maingui.dataTree.IsEmpty()
     return;
 end
 if ~isempty(maingui.unitTest)
-    maingui.dataTree.ResetAll();
+    maingui.dataTree.ResetAllGroups();
 end
 
 InitGuiControls(handles);
@@ -372,12 +372,20 @@ if ~isempty(handles)
         set(handles.listboxGroupTree, 'position', [pos1(1) pos2(2) pos1(3) .98-pos2(2)]);
     end
 end
-listboxGroupTree_Callback([], [1,1,1], handles)
+
+% Select initial data tree processing element in the 'Current Processing Element' panel
+idx = [1,1,1];
+listboxGroupTree_Callback([], idx, handles)
+
+% Update GUI Current Element panel proc level radio button to reflect 
+% processing level the selected element
+proclevel = GetProclevel(handles);
+SetGuiProcLevel(handles, idx(1), idx(2), idx(3), proclevel);
 
 
 
 % --------------------------------------------------------------------
-function eventdata = uipanelProcessingType_SelectionChangeFcn(hObject, eventdata, handles)  %#ok<DEFNU>
+function eventdata = uipanelProcessingType_SelectionChangeFcn(hObject, eventdata, handles)
 global maingui
 
 if isempty(hObject)
@@ -438,7 +446,7 @@ if isempty(iList==0)
 end
 
 % If evendata isn't empty then caller is trying to set currElem
-if isa(eventdata, 'matlab.ui.eventdata.ActionData')
+if isa(eventdata, 'matlab.ui.eventdata.ActionData') || isempty(eventdata)
     
     % Get the [iGroup,iSubj,iRun] mapping of the clicked lisboxFiles entry
     [iGroup, iSubj, iRun] = MapList2GroupTree(iList);
@@ -462,6 +470,7 @@ elseif ~isempty(eventdata)
     set(hObject,'value', iList);
     
 end
+
 Display(handles, hObject0);
 
 

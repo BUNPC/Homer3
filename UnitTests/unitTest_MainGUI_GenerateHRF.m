@@ -34,7 +34,7 @@ try
     ut.callbacks.pushbuttonCalcProcStream(ut.handles.pushbuttonCalcProcStream, [], ut.handles);    
     pause(3);
         
-    maingui.dataTree.ResetAll();
+    maingui.dataTree.ResetAllGroups();
     
 catch
     

@@ -88,7 +88,7 @@ end
 logger.Write('\n');
 logger.Close('unitTest_DefaultProcStream');
 
-dataTree.ResetAll();
+dataTree.ResetAllGroups();
 
 cd(currpath);
 

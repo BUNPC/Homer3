@@ -98,7 +98,7 @@ end
 logger.Write('\n');
 logger.Close('unitTest_MotionArtifact_STDEV');
 
-dataTree.ResetAll();
+dataTree.ResetAllGroups();
 
 cd(currpath);
 

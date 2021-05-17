@@ -537,8 +537,24 @@ classdef GroupClass < TreeNodeClass
             if isempty(obj)
                 return;
             end
-            for ii=1:length(obj.subjs)
+            for ii = 1:length(obj.subjs)
                 if ~obj.subjs(ii).IsEmpty()
+                    b = false;
+                    break;
+                end
+            end
+        end
+
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsEmptyOutput(obj)
+            b = true;
+            if isempty(obj)
+                return;
+            end
+            for ii = 1:length(obj.subjs)
+                if ~obj.subjs(ii).IsEmptyOutput()
                     b = false;
                     break;
                 end
@@ -600,7 +616,7 @@ classdef GroupClass < TreeNodeClass
             
             % If this group has been loaded, then no need to go through the whole Load function. Instead 
             % default to the generic TreeNodeClass.Load method.
-            if isempty(findstr('reload', options)) && ~obj.procStream.IsEmpty()
+            if ~optionExists(options, {'init','reload'})
                 err = obj.Load@TreeNodeClass();
                 return;
             end
@@ -632,10 +648,9 @@ classdef GroupClass < TreeNodeClass
                 obj.Copy(group, 'conditional');
                 close(hwait);
             else
-                group = obj; %#ok<NASGU>
                 if exist([obj.path, obj.outputDirname, obj.outputFilename],'file')
                     obj.logger.Write(sprintf('Warning: This folder contains old version of processing results. Will move it to *_old.mat\n'));
-                    [~,outputFilename] = fileparts(obj.outputFilename);
+                    [~,outputFilename] = fileparts(obj.outputFilename); %#ok<*PROPLC>
                     movefile([obj.path, obj.outputDirname, obj.outputFilename], [obj.path, obj.outputDirname, outputFilename, '_old.mat'])
                 end
                 obj.Save();
@@ -657,7 +672,7 @@ classdef GroupClass < TreeNodeClass
                 obj.logger.Write(sprintf('Auto-saving processing results ...\n'), obj.logger.ProgressBar(), hwait);
             end
             
-            group = GroupClass(obj);
+            group = GroupClass(obj); %#ok<NASGU>
             try 
                 obj.CreateOutputDir();
                 save([obj.pathOutputAlt, obj.outputDirname, obj.outputFilename], 'group');

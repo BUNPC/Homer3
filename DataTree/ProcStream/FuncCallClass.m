@@ -31,7 +31,7 @@ classdef FuncCallClass < handle
             %        argOut.str: 'dod'
             %         argIn.str: '(dod,t'
             %          paramIn: [1x2 ParamClass]
-            %             help: '  Perform a bandpass filter�'
+            %             help: '  Perform a bandpass filter…'
             %
             obj.name       = '';
             obj.nameUI     = '';
@@ -256,7 +256,7 @@ classdef FuncCallClass < handle
             %        argOut: 'dod'
             %         argIn.str: '(dod,t'
             %       paramIn: [1x2 ParamClass]
-            %          help: '  Perform a bandpass filter�'
+            %          help: '  Perform a bandpass filter…'
             %   
             obj.err = 0;            
             if nargin<2
@@ -621,6 +621,8 @@ classdef FuncCallClass < handle
             nbytes = sum(nbytes);
         end
 
+
+
         % ----------------------------------------------------------------------------------        
         function errmsg = CheckParams(obj)
             errmsg = '';
@@ -643,6 +645,8 @@ classdef FuncCallClass < handle
             end
         end
         
+
+
         % ----------------------------------------------------------------------------------        
         function val = GetVar(obj, name)
             val = [];

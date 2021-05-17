@@ -98,7 +98,7 @@ end
 logger.Write('\n');
 logger.Close('unitTest_BandpassFilt_LPF');
 
-dataTree.ResetAll();
+dataTree.ResetAllGroups();
 
 cd(currpath);
 

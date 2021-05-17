@@ -370,8 +370,23 @@ classdef SubjClass < TreeNodeClass
             if isempty(obj)
                 return;
             end
-            for ii=1:length(obj.runs)
+            for ii = 1:length(obj.runs)
                 if ~obj.runs(ii).IsEmpty()
+                    b = false;
+                    break;
+                end
+            end
+        end
+
+
+        % ----------------------------------------------------------------------------------
+        function b = IsEmptyOutput(obj)
+            b = true;
+            if isempty(obj)
+                return;
+            end
+            for ii = 1:length(obj.runs)
+                if ~obj.runs(ii).IsEmptyOutput()
                     b = false;
                     break;
                 end

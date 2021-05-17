@@ -10,7 +10,7 @@ classdef ConfigFileClass < FileClass
         % ----------------------------------------------------
         function obj = ConfigFileClass(filename0)
             obj.linestr = '';
-            obj.sections = struct('name','','val','','param','');
+            obj.sections = struct('name','','val',{{}},'param',{{}});
             obj.filename = '';
             
             % Error checks
@@ -333,10 +333,8 @@ classdef ConfigFileClass < FileClass
             while jj<length(obj.linestr) && (obj.linestr(jj)~=newline || obj.linestr(jj)~=sprintf('\r'))
                 jj=jj+1;
             end
-            if ii == jj && strcmp(obj.linestr(ii),'#')
-                param = cell(1,1);
-            elseif ii == jj
-                param = [];
+            if ii == jj
+                param = {};
             else
                 param = strtrim_improve(obj.linestr(ii:jj));
                 param = split(param,', ');

@@ -173,24 +173,28 @@ classdef ProcResultClass < handle
                                 
                 rootdir = '';
                 if ispathvalid(pname)
-                    rootdir = [filesepStandard(pname), filesepStandard(fname)];
+                    rootdir = [filesepStandard(pname), filesepStandard(fname, 'nameonly')];
                 elseif ispathvalid(filename)
                     rootdir = filesepStandard(filename);
                 end
                 
                 % Set the containing folder name 
-                if ispathvalid(['./', rootdir, fname, '.mat'], 'file')
-                    pname = ['./', rootdir];
-                elseif ispathvalid(['../', rootdir, fname, '.mat'], 'file')
-                    pname = ['../', rootdir];
-                else
-                    pname = ['./', rootdir]; 
+                if ispathvalid(['./', rootdir])
+                    rootdir = ['./', rootdir];
+                elseif ispathvalid(['../', rootdir])
+                    rootdir = ['../', rootdir];                    
+                end                
+                if ispathvalid([rootdir, fname, '.mat'], 'file')
+                    pname = rootdir;
                 end
                 pname = filesepStandard(pname);
                 
             elseif ispathvalid(pname)
-                
-                pname = ['./', filesepStandard(pname)];
+                if ispathvalid(['./', filesepStandard(pname)])
+                    pname = ['./', filesepStandard(pname)];
+                else
+                    pname = [filesepStandard(pname)];
+                end
 
             end
             

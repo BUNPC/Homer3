@@ -690,7 +690,7 @@ if isempty(maingui.unitTest)
 end
 
 % restart
-MainGUI(pathnm, fmt, unitTest, 'userargs');
+MainGUI(filesepStandard(pathnm), fmt, unitTest, 'userargs');
 
 
 

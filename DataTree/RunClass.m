@@ -89,7 +89,7 @@ classdef RunClass < TreeNodeClass
             if isempty(obj)
                 return;
             end
-            err = obj.procStream.Load(obj.GetFilename);            
+            err = obj.procStream.Load([obj.path, obj.GetFilename]);
         end        
         
 

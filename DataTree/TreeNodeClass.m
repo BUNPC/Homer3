@@ -640,7 +640,7 @@ classdef TreeNodeClass < handle
                 return
             end
             err = obj.LoadSubBranch(); %#ok<*MCNPN>
-            obj.procStream.Load(obj.GetFilename);
+            obj.procStream.Load([obj.path, obj.GetFilename]);
         end
         
         

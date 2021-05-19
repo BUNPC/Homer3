@@ -216,7 +216,7 @@ classdef SubjClass < TreeNodeClass
             if isempty(obj)
                 return;
             end
-            err1 = obj.procStream.Load(obj.GetFilename);
+            err1 = obj.procStream.Load([obj.path, obj.GetFilename]);
             err2 = obj.runs(1).Load();
             if err1==0 && err2==0
                 err = 0;

@@ -251,7 +251,7 @@ for iBlk=1:length(data_y)
                    pulse_duration = round(durations(i) / dt); 
                 end
                 pulse = (amplitudes(i) / pulse_duration) * ones(pulse_duration, 1);
-                onset(starts(i):starts(i) + pulse_duration - 1, iCond) = pulse;
+                onset(starts(i):starts(i) + pulse_duration - 1, iCond) = onset(starts(i):starts(i) + pulse_duration - 1, iCond) + pulse;
             end
         end
     end

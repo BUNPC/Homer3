@@ -196,7 +196,7 @@ classdef ChildGuiClass < handle
             pc = get(obj.handles.figure, 'position');
 
             % To work correctly for mutiple sceens, Ps must be sorted in ascending order
-            ps = sort(ps,'ascend');            
+            ps = sort(ps,'ascend');
             
             % Find which monitor parent gui is in
             for ii = 1:size(ps,1)
@@ -204,7 +204,13 @@ classdef ChildGuiClass < handle
                     break;
                 end
             end
-                        
+            
+            % Fix bug: if multiple monitors left-to-right physical arrangement does 
+            % not match left-to-right virtual setting then subtract 1 from monitor number. 
+            if ps(1)<0
+                ii = ii-1;
+            end
+            
             % Re-position parent and child guis
             set(hp, 'position', [ii-pp(3), pp(2), pp(3), pp(4)])
             set(obj.handles.figure, 'position', [ii-1, pc(2), pc(3), pc(4)])

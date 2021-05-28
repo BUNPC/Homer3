@@ -161,8 +161,8 @@ for j = 1:size(stimRuns{1},2) % across conditions
         if stimRuns{i+1}(j).data(1,2) ~= 0
             foo1 = stimRuns{i+1}(j).data;
             foo2 = stimRuns{i+1}(j).states;
-            foo1(1,1) = stimRuns{i+1}(j).data(:,1) + max_t(i) + dt_foo;
-            foo2(1,1) = stimRuns{i+1}(j).states(:,1) + max_t(i) + dt_foo;
+            foo1(:,1) = stimRuns{i+1}(j).data(:,1) + max_t(i) + dt_foo;
+            foo2(:,1) = stimRuns{i+1}(j).states(:,1) + max_t(i) + dt_foo;
             % concatenate
             foo_stim_data = cat(1,foo_stim_data,foo1);
             foo_stim_states = cat(1,foo_stim_states,foo2);

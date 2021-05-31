@@ -1,29 +1,34 @@
 function dotmfiles = findDotMFiles(subdir, exclList)
 
+if ~exist('subdir','var')
+    subdir = filesepStandard(pwd);
+end
 if ~exist('exclList','var')
     exclList = {};
 end
 
-dotmfiles = {};
-currdir = pwd;
+if ~iscell(exclList)
+    exclList = {exclList};
+end
 
-if exist(subdir, 'dir')~=7
+dotmfiles = {};
+
+if ~ispathvalid(subdir, 'dir')
     fprintf('Warning: folder %s doesn''t exist under %s\n', subdir, pwd);
     return;
 end
-cd(subdir);
+
 
 % If current subjdir is in the exclList then go back to curr dir and exit
-subdirFullpath = pwd;
+subdirFullpath = filesepStandard(fullpath(subdir));
 
 for ii=1:length(exclList)
     if ~isempty(findstr(exclList{ii}, subdirFullpath))
-        cd(currdir);
         return;
     end
 end
 
-files = dir('*');
+files = dir([subdirFullpath, '*']);
 if isempty(files)
     return;
 end
@@ -39,12 +44,11 @@ for ii=1:length(files)
         if exclFlag==true
             continue;
         end
-        dotmfiles{end+1} = filesepStandard(sprintf('%s%s%s', pwd, filesep, files(ii).name), 'nameonly');
+        dotmfiles{end+1,1} = filesepStandard(sprintf('%s%s%s', subdirFullpath, files(ii).name), 'nameonly');
     elseif files(ii).isdir && ~iscurrdir(files(ii)) && ~isparentdir(files(ii))
-        dotmfiles = [dotmfiles, findDotMFiles(files(ii).name, exclList)];
+        dotmfiles = [dotmfiles; findDotMFiles([subdirFullpath, files(ii).name], exclList)];
     end
 end
-cd(currdir);
 
 
 

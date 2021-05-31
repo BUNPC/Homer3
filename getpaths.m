@@ -38,7 +38,7 @@ if options.conflcheck
     % appmainfunc = {'Homer2_UI.m','Homer3.m','AtlasViewerGUI.m','brainScape.m'};
     % Remove AtlasViewer from list of conflicting workspaces needed to be removed
     % in preparation for coexistance in one matlab session
-    appmainfunc = {'Homer2_UI.m','Homer3.m','brainScape.m'};
+    appmainfunc = {'Homer2_UI.m','Homer3.m','brainScape.m','ResolveCommonFunctions.m'};
         
     kk=1;
     wsidx = [];
@@ -67,7 +67,7 @@ if options.conflcheck
                     paths_excl_str{kk} = [paths_excl_str{kk}, delimiter, paths_excl{jj}];
                 end
             end
-            rmpath(paths_excl_str{kk});
+            removePaths(paths_excl_str{kk}, wspaths{1,1});
             kk=kk+1;
             
         end
@@ -88,5 +88,16 @@ if options.conflcheck
         paths_excl_str{wsidx} = celltmp;        
     end
     
+end
+
+
+
+
+% ---------------------------------------------------------------
+function removePaths(paths, wspace)
+
+rmpath(paths);
+if exist([pwd, '/Utils'], 'dir')==7
+    addpath([pwd, '/Utils'], '-end');
 end
 

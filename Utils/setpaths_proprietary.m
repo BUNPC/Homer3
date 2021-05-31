@@ -1,4 +1,4 @@
-function setpaths_proprietary()
+function setpaths_proprietary(~)
 
 r = checkToolboxes('Homer3');
 

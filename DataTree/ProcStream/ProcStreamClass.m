@@ -715,7 +715,7 @@ classdef ProcStreamClass < handle
             if ~exist('type', 'var') || isempty(type)
                 type = 'run';
             end
-            versionstamp = sprintf('%% %s\n', MainGUIVersion('exclpath'));
+            versionstamp = sprintf('%% \n');
 
             % First read in and parse existing file contents
             if ~exist(fname, 'file')
@@ -1159,7 +1159,7 @@ classdef ProcStreamClass < handle
         % ----------------------------------------------------------------------------------
         function val = fcallStrEncodedGroup(obj, init)
             persistent v;
-            if exist('init','var') && strcmp(init,'init')
+            if exist('init','var') && strcmp(init,'init') && ~obj.reg.IsEmpty
                 iG = obj.reg.igroup;
                 suffix = obj.getDefaultProcStream();
                 tmp = {...
@@ -1185,7 +1185,7 @@ classdef ProcStreamClass < handle
         % ----------------------------------------------------------------------------------
         function val = fcallStrEncodedSubj(obj, init)
             persistent v;
-            if exist('init','var') && strcmp(init,'init')
+            if exist('init','var') && strcmp(init,'init') && ~obj.reg.IsEmpty
                 iS = obj.reg.isubj;
                 suffix = obj.getDefaultProcStream();
                 tmp = {...
@@ -1211,7 +1211,7 @@ classdef ProcStreamClass < handle
         % ----------------------------------------------------------------------------------
         function val = fcallStrEncodedRun(obj, init)
             persistent v;
-            if exist('init','var') && strcmp(init,'init')
+            if exist('init','var') && strcmp(init,'init') && ~obj.reg.IsEmpty
                 iR = obj.reg.irun;
                 suffix = obj.getDefaultProcStream();
                 tmp = {...

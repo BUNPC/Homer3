@@ -2,6 +2,9 @@ function userfuncdir = FindUserFuncDir(obj)
 userfuncdir = {};
 dirnameApp = getAppDir();
 
+if ~ispathvalid([dirnameApp, 'FuncRegistry/UserFunctions/'])
+    return;
+end
 userfuncdir{1} = [dirnameApp, 'FuncRegistry/UserFunctions/'];
 dirs = dir([userfuncdir{1}, '*']);
 for ii = 1:length(dirs)

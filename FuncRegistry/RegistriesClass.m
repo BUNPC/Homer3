@@ -40,7 +40,9 @@ classdef RegistriesClass < handle
 
             % Get the parameter items from config file relevant to this class
             obj.userfuncdir = FindUserFuncDir(obj);
-            
+            if isempty(obj.userfuncdir)
+                return
+            end
             if strcmp(mode, 'empty')
                 return;
             end

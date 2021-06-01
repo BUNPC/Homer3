@@ -125,7 +125,7 @@ classdef GroupClass < TreeNodeClass
                 return;
             end
             verstr = version2string(obj.version);
-            obj.versionStr = sprintf('%s: GroupClass v%s',  MainGUIVersion('exclpath'), verstr);
+            obj.versionStr = sprintf('GroupClass v%s', verstr);
         end
         
         

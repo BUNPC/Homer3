@@ -212,7 +212,7 @@ if length(wspaths)>1
     end
 end
 
-if exist([wspaths{1}, '/Utils/setpaths_proprietary.m'],'file')
+if exist([pwd, '/Utils/setpaths_proprietary.m'],'file')
     setpaths_proprietary(options);
 end
 

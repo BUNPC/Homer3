@@ -788,25 +788,31 @@ for iBlk=1:length(data_y)
     beta_blks{iBlk} = beta;
     yR_blks{iBlk}   = yR;
     
-    % stats struct
-    if glmSolveMethod == 1 %  for OLS only for now
-        % GLM stats for each condition 
+   % stats struct
+    if glmSolveMethod == 1 % for OLS
+        % GLM stats for each condition
+        if exist('tval')
         hmrstats.beta_label = beta_label;
         hmrstats.tval = tval;
         hmrstats.pval = pval;
         hmrstats.ml = ml;
-        % GLM stats for contrast between conditions, if c_vector exists
-        if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond) && nCond>1
-            hmrstats.tval_contrast = tval_contrast;
-            hmrstats.pval_contrast = pval_contrast;
-            hmrstats.contrast = c_vector;
         end
-    elseif glmSolveMethod == 2 %  for AR 
-                % GLM stats for each condition 
+    else                   % for iWLS
+        if exist('tstat')
         hmrstats.beta_label = beta_label;
-        hmrstats.tval = tval;
+        hmrstats.tval = tstat;
         hmrstats.pval = pval;
-        hmrstats.ml = ml;        
+        hmrstats.ml = ml;
+        end
+    end
+    
+    % GLM stats for contrast between conditions, if c_vector exists
+    if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond) && nCond>1
+        if exist('tval_contrast')
+        hmrstats.tval_contrast = tval_contrast;
+        hmrstats.pval_contrast = pval_contrast;
+        hmrstats.contrast = c_vector;
+        end
     end
     
 end

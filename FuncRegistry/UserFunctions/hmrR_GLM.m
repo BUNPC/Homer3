@@ -85,7 +85,9 @@
 %           (#coefficients x HbX x #Channels x #conditions)
 % R - the correlation coefficient of the GLM fit to the data
 %     (#Channels x HbX)
-% hmrstats - outputs t and pvalues for GLM
+% hmrstats - outputs t and p values for GLM and the corresponding beta_label and ml
+%     (#Betas x #Channels x HbX) for conditions
+%     (#Channels x HbX) for contrasts 
 %
 % USAGE OPTIONS:
 % GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R, hmrstats] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)

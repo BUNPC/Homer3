@@ -38,7 +38,7 @@ if options.conflcheck
     % appmainfunc = {'Homer2_UI.m','Homer3.m','AtlasViewerGUI.m','brainScape.m'};
     % Remove AtlasViewer from list of conflicting workspaces needed to be removed
     % in preparation for coexistance in one matlab session
-    appmainfunc = {'Homer2_UI.m','Homer3.m','brainScape.m','ResolveCommonFunctions.m'};
+    appmainfunc = {'Homer2_UI.m','Homer3.m','AtlasViewerGUI.m','brainScape.m','ResolveCommonFunctions.m'};
         
     kk=1;
     wsidx = [];

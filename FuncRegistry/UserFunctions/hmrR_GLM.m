@@ -243,9 +243,9 @@ for iBlk=1:length(data_y)
         nTrials{iBlk}(iCond) = length(lst);
         % Generate basis boxcars of stim amplitude and duration
         starts = lst+nPre;
-        if ~isempty(stim(iCond).data)
-            durations = stim(iCond).data(:, 2);
-            amplitudes = stim(iCond).data(:, 3);
+        if ~isempty(stim(lstCond(iCond)).data)
+            durations = stim(lstCond(iCond)).data(:, 2);
+            amplitudes = stim(lstCond(iCond)).data(:, 3);
             for i = 1:length(starts)
                 if idxBasis == 1  % Gaussian has no duration T (yet)
                    pulse_duration = 1; 

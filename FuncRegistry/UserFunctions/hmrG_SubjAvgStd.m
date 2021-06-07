@@ -31,6 +31,6 @@ for iBlk = 1:length(ySubjAvg{1})
     for iRun = 1:length(ySubjAvg)
         dts(:,:,iRun) = ySubjAvg{iRun}(iBlk).GetDataTimeSeries();
     end
-    yAvgStdOut(iBlk).SetDataTimeSeries(std(dts,0,3));
+    yAvgStdOut(iBlk).SetDataTimeSeries(std(dts,0,3,'omitnan'));
 end
     

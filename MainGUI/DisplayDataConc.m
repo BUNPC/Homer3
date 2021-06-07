@@ -52,10 +52,10 @@ for iHb=1:length(hbType)
         set(h, 'linestyle', linestyle{hbType(iHb)});
         
         if ~isempty(dStd)
-            dHbMlStd    = squeeze(dStd( :, hbType(iHb), ch(chLst(ii)) ));
-            dHbMlStdErr = dHbMlStd./sqrt(nTrials(condition));
+            dHbMlStd    = squeeze(dStd( :, hbType(iHb), ch(chLst(ii)), condition));
+%             dHbMlStdErr = dHbMlStd./sqrt(nTrials(condition));
             idx         = [1:10:length(t)];
-            h2          = errorbar(hAxes, t(idx), dHbMl(idx), dHbMlStdErr(idx),'.');
+            h2          = errorbar(hAxes, t(idx), dHbMl(idx), dHbMlStd(idx),'.');
             set(h2,'color',linecolor(chLst(ii),:));
         end
     end

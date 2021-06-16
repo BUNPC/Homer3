@@ -134,7 +134,7 @@ classdef TreeNodeClass < handle
             objnew.type = obj.type;
             objnew.err = obj.err;
             objnew.CondNames = obj.CondNames;
-            objnew.procStream.Copy(obj.procStream, obj.GetFilename);
+            objnew.procStream.Copy(obj.procStream, obj.GetOutputFilename);
         end
         
                
@@ -144,7 +144,7 @@ classdef TreeNodeClass < handle
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2, conditional)
             if ~isempty(obj2.procStream)
-                obj.procStream.Copy(obj2.procStream, obj.GetFilename);
+                obj.procStream.Copy(obj2.procStream, obj.GetOutputFilename);
             end
             if nargin==2 || strcmp(conditional, 'unconditional')
                 obj.name = obj2.name;
@@ -158,9 +158,8 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function Reset(obj)
-            obj.procStream.output.Reset(obj.GetFilename);
-            delete([obj.path, obj.name, '*.txt']);
-            delete([obj.path, obj.name, '*.mat']);
+            obj.procStream.output.Reset(obj.GetOutputFilename);
+            delete([obj.GetOutputFilename, '*.txt']);
             delete([obj.path, 'tCCAfilter_*.txt'])
         end
         
@@ -640,7 +639,7 @@ classdef TreeNodeClass < handle
                 return
             end
             err = obj.LoadSubBranch(); %#ok<*MCNPN>
-            obj.procStream.Load([obj.path, obj.GetFilename]);
+            obj.procStream.Load([obj.path, obj.GetOutputFilename]);
         end
         
         
@@ -650,7 +649,7 @@ classdef TreeNodeClass < handle
                 return
             end
             obj.FreeMemorySubBranch();
-            obj.procStream.FreeMemory(obj.GetFilename);
+            obj.procStream.FreeMemory(obj.GetOutputFilename);
         end
         
         
@@ -670,6 +669,29 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function filename = GetOutputFilename(obj, options)
+            filename = '';
+            if isempty(obj)
+                return;
+            end
+            if ~exist('options','var')
+                options = '';
+            end
+            filename = obj.SaveMemorySpace(obj.name);
+            if isempty(filename)
+                return;
+            end
+            if optionExists(options, 'legacy')
+                outputDirname = '';
+            else
+                outputDirname = obj.outputDirname;
+            end
+            [p, f] = fileparts([outputDirname, filename]);
+            filename = [filesepStandard(p, 'nameonly:dir'), f];            
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function filename = GetFilename(obj)
             filename = '';
             if isempty(obj)
@@ -679,7 +701,6 @@ classdef TreeNodeClass < handle
             if isempty(filename)
                 return;
             end
-            filename = [obj.outputDirname, filename];
         end
         
         
@@ -739,7 +760,24 @@ classdef TreeNodeClass < handle
             val = obj.err;
             
         end
-                
+
+        
+        
+        % ----------------------------------------------------------------------------------
+        function BackwardCompatability(obj)
+            if ~ispathvalid([obj.path, obj.outputDirname])
+                mkdir([obj.path, obj.outputDirname])
+            end
+            src = obj.procStream.output.SetFilename(obj.GetOutputFilename('legacy'));
+            dst = obj.procStream.output.SetFilename(obj.GetOutputFilename());
+            if ispathvalid(src)
+                if ~pathscompare(src, dst)
+                    obj.logger.Write(sprintf('Moving %s to %s\n', src, dst));
+                    movefile(src, dst);
+                end
+            end
+        end
+        
     end
 
     

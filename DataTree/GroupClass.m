@@ -114,7 +114,7 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function filename = GetOutputFilename(obj)
+        function filename = GetFilename(obj)
             filename = obj.outputFilename;
         end
         
@@ -482,7 +482,7 @@ classdef GroupClass < TreeNodeClass
             obj.procStream.input.LoadVars(obj.outputVars);
 
             % Calculate processing stream
-            obj.procStream.Calc(obj.GetFilename);
+            obj.procStream.Calc(obj.GetOutputFilename());
 
             if obj.DEBUG
                 obj.logger.Write(sprintf('Completed processing stream for group %d\n', obj.iGroup));
@@ -587,7 +587,7 @@ classdef GroupClass < TreeNodeClass
             if isempty(obj)
                 return;
             end
-            err1 = obj.procStream.Load(obj.GetFilename);
+            err1 = obj.procStream.Load(obj.GetOutputFilename());
             err2 = obj.subjs(1).LoadSubBranch();
             if err1==0 && err2==0
                 err = 0;
@@ -672,7 +672,7 @@ classdef GroupClass < TreeNodeClass
                 obj.logger.Write(sprintf('Auto-saving processing results ...\n'), obj.logger.ProgressBar(), hwait);
             end
             
-            group = GroupClass(obj); %#ok<NASGU>
+            group = GroupClass(obj);
             try 
                 obj.CreateOutputDir();
                 save([obj.pathOutputAlt, obj.outputDirname, obj.outputFilename], 'group');
@@ -735,7 +735,7 @@ classdef GroupClass < TreeNodeClass
                 iBlk = 1;
             end
             
-            obj.procStream.ExportHRF(obj.name, obj.CondNames, iBlk);
+            obj.procStream.ExportHRF(obj.GetOutputFilename, obj.CondNames, iBlk);
             if strcmp(procElemSelect, 'all')
                 for ii=1:length(obj.subjs)
                     obj.subjs(ii).ExportHRF('all', iBlk);
@@ -948,14 +948,27 @@ classdef GroupClass < TreeNodeClass
                 end
             end
         end
-                
+
+        
+        % ----------------------------------------------------------------------------------
+        function r = ListOutputFilenames(obj, options)
+            if ~exist('options','var')
+                options = '';
+            end
+            r = obj.GetOutputFilename(options);
+            fprintf('%s %s\n', obj.path, r);
+            for ii = 1:length(obj.subjs)
+                obj.subjs(ii).ListOutputFilenames(options);
+            end
+        end        
+
     end
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Private methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    methods (Access = private)
+    methods (Access = public)
         
         % ----------------------------------------------------------------------------------
         % Check whether subject k'th subject from this group exists in group G and return
@@ -1002,25 +1015,58 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function BackwardCompatability(obj)
-%             if ispathvalid([obj.path, 'groupResults.mat'])
-%                 q = MenuBox('Detected derived data in this group folder in the old format. Do you want to save it in the new format?',{'Yes','No'});
-%                 if q==1
-%                     if ~ispathvalid([obj.path, obj.outputDirname])
-%                         mkdir([obj.path, obj.outputDirname])
-%                     end
-%                     movefile('groupResults.mat', [obj.path, obj.outputDirname, obj.outputFilename])
-%                     files = dir('*.mat');
-%                     for ii = 1:length(files)
-%                         movefile(files(ii).name, [obj.path, obj.outputDirname]);
-%                     end
-%                 else
-%                     obj.outputDirname = '';
-%                 end
-%             end
+        function b = HaveOutput(obj)
+            b = false;
+            for ii = 1:length(obj.subjs)
+                b = obj.subjs(ii).HaveOutput();
+                if b
+                    break;
+                end
+            end
         end
         
-
+        
+                
+        % ----------------------------------------------------------------------------------
+        function BackwardCompatability(obj)
+            if ispathvalid([obj.path, 'groupResults.mat'])
+                g = load([obj.path, 'groupResults.mat']);
+                
+                % Do not try to restore old data older than Homer3
+                if isempty(g)
+                    return;
+                end
+                if ~isproperty(g,'group')
+                    return;
+                end
+                if ~isa(g.group, 'GroupClass')
+                    return;
+                end
+                
+                % Do not try to restore old data if there is already data
+                % in the new format
+                if obj.HaveOutput()
+                    return;
+                end
+                
+                msg = sprintf('Detected derived data in an old Homer3 format.');
+                obj.logger.Write(sprintf('Backward Compatability: %s\n', msg));
+                
+                % If we're here it means that old format homer3 data exists
+                % AND NO new homer3 format data exists
+                q = MenuBox(sprintf('%s. Do you want to save it in the new format?', msg),{'Yes','No'});
+                if q==1
+                    obj.BackwardCompatability@TreeNodeClass();
+                    for ii = 1:length(obj.subjs)
+                        obj.subjs(ii).BackwardCompatability();
+                    end
+                    
+                    obj.logger.Write(sprintf('Moving %s to %s\n', 'groupResults.mat', [obj.path, obj.outputDirname, obj.outputFilename]));
+                    movefile('groupResults.mat', [obj.path, obj.outputDirname, obj.outputFilename])
+                end
+            end
+        end
+            
     end  % Private methods
 
 end % classdef GroupClass < TreeNodeClass

@@ -462,10 +462,14 @@ classdef ConfigFileClass < FileClass
             if nargin == 0
                 idx = 1;
             end
+            if ischar(idx)
+                idx = obj.GetParamIdx(idx);
+            end
             val = obj.params(idx).val;
         end
             
-            
+        
+        
         % -------------------------------------------------------------------------------------------------
         function valOptions = GetParamValueOptions(obj, idx)
             valOptions = {};
@@ -507,6 +511,20 @@ classdef ConfigFileClass < FileClass
         end
         
         
+        % -------------------------------------------------------------------------------------------------
+        function b = ChangedValue(obj, paramName, s)
+            b = true;
+            s2 = obj.GetValue(paramName);
+            if length(s) ~= length(s2)
+                return;
+            end
+            if ~strcmp(s, s2)
+                return
+            end
+            b = false;
+        end
+
+
     end
 end
 

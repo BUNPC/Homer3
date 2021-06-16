@@ -247,7 +247,7 @@ classdef ProcStreamClass < handle
                 end
                 
                 % Parse obj.input parameters
-                [sargin, p, sarginVal] = obj.ParseInputParams(iFcall);
+                [sargin, p, sarginVal] = obj.ParseInputParams(iFcall); %#ok<ASGLU>
                 
                 % Parse obj.input output arguments
                 sargout = obj.ParseOutputArgs(iFcall);
@@ -282,7 +282,7 @@ classdef ProcStreamClass < handle
                 lst = [0, lst, length(foos)+1]; %#ok<*AGROW>
                 for ii=1:length(lst)-1
                     foo2 = foos(lst(ii)+1:lst(ii+1)-1);
-                    lst2 = strmatch( foo2, paramOut, 'exact' );
+                    lst2 = strmatch( foo2, paramOut, 'exact' ); %#ok<MATCH3>
                     idx = strfind(foo2,'foo');
                     if isempty(lst2) && (isempty(idx) || idx>1) && ~isempty(foo2)
                         paramOut{end+1} = foo2;

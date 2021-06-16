@@ -216,7 +216,7 @@ classdef SubjClass < TreeNodeClass
             if isempty(obj)
                 return;
             end
-            err1 = obj.procStream.Load([obj.path, obj.GetFilename]);
+            err1 = obj.procStream.Load([obj.path, obj.GetOutputFilename()]);
             err2 = obj.runs(1).Load();
             if err1==0 && err2==0
                 err = 0;
@@ -330,7 +330,7 @@ classdef SubjClass < TreeNodeClass
             obj.procStream.input.LoadVars(obj.outputVars);
 
             % Calculate processing stream
-            obj.procStream.Calc(obj.GetFilename);
+            obj.procStream.Calc(obj.GetOutputFilename());
 
             if obj.DEBUG
                 fprintf('Completed processing stream for group %d, subject %d\n', obj.iGroup, obj.iSubj);
@@ -634,11 +634,24 @@ classdef SubjClass < TreeNodeClass
                 iBlk = 1;
             end
 
-            obj.procStream.ExportHRF(obj.name, obj.CondNames, iBlk);
+            obj.procStream.ExportHRF(obj.GetOutputFilename, obj.CondNames, iBlk);
             if strcmp(procElemSelect, 'all')
                 for ii=1:length(obj.runs)
                     obj.runs(ii).ExportHRF(iBlk);
                 end
+            end
+        end
+    
+        
+        % ----------------------------------------------------------------------------------
+        function r = ListOutputFilenames(obj, options)
+            if ~exist('options','var')
+                options = '';
+            end
+            r = obj.GetOutputFilename(options);
+            fprintf('  %s %s\n', obj.path, r);
+            for ii = 1:length(obj.runs)
+                obj.runs(ii).ListOutputFilenames(options);
             end
         end
         
@@ -649,7 +662,27 @@ classdef SubjClass < TreeNodeClass
     % Private methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Access = public)
-                        
+                
+        % ----------------------------------------------------------------------------------
+        function b = HaveOutput(obj)
+            b = false;
+            for ii = 1:length(obj.runs)
+                b = obj.runs(ii).HaveOutput();
+                if b
+                    break;
+                end
+            end
+        end
+                
+        
+        % ----------------------------------------------------------------------------------
+        function BackwardCompatability(obj)
+            obj.BackwardCompatability@TreeNodeClass();
+            for ii = 1:length(obj.runs)
+                obj.runs(ii).BackwardCompatability();
+            end
+        end
+                          
     end  % Private methods
     
 end

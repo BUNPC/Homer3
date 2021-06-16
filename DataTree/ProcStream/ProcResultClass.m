@@ -161,44 +161,27 @@ classdef ProcResultClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function SetFilename(obj, filename)
+        function filename = SetFilename(obj, filename)            
+            if nargin==1
+                filename = '';
+                return;
+            end                
             if isempty(filename)
                 return;
             end
             [pname, fname, ext] = fileparts(filename);
-            
-            % Set the containing folder name 
             if isempty(ext)
-                % Filename argument names folder
-                                
-                rootdir = '';
-                if ispathvalid(pname)
-                    rootdir = [filesepStandard(pname), filesepStandard(fname, 'nameonly')];
-                elseif ispathvalid(filename)
-                    rootdir = filesepStandard(filename);
+                ext = '.mat';
+                if ispathvalid([filesepStandard(pname), fname], 'dir')
+                    pname = [filesepStandard(pname), fname];
+                elseif ispathvalid([filesepStandard(['../', pname]), fname], 'dir')
+                    pname = [filesepStandard(['../', pname]), fname];
+                elseif ispathvalid(filesepStandard(['../', pname]), 'dir')
+                    pname = filesepStandard(['../', pname]);
                 end
-                
-                % Set the containing folder name 
-                if ispathvalid(['./', rootdir])
-                    rootdir = ['./', rootdir];
-                elseif ispathvalid(['../', rootdir])
-                    rootdir = ['../', rootdir];                    
-                end                
-                if ispathvalid([rootdir, fname, '.mat'], 'file')
-                    pname = rootdir;
-                end
-                pname = filesepStandard(pname);
-                
-            elseif ispathvalid(pname)
-                if ispathvalid(['./', filesepStandard(pname)])
-                    pname = ['./', filesepStandard(pname)];
-                else
-                    pname = [filesepStandard(pname)];
-                end
-
             end
-            
-            obj.filename = [pname, fname, '.mat'];
+            filename = [filesepStandard(pname, 'nameonly:dir'), fname, ext];
+            obj.filename = filename;
         end
         
         
@@ -212,7 +195,7 @@ classdef ProcResultClass < handle
                 options = 'keepinmemory';
             end
             
-            obj.SetFilename(filename)
+            obj.SetFilename(filename);
             
             output = obj;
             props = propnames(vars);
@@ -262,7 +245,7 @@ classdef ProcResultClass < handle
         % ----------------------------------------------------------------------------------
         function err = Load(obj, filename)
             err = 0;
-            obj.SetFilename(filename)
+            obj.SetFilename(filename);
             if isempty(obj.filename)
                 return;
             end
@@ -316,7 +299,7 @@ classdef ProcResultClass < handle
         function Reset(obj, filename)
             obj.Initialize();
 
-            obj.SetFilename(filename)
+            obj.SetFilename(filename);
             if isempty(obj.filename)
                 return;
             end
@@ -686,7 +669,7 @@ classdef ProcResultClass < handle
             if ~exist('filename', 'var')
                 filename = '';
             end            
-            obj.SetFilename(filename)
+            obj.SetFilename(filename);
             
             % If file name is set and exists then load data from file
             if ~isempty(filename) && exist(obj.filename, 'file')

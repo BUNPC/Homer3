@@ -58,7 +58,7 @@ if ischar(pathname0)
     
     % Remove any extraneous file separators
     pathname0(idxs) = '';
-    
+        
     % Change path to full path if option requesting it exists
     if optionExists(options,'full') || optionExists(options,'fullpath') || optionExists(options,'absolute')
         if ispathvalid(pathname0)
@@ -67,9 +67,13 @@ if ischar(pathname0)
     end
     
     % Add traling separator only for directory path names 
-    if isdir_private(pathname0) || optionExists(options, 'dir')
+    if (isdir_private(pathname0) || optionExists(options, 'dir')) && ~optionExists(options, 'file')
         if pathname0(end) ~= '/'
             pathname0(end+1) = '/';
+        end
+    elseif (isfile_private(pathname0) || optionExists(options, 'file')) && ~optionExists(options, 'dir')
+        if pathname0(end) == '/'
+            pathname0(end) = '';
         end
     else
         if pathname0(end) == '/'
@@ -84,7 +88,7 @@ end
 pathname = pathname0;
 
 % Call filesepStandard recursively for all path names in cell array
-for ii=1:length(pathname)
+for ii = 1:length(pathname)
     pathname{ii} = filesepStandard(pathname{ii}, options);
 end
 

@@ -40,6 +40,7 @@ classdef ExportTable < handle
             
             [pname, fname] = fileparts(filename);
             
+            
             obj.datatype = datatype;
             obj.datatype(obj.datatype==' ') = [];
             obj.datatype = sprintf('_%s', obj.datatype);

@@ -555,7 +555,7 @@ classdef DataTreeClass <  handle
             
             t_local = tic;
             for ii = 1:length(obj.groups)
-                obj.logger.Write(sprintf('Saving group %d in %s\n', ii, [obj.groups(ii).pathOutputAlt, obj.groups(ii).GetOutputFilename()]));
+                obj.logger.Write(sprintf('Saving group %d in %s\n', ii, [obj.groups(ii).pathOutputAlt, obj.groups(ii).GetFilename()]));
                 obj.groups(ii).Save(hwait);
             end
             obj.logger.Write(sprintf('Completed saving processing results for all groups in %0.3f seconds.\n', toc(t_local)));

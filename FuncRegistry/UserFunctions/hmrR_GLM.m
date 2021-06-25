@@ -801,30 +801,42 @@ for iBlk=1:length(data_y)
     beta_blks{iBlk} = beta;
     yR_blks{iBlk}   = yR;
     
- % stats struct
+% stats struct
     if glmSolveMethod == 1 % for OLS
         % GLM stats for each condition
         if exist('tval')
-        hmrstats.beta_label = beta_label;
-        hmrstats.tval = tval;
-        hmrstats.pval = pval;
-        hmrstats.ml = ml;
+            % set pruned channels tval to zero and pval to NaN
+            tval(:,find(mlAct(1:size(ml,1))==0),:) = 0;
+            pval(:,find(mlAct(1:size(ml,1))==0),:) = NaN;
+            %
+            hmrstats.beta_label = beta_label;
+            hmrstats.tval = tval;
+            hmrstats.pval = pval;
+            hmrstats.ml = ml;
         end
     else                   % for iWLS
         if exist('tstat')
-        hmrstats.beta_label = beta_label;
-        hmrstats.tval = tstat;
-        hmrstats.pval = pval;
-        hmrstats.ml = ml;
+            % set pruned channels tval to zero and pval to NaN
+            tstat(:,find(mlAct(1:size(ml,1))==0),:) = 0;
+            pval(:,find(mlAct(1:size(ml,1))==0),:) = NaN;
+            %
+            hmrstats.beta_label = beta_label;
+            hmrstats.tval = tstat;
+            hmrstats.pval = pval;
+            hmrstats.ml = ml;
         end
     end
     
     % GLM stats for contrast between conditions, if c_vector exists
     if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond) && nCond>1
         if exist('tval_contrast')
-        hmrstats.tval_contrast = tval_contrast;
-        hmrstats.pval_contrast = pval_contrast;
-        hmrstats.contrast = c_vector;
+            % set pruned channels tval to zero and pval to NaN
+            tval_contrast(:,find(mlAct(1:size(ml,1))==0),:) = 0;
+            pval_contrast(:,find(mlAct(1:size(ml,1))==0),:) = NaN;
+            %
+            hmrstats.tval_contrast = tval_contrast;
+            hmrstats.pval_contrast = pval_contrast;
+            hmrstats.contrast = c_vector;
         end
     end
     

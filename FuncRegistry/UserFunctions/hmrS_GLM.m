@@ -179,19 +179,17 @@ for j = 1:size(stimRuns{1},2) % across conditions
     
 end
 
-% concatenate tIncAuto and mlActRuns and AauxRuns
+% concatenate tIncAuto and AauxRuns
 foo_tIncAutoRuns = cell2mat(tIncAutoRuns{1});
-foo_mlActRuns = cell2mat(mlActRuns{1});
 foo_AauxRuns = cell2mat(AauxRuns{1});
 for i = 1:size(dcRuns,2)-1
     foo_tIncAutoRuns = cat(1,foo_tIncAutoRuns,cell2mat(tIncAutoRuns{i+1}));
-    foo_mlActRuns = cat(1,foo_mlActRuns,cell2mat(mlActRuns{i+1}));
     foo_AauxRuns = cat(1,foo_AauxRuns,cell2mat(AauxRuns{i+1}));
 end
-
 tIncAuto{1} = foo_tIncAutoRuns;
-mlActAuto{1} =  foo_mlActRuns;
 Aaux =  foo_AauxRuns;
+% get mlActRuns from one of the runs 
+mlActAuto{1} = cell2mat(mlActRuns{1});
 % #### end ####
 
 
@@ -542,6 +540,7 @@ for iBlk=1:length(data_y)
     
     nCh = size(y,3);
     
+
     % Exit if not enough data to analyze the 3 here is arbitrary.
     % Certainly needs to be larger than 1
     if length(lstInc)<3*size(A,2) | nCond==0
@@ -668,6 +667,7 @@ for iBlk=1:length(data_y)
             
             At = [At(:,1:size(dA,2)) fooAt];
             % #### end ####
+                            
             
             if ~isempty(lstML)
                 
@@ -754,6 +754,8 @@ for iBlk=1:length(data_y)
                     pAinvAinvD = diag(pinvA*pinvA');
                     yest(:,lstML,conc) = At * foo(:,lstML,conc);
                     yvar(1,lstML,conc) = sum((squeeze(y(:,conc,lstML))-yest(:,lstML,conc)).^2)./(size(y,1)-1); % check this against eq(53) in Ye2009
+                    
+                   
                     for iCh = 1:length(lstML)
                         
                         % GLM stats for each condition
@@ -905,30 +907,42 @@ for iBlk=1:length(data_y)
     beta_blks{iBlk} = beta;
     yR_blks{iBlk}   = yR;
     
-   % stats struct
+    % stats struct
     if glmSolveMethod == 1 % for OLS
         % GLM stats for each condition
         if exist('tval')
-        hmrstats.beta_label = beta_label;
-        hmrstats.tval = tval;
-        hmrstats.pval = pval;
-        hmrstats.ml = ml;
+            % set pruned channels tval to zero and pval to NaN
+            tval(:,find(mlAct(1:size(ml,1))==0),:) = 0;
+            pval(:,find(mlAct(1:size(ml,1))==0),:) = NaN;
+            %
+            hmrstats.beta_label = beta_label;
+            hmrstats.tval = tval;
+            hmrstats.pval = pval;
+            hmrstats.ml = ml;
         end
     else                   % for iWLS
         if exist('tstat')
-        hmrstats.beta_label = beta_label;
-        hmrstats.tval = tstat;
-        hmrstats.pval = pval;
-        hmrstats.ml = ml;
+            % set pruned channels tval to zero and pval to NaN
+            tstat(:,find(mlAct(1:size(ml,1))==0),:) = 0;
+            pval(:,find(mlAct(1:size(ml,1))==0),:) = NaN;
+            %
+            hmrstats.beta_label = beta_label;
+            hmrstats.tval = tstat;
+            hmrstats.pval = pval;
+            hmrstats.ml = ml;
         end
     end
     
     % GLM stats for contrast between conditions, if c_vector exists
     if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond) && nCond>1
         if exist('tval_contrast')
-        hmrstats.tval_contrast = tval_contrast;
-        hmrstats.pval_contrast = pval_contrast;
-        hmrstats.contrast = c_vector;
+            % set pruned channels tval to zero and pval to NaN
+            tval_contrast(:,find(mlAct(1:size(ml,1))==0),:) = 0;
+            pval_contrast(:,find(mlAct(1:size(ml,1))==0),:) = NaN;
+            %
+            hmrstats.tval_contrast = tval_contrast;
+            hmrstats.pval_contrast = pval_contrast;
+            hmrstats.contrast = c_vector;
         end
     end
     

@@ -26,8 +26,6 @@
 % c_vector: [0, 0]
 %
 function  [hmrstatsG_contrast] = hmrG_t_paired_contrast(yAvgSubjs, tHRFrange, c_vector)
-% N subject included per channel da gerekiyor.
-% fix name hrmstatsG
 hmrstatsG_contrast = [];
 nDataBlks = length(yAvgSubjs{1});
 nSubj = length(yAvgSubjs);
@@ -45,6 +43,12 @@ if ~isempty(nCond)
                 tHRF      = yAvgSubjs{iSubj}(iBlk).GetTime();
                 fq = abs(1/(tHRF(1)-tHRF(2)));
                 ml    = yAvgSubjs{iSubj}(iBlk).GetMeasListSrcDetPairs();
+                
+                % error check
+                if tHRFrange(1)>max(tHRF) || tHRFrange(2)>max(tHRF) || tHRFrange(1)>tHRFrange(2)
+                    warning('tHRF range should be between 0 and tHRF max');
+                    return
+                end
             end
             
             for iCond = nCond
@@ -64,12 +68,17 @@ if ~isempty(nCond)
             end
         end
     end
-end
-
+    
+    
 % output
 hmrstatsG_contrast.pval = pval;
 hmrstatsG_contrast.hval = hval;
 hmrstatsG_contrast.cval = cval;
 hmrstatsG_contrast.tstats = tstats;
 hmrstatsG_contrast.ml = ml;
-hmrstatsG_contrast.c_vector = c_vector;
+hmrstatsG_contrast.c_vector = c_vector;    
+hmrstatsG_contrast.mean_yAvg = mean_yAvg;
+    
+end
+
+

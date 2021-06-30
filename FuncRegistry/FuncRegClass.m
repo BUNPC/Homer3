@@ -391,17 +391,21 @@ classdef FuncRegClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function lastdt = DateLastModified(obj)
-            lastdt = datetime(1970,01,01);
-            for ii = 1:length(obj.entries)
-                for jj = 1:length(obj.userfuncdir)
-                    file = dir([obj.userfuncdir{jj}, '/', obj.entries(ii).GetName(), '.m']);
-                    if ~isempty(file)
-                        if  datetime(file.date,'locale','system') > lastdt
-                            lastdt =  datetime(file.date,'locale','system');
+            try
+                lastdt = datetime(1970,01,01);
+                for ii = 1:length(obj.entries)
+                    for jj = 1:length(obj.userfuncdir)
+                        file = dir([obj.userfuncdir{jj}, '/', obj.entries(ii).GetName(), '.m']);
+                        if ~isempty(file)
+                            if  datetime(file.date,'locale','system') > lastdt
+                                lastdt =  datetime(file.date,'locale','system');
+                            end
+                            break;
                         end
-                        break;
                     end
                 end
+            catch
+                lastdt = -1;
             end
         end
         

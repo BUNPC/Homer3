@@ -362,8 +362,12 @@ classdef RegistriesClass < handle
             b = false;
             regfile = dir([obj.userfuncdir{1}, 'Registry.mat']);
             for ii = 1:length(obj.funcReg)
-                if obj.funcReg(ii).DateLastModified() > datetime(regfile.date,'locale','system')
-                    return;
+                try
+                    if obj.funcReg(ii).DateLastModified() > datetime(regfile.date,'locale','system')
+                        return;
+                    end
+                catch
+                    % pass
                 end
             end
             b = true;

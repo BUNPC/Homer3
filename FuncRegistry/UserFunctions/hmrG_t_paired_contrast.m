@@ -68,12 +68,17 @@ if ~isempty(nCond)
             end
         end
     end
-end
-
+    
+    
 % output
 hmrstatsG_contrast.pval = pval;
 hmrstatsG_contrast.hval = hval;
 hmrstatsG_contrast.cval = cval;
 hmrstatsG_contrast.tstats = tstats;
 hmrstatsG_contrast.ml = ml;
-hmrstatsG_contrast.c_vector = c_vector;
+hmrstatsG_contrast.c_vector = c_vector;    
+hmrstatsG_contrast.mean_yAvg = mean_yAvg;
+    
+end
+
+

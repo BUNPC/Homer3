@@ -12,7 +12,7 @@
 % tHRFrange: tHRF range for HRF averaging
 %
 % OUTPUTS:
-% hmrstatsG_base_cond: Statistical results from the MATLAB ttest (h,p,c,stats) and measurement list (ml) 
+% hmrstatsG_base_cond: Statistical results from the MATLAB ttest (h,p,c,stats) and measurement list (ml)
 %
 % USAGE OPTIONS:
 % Stats_on_Concentration_Data: [hmrstatsG_base_cond] = hmrG_t_paired_baseline_HRF(dcAvgSubjs, tHRFrange, cond)
@@ -27,8 +27,6 @@ nSubj = length(yAvgSubjs);
 
 
 for iBlk = 1:nDataBlks
-    
-    
     
     for iSubj = 1:nSubj
         
@@ -47,8 +45,8 @@ for iBlk = 1:nDataBlks
             end
         end
         
-        baseline_yAvg(iSubj,:,:,:) = mean(yAvg(round(fq*(tHRFrange(1) + abs(min(tHRF)))):round(fq*(tHRFrange(2) + abs(min(tHRF)))),:,:,:),1);
-        mean_yAvg(iSubj,:,:,:) = mean(yAvg(1:round(fq*abs(min(tHRF))),:,:,:),1);
+        baseline_yAvg(iSubj,:,:,:) = mean(yAvg(1:round(fq*abs(min(tHRF))),:,:,:),1);
+        mean_yAvg(iSubj,:,:,:) = mean(yAvg(round(fq*(tHRFrange(1) + abs(min(tHRF)))):round(fq*(tHRFrange(2) + abs(min(tHRF)))),:,:,:),1);
         
     end
     
@@ -66,13 +64,15 @@ for iBlk = 1:nDataBlks
             end
         end
     end
+    
+    % output
+    hmrstatsG_base_cond.pval = pval;
+    hmrstatsG_base_cond.hval = hval;
+    hmrstatsG_base_cond.cval = cval;
+    hmrstatsG_base_cond.tstats = tstats;
+    hmrstatsG_base_cond.ml = ml;
+    hmrstatsG_base_cond.mean_yAvg = mean_yAvg;
+    
 end
 
-
-% output
-hmrstatsG_base_cond.pval = pval;
-hmrstatsG_base_cond.hval = hval;
-hmrstatsG_base_cond.cval = cval;
-hmrstatsG_base_cond.tstats = tstats;
-hmrstatsG_base_cond.ml = ml;
 

@@ -340,7 +340,11 @@ classdef FuncCallClass < handle
                                 textstr{ii+2}(jj) = ' ';
                             end
                         end
-                        pvalue = str2num(textstr{ii+2});                       
+                        if strcmp(pformat, '%s')
+                            pvalue = textstr{ii+2}; 
+                        else
+                            pvalue = str2num(textstr{ii+2}); %#ok<ST2NM>
+                        end
                         % Save default values in ParamClass
                         obj.paramIn(end+1) = ParamClass(pname, pformat, pvalue, pvalue);
                         obj.GetParamHelp(length(obj.paramIn));

@@ -119,7 +119,11 @@ classdef ParamClass < matlab.mixin.Copyable
             % and format
             obj.value = val;
             eachformat = strsplit(obj.format);
-            formatlen = length(val);
+            if strcmp(obj.format, '%s')
+               formatlen = 1; 
+            else
+               formatlen = length(val); 
+            end
             obj.format = strtrim(repmat([eachformat{1}, ' '], 1, formatlen));
             err = 0;  % Error checking i.e. max length
         end

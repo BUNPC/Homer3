@@ -370,7 +370,11 @@ iFcall  = eventdata(1);
 iParam = eventdata(2);
 fcall = dataTree.currElem.procStream.fcalls(iFcall);
 param = fcall.paramIn(iParam);
-val = str2num(get(hObject,'string'));
+if strcmp(param.GetFormat(), '%s')
+    val = get(hObject, 'string'); 
+else
+    val = str2num(get(hObject, 'string')); %#ok<ST2NM>
+end
 
 % If str2num fails or user entered no params
 if (~isempty(hObject.String) && isempty(val)) || isempty(val)

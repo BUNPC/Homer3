@@ -285,6 +285,10 @@ classdef FuncRegEntryClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function fmt = GetFormatScalar(obj, s)
+            if isempty(str2num(s)) %#ok<ST2NM>
+               fmt = sprintf('%%s');
+               return;
+            end
             k1 = find(s=='.');
             k2 = find(s=='e');
             if ~isempty(k2)

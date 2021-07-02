@@ -705,7 +705,7 @@ end
 
 stimEdit.dataTree.CopyStims(stimEdit.locDataTree);
 
-% Update acquisition file with new contents
+% Update acquisition file and derived dataTree in MainGUI with new contents
 h = waitbar_improved(0, 'Saving new stim marks to %s...', stimEdit.dataTreeHandle.currElem.name);
 stimEdit.dataTree.currElem.SaveAcquiredData()
 idx = stimEdit.dataTree.currElem.GetIndexID();
@@ -1219,6 +1219,10 @@ if size(stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).d
     options.WindowStyle = 'modal';
     options.Interpreter = 'tex';
     A = inputdlg(rename_prompt, name, 1, defaults, options);
+    if length(A) ~= length(unique(A))
+       errordlg('Please give each column a unique name.', 'Invalid name')
+       return;
+    end
     for i = 1:length(A)
         stimEdit.dataTreeHandle.currElem.RenameStimColumn(defaults{i}, A{i});
     end
@@ -1263,7 +1267,7 @@ function pushbuttonDeleteColumn_Callback(hObject, eventdata, handles)
 global stimEdit
 conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
 icond = GetConditionIdxFromPopupmenu(conditions, handles);
-if size(stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).data, 2) > 3
+if size(stimEdit.dataTreeHandle.currElem.procStream.input.acquired.GetStimData(icond), 2) > 3
     options.Resize = 'on';
     options.WindowStyle = 'modal';
     options.Interpreter = 'tex';
@@ -1274,7 +1278,8 @@ if size(stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).d
     if length(idx) > 1
        return 
     end
-    stimEdit.dataTreeHandle.currElem.DeleteStimColumn(idx);
+    labels = stimEdit.dataTreeHandle.currElem.procStream.input.acquired.GetStimDataLabels(icond);
+    stimEdit.dataTreeHandle.currElem.DeleteStimColumn(labels{idx});
     Display(handles);
 else
     errordlg('There are no additional data columns to delete!', 'No columns to delete')
@@ -1293,6 +1298,7 @@ function pushbuttonAddColumn_Callback(hObject, eventdata, handles)
 global stimEdit
 conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
 icond = GetConditionIdxFromPopupmenu(conditions, handles);
+labels = stimEdit.dataTreeHandle.currElem.procStream.input.acquired.GetStimDataLabels(icond);
 options.Resize = 'on';
 options.WindowStyle = 'modal';
 options.Interpreter = 'tex';
@@ -1301,6 +1307,9 @@ defaults = {['stimdata', num2str(col_idx)], '0.0'};
 A = inputdlg({'Column name', 'Initial column value'}, 'New column name', 1, defaults, options);
 if isempty(A)
    return 
+elseif ~isempty(find(strcmp(labels, A{1})))
+    errordlg('A column with this name already exists! Please provide a unique one.', 'Invalid name')
+    return
 end
 name = A{1};
 if isempty(A{2})

@@ -147,13 +147,6 @@ classdef ProcInputClass < handle
         end
 
         
-        
-        % ----------------------------------------------------------------------------------        
-        function SaveAcquiredData(obj)
-            obj.acquired.SaveMutable();
-        end
-
-        
         % ----------------------------------------------------------------------------------
         function b = AcquiredDataModified(obj)
             b = obj.acquired.DataModified();
@@ -344,11 +337,11 @@ classdef ProcInputClass < handle
 
         
         % ----------------------------------------------------------------------------------
-        function DeleteStimColumn(obj, idx)
-            if ~exist('idx', 'var') || idx <= 3
+        function DeleteStimColumn(obj, name)
+            if ~exist('name', 'var')
                 return;
             end
-            obj.acquired.DeleteStimColumn(idx);
+            obj.acquired.DeleteStimColumn(name);
         end
         
         % ----------------------------------------------------------------------------------

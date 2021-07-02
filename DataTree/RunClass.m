@@ -148,7 +148,7 @@ classdef RunClass < TreeNodeClass
             if isempty(obj)
                 return;
             end
-            obj.procStream.input.SaveAcquiredData()
+            obj.acquired.Save([obj.path obj.name]);  % Overwrite the file on disk
         end
         
         
@@ -189,8 +189,9 @@ classdef RunClass < TreeNodeClass
         function CopyStims(obj, obj2)
             obj.CondNames = obj2.CondNames;
             obj.procStream.CopyStims(obj2.procStream);
+            obj.acquired.CopyStim(obj2.acquired);
         end
-               
+        
         
         % ----------------------------------------------------------------------------------
         % Subjects obj1 and obj2 are considered equivalent if their names
@@ -610,7 +611,11 @@ classdef RunClass < TreeNodeClass
             if isempty(condition)
                 return;
             end
+            % New stims must be added both to derived data but also
+            % mirrored in the acquired data-- the condition list generated
+            % by SetConditions may not be mirrored
             obj.procStream.AddStims(tPts, condition, duration, amp, more);
+            obj.acquired.AddStims(tPts, condition, duration, amp, more);
         end
 
         
@@ -623,6 +628,7 @@ classdef RunClass < TreeNodeClass
                 condition = '';
             end
             obj.procStream.DeleteStims(tPts, condition);
+            obj.acquired.DeleteStims(tPts, condition);
         end
         
         
@@ -635,6 +641,7 @@ classdef RunClass < TreeNodeClass
                 condition = '';
             end
             obj.procStream.ToggleStims(tPts, condition);
+            obj.acquired.ToggleStims(tPts, condition);
         end
         
         
@@ -647,6 +654,7 @@ classdef RunClass < TreeNodeClass
                 condition = '';
             end
             obj.procStream.MoveStims(tPts, condition);
+            obj.acquired.MoveStims(tPts, condition);
         end
         
         % ----------------------------------------------------------------------------------
@@ -655,14 +663,16 @@ classdef RunClass < TreeNodeClass
                 return;
             end
             obj.procStream.AddStimColumn(name, initValue);
+            obj.acquired.AddStimColumn(name, initValue);
         end
 
         % ----------------------------------------------------------------------------------
-        function DeleteStimColumn(obj, idx)
-            if ~exist('idx', 'var') || idx <= 3
+        function DeleteStimColumn(obj, name)
+            if ~exist('name', 'var')
                 return;
             end
-            obj.procStream.DeleteStimColumn(idx);
+            obj.procStream.DeleteStimColumn(name);
+            obj.acquired.DeleteStimColumn(name);
         end
         
         % ----------------------------------------------------------------------------------
@@ -671,6 +681,7 @@ classdef RunClass < TreeNodeClass
                 return;
             end
             obj.procStream.RenameStimColumn(oldname, newname);
+            obj.acquired.RenameStimColumn(oldname, newname);
         end
         
         % ----------------------------------------------------------------------------------
@@ -688,6 +699,7 @@ classdef RunClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function SetStimTpts(obj, icond, tpts)
             obj.procStream.SetStimTpts(icond, tpts);
+            obj.acquired.SetStimTpts(icond, tpts);
         end
         
     
@@ -703,6 +715,7 @@ classdef RunClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function SetStimDuration(obj, icond, duration, tpts)
             obj.procStream.SetStimDuration(icond, duration, tpts);
+            obj.acquired.SetStimDuration(icond, duration, tpts);
         end
         
     
@@ -718,6 +731,7 @@ classdef RunClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function SetStimAmplitudes(obj, icond, amps, tpts)
             obj.procStream.SetStimAmplitudes(icond, amps, tpts);
+            obj.acquired.SetStimAmplitudes(icond, amps, tpts);
         end
         
     
@@ -753,18 +767,21 @@ classdef RunClass < TreeNodeClass
                 return;
             end
             obj.procStream.RenameCondition(oldname, newname);
+            obj.acquired.RenameCondition(oldname, newname);
         end
         
         
         
         % ----------------------------------------------------------------------------------
         function StimReject(obj, t, iBlk)
+            % Affects derived stims only
             obj.procStream.StimReject(t, iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
         function StimInclude(obj, t, iBlk)
+            % Affects derived stims only
             obj.procStream.StimInclude(t, iBlk);
         end
         

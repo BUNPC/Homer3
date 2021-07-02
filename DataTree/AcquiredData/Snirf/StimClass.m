@@ -588,10 +588,14 @@ classdef StimClass < FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function DeleteStimColumn(obj, idx)
-            if ~exist('idx', 'var') || idx <= size(obj.data, 2) - 3
+        function DeleteStimColumn(obj, name)
+            if ~exist('name', 'var')
                 return;
             else
+                idx = find(strcmp(obj.dataLabels, name));
+                if isempty(idx)
+                   return; 
+                end
                 obj.data(:, idx) = [];
                 if length(obj.dataLabels) >= idx
                    obj.dataLabels(idx) = []; 

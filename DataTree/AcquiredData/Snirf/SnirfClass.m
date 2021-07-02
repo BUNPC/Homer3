@@ -654,46 +654,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             obj.SaveAux(fileobj);
         end
         
-        
-        
-        % -------------------------------------------------------
-        function [stimFromFile, changes] = UpdateStim(obj, fileobj)
-            flags = zeros(length(obj.stim), 1);
-            
-            % Load stim from file and update it
-            snirfFile = SnirfClass();
-            snirfFile.LoadStim(fileobj);
-            
-            % Update stims from file with edited stims
-            for ii = 1:length(obj.stim)
-                for jj = 1:length(snirfFile.stim)
-                    if strcmp(obj.stim(ii).GetName(), snirfFile.stim(jj).GetName())
-                        if obj.stim(ii) ~= snirfFile.stim(jj)
-                            snirfFile.stim(jj).Copy(obj.stim(ii));
-                        end
-                        flags(ii) = 1;
-                        break;
-                    end
-                end
-                if ~flags(ii)
-                    % We have new stimulus condition added
-                    if ~obj.stim(ii).IsEmpty()
-                        snirfFile.stim(end+1) = StimClass(obj.stim(ii));
-                        flags(ii) = 1;
-                    end
-                end
-            end
-            
-            % If stims were edited then update snirf file with new stims
-            changes = sum(flags);
-            if changes > 0
-                snirfFile.SaveStim(fileobj);
-            end
-            stimFromFile = snirfFile.stim;
-        end
-        
-        
-        
+
         % -------------------------------------------------------
         function CopyStim(obj, obj2)
             for ii = 1:length(obj2.stim)
@@ -745,37 +706,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         function b = DataModified(obj)
             b = obj.StimChangesMade();
         end
-        
-        
-        
-        % -------------------------------------------------------
-        function err = SaveMutable(obj, fileobj)
-            if isempty(obj)
-                return
-            end
-            
-            % Arg 1
-            if ~exist('fileobj','var') || ~exist(fileobj,'file')
-                fileobj = '';
-            end
-            
-            % Error checking
-            if ~isempty(fileobj) && ischar(fileobj)
-                obj.SetFilename(fileobj);
-            elseif isempty(fileobj)
-                fileobj = obj.GetFilename();
-            end
-            if isempty(fileobj)
-                err = -1;
-                return;
-            end
-            
-            % Update original stims and save back to file
-            obj.UpdateStim(fileobj);
-        end
-        
-        
-        
+
         
         % -------------------------------------------------------
         function B = eq(obj, obj2)
@@ -1321,9 +1252,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
 
         
         % ----------------------------------------------------------------------------------
-        function DeleteStimColumn(obj, idx)
+        function DeleteStimColumn(obj, name)
             for i=1:length(obj.stim)
-                obj.stim(i).DeleteStimColumn(idx);
+                obj.stim(i).DeleteStimColumn(name);
             end
         end
         

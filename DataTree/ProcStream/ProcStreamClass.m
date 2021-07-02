@@ -1419,11 +1419,11 @@ classdef ProcStreamClass < handle
 
         
         % ----------------------------------------------------------------------------------
-        function DeleteStimColumn(obj, idx)
-            if ~exist('idx', 'var') || idx <= 3
+        function DeleteStimColumn(obj, name)
+            if ~exist('name', 'var')
                 return;
             end
-            obj.input.DeleteStimColumn(idx);
+            obj.input.DeleteStimColumn(name);
         end
         
         % ----------------------------------------------------------------------------------

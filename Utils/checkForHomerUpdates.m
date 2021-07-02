@@ -13,8 +13,9 @@ if (strcmp(cfg.GetValue('Check For Updates'),'on'))
             % App is offline or server could not be reached
             fprintf('Server could not be reached to check for updates.')
             return
-        end        
-        SetLastCheckForUpdates(datetime);
+        end
+
+        SetLastCheckForUpdates();
         
         % Open a hidden web browser
         wb = com.mathworks.mde.webbrowser.WebBrowser.createBrowser;

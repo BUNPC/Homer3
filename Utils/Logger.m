@@ -154,7 +154,11 @@ classdef Logger < handle
             if options == self.options.NULL
                 return
             end
-            ct = char(datetime(datetime, 'Format','MMMM d, yyyy, HH:mm:ss'));
+            try
+                ct = char(datetime(datetime, 'Format','MMMM d, yyyy, HH:mm:ss'));
+            catch
+                ct = "";
+            end
             if isempty(msg)
                 s = sprintf('\n%s\n', ct);
             else
@@ -195,7 +199,11 @@ classdef Logger < handle
             if options == self.options.NULL
                 return
             end
-            ct = char(datetime(datetime, 'Format','MMMM d, yyyy, HH:mm:ss'));
+            try
+                ct = char(datetime(datetime, 'Format','MMMM d, yyyy, HH:mm:ss'));
+            catch
+                ct = "";
+            end
             s =  sprintf('\n%s:  %s', ct, msg);
             
             if bitand(options, self.options.FILE_ONLY) > 0

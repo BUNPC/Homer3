@@ -3,7 +3,7 @@ classdef AcqDataClass < matlab.mixin.Copyable
     properties (Access = private)
         logger
     end
-    properties (Access = public)
+    properties (Access = protected)
         errmsgs
     end
     

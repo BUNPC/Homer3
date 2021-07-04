@@ -278,7 +278,9 @@ if stimEdit.status ~= 0
     return;
 end
 
+stimEdit.locDataTree.groups(iG).SaveAcquiredData();
 stimEdit.locDataTree.groups(iG).SetConditions();
+
 set(handles.popupmenuConditions, 'string', stimEdit.locDataTree.groups(iG).GetConditions());
 Display(handles);
 

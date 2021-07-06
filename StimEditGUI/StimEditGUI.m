@@ -74,7 +74,6 @@ stimEdit = [];
 
 % These local data trees are used for turning synchronized browsing with MainGUI on/off
 stimEdit.locDataTree = [];
-stimEdit.locDataTree2 = [];
 
 %%%% Begin parse arguments 
 
@@ -241,7 +240,7 @@ figure(handles.figure);
 function menuItemRenameCondition_Callback(hObject, eventdata, handles)
 global stimEdit
 
-% Function to rename a condition. Important to remeber that changing the
+% Function to rename a condition. Important to remember that changing the
 % condition involves 2 distinct well defined steps:
 %   a) For the current element change the name of the specified (old) 
 %      condition for ONLY for ALL the acquired data elements under the 
@@ -252,34 +251,69 @@ global stimEdit
 %      acquired data.
 %
 
-% Get the name of the condition you want to rename
-conditions = get(handles.popupmenuConditions, 'string');
-[index, tf] = listdlg('PromptString', {'Rename which condition?', 'This action is applied to all runs and cannot be undone!'},...
-        'SelectionMode', 'single', 'ListString', conditions);
-if isempty(index)
-   return 
-else
-   idx = index; 
+runLevelRename = 'This run only';
+groupLevelRename = 'Entire group';
+a = questdlg('Choose whether to rename a condition for this run only, or to rename every instance of the condition across the group. WARNING: Proceeding will write any changes made to the stims in this GUI to the acquisition files on disk.', 'Rename a condition', runLevelRename, groupLevelRename, 'Cancel', 'Cancel');
+if strcmp(a, 'Cancel')
+   return;
+elseif strcmp(a, groupLevelRename)
+    % Get the names of the conditions for entire group
+    conditions = get(handles.popupmenuConditions, 'string');
+    [index, tf] = listdlg('PromptString', {'Rename which condition?', 'This action cannot be undone!'},...
+            'SelectionMode', 'single', 'ListString', conditions);
+    if isempty(index)
+       return 
+    else
+       idx = index; 
+    end
+    oldname = conditions{idx};
+    newname = CreateNewConditionName();
+    if isempty(newname)
+        return;
+    end
+    iG = stimEdit.locDataTree.GetCurrElemIndexID();
+    stimEdit.locDataTree.groups(iG).RenameCondition(oldname, newname);
+    if stimEdit.status ~= 0
+        return;
+    end
+    % Save acquired data
+    stimEdit.dataTree.CopyStims(stimEdit.locDataTree);
+    h = waitbar_improved(0, 'Saving new stim conditions...');
+    stimEdit.dataTree.groups(iG).SaveAcquiredData()
+elseif strcmp(a, runLevelRename)
+    % Get the names of the conditions for only the current element
+    conditions = stimEdit.dataTreeHandle.currElem.acquired.GetConditions();
+    [index, tf] = listdlg('PromptString', {'Rename which condition?', 'This action cannot be undone!'},...
+            'SelectionMode', 'single', 'ListString', conditions);
+    if isempty(index)
+       return 
+    else
+       idx = index; 
+    end
+    oldname = conditions{idx};
+    newname = CreateNewConditionName();
+    if isempty(newname)
+        return;
+    end
+    stimEdit.locDataTree.currElem.RenameCondition(oldname, newname);
+    if stimEdit.status ~= 0
+        return;
+    end
+    % Save acquired data, current element only
+    stimEdit.dataTree.currElem.CopyStims(stimEdit.locDataTree.currElem);
+    h = waitbar_improved(0, 'Saving new stim conditions...');
+    stimEdit.dataTree.currElem.SaveAcquiredData()
 end
-oldname = conditions{idx};
 
-newname = CreateNewConditionName();
-if isempty(newname)
-    return;
+if ~isempty(stimEdit.updateParentGui)
+    stimEdit.updateParentGui('StimEditGUI');
 end
 
-% NOTE: for now any renaming of a condition is global to avoid complexity
-% in keeping the condition colors straight. Therefore we comment out the 
-% following line in favor of the one after it. 
-
+% Set conditions resolves list of conditions in each run in derived data,
+% not acquired, so we can call it after saving acquired data.
 iG = stimEdit.locDataTree.GetCurrElemIndexID();
-stimEdit.locDataTree.groups(iG).RenameCondition(oldname, newname);
-if stimEdit.status ~= 0
-    return;
-end
-
-stimEdit.locDataTree.groups(iG).SaveAcquiredData();
 stimEdit.locDataTree.groups(iG).SetConditions();
+stimEdit.dataTree.groups(iG).Save()
 
 set(handles.popupmenuConditions, 'string', stimEdit.locDataTree.groups(iG).GetConditions());
 Display(handles);

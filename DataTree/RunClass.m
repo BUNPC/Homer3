@@ -149,7 +149,7 @@ classdef RunClass < TreeNodeClass
                 return;
             end
             obj.logger.Write(sprintf('Acquired data at %s overwritten\n', obj.name));
-            obj.acquired.Save([obj.path obj.name]);  % Overwrite the file on disk
+            obj.acquired.Save();  % Overwrite the file on disk
         end
         
         

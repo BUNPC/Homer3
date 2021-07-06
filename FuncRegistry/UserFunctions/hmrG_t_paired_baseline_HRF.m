@@ -39,7 +39,7 @@ for iBlk = 1:nDataBlks
             ml    = yAvgSubjs{iSubj}(iBlk).GetMeasListSrcDetPairs();
             
             % error check
-            if tHRFrange(1)>max(tHRF) || tHRFrange(2)>max(tHRF) || tHRFrange(1)>tHRFrange(2)
+            if tHRFrange(1)>max(tHRF) || tHRFrange(2)>max(tHRF) || tHRFrange(1)>=tHRFrange(2)
                 warning('tHRF range should be between 0 and tHRF max');
                 return
             end

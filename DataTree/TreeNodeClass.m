@@ -18,6 +18,9 @@ classdef TreeNodeClass < handle
         DEBUG
         path
         logger
+        pathOutputAlt        
+        outputDirname
+        cfg
     end
     
     methods        
@@ -39,7 +42,10 @@ classdef TreeNodeClass < handle
             obj.err = 0;
             obj.CondNames = {};
             obj.path = filesepStandard(pwd);            
-                        
+            
+            obj.cfg = ConfigFileClass();
+            obj.outputDirname = filesepStandard(obj.cfg.GetValue('Output Folder Name'), 'nameonly:dir');
+
             obj.InitParentAppFunc();
             
             % If this constructor is called from this class' copy method,
@@ -670,6 +676,10 @@ classdef TreeNodeClass < handle
                 return;
             end
             filename = obj.SaveMemorySpace(obj.name);
+            if isempty(filename)
+                return;
+            end
+            filename = [obj.outputDirname, filename];
         end
         
         
@@ -750,7 +760,7 @@ classdef TreeNodeClass < handle
             if ~strcmp(arg,'init')
                 return
             end
-            tbl = distinguishable_colors(20);
+            tbl = distinguishable_colors(128);
         end
    
         

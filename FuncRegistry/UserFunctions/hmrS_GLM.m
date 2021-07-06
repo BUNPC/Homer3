@@ -1,19 +1,23 @@
 % SYNTAX:
-% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R, hmrstats] = hmrR_GLM(data, stim, probe, mlActAuto, Aaux, tIncAuto, trange, rcMap, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
+% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R, hmrstats] = hmrS_GLM(dcRuns, stimRuns, probe, mlActRuns, AauxRuns, tIncAutoRuns, rcMapRuns, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 %
 % UI NAME:
 % GLM_HRF_Drift_SS
 %
 % DESCRIPTION:
-% This script estimates the HRF with options to specify the temporal basis
-% function type and corresponding parameters, whether or not to perform
-% simultaneous regression of short separation channels, drift order, and
-% whether or not to correct for motion artifacts. You can also choose the
-% method for solving the GLM matrix equation.
+% This script estimates HRF at the session level. It concatenates run level
+% design matrices and estimates a common HRF regressor(s) for each condition
+% while estimating separate regressors for the rest of model (e.g. drift).
+% As the run level GLM, it estimates the HRF with options to specify the
+% temporal basis function type and corresponding parameters, whether or not
+% to perform simultaneous regression of short separation channels, drift
+% order, and whether or not to correct for motion artifacts. You can also
+% choose the method for solving the GLM matrix equation.
 %
 %
 % INPUTS:
-% data - this is the concentration data with dimensions #time points x [HbO/HbR/HbT] x #channels
+% dcRuns - this is the concentration data with dimensions #time points x
+%          [HbO/HbR/HbT] x #channels for each run
 % stim - stimulation vector (# time points x #conditions)=1 at stim onset otherwise =0
 % probe - source detector stucture (units should be consistent with rhoSD_ssThresh)
 % mlActAuto -
@@ -33,13 +37,13 @@
 % idxBasis - this specifies the type of basis function to use for the HRF
 %            1. a consecutive sequence of gaussian functions
 %            2. a modified gamma function convolved with a square-wave of
-%                duration given by the stim marker.
+%                duration T. Set T=0 for no convolution.
 %                The modified gamma function is
 %                (exp(1)*(t-tau).^2/sigma^2) .* exp(-(tHRF-tau).^2/sigma^2)
 %            3. a modified gamma function and its derivative convolved
-%                with a square-wave of duration given by the stim marker.
+%                with a square-wave of duration T. Set T=0 for no convolution.
 %			 4.  GAM function from 3dDeconvolve AFNI convolved with
-%                a square-wave of duration given by the stim marker.
+%                a square-wave of duration T. Set T=0 for no convolution.
 % 			         (t/(p*q))^p * exp(p-t/q)
 %                Defaults: p=8.6 q=0.547
 %                The peak is at time p*q.  The FWHM is about 2.3*sqrt(p)*q.
@@ -47,14 +51,15 @@
 %               idxBasis=1 [stdev step ~ ~ ~ ~] where stdev is the width of the
 %                  gaussian and step is the temporal spacing between
 %                  consecutive gaussians
-%               idxBasis=2. [tau sigma] applied to both HbO and HbR
-%                  or [tau1 sigma1 tau2 sigma2]
+%               idxBasis=2. [tau sigma T] applied to both HbO and HbR
+%                  or [tau1 sigma1 T1 tau2 sigma2 T2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
-%               idxBasis=3 [tau sigma] applied to both HbO and HbR
-%                  or [tau1 sigma1 tau2 sigma2]
+%                  default: 0.1 3.0 10.0 1.8 3.0 10.0
+%               idxBasis=3 [tau sigma T] applied to both HbO and HbR
+%                  or [tau1 sigma1 T1 tau2 sigma2 T2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
-%               idxBasis=4 [p q] applied to both HbO and HbR
-%                  or [p1 q1 p2 q2]
+%               idxBasis=4 [p q T] applied to both HbO and HbR
+%                  or [p1 q1 T1 p2 q2 T2]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
 % rhoSD_ssThresh - max distance for a short separation measurement. Set =0
 %          if you do not want to regress the short separation measurements.
@@ -88,13 +93,13 @@
 % hmrstats - outputs t and pvalues for GLM
 %
 % USAGE OPTIONS:
-% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R, hmrstats] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
+% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R, hmrstats] = hmrS_GLM(dcRuns, stimRuns, probe, mlActRuns, AauxRuns, tIncAutoRuns, rcMapRuns, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 %
 % PARAMETERS:
 % trange: [-2.0, 20.0]
 % glmSolveMethod: 1
 % idxBasis: 1
-% paramsBasis: [1.0 1.0 0.0 0.0]
+% paramsBasis: [1.0 1.0 0.0 0.0 0.0 0.0], maxnum: 6
 % rhoSD_ssThresh: 15.0
 % flagNuisanceRMethod: 1
 % driftOrder: 3
@@ -104,7 +109,8 @@
 % Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, probe, ppf )
 
 function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks, hmrstats] = ...
-    hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
+    hmrS_GLM(dcRuns, stimRuns, probe, mlActRuns, AauxRuns, tIncAutoRuns, rcMapRuns, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
+
 
 % Init output
 data_yavg     = DataClass().empty();
@@ -112,10 +118,79 @@ data_yavgstd  = DataClass().empty();
 data_ynew     = DataClass().empty();
 data_ysum2    = DataClass().empty();
 data_yresid   = DataClass().empty();
+stim          = StimClass();
+data_y        = DataClass();
+beta_label    = [];
+hmrstats      = [];
+
+% #### Concatenate runs for session level GLM ####
+% concatenate y
+foo_y = dcRuns{1}.dataTimeSeries;
+foo_t = dcRuns{1}.time;
+max_t = max(foo_t);
+dt_foo = abs(foo_t(1)-foo_t(2));
+for i = 1:size(dcRuns,2)-1
+    foo_y = cat(1,foo_y,dcRuns{i+1}.dataTimeSeries);
+    foo_t = cat(1,foo_t,dcRuns{i+1}.time + max(foo_t(:)) + dt_foo);
+    max_t(i+1) = max(foo_t);
+end
+
+data_y.dataTimeSeries = foo_y;
+data_y.time = foo_t;
+data_y.measurementList = dcRuns{1}.measurementList;
+
+% concatenate stims
+for j = 1:size(stimRuns{1},2) % across conditions
+    
+    if isempty(stimRuns{1}(j).data) == 1
+        stimRuns{1}(j).data = [0 0 0];
+        stimRuns{1}(j).states = [0 0];
+    end
+    
+    foo_stim_data = stimRuns{1}(j).data; % get data from the first run
+    foo_stim_states = stimRuns{1}(j).states;
+    
+    for i = 1:size(dcRuns,2)-1  % across runs: concatenate data from other runs to first run
+       
+        if isempty(stimRuns{i+1}(j).data) == 1
+            stimRuns{i+1}(j).data = [0 0 0];
+            stimRuns{i+1}(j).states = [0 0];
+        end  
+        
+        % update time on stim object
+        stimRuns{i+1}(j).data(:,1) = stimRuns{i+1}(j).data(:,1) + max_t(i) + dt_foo;
+        stimRuns{i+1}(j).states(:,1) = stimRuns{i+1}(j).states(:,1) + max_t(i) + dt_foo;
+        % concatenate
+        foo_stim_data = cat(1,foo_stim_data,stimRuns{i+1}(j).data);
+        foo_stim_states = cat(1,foo_stim_states,stimRuns{i+1}(j).states);
+        
+    end
+    
+    stim(j).name = stimRuns{1}(j).name;
+    stim(j).data =  foo_stim_data;
+    stim(j).states =  foo_stim_states;
+    
+end
+
+% concatenate tIncAuto and mlActRuns and AauxRuns
+foo_tIncAutoRuns = cell2mat(tIncAutoRuns{1});
+foo_mlActRuns = cell2mat(mlActRuns{1});
+foo_AauxRuns = cell2mat(AauxRuns{1});
+for i = 1:size(dcRuns,2)-1
+    foo_tIncAutoRuns = cat(1,foo_tIncAutoRuns,cell2mat(tIncAutoRuns{i+1}));
+    foo_mlActRuns = cat(1,foo_mlActRuns,cell2mat(mlActRuns{i+1}));
+    foo_AauxRuns = cat(1,foo_AauxRuns,cell2mat(AauxRuns{i+1}));
+end
+
+tIncAuto{1} = foo_tIncAutoRuns;
+mlActAuto{1} =  foo_mlActRuns;
+Aaux =  foo_AauxRuns;
+% #### end ####
+
+
+% Further init output
 beta_blks     = cell(length(data_y),1);
 yR_blks       = cell(length(data_y),1);
-beta_label = [];
-hmrstats = [];
 
 % Check input args
 if isempty(tIncAuto)
@@ -130,9 +205,8 @@ end
 % GetStims method to convert stim to the s vector that this function needs.
 snirf = SnirfClass(data_y, stim);
 t = snirf.GetTimeCombined();
-stimStates = snirf.GetStims(t);
-stimAmps = snirf.GetStimAmps(t);
-nTrials = repmat({zeros(1, size(stimStates,2))}, length(data_y), 1);
+s = snirf.GetStims(t);
+nTrials = repmat({zeros(1, size(s,2))}, length(data_y), 1);
 
 for iBlk=1:length(data_y)
     
@@ -227,35 +301,21 @@ for iBlk=1:length(data_y)
     end
     
     %%%%%%%%%%%%%%%%
-    % Prune good stim, generate onset matrix
+    % Prune good stim
     %%%%%%%%%%%%%%%%
-    % Get only indices of conditions with any stimStates that are 1
-    lstCond = find(sum(stimStates == 1, 1) > 0);
-    nCond = length(lstCond); % size(stimStates,2);
+    % handle case of conditions with 0 trials
+    lstCond = find(sum(s>0,1)>0);
+    nCond = length(lstCond); %size(s,2);
+    onset = zeros(nT,nCond);
     nTrials{iBlk} = zeros(nCond,1);
-    onset = zeros(nT, nCond);
     for iCond = 1:nCond
-        lstT = find(stimStates(:, lstCond(iCond)) == 1);  % Indices of stims enabled (== 1)
-        lstp = find((lstT+nPre) >= 1 & (lstT+nPost) <= nTpts);  % Indices of stims not clipped by signal
+        lstT = find(s(:,lstCond(iCond))==1);
+        lstp = find((lstT+nPre)>=1 & (lstT+nPost)<=nTpts);
         lst = lstT(lstp);
         nTrials{iBlk}(iCond) = length(lst);
-        % Generate basis boxcars of stim amplitude and duration
-        starts = lst+nPre;
-        if ~isempty(stim(iCond).data)
-            durations = stim(iCond).data(:, 2);
-            amplitudes = stim(iCond).data(:, 3);
-            for i = 1:length(starts)
-                if idxBasis == 1  % Gaussian has no duration T (yet)
-                   pulse_duration = 1; 
-                else
-                   pulse_duration = round(durations(i) / dt); 
-                end
-                pulse = (amplitudes(i) / pulse_duration) * ones(pulse_duration, 1);
-                onset(starts(i):starts(i) + pulse_duration - 1, iCond) = pulse;
-            end
-        end
+        onset(lst+nPre,iCond) = 1;
     end
-     
+    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Construct the basis functions
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -264,26 +324,23 @@ for iBlk=1:length(data_y)
         gms = paramsBasis(1);
         gstd = paramsBasis(2);
         
-        nB = floor((trange(2)-trange(1)) / gms) - 1;
+        nB = floor((trange(2)-trange(1))/gms)-1;
         tbasis = zeros(ntHRF,nB);
         for b=1:nB
             tbasis(:,b) = exp(-(tHRF-(trange(1)+b*gms)).^2/(2*gstd.^2));
-            tbasis(:,b) = tbasis(:,b)./max(tbasis(:,b));
+            tbasis(:,b) = tbasis(:,b)./max(tbasis(:,b)); %normalize to 1
         end
         
     elseif idxBasis==2
         % Modified Gamma
-        if length(paramsBasis)==2
-            nConc = 1;
-        else
-            nConc = 2;
-        end
-            
+        nConc = 2;
+        
         nB = 1;
         tbasis = zeros(ntHRF,nB,nConc);
         for iConc = 1:nConc
-            tau = paramsBasis((iConc-1)*2+1);
-            sigma = paramsBasis((iConc-1)*2+2);
+            tau = paramsBasis((iConc-1)*3+1);
+            sigma = paramsBasis((iConc-1)*3+2);
+            T = paramsBasis((iConc-1)*3+3);
             
             tbasis(:,1,iConc) = (exp(1)*(tHRF-tau).^2/sigma^2) .* exp( -(tHRF-tau).^2/sigma^2 );
             lstNeg = find(tHRF<0);
@@ -293,21 +350,28 @@ for iBlk=1:length(data_y)
                 tbasis(1:round((tau-tHRF(1))/dt),1,iConc) = 0;
             end
             
+            if T>0
+                for ii=1:nB
+                    foo = conv(tbasis(:,ii,iConc),ones(round(T/dt),1)) / round(T/dt);
+                    tbasis(:,ii,iConc) = foo(1:ntHRF,1);
+                end
+            end
         end
         
     elseif idxBasis==3
         % Modified Gamma and Derivative
-        if length(paramsBasis)==2
+        if length(paramsBasis)==3
             nConc = 1;
-        else
+        elseif length(paramsBasis)==6
             nConc = 2;
         end
         
         nB = 2;
         tbasis=zeros(ntHRF,nB,nConc);
         for iConc = 1:nConc
-            tau = paramsBasis((iConc-1)*2+1);
-            sigma = paramsBasis((iConc-1)*2+2);
+            tau = paramsBasis((iConc-1)*3+1);
+            sigma = paramsBasis((iConc-1)*3+2);
+            T = paramsBasis((iConc-1)*3+3);
             
             tbasis(:,1,iConc) = (exp(1)*(tHRF-tau).^2/sigma^2) .* exp( -(tHRF-tau).^2/sigma^2 );
             tbasis(:,2,iConc) = 2*exp(1)*( (tHRF-tau)/sigma^2 - (tHRF-tau).^3/sigma^4 ) .* exp( -(tHRF-tau).^2/sigma^2 );
@@ -316,13 +380,19 @@ for iBlk=1:length(data_y)
                 tbasis(1:round((tau-tHRF(1))/dt),1:2,iConc) = 0;
             end
             
+            if T>0
+                for ii=1:nB
+                    foo = conv(tbasis(:,ii,iConc),ones(round(T/dt),1)) / round(T/dt);
+                    tbasis(:,ii,iConc) = foo(1:ntHRF,1);
+                end
+            end
         end
         
     elseif idxBasis==4
         % AFNI Gamma function
-        if length(paramsBasis)==2
+        if length(paramsBasis)==3
             nConc = 1;
-        else
+        elseif length(paramsBasis)==6
             nConc = 2;
         end
         
@@ -330,11 +400,16 @@ for iBlk=1:length(data_y)
         tbasis=zeros(ntHRF,nB,nConc);
         for iConc = 1:nConc
             
-            p = paramsBasis((iConc-1)*2+1);
-            q = paramsBasis((iConc-1)*2+2);
+            p = paramsBasis((iConc-1)*3+1);
+            q = paramsBasis((iConc-1)*3+2);
+            T = paramsBasis((iConc-1)*3+3);
             
             tbasis(:,1,iConc) = (tHRF/(p*q)).^p.* exp(p-tHRF/q);
             
+            if T>0
+                foo = conv(tbasis(:,1,iConc),ones(round(T/dt),1)) / round(T/dt);
+                tbasis(:,1,iConc) = foo(1:ntHRF,1);
+            end
         end
         
     end
@@ -365,12 +440,25 @@ for iBlk=1:length(data_y)
     % Expand design matrix nth order polynomial for drift correction
     % rescale polynomial to avoid bad conditionning
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    xDrift = ones(nT,driftOrder);
-    for ii=2:(driftOrder+1)
-        xDrift(:,ii) = ([1:nT]').^(ii-1);
-        xDrift(:,ii) = xDrift(:,ii) / xDrift(end,ii);
+    if size(dcRuns,2)>1
+        fooxDrift = [];
+        for r = 1:size(dcRuns,2)
+            xDrift = ones(size(dcRuns{r}.dataTimeSeries,1),driftOrder);
+            for ii=2:(driftOrder+1)
+                xDrift(:,ii) = ([1:size(dcRuns{r}.dataTimeSeries,1)]').^(ii-1);
+                xDrift(:,ii) = xDrift(:,ii) / xDrift(end,ii);
+            end
+            fooxDrift = [fooxDrift; xDrift];
+        end
+        xDrift = fooxDrift;
+        
+    else
+        xDrift = ones(nT,driftOrder);
+        for ii=2:(driftOrder+1)
+            xDrift(:,ii) = ([1:nT]').^(ii-1);
+            xDrift(:,ii) = xDrift(:,ii) / xDrift(end,ii);
+        end
     end
-    
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Expand design matrix with Aaux
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -560,6 +648,19 @@ for iBlk=1:length(data_y)
                 end
             end
             
+            % #### concetanted final At for session: get separate regressor for the aux for each run ####
+            naux = (size(At,2)-size(dA,2));
+            fooAt = zeros(size(At,1),naux*size(dcRuns,2));
+            
+            fooAt(1:size(dcRuns{1}.dataTimeSeries,1),1:naux) =  At(1:size(dcRuns{1}.dataTimeSeries,1),size(dA,2)+1:end);
+            
+            for i = 1:size(dcRuns,2)-1
+                fooAt(size(dcRuns{i}.dataTimeSeries,1)+1:size(dcRuns{i}.dataTimeSeries,1)+size(dcRuns{i+1}.dataTimeSeries,1),naux+1:naux*(i+1)) =  At(size(dcRuns{i}.dataTimeSeries,1)+1:size(dcRuns{i}.dataTimeSeries,1)+size(dcRuns{i+1}.dataTimeSeries,1),size(dA,2)+1:end);
+            end
+            
+            At = [At(:,1:size(dA,2)) fooAt];
+            % #### end ####
+            
             if ~isempty(lstML)
                 
                 %tcheck if the matrix is well conditionned
@@ -576,19 +677,19 @@ for iBlk=1:length(data_y)
                     yresid = zeros(size(y));
                     
                     foo = nTrials{iBlk};
-                    nTrials{iBlk} = zeros(1,size(stimAmps,2));
+                    nTrials{iBlk} = zeros(1,size(s,2));
                     nTrials{iBlk}(lstCond) = foo;
                     
                     foo = yavg;
-                    yavg = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
+                    yavg = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
                     yavg(:,:,:,lstCond) = foo;
                     
                     foo = yavgstd;
-                    yavgstd = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
+                    yavgstd = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
                     yavgstd(:,:,:,lstCond) = foo;
                     
                     foo = ysum2;
-                    ysum2 = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
+                    ysum2 = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
                     ysum2(:,:,:,lstCond) = foo;
                     
                     beta = [];
@@ -608,14 +709,14 @@ for iBlk=1:length(data_y)
                     for chanIdx=1:length(lstML)
                         ytmp2 = y(lstInc,conc,lstML(chanIdx));
                         [dmoco, beta, tstat(:,lstML(chanIdx),conc), pval(:,lstML(chanIdx),conc), sigma, CovB(:,:,lstML(chanIdx),conc), dfe, w, P, f] = ar_glm_final(squeeze(ytmp2),At(lstInc,:));
-
                         foo(:,lstML(chanIdx),conc)=beta;
-                        ytmp(:,1,chanIdx) = dmoco; %We also need to keep my version of "Yvar" and "Bvar"                    
+                        ytmp(:,1,chanIdx) = dmoco;
+                        
+                        %We also need to keep my version of "Yvar" and "Bvar"
                         
                         yvar(:,lstML(chanIdx),conc)=sigma.^2;
                         bvar(:,lstML(chanIdx),conc)=diag(CovB(:,:,lstML(chanIdx),conc));  %Note-  I am only keeping the diag terms.  This lets you test if beta != 0,
                         %but in the future the HOMER-2 code needs to be modified to keep the entire cov-beta matrix which you need to test between conditions e.g. if beta(1) ~= beta(2)
-                        % reply to above comment from DAB: Now directly using CovB for the contrast calculations. MAY
                     end
                 end
                 
@@ -662,9 +763,8 @@ for iBlk=1:length(data_y)
                                     for m = 1:nCond
                                         cv_dummy = [cv_dummy ones(1,nB)*c_vector(m)];
                                     end
-                                    cv_extended = [cv_dummy zeros(1,size(beta_label,2)-size(cv_dummy,2))];
+                                    cv_extended = [cv_dummy zeros(1,size(At,2)-size(cv_dummy,2))];
                                 end
-                                
                                 tval_contrast(:,lstML(iCh),conc) = cv_extended * foo(:,lstML(iCh),conc)./sqrt(cv_extended * (pinvA*pinvA') * yvar(:,lstML(iCh),conc) * cv_extended');
                                 pval_contrast(:,lstML(iCh),conc) = 1-tcdf(abs(tval_contrast(:,lstML(iCh),conc)),(size(y,1)-1));
                             end
@@ -682,11 +782,10 @@ for iBlk=1:length(data_y)
                         end
                     end
                     
-                elseif glmSolveMethod==2  % iWLS
+                elseif glmSolveMethod==2  % WLS
                     
                     yest(:,lstML,conc) = At * foo(:,lstML,conc);
                     for iCh = 1:length(lstML)
-                        
                         % GLM stats for contrast between conditions, given a c_vector exists
                         if nCond > 1
                             if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond)
@@ -703,7 +802,6 @@ for iBlk=1:length(data_y)
                             end
                         end
                         %
-                        
                         for iCond=1:nCond
                             if size(tbasis,3)==1
                                 yavgstd(:,lstML(iCh),conc,iCond) = diag(tbasis*diag(bvar([1:nB]+(iCond-1)*nB,lstML(iCh),conc))*tbasis').^0.5;
@@ -747,23 +845,23 @@ for iBlk=1:length(data_y)
     end
     
     foo = nTrials{iBlk};
-    nTrials{iBlk} = zeros(1,size(stimAmps,2));
+    nTrials{iBlk} = zeros(1,size(s,2));
     nTrials{iBlk}(lstCond) = foo;
     
     foo = yavg;
-    yavg = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
+    yavg = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
     yavg(:,:,:,lstCond) = foo;
     
     foo = yavgstd;
-    yavgstd = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
+    yavgstd = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
     yavgstd(:,:,:,lstCond) = foo;
     
     foo = ysum2;
-    ysum2 = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
+    ysum2 = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
     ysum2(:,:,:,lstCond) = foo;
     
     foo = tb;
-    beta = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
+    beta = zeros(size(foo,1),size(foo,2),size(foo,3),size(s,2));
     beta(:,:,:,lstCond) = foo;
     
     %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -799,7 +897,7 @@ for iBlk=1:length(data_y)
     beta_blks{iBlk} = beta;
     yR_blks{iBlk}   = yR;
     
- % stats struct
+    % stats struct
     if glmSolveMethod == 1 % for OLS
         % GLM stats for each condition
         hmrstats.beta_label = beta_label;

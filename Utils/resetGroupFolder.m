@@ -8,21 +8,21 @@ if ~exist('options','var') || isempty(options)
     options = 'registry_reset';
 end
 
-if exist([dirname, 'groupResults.mat'],'file')
-    delete([dirname, 'groupResults.mat']);
-end
+cfg = ConfigFileClass();
+outputDir           = cfg.GetValue('Output Folder Name');
+procStreamCfgFile   = cfg.GetValue('Processing Stream Config File');
 
-if isempty(findstr(options, 'nodatatree')) %#ok<*FSTR>
-    maingui.dataTree = DataTreeClass(dirname,'','','files');
+if ispathvalid(outputDir,'dir')
+    rmdir(outputDir, 's');
+elseif isempty(findstr(options, 'nodatatree')) %#ok<*FSTR>
+    maingui.dataTree = DataTreeClass(dirname, '', '', 'files');
     for iG = 1:length(maingui.dataTree.groups)
         maingui.dataTree.SetCurrElem(iG,0,0)
         maingui.dataTree.ResetCurrElem();
     end
 end
 
-cfg = ConfigFileClass();
-procStreamCfgFile = cfg.GetValue('Processing Stream Config File');
-if exist([dirname, procStreamCfgFile],'file')
+if ispathvalid([dirname, procStreamCfgFile],'file')
     delete([dirname, procStreamCfgFile]);
 end
 

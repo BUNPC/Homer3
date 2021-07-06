@@ -234,6 +234,19 @@ classdef SubjClass < TreeNodeClass
             
         
         % ----------------------------------------------------------------------------------
+        function CreateOutputDir(obj)
+            if ispathvalid([obj.pathOutputAlt, obj.outputDirname, obj.name])
+                return;
+            end
+            if ~ispathvalid([obj.pathOutputAlt, obj.name])
+                return;
+            end
+            mkdir([obj.pathOutputAlt, obj.outputDirname, obj.name]);
+        end
+            
+
+        
+        % ----------------------------------------------------------------------------------
         function LoadVars(obj, r, tHRF_common)
             % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
             % all runs. Use smallest tHRF as the common one.
@@ -248,7 +261,21 @@ classdef SubjClass < TreeNodeClass
             obj.outputVars.tHRFRuns{r.iRun}      = r.procStream.output.GetTHRF();
             obj.outputVars.mlActRuns{r.iRun}     = r.procStream.output.GetVar('mlActAuto');
             obj.outputVars.nTrialsRuns{r.iRun}   = r.procStream.output.GetVar('nTrials');
-            obj.outputVars.stimRuns{r.iRun}      = r.GetVar('stim');
+            if ~isempty(r.procStream.output.GetVar('misc'))
+                if isfield(r.procStream.output.misc, 'stim') == 1
+                    obj.outputVars.stimRuns{r.iRun}      = r.procStream.output.misc.stim;
+                else
+                    obj.outputVars.stimRuns{r.iRun}      = r.GetVar('stim');
+                end
+            else
+                obj.outputVars.stimRuns{r.iRun}      = r.GetVar('stim');
+            end
+            obj.outputVars.dcRuns{r.iRun}       = r.procStream.output.GetVar('dc');
+            obj.outputVars.AauxRuns{r.iRun}      = r.procStream.output.GetVar('Aaux');
+            obj.outputVars.tIncAutoRuns{r.iRun}  = r.procStream.output.GetVar('tIncAuto');
+            obj.outputVars.rcMapRuns{r.iRun}     = r.procStream.output.GetVar('rcMap');
+
+            
             
             % a) Find all variables needed by proc stream
             args = obj.procStream.GetInputArgs();

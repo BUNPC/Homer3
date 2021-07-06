@@ -1,5 +1,5 @@
 % SYNTAX:
-% yAvgStd = hmrS_RunAvgStd3(yAvgRuns, yAvgStdRuns, nTrialsRuns)
+% yAvgStd = hmrS_RunAvgStd2(yAvgRuns, yAvgStdRuns, nTrialsRuns)
 %
 % UI NAME:
 % Run_Average_Standard_Deviation
@@ -16,10 +16,10 @@
 % yAvgStdOut: the standard deviation across runs
 %
 % USAGE OPTIONS:
-% Run_Average_Standard_Deviation_on_Concentration_Data:  dcAvgStd  = hmrS_RunAvgStd3(dcAvgRuns, dcAvgStdRuns, nTrialsRuns)
+% Run_Average_Standard_Deviation_on_Concentration_Data:  dcAvgStd  = hmrS_RunAvgStd2(dcAvgRuns, dcAvgStdRuns, nTrialsRuns)
 %
 
-function yAvgStdOut = hmrS_RunAvgStd3(yAvgRuns, yAvgStdRuns, nTrialsRuns)
+function yAvgStdOut = hmrS_RunAvgStd2(yAvgRuns, yAvgStdRuns, nTrialsRuns)
 
 yAvgStdOut = DataClass();
 N = 0;

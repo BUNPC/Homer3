@@ -413,6 +413,11 @@ switch(proclevel)
         maingui.dataTree.SetCurrElem(iGroup, iSubj, iRun);
 end
 [iGroup, iSubj, iRun] = maingui.dataTree.GetCurrElemIndexID();
+if iRun == 0
+    set(handles.menuItemPowerSpectrum, 'enable', 'off')
+else
+    set(handles.menuItemPowerSpectrum, 'enable', 'on')
+end
 listboxGroupTree_Callback([], [iGroup,iSubj,iRun], handles)
 Display(handles, hObject);
 
@@ -1561,6 +1566,7 @@ end
 Display(handles, hObject);
 
 
+
 % --------------------------------------------------------------------
 function checkboxExcludeStims_Callback(hObject, eventdata, handles)
 global maingui
@@ -1585,6 +1591,7 @@ else
     MainGUI_EnableDisablePlotEditMode(handles, 'on');
 end
 Display(handles, hObject);
+
 
 
 % --------------------------------------------------------------------
@@ -1620,6 +1627,7 @@ end
 Display(handles, hObject);
 
 
+
 % --------------------------------------------------------------------
 function ExcludeStims_ButtonDownFcn(hObject, eventdata, handles)
 global maingui
@@ -1647,6 +1655,7 @@ end
 Display(handles, hObject);
 
 
+
 % --------------------------------------------------------------------
 function checkboxShowExcludedTimeManual_Callback(hObject, eventdata, handles)
 
@@ -1655,6 +1664,7 @@ if get(hObject, 'value')==1
     set(handles.checkboxShowExcludedTimeAutoByChannel, 'value',0) 
 end
 Display(handles, hObject);
+
 
 
 % --------------------------------------------------------------------
@@ -1667,6 +1677,7 @@ end
 Display(handles, hObject);
 
 
+
 % --------------------------------------------------------------------
 function checkboxShowExcludedTimeAutoByChannel_Callback(hObject, eventdata, handles)
 
@@ -1675,6 +1686,7 @@ if get(hObject, 'value')==1
     set(handles.checkboxShowExcludedTimeAuto, 'value',0) 
 end
 Display(handles, hObject);
+
 
 
 % --------------------------------------------------------------------
@@ -1693,6 +1705,7 @@ switch(out.procElemSelect)
     otherwise
 end
 maingui.dataTree.currElem.ExportHRF(procElemSelect);
+
 
 
 % --------------------------------------------------------------------
@@ -1731,7 +1744,7 @@ cfg.Close();
 
 
 % --------------------------------------------------------------------
-function menuItemPowerSpectrum_Callback(hObject, eventdata, handles)
+function menuItemPowerSpectrum_Callback(~, ~, ~)
 % hObject    handle to menuItemPowerSpectrum (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -1741,8 +1754,13 @@ n_channels = length(iCh);
 if n_channels > 0
     iSrcDet = maingui.axesSDG.iSrcDet;
     colors = maingui.axesSDG.linecolor;
-    d = maingui.dataTree.currElem.acquired.data.dataTimeSeries;
-    sf = maingui.dataTree.currElem.acquired.data.time(2) - maingui.dataTree.currElem.acquired.data.time(1);
+    d = maingui.dataTree.currElem.GetDataTimeSeries();
+    t = maingui.dataTree.currElem.GetTime();
+    if isempty(t)
+        msgbox('Power Spectrum Plot Tool unavailable for subject and group class');
+        return;
+    end
+    sf = t(2)-t(1);
     fs = 1/sf;
     try
        close(maingui.spectrumFigureHandle);
@@ -1771,7 +1789,7 @@ end
 
 
 % -------------------------------------------------------------------------------
-function togglebuttonMinimizeGUI_Callback(hObject, eventdata, handles)
+function togglebuttonMinimizeGUI_Callback(hObject, ~, handles)
 u0 = get(handles.MainGUI, 'units');
 k = [1.0, 1.0, 0.8, 0.8];
 p0 = get(handles.MainGUI, 'position');
@@ -1795,11 +1813,12 @@ end
 pause(.2)
 set(handles.MainGUI, 'position', p);
 rePositionGuiWithinScreen(handles.MainGUI);
+MainGUI_EnableDisableGUI(handles, 'on')
 
 
 
 % -------------------------------------------------------------------------------
-function pushbuttonResetExcludedTimeCh_Callback(hObject, eventdata, handles)
+function pushbuttonResetExcludedTimeCh_Callback(hObject, ~, handles)
 global maingui
 if isa(maingui.dataTree.currElem, 'RunClass')
     ch = MenuBox('Are you sure you would like to re-enable all excluded channels, stims, and time points?',{'Yes','No'});
@@ -1819,8 +1838,10 @@ else
     errordlg('Select a run to reset its excluded channels and time points.','No run selected');
 end
 
+
+
 % --------------------------------------------------------------------
-function menuItemSegmentSnirf_Callback(hObject, eventdata, handles)
+function menuItemSegmentSnirf_Callback(~, ~, handles)
 global maingui;
 if maingui.dataTree.IsFlatFileDir()
     MessageBox('Segment Tool does not support flat file directories yet, please change to a deep directory style (using sub-directories for groups and subjects) to use the segment tool via Homer3');
@@ -1835,8 +1856,9 @@ end
 DisplayGroupTree(handles);
 
 
+
 % --------------------------------------------------------------------
-function menuItemDownsampleSnirf_Callback(hObject, eventdata, handles)
+function menuItemDownsampleSnirf_Callback(~, ~, handles)
 global maingui;
 if maingui.dataTree.IsFlatFileDir()
     MessageBox('Downsample Tool does not support flat file directories yet, please change to a deep directory style (using sub-directories for groups and subjects) to use the downsample tool via Homer3');
@@ -1850,16 +1872,20 @@ for iG = 1:length(maingui.dataTree.groups)
 end
 DisplayGroupTree(handles);
 
+
+
 % --------------------------------------------------------------------
-function menuItemExportProcessingStreamScript_Callback(hObject, eventdata, handles)
+function menuItemExportProcessingStreamScript_Callback(~, ~, ~)
 global maingui
 fname = uiputfile('*.m', 'Export Processing Stream to Script (.m)', 'processing_stream.m');
 if fname ~= 0
     exportProcessScript(fname, maingui.dataTree.currElem.procStream);
 end
 
+
+
 % --------------------------------------------------------------------
-function panProbeCallback(hObject, eventdata, handles)
+function panProbeCallback(hObject, ~, handles)
 global maingui;
 axes(handles.axesSDG)
 xrange = xlim();
@@ -1884,8 +1910,9 @@ elseif get(hObject,'string')=='\/'
 end
 
 
+
 % --------------------------------------------------------------------
-function zoomInCallback(hObject, eventdata, handles)
+function zoomInCallback(~, ~, handles)
 global maingui;
 axes(handles.axesSDG)
 axes(handles.axesSDG)
@@ -1899,8 +1926,10 @@ ylim( [yrange(1)+yd/10 yrange(2)-yd/10] );
 maingui.axesSDG.xlim = [xrange(1)+xd/10 xrange(2)-xd/10];
 maingui.axesSDG.ylim = [yrange(1)+yd/10 yrange(2)-yd/10];
 
+
+
 % --------------------------------------------------------------------
-function zoomOutCallback(hObject, eventdata, handles)
+function zoomOutCallback(~, ~, handles)
 global maingui;
 axes(handles.axesSDG)
 axes(handles.axesSDG)
@@ -1913,8 +1942,10 @@ ylim( [yrange(1)-yd/10 yrange(2)+yd/10] );
 maingui.axesSDG.xlim = [xrange(1)-xd/10 xrange(2)+xd/10];
 maingui.axesSDG.ylim = [yrange(1)-yd/10 yrange(2)+yd/10];
 
+
+
 % --------------------------------------------------------------------
-function resetProbeViewCallback(hObject, eventdata, handles)
+function resetProbeViewCallback(~, ~, handles)
 global maingui;
 axes(handles.axesSDG)
 bbox = maingui.dataTree.currElem.GetSdgBbox();
@@ -1923,13 +1954,16 @@ ylim( bbox(3:4) );
 maingui.axesSDG.xlim = bbox(1:2);
 maingui.axesSDG.ylim = bbox(3:4);
 
+
+
 % --------------------------------------------------------------------
-function menuItemAppConfigGUI_Callback(hObject, eventdata, handles)
+function menuItemAppConfigGUI_Callback(~, ~, ~)
 configSettingsGUI();
 
 
+
 % ------------------------------------------
-function callbacks = UnitTestInit(handles) %#ok<DEFNU,STOUT>
+function callbacks = UnitTestInit(handles)
 fields = propnames(handles);
 for ii = 1:length(fields)
     callbackName = '';
@@ -1960,4 +1994,48 @@ callbacks.radiobuttonProcTypeGroup = @uipanelProcessingType_SelectionChangeFcn;
 callbacks.radiobuttonProcTypeSubj = @uipanelProcessingType_SelectionChangeFcn;
 callbacks.radiobuttonProcTypeRun = @uipanelProcessingType_SelectionChangeFcn;
 
+
+
+% --------------------------------------------------------------------
+function menuItemPowerSpectrum_Loglog_Callback(~, ~, ~) %#ok<*DEFNU>
+% hObject    handle to menuItemPowerSpectrum (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global maingui;
+iCh = maingui.axesSDG.iCh;
+n_channels = length(iCh);
+if n_channels > 0
+    iSrcDet = maingui.axesSDG.iSrcDet;
+    colors = maingui.axesSDG.linecolor;
+    d = maingui.dataTree.currElem.GetDataTimeSeries();
+    t = maingui.dataTree.currElem.GetTime();
+    if isempty(t)
+        msgbox('Power Spectrum Plot Tool unavailable for subject and group class');
+        return;
+    end
+    sf = t(2)-t(1);
+    fs = 1/sf;
+    try
+       close(maingui.spectrumFigureHandle);
+    catch
+    end
+    maingui.spectrumFigureHandle = figure('NumberTitle', 'off', 'Name', 'PSD of selected channels');
+    n = 3;
+    m = ceil(n_channels / n);
+    for i = 1:n_channels
+        % 100 sec window with 50% overlap
+        window = floor(100 / sf);
+        overlap = window / 2;
+        bins = 2048;
+        [pxx,f] = pwelch(d(:,iCh(i)), window, overlap, bins, fs);
+        subplot(m,n,i);
+        semilogx(f, 10*log10(pxx), 'Color', colors(i,:));
+        title([num2str(iSrcDet(i,1)), ' \rightarrow ', num2str(iSrcDet(i,2))]);
+        xlim([0,fs/2]);
+        xlabel(sprintf('Frequency (Hz)'));
+        ylabel(sprintf('PSD (dB)\n'));
+    end
+else
+    errordlg('Cannot calculate power spectra with no channels selected.', 'No channels selected'); 
+end
 

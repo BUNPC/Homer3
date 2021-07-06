@@ -7,7 +7,7 @@ classdef GroupClass < TreeNodeClass
     end
     
     properties % (Access = private)
-        pathOutput
+        outputFilename
     end
     
     
@@ -28,6 +28,11 @@ classdef GroupClass < TreeNodeClass
             
             obj.type    = 'group';
             obj.subjs   = SubjClass().empty;
+                        
+            obj.outputFilename = obj.cfg.GetValue('Output File Name');
+            if isempty(obj.outputFilename)
+                obj.outputFilename = 'groupResults.mat';
+            end
             
             if nargin==0
                 return;
@@ -105,6 +110,12 @@ classdef GroupClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function verstr = GetVersionStr(obj)
             verstr = version2string(obj.version);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function filename = GetOutputFilename(obj)
+            filename = obj.outputFilename;
         end
         
         
@@ -268,12 +279,22 @@ classdef GroupClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function SetPath(obj, dirname)
             obj.path = dirname;
+            
+            % In case there's not enough disk space in the current
+            % group folder, we have a alternative path that can be 
+            % set independently for saving group results. By default 
+            % it is set to root group folder. 
+            obj.pathOutputAlt = obj.path;
         end
         
         
         % ----------------------------------------------------------------------------------
         function SetPathOutput(obj, dirname)
-            obj.pathOutput = dirname;
+            % In case there's not enough disk space in the current
+            % group folder, we have a alternative path that can be 
+            % set independently for saving group results. By default 
+            % it is set to root group folder. 
+            obj.pathOutputAlt = dirname;
         end
         
         
@@ -324,7 +345,7 @@ classdef GroupClass < TreeNodeClass
             % Find out if we need to ask user for processing options 
             % config file to initialize procStream.fcalls at the 
             % run, subject or group level. First try to find the proc 
-            % input at each level from the save results groupresults.mat 
+            % input at each level from the saved derived data. 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             g = obj;
             s = obj.subjs(1);
@@ -498,8 +519,8 @@ classdef GroupClass < TreeNodeClass
             if ~exist('option','var')
                 option = 'down';
             end
-            if exist([obj.path, 'groupResults.mat'],'file')
-                delete([obj.path, 'groupResults.mat']);
+            if exist([obj.path, obj.outputDirname, obj.outputFilename],'file')
+                delete([obj.path, obj.outputDirname, obj.outputFilename]);
             end
             if strcmp(option, 'down')
                 for jj=1:length(obj.subjs)
@@ -584,11 +605,13 @@ classdef GroupClass < TreeNodeClass
                 return;
             end
             
+            obj.BackwardCompatability();
+
             group = [];
-            if exist([obj.path, 'groupResults.mat'],'file')
-                g = load([obj.path, 'groupResults.mat']);
+            if ispathvalid([obj.path, obj.outputDirname, obj.outputFilename],'file')
+                g = load([obj.path, obj.outputDirname, obj.outputFilename]);
                 
-                % Do some basic error checks on groupResults contents
+                % Do some basic error checks on saved derived data contents
                 if isproperty(g, 'group') && isa(g.group, 'GroupClass')
                     if isproperty(g.group, 'version')
                         if ismethod(g.group, 'GetVersion')
@@ -602,7 +625,7 @@ classdef GroupClass < TreeNodeClass
             % Copy saved group to current group if versions are compatible. obj.CompareVersions==0 
             % means the versions of the saved group and current one are equal.
             if ~isempty(group) && obj.CompareVersions(group)<=0
-                % Do a conditional copy of group from groupResults file. Conditional copy copies ONLY 
+                % Do a conditional copy of group from saved processing output file. Conditional copy copies ONLY 
                 % derived data, that is, only from procStream but NOT acqruired. We do not want to 
                 % overwrite the real acquired data loaded from acquisition files 
                 hwait = waitbar(0,'Loading group');
@@ -610,9 +633,10 @@ classdef GroupClass < TreeNodeClass
                 close(hwait);
             else
                 group = obj; %#ok<NASGU>
-                if exist([obj.path, 'groupResults.mat'],'file')
-                    obj.logger.Write(sprintf('Warning: This folder contains old version of groupResults.mat. Will move it to groupResults_old.mat\n'));
-                    movefile([obj.path, 'groupResults.mat'], './groupResults_old.mat')
+                if exist([obj.path, obj.outputDirname, obj.outputFilename],'file')
+                    obj.logger.Write(sprintf('Warning: This folder contains old version of processing results. Will move it to *_old.mat\n'));
+                    [~,outputFilename] = fileparts(obj.outputFilename);
+                    movefile([obj.path, obj.outputDirname, obj.outputFilename], [obj.path, obj.outputDirname, outputFilename, '_old.mat'])
                 end
                 obj.Save();
             end
@@ -627,15 +651,16 @@ classdef GroupClass < TreeNodeClass
                 hwait = [];
             end            
             
-            obj.logger.Write(sprintf('Saving processed data in %s\n', [obj.path, 'groupResults.mat']));
+            obj.logger.Write(sprintf('Saving processed data in %s\n', [obj.path, obj.outputDirname, obj.outputFilename]));
             
             if ishandle(hwait)
                 obj.logger.Write(sprintf('Auto-saving processing results ...\n'), obj.logger.ProgressBar(), hwait);
             end
             
-            group = GroupClass(obj); %#ok<NASGU>
+            group = GroupClass(obj);
             try 
-                save([obj.pathOutput, 'groupResults.mat'], 'group');
+                obj.CreateOutputDir();
+                save([obj.pathOutputAlt, obj.outputDirname, obj.outputFilename], 'group');
             catch ME
                 MessageBox(ME.message);
                 obj.logger.Write(ME.message);
@@ -643,6 +668,19 @@ classdef GroupClass < TreeNodeClass
         end
         
         
+        
+        % ----------------------------------------------------------------------------------
+        function CreateOutputDir(obj)
+            if ispathvalid([obj.pathOutputAlt, obj.outputDirname])
+                return;
+            end
+            mkdir([obj.pathOutputAlt, obj.outputDirname]);
+            for ii = 1:length(obj.subjs)
+                obj.subjs(ii).CreateOutputDir();
+            end
+        end
+            
+           
         
         % ----------------------------------------------------------------------------------
         function SaveAcquiredData(obj)            
@@ -945,7 +983,29 @@ classdef GroupClass < TreeNodeClass
                 end
             end
         end
-                
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function BackwardCompatability(obj)
+%             if ispathvalid([obj.path, 'groupResults.mat'])
+%                 q = MenuBox('Detected derived data in this group folder in the old format. Do you want to save it in the new format?',{'Yes','No'});
+%                 if q==1
+%                     if ~ispathvalid([obj.path, obj.outputDirname])
+%                         mkdir([obj.path, obj.outputDirname])
+%                     end
+%                     movefile('groupResults.mat', [obj.path, obj.outputDirname, obj.outputFilename])
+%                     files = dir('*.mat');
+%                     for ii = 1:length(files)
+%                         movefile(files(ii).name, [obj.path, obj.outputDirname]);
+%                     end
+%                 else
+%                     obj.outputDirname = '';
+%                 end
+%             end
+        end
+        
+
     end  % Private methods
 
 end % classdef GroupClass < TreeNodeClass

@@ -13,6 +13,9 @@ classdef DataTreeClass <  handle
         dataStorageScheme
     end
     
+    
+    
+    
     methods
         
         % ---------------------------------------------------------------
@@ -368,7 +371,11 @@ classdef DataTreeClass <  handle
                     runCurr = RunClass().empty();
                 end
             end
-            obj.logger.Write(sprintf('\nLoaded acquisition data in %0.1f seconds\n\n', toc));            
+            obj.logger.Write(sprintf('\n'));
+            obj.logger.Write(sprintf('Loaded group %s acquisition data in %0.1f seconds\n', obj.groups(iG).name, toc));
+            obj.logger.Write(sprintf('  Derived data output folder   : %s%s\n', obj.groups(iG).path, obj.groups(iG).outputDirname));
+            obj.logger.Write(sprintf('  Derived data output file     : %s\n\n', obj.groups(iG).outputFilename));
+            
         end
 
 
@@ -392,11 +399,6 @@ classdef DataTreeClass <  handle
                 group.SetIndexID(jj);
                 obj.groups(jj) = group;
                 obj.groups(jj).SetPath(obj.dirnameGroups{jj})
-
-                % In case there's not enough disk space in the current
-                % group folder, we have a separate path for saving group
-                % results
-                obj.groups(jj).SetPathOutput(obj.dirnameGroups{jj})
                 obj.logger.Write(sprintf('Added group %s to dataTree.\n', obj.groups(jj).GetName));
             end
 
@@ -553,10 +555,10 @@ classdef DataTreeClass <  handle
             
             t_local = tic;
             for ii = 1:length(obj.groups)
-                obj.logger.Write(sprintf('Saving group %d in %s\n', ii, [obj.groups(ii).pathOutput, 'groupResults.mat']));                
+                obj.logger.Write(sprintf('Saving group %d in %s\n', ii, [obj.groups(ii).pathOutputAlt, obj.groups(ii).GetOutputFilename()]));
                 obj.groups(ii).Save(hwait);
             end
-            obj.logger.Write(sprintf('Completed saving groupResults.mat for all groups in %0.3f seconds.\n', toc(t_local)));
+            obj.logger.Write(sprintf('Completed saving processing results for all groups in %0.3f seconds.\n', toc(t_local)));
         end
 
 

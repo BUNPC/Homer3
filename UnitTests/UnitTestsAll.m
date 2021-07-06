@@ -3,7 +3,6 @@ global logger
 
 t_local = tic;
 
-
 CleanUp(true);
 
 cleanupObj = onCleanup(@()userInterrupt_Callback(true));
@@ -16,7 +15,7 @@ c.SetValue('Regression Test Active','true');
 c.SetValue('Include Archived User Functions','Yes');
 c.SetValue('Default Processing Stream Style','NIRS');
 c.Save();
-UnitTestsAll_Nirs(false);
+% UnitTestsAll_Nirs(false);
 
 c.SetValue('Default Processing Stream Style','SNIRF');
 c.Save();

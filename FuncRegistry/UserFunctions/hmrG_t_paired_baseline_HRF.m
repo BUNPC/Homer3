@@ -45,8 +45,8 @@ for iBlk = 1:nDataBlks
             end
         end
         
-        baseline_yAvg(iSubj,:,:,:) = mean(yAvg(1:round(fq*abs(min(tHRF))),:,:,:),1);
-        mean_yAvg(iSubj,:,:,:) = mean(yAvg(round(fq*(tHRFrange(1) + abs(min(tHRF)))):round(fq*(tHRFrange(2) + abs(min(tHRF)))),:,:,:),1);
+        baseline_yAvg(iSubj,:,:,:) = squeeze(mean(yAvg(1:round(fq*abs(min(tHRF))),:,:,:),1));
+        mean_yAvg(iSubj,:,:,:) = squeeze(mean(yAvg(round(fq*(tHRFrange(1) + abs(min(tHRF)))):round(fq*(tHRFrange(2) + abs(min(tHRF)))),:,:,:),1));
         
     end
     
@@ -55,7 +55,7 @@ for iBlk = 1:nDataBlks
         for i = 1:size(yAvg, 2)  % HbO/R/T
             for j = 1:size(yAvg,3) % Channels
                 
-                [h,p,c,stats] = ttest(baseline_yAvg(:,i,j,iCond),mean_yAvg(:,i,j,iCond));
+                [h,p,c,stats] = ttest(mean_yAvg(:,i,j,iCond),baseline_yAvg(:,i,j,iCond));
                 pval(i,j,iCond) = p;
                 hval(i,j,iCond) = h;
                 cval(i,j,iCond,:) = c;

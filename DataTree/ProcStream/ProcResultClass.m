@@ -169,18 +169,19 @@ classdef ProcResultClass < handle
             if isempty(filename)
                 return;
             end
-            [pname, fname, ext] = fileparts(filename);
-            if isempty(ext)
-                ext = '.mat';
-                if ispathvalid([filesepStandard(pname), fname], 'dir')
-                    pname = [filesepStandard(pname), fname];
-                elseif ispathvalid([filesepStandard(['../', pname]), fname], 'dir')
-                    pname = [filesepStandard(['../', pname]), fname];
-                elseif ispathvalid(filesepStandard(['../', pname]), 'dir')
-                    pname = filesepStandard(['../', pname]);
+            [pname, fname] = fileparts(filename);
+            options = 'nameonly';
+            if ispathvalid(fname)
+                % Case 1: Flat group dir structure                
+                if ispathvalid([filename, '.mat'])
+                    % Loading: .mat file exists
+                    options = 'dir';
+                else
+                    options = 'nameonly:dir';                    
                 end
+                pname = filesepStandard([filesepStandard(pname, options), fname], 'nameonly:dir');
             end
-            filename = [filesepStandard(pname, 'nameonly:dir'), fname, ext];
+            filename = [filesepStandard(pname, options), fname, '.mat'];
             obj.filename = filename;
         end
         
@@ -224,7 +225,7 @@ classdef ProcResultClass < handle
             
             try
                 obj.logger.Write(sprintf('Saving derived data output: %s', obj.filename));
-            	save(obj.filename, '-mat', 'output');
+            	save(obj.filename, '-mat', 'output');                
             catch
                 if ~ispathvalid(obj.filename)
                     msg = sprintf('ERROR: Was not able to save processed data - %s not found.', obj.filename);
@@ -332,8 +333,6 @@ classdef ProcResultClass < handle
                 indent = 6;
             end
             fprintf('%sOutput:\n', blanks(indent));
-            fprintf('%snTrials:\n', blanks(indent+4));
-            pretty_print_matrix(obj.nTrials, indent+4, sprintf('%%d'))
         end
         
     end

@@ -62,7 +62,7 @@ while files.isempty()
     switch fmt
         case {'snirf','.snirf'}
             files = DataFilesClass(dirnameGroup, 'snirf');
-            filesSrc = DataFilesClass(dirnameGroup, 'nirs');           
+            filesSrc = DataFilesClass(dirnameGroup, 'nirs', '', false);           
             if ~filesSrc.isempty()
                 nfolders = length(filesSrc.files)-filesSrc.nfiles;
                 if nfolders==0
@@ -113,18 +113,22 @@ while files.isempty()
     if files.isempty()
         switch fmt
             case {'snirf','.snirf'}
-        msg{1} = sprintf('Homer3 did not find any %s data files to load in the current group folder. ', fmt);        
-        msg{2} = sprintf('Do you want to select another group folder?');
-        q = MenuBox(msg, {'YES','NO'});
-        if q==2
-            files = DataFilesClass();
-            return;
-        end
-        dirnameGroup = uigetdir(pwd, 'Please select another group folder ...');
-        if dirnameGroup==0
-            files = DataFilesClass();
-            return;
+                msg{1} = sprintf('Homer3 did not find any %s data files to load in the current group folder. ', fmt);
+                msg{2} = sprintf('Do you want to select another group folder?');
+                q = MenuBox(msg, {'YES','NO'});
+                if q==2
+                    files = DataFilesClass();
+                    return;
                 end
+                dirnameGroup = uigetdir(pwd, 'Please select another group folder ...');
+                if dirnameGroup==0
+                    files = DataFilesClass();
+                    return;
+                end
+                
+                % Change current folder to new group
+                cd(dirnameGroup)
+                
             case {'snirfonly'}
                 files = [];
         end

@@ -222,15 +222,24 @@ classdef DataTreeClass <  handle
                 
                 % Get file names and load them into DataTree
                 while length(obj.groups) < iGnew
+                    
+                    % Find group folder and it's acqiosition files                    
                     obj.files    = FileClass().empty();
                     obj.filesErr = FileClass().empty();
-                    
-                    dataInit = FindFiles(obj.dirnameGroups{kk}, fmt, options);
-                    if isempty(dataInit) || dataInit.isempty()
-                        return;
-                    end
+                    dataInit     = DataFilesClass();
+                    dataInitPrev = DataFilesClass();
+                    iter = 1;
+                    while dataInit.GetError() < 0
+                        dataInit = FindFiles(obj.dirnameGroups{kk}, fmt, options);
+                        if isempty(dataInit) || dataInit.isempty()
+                            return;
+                        end
+                        dataInitPrev(iter) = dataInit;
+                        obj.dirnameGroups{kk} = dataInit.pathnm;
+                        iter = iter+1;
+                    end                    
                     obj.files = dataInit.files;
-                    
+                                        
                     % Print file and folder numbers stats
                     nfolders = length(dataInit.files)-dataInit.nfiles;
                     if nfolders==0
@@ -239,6 +248,7 @@ classdef DataTreeClass <  handle
                     obj.logger.Write(sprintf('DataTreeClass.FindAndLoadGroups: Found %d data files in %d folders\n', ...
                             dataInit.nfiles, nfolders));
                     
+                    % Now load group files to data tree
                     obj.LoadGroup(iGnew, procStreamCfgFile, options);
                     if length(obj.groups) < iGnew
                         if obj.FoundDataFilesInOtherFormat(dataInit, kk)
@@ -247,9 +257,14 @@ classdef DataTreeClass <  handle
                             break;
                         end
                     end
+                    
+                    % Clean up any obsolete files in output folder if names
+                    % of files or folder was changed
+                    obj.groups(iGnew).CleanUpOutput(dataInitPrev);
+                                        
                 end
                 
-            end           
+            end
             obj.logger.Write(sprintf('Loaded data set in %0.1f seconds\n', toc));
         end
         

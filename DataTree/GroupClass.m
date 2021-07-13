@@ -300,6 +300,14 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function Add(obj, subj, run)                        
+            [~,f,e] = fileparts(subj.GetName());
+            if strcmp(f, obj.name)
+                msg{1} = sprintf('WARNING: The subject being added (%s) has the same name as the group (%s) containing it. ', [f,e], obj.name);
+                msg{2} = sprintf('The subject names should not have the same name as the group folder, otherwise '); 
+                msg{3} = sprintf('it may cause incorrect results in processing.');
+                obj.logger.Write(sprintf('%s\n', [msg{:}]));
+            end
+            
             % Add subject to this group
             jj=0;
             for ii=1:length(obj.subjs)
@@ -314,7 +322,7 @@ classdef GroupClass < TreeNodeClass
                 obj.subjs(jj) = subj;
                 obj.logger.Write(sprintf('   Added subject %s to group %s.\n', obj.subjs(jj).GetName, obj.GetName));
             end
-            
+                        
             % Add run to subj
             obj.subjs(jj).Add(run);
         end
@@ -503,11 +511,10 @@ classdef GroupClass < TreeNodeClass
             if ~exist('indent', 'var')
                 indent = 0;
             end
-            obj.logger.Write(sprintf('%sGroup 1:\n', blanks(indent)));
-            obj.procStream.Print(indent+4);
-            obj.procStream.output.Print(indent+4);
-            for ii=1:length(obj.subjs)
-                obj.subjs(ii).Print(indent+4);
+            obj.logger.Write(sprintf('%s%s,  output file: %s\n', blanks(indent), obj.name, obj.procStream.output.SetFilename(obj.GetOutputFilename())));
+            % obj.procStream.Print(indent);
+            for ii = 1:length(obj.subjs)
+                obj.subjs(ii).Print(indent);
             end
         end
         
@@ -587,7 +594,7 @@ classdef GroupClass < TreeNodeClass
             if isempty(obj)
                 return;
             end
-            err1 = obj.procStream.Load(obj.GetOutputFilename());
+            err1 = obj.procStream.Load([obj.path, obj.GetOutputFilename()]);
             err2 = obj.subjs(1).LoadSubBranch();
             if err1==0 && err2==0
                 err = 0;
@@ -960,8 +967,57 @@ classdef GroupClass < TreeNodeClass
             for ii = 1:length(obj.subjs)
                 obj.subjs(ii).ListOutputFilenames(options);
             end
-        end        
-
+        end
+        
+        
+        % ---------------------------------------------------------------
+        function CleanUpOutput(obj, filesObsolete)
+            for jj = 1:length(filesObsolete)
+                renameFlag = false;
+                for ii = 1:length(filesObsolete(jj).files)
+                    if isempty(filesObsolete(jj).files(ii).namePrev)
+                        continue;
+                    end
+                    renameFlag = true;
+                end
+                
+                % If something changed in the folder structure 
+                if renameFlag
+                    msg{1} = sprintf('Previous Homer3 processing output exists but is now inconsistent with the current ');
+                    msg{2} = sprintf('data files. This output should be regenerated in the new Homer3 session to reflect the new file/folder names. ');
+                    msg{3} = sprintf('The existing Homer processing output will be moved to %s. Is this okay?', obj.GetArchivedOutputDirname());
+                    q = MenuBox(msg,{'YES','NO'});
+                    if q==1
+                        if isempty(obj.outputDirname)
+                            movefile('*.mat', obj.GetArchivedOutputDirname())
+                            movefile('*.txt', obj.GetArchivedOutputDirname())
+                        else
+                            movefile(obj.outputDirname, obj.GetArchivedOutputDirname())                            
+                        end
+                        obj.Save();
+                    end
+                end
+            end
+        end
+        
+        
+        
+        % -----------------------------------------------------------------
+        function name = GetArchivedOutputDirname(obj)
+            n = 1;
+            addon = '_old';
+            if isempty(obj.outputDirname)
+                base = 'homerOutput';
+            else
+                base = filesepStandard(obj.outputDirname, 'file');
+            end
+            name = sprintf('%s%s%d', base, addon, n);
+            while ispathvalid(name)
+                n = n+1;
+                name = sprintf('%s%s%d', base, addon, n);
+            end
+        end
+        
     end
     
     

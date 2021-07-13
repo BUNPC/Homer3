@@ -570,6 +570,15 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function SetName(obj, name)
+            if isempty(obj)
+                return;
+            end
+            obj.name = name;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function name = GetFileName(obj)
             name = '';
             if isempty(obj)
@@ -721,7 +730,7 @@ classdef TreeNodeClass < handle
             };
         
             if exist('obj2','var')
-                msg{1} = sprintf('WARNING: Saved data for %s "%s" does not match this group folder. ', obj.type, obj.name);
+                msg{1} = sprintf('WARNING: Saved processing data for %s "%s" does not match this group folder. ', obj.type, obj.name);
                 msg{2} = sprintf('Are you sure this saved data belongs to this group folder?');
             else
                 msg{1} = sprintf('WARNING: The %s "%s" does not match the saved group data. ', obj.type, obj.name);
@@ -773,7 +782,15 @@ classdef TreeNodeClass < handle
             if ispathvalid(src)
                 if ~pathscompare(src, dst)
                     obj.logger.Write(sprintf('Moving %s to %s\n', src, dst));
-                    movefile(src, dst);
+                    rootpath = fileparts(dst);
+                    try
+                        if ~ispathvalid(rootpath)
+                            mkdir(rootpath)
+                        end
+                    	movefile(src, dst);
+                    catch
+                        obj.logger.Write(sprintf('ERROR: Failed to to move old output to new format\n'));
+                    end
                 end
             end
         end

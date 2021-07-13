@@ -209,7 +209,7 @@ classdef SubjClass < TreeNodeClass
                 option = 'down';
             end
             if strcmp(option, 'down')
-                for jj=1:length(obj.runs)
+                for jj = 1:length(obj.runs)
                     obj.runs(jj).Reset();
                 end
             end
@@ -639,12 +639,12 @@ classdef SubjClass < TreeNodeClass
                 iBlk = 1;
             end
 
-            obj.procStream.ExportHRF(obj.GetOutputFilename, obj.CondNames, iBlk);
             if strcmp(procElemSelect, 'all')
-                for ii=1:length(obj.runs)
+                for ii = 1:length(obj.runs)
                     obj.runs(ii).ExportHRF(iBlk);
                 end
-            end
+            end            
+            obj.ExportHRF@TreeNodeClass(procElemSelect, iBlk);
         end
     
         

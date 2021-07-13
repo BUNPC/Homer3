@@ -530,7 +530,7 @@ classdef GroupClass < TreeNodeClass
                 delete([obj.path, obj.outputDirname, obj.outputFilename]);
             end
             if strcmp(option, 'down')
-                for jj=1:length(obj.subjs)
+                for jj = 1:length(obj.subjs)
                     obj.subjs(jj).Reset();
                 end
             end
@@ -742,12 +742,12 @@ classdef GroupClass < TreeNodeClass
                 iBlk = 1;
             end
             
-            obj.procStream.ExportHRF(obj.GetOutputFilename, obj.CondNames, iBlk);
             if strcmp(procElemSelect, 'all')
-                for ii=1:length(obj.subjs)
+                for ii = 1:length(obj.subjs)
                     obj.subjs(ii).ExportHRF('all', iBlk);
                 end
-            end
+            end            
+            obj.ExportHRF@TreeNodeClass(procElemSelect, iBlk);            
         end
 
         

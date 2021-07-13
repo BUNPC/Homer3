@@ -158,8 +158,8 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function Reset(obj)
-            obj.procStream.output.Reset(obj.GetOutputFilename);
-            delete([obj.GetOutputFilename, '*.txt']);
+            obj.procStream.output.Reset([obj.path, obj.GetOutputFilename()]);
+            delete([obj.path, obj.GetOutputFilename(), '*.txt']);
             delete([obj.path, 'tCCAfilter_*.txt'])
         end
         
@@ -648,7 +648,6 @@ classdef TreeNodeClass < handle
                 return
             end
             err = obj.LoadSubBranch(); %#ok<*MCNPN>
-            obj.procStream.Load([obj.path, obj.GetOutputFilename]);
         end
         
         
@@ -660,6 +659,22 @@ classdef TreeNodeClass < handle
             obj.FreeMemorySubBranch();
             obj.procStream.FreeMemory(obj.GetOutputFilename);
         end
+        
+
+        % ----------------------------------------------------------------------------------
+        function ExportHRF(obj, ~, iBlk)
+
+            % Update call application GUI using it's generic Update function
+            if ~isempty(obj.updateParentGui)
+                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
+            end
+            
+            % Load derived data and export it
+            obj.procStream.Load([obj.path, obj.GetOutputFilename()]);
+            obj.procStream.ExportHRF([obj.path, obj.GetOutputFilename()], obj.CondNames, iBlk);
+            pause(.5);
+        end
+        
         
         
         % ----------------------------------------------------------------------------------

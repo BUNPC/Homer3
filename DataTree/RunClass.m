@@ -848,7 +848,7 @@ classdef RunClass < TreeNodeClass
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            obj.procStream.ExportHRF(obj.GetOutputFilename, obj.CondNames, iBlk);
+            obj.ExportHRF@TreeNodeClass('', iBlk);
         end
 
         

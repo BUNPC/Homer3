@@ -32,11 +32,11 @@ niC = max(niC);
 for iBlk = 1:nDataBlks
     % get tHRF and ml from yAvgRuns
     for iRun = 1:length(yAvgStdRuns)
-    tHRF    = yAvgStdRuns{iRun}(iBlk).GetTime();
-    ml    = yAvgStdRuns{iRun}(iBlk).GetMeasListSrcDetPairs();
-    if ~isempty(ml)
-        break
-    end
+        tHRF    = yAvgStdRuns{iRun}(iBlk).GetTime();
+        ml    = yAvgStdRuns{iRun}(iBlk).GetMeasListSrcDetPairs();
+        if ~isempty(ml)
+            break
+        end
     end
     yAvgStdOut(iBlk).SetTime(tHRF);
     
@@ -63,24 +63,20 @@ for iBlk = 1:nDataBlks
             end
         end
         
-            % get std and append
-            yAvgStd_wa = sqrt(var);
-            if yAvgStd_wa == 0
-               yAvgStd_wa = zeros(size(tHRF,1), 3, size(ml,1));
-            end
-            yAvgStdOut(iBlk).AppendDataTimeSeries(yAvgStd_wa);
-            var = 0;
-            N = 0;
-            
-            % add measlist field
-%             if ~isempty(ml)
-                for iCh = 1:size(ml,1)
-                    yAvgStdOut(iBlk).AddChannelHbO(ml(iCh,1), ml(iCh,2), iC);
-                    yAvgStdOut(iBlk).AddChannelHbR(ml(iCh,1), ml(iCh,2), iC);
-                    yAvgStdOut(iBlk).AddChannelHbT(ml(iCh,1), ml(iCh,2), iC);
-                end
-%             end
-%         end
+        % get std and append
+        yAvgStd_wa = sqrt(var);
+        if yAvgStd_wa == 0
+            yAvgStd_wa = zeros(length(tHRF), 3, size(ml,1));
+        end
+        yAvgStdOut(iBlk).AppendDataTimeSeries(yAvgStd_wa);
+        var = 0;
+        N = 0;
+        
+        for iCh = 1:size(ml,1)
+            yAvgStdOut(iBlk).AddChannelHbO(ml(iCh,1), ml(iCh,2), iC);
+            yAvgStdOut(iBlk).AddChannelHbR(ml(iCh,1), ml(iCh,2), iC);
+            yAvgStdOut(iBlk).AddChannelHbT(ml(iCh,1), ml(iCh,2), iC);
+        end
         
     end
 end

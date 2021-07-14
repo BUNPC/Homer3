@@ -912,7 +912,7 @@ classdef GroupClass < TreeNodeClass
                 obj.subjs(ii).SetConditions();
                 CondNames = [CondNames, obj.subjs(ii).GetConditions()];
             end
-            obj.CondNames    = unique(CondNames);
+            obj.CondNames = unique(CondNames);
            
             % Now that we have all conditions, set the conditions across 
             % the whole group to these

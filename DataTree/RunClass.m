@@ -325,11 +325,11 @@ classdef RunClass < TreeNodeClass
         function Print(obj, indent)
             if ~exist('indent', 'var')
                 indent = 4;
+            else
+                indent = indent+2;
             end
-            fprintf('%sRun %d:\n', blanks(indent), obj.iRun);
-            fprintf('%sCondNames: %s\n', blanks(indent+4), cell2str(obj.CondNames));
-            obj.procStream.input.Print(indent+4);
-            obj.procStream.output.Print(indent+4);
+            obj.logger.Write(sprintf('%s%s,  output file: %s\n', blanks(indent), obj.name, obj.procStream.output.SetFilename(obj.GetOutputFilename())));
+            % obj.procStream.Print(indent);
         end
         
     end    % Public methods
@@ -866,7 +866,7 @@ classdef RunClass < TreeNodeClass
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            obj.procStream.ExportHRF(obj.GetOutputFilename, obj.CondNames, iBlk);
+            obj.ExportHRF@TreeNodeClass('', iBlk);
         end
 
         

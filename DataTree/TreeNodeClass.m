@@ -158,8 +158,8 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function Reset(obj)
-            obj.procStream.output.Reset(obj.GetOutputFilename);
-            delete([obj.GetOutputFilename, '*.txt']);
+            obj.procStream.output.Reset([obj.path, obj.GetOutputFilename()]);
+            delete([obj.path, obj.GetOutputFilename(), '*.txt']);
             delete([obj.path, 'tCCAfilter_*.txt'])
         end
         
@@ -570,6 +570,15 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function SetName(obj, name)
+            if isempty(obj)
+                return;
+            end
+            obj.name = name;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function name = GetFileName(obj)
             name = '';
             if isempty(obj)
@@ -639,7 +648,6 @@ classdef TreeNodeClass < handle
                 return
             end
             err = obj.LoadSubBranch(); %#ok<*MCNPN>
-            obj.procStream.Load([obj.path, obj.GetOutputFilename]);
         end
         
         
@@ -651,6 +659,22 @@ classdef TreeNodeClass < handle
             obj.FreeMemorySubBranch();
             obj.procStream.FreeMemory(obj.GetOutputFilename);
         end
+        
+
+        % ----------------------------------------------------------------------------------
+        function ExportHRF(obj, ~, iBlk)
+
+            % Update call application GUI using it's generic Update function
+            if ~isempty(obj.updateParentGui)
+                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
+            end
+            
+            % Load derived data and export it
+            obj.procStream.Load([obj.path, obj.GetOutputFilename()]);
+            obj.procStream.ExportHRF([obj.path, obj.GetOutputFilename()], obj.CondNames, iBlk);
+            pause(.5);
+        end
+        
         
         
         % ----------------------------------------------------------------------------------
@@ -721,7 +745,7 @@ classdef TreeNodeClass < handle
             };
         
             if exist('obj2','var')
-                msg{1} = sprintf('WARNING: Saved data for %s "%s" does not match this group folder. ', obj.type, obj.name);
+                msg{1} = sprintf('WARNING: Saved processing data for %s "%s" does not match this group folder. ', obj.type, obj.name);
                 msg{2} = sprintf('Are you sure this saved data belongs to this group folder?');
             else
                 msg{1} = sprintf('WARNING: The %s "%s" does not match the saved group data. ', obj.type, obj.name);
@@ -773,7 +797,15 @@ classdef TreeNodeClass < handle
             if ispathvalid(src)
                 if ~pathscompare(src, dst)
                     obj.logger.Write(sprintf('Moving %s to %s\n', src, dst));
-                    movefile(src, dst);
+                    rootpath = fileparts(dst);
+                    try
+                        if ~ispathvalid(rootpath)
+                            mkdir(rootpath)
+                        end
+                    	movefile(src, dst);
+                    catch
+                        obj.logger.Write(sprintf('ERROR: Failed to to move old output to new format\n'));
+                    end
                 end
             end
         end

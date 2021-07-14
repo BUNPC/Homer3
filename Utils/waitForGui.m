@@ -3,6 +3,8 @@ if nargin==0
     return;
 end
 
+set(h, 'visible','on');
+
 timer = tic;
 guiname = get(h, 'name');
 fprintf('%s GUI is busy...\n', guiname);

@@ -60,8 +60,11 @@ classdef ProcStreamClass < handle
             kk=1;
             for ii = 1:length(obj2.fcalls)                
                 % If registry is empty, then add fcall entries unconditionally.
-                % Otherwise only include those user function calls that exist in the registry.
-                if ~isempty(obj.reg.GetUsageName(obj2.fcalls(ii)))
+                % Otherwise only include ONLY those user function calls that exist in the registry.
+                if obj.reg.IsEmpty() 
+                    obj.fcalls(kk) = FuncCallClass(obj2.fcalls(ii), obj.reg);
+                    kk = kk+1;
+                elseif ~isempty(obj.reg.GetUsageName(obj2.fcalls(ii)))
                     obj.fcalls(kk) = FuncCallClass(obj2.fcalls(ii), obj.reg);
                     kk = kk+1;
                 else
@@ -497,11 +500,21 @@ classdef ProcStreamClass < handle
         end
         
         
+        
+        % ----------------------------------------------------------------------------------
+        function  Print(obj, indent)
+            obj.input.Print(indent);
+            obj.output.Print(indent);
+        end
+
+        
+        
         % ----------------------------------------------------------------------------------
         function n = GetFuncCallNum(obj)
             n = length(obj.fcalls);
         end
-                
+                        
+        
         
         % ----------------------------------------------------------------------------------
         function [maxnamelen, numUsages] = GetMaxCallNameLength(obj)
@@ -1036,7 +1049,10 @@ classdef ProcStreamClass < handle
                     
                     % If registry is empty, then add fcall entries unconditionally. 
                     % Otherwise only include those user function calls that exist in the registry. 
-                    if temp.GetErr()==0 && ~isempty(obj.reg.GetUsageName(temp))
+                    if obj.reg.IsEmpty()
+                        obj.fcalls(kk) = FuncCallClass(temp, obj.reg);
+                        kk=kk+1;
+                    elseif temp.GetErr()==0 && ~isempty(obj.reg.GetUsageName(temp))
                         obj.fcalls(kk) = FuncCallClass(temp, obj.reg);
                         kk=kk+1;
                     else

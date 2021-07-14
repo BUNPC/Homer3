@@ -13,9 +13,9 @@ function selection = MenuBox(msg, bttns, relativePos, textLineWidth, options)
 %   q = MenuBox('Please select option',{'option1','option2','option3'});
 %   q = MenuBox('Please select option',{'option1','option2','option3'}, 'lowerleft');
 %   q = MenuBox('Please select option',{'option1','option2','option3'}, 'upperright',80);
-%   q = MenuBox('Please select option',{'option1','option2','option3'},[],[],sprintf('dontAskAgain'));
-%   q = MenuBox('Please select option',{'option1','option2','option3'},'centerright',[],sprintf('dontAskAgainOptions'));
-%   q = MenuBox('Please select option',{'option1','option2','option3'},[],75,sprintf('dontAskAgain'));
+%   q = MenuBox('Please select option',{'option1','option2','option3'},[],[],'dontAskAgain');
+%   q = MenuBox('Please select option',{'option1','option2','option3'},'centerright',[],'dontAskAgainOptions');
+%   q = MenuBox('Please select option',{'option1','option2','option3'},[],75,'dontAskAgain');
 %
 
 global bttnIds
@@ -24,7 +24,7 @@ bttnIds = 0;
 DEBUG=0;
 DEBUG2=0;
 
-% Parse args 
+% Parse args
 if iscell(msg)
     msg = [msg{:}];
 end
@@ -94,13 +94,13 @@ end
 set(hParent, 'units','characters');
 if hParent==0
     posParent = get(hParent,'MonitorPositions');
-else    
+else
     posParent = get(hParent, 'position');
 end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Calculate GUI objects position/dimensions in the Y and Y 
+% Calculate GUI objects position/dimensions in the Y and Y
 % directions, in characters units
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 hf = figure('numbertitle', 'off', 'menubar','none', 'toolbar','none', 'name',title);
@@ -113,7 +113,7 @@ posBox = [pX, pY, Wfig, Hfig];
 
 if DEBUG
     fprintf('posBox = [%0.1f, %0.1f, %0.1f, %0.1f]\n', posBox(1), posBox(2), posBox(3), posBox(4));
-end 
+end
 
 
 % Set GUI position/size
@@ -124,15 +124,15 @@ p = get(hf, 'position');
 if DEBUG2
     fprintf('message position:   [%0.1f, %0.1f, %0.1f, %0.1f]\n', a, p(4)-Htext-vertgap, Wtext, Htext);
     ht = uicontrol('parent',hf, 'style','text', 'units','characters', 'string',msg, ...
-                   'position',[a, p(4)-(Htext+vertgap+1), Wtext, Htext], 'horizontalalignment','left', ...
-                   'backgroundcolor',[.2,.2,.2], 'foregroundcolor',[.9,.9,.9]);
+        'position',[a, p(4)-(Htext+vertgap+1), Wtext, Htext], 'horizontalalignment','left', ...
+        'backgroundcolor',[.2,.2,.2], 'foregroundcolor',[.9,.9,.9]);
 else
     ht = uicontrol('parent',hf, 'style','text', 'units','characters', 'string',msg, ...
-                   'position',[a, p(4)-(Htext+vertgap+1), Wtext, Htext], 'horizontalalignment','left');
+        'position',[a, p(4)-(Htext+vertgap+1), Wtext, Htext], 'horizontalalignment','left');
 end
 
 % Draw button options
-hb = zeros(nbttns,1); 
+hb = zeros(nbttns,1);
 p  = zeros(nbttns,4);
 TextPos = get(ht, 'position');
 
@@ -145,28 +145,24 @@ for k = 1:nbttns
     end
     
     if k > (nbttns-ncheckboxes)
-        if k-(nbttns-ncheckboxes)==1
-            val = 1;
-        else
-            val = 0;
-        end
+        val = GetCheckboxValue(k, nbttns, ncheckboxes, options);
         hb(k) = uicontrol('parent',hf, 'style','checkbox', 'string',checkboxes{k-(nbttns-ncheckboxes)}, 'units','characters', ...
             'position',[p(k,1), p(k,2), 2*length(checkboxes{k-(nbttns-ncheckboxes)}), p(k,4)], 'value',val, ...
             'tag',sprintf('%d', k-(nbttns-ncheckboxes)), 'callback',{@checkboxDontAskOptions_Callback, hf});
+        
+        checkboxDontAskOptions_Callback(hb(k), [], hf);
     else
         hb(k) = uicontrol('parent',hf, 'style','pushbutton', 'string',bttns{k}, 'units','characters', 'position',p(k,:), ...
             'tag',sprintf('%d', k), 'callback',@pushbuttonGroup_Callback);
     end
 end
 
-
-
 % Need to make sure position data is saved in pixel units at end of function
 % to as these are the units used to reposition GUI later if needed
 setGuiFonts(hf);
 p = guiOutsideScreenBorders(hf);
 
-% Change units temporarily to normalized to apply the repositiong because 
+% Change units temporarily to normalized to apply the repositiong because
 % guiOutsideScreenBorders uses normalized units
 set(hf, 'visible','on', 'units','normalized', 'position',p);
 
@@ -185,7 +181,7 @@ end
 
 % Call this callback in case default is preselected in the code, that way
 % we make sure that if one of the checkboxes is preselected not by user
-% action but by code, that we detect that. 
+% action but by code, that we detect that.
 checkboxDontAskOptions_Callback([], [], hf)
 
 % Assign button selctions to function output
@@ -211,17 +207,17 @@ function checkboxDontAskOptions_Callback(hObject, ~, hf)
 global bttnIds
 
 if ~isvalid(hf)
-   return 
+    return
 end
 
 hb = get(hf, 'children');
 checkboxId = [];
 if ishandles(hObject)
-checkboxId = str2num(get(hObject, 'tag'));
-if ~get(hObject, 'value')
-    bttnIds(2) = 0;
-    return;
-end
+    checkboxId = str2num(get(hObject, 'tag'));
+    if ~get(hObject, 'value')
+        bttnIds(2) = 0;
+        return;
+    end
 else
     for ii = 1:length(hb)
         if strcmp(get(hb(ii), 'style'),'checkbox')
@@ -300,10 +296,10 @@ end
 function checkboxes = getCheckboxes(options)
 
 checkboxes = {};
-if ~optionExists(options, 'dontAskAgainOptions') && ~optionExists(options, 'dontAskAgain')
+if ~optionExists(options, 'dontAskAgainOptions') && ~optionExists(options, 'dontAskAgain') && ~optionExists(options, 'askEveryTime') && ~optionExists(options, 'askEveryTimeOptions')
     return;
 end
-if optionExists(options, 'dontAskAgainOptions')
+if optionExists(options, 'dontAskAgainOptions') || optionExists(options, 'askEveryTimeOptions')
     checkboxes = { ...
         sprintf('don''t ask again');  ...
         sprintf('ask every time'); ...
@@ -314,3 +310,30 @@ else
         sprintf('don''t ask again');  ...
         };
 end
+
+
+
+% ---------------------------------------------------------------------------------
+function val = GetCheckboxValue(k, nbttns, ncheckboxes, options)
+val = [];
+if optionExists(options, 'dontAskAgain') || optionExists(options, 'dontAskAgainOptions')
+    if k-(nbttns-ncheckboxes)==1
+        val = 1;
+    else
+        val = 0;
+    end
+elseif optionExists(options, 'askEveryTime') 
+    if k-(nbttns-ncheckboxes)==1
+        val = 0;
+    else
+        val = 1;
+    end
+elseif optionExists(options, 'askEveryTimeOptions')
+    icheckbox = k-(nbttns-ncheckboxes);
+    if icheckbox==ncheckboxes
+        val = 1;
+    else
+        val = 0;
+    end
+end
+

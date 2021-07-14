@@ -32,7 +32,7 @@ clear DEBUG1 testidx procStreamStyle
 DEBUG1 = [];
 testidx = [];
 procStreamStyle = [];
-QUICK_TEST = [0,1];
+QUICK_TEST = [0,0];
 
 groupFolders = FindUnitTestsFolders();
 rootpath = filesepStandard(fileparts(which('Homer3.m')));

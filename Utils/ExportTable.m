@@ -3,12 +3,12 @@ classdef ExportTable < handle
     properties
         filename
         pathname
+        ext
         datatype
         datatitle
         cells
-        format
         offsetDataRowIdx
-        fd        
+        fd
     end
 
     
@@ -47,41 +47,49 @@ classdef ExportTable < handle
             obj.pathname = filesepStandard(pname);
             obj.filename = [fname, obj.datatype];
             obj.datatitle = sprintf('%s: Exported %s data', fname, datatype);
+            
+            switch(format)
+                case {'text', 'txt'}
+                    obj.ext = '.txt';
+                case {'spreadsheet'}
+                    obj.ext = '.xls';
+            end
+            fprintf('Exporting   %s  to  %s%s\n', fname, obj.filename, obj.ext);
            
             obj.cells = cells;
-            obj.format = format;
 
             obj.offsetDataRowIdx = 1;
-            for ii=1:size(obj.cells,1)
+            for ii = 1:size(obj.cells,1)
                 if isempty(obj.cells(ii,1).name)
                     obj.offsetDataRowIdx = ii+1;
                 end
             end
             
-            obj.Open()
-            obj.Save()
-            obj.Close()
+            obj.Open();
+            obj.Save();
+            obj.Close();
 
         end
         
         
         % ----------------------------------------------------------------
         function Open(obj)
-            if ~strcmp(obj.format, 'text') && ~strcmp(obj.format, 'txt')
+            if ~strcmp(obj.ext, '.txt')
                 return
             end
             if obj.fd > -1
                 return;
             end
-            obj.fd = fopen([obj.pathname, obj.filename, '.txt'], 'wt');
+            obj.fd = fopen([obj.pathname, obj.filename, obj.ext], 'wt');
         end
         
         
         % ----------------------------------------------------------------
-        function Save(obj)
-            if strcmpi(obj.format, 'text')
+        function err = Save(obj)
+            err = -2;
+            if strcmpi(obj.ext, '.txt')
                 err = obj.SaveText();
-            elseif strcmpi(obj.format, 'spreadsheet')
+            elseif strcmpi(obj.ext, 'xls')
                 err = obj.SaveSpreadsheet();
                 if err==-1
                     err = obj.SaveText();
@@ -92,7 +100,7 @@ classdef ExportTable < handle
                 
         % ----------------------------------------------------------------
         function Close(obj)
-            if ~strcmp(obj.format, 'text') && ~strcmp(obj.format, 'txt')
+            if ~strcmp(obj.ext, '.txt')
                 return
             end
             if obj.fd < 0
@@ -114,8 +122,8 @@ classdef ExportTable < handle
         % ----------------------------------------------------------------
         function err = SaveText(obj)            
             err = 0;
-            fprintf(obj.fd, '%s\n', obj.datatitle);
-            fprintf('%s\n', obj.datatitle);
+%             fprintf(obj.fd, '%s\n', obj.datatitle);
+%             fprintf('%s\n', obj.datatitle);
             h =  waitbar_improved(0, sprintf('Exporting %s to text ... 0%% complete.', obj.filename));
             for ii=1:size(obj.cells,1)
                 waitbar_improved(ii/size(obj.cells,1), h, sprintf('Exporting %s to text ... %d%% complete', obj.filename, uint32(100 * ii/size(obj.cells,1))));
@@ -154,11 +162,11 @@ classdef ExportTable < handle
             end
             close(h);
             
-            if ispathvalid([obj.pathname, obj.filename, '.xls'],'file')
-                delete([obj.pathname, obj.filename, '.xls']);
+            if ispathvalid([obj.pathname, obj.filename, obj.ext],'file')
+                delete([obj.pathname, obj.filename, obj.ext]);
             end
             try
-                xlswrite([obj.pathname, obj.filename, '.xls'], [headers; data]);
+                xlswrite([obj.pathname, obj.filename, obj.ext], [headers; data]);
             catch ME
                 msg{1} = sprintf('ERROR: Failed to export to Excel format. This may be because Excel ');
                 msg{2} = sprintf('is not installed on your computer. Do you want to export to a ');

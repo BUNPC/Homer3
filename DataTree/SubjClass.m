@@ -157,6 +157,22 @@ classdef SubjClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function Add(obj, run)
+            [~,f,e] = fileparts(run.GetName());
+            if strcmp(f, obj.name)
+                msg{1} = sprintf('WARNING: The run being added (%s) has the same name as the subject (%s) containing it. ', [f,e], obj.name);
+                msg{2} = sprintf('The run names should not have the same name as the subject, otherwise '); 
+                msg{3} = sprintf('it may cause incorrect results in processing. Do you want to change this run''s name?');
+                obj.logger.Write(sprintf('%s\n', [msg{:}]));
+
+                % Deconflict name of subject with name of run if there is no
+                % subject folder for this subject
+                if ~ispathvalid(['./',obj.name], 'dir')
+                    obj.name = [obj.name, '_s'];
+                    obj.logger.Write(sprintf('Renaming subject to %s\n', obj.name));
+                end
+            end
+            
+            
             % Add run to this subject
             jj=0;
             for ii=1:length(obj.runs)
@@ -170,14 +186,6 @@ classdef SubjClass < TreeNodeClass
                 run.SetIndexID(obj.iGroup, obj.iSubj, jj);
                 obj.runs(jj) = run;
                 obj.logger.Write(sprintf('     Added run %s to subject %s.\n', obj.runs(jj).GetFileName, obj.GetName));
-            end
-            
-            % If subject has only one run AND the run file name is not formatted according to the standard Homer 
-            % naming convention (so as to distinguish between subject and run) then run name (minus extension) will 
-            % have the same name as the subject which will create a conflict when saving .mat files in a distributed 
-            % storage scheme. We therefore rename the subject name in case of this type of conflict
-            if obj.CheckForNameConflict(run)
-                obj.name = ['Subj_', obj.name];
             end
         end
         
@@ -201,7 +209,7 @@ classdef SubjClass < TreeNodeClass
                 option = 'down';
             end
             if strcmp(option, 'down')
-                for jj=1:length(obj.runs)
+                for jj = 1:length(obj.runs)
                     obj.runs(jj).Reset();
                 end
             end
@@ -350,16 +358,13 @@ classdef SubjClass < TreeNodeClass
         function Print(obj, indent)
             if ~exist('indent', 'var')
                 indent = 2;
+            else
+                indent = indent+2;
             end
-            if ~exist('indent', 'var')
-                indent = 2;
-            end
-            fprintf('%sSubject %d:\n', blanks(indent), obj.iSubj);
-            fprintf('%sCondNames: %s\n', blanks(indent+4), cell2str(obj.CondNames));
-            obj.procStream.input.Print(indent+4);
-            obj.procStream.output.Print(indent+4);
+            obj.logger.Write(sprintf('%s%s,  output file: %s\n', blanks(indent), obj.name, obj.procStream.output.SetFilename(obj.GetOutputFilename())));
+            % obj.procStream.Print(indent);
             for ii=1:length(obj.runs)
-                obj.runs(ii).Print(indent+4);
+                obj.runs(ii).Print(indent);
             end
         end
         
@@ -634,12 +639,12 @@ classdef SubjClass < TreeNodeClass
                 iBlk = 1;
             end
 
-            obj.procStream.ExportHRF(obj.GetOutputFilename, obj.CondNames, iBlk);
             if strcmp(procElemSelect, 'all')
-                for ii=1:length(obj.runs)
+                for ii = 1:length(obj.runs)
                     obj.runs(ii).ExportHRF(iBlk);
                 end
-            end
+            end            
+            obj.ExportHRF@TreeNodeClass(procElemSelect, iBlk);
         end
     
         

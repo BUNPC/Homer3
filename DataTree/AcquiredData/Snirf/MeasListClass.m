@@ -118,6 +118,7 @@ classdef MeasListClass < FileLoadSaveClass
                 obj.detectorIndex   = HDF5_DatasetLoad(gid, 'detectorIndex');
                 obj.wavelengthIndex = HDF5_DatasetLoad(gid, 'wavelengthIndex');
                 obj.dataType        = HDF5_DatasetLoad(gid, 'dataType');
+                obj.dataTypeIndex   = HDF5_DatasetLoad(gid, 'dataTypeIndex');
                 obj.dataTypeLabel   = HDF5_DatasetLoad(gid, 'dataTypeLabel', obj.dataTypeLabel);
                 obj.detectorIndex   = HDF5_DatasetLoad(gid, 'detectorIndex');
                 obj.sourcePower     = HDF5_DatasetLoad(gid, 'sourcePower');

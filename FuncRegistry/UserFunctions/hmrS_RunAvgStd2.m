@@ -1,26 +1,30 @@
 % SYNTAX:
-% yAvgStd = hmrS_RunAvgStd2(yAvgStdRuns, nTrialsRuns)
+% [yAvgStd, yAvgStdErr] = hmrS_RunAvgStd2(yAvgStdRuns, nTrialsRuns)
 %
 % UI NAME:
-% Run_Average_Standard_Deviation
+% Run_Average_Standard_Deviation_and_Error
 %
 % DESCRIPTION:
-% Calculates a weighted avearge of HRF standard deviation across runs within a subject.
+% Calculates a weighted avearge of HRF standard deviation and standard error across runs.trials within a subject.
 %
 % INPUTS:
 % yAvgStdRuns:
 % nTrialsRuns:
 %
 % OUTPUTS:
-% yAvgStdOut: the standard deviation across runs
+% yAvgStdOut: the standard deviation across runs.trials
+% yAvgStdErrOut: the standard error across runs.trials
 %
 % USAGE OPTIONS:
-% Run_Average_Standard_Deviation_on_Concentration_Data:  dcAvgStd  = hmrS_RunAvgStd2(dcAvgStdRuns, nTrialsRuns)
+% Run_Average_Standard_Deviation_on_Concentration_Data:  [dcAvgStd, dcAvgStdErr]  = hmrS_RunAvgStd2(dcAvgStdRuns, nTrialsRuns)
 %
 
-function yAvgStdOut = hmrS_RunAvgStd2(yAvgStdRuns, nTrialsRuns)
+function [yAvgStdOut, yAvgStdErrOut] = hmrS_RunAvgStd2(yAvgStdRuns, nTrialsRuns)
 
 yAvgStdOut = DataClass();
+yAvgStdErrOut = DataClass();
+
+
 N = 0;
 var = 0;
 nDataBlks = length(yAvgStdRuns{1});
@@ -30,6 +34,16 @@ for i = 1:size(nTrialsRuns, 2); niC(i) = size(nTrialsRuns{i}{1},2); end
 niC = max(niC);
 
 for iBlk = 1:nDataBlks
+    
+    nTrials = zeros(1,niC);
+    for iC = 1:niC
+        for iRun = 1:length(nTrialsRuns)
+            if ~isempty(nTrialsRuns{iRun}{iBlk})
+                nTrials(iC) = nTrials(iC) + nTrialsRuns{iRun}{1}(iC);
+            end
+        end
+    end
+    
     % get tHRF and ml from yAvgRuns
     for iRun = 1:length(yAvgStdRuns)
         tHRF    = yAvgStdRuns{iRun}(iBlk).GetTime();
@@ -39,7 +53,7 @@ for iBlk = 1:nDataBlks
         end
     end
     yAvgStdOut(iBlk).SetTime(tHRF);
-    
+    yAvgStdErrOut(iBlk).SetTime(tHRF);
     
     for iC = 1:niC % across conditions
         
@@ -67,8 +81,13 @@ for iBlk = 1:nDataBlks
         yAvgStd_wa = sqrt(var);
         if yAvgStd_wa == 0
             yAvgStd_wa = zeros(length(tHRF), 3, size(ml,1));
+            yAvgStdErr_wa = zeros(length(tHRF), 3, size(ml,1));
         end
         yAvgStdOut(iBlk).AppendDataTimeSeries(yAvgStd_wa);
+        
+        yAvgStdErr_wa = yAvgStd_wa/sqrt(nTrials(iC)-1);
+        yAvgStdErrOut(iBlk).AppendDataTimeSeries(yAvgStdErr_wa);
+        
         var = 0;
         N = 0;
         
@@ -76,6 +95,10 @@ for iBlk = 1:nDataBlks
             yAvgStdOut(iBlk).AddChannelHbO(ml(iCh,1), ml(iCh,2), iC);
             yAvgStdOut(iBlk).AddChannelHbR(ml(iCh,1), ml(iCh,2), iC);
             yAvgStdOut(iBlk).AddChannelHbT(ml(iCh,1), ml(iCh,2), iC);
+            
+            yAvgStdErrOut(iBlk).AddChannelHbO(ml(iCh,1), ml(iCh,2), iC);
+            yAvgStdErrOut(iBlk).AddChannelHbR(ml(iCh,1), ml(iCh,2), iC);
+            yAvgStdErrOut(iBlk).AddChannelHbT(ml(iCh,1), ml(iCh,2), iC);
         end
         
     end

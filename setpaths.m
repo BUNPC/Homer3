@@ -62,8 +62,10 @@ function setpaths(options_str)
 % Start world by trying to add standard 'Utils' path if it exists 
 % If it exists, assume that's where intialation functions are. 
 if exist([pwd, '/Utils'], 'dir')==7
-    addpath([pwd, '/Utils'], '-end');
+    addpath([pwd, '/Utils']);
+    addpath([pwd, '/Utils/namespace']);
 end
+setNamespace('Homer3');
 
 % Parse arguments
 if ~exist('options_str','var')
@@ -73,6 +75,7 @@ options = parseOptions(options_str);
 
 if ~options.add
     options.conflcheck = false;
+    deleteNamespace('Homer3');
 end
 
 [paths, wspaths, paths_excl_str] = getpaths(options);

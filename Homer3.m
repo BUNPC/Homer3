@@ -11,6 +11,8 @@ function unitTest = Homer3(groupDirs, inputFileFormat, unitTest)
 
 global logger
 
+setNamespace('Homer3');
+
 if ~exist('groupDirs','var') || isempty(groupDirs)
     groupDirs = filesepStandard(pwd);
 end

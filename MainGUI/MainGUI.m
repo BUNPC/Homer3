@@ -284,7 +284,7 @@ if isempty(maingui)
     return;
 end
 if isfield(maingui,'logger') && ~isempty(maingui.logger)
-    maingui.logger.Close();
+    maingui.logger.Close('Homer3');
 end
 if isempty(maingui.dataTree)
     return;

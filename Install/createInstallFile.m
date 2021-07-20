@@ -37,8 +37,8 @@ mkdir([dirnameInstall, 'homer3_install/SubjDataSample']);
 
 % Generate executables
 if ~strcmp(options, 'nobuild')
+	Buildme();
 	Buildme_Setup();
-	Buildme_Homer3();
     if islinux()
         perl('./makesetup.pl','./run_setup.sh','./setup.sh');
     elseif ismac()

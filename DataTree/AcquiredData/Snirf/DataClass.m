@@ -228,15 +228,16 @@ classdef DataClass < FileLoadSaveClass
             for ii = 1:length(obj.measurementList)
                 % If this data contains block average then only get the measurements for first condition. That will
                 % contain all the measurement channels
-                if obj.measurementList(ii).GetCondition()>1
-                    break;
-                end
+%                 if obj.measurementList(ii).GetCondition() > 1
+%                     break;
+%                 end
                 % Deal with the cases where the measurementList contains
                 % wavelengthIndex versus not
                 if ~isempty(obj.measurementList(ii).GetWavelengthIndex())
                     ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), 1, obj.measurementList(ii).GetWavelengthIndex()];
                 else 
-                    ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), 1, 1];
+                    ml(ii, :) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), 1, 1];
+%                     ml(ii, :) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), 1, obj.measurementList(ii).GetWavelengthIndex()];
                 end
             end
             

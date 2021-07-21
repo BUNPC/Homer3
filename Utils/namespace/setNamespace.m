@@ -2,7 +2,7 @@ function setNamespace(nm)
 global namespace
 N = 2;
 
-fprintf('In setNamespace:\n');
+% fprintf('In setNamespace:\n');
 
 if nargin==0
     pname = filesepStandard(pwd);
@@ -31,5 +31,5 @@ idx = mod(length(namespace), N+1)+1;
 namespace(idx).name = nm;
 namespace(idx).pname = pname;
 
-fprintf('  namespace = [%s, %s]\n', namespace(idx).name, namespace(idx).pname);
+% fprintf('  namespace = [%s, %s]\n', namespace(idx).name, namespace(idx).pname);
 

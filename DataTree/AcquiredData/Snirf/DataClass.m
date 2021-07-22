@@ -316,8 +316,8 @@ classdef DataClass < FileLoadSaveClass
                     srcDetPairs(jj,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex()];
                     jj=jj+1;
                 end
-                if ~ismember(obj.measurementList(ii).GetCondition(), conditions)
-                    conditions(kk) = obj.measurementList(ii).GetCondition();
+                if ~ismember(obj.measurementList(ii).GetDataTypeIndex(), conditions)
+                    conditions(kk) = obj.measurementList(ii).GetDataTypeIndex();
                     kk=kk+1;
                 end
                 if ~ismember(obj.measurementList(ii).GetWavelengthIndex(), wavelengths)
@@ -440,7 +440,7 @@ classdef DataClass < FileLoadSaveClass
             end
             val = zeros(length(ch_idx),1);
             for ii=ch_idx
-                val(ii) = obj.measurementList(ii).GetCondition();
+                val(ii) = obj.measurementList(ii).GetDataTypeIndex();
             end
         end
         

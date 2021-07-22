@@ -217,13 +217,13 @@ classdef MeasListClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function SetCondition(obj, val)
+        function SetDataTypeIndex(obj, val)
             obj.dataTypeIndex = val;
         end
         
         
         % ---------------------------------------------------------
-        function val = GetCondition(obj)
+        function val = GetDataTypeIndex(obj)
             val = obj.dataTypeIndex;
         end
         

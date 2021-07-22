@@ -220,19 +220,22 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasList(obj)
+        function ml = GetMeasList(obj, dataTypeIndex)
             % Returns nirs-style measurement list of src-det pairings per
-            % wavelength
+            % wavelength, sorted by wavelength, for the given dataTypeIndex
+            % (defaulting to dataTypeIndex = 1)
             
+            if ~exist('cond', 'var')
+               dataTypeIndex = 1;
+            end
             % Preallocate for speed 
             ml = zeros(length(obj.measurementList), 4);
-            
             % Convert obj.measurementList to matrix
             for ii = 1:length(obj.measurementList)
                 % If this data contains processed data, repeated src-det-wl
                 % pairs will be returned if multiple conditions are
-                % included
-                if ~(obj.measurementList(ii).GetDataTypeIndex() > 1)
+                % included, so we include only cond
+                if obj.measurementList(ii).GetDataTypeIndex() == dataTypeIndex
                     % Deal with the cases where the measurementList contains
                     % wavelengthIndex versus not
                     if ~isempty(obj.measurementList(ii).GetWavelengthIndex())

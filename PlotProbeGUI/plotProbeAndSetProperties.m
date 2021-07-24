@@ -24,7 +24,10 @@ tMarkVis = plotprobe.tMarkShow;
 ch       = plotprobe.dataTree.currElem.GetMeasList(iBlk);
 SD       = plotprobe.dataTree.currElem.GetSDG('2D');
 
-
+data = getappdata(handles.figure, 'data');
 set(handles.textTimeMarkersAmpUnits, 'string',plotprobe.tMarkUnits);
 hData = plotProbe( y, t, SD, ch, ystd, axScl, tMarkInt, tMarkAmp, tMarkVis );
-plotprobe.handles.data{iFig} = hData;
+data{iFig} = hData;
+setappdata(handles.figure, 'data',data);
+
+

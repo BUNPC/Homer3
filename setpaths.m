@@ -75,7 +75,6 @@ options = parseOptions(options_str);
 
 if ~options.add
     options.conflcheck = false;
-    deleteNamespace('Homer3');
 end
 
 [paths, wspaths, paths_excl_str] = getpaths(options);
@@ -169,6 +168,7 @@ if options.add
 else
     fprintf('REMOVED search paths for workspace %s\n', pwd);
     rmpath(paths_excl_str{1});
+    deleteNamespace('Homer3');
 end
 
 

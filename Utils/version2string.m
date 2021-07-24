@@ -35,6 +35,9 @@ for kk = length(V):-1:1
         verstr = sprintf('%s, %s', V{kk}, verstr);
     end
 end
+if isempty(verstr)
+    return
+end
 if verstr(end) == '.'
     verstr(end) = '';
 end

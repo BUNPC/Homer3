@@ -253,9 +253,9 @@ classdef ProcResultClass < handle
 
             % If object is not empty it means we already have loaded data. No
             % need to waste time loading it from file.
-            if ~obj.IsEmpty()
-                return;
-            end
+%             if ~obj.IsEmpty()
+%                 return;
+%             end
             
             % Error check file
             if ~ispathvalid(obj.filename,'file')

@@ -4,11 +4,11 @@ if isdeployed()
     return;
 end
 if nargin==0
-    pname = filesepStandard(pwd);
-elseif ~isdeployed()
-    pname = filesepStandard((fileparts(which(nm))));
+    return
 end
-
+if strcmp(nm, 'all')
+    namespace = [];
+end
 k = [];
 for ii = 1:length(namespace)
     if strcmp(namespace(ii).name, nm)

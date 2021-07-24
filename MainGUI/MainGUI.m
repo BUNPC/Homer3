@@ -280,17 +280,18 @@ varargout{1} = maingui.unitTest;
 function [eventdata, handles] = MainGUI_DeleteFcn(hObject, eventdata, handles)
 global maingui;
 
-deleteNamespace('Homer3');
 if ishandles(hObject)
     delete(hObject)
 end
 if isempty(maingui)
+    deleteNamespace('Homer3');
     return;
 end
 if isfield(maingui,'logger') && ~isempty(maingui.logger)
     maingui.logger.Close('Homer3');
 end
 if isempty(maingui.dataTree)
+    deleteNamespace('Homer3');
     return;
 end
 
@@ -301,6 +302,7 @@ end
 delete(maingui.dataTree);
 maingui = [];
 clear maingui;
+deleteNamespace('Homer3');
 
 
 

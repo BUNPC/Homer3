@@ -182,7 +182,7 @@ for i = 1:cfgGui.ncols
     
 end
 
-if verGreaterThanOrEqual('matlab','9.4')
+if verGreaterThanOrEqual('matlab','9.8')
     set(hp, 'ContextMenu',setMouseClickAction(hcm,hp));
 else
     set(hp, 'ButtonDownFcn',{@mouseClickFcn_Callback,hp});

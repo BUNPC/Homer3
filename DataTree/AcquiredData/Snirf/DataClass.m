@@ -235,9 +235,17 @@ classdef DataClass < FileLoadSaveClass
                 % If this data contains processed data, repeated src-det-wl
                 % pairs will be returned if multiple conditions are
                 % included, so we include only cond
-                if obj.measurementList(ii).GetDataTypeIndex() == dataTypeIndex
-                    % Deal with the cases where the measurementList contains
-                    % wavelengthIndex versus not
+                if obj.measurementList(ii).GetDataType() == 99999
+                    if obj.measurementList(ii).GetDataTypeIndex() == dataTypeIndex
+                        % Deal with the cases where the measurementList contains
+                        % wavelengthIndex versus not
+                        if ~isempty(obj.measurementList(ii).GetWavelengthIndex())
+                            ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), 1, obj.measurementList(ii).GetWavelengthIndex()];
+                        else 
+                            ml(ii, :) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), 1, 1];
+                        end
+                    end
+                else
                     if ~isempty(obj.measurementList(ii).GetWavelengthIndex())
                         ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), 1, obj.measurementList(ii).GetWavelengthIndex()];
                     else 

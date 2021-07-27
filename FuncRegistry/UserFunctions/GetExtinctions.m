@@ -61,7 +61,7 @@ function [exs,varargout] = GetExtinctions( lambda,WhichSpectrum )
 %	To convert this data to absorption coefficient in (cm-1), multiply
 %	by the molar concentration and 2.303,
 %
-%	µa = (2.303) e (x g/liter)/(66,500 g Hb/mole)
+%	Âµa = (2.303) e (x g/liter)/(66,500 g Hb/mole)
 %	where x is the number of grams per liter. A typical value of x
 %	for whole blood is x=150 g Hb/liter.
 %
@@ -117,6 +117,8 @@ function [exs,varargout] = GetExtinctions( lambda,WhichSpectrum )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+lambda = double(lambda);  // Cast to double
+
 num_lambda = length(lambda);
 
 
@@ -152,7 +154,7 @@ switch(WhichSpectrum)
         % using 66,500 as the gram molecular weight of hemoglobin.
         % To convert this data to absorption coefficient in (cm-1), multiply by the molar concentration and 2.303,
         %
-        % µa = (2.303) e (x g/liter)/(66,500 g Hb/mole)
+        % Âµa = (2.303) e (x g/liter)/(66,500 g Hb/mole)
         % where x is the number of grams per liter. A typical value of x for whole blood is x=150 g Hb/liter.
 
         vLambdaHbOHb = [
@@ -309,7 +311,7 @@ switch(WhichSpectrum)
         %using 66,500 as the gram molecular weight of hemoglobin.
         %To convert this data to absorption coefficient in (cm-1), multiply by the molar concentration and 2.303,
         %
-        %µa = (2.303) e (x g/liter)/(66,500 g Hb/mole)
+        %Âµa = (2.303) e (x g/liter)/(66,500 g Hb/mole)
         %where x is the number of grams per liter. A typical value of x for whole blood is x=150 g Hb/liter.
 
         vLambdaHbOHb = [
@@ -717,7 +719,7 @@ switch(WhichSpectrum)
         % using 66,500 as the gram molecular weight of hemoglobin.
         % To convert this data to absorption coefficient in (cm-1), multiply by the molar concentration and 2.303,
         %
-        % µa = (2.303) e (x g/liter)/(66,500 g Hb/mole)
+        % Âµa = (2.303) e (x g/liter)/(66,500 g Hb/mole)
 
         vLambdaHbOHb = [ 630 680	4280;
             640	440	3640;
@@ -779,7 +781,7 @@ switch(WhichSpectrum)
         % using 66,500 as the gram molecular weight of hemoglobin.
         % To convert this data to absorption coefficient in (cm-1), multiply by the molar concentration and 2.303,
         %
-        % µa = (2.303) e (x g/liter)/(66,500 g Hb/mole)
+        % Âµa = (2.303) e (x g/liter)/(66,500 g Hb/mole)
         % where x is the number of grams per liter. A typical value of x for whole blood is x=150 g Hb/liter.
 
         vLambdaHbOHb = [450	68000	58000;
@@ -857,7 +859,7 @@ end
 %
 % ABSORPTION SPECTRUMOF H20
 % FROM G. M. Hale and M. R. Querry, "Optical constants of water in the 200nm to
-% 200µm wavelength region," Appl. Opt., 12, 555--563, (1973).
+% 200Âµm wavelength region," Appl. Opt., 12, 555--563, (1973).
 %
 % ON THE WEB AT
 % http://omlc.ogi.edu/spectra/water/abs/index.html

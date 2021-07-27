@@ -117,7 +117,7 @@ function [exs,varargout] = GetExtinctions( lambda,WhichSpectrum )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-lambda = double(lambda);  // Cast to double
+lambda = double(lambda);  % Cast to double
 
 num_lambda = length(lambda);
 

@@ -235,7 +235,7 @@ classdef DataClass < FileLoadSaveClass
                 % If this data contains processed data, repeated src-det-wl
                 % pairs will be returned if multiple conditions are
                 % included, so we include only cond
-                if obj.measurementList(ii).GetDataType() == 99999
+                if obj.measurementList(ii).GetDataType() == 99999 || obj.measurementList(ii).GetDataType() == 301
                     if (obj.measurementList(ii).GetDataTypeIndex() == dataTypeIndex) || (obj.measurementList(ii).GetDataTypeIndex() == 0)
                         % Deal with the cases where the measurementList contains
                         % wavelengthIndex versus not 

@@ -1,5 +1,5 @@
 % SYNTAX:
-% tInc = hmrR_MotionArtifact(data, probe, mlActMan, mlActAuto, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
+% tIncAuto = hmrR_MotionArtifact(data, probe, mlActMan, mlActAuto, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
 %
 % UI NAME:
 % Motion_Artifacts
@@ -65,10 +65,10 @@
 % JDUBB 3/18/2019 Adapted to SNIRF format
 %
 %
-function tInc = hmrR_MotionArtifact(data, probe, mlActMan, mlActAuto, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
+function tIncAuto = hmrR_MotionArtifact(data, probe, mlActMan, mlActAuto, tIncMan, tMotion, tMask, std_thresh, amp_thresh)
 
 % Init output 
-tInc = cell(length(data),1);
+tIncAuto = cell(length(data),1);
 
 % Input processing.  Check required inputs, throw errors if necessary.
 if nargin<3
@@ -104,7 +104,7 @@ for iBlk=1:length(data)
     if isempty(tIncMan{iBlk})
         tIncMan{iBlk} = ones(size(d,1),1);
     end
-    tInc{iBlk} = tIncMan{iBlk};
+    tIncAuto{iBlk} = tIncMan{iBlk};
     if isempty(mlActMan{iBlk})
         mlActMan{iBlk} = ones(size(MeasList,1),1);
     end
@@ -156,13 +156,13 @@ for iBlk=1:length(data)
         bad_inds(find(tIncMan{iBlk}(bad_inds)==0)) = [];
         
         % Set t and diff of data to 0 at the bad inds
-        tInc{iBlk}(1+bad_inds) = 0; % bad inds calculated on diff so add 1        
+        tIncAuto{iBlk}(1+bad_inds) = 0; % bad inds calculated on diff so add 1        
     end
     
     % calculate the variance due to motion relative to total variance
-    lst = find(tInc{iBlk}==0);
+    lst = find(tIncAuto{iBlk}==0);
     dstd0 = std(d(lst,:),[],1);
-    lst = find(tInc{iBlk}==1);
+    lst = find(tIncAuto{iBlk}==1);
     dstd1 = std(d(lst,:),[],1);
     
 end

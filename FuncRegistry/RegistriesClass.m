@@ -40,7 +40,9 @@ classdef RegistriesClass < handle
 
             % Get the parameter items from config file relevant to this class
             obj.userfuncdir = FindUserFuncDir(obj);
-            
+            if isempty(obj.userfuncdir)
+                return
+            end
             if strcmp(mode, 'empty')
                 return;
             end
@@ -360,8 +362,12 @@ classdef RegistriesClass < handle
             b = false;
             regfile = dir([obj.userfuncdir{1}, 'Registry.mat']);
             for ii = 1:length(obj.funcReg)
-                if obj.funcReg(ii).DateLastModified() > datetime(regfile.date,'locale','system')
-                    return;
+                try
+                    if obj.funcReg(ii).DateLastModified() > datetime(regfile.date,'locale','system')
+                        return;
+                    end
+                catch
+                    % pass
                 end
             end
             b = true;

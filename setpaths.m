@@ -59,6 +59,13 @@ function setpaths(options_str)
 %      setpaths('rmpathconfl|verbose|add|conflcheck');
 %
 
+% Start world by trying to add standard 'Utils' path if it exists 
+% If it exists, assume that's where intialation functions are. 
+if exist([pwd, '/Utils'], 'dir')==7
+    addpath([pwd, '/Utils']);
+    addpath([pwd, '/Utils/namespace']);
+end
+setNamespace('Homer3');
 
 % Parse arguments
 if ~exist('options_str','var')
@@ -161,6 +168,7 @@ if options.add
 else
     fprintf('REMOVED search paths for workspace %s\n', pwd);
     rmpath(paths_excl_str{1});
+    deleteNamespace('Homer3');
 end
 
 
@@ -198,7 +206,7 @@ end
 if length(wspaths)>1
     fprintf('\n');
     fprintf('%s\n', msg);
-    for ii=2:length(wspaths)
+    for ii = 2:length(wspaths)
         fprintf('  %s\n', wspaths{ii});
         if options.rmpathconfl
             continue;
@@ -207,8 +215,8 @@ if length(wspaths)>1
     end
 end
 
-if exist('./setpaths_proprietary.m','file')
-    setpaths_proprietary();
+if exist([pwd, '/Utils/setpaths_proprietary.m'],'file')
+    setpaths_proprietary(options);
 end
 
 
@@ -226,8 +234,5 @@ if isunix()
         end
     end
 end
-
-
-
 
 

@@ -1,34 +1,39 @@
 function dotmfiles = findDotMFiles(subdir, exclList)
 
+if ~exist('subdir','var')
+    subdir = filesepStandard(pwd);
+end
 if ~exist('exclList','var')
     exclList = {};
 end
 
-dotmfiles = {};
-currdir = pwd;
+if ~iscell(exclList)
+    exclList = {exclList};
+end
 
-if exist(subdir, 'dir')~=7
+dotmfiles = {};
+
+if ~ispathvalid(subdir, 'dir')
     fprintf('Warning: folder %s doesn''t exist under %s\n', subdir, pwd);
     return;
 end
-cd(subdir);
+
 
 % If current subjdir is in the exclList then go back to curr dir and exit
-subdirFullpath = pwd;
+subdirFullpath = filesepStandard(fullpath(subdir));
 
 for ii=1:length(exclList)
     if ~isempty(findstr(exclList{ii}, subdirFullpath))
-        cd(currdir);
         return;
     end
 end
 
-files = dir('*');
+files = dir([subdirFullpath, '*']);
 if isempty(files)
     return;
 end
 
-for ii=1:length(files)
+for ii = 1:length(files)
     exclFlag = false;
     if isdotmfile(files(ii))
         for kk=1:length(exclList)
@@ -39,26 +44,25 @@ for ii=1:length(files)
         if exclFlag==true
             continue;
         end
-        dotmfiles{end+1} = filesepStandard(sprintf('%s%s%s', pwd, filesep, files(ii).name), 'nameonly');
+        dotmfiles{end+1,1} = filesepStandard(sprintf('%s%s%s', subdirFullpath, files(ii).name), 'nameonly');
     elseif files(ii).isdir && ~iscurrdir(files(ii)) && ~isparentdir(files(ii))
-        dotmfiles = [dotmfiles, findDotMFiles(files(ii).name, exclList)];
+        dotmfiles = [dotmfiles; findDotMFiles([subdirFullpath, files(ii).name], exclList)];
     end
 end
-cd(currdir);
 
 
 
 % -------------------------------------------------------------------------
 function b = isdotmfile(file)
-
-b=0;
+b = false;
 if file.isdir
     return;
 end
-if file.name(end) ~= 'm' || file.name(end-1) ~= '.'
+[~, ~, ext] = fileparts(file.name);
+if ~strcmp(ext, '.m')
     return;
 end
-b=1;
+b = true;
 
 
 
@@ -123,21 +127,5 @@ if (length(file.name)>3)
     return;
 end
 b=1;
-
-
-
-% -------------------------------------------------------------------------
-% Helper function: remove name arg from list
-function list = removeEntryFromList(name, list)
-
-temp = strfind(list, name);
-k=[];
-for ii=1:length(temp)
-    if ~isempty(temp{ii})
-        k=ii;
-    end
-end
-list(k) = [];
-
 
 

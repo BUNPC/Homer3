@@ -44,7 +44,7 @@ classdef RunClass < TreeNodeClass
                 obj.iRun   = varargin{4};
             end
             
-            obj.LoadAcquiredData(dirname);
+            obj.LoadAcquiredData();
             if obj.acquired.Error()
                 obj = RunClass.empty();
                 return;
@@ -70,13 +70,10 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function err = Load(obj, dirname)
+        function err = Load(obj)
             err = 0;
-            if nargin==1 || isempty(dirname)
-                dirname = filesepStandard(pwd);
-            end
             err1 = obj.LoadDerivedData();
-            err2 = obj.LoadAcquiredData(dirname);            
+            err2 = obj.LoadAcquiredData();            
             if ~(err1==0 && err2==0)
                 err = -1;
             end
@@ -89,19 +86,16 @@ classdef RunClass < TreeNodeClass
             if isempty(obj)
                 return;
             end
-            err = obj.procStream.Load(obj.GetFilename);            
+            err = obj.procStream.Load([obj.path, obj.GetOutputFilename]);
         end        
         
 
                 
         % ----------------------------------------------------------------------------------
-        function err = LoadAcquiredData(obj, dirname)
+        function err = LoadAcquiredData(obj)
             err = -1;
             if isempty(obj)
                 return;
-            end
-            if ~exist('dirname','var') || isempty(dirname)
-                dirname = filesepStandard(pwd);
             end
             
             if isempty(obj.SaveMemorySpace(obj.name))
@@ -113,12 +107,12 @@ classdef RunClass < TreeNodeClass
             
             if isempty(obj.acquired)
                 if obj.IsNirs()
-                    obj.acquired = NirsClass([dirname, obj.name], dataStorageScheme);
+                    obj.acquired = NirsClass([obj.path, obj.name], dataStorageScheme);
                 else
-                    obj.acquired = SnirfClass([dirname, obj.name], dataStorageScheme);
+                    obj.acquired = SnirfClass([obj.path, obj.name], dataStorageScheme);
                 end
             else
-                obj.acquired.Load([dirname, obj.name]);
+                obj.acquired.Load([obj.path, obj.name]);
             end
             
             if obj.acquired.Error() < 0
@@ -141,10 +135,10 @@ classdef RunClass < TreeNodeClass
             end
             
             % Unload derived data 
-            obj.procStream.FreeMemory(obj.GetFilename);
+            obj.procStream.FreeMemory(obj.GetOutputFilename());
 
             % Unload acquired data 
-            obj.acquired.FreeMemory(obj.GetFilename);
+            obj.acquired.FreeMemory(obj.GetFilename());
         end
         
         
@@ -224,7 +218,23 @@ classdef RunClass < TreeNodeClass
             end
             b = false;
         end
-               
+
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsEmptyOutput(obj)
+            b = true;
+            if isempty(obj)
+                return;
+            end
+            obj.LoadDerivedData();
+            if obj.procStream.IsEmptyOutput()
+                return;
+            end
+            b = false;
+        end
+
+
     end
     
     
@@ -300,7 +310,7 @@ classdef RunClass < TreeNodeClass
             obj.procStream.input.LoadVars(vars);
 
             % Calculate processing stream
-            obj.procStream.Calc(obj.GetFilename);
+            obj.procStream.Calc(obj.GetOutputFilename());
 
             if obj.DEBUG
                 obj.logger.Write(sprintf('Completed processing stream for group %d, subject %d, run %d\n', obj.iGroup, obj.iSubj, obj.iRun));
@@ -313,11 +323,11 @@ classdef RunClass < TreeNodeClass
         function Print(obj, indent)
             if ~exist('indent', 'var')
                 indent = 4;
+            else
+                indent = indent+2;
             end
-            fprintf('%sRun %d:\n', blanks(indent), obj.iRun);
-            fprintf('%sCondNames: %s\n', blanks(indent+4), cell2str(obj.CondNames));
-            obj.procStream.input.Print(indent+4);
-            obj.procStream.output.Print(indent+4);
+            obj.logger.Write(sprintf('%s%s,  output file: %s\n', blanks(indent), obj.name, obj.procStream.output.SetFilename(obj.GetOutputFilename())));
+            % obj.procStream.Print(indent);
         end
         
     end    % Public methods
@@ -593,14 +603,14 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function AddStims(obj, tPts, condition)
+        function AddStims(obj, tPts, condition, duration, amp, more)
             if isempty(tPts)
                 return;
             end
             if isempty(condition)
                 return;
             end
-            obj.procStream.AddStims(tPts, condition);
+            obj.procStream.AddStims(tPts, condition, duration, amp, more);
         end
 
         
@@ -639,6 +649,29 @@ classdef RunClass < TreeNodeClass
             obj.procStream.MoveStims(tPts, condition);
         end
         
+        % ----------------------------------------------------------------------------------
+        function AddStimColumn(obj, name, initValue)
+            if ~exist('name', 'var')
+                return;
+            end
+            obj.procStream.AddStimColumn(name, initValue);
+        end
+
+        % ----------------------------------------------------------------------------------
+        function DeleteStimColumn(obj, idx)
+            if ~exist('idx', 'var') || idx <= 3
+                return;
+            end
+            obj.procStream.DeleteStimColumn(idx);
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function RenameStimColumn(obj, oldname, newname)
+            if ~exist('oldname', 'var') || ~exist('newname', 'var')
+                return;
+            end
+            obj.procStream.RenameStimColumn(oldname, newname);
+        end
         
         % ----------------------------------------------------------------------------------
         function data = GetStimData(obj, icond)
@@ -668,8 +701,8 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimDuration(obj, icond, duration)
-            obj.procStream.SetStimDuration(icond, duration);
+        function SetStimDuration(obj, icond, duration, tpts)
+            obj.procStream.SetStimDuration(icond, duration, tpts);
         end
         
     
@@ -683,8 +716,8 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimAmplitudes(obj, icond, vals)
-            obj.procStream.SetStimAmplitudes(icond, vals);
+        function SetStimAmplitudes(obj, icond, amps, tpts)
+            obj.procStream.SetStimAmplitudes(icond, amps, tpts);
         end
         
     
@@ -783,7 +816,7 @@ classdef RunClass < TreeNodeClass
                 for j = 1:length(inputs)
                     if ~any(strcmp(available, inputs{j}))
                        fn_error = obj.procStream.fcalls(i);
-                       missing_args{end+1} = inputs{j};
+                       missing_args{end+1} = inputs{j}; %#ok<AGROW>
                     end
                 end
                 
@@ -803,28 +836,54 @@ classdef RunClass < TreeNodeClass
                 % Add outputs of the function to available list
                 outputs = obj.procStream.fcalls(i).GetOutputs();
                 for j = 1:length(outputs)
-                   available{end + 1} = outputs{j}; 
+                   available{end + 1} = outputs{j};  %#ok<AGROW>
                 end
             end
         end
+        
+        
         
         % ----------------------------------------------------------------------------------
         function ExportHRF(obj, ~, iBlk)
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            obj.procStream.ExportHRF(obj.name, obj.CondNames, iBlk);
+            obj.ExportHRF@TreeNodeClass('', iBlk);
         end
-         
-    end
+
         
+        % ----------------------------------------------------------------------------------
+        function r = ListOutputFilenames(obj, options)
+            if ~exist('options','var')
+                options = '';
+            end
+            r = obj.GetOutputFilename(options);        
+            fprintf('    %s %s\n', obj.path, r);
+        end
+
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = HaveOutput(obj)
+            b1 = ~obj.procStream.output.IsEmpty();
+            fname = obj.procStream.output.SetFilename(obj.GetOutputFilename());
+            b2 = false;
+            if ispathvalid(fname)
+                r = load(fname);
+                b2 = ~r.output.IsEmpty();
+            end
+            b = b1 || b2;
+        end
+                
+        
+    end
+
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Private methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Access = public)
-                
-        
+
     end  % Private methods
 
 end

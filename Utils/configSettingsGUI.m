@@ -1,197 +1,324 @@
-function configSettingsGUI
-    global cfgSet
-    
-    cfgSet = ConfigFileClass();
-    
-    f = figure('NumberTitle','off');
-    f.Name = 'App Setting Config GUI';
-    set(f, 'MenuBar', 'none');
-    set(f, 'ToolBar', 'none');
-    
-    param = cell(length(cfgSet.sections),1);
-    for i = 1:length(cfgSet.sections)
-        param{i} = cfgSet.sections(i).param;
-    end
-    
-    %Number of Parameters
-    np = length(cfgSet.sections);
-    %Number of Editable Parameters
-    n = length(cfgSet.sections) - length(find(cellfun(@isempty,param)));
-    
-    nAdj = 1;               %Count for Editable Parameters
-    p = cell(n,1);          %Panels
-    c = cell(n,1);          %Parameters/User Inputs
-    
-    if n < 11
-        if rem(n,2) ~= 0
-            p{1} = uipanel('Title',cfgSet.sections(1).name,'FontSize',12,'Position',[0 1-(1/((n+1)/2)) 1 1/((n+1)/2)]);
-            if isempty(cfgSet.sections(1).param)
-                %Not editable?
-                c{1} = uicontrol(p{1}, 'Style', 'text', 'FontSize', 15, 'Units', 'Normalized');
-                c{1}.String = 'Not Editable';
-                cfgSet.sections(1).val = [];
-            elseif isempty(find(strcmp(cfgSet.sections(1).param,cfgSet.sections(1).val),1))
-                c{1} = uicontrol(p{1}, 'Style', 'edit', 'FontSize', 15, 'Units', 'Normalized', 'Tag', cfgSet.sections(1).name);
-                c{1}.String = cfgSet.sections(1).val;
-                c{1}.Position = [0.125 0.25 0.75 0.5];
-                c{nAdj}.Callback = @setVal;
-                nAdj = nAdj + 1;
-            else
-                c{1} = uicontrol(p{1}, 'Style', 'popupmenu', 'FontSize', 15, 'Units', 'Normalized', 'Tag', cfgSet.sections(1).name);
-                c{1}.String = cfgSet.sections(1).param;
-                c{1}.Value = find(strcmp(cfgSet.sections(1).param,cfgSet.sections(1).val));
-                c{1}.Position = [0.125 0.25 0.75 0.5];
-                c{nAdj}.Callback = @setVal;
-                nAdj = nAdj + 1;
-            end
-            if n < 2
-                %End
-            else
-                for i = 2:np
-                    if isempty(cfgSet.sections(i).param)
-                        %Not editable?
-                        continue;
-                    elseif isempty(find(strcmp(cfgSet.sections(i).param,cfgSet.sections(i).val),1))
-                        p{nAdj} = uipanel('Title',cfgSet.sections(i).name,'FontSize',12,'Position',[0.5*rem(nAdj,2) 1-(floor(nAdj/2)+1)*(1/(n/2+1)) 0.5 1/(n/2+1)]);
-                        c{nAdj} = uicontrol(p{nAdj}, 'Style', 'edit', 'FontSize', 15, 'Units', 'Normalized', 'Tag', cfgSet.sections(i).name);
-                        c{nAdj}.String = cfgSet.sections(i).val{1};
-                        c{nAdj}.Callback = @setVal;
-                    else
-                        p{nAdj} = uipanel('Title',cfgSet.sections(i).name,'FontSize',12,'Position',[0.5*rem(nAdj,2) 1-(floor(nAdj/2)+1)*(1/(n/2+1)) 0.5 1/(n/2+1)]);
-                        c{nAdj} = uicontrol(p{nAdj}, 'Style', 'popupmenu', 'FontSize', 15, 'Units', 'Normalized', 'Tag', cfgSet.sections(i).name);
-                        c{nAdj}.String = cfgSet.sections(i).param;
-                        c{nAdj}.Callback = @setVal;
-                    end
-                    c{nAdj}.Value = find(strcmp(cfgSet.sections(i).param,cfgSet.sections(i).val));
-                    c{nAdj}.Position = [0.125 0.25 0.75 0.5];
-                    nAdj = nAdj + 1;
-                end
-            end
-        else
-            if n == 0
-                %Nothing
-            else
-                for i = 0:(np-1)
-                    if i == 0
-                        if isempty(cfgSet.sections(i+1).param)
-                            %Not editable?
-                            continue;
-                        elseif isempty(find(strcmp(cfgSet.sections(i+1).param,cfgSet.sections(i+1).val),1))
-                            p{nAdj} = uipanel('Title',cfgSet.sections(i+1).name,'FontSize',12,'Position',[0.5*rem(nAdj-1,2) 1-(floor((nAdj-1)/2)+1)*(1/(n/2+1)) 0.5 1/(n/2+1)]);
-                            c{nAdj} = uicontrol(p{nAdj}, 'Style', 'edit', 'FontSize', 15, 'Units', 'Normalized', 'Tag', cfgSet.sections(i+1).name);
-                            c{nAdj}.String = cfgSet.sections(i+1).val{1};
-                            c{nAdj}.Callback = @setVal;
-                        else
-                            p{nAdj} = uipanel('Title',cfgSet.sections(i+1).name,'FontSize',12,'Position',[0.5*rem(nAdj-1,2) 1-(floor((nAdj-1)/2)+1)*(1/(n/2+1)) 0.5 1/(n/2+1)]);
-                            c{nAdj} = uicontrol(p{nAdj}, 'Style', 'popupmenu', 'FontSize', 15, 'Units', 'Normalized', 'Tag', cfgSet.sections(i+1).name);
-                            c{nAdj}.String = cfgSet.sections(i+1).param;
-                            c{nAdj}.Callback = @setVal;
-                        end
-                        c{nAdj}.Value = find(strcmp(cfgSet.sections(i+1).param,cfgSet.sections(i+1).val));
-                        c{nAdj}.Position = [0.125 0.25 0.75 0.5];
-                        nAdj = nAdj + 1;
-                    else
-                        if isempty(cfgSet.sections(i+1).param)
-                            %Not editable?
-                            continue;
-                        elseif isempty(find(strcmp(cfgSet.sections(i+1).param,cfgSet.sections(i+1).val),1))
-                            p{nAdj} = uipanel('Title',cfgSet.sections(i+1).name,'FontSize',12,'Position',[0.5*rem(nAdj-1,2) 1-(floor((nAdj-1)/2)+1)*(1/(n/2+1)) 0.5 1/(n/2+1)]);
-                            c{nAdj} = uicontrol(p{nAdj}, 'Style', 'edit', 'FontSize', 15, 'Units', 'Normalized', 'Tag', cfgSet.sections(i+1).name);
-                            c{nAdj}.String = cfgSet.sections(i+1).val{1};
-                            c{nAdj}.Callback = @setVal;
-                        else
-                            p{nAdj} = uipanel('Title',cfgSet.sections(i+1).name,'FontSize',12,'Position',[0.5*rem(nAdj-1,2) 1-(floor((nAdj-1)/2)+1)*(1/(n/2+1)) 0.5 1/(n/2+1)]);
-                            c{nAdj} = uicontrol(p{nAdj}, 'Style', 'popupmenu', 'FontSize', 15, 'Units', 'Normalized', 'Tag', cfgSet.sections(i+1).name);
-                            c{nAdj}.String = cfgSet.sections(i+1).param;
-                            c{nAdj}.Callback = @setVal;
-                        end
-                        c{nAdj}.Value = find(strcmp(cfgSet.sections(i+1).param,cfgSet.sections(i+1).val));
-                        c{nAdj}.Position = [0.125 0.25 0.75 0.5];
-                        nAdj = nAdj + 1;
-                    end
-                end
-            end
-        end
-    else
-        div = ceil(n/5);
-        for i = 0:(np-1)
-            if i == 0
-                if isempty(cfgSet.sections(i+1).param)
-                    %Not editable?
-                    continue;
-                elseif isempty(find(strcmp(cfgSet.sections(i+1).param,cfgSet.sections(i+1).val),1))
-                    p{nAdj} = uipanel('Title',cfgSet.sections(i+1).name,'FontSize',12,'Position',[(1/div)*(rem(nAdj-1,div)) 1-(floor((nAdj-1)/div)+1)*(1/ceil(n/div)) 1/div 1/ceil(n/div)]);
-                    c{nAdj} = uicontrol(p{i+1}, 'Style', 'edit', 'FontSize', 15, 'Units', 'Normalized', 'Tag', cfgSet.sections(i+1).name);
-                    c{nAdj}.String = cfgSet.sections(i+1).val{1};
-                    c{nAdj}.Callback = @setVal;
-                else
-                    p{nAdj} = uipanel('Title',cfgSet.sections(i+1).name,'FontSize',12,'Position',[(1/div)*(rem(nAdj-1,div)) 1-(floor((nAdj-1)/div)+1)*(1/ceil(n/div)) 1/div 1/ceil(n/div)]);
-                    c{nAdj} = uicontrol(p{i+1}, 'Style', 'edit', 'FontSize', 15, 'Units', 'Normalized', 'Tag', cfgSet.sections(i+1).name);
-                    c{nAdj}.String = cfgSet.sections(i+1).param;
-                    c{nAdj}.Callback = @setVal;
-                end
-                c{nAdj}.Value = find(strcmp(cfgSet.sections(i+1).param,cfgSet.sections(i+1).val));
-                c{nAdj}.Position = [0.125 0.25 0.75 0.5];
-                nAdj = nAdj + 1;
-            else
-                p{nAdj} = uipanel('Title',cfgSet.sections(i+1).name,'FontSize',12,'Position',[(1/div)*(rem(nAdj-1,div)) 1-(floor((nAdj-1)/div)+1)*(1/ceil(n/div)) 1/div 1/ceil(n/div)]);
-                if isempty(cfgSet.sections(i+1).param)
-                    %Not editable?
-                    continue;
-                elseif isempty(find(strcmp(cfgSet.sections(i+1).param,cfgSet.sections(i+1).val),1))
-                    c{nAdj} = uicontrol(p{i+1}, 'Style', 'popupmenu', 'FontSize', 15, 'Units', 'Normalized', 'Tag', cfgSet.sections(i+1).name);
-                    c{nAdj}.String = cfgSet.sections(i+1).val{1};
-                    c{nAdj}.Callback = @setVal;
-                else
-                    c{nAdj} = uicontrol(p{i+1}, 'Style', 'popupmenu', 'FontSize', 15, 'Units', 'Normalized', 'Tag', cfgSet.sections(i+1).name);
-                    c{nAdj}.String = cfgSet.sections(i+1).param;
-                    c{nAdj}.Callback = @setVal;
-                end
-                c{nAdj}.Value = find(strcmp(cfgSet.sections(i+1).param,cfgSet.sections(i+1).val));
-                c{nAdj}.Position = [0.125 0.25 0.75 0.5];
-                nAdj = nAdj + 1;
-            end
-        end
-    end
-    
-    if n < 11
-        if rem(n,2) ~= 0
-            p{nAdj} = uipanel('FontSize',12,'Position',[0 0 1 1/((n+1)/2+1)]);
-        else
-            p{nAdj} = uipanel('FontSize',12,'Position',[0 0 1 1/(n/2+1)]);
-        end
-    else
-        p{nAdj} = uipanel('FontSize',12,'Position',[0 0 1 1/ceil(n/div)]);
-    end
-    c{nAdj} = uicontrol(p{nAdj}, 'Style', 'pushbutton', 'FontSize', 15, 'Units', 'Normalized', 'String', 'Save',...
-              'Position', [0.125 0.25 0.25 0.5]);
-    c{nAdj}.Callback = @cfgSave;
-    c{nAdj+1} = uicontrol(p{nAdj}, 'Style', 'pushbutton', 'FontSize', 15, 'Units', 'Normalized', 'String', 'Exit',...
-              'Position', [0.625 0.25 0.25 0.5]);
-    c{nAdj+1}.Callback = @cfgExit;
+function configSettingsGUI(nParamsPerCol, options)
 
-%     clear cfgSet
+if nargin==0 || isempty(nParamsPerCol)
+    nParamsPerCol = 6;
+end
+if nargin<2
+    options = '';
+end    
+if nParamsPerCol<1
+    nParamsPerCol = 1;
+end
+if nParamsPerCol>12
+    nParamsPerCol = 12;
+end
+
+InitializeGuiStruct(options);
+hf = CreateGui();
+ResetGui(hf);
+ResizeGui(hf, nParamsPerCol);
+hBttnSave = DrawBttns(hf);
+DrawConfigParams(hf, hBttnSave);
+
+
+% -------------------------------------------------------------
+function InitializeGuiStruct(options)
+global cfgGui
+
+if ~isempty(cfgGui)
+    if ishandles(cfgGui.handle)
+        return;
+    end
+end
+
+cfgGui = struct(...
+    'filedata',[], ...
+    'ysizeParam',0, ...
+    'xsizeParam',0, ...
+    'ysizeBttn',0, ...
+    'xsizeBttn',0, ...
+    'ysizeGap',0, ...
+    'xsizeGap',0, ...
+    'nrows',0, ...
+    'ncols',0, ...
+    'ysizeTotal',0, ...
+    'xsizeTotal',0, ...
+    'ysizeParamsAll',0, ...
+    'xsizeParamsAll',0, ...
+    'nParamsPerCol',8, ...
+    'handle',[] ...
+    );
+
+cfgGui.filedata = ConfigFileClass();
+
+% char to pixel conversion
+cfgGui.units = 'pixels';
+[fx, fy] = guiUnitConversion('characters', cfgGui.units);
+
+% Hardcode size of each parameter panel in char units
+cfgGui.ysizeParam = 5*fy;
+cfgGui.xsizeParam = 50*fx;
+
+% Hardcode size of each buttons
+cfgGui.ysizeBttn = 2.4*fy;
+cfgGui.xsizeBttn = 25*fx;
+
+% Gaps sizes between controls
+cfgGui.ysizeGap = 1*fy;
+cfgGui.xsizeGap = 2*fx;
+
+cfgGui.fontsizeVals = 9;
+cfgGui.posParam     = [.10,.10,.80,.80];
+
+cfgGui.options = options;
+
+
+
+% -------------------------------------------------------------
+function hf = CreateGui()
+global cfgGui
+
+if ~ishandles(cfgGui.handle)
+    hf = figure('name', 'App Setting Config GUI', 'NumberTitle','off', 'MenuBar','none', 'ToolBar','none', ...
+        'units',cfgGui.units);
+else
+    hf = cfgGui.handle;
+end
+cfgGui.handle = hf;
+
+
+
+
+% -------------------------------------------------------------
+function ResetGui(hf)
+hc = get(hf, 'children');
+for ii = 1:length(hc)
+    if strcmpi(get(hc(ii), 'type'), 'uimenu')
+        continue;
+    end
+    delete(hc(ii));
+end
+
+
+
+% -------------------------------------------------------------
+function ResizeGui(hf, nParamsPerCol)
+global cfgGui
+
+cfgGui.nParamsPerCol = nParamsPerCol;
+
+p0 = get(hf, 'position');
+
+% Calculate number of columns and rows needed to accomodate all the
+% parameters
+cfgGui.np = cfgGui.filedata.GetParamNum();
+if floor(cfgGui.np/cfgGui.nParamsPerCol) == 0
+    k = 1;
+elseif floor(cfgGui.np/cfgGui.nParamsPerCol) == cfgGui.np/cfgGui.nParamsPerCol
+    k = 0;
+else
+    k = 1;
+end
+cfgGui.ncols = floor(cfgGui.np/cfgGui.nParamsPerCol)+k;
+cfgGui.nrows = cfgGui.nParamsPerCol;
+cfgGui.ysizeParamsAll = cfgGui.nrows * (cfgGui.ysizeParam + cfgGui.ysizeGap) + 2*cfgGui.ysizeGap;
+cfgGui.xsizeParamsAll = cfgGui.ncols * (cfgGui.xsizeParam + cfgGui.xsizeGap) + 2*cfgGui.xsizeGap;
+cfgGui.ysizeTotal = cfgGui.ysizeParamsAll+cfgGui.ysizeBttn+4*cfgGui.ysizeGap;
+cfgGui.xsizeTotal = cfgGui.xsizeParamsAll;
+set(hf, 'position', [p0(1), p0(2), cfgGui.xsizeTotal, cfgGui.ysizeTotal])
+rePositionGuiWithinScreen(hf);
+
+
+
+% -------------------------------------------------------------
+function hv = DrawConfigParams(hf, hBttnSave)
+global cfgGui
+
+np = cfgGui.filedata.GetParamNum();
+hp = zeros(np,1);
+hcm = setMouseClickAction();
+
+for i = 1:cfgGui.ncols
+    for j = 1:cfgGui.nrows
+        % Figure out param panel position
+        xpos    = (cfgGui.xsizeParam+cfgGui.xsizeGap)*(i-1) + cfgGui.xsizeGap;
+        ypos    = cfgGui.ysizeTotal - 2*cfgGui.ysizeGap - (cfgGui.ysizeParam+cfgGui.ysizeGap)*j;
+        posPanel = [xpos, ypos, cfgGui.xsizeParam, cfgGui.ysizeParam];
+
+        ip = cfgGui.nParamsPerCol*(i-1) + j;
+        if ip>np
+            if np==0
+                uicontrol(hf, 'Style','text', 'string','CONFIG FILE IS EMPTY', 'FontSize',11, ...
+                          'fontweight','bold', 'units',cfgGui.units, 'Position',posPanel, 'foregroundcolor',[.6,.3,.1]);
+            end
+            break;
+        end
+
+        % Draw param panel
+        hp(ip) = uipanel('parent',hf, 'Title',cfgGui.filedata.GetParamName(ip), 'FontSize',10, 'fontweight','bold', 'foregroundcolor',[.6,.3,.1], ...
+            'units',cfgGui.units, 'Position',posPanel);        
+        
+        % Draw param values control within panel. Note all controls have same relative position within panel 
+        pval = cfgGui.filedata.GetParamValue(ip);
+        if isempty(pval)
+            pval = '';
+        end
+        if isempty(cfgGui.filedata.GetParamValueOptions(ip))
+            hv = uicontrol(hp(ip), 'Style','edit', 'string',pval, 'FontSize',cfgGui.fontsizeVals, 'fontweight','bold', 'Tag',cfgGui.filedata.GetParamName(ip), ...
+                'units','normalized', 'position',cfgGui.posParam);
+        else
+            hv = uicontrol(hp(ip), 'Style','popupmenu', 'string',cfgGui.filedata.GetParamValueOptions(ip), ...
+                'FontSize',cfgGui.fontsizeVals, 'fontweight','bold', 'Tag',cfgGui.filedata.GetParamName(ip), ...
+                'units','normalized', 'position',cfgGui.posParam);
+            k = find(strcmp(cfgGui.filedata.GetParamValueOptions(ip), pval));
+            if isempty(k)
+                set(hv, 'string',[{''}; cfgGui.filedata.GetParamValueOptions(ip)]);
+            else
+                hv.Value = k;
+            end            
+        end
+        hv.Callback = {@setVal, hBttnSave};
+    end
+    
+end
+
+if verGreaterThanOrEqual('matlab','9.8')
+    set(hp, 'ContextMenu',setMouseClickAction(hcm,hp));
+else
+    set(hp, 'ButtonDownFcn',{@mouseClickFcn_Callback,hp});
+end
+set(hf, 'ButtonDownFcn',{@mouseClickFcn_Callback,hp});
+
+
+
+% -------------------------------------------------------------
+function [hBttnSave, hBttnExit] = DrawBttns(hf)
+global cfgGui
+
+if cfgGui.ncols == 1
+    k = 10;
+else
+    k = 5;
+end
+xoffset = cfgGui.xsizeTotal/k;
+hBttnSave = uicontrol(hf, 'Style','pushbutton', 'FontSize',15, 'Units',cfgGui.units, 'String','SAVE', ...
+    'Position', [xoffset, cfgGui.ysizeTotal-(cfgGui.ysizeParamsAll+cfgGui.ysizeParam), cfgGui.xsizeBttn, cfgGui.ysizeBttn]);
+hBttnSave.Callback = @cfgSave;
+hBttnExit = uicontrol(hf, 'Style','pushbutton', 'FontSize',15, 'Units',cfgGui.units, 'String','EXIT', ...
+    'Position', [cfgGui.xsizeTotal-(cfgGui.xsizeBttn+xoffset), cfgGui.ysizeTotal-(cfgGui.ysizeParamsAll+cfgGui.ysizeParam), cfgGui.xsizeBttn, cfgGui.ysizeBttn]);
+hBttnExit.Callback = @cfgExit;
+setappdata(hBttnSave, 'backgroundcolororiginal',hBttnSave.BackgroundColor); 
+setappdata(hBttnSave, 'foregroundcolororiginal',hBttnSave.ForegroundColor); 
+
+
+
+
+% -------------------------------------------------------------
+function setVal(hObject, ~, hBttnSave)
+global cfgGui
+
+if strcmp(hObject.Style, 'popupmenu')
+    if hObject.Value>0
+        s = hObject.String{hObject.Value};
+    else
+        s = {};
+    end
+else
+    s = hObject.String;
+end
+if iscell(s) && ~isempty(s)
+    s = s{1};
+elseif isempty(s)    
+    s = '';
+end
+
+% Check if param value has changed
+if cfgGui.filedata.ChangedValue(hObject.Tag, s)
+    hBttnSave.BackgroundColor = [.90, .10, .05];
+    hBttnSave.ForegroundColor = [.90, .80, .75];
+end
+cfgGui.filedata.SetValue(hObject.Tag, s);
+
+
+
+% -------------------------------------------------------------
+function cfgSave(hObject, ~) %#ok<*DEFNU>
+global cfgGui
+cfgGui.filedata.Save();
+hObject.BackgroundColor = getappdata(hObject, 'backgroundcolororiginal'); 
+hObject.ForegroundColor = getappdata(hObject, 'foregroundcolororiginal'); 
+if optionExists(cfgGui.options, {'keepopen','stayopen'})
+    return
+end
+close;
+
+
+
+% -------------------------------------------------------------
+function cfgExit(~,~)
+close;
+
+
+% -------------------------------------------------------------
+function mouseClickFcn_Callback(hObject, ~, handles)
+type = get(hObject, 'type');
+if strcmp(type, 'figure')
+    return;
 end
     
-    % -------------------------------------------------------------
-    function setVal(src,~)
-      global cfgSet
-      if iscell(src.String)
-        cfgSet.SetValue(src.Tag, src.String{src.Value});
-      else
-        cfgSet.SetValue(src.Tag, src.String);
-      end
+hf = [];
+while ~strcmp(type, 'root')
+    hObject = get(hObject, 'parent');
+    type = get(hObject, 'type');    
+    if strcmp(type, 'figure')
+        hf = hObject;
+        break;
     end
+end
+if isempty(hf)
+    return;
+end
     
-    % -------------------------------------------------------------
-    function cfgSave(~,~)
-      global cfgSet
-      cfgSet.Save();
-      close;
+me = get(hf,'selectiontype');
+if ~strcmp(me, 'alt')
+    return
+end
+
+mp = get(hf,'currentpoint');
+if length(mp)<2
+    return;
+end
+% fprintf('Mouse click position: [%0.1f, %0.1f]:\n\n', mp(1), mp(2));
+paramNameClicked = '';
+for ii = 1:length(handles)
+    p = get(handles(ii), 'position');
+    paramName = get(handles(ii), 'title');
+    if (mp(1)>=p(1) && mp(1)<=p(1)+p(3)) && (mp(2)>=p(2) && mp(2)<=p(2)+p(4))
+        % fprintf('**** Clicked on ''%s'': [%0.1f, %0.1f] ****\n', paramName, p(1), p(2));
+        paramNameClicked = paramName;
+    else
+        % fprintf('Param ''%s'' position: [%0.1f, %0.1f]\n', paramName, p(1), p(2));
     end
-    
-    % -------------------------------------------------------------
-    function cfgExit(~,~)
-        close;
-    end
-    
+end
+if isempty(paramNameClicked)
+    return;
+end
+clipboard('copy',paramNameClicked) 
+msg = sprintf('''%s''   copied to clipboard',paramNameClicked);
+try
+    MessageBox(msg, sprintf('Parameter: ''%s''', paramNameClicked), 'timelimit');
+catch
+    msgbox(msg);
+end
+
+
+% -------------------------------------------------------------
+function hcm = setMouseClickAction(hcm, hp)
+if nargin<2
+    hcm = uicontextmenu();
+    uimenu(hcm, 'text','Copy Param Name');
+    return
+end
+hm = get(hcm, 'children');
+hm.MenuSelectedFcn = {@mouseClickFcn_Callback,hp};
+

@@ -74,10 +74,10 @@ classdef FuncRegClass < matlab.mixin.Copyable
             fprintf('%s\n', heading);
 
             files = cell(length(obj.userfuncdir),1);
-            for jj=1:length(obj.userfuncdir)
+            for jj = 1:length(obj.userfuncdir)
                 expr = sprintf('%shmr%s_*.m', obj.userfuncdir{jj}, upper(obj.type(1)));
                 files{jj} = dir(expr);
-                for iF=1:length(files{jj})
+                for iF = 1:length(files{jj})
                     files{jj}(iF).folder = obj.userfuncdir{jj};
                 end
                 fprintf('User functions folder %s\n', obj.userfuncdir{jj});
@@ -85,18 +85,18 @@ classdef FuncRegClass < matlab.mixin.Copyable
             
             h = waitbar(0, heading);
             
-            kk=1;
-            for jj=1:length(files)
+            kk = 1;
+            for jj = 1:length(files)
                 N = length(files{jj});
-                for ii=1:N
+                for ii = 1:N
                     if strfind(files{jj}(ii).name, '_result.m')
                         continue;
                     end
                     progressmsg = sprintf('Parsing %s', files{jj}(ii).name);
                     fprintf('%s\n', progressmsg);
                     waitbar_improved(kk/N, h, sprintf(progressmsg));
-                    obj.AddEntry(files{jj}(ii).name);
-                    kk=kk+1;
+                    obj.AddEntry(files{jj}(ii).name, jj);
+                    kk = kk+1;
                 end
             end
             
@@ -106,8 +106,11 @@ classdef FuncRegClass < matlab.mixin.Copyable
         
 
         % -------------------------------------------------------------------------------
-        function err = AddEntry(obj, funcname)
+        function err = AddEntry(obj, funcname, jj)
             err = 0;
+            if nargin<3
+                jj = 1;
+            end
             idx = obj.GetIdx(funcname);
             if ~isempty(idx)
                 q = menu('Function entry already exists in registry. Do you want to reload it?', 'YES','NO');
@@ -119,7 +122,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
             if tmp.IsValid()
                 idx = length(obj.entries)+1;
                 obj.entries(idx) = FuncRegEntryClass(tmp);
-                obj.userfuncfiles{idx} = [obj.userfuncdir{1}, funcname];
+                obj.userfuncfiles{idx} = [obj.userfuncdir{jj}, funcname];
             else
                 fprintf('  Discarding %s. Function is not valid registry entry.\n', tmp.name)
             end
@@ -388,17 +391,21 @@ classdef FuncRegClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------------------------------------
         function lastdt = DateLastModified(obj)
-            lastdt = datetime(1970,01,01);
-            for ii = 1:length(obj.entries)
-                for jj = 1:length(obj.userfuncdir)
-                    file = dir([obj.userfuncdir{jj}, '/', obj.entries(ii).GetName(), '.m']);
-                    if ~isempty(file)
-                        if  datetime(file.date,'locale','system') > lastdt
-                            lastdt =  datetime(file.date,'locale','system');
+            try
+                lastdt = datetime(1970,01,01);
+                for ii = 1:length(obj.entries)
+                    for jj = 1:length(obj.userfuncdir)
+                        file = dir([obj.userfuncdir{jj}, '/', obj.entries(ii).GetName(), '.m']);
+                        if ~isempty(file)
+                            if  datetime(file.date,'locale','system') > lastdt
+                                lastdt =  datetime(file.date,'locale','system');
+                            end
+                            break;
                         end
-                        break;
                     end
                 end
+            catch
+                lastdt = -1;
             end
         end
         

@@ -1,4 +1,4 @@
-function [p, b] = guiOutsideScreenBorders(hObject)
+ function [p, b] = guiOutsideScreenBorders(hObject)
 %
 % Syntax:
 %    [p, b] = guiOutsideScreenBorders(hObject)
@@ -34,7 +34,7 @@ end
 
 % Get screen borders 
 buffer_x = Ps(ii,3)*.02;
-buffer_y = Ps(ii,4)*.05;
+buffer_y = Ps(ii,4)*.08;
 ScreenWidth     = Ps(ii,3);
 ScreenHeight    = Ps(ii,4);
 ScreenSideLeft  = Ps(ii,1)+buffer_x;

@@ -5,13 +5,13 @@
 % OD_to_Conc
 %
 % DESCRIPTION:
-% Convert OD to concentrations. For use with data up to 3 wavelengths.
+% Convert OD to concentrations.
 %
 % INPUTS:
 % dod: SNIRF.data container with the Change in OD tim course 
 % probe: SNIRF.probe container with the source/detector geometry
 % ppf: Partial path length factors for each wavelength. This is a vector of  
-%      3 elements, one for each wavelength.  Typical value is ~6 for each 
+%      factors per wavelength.  Typical value is ~6 for each 
 %      wavelength if the absorption change is uniform over the volume of tissue measured. 
 %      To approximate the partial volume effect of a small localized absorption change 
 %      within an adult human head, this value could be as small as 0.1. Convention is 
@@ -27,7 +27,7 @@
 % Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, probe, ppf )
 %
 % PARAMETERS:
-% ppf: [1.0, 1.0, 1.0]
+% ppf: [1.0, 1.0]
 %
 % PREREQUISITES:
 % Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
@@ -46,7 +46,7 @@ for ii=1:length(dod)
     y      = dod(ii).GetDataTimeSeries();
     
     if length(ppf) < nWav
-        errordlg('WARNING: Data contains more than 3 wavelengths. Using PPF value of 1 for all wavelengths.');
+        warning('Length of ppf does not match the number of wavelengths. Falling back to ppf=1 for all wavelengths.');
         ppf = ones(1, nWav);
     elseif length(ppf) > nWav
         d = length(ppf)-nWav;

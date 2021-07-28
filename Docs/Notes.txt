@@ -269,3 +269,14 @@ Christian found issue when opening Homer3 in random folder that it cannot tell i
 generates a groupResults.mat file. We have to add feature where Homer3 decides if a group folder is valid. A group folder is valid if it has acquistion files
 that are consiStent with each other in terms of having the same probe. 
 
+
+==================================
+Jul 22, 2021
+
+Fixes need to made 
+
+1. configSettingsGUI bug
+2. Error in plot ptobe with synch browsing, close exported fig, change curr element
+3. Keep all exported figures in plot probe open instead of having one exported figure 
+4. Make sync browsing default in plot probe
+

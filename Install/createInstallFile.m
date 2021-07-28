@@ -1,5 +1,7 @@
 function createInstallFile(options)
 
+setNamespace('Homer3')
+
 if ~exist('options','var') | isempty(options)
     options = 'all';
 end
@@ -8,11 +10,13 @@ end
 dirnameApp = getAppDir;
 if isempty(dirnameApp)
     MessageBox('Cannot create installation package. Could not find root application folder.');
+    deleteNamespace('Homer3')
     return;
 end
 dirnameInstall = filesepStandard(fileparts(which('createInstallFile.m')));
 if isempty(dirnameInstall)
     MessageBox('Cannot create installation package. Could not find root installation folder.');
+    deleteNamespace('Homer3')
     return;
 end
 addpath(dirnameInstall, '-end')
@@ -37,8 +41,8 @@ mkdir([dirnameInstall, 'homer3_install/SubjDataSample']);
 
 % Generate executables
 if ~strcmp(options, 'nobuild')
+	Buildme();
 	Buildme_Setup();
-	Buildme_Homer3();
     if islinux()
         perl('./makesetup.pl','./run_setup.sh','./setup.sh');
     elseif ismac()
@@ -104,10 +108,16 @@ if exist([dirnameApp, 'FuncRegistry/UserFunctions'],'dir')
     copyfile([dirnameApp, 'FuncRegistry/UserFunctions'], [dirnameInstall, 'homer3_install/FuncRegistry/UserFunctions']);
 end
 
+if ispathvalid([dirnameInstall, 'uninstall.bat'])
+    copyfile([dirnameInstall, 'uninstall.bat'], [dirnameInstall, 'homer3_install/uninstall.bat']);
+end
+
 % Zip it all up into a single installation file
 zip([dirnameInstall, 'homer3_install.zip'], [dirnameInstall, 'homer3_install']);
 
 % Clean up 
+deleteNamespace('Homer3')
 fclose all;
 cleanup(dirnameInstall, dirnameApp);
+
 

@@ -18,6 +18,9 @@ classdef TreeNodeClass < handle
         DEBUG
         path
         logger
+        pathOutputAlt        
+        outputDirname
+        cfg
     end
     
     methods        
@@ -39,7 +42,10 @@ classdef TreeNodeClass < handle
             obj.err = 0;
             obj.CondNames = {};
             obj.path = filesepStandard(pwd);            
-                        
+            
+            obj.cfg = ConfigFileClass();
+            obj.outputDirname = filesepStandard(obj.cfg.GetValue('Output Folder Name'), 'nameonly:dir');
+
             obj.InitParentAppFunc();
             
             % If this constructor is called from this class' copy method,
@@ -128,7 +134,7 @@ classdef TreeNodeClass < handle
             objnew.type = obj.type;
             objnew.err = obj.err;
             objnew.CondNames = obj.CondNames;
-            objnew.procStream.Copy(obj.procStream, obj.GetFilename);
+            objnew.procStream.Copy(obj.procStream, obj.GetOutputFilename);
         end
         
                
@@ -138,7 +144,7 @@ classdef TreeNodeClass < handle
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2, conditional)
             if ~isempty(obj2.procStream)
-                obj.procStream.Copy(obj2.procStream, obj.GetFilename);
+                obj.procStream.Copy(obj2.procStream, obj.GetOutputFilename);
             end
             if nargin==2 || strcmp(conditional, 'unconditional')
                 obj.name = obj2.name;
@@ -152,9 +158,8 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function Reset(obj)
-            obj.procStream.output.Reset(obj.GetFilename);
-            delete([obj.path, obj.name, '*.txt']);
-            delete([obj.path, obj.name, '*.mat']);
+            obj.procStream.output.Reset([obj.path, obj.GetOutputFilename()]);
+            delete([obj.path, obj.GetOutputFilename(), '*.txt']);
             delete([obj.path, 'tCCAfilter_*.txt'])
         end
         
@@ -565,6 +570,15 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function SetName(obj, name)
+            if isempty(obj)
+                return;
+            end
+            obj.name = name;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function name = GetFileName(obj)
             name = '';
             if isempty(obj)
@@ -634,7 +648,6 @@ classdef TreeNodeClass < handle
                 return
             end
             err = obj.LoadSubBranch(); %#ok<*MCNPN>
-            obj.procStream.Load(obj.GetFilename);
         end
         
         
@@ -644,8 +657,24 @@ classdef TreeNodeClass < handle
                 return
             end
             obj.FreeMemorySubBranch();
-            obj.procStream.FreeMemory(obj.GetFilename);
+            obj.procStream.FreeMemory(obj.GetOutputFilename);
         end
+        
+
+        % ----------------------------------------------------------------------------------
+        function ExportHRF(obj, ~, iBlk)
+
+            % Update call application GUI using it's generic Update function
+            if ~isempty(obj.updateParentGui)
+                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
+            end
+            
+            % Load derived data and export it
+            obj.procStream.Load([obj.path, obj.GetOutputFilename()]);
+            obj.procStream.ExportHRF([obj.path, obj.GetOutputFilename()], obj.CondNames, iBlk);
+            pause(.5);
+        end
+        
         
         
         % ----------------------------------------------------------------------------------
@@ -664,12 +693,38 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function filename = GetOutputFilename(obj, options)
+            filename = '';
+            if isempty(obj)
+                return;
+            end
+            if ~exist('options','var')
+                options = '';
+            end
+            filename = obj.SaveMemorySpace(obj.name);
+            if isempty(filename)
+                return;
+            end
+            if optionExists(options, 'legacy')
+                outputDirname = '';
+            else
+                outputDirname = obj.outputDirname;
+            end
+            [p, f] = fileparts([outputDirname, filename]);
+            filename = [filesepStandard(p, 'nameonly:dir'), f];            
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function filename = GetFilename(obj)
             filename = '';
             if isempty(obj)
                 return;
             end
             filename = obj.SaveMemorySpace(obj.name);
+            if isempty(filename)
+                return;
+            end
         end
         
         
@@ -690,7 +745,7 @@ classdef TreeNodeClass < handle
             };
         
             if exist('obj2','var')
-                msg{1} = sprintf('WARNING: Saved data for %s "%s" does not match this group folder. ', obj.type, obj.name);
+                msg{1} = sprintf('WARNING: Saved processing data for %s "%s" does not match this group folder. ', obj.type, obj.name);
                 msg{2} = sprintf('Are you sure this saved data belongs to this group folder?');
             else
                 msg{1} = sprintf('WARNING: The %s "%s" does not match the saved group data. ', obj.type, obj.name);
@@ -729,7 +784,32 @@ classdef TreeNodeClass < handle
             val = obj.err;
             
         end
-                
+
+        
+        
+        % ----------------------------------------------------------------------------------
+        function BackwardCompatability(obj)
+            if ~ispathvalid([obj.path, obj.outputDirname])
+                mkdir([obj.path, obj.outputDirname])
+            end
+            src = obj.procStream.output.SetFilename(obj.GetOutputFilename('legacy'));
+            dst = obj.procStream.output.SetFilename(obj.GetOutputFilename());
+            if ispathvalid(src)
+                if ~pathscompare(src, dst)
+                    obj.logger.Write(sprintf('Moving %s to %s\n', src, dst));
+                    rootpath = fileparts(dst);
+                    try
+                        if ~ispathvalid(rootpath)
+                            mkdir(rootpath)
+                        end
+                    	movefile(src, dst);
+                    catch
+                        obj.logger.Write(sprintf('ERROR: Failed to to move old output to new format\n'));
+                    end
+                end
+            end
+        end
+        
     end
 
     
@@ -750,7 +830,7 @@ classdef TreeNodeClass < handle
             if ~strcmp(arg,'init')
                 return
             end
-            tbl = distinguishable_colors(20);
+            tbl = distinguishable_colors(128);
         end
    
         

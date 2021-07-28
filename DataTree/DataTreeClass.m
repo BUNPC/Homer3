@@ -13,6 +13,9 @@ classdef DataTreeClass <  handle
         dataStorageScheme
     end
     
+    
+    
+    
     methods
         
         % ---------------------------------------------------------------
@@ -219,15 +222,24 @@ classdef DataTreeClass <  handle
                 
                 % Get file names and load them into DataTree
                 while length(obj.groups) < iGnew
+                    
+                    % Find group folder and it's acqiosition files                    
                     obj.files    = FileClass().empty();
                     obj.filesErr = FileClass().empty();
-                    
-                    dataInit = FindFiles(obj.dirnameGroups{kk}, fmt, options);
-                    if isempty(dataInit) || dataInit.isempty()
-                        return;
-                    end
+                    dataInit     = DataFilesClass();
+                    dataInitPrev = DataFilesClass();
+                    iter = 1;
+                    while dataInit.GetError() < 0
+                        dataInit = FindFiles(obj.dirnameGroups{kk}, fmt, options);
+                        if isempty(dataInit) || dataInit.isempty()
+                            return;
+                        end
+                        dataInitPrev(iter) = dataInit;
+                        obj.dirnameGroups{kk} = dataInit.pathnm;
+                        iter = iter+1;
+                    end                    
                     obj.files = dataInit.files;
-                    
+                                        
                     % Print file and folder numbers stats
                     nfolders = length(dataInit.files)-dataInit.nfiles;
                     if nfolders==0
@@ -236,6 +248,7 @@ classdef DataTreeClass <  handle
                     obj.logger.Write(sprintf('DataTreeClass.FindAndLoadGroups: Found %d data files in %d folders\n', ...
                             dataInit.nfiles, nfolders));
                     
+                    % Now load group files to data tree
                     obj.LoadGroup(iGnew, procStreamCfgFile, options);
                     if length(obj.groups) < iGnew
                         if obj.FoundDataFilesInOtherFormat(dataInit, kk)
@@ -244,9 +257,14 @@ classdef DataTreeClass <  handle
                             break;
                         end
                     end
+                    
+                    % Clean up any obsolete files in output folder if names
+                    % of files or folder was changed
+                    obj.groups(iGnew).CleanUpOutput(dataInitPrev);
+                                        
                 end
                 
-            end           
+            end
             obj.logger.Write(sprintf('Loaded data set in %0.1f seconds\n', toc));
         end
         
@@ -311,7 +329,7 @@ classdef DataTreeClass <  handle
             % Load derived or post-acquisition data from a file if it
             % exists
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.groups(iG).Load();
+            obj.groups(iG).Load('init');
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Initialize procStream for all tree nodes
@@ -368,7 +386,11 @@ classdef DataTreeClass <  handle
                     runCurr = RunClass().empty();
                 end
             end
-            obj.logger.Write(sprintf('\nLoaded acquisition data in %0.1f seconds\n\n', toc));            
+            obj.logger.Write(sprintf('\n'));
+            obj.logger.Write(sprintf('Loaded group %s acquisition data in %0.1f seconds\n', obj.groups(iG).name, toc));
+            obj.logger.Write(sprintf('  Derived data output folder   : %s%s\n', obj.groups(iG).path, obj.groups(iG).outputDirname));
+            obj.logger.Write(sprintf('  Derived data output file     : %s\n\n', obj.groups(iG).outputFilename));
+            
         end
 
 
@@ -392,11 +414,6 @@ classdef DataTreeClass <  handle
                 group.SetIndexID(jj);
                 obj.groups(jj) = group;
                 obj.groups(jj).SetPath(obj.dirnameGroups{jj})
-
-                % In case there's not enough disk space in the current
-                % group folder, we have a separate path for saving group
-                % results
-                obj.groups(jj).SetPathOutput(obj.dirnameGroups{jj})
                 obj.logger.Write(sprintf('Added group %s to dataTree.\n', obj.groups(jj).GetName));
             end
 
@@ -553,10 +570,10 @@ classdef DataTreeClass <  handle
             
             t_local = tic;
             for ii = 1:length(obj.groups)
-                obj.logger.Write(sprintf('Saving group %d in %s\n', ii, [obj.groups(ii).pathOutput, 'groupResults.mat']));                
+                obj.logger.Write(sprintf('Saving group %d in %s\n', ii, [obj.groups(ii).pathOutputAlt, obj.groups(ii).GetFilename()]));
                 obj.groups(ii).Save(hwait);
             end
-            obj.logger.Write(sprintf('Completed saving groupResults.mat for all groups in %0.3f seconds.\n', toc(t_local)));
+            obj.logger.Write(sprintf('Completed saving processing results for all groups in %0.3f seconds.\n', toc(t_local)));
         end
 
 
@@ -580,7 +597,7 @@ classdef DataTreeClass <  handle
         
         
         % ----------------------------------------------------------
-        function ResetAll(obj)
+        function ResetAllGroups(obj)
             for ii = 1:length(obj.groups)
                 obj.groups(ii).Reset()
             end
@@ -601,6 +618,24 @@ classdef DataTreeClass <  handle
             end
             b = false;
         end
+        
+        
+        
+        % ----------------------------------------------------------
+        function b = IsEmptyOutput(obj)
+            b = true;
+            if obj.IsEmpty()
+                return;
+            end
+            for ii = 1:length(obj.groups)
+                if ~obj.groups(ii).IsEmptyOutput
+                    b = false;
+                    break;
+                end
+            end
+        end
+        
+        
         
         % ----------------------------------------------------------
         function b = IsFlatFileDir(obj)

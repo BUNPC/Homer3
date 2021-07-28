@@ -56,7 +56,7 @@
 % PARAMETERS:
 % flagtCCA: 1
 % tCCAparams: [3 0.08 0.3]
-% tCCAaux_inx: [1 1 1 1 0 0 0 0]
+% tCCAaux_inx: [1 2 3 4]
 % rhoSD_ssThresh: 15.0
 % ss_ch_on: 1
 % runIdxResting: 1

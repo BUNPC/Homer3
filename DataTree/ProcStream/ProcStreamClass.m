@@ -60,8 +60,11 @@ classdef ProcStreamClass < handle
             kk=1;
             for ii = 1:length(obj2.fcalls)                
                 % If registry is empty, then add fcall entries unconditionally.
-                % Otherwise only include those user function calls that exist in the registry.
-                if ~isempty(obj.reg.GetUsageName(obj2.fcalls(ii)))
+                % Otherwise only include ONLY those user function calls that exist in the registry.
+                if obj.reg.IsEmpty() 
+                    obj.fcalls(kk) = FuncCallClass(obj2.fcalls(ii), obj.reg);
+                    kk = kk+1;
+                elseif ~isempty(obj.reg.GetUsageName(obj2.fcalls(ii)))
                     obj.fcalls(kk) = FuncCallClass(obj2.fcalls(ii), obj.reg);
                     kk = kk+1;
                 else
@@ -247,7 +250,7 @@ classdef ProcStreamClass < handle
                 end
                 
                 % Parse obj.input parameters
-                [sargin, p, sarginVal] = obj.ParseInputParams(iFcall);
+                [sargin, p, sarginVal] = obj.ParseInputParams(iFcall); %#ok<ASGLU>
                 
                 % Parse obj.input output arguments
                 sargout = obj.ParseOutputArgs(iFcall);
@@ -282,7 +285,7 @@ classdef ProcStreamClass < handle
                 lst = [0, lst, length(foos)+1]; %#ok<*AGROW>
                 for ii=1:length(lst)-1
                     foo2 = foos(lst(ii)+1:lst(ii+1)-1);
-                    lst2 = strmatch( foo2, paramOut, 'exact' );
+                    lst2 = strmatch( foo2, paramOut, 'exact' ); %#ok<MATCH3>
                     idx = strfind(foo2,'foo');
                     if isempty(lst2) && (isempty(idx) || idx>1) && ~isempty(foo2)
                         paramOut{end+1} = foo2;
@@ -351,10 +354,22 @@ classdef ProcStreamClass < handle
             end
         end
         
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsEmptyOutput(obj)
+            b = true;
+            if obj.output.IsEmpty()
+                return;
+            end
+            b = false;
+        end
+
+
         % ----------------------------------------------------------------------------------
         function b = AcquiredDataModified(obj)
             b = obj.input.AcquiredDataModified();
         end
+        
         
     end
     
@@ -485,11 +500,21 @@ classdef ProcStreamClass < handle
         end
         
         
+        
+        % ----------------------------------------------------------------------------------
+        function  Print(obj, indent)
+            obj.input.Print(indent);
+            obj.output.Print(indent);
+        end
+
+        
+        
         % ----------------------------------------------------------------------------------
         function n = GetFuncCallNum(obj)
             n = length(obj.fcalls);
         end
-                
+                        
+        
         
         % ----------------------------------------------------------------------------------
         function [maxnamelen, numUsages] = GetMaxCallNameLength(obj)
@@ -703,7 +728,7 @@ classdef ProcStreamClass < handle
             if ~exist('type', 'var') || isempty(type)
                 type = 'run';
             end
-            versionstamp = sprintf('%% %s\n', MainGUIVersion('exclpath'));
+            versionstamp = sprintf('%% \n');
 
             % First read in and parse existing file contents
             if ~exist(fname, 'file')
@@ -1024,7 +1049,10 @@ classdef ProcStreamClass < handle
                     
                     % If registry is empty, then add fcall entries unconditionally. 
                     % Otherwise only include those user function calls that exist in the registry. 
-                    if temp.GetErr()==0 && ~isempty(obj.reg.GetUsageName(temp))
+                    if obj.reg.IsEmpty()
+                        obj.fcalls(kk) = FuncCallClass(temp, obj.reg);
+                        kk=kk+1;
+                    elseif temp.GetErr()==0 && ~isempty(obj.reg.GetUsageName(temp))
                         obj.fcalls(kk) = FuncCallClass(temp, obj.reg);
                         kk=kk+1;
                     else
@@ -1147,7 +1175,7 @@ classdef ProcStreamClass < handle
         % ----------------------------------------------------------------------------------
         function val = fcallStrEncodedGroup(obj, init)
             persistent v;
-            if exist('init','var') && strcmp(init,'init')
+            if exist('init','var') && strcmp(init,'init') && ~obj.reg.IsEmpty
                 iG = obj.reg.igroup;
                 suffix = obj.getDefaultProcStream();
                 tmp = {...
@@ -1173,7 +1201,7 @@ classdef ProcStreamClass < handle
         % ----------------------------------------------------------------------------------
         function val = fcallStrEncodedSubj(obj, init)
             persistent v;
-            if exist('init','var') && strcmp(init,'init')
+            if exist('init','var') && strcmp(init,'init') && ~obj.reg.IsEmpty
                 iS = obj.reg.isubj;
                 suffix = obj.getDefaultProcStream();
                 tmp = {...
@@ -1199,7 +1227,7 @@ classdef ProcStreamClass < handle
         % ----------------------------------------------------------------------------------
         function val = fcallStrEncodedRun(obj, init)
             persistent v;
-            if exist('init','var') && strcmp(init,'init')
+            if exist('init','var') && strcmp(init,'init') && ~obj.reg.IsEmpty
                 iR = obj.reg.irun;
                 suffix = obj.getDefaultProcStream();
                 tmp = {...
@@ -1350,14 +1378,14 @@ classdef ProcStreamClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
-        function AddStims(obj, tPts, condition)
+        function AddStims(obj, tPts, condition, duration, amp, more)
             if isempty(tPts)
                 return;
             end
             if isempty(condition)
                 return;
             end
-            obj.input.AddStims(tPts, condition);
+            obj.input.AddStims(tPts, condition, duration, amp, more);
         end
 
         
@@ -1398,6 +1426,31 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function AddStimColumn(obj, name, initValue)
+            if ~exist('name', 'var')
+                return;
+            end
+            obj.input.AddStimColumn(name, initValue);
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function DeleteStimColumn(obj, idx)
+            if ~exist('idx', 'var') || idx <= 3
+                return;
+            end
+            obj.input.DeleteStimColumn(idx);
+        end
+        
+        % ----------------------------------------------------------------------------------
+        function RenameStimColumn(obj, oldname, newname)
+            if ~exist('oldname', 'var') || ~exist('newname', 'var')
+                return;
+            end
+            obj.input.RenameStimColumn(oldname, newname);
+        end
+        
+        % ----------------------------------------------------------------------------------
         function data = GetStimData(obj, icond)
             data = obj.input.GetStimData(icond);
         end
@@ -1425,8 +1478,8 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimDuration(obj, icond, duration)
-            obj.input.SetStimDuration(icond, duration);
+        function SetStimDuration(obj, icond, duration, tpts)
+            obj.input.SetStimDuration(icond, duration, tpts);
         end
         
     
@@ -1440,8 +1493,8 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimAmplitudes(obj, icond, vals)
-            obj.input.SetStimAmplitudes(icond, vals);
+        function SetStimAmplitudes(obj, icond, vals, tpts)
+            obj.input.SetStimAmplitudes(icond, vals, tpts);
         end
         
     

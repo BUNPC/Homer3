@@ -50,8 +50,6 @@ plotprobe.datatypeVals = struct('RAW',1, 'RAW_HRF',2, 'OD',4, 'OD_HRF',8, 'CONC'
 plotprobe.name = 'plotprobe';
 plotprobe.y = {};
 plotprobe.t = {};
-plotprobe.handles.data = {};
-plotprobe.handles.figureDup = [];
 SetGuiControls(handles)
 
 setGuiFonts(handles.figure);
@@ -106,15 +104,15 @@ varargin = args;
 
 % Arguments take precedence over parent gui parameters
 if length(varargin)==1
-    if iswholenum(varargin{1}) & length(varargin{1})==1
+    if iswholenum(varargin{1}) && length(varargin{1})==1
         plotprobe.datatype = varargin{1};                   % PlotProbeGUI(datatype)
     else
         plotprobe.groupDirs = varargin{1};                  % PlotProbeGUI(groupDirs)
     end
 elseif length(varargin)==2
-    if iswholenum(varargin{1}) & length(varargin{1})==1
+    if iswholenum(varargin{1}) && length(varargin{1})==1
         plotprobe.datatype = varargin{1};                   % PlotProbeGUI(datatype)
-        if isreal(varargin{2}) & length(varargin{2})==4     
+        if isreal(varargin{2}) && length(varargin{2})==4     
             plotprobe.pos = varargin{2};                        % PlotProbeGUI(datatype, pos)
         elseif iswholenum(varargin{2})
             plotprobe.condition = varargin{2};                  % PlotProbeGUI(datatype, condition)
@@ -124,16 +122,16 @@ elseif length(varargin)==2
         plotprobe.format = varargin{2};
     end    
 elseif length(varargin)==3
-    if iswholenum(varargin{1}) & length(varargin{1})==1
+    if iswholenum(varargin{1}) && length(varargin{1})==1
         plotprobe.datatype = varargin{1};
         plotprobe.condition = varargin{2};
         plotprobe.pos = varargin{3};                        % PlotProbeGUI(datatype, condition, pos)
     elseif ischar(varargin{2})
         plotprobe.groupDirs = varargin{1};
         plotprobe.format = varargin{2};
-        if isreal(varargin{3}) & length(varargin{3})==4     
+        if isreal(varargin{3}) && length(varargin{3})==4     
             plotprobe.pos = varargin{3};                    % PlotProbeGUI(groupDirs, format, pos)
-        elseif iswholenum(varargin{3}) & length(varargin{3})==1
+        elseif iswholenum(varargin{3}) && length(varargin{3})==1
             plotprobe.datatype = varargin{3};               % PlotProbeGUI(groupDirs, format, datatype)
         end
     end
@@ -141,7 +139,7 @@ elseif length(varargin)==4
     plotprobe.groupDirs = varargin{1};
     plotprobe.format    = varargin{2};
     plotprobe.datatype  = varargin{3};
-    if isreal(varargin{4}) & length(varargin{2})==4     
+    if isreal(varargin{4}) && length(varargin{2})==4     
         plotprobe.pos = varargin{4};                        % PlotProbeGUI(groupDirs, format, datatype, pos)
     elseif iswholenum(varargin{4})
         plotprobe.condition = varargin{4};                  % PlotProbeGUI(groupDirs, format, datatype, condition)
@@ -163,6 +161,9 @@ if isempty(maingui)
     if isempty(plotprobe.format)
         plotprobe.format = 'snirf';
     end
+    if isempty(plotprobe.condition)
+        plotprobe.condition = 1;
+    end
 else
     if isempty(plotprobe.groupDirs)
         plotprobe.groupDirs = maingui.groupDirs;
@@ -170,12 +171,12 @@ else
     if isempty(plotprobe.format)
         plotprobe.format = maingui.format;
     end
+    if isempty(plotprobe.condition)
+        plotprobe.condition = maingui.condition;
+    end
 end
 if isempty(plotprobe.datatype)
     plotprobe.datatype = plotprobe.datatypeVals.CONC_HRF;
-end
-if isempty(plotprobe.condition)
-    plotprobe.condition = maingui.condition;
 end
 
 
@@ -265,8 +266,16 @@ else
     set(handles.menuItemSyncBrowsing, 'enable','off');
 end
 
+setappdata(hObject, 'figures',hObject);
+setappdata(hObject, 'data',{});
+
 SetTextFilename(handles);
 DisplayData(handles, hObject);
+
+if ~menuItemSyncBrowsing_Callback(handles.menuItemSyncBrowsing, 'get')
+    menuItemSyncBrowsing_Callback(handles.menuItemSyncBrowsing, '', handles);
+end
+
 
 
 
@@ -313,7 +322,7 @@ end
 SetWindowTitle(handles)
 
 % Clear axes of previous data, before redisplaying it
-ClearAxesData();
+ClearAxesData(handles);
 
 hold on
 nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
@@ -345,13 +354,13 @@ global plotprobe
 foo = str2num( get(hObject,'string') );
 if length(foo)<2
     foo = plotprobe.axScl;
-elseif foo(1)<=0 | foo(2)<=0
+elseif foo(1)<=0 || foo(2)<=0
     foo = plotprobe.axScl;
 end    
 plotprobe.axScl = foo;
 
 % Clear axes of previous data, before redisplaying it
-ClearAxesData();
+ClearAxesData(handles);
 
 set(hObject,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
@@ -371,7 +380,7 @@ plotprobe.axScl(2) = plotprobe.axScl(2) - 0.1;
 set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 
 % Clear axes of previous data, before redisplaying it
-ClearAxesData();
+ClearAxesData(handles);
 
 nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
@@ -390,7 +399,7 @@ plotprobe.axScl(2) = plotprobe.axScl(2) + 0.1;
 set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 
 % Clear axes of previous data, before redisplaying it
-ClearAxesData();
+ClearAxesData(handles);
 
 nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
@@ -408,7 +417,7 @@ plotprobe.axScl(1) = plotprobe.axScl(1) - 0.1;
 set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 
 % Clear axes of previous data, before redisplaying it
-ClearAxesData();
+ClearAxesData(handles);
 
 nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
@@ -428,7 +437,7 @@ set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 
 % Clear axes of previous data, before redisplaying it
-ClearAxesData();
+ClearAxesData(handles);
 
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk);
@@ -437,20 +446,21 @@ end
 
 
 % ----------------------------------------------------------------------
-function radiobuttonShowTimeMarkers_Callback(hObject, ~, ~)
+function radiobuttonShowTimeMarkers_Callback(hObject, ~, handles)
 global plotprobe
 
+data = getappdata(handles.figure, 'data');
 plotprobe.tMarkShow = get(hObject,'value');
 nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     ml = plotprobe.dataTree.currElem.GetMeasList(iBlk);
     lst = find(ml.MeasList(:,4)==1);
     mlVis = ml.MeasListVis(lst);
-    if ~isempty(plotprobe.handles.data{iBlk})
+    if ~isempty(data{iBlk})
         if plotprobe.tMarkShow
-            set(plotprobe.handles.data{iBlk}(logical(mlVis), 4:end), 'visible','on');
+            set(data{iBlk}(logical(mlVis), 4:end), 'visible','on');
         else
-            set(plotprobe.handles.data{iBlk}(:,4:end), 'visible', 'off');    
+            set(data{iBlk}(:,4:end), 'visible', 'off');    
         end
     end
 end
@@ -470,12 +480,13 @@ if datatype == datatypeVals.CONC_HRF
 end
 
 % Clear axes of previous data, before redisplaying it
-ClearAxesData();
+ClearAxesData(handles);
 
 nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk);
 end
+
 
 
 % ----------------------------------------------------------------------
@@ -496,7 +507,7 @@ plotprobe.tMarkInt = foo;
 set(hObject,'string', sprintf('%0.1f ',plotprobe.tMarkInt) );
 
 % Clear axes of previous data, before redisplaying it
-ClearAxesData();
+ClearAxesData(handles);
 
 nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
@@ -506,12 +517,10 @@ end
 
 
 % ----------------------------------------------------------------------
-function pushbuttonPlotProbeDuplicate_Callback(~, ~, handles) %#ok<*DEFNU>
+function pushbuttonPlotProbeExport_Callback(~, ~, handles) %#ok<*DEFNU>
 global plotprobe
 
-if ishandles(plotprobe.handles.figureDup)
-    delete(plotprobe.handles.figureDup);
-end
+figures = getappdata(handles.figure, 'figures');
 
 %%%% Get the zoom level of the original plotProbe axes
 figure(handles.figure);
@@ -519,41 +528,64 @@ a = get(gca,'xlim');
 b = get(gca,'ylim');
 set(gca, 'tag','axes1');
 
+iNew = length(figures)+1;
+
 %%%% Create new figure and use same zoom level and axes position 
 %%%% as original 
-handles.figureDup = figure('name', plotprobe.dataTreeHandle.currElem.GetName(), 'NumberTitle','off');
+figures(iNew) = figure('name', plotprobe.dataTreeHandle.currElem.GetName(), 'NumberTitle','off');
+setappdata(handles.figure, 'figures',figures);
 xlim(a);
 ylim(b);
 axis off
 pos = getNewFigPos(handles);
-set(handles.figureDup, 'position',pos);
+if ~isempty(pos)
+    set(figures(iNew), 'position',pos);
+end
 
 % Display name label and divider
 hname = get(handles.textFilename);
 hnameFrame = get(handles.textFilenameFrame);
 hdiv = get(handles.uipanelDivider);
-uicontrol('parent',handles.figureDup, 'style','text', 'string',hnameFrame.String, 'units',hnameFrame.Units, 'position',hnameFrame.Position, ...
+uicontrol('parent',figures(iNew), 'style','text', 'string',hnameFrame.String, 'units',hnameFrame.Units, 'position',hnameFrame.Position, ...
            'backgroundcolor',hnameFrame.BackgroundColor, 'fontsize',hnameFrame.FontSize, 'fontweight',hnameFrame.FontWeight);
-uicontrol('parent',handles.figureDup, 'style','text', 'string',hname.String, 'units',hname.Units, 'position',hname.Position, ...
+uicontrol('parent',figures(iNew), 'style','text', 'string',hname.String, 'units',hname.Units, 'position',hname.Position, ...
            'backgroundcolor',hname.BackgroundColor, 'fontsize',hname.FontSize, 'fontweight',hname.FontWeight);
-uipanel('parent',handles.figureDup, 'units',hdiv.Units, 'position',hdiv.Position, 'bordertype',hdiv.BorderType);
+uipanel('parent',figures(iNew), 'units',hdiv.Units, 'position',hdiv.Position, 'bordertype',hdiv.BorderType);
        
 % Display data
 nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iBlk, length(plotprobe.handles.data)+1);
+    plotProbeAndSetProperties(handles, iBlk, length(figures));
 end
-plotprobe.handles.figureDup = handles.figureDup;
-rePositionGuiWithinScreen(plotprobe.handles.figureDup);
+rePositionGuiWithinScreen(figures(iNew));
 
 
 
 % ---------------------------------------------
 function pos = getNewFigPos(handles)
+pos = [];
+figures = getappdata(handles.figure, 'figures');
+if length(figures)<2
+    return;
+end
 
-hFig = handles.figure;
-hFigDup = handles.figureDup;
+hFig = [];
+for ii = 1:length(figures)-1
+    if ishandles(figures(ii))
+        hFig = figures(ii);
+    end
+end
+if ~ishandles(hFig)
+    return;
+end
 
+if ii==1
+    kx = .4;
+elseif ii>1
+    kx = .04;
+end
+
+hFigDup = figures(end);
 p = get(hFig,'position');
 u = get(hFig,'units');
 set(hFigDup, 'units',u, 'position',p);
@@ -579,41 +611,64 @@ if c(1)>scrsz(3)/2
 else
     q=+1;
 end
-if c(2)>scrsz(4)/2
-    r=-1;
-else
-    r=+1;
-end
-offsetX = q*scrsz(3)*.4;
-offsetY = r*scrsz(4)*.1;
+offsetX = q*scrsz(3)*kx;
+offsetY = p(4)*.02;
 
 % pos = [p(1)+offsetX p(2)+offsetY p(3) p(4)];
-pos = [p(1)+offsetX p(2), p(3) p(4)];
+pos = [p(1)+offsetX, p(2)-offsetY, p(3), p(4)];
 set(0,'units',u0);
 
 % Set relative position with axes to be same in duplicate as in parent 
 haxes = findobj2(hFig, 'tag','axes1', 'flat');
 p = get(haxes,'position');
-set(gca, 'position',p)
+if isempty(p)
+    return
+end
+set(gca, 'position',p, 'tag','axes1');
 
 
+
+
+% -------------------------------------------------------------------
+function CloseSupporting(hObject)
+if ~ishandles(hObject)
+    return;
+end
+
+% Check to see if any figure associated with this GUI need  to
+% be closed as well
+msg = sprintf('Do you want to close all supporting figures associated with PlotProbeGUI?');
+firstfig = false;
+figures = getappdata(hObject, 'figures');
+for ii = 2:length(figures)
+    if ishandle(figures(ii))
+        if firstfig == false
+            firstfig = true;
+            q = MenuBox(msg, {'YES','NO'});
+            if q==2
+                break;
+            end
+        end
+        delete(figures(ii));
+    end
+end
+    
+    
+    
+    
 % ----------------------------------------------------------------------
-function PlotProbeGUI_Close(~, ~, ~)
+function PlotProbeGUI_Close(hObject, ~, ~)
 global plotprobe
 if isempty(plotprobe)
     return
 end
+if nargin==0
+    hObject = [];
+end
 if ~isempty(plotprobe.updateParentGui) 
 	plotprobe.updateParentGui('PlotProbeGUI');
 end
-
-% Removed closing of duplicate figure at users' request
-% JD: Oct 22, 2020
-
-% if ishandles(plotprobe.handles.figureDup)
-%     delete(plotprobe.handles.figureDup);
-% end
-
+CloseSupporting(hObject)
 
 
 
@@ -645,9 +700,7 @@ end
 nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 plotprobe.y = cell(nDataBlks,1);
 plotprobe.t = cell(nDataBlks,1);
-
-hFigs = [handles.figure, plotprobe.handles.figureDup];
-    
+   
 for iBlk = 1:nDataBlks
     if datatype == plotprobe.datatypeVals.OD_HRF
         plotprobe.y{iBlk} = plotprobe.dataTreeHandle.currElem.GetDodAvg(condition, iBlk);
@@ -660,39 +713,28 @@ for iBlk = 1:nDataBlks
         plotprobe.tMarkUnits = '(micro-molars)';
     end
     
-    for iFig = 1:length(hFigs)
-        
-        if iFig==1
-        
-            % Clear axes of previous data, before redisplaying it
-            ClearAxesData(iFig);
-            
-            if ishandles(hFigs(iFig))
-                figure(hFigs(iFig))
-                plotProbeAndSetProperties(handles, iBlk, iFig);
-            end
-        end
-        
-        figure(hFigs(iFig))
-        
-    end    
+    % Clear axes of previous data, before redisplaying it
+    ClearAxesData(handles);    
+    plotProbeAndSetProperties(handles);
+    figure(handles.figure)
 end
 
 
 
 % ----------------------------------------------------------------------
-function ClearAxesData(iFig)
-global plotprobe
+function ClearAxesData(handles, iFig)
+data = getappdata(handles.figure, 'data');
 if ~exist('iFig','var') || isempty(iFig)
     iFig=1;
 end
-if isempty(plotprobe.handles.data)
+if isempty(data)
     return
 end
-if ishandles(plotprobe.handles.data{iFig})
-    delete(plotprobe.handles.data{iFig});
-    plotprobe.handles.data{iFig} = [];
+if ishandles(data{iFig})
+    delete(data{iFig});
+    data{iFig} = [];
 end
+setappdata(handles.figure, 'data',data);
 
 
 
@@ -768,12 +810,28 @@ set(handles.textFilenameFrame, 'units','normalized');
 
 
 % --------------------------------------------------------------------
-function menuItemSyncBrowsing_Callback(hObject, ~, handles)
+function b = menuItemSyncBrowsing_Callback(hObject, eventdata, handles)
 global plotprobe
+
+if nargin==1
+    eventdata = '';
+    handles = [];
+elseif nargin==2
+    handles = [];
+end
+
+b = 0;
+if ischar(eventdata) && strcmpi(eventdata, 'get')
+    b = strcmpi(get(hObject, 'checked'), 'on');
+    return
+end
+
 if strcmpi(get(hObject, 'checked'), 'off')
     set(hObject, 'checked', 'on')
     SyncBrowsing(plotprobe, 'on');
-    PlotProbeGUI_Update(handles);
+    if ~isempty(handles)
+        PlotProbeGUI_Update(handles);
+    end
 else
     set(hObject, 'checked', 'off')
     SyncBrowsing(plotprobe, 'off');
@@ -782,9 +840,9 @@ end
 
 
 % --------------------------------------------------------------------
-function radiobuttonShowStd_Callback(hObject, ~, handles)
+function radiobuttonShowStd_Callback(~, ~, handles)
 global plotprobe
-ClearAxesData();
+ClearAxesData(handles);
 nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 for iBlk=1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk);

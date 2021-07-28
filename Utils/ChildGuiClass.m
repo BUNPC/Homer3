@@ -6,6 +6,7 @@ classdef ChildGuiClass < handle
         args
         visible
         lastpos
+        closeSupporting;
     end
     
     methods
@@ -48,6 +49,7 @@ classdef ChildGuiClass < handle
             obj.args = {};
             obj.visible = 'on';
             obj.lastpos = [];
+            obj.closeSupporting = 0;
             
             if nargin==0
                 return;
@@ -126,6 +128,8 @@ classdef ChildGuiClass < handle
                 obj.args = varargin;
             end
             
+            obj.closeSupporting = 0;
+            
             % Allow up to 6 arguments to be passed to GUI
             a = obj.args;
             handles = []; %#ok<*PROPLC>
@@ -196,7 +200,7 @@ classdef ChildGuiClass < handle
             pc = get(obj.handles.figure, 'position');
 
             % To work correctly for mutiple sceens, Ps must be sorted in ascending order
-            ps = sort(ps,'ascend');            
+            ps = sort(ps,'ascend');
             
             % Find which monitor parent gui is in
             for ii = 1:size(ps,1)
@@ -204,7 +208,13 @@ classdef ChildGuiClass < handle
                     break;
                 end
             end
-                        
+            
+            % Fix bug: if multiple monitors left-to-right physical arrangement does 
+            % not match left-to-right virtual setting then subtract 1 from monitor number. 
+            if ps(1)<0
+                ii = ii-1;
+            end
+            
             % Re-position parent and child guis
             set(hp, 'position', [ii-pp(3), pp(2), pp(3), pp(4)])
             set(obj.handles.figure, 'position', [ii-1, pc(2), pc(3), pc(4)])
@@ -298,14 +308,18 @@ classdef ChildGuiClass < handle
         
         % -------------------------------------------------------------------
         function Close(obj, hObject, eventdata) %#ok<INUSD>
+            if ~ishandles(obj.handles.figure)
+                return;
+            end
             if isempty(obj.name)
                 return;
             end
             obj.args = {};
-            if ~ishandle(obj.handles.figure)
-                return;
-            end
             obj.lastpos = get(obj.handles.figure, 'position');
+            
+            obj.CloseSupporting();
+            
+            % Now delete the parent GUI
             delete(obj.handles.figure);
             
             % See if there's a private GUI close function to call
@@ -314,6 +328,33 @@ classdef ChildGuiClass < handle
             end
             obj.handles.closeptr();
         end
+        
+        
+        
+        % -------------------------------------------------------------------
+        function CloseSupporting(obj)
+            if ~ishandles(obj.handles.figure)
+                return;
+            end
+            
+            % Check to see if any figure associated with this GUI need  to
+            % be closed as well
+            msg = sprintf('Do you want to close all supporting figures associated with %s?', obj.name);
+            figures = getappdata(obj.handles.figure, 'figures');            
+            for ii = 2:length(figures)
+                if ishandle(figures(ii))
+                    if obj.closeSupporting == 2
+                        break;
+                    end
+                    if obj.closeSupporting==0
+                        obj.closeSupporting = MenuBox(msg, {'YES','NO'});
+                    end
+                    if obj.closeSupporting == 1
+                        delete(figures(ii));
+                    end
+                end
+            end
+        end        
         
         
         

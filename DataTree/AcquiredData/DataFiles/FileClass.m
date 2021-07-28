@@ -12,6 +12,7 @@ classdef FileClass < matlab.mixin.Copyable
         datenum
 
         % FileClass specific properties
+        namePrev
         idx
         subjdir
         subjdiridx
@@ -19,11 +20,13 @@ classdef FileClass < matlab.mixin.Copyable
         map2group
         pathfull
         err
+        logger
     end
     
     methods
 
         function obj = FileClass(varargin)
+            global logger
             
             obj.name       = '';
             obj.date       = '';
@@ -31,6 +34,7 @@ classdef FileClass < matlab.mixin.Copyable
             obj.isdir      = 0;
             obj.datenum    = 0;
             
+            obj.namePrev   = '';
             obj.idx        = 0;
             obj.subjdir    = '';
             obj.subjdiridx = 0;
@@ -38,7 +42,8 @@ classdef FileClass < matlab.mixin.Copyable
             obj.map2group  = struct('iSubj',0,'iRun',0);
             obj.pathfull   = '';
             obj.err        = -1;          % Assume file is not loadable
-
+            obj.logger     = InitLogger(logger);            
+            
             if nargin==0
                 return;
             end
@@ -87,7 +92,7 @@ classdef FileClass < matlab.mixin.Copyable
         
         
         % -----------------------------------------------------------
-        function file_struct = Dirname2Struct(obj, dirnameFull)
+        function file_struct = Dirname2Struct(~, dirnameFull)
             file_struct = [];
             [~, dirname] = fileparts(dirnameFull);
             dirs = dir([dirnameFull, '/..']);
@@ -209,8 +214,110 @@ classdef FileClass < matlab.mixin.Copyable
             end
             b = false;            
         end
+
+        
+        % ----------------------------------------------------
+        function err = ErrorCheckName(obj)
+            a = obj.name;
+            [p1,f1] = fileparts(obj.name);
+            [p2,f2] = fileparts(filesepStandard(obj.pathfull,'nameonly:file'));
+            [~,f3]  = fileparts(p2);
+            if strcmp(f1, p1)
+                obj.err = -1;
+            end
+            if strcmp(f1, f2)
+                obj.err = -2;
+            end
+            if strcmp(f1, f3)
+                obj.err = -3;
+            end
+            err = obj.err;
+        end
+        
+        
                 
+        % ----------------------------------------------------
+        function FixNameConflict(obj)
+            if obj.err == 0
+                return
+            end
+            keeptrying = true;
+            while keeptrying
+                [p,f,e] = fileparts(obj.name);
+                suggestedRenaming = obj.SuggestRenaming(f,e);
+                [rootpath, newname] = SaveFileGUI(suggestedRenaming, p, '', 'rename');
+                newnameFull = [rootpath, newname];
+                if isempty(newnameFull)
+                    % Means user chnaged mind and canceled. So we call it fixed
+                    obj.NameConflictFixed()
+                    return;
+                end
+                if strcmp(newname, [f,e])
+                    q = MenuBox('ERROR: The file name has not been renamed. Do you want to try again?', {'YES','NO'});
+                    if q==1
+                        continue;
+                    else
+                        return;
+                    end
+                end
+                if pathscompare(obj.name, newnameFull)
+                    return;
+                end
+                if ~isempty(e)
+                    d = dir([filesepStandard(p),f,'.*']);
+                    [p2,f2] = fileparts(newnameFull);
+                    for ii = 1:length(d)
+                        [~,~,e1] = fileparts(d(ii).name);
+                        obj.logger.Write(sprintf('FileClass: Renaming  %s to %s\n', [filesepStandard(p),f,e1], [filesepStandard(p2),f2,e1]));
+                        movefile([filesepStandard(p),f,e1], [filesepStandard(p2),f2,e1]);
+                    end
+                else
+                    obj.logger.Write(sprintf('FileClass: Renaming  %s to %s\n', obj.name, newnameFull));
+                    movefile(obj.name, newnameFull);
+                end
+                obj.namePrev = obj.name;
+                obj.name = [filesepStandard(p), newname];
+                keeptrying = false;
+            end
+        end
+        
+        
+        
+        % -----------------------------------------------------------------
+        function name = SuggestRenaming(~, fname, ext)
+            n = 1;
+            base = fname;
+            if isempty(ext)
+                addon = 's';
+            else
+                addon = 'r';
+            end
+            name = sprintf('%s_%s%d%s', base, addon, n, ext);
+            while ispathvalid(name)
+                n = n+1;
+                name = sprintf('%s_%s%d%s', base, addon, n, ext);
+            end
+        end
+        
+        
+        % -----------------------------------------------------
+        function NameConflictFixed(obj)
+            obj.err = 0;
+        end
+        
+        
+        % -----------------------------------------------------
+        function name = GetName(obj)
+            name = obj.name;
+        end
+        
+        
+        % -----------------------------------------------------
+        function err = GetError(obj)
+            err = obj.err;
+        end
+        
         
     end
-    
+       
 end

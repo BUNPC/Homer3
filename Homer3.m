@@ -14,13 +14,20 @@ global logger
 setNamespace('Homer3');
 
 if ~exist('groupDirs','var') || isempty(groupDirs)
-    groupDirs = filesepStandard(pwd);
+    groupDirs = pwd;
 end
 if ~exist('inputFileFormat','var') || isempty(inputFileFormat)
     inputFileFormat = '.snirf';
 end
 if ~exist('unitTest','var')
     unitTest = [];
+end
+
+if ~iscell(groupDirs)
+    groupDirs = {groupDirs};
+end
+for ii = 1:length(groupDirs)
+    groupDirs{ii} = filesepStandard(groupDirs{ii});
 end
 
 if isempty(unitTest)

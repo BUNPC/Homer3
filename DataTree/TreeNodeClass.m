@@ -143,15 +143,17 @@ classdef TreeNodeClass < handle
         % obj2 to obj
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2, conditional)
-            if ~isempty(obj2.procStream)
-                obj.procStream.Copy(obj2.procStream, obj.GetOutputFilename);
-            end
             if nargin==2 || strcmp(conditional, 'unconditional')
                 obj.name = obj2.name;
+                obj.path = obj2.path;
+                obj.outputDirname = obj2.outputDirname;
                 obj.type = obj2.type;
                 obj.iGroup = obj2.iGroup;
                 obj.iSubj = obj2.iSubj;
                 obj.iRun = obj2.iRun;
+            end
+            if ~isempty(obj2.procStream)
+                obj.procStream.Copy(obj2.procStream, [obj.path, obj.GetOutputFilename()]);
             end
         end
         
@@ -199,6 +201,28 @@ classdef TreeNodeClass < handle
             if nargin>3
                 obj.iRun = iR;
             end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetPath(obj, dirname)
+            obj.path = dirname;
+            
+            % In case there's not enough disk space in the current
+            % group folder, we have a alternative path that can be 
+            % set independently for saving group results. By default 
+            % it is set to root group folder. 
+            obj.pathOutputAlt = obj.path;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetPathOutput(obj, dirname)
+            % In case there's not enough disk space in the current
+            % group folder, we have a alternative path that can be 
+            % set independently for saving group results. By default 
+            % it is set to root group folder. 
+            obj.pathOutputAlt = dirname;
         end
         
         
@@ -652,6 +676,16 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function Calc(obj)            
+            % Make variables in this subject available to processing stream input
+            obj.procStream.input.LoadVars(obj.outputVars);
+
+            % Calculate processing stream
+            obj.procStream.Calc([obj.path, obj.GetOutputFilename()]);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function FreeMemory(obj)
             if isempty(obj)
                 return
@@ -701,8 +735,8 @@ classdef TreeNodeClass < handle
             if ~exist('options','var')
                 options = '';
             end
-            filename = obj.SaveMemorySpace(obj.name);
-            if isempty(filename)
+            filename0 = obj.SaveMemorySpace(obj.name);
+            if isempty(filename0)
                 return;
             end
             if optionExists(options, 'legacy')
@@ -710,7 +744,7 @@ classdef TreeNodeClass < handle
             else
                 outputDirname = obj.outputDirname;
             end
-            [p, f] = fileparts([outputDirname, filename]);
+            [p, f] = fileparts([outputDirname, filename0]);
             filename = [filesepStandard(p, 'nameonly:dir'), f];            
         end
         
@@ -781,8 +815,14 @@ classdef TreeNodeClass < handle
         
         % ------------------------------------------------------------
         function val = GetError(obj)
-            val = obj.err;
-            
+            val = obj.err;            
+        end
+
+        
+        
+        % ------------------------------------------------------------
+        function Print(obj, indent)
+            obj.logger.Write(sprintf('%s%s\n', blanks(indent), [obj.path, obj.procStream.output.SetFilename(obj.GetOutputFilename())] ));
         end
 
         
@@ -792,8 +832,8 @@ classdef TreeNodeClass < handle
             if ~ispathvalid([obj.path, obj.outputDirname])
                 mkdir([obj.path, obj.outputDirname])
             end
-            src = obj.procStream.output.SetFilename(obj.GetOutputFilename('legacy'));
-            dst = obj.procStream.output.SetFilename(obj.GetOutputFilename());
+            src = obj.procStream.output.SetFilename([obj.path, obj.GetOutputFilename('legacy')]);
+            dst = obj.procStream.output.SetFilename([obj.path, obj.GetOutputFilename()]);
             if ispathvalid(src)
                 if ~pathscompare(src, dst)
                     obj.logger.Write(sprintf('Moving %s to %s\n', src, dst));

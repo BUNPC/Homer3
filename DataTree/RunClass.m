@@ -26,13 +26,12 @@ classdef RunClass < TreeNodeClass
                 obj.name  = '';
                 return;
             end    
-            dirname = './';
             if isa(varargin{1}, 'RunClass')
                 obj.Copy(varargin{1});
                 return;
             elseif isa(varargin{1}, 'FileClass')
-                dirname = varargin{1}.pathfull;
                 [~, ~, obj.name] = varargin{1}.ExtractNames();
+                obj.path         = varargin{1}.GetFilesPath();  % Fix wrong root path 
             elseif ischar(varargin{1}) && strcmp(varargin{1},'copy')
                 return;
             elseif ischar(varargin{1}) 
@@ -135,10 +134,10 @@ classdef RunClass < TreeNodeClass
             end
             
             % Unload derived data 
-            obj.procStream.FreeMemory(obj.GetOutputFilename());
+            obj.procStream.FreeMemory([obj.path, obj.GetOutputFilename()]);
 
             % Unload acquired data 
-            obj.acquired.FreeMemory(obj.GetFilename());
+            obj.acquired.FreeMemory([obj.path, obj.GetFilename()]);
         end
         
         
@@ -301,16 +300,11 @@ classdef RunClass < TreeNodeClass
             args = obj.procStream.GetInputArgs();
 
             % b) Find these variables in this run
-            vars = [];
-            for ii=1:length(args)
-                eval( sprintf('vars.%s = obj.GetVar(args{ii});', args{ii}) );
+            for ii = 1:length(args)
+                eval( sprintf('obj.outputVars.%s = obj.GetVar(args{ii});', args{ii}) );
             end
             
-            % c) Load the needed variables to proc stream input
-            obj.procStream.input.LoadVars(vars);
-
-            % Calculate processing stream
-            obj.procStream.Calc(obj.GetOutputFilename());
+            Calc@TreeNodeClass(obj);
 
             if obj.DEBUG
                 obj.logger.Write(sprintf('Completed processing stream for group %d, subject %d, run %d\n', obj.iGroup, obj.iSubj, obj.iRun));
@@ -324,10 +318,9 @@ classdef RunClass < TreeNodeClass
             if ~exist('indent', 'var')
                 indent = 4;
             else
-                indent = indent+2;
+                indent = indent+4;
             end
-            obj.logger.Write(sprintf('%s%s,  output file: %s\n', blanks(indent), obj.name, obj.procStream.output.SetFilename(obj.GetOutputFilename())));
-            % obj.procStream.Print(indent);
+            Print@TreeNodeClass(obj, indent);
         end
         
     end    % Public methods
@@ -866,7 +859,7 @@ classdef RunClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function b = HaveOutput(obj)
             b1 = ~obj.procStream.output.IsEmpty();
-            fname = obj.procStream.output.SetFilename(obj.GetOutputFilename());
+            fname = obj.procStream.output.SetFilename([obj.path, obj.GetOutputFilename()]);
             b2 = false;
             if ispathvalid(fname)
                 r = load(fname);

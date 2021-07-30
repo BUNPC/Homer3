@@ -170,7 +170,7 @@ classdef ProcResultClass < handle
                 return;
             end
             [pname, fname] = fileparts(filename);
-            options = 'nameonly';
+            options = 'nameonly:dir';
             if ispathvalid(fname)
                 % Case 1: Flat group dir structure                
                 if ispathvalid([filename, '.mat'])

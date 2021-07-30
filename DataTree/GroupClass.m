@@ -277,28 +277,6 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetPath(obj, dirname)
-            obj.path = dirname;
-            
-            % In case there's not enough disk space in the current
-            % group folder, we have a alternative path that can be 
-            % set independently for saving group results. By default 
-            % it is set to root group folder. 
-            obj.pathOutputAlt = obj.path;
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function SetPathOutput(obj, dirname)
-            % In case there's not enough disk space in the current
-            % group folder, we have a alternative path that can be 
-            % set independently for saving group results. By default 
-            % it is set to root group folder. 
-            obj.pathOutputAlt = dirname;
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
         function Add(obj, subj, run)                        
             [~,f,e] = fileparts(subj.GetName());
             if strcmp(f, obj.name)
@@ -319,6 +297,7 @@ classdef GroupClass < TreeNodeClass
             if jj==0
                 jj = length(obj.subjs)+1;
                 subj.SetIndexID(obj.iGroup, jj);
+                subj.SetPath(obj.path);                      % Inherit root path from group
                 obj.subjs(jj) = subj;
                 obj.logger.Write(sprintf('   Added subject %s to group %s.\n', obj.subjs(jj).GetName, obj.GetName));
             end
@@ -486,12 +465,8 @@ classdef GroupClass < TreeNodeClass
                 obj.LoadVars(s(iSubj), tHRF_common); 
             end
             
-            % Make variables in this group available to processing stream input
-            obj.procStream.input.LoadVars(obj.outputVars);
-
-            % Calculate processing stream
-            obj.procStream.Calc(obj.GetOutputFilename());
-
+            Calc@TreeNodeClass(obj);
+            
             if obj.DEBUG
                 obj.logger.Write(sprintf('Completed processing stream for group %d\n', obj.iGroup));
                 obj.logger.Write(sprintf('\n'));
@@ -508,11 +483,11 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function Print(obj, indent)
+            obj.logger.Write(sprintf('\n'));
             if ~exist('indent', 'var')
                 indent = 0;
             end
-            obj.logger.Write(sprintf('%s%s,  output file: %s\n', blanks(indent), obj.name, obj.procStream.output.SetFilename(obj.GetOutputFilename())));
-            % obj.procStream.Print(indent);
+            Print@TreeNodeClass(obj, indent);
             for ii = 1:length(obj.subjs)
                 obj.subjs(ii).Print(indent);
             end

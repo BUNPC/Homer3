@@ -3,6 +3,8 @@ global logger
 
 t_local = tic;
 
+setNamespace('Homer3')
+
 CleanUp(true);
 
 cleanupObj = onCleanup(@()userInterrupt_Callback(true));

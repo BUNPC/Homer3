@@ -147,6 +147,7 @@ varargout{1} = stats.err;
 function pushbuttonOK_Callback(hObject, eventdata, handles)
 global stats
 
+fprintf('Completing Installation ...\n');
 stats.pushbuttonOKPress = true;
 
-delete(stats.handles.this);
+delete(handles.figure1);

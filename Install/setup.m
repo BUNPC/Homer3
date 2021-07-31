@@ -16,8 +16,6 @@ close(h);
 
 cleanup();
 
-deleteNamespace('Homer3')
-
 
 
 

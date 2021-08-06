@@ -36,6 +36,7 @@ if ~exist('options', 'var')
 end
 
 if ischar(pathname0)
+    pathname0 = removeExtraDots(pathname0);
     
     % Do basic error check to see if path exists; if not wexist without
     % doing anything 
@@ -80,7 +81,7 @@ if ischar(pathname0)
             pathname0(end) = '';
         end
     end
-    
+        
     % Change path to full path if option requesting it exists
     pathname = pathname0;
     return;
@@ -91,4 +92,35 @@ pathname = pathname0;
 for ii = 1:length(pathname)
     pathname{ii} = filesepStandard(pathname{ii}, options);
 end
+
+
+% ---------------------------------------------------------------------------
+function pname = removeExtraDots(pname)
+k = cell(4,3);
+
+% Case 1:
+k{1,1} = strfind(pname, '/./');
+k{2,1} = strfind(pname, '/.\');
+k{3,1} = strfind(pname, '\.\');
+k{4,1} = strfind(pname, '\./');
+for ii = 1:length(k(:,1))
+    for jj = length(k{ii,1}):-1:1
+        pname(k{ii,1}(jj)+1:k{ii,1}(jj)+2) = '';
+    end
+end
+
+% Case 2:
+k{1,2} = strfind(pname, '/.');
+k{2,2} = strfind(pname, '\.');
+for ii = 1:length(k(:,2))
+    if ~isempty(k{ii,2})
+        if k{ii,2}+1<length(pname)
+            continue
+        end
+        pname(k{ii,2}+1) = '';
+    end
+end
+
+
+
 

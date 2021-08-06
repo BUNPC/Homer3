@@ -1,7 +1,6 @@
 function dotmfiles = findDotMFiles(subdir, exclList)
-
 if ~exist('subdir','var')
-    subdir = filesepStandard(pwd);
+    subdir = pwd;
 end
 if ~exist('exclList','var')
     exclList = {};
@@ -18,14 +17,10 @@ if ~ispathvalid(subdir, 'dir')
     return;
 end
 
-
 % If current subjdir is in the exclList then go back to curr dir and exit
 subdirFullpath = filesepStandard(fullpath(subdir));
-
-for ii=1:length(exclList)
-    if ~isempty(findstr(exclList{ii}, subdirFullpath))
-        return;
-    end
+if isExcluded(subdirFullpath, exclList)
+    return;
 end
 
 files = dir([subdirFullpath, '*']);
@@ -36,7 +31,7 @@ end
 for ii = 1:length(files)
     exclFlag = false;
     if isdotmfile(files(ii))
-        for kk=1:length(exclList)
+        for kk = 1:length(exclList)
             if strcmp(files(ii).name, exclList{kk})
                 exclFlag = true;
             end
@@ -68,7 +63,6 @@ b = true;
 
 % -------------------------------------------------------------------------
 function b = iscurrdir(file)
-
 b=0;
 if ~file.isdir
     return;
@@ -92,14 +86,12 @@ end
 if (length(file.name)>2)
     return;
 end
-
 b=1;
 
 
 
 % -------------------------------------------------------------------------
 function b = isparentdir(file)
-
 b=0;
 if ~file.isdir
     return;
@@ -127,5 +119,21 @@ if (length(file.name)>3)
     return;
 end
 b=1;
+
+
+% -------------------------------------------------------------------------
+function b = isExcluded(pname, exclList)
+b = true;
+if pname(end)=='/'
+    pname(end) = '';
+end
+[~,f,e] = fileparts(pname);
+for ii = 1:length(exclList)
+    if strcmp(exclList{ii}, [f,e])
+        return;
+    end
+end
+b = false;
+
 
 

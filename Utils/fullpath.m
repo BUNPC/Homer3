@@ -16,25 +16,43 @@ end
 p = ''; 
 f = '';
 e = '';
-if exist(pname,'file')==2
+if strcmp(pname, '.')
+    p = pwd; f = ''; e = '';
+elseif strcmp(pname, '..')
+    currdir = pwd;
+    cd('..');
+    p = pwd; f = ''; e = '';
+    cd(currdir);
+else
     [p,f,e] = fileparts(pname);
-    pname = p;
-   
-    % If path to file wasn't specified at all, that is, if only the filename was
-    % provided without an absolute or relative path, the add './' prefix to file name. 
-    if isempty(pname)
-        [p,f,e] = fileparts(['./', pname]);
-        pname = p;
-    end        
+    if length(f)==1 && f=='.' && length(e)==1 && e=='.' 
+        f = ''; 
+        e = '';
+    elseif isempty(f) && length(e)==1 && e=='.' 
+        e = '';
+    end
 end
+pname = removeExtraDots(p);
+
+% If path to file wasn't specified at all, that is, if only the filename was
+% provided without an absolute or relative path, the add './' prefix to file name.
+if isempty(pname)
+    p = fileparts(['./', pname]);
+    pname = p;
+end
+
 
 % get full pathname 
 currdir = pwd;
 
-if exist(pname,'dir')==7
-    cd_safe(pname);
-else
-    return;
+try
+    cd(pname);
+catch
+    try 
+        cd(p)
+    catch        
+        return;
+    end
 end
 
 if strcmp(style, 'linux')
@@ -43,8 +61,15 @@ else
     sep = filesep;
 end
 pnamefull = [pwd,sep,f,e];
+if ~exist(pnamefull, 'file')
+    pnamefull = '';
+    cd(currdir);
+    return;
+end
+
 pnamefull(pnamefull=='/' | pnamefull=='\') = sep;
 
 cd(currdir);
+
 
 

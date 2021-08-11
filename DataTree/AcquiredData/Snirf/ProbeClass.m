@@ -34,22 +34,22 @@ classdef ProbeClass < FileLoadSaveClass
                     SD = varargin{1};
                     obj.wavelengths = SD.Lambda;
                     obj.wavelengthsEmission  = [];
-                    if isfield(SD,'SrcPos2D')
+                    if isfield(SD,'SrcPos2D') &  ~isempty(SD.SrcPos2D)
                         obj.sourcePos2D  = SD.SrcPos2D;
                     else
                         obj.sourcePos2D  = SD.SrcPos;
                     end
-                    if isfield(SD,'SrcPos2D')
+                    if isfield(SD,'DetPos2D') & ~isempty(SD.DetPos2D)
                         obj.detectorPos2D  = SD.DetPos2D;
                     else
                         obj.detectorPos2D  = SD.DetPos;
                     end
-                    if isfield(SD,'SrcPos3D')
+                    if isfield(SD,'SrcPos3D') & ~isempty(SD.SrcPos3D)
                         obj.sourcePos3D  = SD.SrcPos3D;
                     else
                         obj.sourcePos3D  = SD.SrcPos;
                     end
-                    if isfield(SD,'DetPos3D')
+                    if isfield(SD,'DetPos3D') & ~isempty(SD.DetPos3D)
                         obj.detectorPos3D  = SD.DetPos3D;
                     else
                         obj.detectorPos3D  = SD.DetPos;

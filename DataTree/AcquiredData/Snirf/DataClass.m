@@ -220,14 +220,11 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasList(obj, dataTypeIndex)
+        function ml = GetMeasList(obj)
             % Returns nirs-style measurement list of src-det pairings per
             % wavelength, sorted by wavelength, for the given dataTypeIndex
             % (defaulting to dataTypeIndex = 1)
             
-            if ~exist('cond', 'var')
-               dataTypeIndex = 1;
-            end
             % Preallocate for speed 
             ml = zeros(length(obj.measurementList), 4);
             % Convert obj.measurementList to matrix
@@ -235,22 +232,10 @@ classdef DataClass < FileLoadSaveClass
                 % If this data contains processed data, repeated src-det-wl
                 % pairs will be returned if multiple conditions are
                 % included, so we include only cond
-                if obj.measurementList(ii).GetDataType() == 99999 || obj.measurementList(ii).GetDataType() == 301
-                    if (obj.measurementList(ii).GetDataTypeIndex() == dataTypeIndex) || (obj.measurementList(ii).GetDataTypeIndex() == 0)
-                        % Deal with the cases where the measurementList contains
-                        % wavelengthIndex versus not 
-                        if ~isempty(obj.measurementList(ii).GetWavelengthIndex())
-                            ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), 1, obj.measurementList(ii).GetWavelengthIndex()];
-                        else 
-                            ml(ii, :) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), 1, 1];
-                        end
-                    end
+                if ~isempty(obj.measurementList(ii).GetWavelengthIndex())
+                    ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), obj.measurementList(ii).GetDataTypeIndex(), obj.measurementList(ii).GetWavelengthIndex()];
                 else
-                    if ~isempty(obj.measurementList(ii).GetWavelengthIndex())
-                        ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), 1, obj.measurementList(ii).GetWavelengthIndex()];
-                    else 
-                        ml(ii, :) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), 1, 1];
-                    end
+                    ml(ii, :) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), obj.measurementList(ii).GetDataTypeIndex(), 1];
                 end
             end
             
@@ -298,7 +283,7 @@ classdef DataClass < FileLoadSaveClass
         end
         
         
-        % ---------------------------------------------------------
+        % --------------------------g-------------------------------
         function d = GetDataTimeSeries(obj, options)
             d = [];
             if ~exist('options','var') || isempty(options)

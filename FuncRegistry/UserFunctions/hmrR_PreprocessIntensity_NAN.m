@@ -27,7 +27,7 @@ for ii=1:length(intensity)
         
         for j = 1:size(d,2)
             foo = d(:,j);
-            if ~isempty(find(isnan(foo)))
+            if ~isempty(find(isnan(foo))) & size(find(isnan(foo)==1),1) ~= size(d,1)
                 
                 xdata = (1:length( foo))';
                 d(:,j) = interp1(xdata(~isnan( foo)), foo(~isnan( foo)),xdata,'spline');

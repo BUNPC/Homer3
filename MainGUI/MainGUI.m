@@ -77,6 +77,7 @@ if ~isempty(maingui.unitTest)
 end
 
 
+
 % ---------------------------------------------------------------------
 function MainGUI_EnableDisableGUI(handles, val)
    
@@ -172,6 +173,8 @@ set(handles.menuItemResetGroupFolder, 'enable', val)
 function eventdata = MainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global maingui
 global logger
+
+setNamespace('Homer3');
 
 startuptimer = tic;
 maingui = [];
@@ -281,12 +284,14 @@ if ishandles(hObject)
     delete(hObject)
 end
 if isempty(maingui)
+    deleteNamespace('Homer3');
     return;
 end
 if isfield(maingui,'logger') && ~isempty(maingui.logger)
-    maingui.logger.Close();
+    maingui.logger.Close('Homer3');
 end
 if isempty(maingui.dataTree)
+    deleteNamespace('Homer3');
     return;
 end
 
@@ -297,7 +302,13 @@ end
 delete(maingui.dataTree);
 maingui = [];
 clear maingui;
+deleteNamespace('Homer3');
 
+
+
+% --------------------------------------------------------------------
+function [eventdata, handles] = MainGUI_CloseFcn(hObject, eventdata, handles)
+deleteNamespace('Homer3');
 
 
 % --------------------------------------------------------------------------------------------

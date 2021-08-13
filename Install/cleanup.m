@@ -1,5 +1,7 @@
 function cleanup(dirnameInstall, dirnameApp, options)
-platform = setplatformparams();
+global platform
+
+installfilename = sprintf('%s_install', lower(getAppname()));
 
 if ~exist('dirnameInstall','var') | isempty(dirnameInstall)
     if exist('./Install','dir')
@@ -16,8 +18,8 @@ if ~exist('options','var')
 end
 
 
-if exist([dirnameInstall, 'homer3_install'],'dir')
-    rmdir_safe([dirnameInstall, 'homer3_install']);
+if exist([dirnameInstall, installfilename],'dir')
+    rmdir_safe([dirnameInstall, installfilename]);
 end
 for ii=1:length(platform.exename(1))
     if exist([dirnameInstall, platform.exename{ii}],'file')==2

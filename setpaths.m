@@ -62,8 +62,10 @@ function setpaths(options_str)
 % Start world by trying to add standard 'Utils' path if it exists 
 % If it exists, assume that's where intialation functions are. 
 if exist([pwd, '/Utils'], 'dir')==7
-    addpath([pwd, '/Utils'], '-end');
+    addpath([pwd, '/Utils']);
+    addpath([pwd, '/Utils/namespace']);
 end
+setNamespace('Homer3');
 
 % Parse arguments
 if ~exist('options_str','var')
@@ -164,6 +166,7 @@ if options.add
     addwspaths(wspaths, paths_excl_str, options);
     setpermissions(paths);
 else
+    deleteNamespace('Homer3');
     fprintf('REMOVED search paths for workspace %s\n', pwd);
     rmpath(paths_excl_str{1});
 end

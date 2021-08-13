@@ -184,6 +184,7 @@ classdef SubjClass < TreeNodeClass
             if jj==0
                 jj = length(obj.runs)+1;
                 run.SetIndexID(obj.iGroup, obj.iSubj, jj);
+                run.SetPath(obj.path);                      % Inherit root path from subject
                 obj.runs(jj) = run;
                 obj.logger.Write(sprintf('     Added run %s to subject %s.\n', obj.runs(jj).GetFileName, obj.GetName));
             end
@@ -332,13 +333,8 @@ classdef SubjClass < TreeNodeClass
             for iRun = 1:length(r)
                 obj.LoadVars(r(iRun), tHRF_common);
             end
-            
-            
-            % Make variables in this subject available to processing stream input
-            obj.procStream.input.LoadVars(obj.outputVars);
-
-            % Calculate processing stream
-            obj.procStream.Calc(obj.GetOutputFilename());
+                        
+            Calc@TreeNodeClass(obj);
 
             if obj.DEBUG
                 fprintf('Completed processing stream for group %d, subject %d\n', obj.iGroup, obj.iSubj);
@@ -349,7 +345,6 @@ classdef SubjClass < TreeNodeClass
             if ~isempty(obj.updateParentGui)
                 obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
             end
-            pause(.5);
             
         end
                 
@@ -357,12 +352,11 @@ classdef SubjClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function Print(obj, indent)
             if ~exist('indent', 'var')
-                indent = 2;
+                indent = 4;
             else
-                indent = indent+2;
+                indent = indent+4;
             end
-            obj.logger.Write(sprintf('%s%s,  output file: %s\n', blanks(indent), obj.name, obj.procStream.output.SetFilename(obj.GetOutputFilename())));
-            % obj.procStream.Print(indent);
+            Print@TreeNodeClass(obj, indent);
             for ii=1:length(obj.runs)
                 obj.runs(ii).Print(indent);
             end

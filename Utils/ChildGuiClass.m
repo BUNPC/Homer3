@@ -6,6 +6,7 @@ classdef ChildGuiClass < handle
         args
         visible
         lastpos
+        closeSupporting;
     end
     
     methods
@@ -48,6 +49,7 @@ classdef ChildGuiClass < handle
             obj.args = {};
             obj.visible = 'on';
             obj.lastpos = [];
+            obj.closeSupporting = 0;
             
             if nargin==0
                 return;
@@ -125,6 +127,8 @@ classdef ChildGuiClass < handle
             if exist('varargin','var') && isempty(obj.args)
                 obj.args = varargin;
             end
+            
+            obj.closeSupporting = 0;
             
             % Allow up to 6 arguments to be passed to GUI
             a = obj.args;
@@ -304,14 +308,18 @@ classdef ChildGuiClass < handle
         
         % -------------------------------------------------------------------
         function Close(obj, hObject, eventdata) %#ok<INUSD>
+            if ~ishandles(obj.handles.figure)
+                return;
+            end
             if isempty(obj.name)
                 return;
             end
             obj.args = {};
-            if ~ishandle(obj.handles.figure)
-                return;
-            end
             obj.lastpos = get(obj.handles.figure, 'position');
+            
+            obj.CloseSupporting();
+            
+            % Now delete the parent GUI
             delete(obj.handles.figure);
             
             % See if there's a private GUI close function to call
@@ -320,6 +328,33 @@ classdef ChildGuiClass < handle
             end
             obj.handles.closeptr();
         end
+        
+        
+        
+        % -------------------------------------------------------------------
+        function CloseSupporting(obj)
+            if ~ishandles(obj.handles.figure)
+                return;
+            end
+            
+            % Check to see if any figure associated with this GUI need  to
+            % be closed as well
+            msg = sprintf('Do you want to close all supporting figures associated with %s?', obj.name);
+            figures = getappdata(obj.handles.figure, 'figures');            
+            for ii = 2:length(figures)
+                if ishandle(figures(ii))
+                    if obj.closeSupporting == 2
+                        break;
+                    end
+                    if obj.closeSupporting==0
+                        obj.closeSupporting = MenuBox(msg, {'YES','NO'});
+                    end
+                    if obj.closeSupporting == 1
+                        delete(figures(ii));
+                    end
+                end
+            end
+        end        
         
         
         

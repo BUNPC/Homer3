@@ -31,7 +31,7 @@ global stats
 
 handles = stats.handles;
 
-msgFail{1}    = sprintf('Homer3 failed to install properly. Error code %d', stats.err);
+msgFail{1}   = sprintf('%s failed to install properly. Error code %d', stats.name, stats.err);
 msgFail{2}    = 'Contact jdubb@bu.edu for help with installation.';
 
 hGui         = handles.this;
@@ -58,11 +58,11 @@ handles = stats.handles;
 
 msgSuccess{1} = 'Installation Completed Successfully!';
 if ispc()
-    msgSuccess{2} = 'To run: Click on the Homer3 icon on your Desktop to launch one of these applications';
+    msgSuccess{2} = sprintf('To run: Click on the %s icon on your Desktop to launch one of these applications', stats.name);
 elseif islinux()
-    msgSuccess{2} = 'To run: Click on the Homer3.sh icon on your Desktop to launch one of these applications';
+    msgSuccess{2} = sprintf('To run: Click on the %s.sh icon on your Desktop to launch one of these applications', stats.name);
 elseif ismac()
-    msgSuccess{2} = 'To run: Click on the Homer3.command icon on your Desktop to launch one of these applications';
+    msgSuccess{2} = sprintf('To run: Click on the %s.command icon on your Desktop to launch one of these applications', stats.name);
 end
 
 set(handles.this, 'name','SUCCESS:');
@@ -89,6 +89,9 @@ stats.handles.msgFinished = handles.textFinished;
 stats.handles.msgMoreInfo = handles.textMoreInfo;
 stats.dirnameApp = getAppDir('isdeployed');
 stats.pushbuttonOKPress = false;
+
+stats.name = varargin{1};
+
 
 fprintf('FinishInstallGUI_OpeningFcn: dirnameApp = %s\n', stats.dirnameApp);
 
@@ -147,6 +150,7 @@ varargout{1} = stats.err;
 function pushbuttonOK_Callback(hObject, eventdata, handles)
 global stats
 
+fprintf('Completing Installation ...\n');
 stats.pushbuttonOKPress = true;
 
-delete(stats.handles.this);
+delete(handles.figure1);

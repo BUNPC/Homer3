@@ -2,12 +2,16 @@ function setup()
 global h
 global nSteps
 
+[~, exename] = getAppname();
+
+setNamespace(exename)
+
 h = waitbar(0,'Installation Progress ...');
 
 main();
 
 % Check that everything was installed properly
-r = finishInstallGUI();
+r = finishInstallGUI(exename);
 
 waitbar(nSteps/nSteps, h);
 close(h);
@@ -21,39 +25,23 @@ function main()
 global h
 global nSteps
 global iStep
-
+global platform
 
 nSteps = 100;
 iStep = 1;
 
+[appname, exename] = getAppname();
+
 if ismac()
-    dirnameSrc = '~/Downloads/homer3_install/';
+    dirnameSrc = sprintf('~/Downloads/%s_install/', lower(appname));
 else
 	dirnameSrc = [pwd, '/'];
 end
 dirnameDst = getAppDir('isdeployed');
 
-% Uninstall
-try
-    if exist(dirnameDst,'dir')
-        rmdir(dirnameDst, 's');
-    end
-catch ME
-    close(h);
-    printStack();
-    msg{1} = sprintf('Error: Could not remove old installation folder %s. It might be in use by other applications.\n', dirnameDst);
-    msg{2} = sprintf('Try closing and reopening file browsers or any other applications that might be using the\n');
-    msg{3} = sprintf('installation folder and then retry installation.');
-    menu([msg{:}], 'OK');
-    pause(5);
-    rethrow(ME)
-end
-
-platform = setplatformparams();
-
 v = getVernum();
 fprintf('=================================\n');
-fprintf('Setup script for Homer3 v%s.%s:\n', v{1}, v{2});
+fprintf('Setup script for %s v%s.%s:\n', exename, v{1}, v{2});
 fprintf('=================================\n\n');
 
 fprintf('Platform params:\n');
@@ -64,7 +52,7 @@ fprintf('  setup_script: %s\n', platform.setup_script);
 fprintf('  dirnameApp: %s\n', platform.dirnameApp);
 fprintf('  mcrpath: %s\n', platform.mcrpath);
 
-deleteShortcuts(platform);
+deleteShortcuts();
 
 pause(2);
 
@@ -96,6 +84,7 @@ copyFileToInstallation([dirnameSrc, 'SubjDataSample'], [dirnameDst, 'SubjDataSam
 % Create desktop shortcuts to Homer3
 createDesktopShortcuts(dirnameSrc, dirnameDst);
 
+waitbar(iStep/nSteps, h); iStep = iStep+1;
 pause(2);
 
 
@@ -104,8 +93,8 @@ pause(2);
 % -----------------------------------------------------------------
 function cleanup()
 if ismac()
-    rmdir_safe('~/Desktop/homer3_install/');
-    rmdir_safe('~/Downloads/homer3_install/');
+    rmdir_safe(sprintf('~/Desktop/%s_install/', lower(getAppname())));
+    rmdir_safe('~/Downloads/%s_install/', lower(getAppname()));
 end
 
 
@@ -162,7 +151,9 @@ end
 
 
 % --------------------------------------------------------------
-function deleteShortcuts(platform)
+function deleteShortcuts()
+global platform
+
 if exist(platform.exenameDesktopPath, 'file')
     try
         delete(platform.exenameDesktopPath);
@@ -180,13 +171,14 @@ end
 
 % ---------------------------------------------------------
 function createDesktopShortcuts(dirnameSrc, dirnameDst)
+[~, exename] = getAppname();
 try
     if ispc()
         
         k = dirnameDst=='/';
         dirnameDst(k)='\';
         
-        cmd = sprintf('call "%s\\createShortcut.bat" "%s" Homer3.exe', dirnameSrc(1:end-1), dirnameDst);
+        cmd = sprintf('call "%s\\createShortcut.bat" "%s" %s.exe', dirnameSrc(1:end-1), dirnameDst, exename);
         system(cmd);
         
         cmd = sprintf('call "%s\\createShortcut.bat" "%s" SubjDataSample', dirnameSrc(1:end-1), dirnameDst(1:end-1));
@@ -204,9 +196,8 @@ try
         
     end
 catch
-    msg{1} = sprintf('Error: Could not create Homer3 shortcuts on Desktop. Exiting installation.');
+    msg{1} = sprintf('Error: Could not create %s shortcuts on Desktop. Exiting installation.', exename);
     menu([msg{:}], 'OK');
     return;    
 end
-
 

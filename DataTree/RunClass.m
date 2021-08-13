@@ -363,6 +363,18 @@ classdef RunClass < TreeNodeClass
             d = obj.acquired.GetDataTimeSeries('', iBlk);
         end
         
+        % ----------------------------------------------------------------------------------
+        function types = GetDataTypes(obj, iBlk)
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1; %#ok<NASGU>
+            end
+            d = obj.acquired.GetData();
+            try  % No way to check for "Empty" class handles?
+                types = unique(d.GetDataType());
+            catch
+                types = []; 
+            end
+        end
         
         % ----------------------------------------------------------------------------------
         function d = GetDataTimeSeries(obj, options, iBlk)

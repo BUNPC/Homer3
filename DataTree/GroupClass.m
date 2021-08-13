@@ -553,6 +553,14 @@ classdef GroupClass < TreeNodeClass
     methods
         
         % ----------------------------------------------------------------------------------
+        function datatypes = GetDataTypes(obj)
+            datatypes = [];
+            for i=1:length(obj.subjs)
+                datatypes = [datatypes, obj.subjs(i).GetDataTypes()]; %#ok<AGROW>
+            end
+        end
+        
+        % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
             nbytes = 0;
             for ii = 1:length(obj.subjs)

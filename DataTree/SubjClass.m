@@ -436,6 +436,14 @@ classdef SubjClass < TreeNodeClass
     methods
         
         % ----------------------------------------------------------------------------------
+        function datatypes = GetDataTypes(obj)
+            datatypes = [];
+            for i=1:length(obj.runs)
+                datatypes = [datatypes, obj.runs(i).GetDataTypes()]; %#ok<AGROW>
+            end
+        end
+        
+        % ----------------------------------------------------------------------------------
         function SetSDG(obj,option)
             if exist('option','var')
                 obj.SD = obj.runs(1).GetSDG(option);

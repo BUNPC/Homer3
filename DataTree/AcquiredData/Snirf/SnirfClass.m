@@ -1100,7 +1100,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             iSrc = mlAll(ich0,1);
             iDet = mlAll(ich0,2);
             
-            % Now search block by block for the selecdted channels
+            % Now search block by block for the selected channels
             ich = cell(nDataBlks,1);
             for iBlk=1:nDataBlks
                 ml = obj.GetMeasList(iBlk);

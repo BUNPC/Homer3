@@ -221,27 +221,15 @@ classdef DataClass < FileLoadSaveClass
         
         % ---------------------------------------------------------
         function ml = GetMeasList(obj)
-            % Returns nirs-style measurement list of src-det pairings per
-            % wavelength, sorted by wavelength, for the given dataTypeIndex
-            % (defaulting to dataTypeIndex = 1)
-            
-            % Preallocate for speed 
             ml = zeros(length(obj.measurementList), 4);
-            % Convert obj.measurementList to matrix
+            % Convert obj.measurementList to ml matrix
             for ii = 1:length(obj.measurementList)
-                % If this data contains processed data, repeated src-det-wl
-                % pairs will be returned if multiple conditions are
-                % included, so we include only cond
                 if ~isempty(obj.measurementList(ii).GetWavelengthIndex())
                     ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), obj.measurementList(ii).GetDataTypeIndex(), obj.measurementList(ii).GetWavelengthIndex()];
                 else
                     ml(ii, :) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), obj.measurementList(ii).GetDataTypeIndex(), 1];
                 end
             end
-            
-            % Remove unused rows that were pre-allocated
-            ml(all(~ml,2), :) = [];
-
         end
         
         

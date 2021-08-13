@@ -111,6 +111,7 @@ set(handles.textPanDisplay, 'enable', val);
 
 % Plot type selected panel
 set(handles.listboxPlotConc, 'enable', val);
+set(handles.listboxPlotTD, 'enable', val);
 set(handles.listboxPlotWavelength, 'enable', val);
 set(handles.radiobuttonPlotRaw, 'enable', val);
 set(handles.radiobuttonPlotOD,  'enable', val);
@@ -681,6 +682,15 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
+function [eventdata, handles] = listboxPlotTD_Callback(hObject, eventdata, handles)
+if ~ishandles(hObject)
+    return;
+end
+Display(handles, hObject);
+
+
+
+% --------------------------------------------------------------------
 function [eventdata, handles] = menuItemChangeGroup_Callback(hObject, eventdata, handles)
 global maingui
 if ~ishandles(hObject)
@@ -913,6 +923,9 @@ if maingui.dataTree.LoadCurrElem() < 0
     return;
 end
 
+types = maingui.dataTree.GetCurrElem.GetDataTypes();
+% setDataTypeTable()
+
 DisplayAxesSDG(handles);
 hObject = DisplayData(handles, hObject);
 
@@ -938,8 +951,8 @@ end
 hf = get(hAxes,'parent');
 
 % Some callbacks which call DisplayData serve double duty as called functions 
-% from other callbacks which in turn call DisplayData. To avoid double or
-% triple redisplaying in a single thread, exit DisplayData if hObject is
+% from other callbacks which in turn call DisplayData. To avoid drawing
+% to the display more than once, exit DisplayData if hObject is
 % not a handle. 
 if ~exist('hObject','var')
     hObject=[];

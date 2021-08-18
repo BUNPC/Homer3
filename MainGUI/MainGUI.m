@@ -924,12 +924,28 @@ if maingui.dataTree.LoadCurrElem() < 0
 end
 
 types = maingui.dataTree.GetCurrElem.GetDataTypes();
-% setDataTypeTable()
+if any((types >= 201) & (types <= 400))  % If TD data present
+    set(handles.listboxPlotTD, 'visible', 'on');
+    nDatatypeIndex = max([maingui.dataTree.currElem.acquired.data.measurementList.dataTypeIndex]);
+    if handles.listboxPlotTD.Value > nDatatypeIndex
+       set(handles.listboxPlotTD, 'value', nDatatypeIndex) 
+    end
+    if any(types < 301)  % If TD gated data present
+        c = strsplit(num2str(1:nDataTypeIndex));
+        set(handles.listboxPlotTD, 'string', c)
+    else  % If TD moment data present
+        c = {'0th (Sum)', '1st (Mean)', '2nd (Var)'};
+        c = c(1:nDatatypeIndex);
+        set(handles.listboxPlotTD, 'string', c);
+    end
+else
+    set(handles.listboxPlotTD, 'visible', 'off');
+end
 
 DisplayAxesSDG(handles);
 hObject = DisplayData(handles, hObject);
 
-if get(handles.checkboxExcludeTime, 'value') == 1 | get(handles.checkboxExcludeStims, 'value') == 1
+if get(handles.checkboxExcludeTime, 'value') == 1 || get(handles.checkboxExcludeStims, 'value') == 1
     zoom(handles.axesData, 'off')
 else
     zoom(handles.axesData, 'on')
@@ -1005,6 +1021,12 @@ for iBlk = iDataBlks
     dStd    = [];
     t       = [];
     nTrials = [];    
+    
+    % If TD datatype selected, reduce MeasList to include only selected
+    % datatype. TODO resolve this situation for HRFs
+    if strcmp(handles.listboxPlotTD.Visible, 'on')
+       ch.MeasList = ch.MeasList(ch.MeasList(:, 3) == handles.listboxPlotTD.Value, :); 
+    end
     
     % Get plot data from dataTree
     if datatype == maingui.buttonVals.RAW

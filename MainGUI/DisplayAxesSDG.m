@@ -114,6 +114,10 @@ for iBlk = 1:nDataBlks
     MeasListActAuto = [MeasListActAuto; ch.MeasListActAuto];
     MeasListVis     = [MeasListVis; ch.MeasListVis];
 end
+
+% Remove all but first dataTypeIndex from MeasList
+MeasList = MeasList(MeasList(:, 3) == min([maingui.dataTree.currElem.acquired.data.measurementList.dataTypeIndex]), :);
+
 ml    = MeasList(MeasList(:,1)>0,:);
 lstML = find(ml(:,4)==1); %cw6info.displayLambda);
 lstIncl = find(MeasListActMan(1:length(lstML))==1);

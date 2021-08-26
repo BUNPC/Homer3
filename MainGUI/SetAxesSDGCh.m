@@ -53,12 +53,10 @@ for idx=1:size(SD.DetPos,1)
     end
 end
 
-% Copied from cw6_plotLst
-idxLambda = 1;  %maingui.displayLambda;
 if SrcMin
-    lst = find( ml(:,1)==idxMin & ml(:,4)==idxLambda );
+    lst = find(ml(:,1) == idxMin);
 else
-    lst = find( ml(:,2)==idxMin & ml(:,4)==idxLambda );
+    lst = find(ml(:,2) == idxMin); 
 end
 
 % Remove any channels from lst which are already part of the axesSDG.iCh
@@ -87,8 +85,9 @@ if length(iCh) > maxCh
     return;
 end
 
-maingui.axesSDG.iCh     = iCh;
-maingui.axesSDG.iSrcDet = iSrcDet;
+% Set indices of displayed channels
+maingui.axesSDG.iCh     = iCh;   % Indices of all selected channels (for all wavelengths)
+maingui.axesSDG.iSrcDet = iSrcDet;  % Source-detector pairs
 
 
 

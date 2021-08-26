@@ -390,7 +390,7 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function val = GetMl(obj)
+        function val = GetMeasurementList(obj)
             val = obj.measurementList;
         end
         

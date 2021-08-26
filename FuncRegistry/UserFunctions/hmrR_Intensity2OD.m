@@ -27,6 +27,6 @@ for ii=1:length(intensity)
     nTpts = size(d,1);
     dod(ii).SetTime(intensity(ii).GetTime());
     dod(ii).SetDataTimeSeries(-log(abs(d)./(ones(nTpts,1)*dm)));
-    dod(ii).SetMl(intensity(ii).GetMl());
+    dod(ii).SetMl(intensity(ii).GetMeasurementList());
     dod(ii).SetDataTypeDod();
 end

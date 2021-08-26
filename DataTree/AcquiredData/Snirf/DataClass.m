@@ -6,6 +6,10 @@ classdef DataClass < FileLoadSaveClass
         measurementList
     end
     
+    properties (Access = private)
+       mlArr  % measurementList in array form returned by GetMeasList
+    end
+    
     
     methods
         
@@ -89,6 +93,9 @@ classdef DataClass < FileLoadSaveClass
                 obj.dataTimeSeries = double([]);
                 obj.time = double([]);
             end
+            
+            obj.generateMlArr();
+            
         end
         
     end
@@ -155,6 +162,9 @@ classdef DataClass < FileLoadSaveClass
             catch ME
                 err = -1;
             end
+            
+            obj.generateMlArr();
+            
         end
         
         
@@ -221,15 +231,8 @@ classdef DataClass < FileLoadSaveClass
         
         % ---------------------------------------------------------
         function ml = GetMeasList(obj)
-            ml = zeros(length(obj.measurementList), 4);
-            % Convert obj.measurementList to ml matrix
-            for ii = 1:length(obj.measurementList)
-                if ~isempty(obj.measurementList(ii).GetWavelengthIndex())
-                    ml(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), obj.measurementList(ii).GetDataTypeIndex(), obj.measurementList(ii).GetWavelengthIndex()];
-                else
-                    ml(ii, :) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), obj.measurementList(ii).GetDataTypeIndex(), 1];
-                end
-            end
+            % Return preallocated measurement list of array form
+            ml = obj.mlArr;
         end
         
         
@@ -386,6 +389,7 @@ classdef DataClass < FileLoadSaveClass
         % ---------------------------------------------------------
         function SetMl(obj, val)
             obj.measurementList = val.copy();      % shallow copy ok because MeasListClass has no handle properties
+            obj.generateMlArr();
         end
         
         
@@ -458,7 +462,6 @@ classdef DataClass < FileLoadSaveClass
                 case 3
                     AddChannelHbT(obj, isrc, idet, icond);
             end
-            
         end
         
         
@@ -479,6 +482,7 @@ classdef DataClass < FileLoadSaveClass
             else
                 obj.measurementList(end+1) = MeasListClass(isrc, idet, vals.Processed, 'HRF HbO', icond);
             end
+            obj.generateMlArr();
         end
         
         
@@ -499,6 +503,7 @@ classdef DataClass < FileLoadSaveClass
             else
                 obj.measurementList(end+1) = MeasListClass(isrc, idet, vals.Processed, 'HRF HbR', icond);
             end
+            obj.generateMlArr();
         end
         
         
@@ -519,6 +524,7 @@ classdef DataClass < FileLoadSaveClass
             else
                 obj.measurementList(end+1) = MeasListClass(isrc, idet, vals.Processed, 'HRF HbT', icond);
             end
+            obj.generateMlArr();
         end
         
         
@@ -540,6 +546,7 @@ classdef DataClass < FileLoadSaveClass
                 obj.measurementList(end+1) = MeasListClass(isrc, idet, vals.Processed, 'HRF dOD', icond);
             end
             obj.measurementList(end).SetWavelengthIndex(wl);
+            obj.generateMlArr();
         end
         
         
@@ -625,7 +632,25 @@ classdef DataClass < FileLoadSaveClass
             end
         end
         
+    end
+    
+    methods (Access = protected)
+        
+        function generateMlArr(obj)
+           % Preallocate ml array returned by GetMeasList 
+            obj.mlArr = zeros(length(obj.measurementList), 4);
+            
+            % Convert obj.measurementList to ml matrix
+            for ii = 1:length(obj.measurementList)
+                if ~isempty(obj.measurementList(ii).GetWavelengthIndex())
+                    obj.mlArr(ii,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), obj.measurementList(ii).GetDataTypeIndex(), obj.measurementList(ii).GetWavelengthIndex()];
+                else
+                    obj.mlArr(ii, :) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex(), obj.measurementList(ii).GetDataTypeIndex(), 1];
+                end
+            end
+        end
         
     end
+
 end
 

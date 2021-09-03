@@ -428,30 +428,13 @@ classdef ProcResultClass < handle
                 if isempty(eval(sprintf('obj.%s', type)))
                     return;
                 end
-                yavg = eval(sprintf('obj.%s(iBlk).GetDataTimeSeries(''reshape'')', type));
+                yavg = eval(sprintf('obj.%s(iBlk).GetDataTimeSeries()', type));
+                ml = eval(sprintf('obj.%s(iBlk).GetMeasurementList()', type));
+                % Get condition
+                yavg = yavg(:, ismember([ml.dataTypeIndex], condition));
             else
                 yavg = eval(sprintf('obj.%s', type));
             end
-            
-            % Get condition
-            if ~exist('condition','var')
-                condition = 1:size(yavg,3);
-            end
-            if isempty(condition)
-                yavg = [];
-            end
-            if isempty(yavg)
-                return;
-            end
-            if max(condition)>size(yavg,3)
-                yavg = [];
-                return;
-            end
-            if all(isnan(yavg(:,:,condition)))
-                yavg = [];
-                return;
-            end
-            yavg = yavg(:,:,condition);
         end
         
         
@@ -477,30 +460,63 @@ classdef ProcResultClass < handle
                 if isempty(eval(sprintf('obj.%s', type)))
                     return;
                 end
-                yavg = eval(sprintf('obj.%s(iBlk).GetDataTimeSeries(''reshape'')', type));
+                yavg = eval(sprintf('obj.%s(iBlk).GetDataTimeSeries()', type));
+                ml = eval(sprintf('obj.%s(iBlk).GetMeasurementList()', type));
+                % Get condition
+                yavg = yavg(:, ismember([ml.dataTypeIndex], condition));
             else
                 yavg = eval(sprintf('obj.%s', type));
             end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function y = GetDataTimeCourse(obj, type, iBlk)
+            y = [];
+            % Check type argument
+            if ~exist('type','var') || isempty(type)
+                type = 'dcAvg';
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1; %#ok<NASGU>
+            end
             
-            % Get condition
-            if ~exist('condition','var')
-                condition = 1:size(yavg,4);
-            end
-            if isempty(condition)
-                yavg = [];
-            end
-            if isempty(yavg)
+            if ~ischar(type)
                 return;
             end
-            if max(condition)>size(yavg,4)
-                yavg = [];
+            
+            if isa(eval(sprintf('obj.%s', type)), 'DataClass')
+                if isempty(eval(sprintf('obj.%s', type)))
+                    return;
+                end
+                y = eval(sprintf('obj.%s(iBlk).GetDataTimeSeries()', type));
+            else
+                y = eval(sprintf('obj.%s', type));
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ml = GetDataMeasList(obj, type, iBlk)
+            ml = [];
+            % Check type argument
+            if ~exist('type','var') || isempty(type)
+                type = 'dcAvg';
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1; %#ok<NASGU>
+            end
+            if ~ischar(type)
                 return;
             end
-            if all(isnan(yavg(:,:,:,condition)))
-                yavg = [];
-                return;
+            if isa(eval(sprintf('obj.%s', type)), 'DataClass')
+                if isempty(eval(sprintf('obj.%s', type)))
+                    return;
+                end
+                ml = eval(sprintf('obj.%s(iBlk).GetMeasList()', type));
+            else
+                ml = eval(sprintf('obj.%s', type));
             end
-            yavg = yavg(:,:,:,condition);
         end
         
         

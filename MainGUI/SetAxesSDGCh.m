@@ -10,6 +10,7 @@ iCh      = maingui.axesSDG.iCh;
 iSrcDet  = maingui.axesSDG.iSrcDet;
 SD       = maingui.dataTree.currElem.GetSDG('2D');
 
+% Create measurement list which is concatenation of each data block's list
 nDataBlks = maingui.dataTree.currElem.GetDataBlocksNum();
 ml = [];
 for iBlk = 1:nDataBlks
@@ -59,9 +60,9 @@ else
     lst = find(ml(:,2) == idxMin); 
 end
 
-% Remove any channels from lst which are already part of the axesSDG.iCh
+% Remove any channels from lst which are already part of iCh
 % to avoid confusion with double counting of channels
-% lst(ismember(lst, axesSDG.iCh)) = [];
+lst(ismember(lst, iCh)) = [];
 if strcmp(mouseevent,'normal')
     if SrcMin
         iCh = lst;
@@ -78,11 +79,6 @@ elseif strcmp(mouseevent,'extend')
         iCh(end+[1:length(lst)]) = lst;
         iSrcDet(end+[1:length(lst)],:) = [ml(lst,1) idxMin*ones(length(lst),1)];
     end
-end
-
-if length(iCh) > maxCh
-    menu('Number of selected channels exceeds max for waterfall display.','OK');
-    return;
 end
 
 % Set indices of displayed channels

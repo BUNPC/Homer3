@@ -22,9 +22,6 @@ for jj=1:length(CondNames)
 end
 if isempty(CondNames)
    CondNames = {' '};
-   set(handles.popupmenuConditions, 'enable', 'off');
-else
-    set(handles.popupmenuConditions, 'enable', 'on');
 end
 set(handles.popupmenuConditions, 'string', CondNames);
 maingui.condition = get(handles.popupmenuConditions, 'value');

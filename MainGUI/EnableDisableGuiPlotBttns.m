@@ -44,6 +44,7 @@ if ~isempty(maingui.dataTree.groups(1).CondNames) > 0  % If there is stim
     CondName = maingui.dataTree.groups(1).CondNames{iCondGrp};
     if ~isempty(maingui.dataTree.currElem.GetDodAvg(CondName)) || ~isempty(maingui.dataTree.currElem.GetDcAvg(CondName))
         set(handles.checkboxPlotHRF, 'enable','on');
+        set(handles.popupmenuConditions, 'enable','on');
         if ~isa(maingui.dataTree.currElem, 'RunClass')
             set(handles.checkboxPlotHRF, 'value',1);
             if ~isempty(maingui.dataTree.currElem.GetDcAvg())
@@ -54,16 +55,20 @@ if ~isempty(maingui.dataTree.groups(1).CondNames) > 0  % If there is stim
         end
     else
         set(handles.checkboxPlotHRF, 'enable','off');
+        set(handles.popupmenuConditions, 'enable','off');
         set(handles.checkboxPlotHRF, 'value',0);        
     end
 elseif raw_enable && raw_checked
     set(handles.checkboxPlotHRF, 'enable','off');
+    set(handles.popupmenuConditions, 'enable','off');
     set(handles.checkboxPlotHRF, 'value',0);
 elseif ~OD_enable && ~Conc_enable
     set(handles.checkboxPlotHRF, 'enable','off');
+    set(handles.popupmenuConditions, 'enable','off');
     set(handles.checkboxPlotHRF, 'value',0);
 else
     set(handles.checkboxPlotHRF, 'enable','off');
+    set(handles.popupmenuConditions, 'enable','off');
     set(handles.checkboxPlotHRF, 'value',0);    
 end
 

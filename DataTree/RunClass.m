@@ -356,11 +356,12 @@ classdef RunClass < TreeNodeClass
 
         
         % ----------------------------------------------------------------------------------
-        function d = GetRawData(obj, iBlk)
+        function [d, ml] = GetRawData(obj, iBlk)
             if nargin<2
                 iBlk = 1;
             end
             d = obj.acquired.GetDataTimeSeries('', iBlk);
+            ml = obj.acquired.data(iBlk).GetMeasurementList();
         end
         
         % ----------------------------------------------------------------------------------

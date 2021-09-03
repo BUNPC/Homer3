@@ -315,25 +315,27 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function dod = GetDod(obj, iBlk)
+        function [dod, ml] = GetDod(obj, iBlk)
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk=1;
             end
             dod = obj.procStream.output.GetDataTimeCourse('dod',iBlk);
+            ml = obj.procStream.output.GetDataMeasurementList('dod', iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function dc = GetDc(obj, iBlk)
+        function [dc, ml] = GetDc(obj, iBlk)
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk=1;
             end
             dc = obj.procStream.output.GetDataTimeCourse('dc',iBlk);
+            ml = obj.procStream.output.GetDataMeasurementList('dc', iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function dodAvg = GetDodAvg(obj, condition, iBlk)
+        function [dodAvg, ml] = GetDodAvg(obj, condition, iBlk)
             if ~exist('condition','var') || isempty(condition)
                 icond = 1:length(obj.GetConditions());
             elseif ischar(condition)
@@ -345,11 +347,12 @@ classdef TreeNodeClass < handle
                 iBlk=1;
             end
             dodAvg = obj.procStream.output.GetDodAvg('dodAvg', icond, iBlk);
+            ml = obj.procStream.output.GetDataMeasurementList('dodAvg', iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function dcAvg = GetDcAvg(obj, condition, iBlk)
+        function [dcAvg, ml] = GetDcAvg(obj, condition, iBlk)
             if ~exist('condition','var') || isempty(condition)
                 icond = 1:length(obj.GetConditions());
             elseif ischar(condition)
@@ -361,11 +364,12 @@ classdef TreeNodeClass < handle
                 iBlk=1;
             end
             dcAvg = obj.procStream.output.GetDcAvg('dcAvg', icond, iBlk);
+            ml = obj.procStream.output.GetDataMeasurementList('dcAvg', iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function dodAvgStd = GetDodAvgStd(obj, condition, iBlk)
+        function [dodAvgStd, ml] = GetDodAvgStd(obj, condition, iBlk)
             if ~exist('condition','var') || isempty(condition)
                 condition = 1:length(obj.GetConditions());
             end
@@ -373,11 +377,12 @@ classdef TreeNodeClass < handle
                 iBlk=1;
             end
             dodAvgStd = obj.procStream.output.GetDodAvg('dodAvgStd', condition, iBlk);
+            ml = obj.procStream.output.GetDataMeasurementList('dodAvgStd', iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function dcAvgStd = GetDcAvgStd(obj, condition, iBlk)
+        function [dcAvgStd, ml] = GetDcAvgStd(obj, condition, iBlk)
             if ~exist('condition','var') || isempty(condition)
                 condition = 1:length(obj.GetConditions());
             end
@@ -385,11 +390,12 @@ classdef TreeNodeClass < handle
                 iBlk=1;
             end
             dcAvgStd = obj.procStream.output.GetDcAvg('dcAvgStd', condition, iBlk);
+            ml = obj.procStream.output.GetDataMeasurementList('dcAvgStd', iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function dodSum2 = GetDodSum2(obj, condition, iBlk)
+        function [dodSum2, ml] = GetDodSum2(obj, condition, iBlk)
             if ~exist('condition','var') || isempty(condition)
                 condition = 1:length(obj.GetConditions());
             end
@@ -397,11 +403,12 @@ classdef TreeNodeClass < handle
                 iBlk=1;
             end
             dodSum2 = obj.procStream.output.GetDodSum2('dodSum2', condition, iBlk);
+            ml = obj.procStream.output.GetDataMeasurementList('dodSum2', iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function dcSum2 = GetDcSum2(obj, condition, iBlk)
+        function [dcSum2, ml] = GetDcSum2(obj, condition, iBlk)
             if ~exist('condition','var') || isempty(condition)
                 condition = 1:length(obj.GetConditions());
             end
@@ -409,6 +416,7 @@ classdef TreeNodeClass < handle
                 iBlk=1;
             end
             dcSum2 = obj.procStream.output.GetDcSum2('dcSum2', condition, iBlk);
+            ml = obj.procStream.output.GetDataMeasurementList('dcSum2', iBlk);
         end
         
         

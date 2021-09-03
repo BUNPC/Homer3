@@ -505,10 +505,8 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function y = GetDataTimeCourse(obj, type, iBlk)
-            y = [];
-            options = ''; %#ok<NASGU>
-            
+        function ml = GetDataMeasurementList(obj, type, iBlk)
+            ml = [];
             % Check type argument
             if ~exist('type','var') || isempty(type)
                 type = 'dcAvg';
@@ -516,21 +514,16 @@ classdef ProcResultClass < handle
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1; %#ok<NASGU>
             end
-            
             if ~ischar(type)
                 return;
             end
-            
             if isa(eval(sprintf('obj.%s', type)), 'DataClass')
                 if isempty(eval(sprintf('obj.%s', type)))
                     return;
                 end
-                if strcmp(type, 'dc') || strcmp(type, 'dcAvg') || strcmp(type, 'dodAvg')
-                    options = 'reshape'; %#ok<NASGU>
-                end
-                y = eval(sprintf('obj.%s(iBlk).GetDataTimeSeries(options)', type));
+                ml = eval(sprintf('obj.%s(iBlk).GetMeasurementList()', type));
             else
-                y = eval(sprintf('obj.%s', type));
+                ml = eval(sprintf('obj.%s', type));
             end
         end
         

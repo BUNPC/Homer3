@@ -926,17 +926,19 @@ end
 types = maingui.dataTree.GetCurrElem.GetDataTypes();
 if any((types >= 201) & (types <= 400))  % If TD data present
     set(handles.listboxPlotTD, 'visible', 'on');
-    nDatatypeIndex = max([maingui.dataTree.currElem.acquired.data.measurementList.dataTypeIndex]);
-    if handles.listboxPlotTD.Value > nDatatypeIndex
-       set(handles.listboxPlotTD, 'value', nDatatypeIndex) 
+    maxDataTypeIndex = max([maingui.dataTree.currElem.acquired.data.measurementList.dataTypeIndex]);
+    if handles.listboxPlotTD.Value > maxDataTypeIndex
+       set(handles.listboxPlotTD, 'value', maxDataTypeIndex) 
     end
     if any(types < 301)  % If TD gated data present
-        c = strsplit(num2str(1:nDataTypeIndex));
-        set(handles.listboxPlotTD, 'string', c)
+        td = strcat("Gate ", cellstr(num2str(maingui.dataTree.currElem.acquired.probe.timeDelays)));
+        set(handles.listboxPlotTD, 'string', td)
     else  % If TD moment data present
-        c = {'0th (Sum)', '1st (Mean)', '2nd (Var)'};
-        c = c(1:nDatatypeIndex);
-        set(handles.listboxPlotTD, 'string', c);
+        mo = maingui.dataTree.currElem.acquired.probe.momentOrders;
+        if ~iscell(mo)  % Compatibility with string moment order
+            mo = strcat("Moment ", cellstr(num2str(mo)));
+        end
+        set(handles.listboxPlotTD, 'string', mo);
     end
 else
     set(handles.listboxPlotTD, 'visible', 'off');
@@ -993,63 +995,56 @@ set(hAxes,'ygrid','on');
 xlabel(hAxes, '');
 ylabel(hAxes, '');
 
-
 linecolor  = maingui.axesData.linecolor;
 linestyle  = maingui.axesData.linestyle;
+sclConc    = maingui.sclConc;        % convert Conc from Molar to uMolar
+
+% These are properties set by channel selection callbacks
+iSrcDet     = maingui.axesSDG.iSrcDet;  % Source detector index  pairs
+
+% Set by GUI elements
+wl         = GetWl(handles);
 datatype   = GetDatatype(handles);
 condition  = GetCondition(handles);
-iCh0       = maingui.axesSDG.iCh;
-iWl        = GetWl(handles);
 hbType     = GetHbType(handles);
-sclConc    = maingui.sclConc;        % convert Conc from Molar to uMolar
+tdType     = GetTdType(handles);
 showStdErr = GetShowStdErrEnabled(handles);
 
-[iDataBlks, iCh] = procElem.GetDataBlocksIdxs(iCh0);
-maingui.logger.Write(sprintf('Displaying channels [%s] in data blocks [%s]\n', num2str(iCh0(:)'), num2str(iDataBlks(:)')))
-iColor = 1;
-for iBlk = iDataBlks
+% Need to display selected channels which may be distributed across data blocks
+nDataBlks = procElem.GetDataBlocksIdxs();
 
-    if isempty(iCh)
-        iChBlk  = [];
-    else
-        iChBlk  = iCh{iBlk};
-    end
+% maingui.logger.Write(sprintf('Displaying channels [%s] in data blocks [%s]\n', num2str(iCh(any(iChWl, 2))'), num2str(iDataBlks(:)')))
+iColor = 1;
+for iBlk = nDataBlks
     
-    ch      = procElem.GetMeasList(iBlk);
-    chVis   = find(ch.MeasListVis(iChBlk)==1);
     d       = [];
+    ml      = [];
     dStd    = [];
     t       = [];
     nTrials = [];    
     
-    % If TD datatype selected, reduce MeasList to include only selected
-    % datatype. TODO resolve this situation for HRFs
-    if strcmp(handles.listboxPlotTD.Visible, 'on')
-       ch.MeasList = ch.MeasList(ch.MeasList(:, 3) == handles.listboxPlotTD.Value, :); 
-    end
-    
-    % Get plot data from dataTree
+    % Get plot data and measurement lists from dataTree
     if datatype == maingui.buttonVals.RAW
-        d = procElem.GetDataTimeSeries('same', iBlk);
+        [d, ml] = procElem.GetRawData(iBlk);
         t = procElem.GetTime(iBlk);
     elseif datatype == maingui.buttonVals.OD
-        d = procElem.GetDod(iBlk);
+        [d, ml] = procElem.GetDod(iBlk);
         t = procElem.GetTime(iBlk);
     elseif datatype == maingui.buttonVals.CONC
-        d = procElem.GetDc(iBlk);
+        [d, ml] = procElem.GetDc(iBlk);
         t = procElem.GetTime(iBlk);
     elseif datatype == maingui.buttonVals.OD_HRF
-        d = procElem.GetDodAvg([], iBlk);
+        [d, ml] = procElem.GetDodAvg([], iBlk);  % Empty condition parameter returns d for all conditions
         t = procElem.GetTHRF(iBlk);
         if showStdErr
-            dStd = procElem.GetDodAvgStd(iBlk);
+            dStd = procElem.GetDodAvgStd([], iBlk);
         end
         nTrials = procElem.GetNtrials(iBlk);
         if isempty(condition)
             return;
         end
     elseif datatype == maingui.buttonVals.CONC_HRF
-        d = procElem.GetDcAvg([], iBlk);
+        [d, ml] = procElem.GetDcAvg([], iBlk);
         t = procElem.GetTHRF(iBlk);
         if showStdErr
             dStd = procElem.GetDcAvgStd([], iBlk) * sclConc;
@@ -1061,7 +1056,7 @@ for iBlk = iDataBlks
     end
     
     %%% Plot data
-    if ~isempty(d)
+    if ~isempty(d) && ~isempty(iSrcDet)
         xx = xlim(hAxes);
         yy = ylim(hAxes);
         if strcmpi(get(hAxes,'ylimmode'),'manual')
@@ -1080,24 +1075,74 @@ for iBlk = iDataBlks
             set(hAxes,'ylim',yy);
         end
         
-        linecolors = linecolor(iColor:iColor+length(iChBlk)-1,:);
+        % Indices of ml corresponding to selected sources and detectors
+        iChSelected = transpose(find(any([ml.sourceIndex] == iSrcDet(:, 1) & [ml.detectorIndex] == iSrcDet(:, 2))));
+        
+        if length(iChSelected) > size(linecolor, 1);
+            menu('Number of selected channels exceeds max for waterfall display.','OK');
+            return;
+        end
+        
+        linecolors = linecolor(iColor:iColor+length(iChSelected)-1,:);
+        ch      = procElem.GetMeasList(iBlk);
+%         chVis   = find(ch.MeasListVis(iChSelected)==1);
+        chVis = 1:length(ml);
+        
+        chSelected = zeros(length(ml), 1);
+        chSelected(iChSelected) = 1;
+        
+        % If TD datatype selected, reduce MeasList to include only selected
+        % datatype
+        if tdType > 0
+           chSelected = chSelected & transpose([ml.dataTypeIndex] == tdType);
+        end
         
         % Plot data
-        if datatype == maingui.buttonVals.RAW || datatype == maingui.buttonVals.OD || datatype == maingui.buttonVals.OD_HRF
-            if  datatype == maingui.buttonVals.OD_HRF
-                d = d(:,:,condition);
+         if datatype == maingui.buttonVals.RAW || datatype == maingui.buttonVals.OD || datatype == maingui.buttonVals.OD_HRF
+            
+             % TODO resolve data blocks with different channel content
+            
+            % Note logical indexing produces column vectors but to date we
+            % have been using row vectors for this indexing
+            if datatype == maingui.buttonVals.OD_HRF
+                chCond = transpose([ml.dataTypeIndex] == condition);
+            else
+                chCond = ones(length(ml), 1);
             end
-            d = procElem.reshape_y(d, ch.MeasList);
-            DisplayDataRawOrOD(hAxes, t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
+            
+            iChBlk = find(chSelected & chCond);
+            
+            % Subset of iChBlk for each wl
+            iChWl = transpose([ml(iChBlk).wavelengthIndex] == transpose(GetWl(handles)));
+            DisplayDataRawOrOD(hAxes, t, d, dStd, iChWl, iChBlk, nTrials, condition, linecolors);
 
             % Set the x-axis label
             xlabel(hAxes, 'Time (s)', 'FontSize', 11);
+            
+            iColor = iColor+length(iChBlk);
+            
         elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
+            % Hard-coded Hb type labels corresponding to SNIRF spec. TODO
+            % load these dynamically from somewhere that makes sense
             if  datatype == maingui.buttonVals.CONC_HRF
-                d = d(:,:,:,condition);
+                HbLabels = ["HRF HbO", "HRF HbR", "HRF HbT"];
+                chCond = transpose([ml.dataTypeIndex] == condition);
+            else
+                HbLabels = ["HbO", "HbR", "HbT"];
+                chCond = ones(length(ml), 1);
             end
+            
+            iChBlk = find(chSelected & chCond);
+
+            % Get only selected Hb type(s)
+            hbTypeLabels = HbLabels(hbType);
+            iChHb = false(size(iChBlk, 1), size(hbTypeLabels, 1));
+            for i = 1:length(hbTypeLabels)
+               iChHb(:, i) = strcmp({ml(iChBlk).dataTypeLabel}, hbTypeLabels{i}); 
+            end
+            
             d = d * sclConc;
-            DisplayDataConc(hAxes, t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
+            DisplayDataConc(hAxes, t, d, dStd, iChHb, iChBlk, nTrials, condition, linecolors);
             
             % Set the x-axis label
             xlabel(hAxes, 'Time (s)', 'FontSize', 11);
@@ -1109,10 +1154,13 @@ for iBlk = iDataBlks
                 ylabel(hAxes, ['\muM ' lengthUnit], 'FontSize', 11);
             else
                 ylabel(hAxes, '\muM', 'FontSize', 11);
+            
             end
+            
+            iColor = iColor+length(iChBlk);
+            
         end
     end
-    iColor = iColor+length(iChBlk);
 end
 
 % Set Zoom on/off
@@ -1402,7 +1450,7 @@ procElem = maingui.dataTree.currElem;
 iCh0     = maingui.axesSDG.iCh;
 datatype = GetDatatype(handles);
 
-iDataBlks = procElem.GetDataBlocksIdxs(iCh0);
+iDataBlks = procElem.GetDataBlocksIdxs();
 for iBlk = iDataBlks
     % Get plot data from dataTree
     if datatype == maingui.buttonVals.RAW
@@ -1668,7 +1716,7 @@ p1 = min(point1,point2);
 p2 = max(point1,point2);
 
 iCh = maingui.axesSDG.iCh;
-iDataBlks =  maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
+iDataBlks =  maingui.dataTree.currElem.GetDataBlocksIdxs();
 for iBlk=1:iDataBlks
     
     % Get and set the excuded time points in tIncMan
@@ -1700,7 +1748,7 @@ p1 = min(point1,point2);
 p2 = max(point1,point2);
 
 iCh = maingui.axesSDG.iCh;
-iDataBlks =  maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
+iDataBlks =  maingui.dataTree.currElem.GetDataBlocksIdxs();
 for iBlk=1:iDataBlks
     t = maingui.dataTree.currElem.GetTime(iBlk);
     idx = find(t>=p1(1) & t<=p2(1));
@@ -1882,7 +1930,7 @@ if isa(maingui.dataTree.currElem, 'RunClass')
     end
     maingui.dataTree.currElem.InitTincMan();
     iCh = maingui.axesSDG.iCh;
-    iDataBlks =  maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
+    iDataBlks =  maingui.dataTree.currElem.GetDataBlocksIdxs();
     for iBlk = 1:iDataBlks
         t = maingui.dataTree.currElem.GetTime(iBlk);
         maingui.dataTree.currElem.StimInclude(t, iBlk);

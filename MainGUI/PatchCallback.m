@@ -12,7 +12,7 @@ if ch==2
 end
 
 iCh = maingui.axesSDG.iCh;
-iDataBlks =  maingui.dataTree.currElem.GetDataBlocksIdxs(iCh);
+iDataBlks =  maingui.dataTree.currElem.GetDataBlocksIdxs();
 for iBlk=1:iDataBlks
     tInc = maingui.dataTree.currElem.GetTincMan(iBlk);
     t = maingui.dataTree.currElem.GetTime(iBlk);

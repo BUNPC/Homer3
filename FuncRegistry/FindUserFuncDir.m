@@ -20,7 +20,7 @@ for ii = 1:length(dirs)
             userfuncdir{end+1} = fullpath([userfuncdir{1}, 'Archive/']);
         end
     else
-        userfuncdir{end+1} = fullpath([userfuncdir{1}, dirs(ii).name]);
+        userfuncdir{end+1} = filesepStandard(fullpath([userfuncdir{1}, dirs(ii).name]));
     end
 end
 

@@ -31,12 +31,16 @@ classdef Logger < handle
             if exist(self.filename, 'file') == 2
                 fds = fopen('all');
                 for ii = 1:length(fds)
-                    if strcmp(fopen(fds(ii)), self.filename)
+                    filename = fopen(fds(ii));
+                    if pathscompare(filename, self.filename)
                         fclose(fds(ii));
+                        warning('off','MATLAB:DELETE:Permission');
                         delete(self.filename)
+                        warning('on','MATLAB:DELETE:Permission');
                     end
                 end
             end
+            
             
             try
                 self.fhandle = fopen(self.filename, 'wt');

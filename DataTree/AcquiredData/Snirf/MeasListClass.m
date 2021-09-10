@@ -55,9 +55,9 @@ classdef MeasListClass < FileLoadSaveClass
             if nargin==1 && isa(varargin{1}, 'MeasListClass')
                 obj                  = varargin{1}.copy();                    % shallow copy ok because MeasListClass has no handle properties 
             elseif nargin==1 
-                obj.sourceIndex      = varargin{1}(1);
-                obj.detectorIndex    = varargin{1}(2);
-                obj.wavelengthIndex  = varargin{1}(4);
+                obj.sourceIndex      = varargin{1}(:,1);
+                obj.detectorIndex    = varargin{1}(:,2);
+                obj.wavelengthIndex  = varargin{1}(:,4);
                 obj.dataType         = dataTypeValues.Raw.CW.Amplitude;
             elseif nargin==3
                 obj.sourceIndex      = varargin{1};

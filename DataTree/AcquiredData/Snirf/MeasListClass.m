@@ -130,6 +130,16 @@ classdef MeasListClass < FileLoadSaveClass
                 err = -1;
                 return
             end
+            
+            if obj.IsEmpty()
+                err = -1;
+            end
+            if obj.sourceIndex<1
+                err = -1;
+            end
+            if obj.detectorIndex<1
+                err = -1;
+            end
 
         end
 
@@ -231,10 +241,12 @@ classdef MeasListClass < FileLoadSaveClass
         % -------------------------------------------------------
         function b = IsEmpty(obj)
             b = false;
-            if obj.sourceIndex==0 && obj.detectorIndex==0
+            if isempty(obj.sourceIndex) && isempty(obj.detectorIndex)
                 b = true;
+                return
             end
         end
+
         
         % -------------------------------------------------------
         function B = eq(obj, obj2)

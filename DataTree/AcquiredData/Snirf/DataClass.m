@@ -133,17 +133,21 @@ classdef DataClass < FileLoadSaveClass
                 
                 obj.dataTimeSeries  = HDF5_DatasetLoad(gid, 'dataTimeSeries');
                 obj.time            = HDF5_DatasetLoad(gid, 'time');
-                
-                ii=1;
+                                   
+                ii = 1;
                 while 1
                     if ii > length(obj.measurementList)
                         obj.measurementList(ii) = MeasListClass;
                     end
                     if obj.measurementList(ii).LoadHdf5(fileobj, [location, '/measurementList', num2str(ii)]) < 0
-                        obj.measurementList(ii).delete();
-                        obj.measurementList(ii) = [];
-                        if ii==1
-                            err=-1;
+                        if ~obj.measurementList(ii).IsEmpty()
+                            err = -1;                        
+                        else
+                            obj.measurementList(ii).delete();
+                            obj.measurementList(ii) = [];
+                        end
+                        if ii == 1
+                            err = -1;
                         end
                         break;
                     end
@@ -155,6 +159,8 @@ classdef DataClass < FileLoadSaveClass
             catch ME
                 err = -1;
             end
+            
+            err = ErrorCheck(obj, err);
         end
         
         
@@ -184,13 +190,6 @@ classdef DataClass < FileLoadSaveClass
             end
         end
         
-    end
-    
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Set/Get properties methods
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    methods
         
         % -------------------------------------------------------
         function b = IsEmpty(obj)
@@ -206,6 +205,27 @@ classdef DataClass < FileLoadSaveClass
             end
         end
         
+        
+        % ----------------------------------------------------------------------
+        function err = ErrorCheck(obj, err)
+            if obj.IsEmpty()
+                err = -1;
+            end
+            if size(obj.dataTimeSeries,1) ~= length(obj.time)
+                err = -1;
+            end
+            if size(obj.dataTimeSeries,2) ~= length(obj.measurementList)
+                err = -1;
+            end
+        end
+        
+    end
+    
+        
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Set/Get properties methods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
         
         % ---------------------------------------------------------
         function val = GetT(obj)

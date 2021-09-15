@@ -96,6 +96,11 @@ classdef DataFilesClass < handle
         % ----------------------------------------------------
         function findDataSet(obj, type)
             obj.files = mydir([obj.pathnm, '/*.', type]);
+            
+            % Remove any files that cannot pass the basic test of loading
+            % its data
+            obj.ErrorCheck(type);
+            
             if isempty( obj.files )                
                 % If there are no data files in current dir, don't give up yet - check
                 % the subdirs for data files.
@@ -276,6 +281,30 @@ classdef DataFilesClass < handle
             end
         end
         
+        
+        
+        % ----------------------------------------------------------
+        function ErrorCheck(obj, type)
+            errorIdxs = [];
+
+            % Assume constructor name follows from name of data format type
+            constructor = sprintf('%sClass', [upper(type(1)), type(2:end)]);
+            
+            % Make sure function by that name exists; otherwise no way to
+            % use it to check loadability
+            if isempty(which(constructor))
+                return;
+            end
+            
+            % Try to create object of data type and load data into it
+            for ii = 1:length(obj.files)
+                eval(sprintf('o = %s(obj.files(ii).name);', constructor));
+                if o.GetError()<0
+                    errorIdxs = [errorIdxs, ii];
+                end
+            end
+            obj.files(errorIdxs) = [];
+        end
         
         
         % ----------------------------------------------------------

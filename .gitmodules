@@ -1,0 +1,8 @@
+[submodule "Utils/Shared"]
+	path = Utils/Shared
+	url = https://github.com/jayd1860/Utils
+	branch = development
+[submodule "DataTree"]
+	path = DataTree
+	url = https://github.com/jayd1860/DataTree
+	branch = development

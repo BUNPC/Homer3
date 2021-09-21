@@ -61,10 +61,7 @@ function setpaths(options_str)
 
 % Start world by trying to add standard 'Utils' path if it exists 
 % If it exists, assume that's where intialation functions are. 
-if exist([pwd, '/Utils'], 'dir')==7
-    addpath([pwd, '/Utils']);
-    addpath([pwd, '/Utils/namespace']);
-end
+paths0 = startupPaths();
 setNamespace('Homer3');
 
 % Parse arguments
@@ -72,12 +69,12 @@ if ~exist('options_str','var')
     options_str = 'rmpathconfl';
 end
 options = parseOptions(options_str);
-
 if ~options.add
     options.conflcheck = false;
 end
 
 [paths, wspaths, paths_excl_str] = getpaths(options);
+paths = [paths(:); paths0(:)];
 % if ~isempty(wspaths)
 %     if pathscompare(wspaths{1}, pwd)
 %         fprintf('Current workspace %s already at the top of the search path.\n', wspaths{1});
@@ -94,7 +91,7 @@ paths_str = '';
 dnum = 0;
 diffqueue = {};  % Files to be diff'd
 
-for ii=1:length(paths)
+for ii = 1:length(paths)
     
     paths{ii} = [rootpath, paths{ii}];
     
@@ -215,7 +212,7 @@ if length(wspaths)>1
     end
 end
 
-if exist([pwd, '/Utils/setpaths_proprietary.m'],'file')
+if exist([pwd, '/Utils/Shared/setpaths_proprietary.m'],'file')
     setpaths_proprietary(options);
 end
 
@@ -234,5 +231,32 @@ if isunix()
         end
     end
 end
+
+
+
+% ----------------------------------------------------
+function paths = startupPaths()
+paths = getpathsStartup();
+for ii = 1:length(paths)
+    fprintf('Adding startup path %s\n', paths{ii});
+    addpath([pwd, '/', paths{ii}], '-end');
+    if strfind(paths{ii}, 'submodules')
+        [err, msg] = downloadSharedLibs(); %#ok<ASGLU>
+    end
+end
+
+
+
+% ----------------------------------------------------
+function paths = getpathsStartup()
+global startup
+startup = {};
+paths = {
+    '/Utils';
+    '/Utils/submodules';
+    '/Utils/Shared';
+    '/Utils/Shared/namespace';
+};
+startup = paths;
 
 

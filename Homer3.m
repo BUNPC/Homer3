@@ -44,7 +44,9 @@ if strcmp(cfg.GetValue('Logging'), 'off')
 end
 PrintSystemInfo(logger, 'Homer3');
 checkForHomerUpdates();
-logger.Write(sprintf('Opened application config file %s\n', cfg.filename))
+for ii = 1:length(cfg.filenames)
+    logger.Write(sprintf('Opened config file %s\n', cfg.filenames{ii}))
+end
 gdir = cfg.GetValue('Last Group Folder');
 if isempty(gdir)
     if isdeployed()

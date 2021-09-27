@@ -1,7 +1,5 @@
 function [cmds, errs, msgs] = gitSubmodulesUpdate(repo, preview)
 cmds = {};
-errs = -1;
-msgs = {};
 
 currdir = pwd;
 
@@ -16,7 +14,7 @@ repoFull = filesepStandard_startup(repo,'full');
 ii = 1;
 
 cmds{ii,1} = sprintf('cd %s', repoFull); ii = ii+1;
-cmds{ii,1} = sprintf('git config --global http.sslverify "false');
+cmds{ii,1} = sprintf('git config --global http.sslverify "false"');
 cmds{ii,1} = sprintf('git submodule update --init'); ii = ii+1;
 
 [errs, msgs] = exeShellCmds(cmds, preview);

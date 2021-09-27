@@ -62,6 +62,10 @@ function setpaths(options_str)
 % Start world by trying to add standard 'Utils' path if it exists 
 % If it exists, assume that's where intialation functions are. 
 paths0 = startupPaths();
+if isempty(paths0)
+    return
+end
+
 setNamespace('Homer3');
 
 % Parse arguments
@@ -241,10 +245,12 @@ for ii = 1:length(paths)
     fprintf('Adding startup path %s\n', paths{ii});
     addpath([pwd, '/', paths{ii}], '-end');
     if strfind(paths{ii}, 'submodules')
-        [err, msg] = downloadSharedLibs(); %#ok<ASGLU>
+        [cmds, errs, msgs] = downloadSharedLibs(); %#ok<ASGLU>
     end
 end
-
+if ~all(errs==0)
+    paths = [];
+end
 
 
 % ----------------------------------------------------

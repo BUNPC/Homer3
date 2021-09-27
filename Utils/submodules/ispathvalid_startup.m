@@ -14,7 +14,7 @@ if ~isempty(options)
     if optionExists_startup(options,'file')
         
         % Err check 1.
-        if isdir_private(p)
+        if isdir_private_startup(p)
             return;
         end
         
@@ -26,8 +26,8 @@ if ~isempty(options)
             end
         end
         
-    elseif optionExists(options,'dir')
-        if isfile_private(p)
+    elseif optionExists_startup(options,'dir')
+        if isfile_private_startup(p)
             return;
         end
     else

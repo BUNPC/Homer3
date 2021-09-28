@@ -11,22 +11,20 @@ if ~exist('preview','var')
 end
 
 repoFull = filesepStandard_startup(repo,'full');
+
+branch = gitGetBranch(repoFull);
+submodules = parseGitSubmodulesFile(repoFull);
+
 ii = 1;
 
-cmds{ii,1} = sprintf('cd %s', repoFull); ii = ii+1;
-cmds{ii,1} = sprintf('git config --global http.sslverify "false"');
-cmds{ii,1} = sprintf('git submodule update --init'); ii = ii+1;
+cmds{ii,1} = sprintf('git config --global http.sslverify "false"'); ii = ii+1;
+for jj = 1:size(submodules,1)
+    cmds{ii+jj-1,1} = sprintf('cd %s', repoFull); ii = ii+1;
+    cmds{ii+jj-1,1} = sprintf('cd %s', submodules{jj,3}); ii = ii+1;
+    cmds{ii+jj-1,1} = sprintf('git pull origin %s', branch);
+end
 
 [errs, msgs] = exeShellCmds(cmds, preview);
-
-branch = gitGetBranch(repo);
-
-submodules = parseGitSubmodulesFile(repo);
-for ii = 1:size(submodules,1)
-    cd(repoFull)
-    cd(submodules{ii,3})
-    gitSetBranch(branch);
-end
 
 cd(currdir);
 

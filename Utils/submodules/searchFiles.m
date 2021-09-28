@@ -1,4 +1,19 @@
-function searchFiles(submodules, options)
+function paths = searchFiles(submodules, options)
+%
+% Syntax:
+%    paths = searchFiles(submodules, options)
+%
+% Usage:
+%    paths = searchFiles()
+%    paths = searchFiles(submodules)
+%    paths = searchFiles(submodules, options)
+%
+% Examples:
+%    paths = searchFiles()
+%    paths = searchFiles({}, 'update')
+%    
+%
+global paths  %#ok<REDEFGI>
 
 if ~exist('submodules','var') || isempty(submodules)
     submodules = parseGitSubmodulesFile();
@@ -6,6 +21,7 @@ end
 if ~exist('options','var')
     options = '';
 end
+paths = {};
 
 submodulenames = {};
 submodulepaths = {};
@@ -92,13 +108,14 @@ fprintf('Display SUBMIT button [%1.f, %1.f, %1.f, %1.f]\n', [xpos4, yposi, xsize
 uicontrol('parent',hf, 'style','pushbutton', 'string','SUBMIT', 'units','normalized', 'position',[xpos4, yposi, xsize4, ysize4], ...
     'fontsize',11, 'fontweight','bold', 'callback',{@submitBttnCallback, hedit, submodules});
 
+waitForGui_startup(hf);
 
 
 
 % ------------------------------------------------------
 function pname = browseBttnCallback(~, ~, hEdit, submodulename)
 pname = '';
-[filename, pathname] = uigetfile('*.zip', sprintf('Select file for submodule "%s"', submodulename));
+[filename, pathname] = uigetfile('*', sprintf('Select file for submodule "%s"', submodulename));
 if filename==0
     return
 end
@@ -117,6 +134,8 @@ set(hEdit, 'string',pname)
 
 % ------------------------------------------------------
 function submitBttnCallback(hObject, ~, hEdits, submodules)
+global paths 
+
 hf = get(hObject,'parent');
 
 for ii = 1:length(hEdits)
@@ -135,7 +154,7 @@ for ii = 1:length(hEdits)
             if ispathvalid_startup(filenameUnziped,'dir')
                 rmdir(filenameUnziped,'s')
             end
-            unzip(filepath);
+            unzip(filepath, fileparts(filenameUnziped(1:end-1)));
         catch
         end
     end
@@ -155,35 +174,10 @@ for ii = 1:length(hEdits)
         fprintf('Copying %s to %s\n', [filenameUnziped, '/*'], submodulepath);
         copyfile([filenameUnziped, '/*'], submodulepath);
         rmdir(filenameUnziped,'s');
-    end
+        paths{ii,1} = filenameUnziped;
+        break;
+    end    
 end
 
 delete(hf)
-
-
-
-
-% ----------------------------------------------------
-function removeFolderContents(folder)
-if isemptyFolder(folder)
-    return
-end
-o = dir(folder);
-for ii = 1:length(o)
-    if strcmp(o(ii).name,'.')
-        continue
-    end
-    if strcmp(o(ii).name,'..')
-        continue
-    end
-    try
-        if o(ii).isdir
-            rmdir([folder, '/', o(ii).name],'s')
-        else
-            delete([folder, '/', o(ii).name])
-        end
-    catch
-    end
-end
-
 

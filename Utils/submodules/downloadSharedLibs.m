@@ -17,7 +17,7 @@ end
 
 if optionExists_startup(options, 'init')
     [cmds, errs, msgs] = gitSubmodulesInit();
-elseif strcmp(options, 'update')
+elseif optionExists_startup(options, 'update')
     [cmds, errs, msgs] = gitSubmodulesUpdate();
 end
 
@@ -30,9 +30,9 @@ end
 % Try to install missing libs without git
 branch = warningGitFailedToInstall(s);
 if ~isempty(branch)
-    if strcmp(options, 'init')
+    if optionExists_startup(options, 'init')
         downloadSubmodulesWithoutGit(s(kk,:), branch);
-    elseif strcmp(options, 'update')
+    elseif optionExists_startup(options, 'update')
         updateSubmodulesWithoutGit(s, branch);
     end
 end

@@ -115,7 +115,7 @@ waitForGui_startup(hf);
 % ------------------------------------------------------
 function pname = browseBttnCallback(~, ~, hEdit, submodulename)
 pname = '';
-[filename, pathname] = uigetfile('*', sprintf('Select file for submodule "%s"', submodulename));
+[filename, pathname] = uigetfile('*.zip', sprintf('Select file for submodule "%s"', submodulename));
 if filename==0
     return
 end

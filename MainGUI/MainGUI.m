@@ -1252,23 +1252,17 @@ end
 axes(hAxes);
 hold(hAxes, 'on');
 
-aux = maingui.dataTree.currElem.GetAuxiliary();
-t = maingui.dataTree.currElem.GetAuxiliaryTime();
+aux = maingui.dataTree.currElem.GetAux();
 
 % Check if there's any aux 
-if isempty(aux) || isempty(t)
-    set(handles.checkboxPlotAux, 'enable','off');
-    set(handles.popupmenuAux, 'enable','off');
-    return;
-end
-if isempty(aux.names)
+if isempty(aux) || isempty({aux.name})
     set(handles.checkboxPlotAux, 'enable','off');
     set(handles.popupmenuAux, 'enable','off');
     return;
 end
 
 % Enable aux gui objects and set their values based on the aux values
-set(handles.popupmenuAux, 'string', aux.names);
+set(handles.popupmenuAux, 'string', {aux.name});
 onoff = get(handles.checkboxPlotAux, 'value');
 if onoff==0
     return;
@@ -1281,10 +1275,10 @@ if iAux==0
 end
 
 hold(hAxes, 'on');
-data = aux.data(:,iAux)-min(aux.data(:,iAux));
+data = aux(iAux).dataTimeSeries - min(aux(iAux).dataTimeSeries);
 r = ylim();
 yrange = [r(1) - (r(2)-r(1)), r(1)];
-h = plot(hAxes, t, yrange(1)+(yrange(2)-yrange(1)) * (data/(max(data)-min(data))), 'k');
+h = plot(hAxes, aux(iAux).time, yrange(1) + (yrange(2) - yrange(1)) * (data / (max(data) - min(data))), 'k');
 set(h,'linewidth',1);
 hold(hAxes, 'off');
 

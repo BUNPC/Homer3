@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: openfnirs forum
+    url: https://openfnirs.org/community/homer3-forum/
+    about: Discussion on GitHub is limited to the development of Homer3. For support from the Homer3 community, visit the openfnirs forum.

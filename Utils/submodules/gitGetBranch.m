@@ -16,7 +16,7 @@ repoFull = filesepStandard_startup(repo,'full');
 ii = 1;
 kk = 1;
 cmds{ii,1} = sprintf('cd %s', repoFull); ii = ii+1;
-cmds{ii,1} = sprintf('git branch'); ii = ii+1; kk = ii-1;
+cmds{ii,1} = sprintf('%sgit branch',setTerminal()); ii = ii+1; kk = ii-1;
 
 [errs, msgs] = exeShellCmds(cmds, false, quiet);
 

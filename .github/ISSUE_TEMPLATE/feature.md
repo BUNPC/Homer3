@@ -7,6 +7,9 @@ assignees: ''
 
 ---
 
+* [ ] Are you sure this isn't a duplicate [suggestion](https://github.com/BUNPC/Homer3/issues)?
+* [ ] Are you suggesting a feature (rather than reporting a problem/bug or requesting support)?
+
 **Is your feature request related to a problem? Please describe.**
 A concise description of what the problem is.
 

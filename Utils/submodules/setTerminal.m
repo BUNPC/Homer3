@@ -4,6 +4,6 @@ function s = setTerminal()
 % to press Enter key to continue matlab script execution.
 s = '';
 if ismac()
-    s = 'TERM=ansi';
+    s = 'TERM=ansi; ';
 end
 

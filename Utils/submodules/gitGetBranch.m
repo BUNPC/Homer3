@@ -14,7 +14,6 @@ currdir = pwd;
 repoFull = filesepStandard_startup(repo,'full');
 
 ii = 1;
-kk = 1;
 cmds{ii,1} = sprintf('cd %s', repoFull); ii = ii+1;
 cmds{ii,1} = sprintf('%sgit branch',setTerminal()); ii = ii+1; kk = ii-1;
 
@@ -27,8 +26,40 @@ if all(errs==0)
             break;
         end
     end
-    name = strtrim(deblank(branches{jj}(2:end)));
+    name = extractBranchName(branches{jj});
 end
 
 cd(currdir);
+
+
+
+
+% -----------------------------------------
+function b = extractBranchName(b)
+b = removeGarbage(b);
+k = find(b<43);
+b(k) = ''; %#ok<FNDSB>
+
+
+
+% -----------------------------------------
+function b = removeGarbage(b)
+
+% Remove garbage strings from branch name. Matlab for MAC 
+% creates these issues because of peculiar shell environemnt 
+if ismac()
+    k = [];
+    knownGarbage = {
+        '[m';
+        '[32m';
+        };
+    for kk = 1:length(knownGarbage)
+        j = strfind(b, knownGarbage{kk});
+        for jj = 1:length(j)
+            k = [k, j(jj):j(jj)+length(knownGarbage{kk})-1]; %#ok<AGROW>
+        end
+    end
+    b(k) = '';
+end
+
 

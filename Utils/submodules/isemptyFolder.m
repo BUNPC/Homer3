@@ -1,4 +1,4 @@
-unction b = isemptyFolder(pname)
+function b = isemptyFolder(pname)
 b = [];
 if ~ispathvalid_startup(pname, 'dir')
     b = true;

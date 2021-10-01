@@ -1,6 +1,8 @@
-function b = isemptyFolder(pname)
+unction b = isemptyFolder(pname)
 b = [];
 if ~ispathvalid_startup(pname, 'dir')
+    b = true;
+    mkdir(pname)
     return;
 end
 
@@ -16,4 +18,3 @@ for ii = 1:length(dirs0)
     n = n+1;
 end
 b = n==0;
-

@@ -93,7 +93,7 @@ addSearchPaths(appThisPaths);
 % Download submodules
 status = downloadLibraries(options);
 if status<0
-    fprintf('ERROR: Could no download shared libbraries required by this application...\n')
+    fprintf('ERROR: Could not download shared libraries required by this application...\n')
     return;
 end
 setNamespace('Homer3');
@@ -121,7 +121,7 @@ nTries = 2;
 h = waitbar(0,'Downloading shared libraries.');
 for iTry = 1:nTries
     [cmds, errs, msgs] = downloadSharedLibs(options); %#ok<ASGLU>
-    if all(errs==0)
+    if all(errs==0 | errs == -2)
         break
     end
 end

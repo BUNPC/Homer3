@@ -12,7 +12,6 @@ s = parseGitSubmodulesFile();
 % Check for missing libs
 kk = checkMissingLibraries(s);
 if isempty(kk) && optionExists_startup(options, 'init')
-    addSearchPaths(s);
     return;
 end
 
@@ -25,12 +24,11 @@ end
 % Check again for missing libs
 kk = checkMissingLibraries(s);
 if isempty(kk) && (optionExists_startup(options, 'init') || all(errs==0))
-    addSearchPaths(s);
     return;
 end
 
 % Try to install missing libs without git
-branch = warningGitFailedToInstall(s);
+branch = warningGitFailedToInstall(s(kk,:));
 if ~isempty(branch)
     if optionExists_startup(options, 'init')
         downloadSubmodulesWithoutGit(s(kk,:), branch);
@@ -43,13 +41,12 @@ end
 kk = checkMissingLibraries(s);
 if isempty(kk)
     errs = 0;
-    addSearchPaths(s);
     return;
 end
 
 q = warningManualInstallRequired(s(kk,:));
 if q==1
-    errs = -1;
+    errs = -2;
 else
     paths = searchFiles();
     if isempty(paths)
@@ -66,6 +63,8 @@ for ii = 1:size(s,1)
     if isIncompleteSubmodule(s{ii,3})
         removeFolderContents(s{ii,3});
         kk = [kk, ii]; %#ok<AGROW>
+    else
+        addSearchPaths(s(ii,:));
     end    
 end
 

@@ -59,7 +59,7 @@ b = false;
 if ~ispathvalid_startup(folder, 'dir')
     return
 end
-if isempty(ls([folder,'/*.m']))
+if isempty(dir([folder,'/*.m']))
     % Exceptions to rule that 'dotm' folder must have at least one '.m' file: 
     % it is a an executable folder (i.e. '/bin')
     if ~isempty(strfind(folder, '/bin/'))

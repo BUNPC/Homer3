@@ -13,19 +13,47 @@ for ii = 1:size(submodules,1)
     [~, submodulename] = fileparts(url);
     filenameDownload = sprintf('./%s-%s', submodulename, branch);
 
-    fprintf('Downloading %s/archive/refs/heads/%s.zip  to  %s\n', url, branch, [filenameDownload, '.zip']);    
+    cleanup(filenameDownload);
+    
+    fprintf('Downloading %s/archive/refs/heads/%s.zip  to  %s\n', url, branch, [filenameDownload, '.zip']);
     urlwrite(sprintf('%s/archive/refs/heads/%s.zip', url, branch), [filenameDownload, '.zip']); %#ok<URLWR>
-    
-    if ispathvalid_startup([filenameDownload, '.zip'])    
-        fprintf('Unzipping %s\n', [filenameDownload, '.zip']);
-        unzip([filenameDownload, '.zip']);
-    end
-    
-    if ispathvalid_startup(filenameDownload)
-        fprintf('Copying %s/*  to  %s\n', filenameDownload, submodulepath);
-        copyfile([filenameDownload, '/*'], submodulepath);
-    end 
+
+    install(filenameDownload, submodulepath);
     
     fprintf('\n');
 end
 
+
+
+
+% ----------------------------------------------------------
+function cleanup(filenameDownload)
+if ispathvalid_startup([filenameDownload, '.zip'])
+    fprintf('Removing %s\n', [filenameDownload, '.zip']);
+    try
+        delete([filenameDownload, '.zip']);
+    catch
+        warning('Failed to remove %s\n', [filenameDownload, '.zip']);
+    end
+end
+if ispathvalid_startup(filenameDownload)
+    fprintf('Removing %s\n', filenameDownload);
+    try
+        rmdir(filenameDownload, 's');
+    catch
+        warning('Failed to remove %s\n', filenameDownload);
+    end
+end
+
+
+
+% ---------------------------------------------------------
+function install(filenameDownload, submodulepath)
+if ispathvalid_startup([filenameDownload, '.zip'])
+    fprintf('Unzipping %s\n', [filenameDownload, '.zip']);
+    unzip([filenameDownload, '.zip']);
+end
+if ispathvalid_startup(filenameDownload)
+    fprintf('Copying %s/*  to  %s\n', filenameDownload, submodulepath);
+    copyfile([filenameDownload, '/*'], submodulepath);
+end

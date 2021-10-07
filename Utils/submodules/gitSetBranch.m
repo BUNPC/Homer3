@@ -21,6 +21,7 @@ ii = 1;
 
 cmds{ii,1} = sprintf('cd %s', repoFull); ii = ii+1;
 cmds{ii,1} = sprintf('git checkout %s', branch); ii = ii+1;
+cmds{ii,1} = sprintf('git pull'); ii = ii+1;
 
 [errs, msgs] = exeShellCmds(cmds, preview, quiet);
 

@@ -1,4 +1,4 @@
-function setpaths(options_str)
+function setpaths(options)
 
 %
 % USAGE:
@@ -12,271 +12,157 @@ function setpaths(options_str)
 %
 %   Sets all the paths needed by a tool
 %
-% INPUTS:
-%
-%   options:   Char string containing one or more options. To select mutiple options, combine
-%              together the 4 mutually exclusive options below in any order, separating
-%              individual options with ',',':' or '|'. The list of mutually exclusive
-%              options are:
-%
-%           {'add','remove'}               (default: add)         Add or remove paths of current
-%                                                                 workspace to search path
-%           {'conflcheck','noconflcheck'}  (default: conflcheck)
-%           {'mvpathconfl','rmpathconfl'}  (default: mvpathconfl) 'conflcheck' option must be selected
-%                                                                  for this this option not to be ignored
-%           {'quiet','verbose'}            (default: quiet)
-%           {'nodiffnames','diffnames'}    (default: nodiffnames) Diffs files that share a name with a file already on the path
-%
-%
-% EXAMPLES:
-%
-%   Example 1: Add paths for current workspace quietly and do not do any
-%              checking for conflicting workspaces.
-%
-%   setpaths;
-%      setpaths(1);
-%
-%   Example 2: Quietly add paths for current workspace to have precedence over any
-%              conflicting workspace. The paths for any conflicting workspace will
-%              be made lower precedence than current workspace.
-%
-%      setpaths('add:conflcheck');
-%
-%
-%   Example 3: Quietly remove paths for current workspace quietly.
-%
-%   setpaths(0);
-%      setpaths('remove');
-%      setpaths('remove:quiet');
-%
-%
-%   Example 4: Add paths for the current workspace verbosely and remove all
-%              paths of conflicting workspaces.
-%
-%      setpaths('rmpathconfl:verbose');
-%      setpaths('add:rmpathconfl:verbose');
-%      setpaths('add:conflcheck:rmpathconfl:verbose');
-%      setpaths('rmpathconfl|verbose|add|conflcheck');
-%
+
+warning('off','MATLAB:rmpath:DirNotFound');
 
 % Parse arguments
-if ~exist('options_str','var')
-    options_str = 'rmpathconfl:init';
-end
-
-% Start world by trying to add standard 'Utils' path if it exists
-% If it exists, assume that's where intialation functions are. 
-paths0 = startupPaths(options_str);
-if isempty(paths0)
-    return
-end
-
-options = parseOptions(options_str);
-if ~options.add
-    options.conflcheck = false;
-end
-
-[paths, wspaths, paths_excl_str] = getpaths(options);
-paths = [paths(:); paths0(:)];
-% if ~isempty(wspaths)
-%     if pathscompare(wspaths{1}, pwd)
-%         fprintf('Current workspace %s already at the top of the search path.\n', wspaths{1});
-%         addwspaths(wspaths, paths_excl_str, options);
-%         return;
-%     end
-% end
-
-% Add or remove paths for this application
-rootpath = pwd;
-rootpath(rootpath=='\')='/';
-paths_str = '';
-
-dnum = 0;
-diffqueue = {};  % Files to be diff'd
-
-for ii = 1:length(paths)
-    
-    paths{ii} = [rootpath, paths{ii}];
-    
-    if options.diffnames
-        % See if any of the imported functions already exist
-        
-        files = dir(fullfile(paths{ii},'*.m'));
-        
-        for f = 1:length(files)
-            % When exists returns 2 but excluding the working dir
-            if ( (exist(files(f).name(1:end-2),'file') == 2) & (~isequal(files(f).folder,pwd())))
-                if options.verbose
-                    fprintf('This file shadows one already on the path: %s\n',[files(f).folder '\' files(f).name(1:end-2)]);
-                    fprintf('Here is the original: %s\n', which(files(f).name(1:end-2)));
-                end
-                if (strcmp( fileread([files(f).folder '\' files(f).name]), fileread(which(files(f).name(1:end-2))) ))
-                    if options.verbose
-                        fprintf('The files are the same.\n');
-                    end
-                else
-                    if options.verbose
-                        fprintf('The files have some differences.\n')
-                    end
-                    dnum = dnum + 1;
-                    diffqueue{end+1} = {[files(f).folder '\' files(f).name], which(files(f).name(1:end-2))};
-                end
-            end
-        end
-    end
-    
-    if options.verbose
-        if options.add
-            fprintf('Adding path %s\n', paths{ii});
-        else
-            fprintf('Removing path %s\n', paths{ii});
-        end
-    end
-    
-    if ~exist(paths{ii}, 'dir')
-        fprintf('Path %s does not exist\n', paths{ii});
-        menu('WARNING: The current folder does NOT look like the application root folder. Please change current folder to the root application folder and rerun setpaths.', 'OK');
-        return;
-    end
-    
-    paths_str = [paths_str, delimiter, paths{ii}];
-    
-end
-
-% If there are different files with same name
-if dnum > 0  % True only if options.diffpaths is
-    fprintf('There are %i files that shadow different files already on the path.\n', dnum);
-    diffchoice = input(sprintf('Would you like to diff them now? y/n '),'s');
-    if (size(diffchoice,2) > 0) & ((diffchoice == 'y') | (diffchoice == 'yes'))
-        for i = 1:size(diffqueue,2)
-            % Use visual diff tool
-            visdiff(diffqueue{i}{1}, diffqueue{i}{2});
-        end
+addremove = 1;
+if ~exist('options','var')
+    options = 'init';
+elseif isnumeric(options)
+    if options == 0
+        addremove = 0;
+    else
+        options = 'init';
     end
 end
 
-% Add current workspace at the top of the stack of conflicting workspaces
-wspaths = [pwd; wspaths];
-paths_excl_str = [paths_str, paths_excl_str];
-
-% Either add all conflicting workspaces to the search path or remove the
-% current one, depending on user selection
-if options.add
-    fprintf('ADDED search paths for workspace %s\n', pwd);
-    addwspaths(wspaths, paths_excl_str, options);
-    setpermissions(paths);
-else
-    deleteNamespace('Homer3');
-    fprintf('REMOVED search paths for workspace %s\n', pwd);
-    rmpath(paths_excl_str{1});
+% Add startup searchpath
+if exist([pwd, '/Utils/submodules'],'dir')
+    %addpath([pwd, '/Utils'],'-end');
+    addpath([pwd, '/Utils/submodules'],'-end');
 end
 
+% Create list of possible known similar apps that may conflic with current
+% app
+appNameExclList = {'Homer3','Homer2_UI','brainScape','ResolveCommonFunctions'};
+appNameInclList = {'AtlasViewerGUI'};
+exclSearchList  = {'.git','Data','Docs'};
 
-% ---------------------------------------------------
-function idx = findExePaths(paths)
-
-idx = [];
-kk = 1;
-for ii=1:length(paths)
-    if ~isempty(strfind(paths{ii}, '/bin'))
-        idx(kk) = ii;
-        kk=kk+1;
-    end
-end
-
-
-
-% ---------------------------------------------------
-function addwspaths(wspaths, paths_excl_str, options)
-
-if isempty(wspaths)
+appThis         = filesepStandard_startup(pwd);
+appThisPaths    = findDotMFolders(appThis, exclSearchList);
+if addremove == 0
+    removeSearchPaths(appThis);
     return;
 end
 
-% Add the primary workspace to the search path
-addpath(paths_excl_str{1}, '-end');
+appExclList = {};
+appInclList = {};
 
-if options.rmpathconfl
-    msg = 'Removed the following similar workspaces from the search path to avoid conflicts:';
-else
-    msg = 'Order of precedence of similar workspaces:';
+% Find all root folders of apps to exclude from search paths
+for ii = 1:length(appNameExclList)
+    foo = which([appNameExclList{ii}, '.m'],'-all');
+    for jj = 1:length(foo)
+        p = filesepStandard_startup(fileparts(foo{jj}));
+        if pathscompare_startup(appThis, p)
+            continue
+        end
+        fprintf('Exclude paths for %s\n', p);
+        appExclList = [appExclList; p];
+    end
 end
 
-% Add all the other similar workspaces that have been found and removed
-if length(wspaths)>1
-    fprintf('\n');
-    fprintf('%s\n', msg);
-    for ii = 2:length(wspaths)
-        fprintf('  %s\n', wspaths{ii});
-        if options.rmpathconfl
-            continue;
+% Find all root folders of apps to include in search paths
+for ii = 1:length(appNameInclList)
+    foo = which([appNameInclList{ii}, '.m'],'-all');
+    for jj = 1:length(foo)
+        if jj > 1
+            p = filesepStandard_startup(fileparts(foo{jj}));
+            appExclList = [appExclList; p];
+            fprintf('Exclude paths for %s\n', p);
+        else
+            p = filesepStandard_startup(fileparts(foo{jj}));
+            appInclList = [appInclList; p];
+            fprintf('Include paths for %s\n', p);
         end
-        addpath(paths_excl_str{ii}, '-end');
     end
+end
+
+% Remove all search paths for all other apps except for current one, to
+% make that we use only search from the current app for download shared
+% libraries (i.e, submodules).
+for ii = 1:length(appExclList)
+    removeSearchPaths(appExclList{ii})
+end
+for ii = 1:length(appInclList)    
+    removeSearchPaths(appInclList{ii})
+end
+
+addSearchPaths(appThisPaths);
+
+% Download submodules
+status = downloadLibraries(options);
+if status<0
+    fprintf('ERROR: Could no download shared libbraries required by this application...\n')
+    return;
+end
+setNamespace('Homer3');
+
+
+% Add back all search paths for all other apps except for current app
+for ii = 1:length(appInclList)
+    foo = findDotMFolders(appInclList{ii}, exclSearchList);
+    addSearchPaths(foo);
 end
 
 if exist([pwd, '/Utils/Shared/setpaths_proprietary.m'],'file')
     setpaths_proprietary(options);
 end
 
+warning('on','MATLAB:rmpath:DirNotFound');
+
+
+
+
+% ----------------------------------------------------
+function status = downloadLibraries(options)
+status = 0;
+nTries = 2;
+h = waitbar(0,'Downloading shared libraries.');
+for iTry = 1:nTries
+    [cmds, errs, msgs] = downloadSharedLibs(options); %#ok<ASGLU>
+    if all(errs==0)
+        break
+    end
+end
+close(h)
+if all(errs==0)
+    return
+end
+status = -1;
 
 
 % ---------------------------------------------------
-function setpermissions(paths)
-
-if isunix()
-    idx = findExePaths(paths);
-    for ii=1:length(idx)
-        fprintf(sprintf('chmod 755 %s/*\n', paths{idx(ii)}));
-        files = dir([paths{idx(ii)}, '/*']);
+function setpermissions(appPath)
+if isunix() || ismac()
+    if ~isempty(strfind(appPath, '/bin'))
+        fprintf(sprintf('chmod 755 %s/*\n', appPath));
+        files = dir([appPath, '/*']);
         if ~isempty(files)
-            system(sprintf('chmod 755 %s/*', paths{idx(ii)}));
+            system(sprintf('chmod 755 %s/*', appPath));
         end
     end
 end
 
 
+% ----------------------------------------------------
+function addSearchPaths(appPaths)
+for kk = 1:length(appPaths)
+    addpath(appPaths{kk}, '-end');
+    setpermissions(appPaths{kk});
+end
+fprintf('ADDED search paths for app %s\n', appPaths{1});
+
+
 
 % ----------------------------------------------------
-function paths = startupPaths(options_str)
-nTries = 2;
-h = waitbar(0,'Please wait...downloading shared libraries.');
-for iTry = 1:nTries    
-    paths = getpathsStartup();
-    for ii = 1:length(paths)
-        % fprintf('Adding startup path %s\n', paths{ii});
-        pathStartupNew = [pwd, '/', paths{ii}];
-        if exist(pathStartupNew, 'dir')
-            addpath(pathStartupNew, '-end');
-        end
-        if strfind(paths{ii}, 'submodules')
-            [cmds, errs, msgs] = downloadSharedLibs(options_str); %#ok<ASGLU>
-        end
+function removeSearchPaths(app)
+p = path;
+p = str2cell_startup(p,';');
+for kk = 1:length(p)
+    if ~isempty(strfind(filesepStandard_startup(p{kk}), app))
+        rmpath(p{kk});
     end
-    try
-        setNamespace('Homer3');
-        break;
-    catch
-        cleanupSharedLibs();
-    end   
 end
-close(h)
-if ~all(errs==0)
-    paths = [];
-end
-
-
-
-% ----------------------------------------------------
-function paths = getpathsStartup()
-global startup
-startup = {};
-paths = {
-    '/Utils';
-    '/Utils/submodules';
-    '/Utils/Shared';
-    '/Utils/Shared/namespace';
-};
-startup = paths;
-
+fprintf('REMOVED search paths for app %s\n', app);
 

@@ -5,7 +5,7 @@ b = 0;
 if ~exist('options','var')
     options = '';
 end
-if optionExists(options,'nameonly')
+if optionExists_startup(options,'nameonly')
     b = pathsCompareNameOnly(path1, path2);
     return;
 end
@@ -23,8 +23,8 @@ end
 currdir = pwd;
 
 % If paths are files, compare just the file names, then the folders 
-fullpath1 = filesepStandard(fullpath(path1));
-fullpath2 = filesepStandard(fullpath(path2));
+fullpath1 = filesepStandard_startup(path1, 'full');
+fullpath2 = filesepStandard_startup(path2, 'full');
 
 
 % Compare folders

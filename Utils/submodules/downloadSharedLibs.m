@@ -12,6 +12,7 @@ s = parseGitSubmodulesFile();
 % Check for missing libs
 kk = checkMissingLibraries(s);
 if isempty(kk) && optionExists_startup(options, 'init')
+    addSearchPaths(s);
     return;
 end
 
@@ -24,6 +25,7 @@ end
 % Check again for missing libs
 kk = checkMissingLibraries(s);
 if isempty(kk) && (optionExists_startup(options, 'init') || all(errs==0))
+    addSearchPaths(s);
     return;
 end
 
@@ -41,6 +43,7 @@ end
 kk = checkMissingLibraries(s);
 if isempty(kk)
     errs = 0;
+    addSearchPaths(s);
     return;
 end
 
@@ -60,9 +63,10 @@ end
 function kk = checkMissingLibraries(s)
 kk = [];
 for ii = 1:size(s,1)
-    if isemptyFolder(s{ii,3})
+    if isIncompleteSubmodule(s{ii,3})
+        removeFolderContents(s{ii,3});
         kk = [kk, ii]; %#ok<AGROW>
-    end
+    end    
 end
 
 
@@ -99,5 +103,35 @@ msg{ii} = sprintf('Select option:');
 msg = [msg{:}];
 
 q = menu(msg, {'Quit setpaths, install git and rerun setpaths','Download submodules manually and provide their locations'});
+
+
+
+
+% ----------------------------------------------------------
+function addSearchPaths(s)
+kk = [];
+exclSearchList  = {'.git'};
+for ii = 1:size(s,1)
+    foo = findDotMFolders(s{ii,3}, exclSearchList);
+    for kk = 1:length(foo)
+        addpath(foo{kk}, '-end');
+        setpermissions(foo{kk});
+    end
+end
+
+
+
+
+% ---------------------------------------------------
+function setpermissions(appPath)
+if isunix() || ismac()
+    if ~isempty(strfind(appPath, '/bin'))
+        fprintf(sprintf('chmod 755 %s/*\n', appPath));
+        files = dir([appPath, '/*']);
+        if ~isempty(files)
+            system(sprintf('chmod 755 %s/*', appPath));
+        end
+    end
+end
 
 

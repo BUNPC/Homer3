@@ -7,13 +7,7 @@ if ~ispathvalid_startup(subdir, 'dir')
     fprintf('Warning: folder %s doesn''t exist under %s\n', subdir, pwd);
     return;
 end
-if strcmp(subdir, '.')
-    return
-end
-if strcmp(subdir, '..')
-    return
-end
-if strcmp(subdir, '.git')
+if subdir(1) == '.'
     return
 end
 
@@ -21,21 +15,12 @@ end
 subdirFullpath = filesepStandard_startup(subdir,'full');
 f = dir([subdirFullpath, '*']);
 for ii = 1:length(f)
-    if strcmp(f(ii).name, '.')
-        continue
-    end
-    if strcmp(f(ii).name, '..')
-        continue
-    end
-    if strcmp(f(ii).name, '.git')
-        continue
-    end
-    if strcmp(f(ii).name, '.numberfiles')
+    if f(ii).name(1) == '.'
         continue
     end
     
     if ~f(ii).isdir
-        files{end+1,1} = filesepStandard_startup(sprintf('%s%s%s', subdirFullpath, f(ii).name), 'nameonly');        
+        files{end+1,1} = filesepStandard_startup(sprintf('%s%s%s', subdirFullpath, f(ii).name), 'nameonly');         %#ok<*AGROW>
     else
         files = [files; findAllFiles([subdirFullpath, f(ii).name])];
     end

@@ -13,7 +13,7 @@ for ii = 1:size(submodules,1)
     [~, submodulename] = fileparts(url);
     filenameDownload = sprintf('./%s-%s', submodulename, branch);
 
-    cleanup(filenameDownload);
+    cleanup(filenameDownload, submodulepath);
     
     fprintf('Downloading %s/archive/refs/heads/%s.zip  to  %s\n', url, branch, [filenameDownload, '.zip']);
     urlwrite(sprintf('%s/archive/refs/heads/%s.zip', url, branch), [filenameDownload, '.zip']); %#ok<URLWR>
@@ -27,7 +27,8 @@ end
 
 
 % ----------------------------------------------------------
-function cleanup(filenameDownload)
+function cleanup(filenameDownload, submodulepath)
+removeFolderContents(submodulepath);
 if ispathvalid_startup([filenameDownload, '.zip'])
     fprintf('Removing %s\n', [filenameDownload, '.zip']);
     try
@@ -55,5 +56,5 @@ if ispathvalid_startup([filenameDownload, '.zip'])
 end
 if ispathvalid_startup(filenameDownload)
     fprintf('Copying %s/*  to  %s\n', filenameDownload, submodulepath);
-    copyfile([filenameDownload, '/*'], submodulepath);
+    copyFolderContents(filenameDownload, submodulepath);
 end

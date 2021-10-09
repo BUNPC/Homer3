@@ -76,7 +76,7 @@ msg{ii} = sprintf('WARNING: Git failed to install the following libraries requir
 for jj = 1:size(s,1)
     msg{ii} = sprintf('    %s\n', s{jj,1}); ii = ii+1;
 end
-msg{ii} = sprintf('\n'); ii = ii+1;
+msg{ii} = sprintf('\n'); ii = ii+1; %#ok<SPRINTFN>
 msg{ii} = sprintf('Git might not be installed on your computer. '); ii = ii+1;
 msg{ii} = sprintf('These libraries can still be installed without git. Please provide a branch name (default: ''development'') '); ii = ii+1;
 msg{ii} = sprintf('of the submodles branches to download that matches the branch of the parent repo (this application).');

@@ -122,7 +122,7 @@ end
 pause(.01)
 
 pname = filesepStandard_startup([pathname, '/', filename]);
-if isempty(strfind(pname, submodulename))
+if isempty(strfind(pname, submodulename)) %#ok<*STREMP>
     msgbox(sprintf('Selected file  "%s"  does not match the submodule  "%s". Please download and provide the path name for submodule  "%s"...', ...
         filename, submodulename, submodulename))
     return;
@@ -172,7 +172,7 @@ for ii = 1:length(hEdits)
             continue
         end
         fprintf('Copying %s to %s\n', [filenameUnziped, '/*'], submodulepath);
-        copyfile([filenameUnziped, '/*'], submodulepath);
+        copyFolderContents(filenameUnziped, submodulepath);
         rmdir(filenameUnziped,'s');
         paths{ii,1} = filenameUnziped;
         break;

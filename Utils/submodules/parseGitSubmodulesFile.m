@@ -26,10 +26,10 @@ for ii = 1:length(strs)
                 break;
             end
             if strcmp(strs{ii+jj}, 'path')
-                modules{kk,2} = filesepStandard_startup([filesepStandard_startup(pwd), strs{ii+jj+2}]);
+                modules{kk,2} = filesepStandard_startup([filesepStandard_startup(pwd), strs{ii+jj+2}], 'nameonly:dir');
             end
             if strcmp(strs{ii+jj}, 'path')
-                modules{kk,3} = filesepStandard_startup(strs{ii+jj+2});
+                modules{kk,3} = filesepStandard_startup(strs{ii+jj+2}, 'nameonly:dir');
             end
             if strcmp(strs{ii+jj}, 'url')
                 modules{kk,1} = strs{ii+jj+2};

@@ -37,16 +37,10 @@ for ii = 1:length(dirs)
     if ~dirs(ii).isdir
         continue;
     end
-    if strcmp(dirs(ii).name, '.')
+    if dirs(ii).name(1) == '.'
         continue;
     end
-    if strcmp(dirs(ii).name, '..')
-        continue;
-    end
-    if strcmp(dirs(ii).name, '.numberfiles')
-        continue;
-    end
-    dotmfolders = [dotmfolders; findDotMFolders([subdirFullpath, dirs(ii).name], exclList)];
+    dotmfolders = [dotmfolders; findDotMFolders([subdirFullpath, dirs(ii).name], exclList)]; %#ok<AGROW>
 end
 
 
@@ -62,7 +56,7 @@ end
 if isempty(dir([folder,'/*.m']))
     % Exceptions to rule that 'dotm' folder must have at least one '.m' file: 
     % it is a an executable folder (i.e. '/bin')
-    if ~isempty(strfind(folder, '/bin/'))
+    if ~isempty(strfind(folder, '/bin/')) %#ok<*STREMP>
         b = true;
         return
     end

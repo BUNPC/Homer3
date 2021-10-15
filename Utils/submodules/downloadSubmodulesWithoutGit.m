@@ -58,3 +58,17 @@ if ispathvalid_startup(filenameDownload)
     fprintf('Copying %s/*  to  %s\n', filenameDownload, submodulepath);
     copyFolderContents(filenameDownload, submodulepath);
 end
+if ispathvalid_startup([filenameDownload, '.zip'])
+    fprintf('Removing %s\n', [filenameDownload, '.zip']);
+    try
+        delete([filenameDownload, '.zip']);        
+    catch
+    end
+end
+if ispathvalid_startup(filenameDownload)
+    fprintf('Removing %s\n', filenameDownload);
+    try
+        rmdir(filenameDownload, 's');
+    catch
+    end
+end

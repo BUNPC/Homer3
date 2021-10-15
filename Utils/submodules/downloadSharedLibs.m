@@ -1,4 +1,4 @@
-function [cmds, errs, msgs] = downloadSharedLibs(options)
+function [cmds, errs, msgs] = downloadSharedLibs(options, appname)
 cmds = {};
 errs = 0;
 msgs = {};
@@ -15,10 +15,10 @@ if isempty(kk) && optionExists_startup(options, 'init')
     return;
 end
 
-if optionExists_startup(options, 'init')
-    [cmds, errs, msgs] = gitSubmodulesInit();
-elseif optionExists_startup(options, 'update')
-    [cmds, errs, msgs] = gitSubmodulesUpdate();
+if optionExists_startup(options, 'update')
+    [cmds, errs, msgs] = gitSubmodulesUpdate(pwd, options);
+else
+    [cmds, errs, msgs] = gitSubmodulesInit(pwd, options);
 end
 
 % Check again for missing libs
@@ -28,7 +28,7 @@ if isempty(kk) && (optionExists_startup(options, 'init') || all(errs==0))
 end
 
 % Try to install missing libs without git
-branch = warningGitFailedToInstall(s(kk,:));
+branch = warningGitFailedToInstall(s(kk,:), appname);
 if ~isempty(branch)
     if optionExists_startup(options, 'init')
         downloadSubmodulesWithoutGit(s(kk,:), branch);
@@ -70,7 +70,7 @@ end
 
 
 % ----------------------------------------------------------
-function branch = warningGitFailedToInstall(s)
+function branch = warningGitFailedToInstall(s, appname)
 ii = 1;
 msg{ii} = sprintf('WARNING: Git failed to install the following libraries required by this application:\n\n'); ii = ii+1;
 for jj = 1:size(s,1)
@@ -78,11 +78,13 @@ for jj = 1:size(s,1)
 end
 msg{ii} = sprintf('\n'); ii = ii+1; %#ok<SPRINTFN>
 msg{ii} = sprintf('Git might not be installed on your computer. '); ii = ii+1;
-msg{ii} = sprintf('These libraries can still be installed without git. Please provide a branch name (default: ''development'') '); ii = ii+1;
-msg{ii} = sprintf('of the submodles branches to download that matches the branch of the parent repo (this application).');
+msg{ii} = sprintf('These libraries can still be installed without git. The assumed submodule branch that matches '); ii = ii+1;
+msg{ii} = sprintf('the branch of the parent repo, ''%s'', is ''%s'' (see edit box below). Please edit it ', appname, guessBranch(appname)); ii = ii+1;
+msg{ii} = sprintf('if this assumption is not correct.\n\n');  ii = ii+1;
+msg{ii} = sprintf('Submodule source branch name:');  ii = ii+1;
 msg = [msg{:}];
 
-branch = inputdlg(msg, 'MISSING LIBRARIES', 1);
+branch = inputdlg(msg, 'MISSING LIBRARIES', 1,{guessBranch(appname)});
 if ~isempty(branch)
     branch = branch{1};
 end
@@ -133,4 +135,19 @@ if isunix() || ismac()
     end
 end
 
+
+
+
+% ----------------------------------------------------
+function branchGuess = guessBranch(appname)
+branchGuess = 'development';
+[~, rootdir] = fileparts(fileparts(which([appname, '.m'])));
+k = strfind(rootdir, appname);
+if (k+length(appname)) <= length(rootdir)
+    j = 0;
+    if rootdir(k+length(appname))=='-'
+        j = 1;
+    end
+    branchGuess = rootdir(k+length(appname)+j:end);
+end
 

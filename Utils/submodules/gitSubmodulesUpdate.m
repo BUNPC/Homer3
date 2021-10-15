@@ -1,10 +1,14 @@
-function [cmds, errs, msgs] = gitSubmodulesUpdate(repo, preview)
+function [cmds, errs, msgs] = gitSubmodulesUpdate(repo, options, preview)
 cmds = {};
+
 
 currdir = pwd;
 
 if ~exist('repo','var') || isempty(repo)
     repo = [pwd, '/'];
+end
+if ~exist('options','var')
+    options = 'init';
 end
 if ~exist('preview','var')
     preview = false;

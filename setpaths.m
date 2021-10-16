@@ -10,51 +10,51 @@ function setpaths(options)
 %
 % DESCRIPTION:
 %
-%   Sets all the paths needed by the app in the current folder. It also uses git commands to downloasd 
-%   all its associated submodules if they exist and changes their branch and origin to match the parent app. 
+%   Sets all the paths needed by the app in the current folder. It also uses git commands to downloasd
+%   all its associated submodules if they exist and changes their branch and origin to match the parent app.
 %
-%   If GIT is NOT available, setpaths will try to download and install the non-git versions of the submodules 
+%   If GIT is NOT available, setpaths will try to download and install the non-git versions of the submodules
 %   after asking the user to input the source branch that matches the parent app.
 %
 %   options:
 %        1. no arguments
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize 
-%           all submodules to same branch and origin as parent app equivalent to numeric argument 1 or string 
-%           argument 'init'. 
+%           Add search paths for parent app under current folder and all its associated submodules. Initialize
+%           all submodules to same branch and origin as parent app equivalent to numeric argument 1 or string
+%           argument 'init'.
 %
 %        2. 1
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize all 
+%           Add search paths for parent app under current folder and all its associated submodules. Initialize all
 %           submodules to same branch and origin as parent app equivalent to string argument 'init' or no arguments
 %
 %        3. 0
-%           Remove search paths for parent app under current folder and all its associated submodules 
+%           Remove search paths for parent app under current folder and all its associated submodules
 %
 %        4. 'init'
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize all 
+%           Add search paths for parent app under current folder and all its associated submodules. Initialize all
 %           submodules to same branch and origin as parent app equivalent to numeric argument 1 or no arguments
 %
 %        5. 'update'
-%           Update all submodules to their latest revision for their current branches. If used on a newly 
+%           Update all submodules to their latest revision for their current branches. If used on a newly
 %           downloaded parent app it will do the equivalent of setpaths with no args, setpaths('init')
-%           or setpaths(1). 
+%           or setpaths(1).
 %
 %        6. 'branch: <branchname>'
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize all 
-%           submodules to same branch and origin as parent app. Checkout branch <branchname> for parent app and 
+%           Add search paths for parent app under current folder and all its associated submodules. Initialize all
+%           submodules to same branch and origin as parent app. Checkout branch <branchname> for parent app and
 %           submodules. If branch <branchname> doesn't exist create based off current branch and then check it out.
 %
 %        7. 'branch: <branchname src>, <branchname dst>'
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize all 
+%           Add search paths for parent app under current folder and all its associated submodules. Initialize all
 %           submodules and parent repo to <branchname src> and change submodule origin to match parent app. The branch
 %           <branchname src> must exist (otherwise setpaths will fail to checkout the appropriate branch). Then create
-%           new branch <branchname dst> if it does not exist already based off <branchname src>. If branch 
-%           <branchname dst> DOES exist then simply check it out. 
+%           new branch <branchname dst> if it does not exist already based off <branchname src>. If branch
+%           <branchname dst> DOES exist then simply check it out.
 %
 %
 % EXAMPLES:
 %
-%   % Example 1:   Set search paths for parent app in the current folder and any associated submodules. 
-%   %   Download associated submodule and change their branch and origin to match that of parent app. 
+%   % Example 1:   Set search paths for parent app in the current folder and any associated submodules.
+%   %   Download associated submodule and change their branch and origin to match that of parent app.
 %
 %   setpaths
 %
@@ -64,23 +64,23 @@ function setpaths(options)
 %   setpaths(0)
 %
 %
-%   % Example 3:   Update all submodules to their latest revision for their current branches. If used on a 
-%   %   newly downloaded repo it will do the equivalent of setpaths with no args or setpaths('init'). 
+%   % Example 3:   Update all submodules to their latest revision for their current branches. If used on a
+%   %   newly downloaded repo it will do the equivalent of setpaths with no args or setpaths('init').
 %
 %   setpaths('update')
 %
 %
-%   % Example 4:   Set search paths for parent app in the current folder and any associated submodules. 
-%   %   Change submodule current branch and origin to match parent app. Then create/checkout branch 
-%   %   'mynewbranch1'. If 'mynewbranch1' is new it will be based off 'development' branch in the parent 
-%   %   app AND all submodules. 
+%   % Example 4:   Set search paths for parent app in the current folder and any associated submodules.
+%   %   Change submodule current branch and origin to match parent app. Then create/checkout branch
+%   %   'mynewbranch1'. If 'mynewbranch1' is new it will be based off 'development' branch in the parent
+%   %   app AND all submodules.
 %
 %   setpaths('branch: development, mynewbranch1')
 %
 %
-%   % Example 5:   Set search paths for parent app in the current folder and any associated submodules. 
-%   %   Download associated submodule and change their branch and origin to match that of parent app. 
-%   %   Then create/checkout branch 'mynewbranch1'. If 'mynewbranch1' is new it will be created in the 
+%   % Example 5:   Set search paths for parent app in the current folder and any associated submodules.
+%   %   Download associated submodule and change their branch and origin to match that of parent app.
+%   %   Then create/checkout branch 'mynewbranch1'. If 'mynewbranch1' is new it will be created in the
 %   %   parent app AND all submodules based off the current branch in each of those repos.
 %
 %   setpaths('branch: mynewbranch1')
@@ -88,107 +88,112 @@ function setpaths(options)
 currdir = pwd;
 
 try
-warning('off','MATLAB:rmpath:DirNotFound');
-
-appname = 'Homer3';
-
-% Parse arguments
-addremove = 1;
-if ~exist('options','var')
-    options = 'init';
-elseif isnumeric(options)
-    if options == 0
-        addremove = 0;
-    else
+    
+    warning('off','MATLAB:rmpath:DirNotFound');
+    
+    appname = 'Homer3';
+    
+    % Parse arguments
+    addremove = 1;
+    if ~exist('options','var')
         options = 'init';
-    end
-end
-
-% Add startup searchpath
-if exist([pwd, '/Utils/submodules'],'dir')
-    %addpath([pwd, '/Utils'],'-end');
-    addpath([pwd, '/Utils/submodules'],'-end');
-end
-
-% Create list of possible known similar apps that may conflic with current
-% app
-appNameExclList = {'Homer3','Homer2_UI','brainScape','ResolveCommonFunctions'};
-appNameInclList = {'AtlasViewerGUI'};
-exclSearchList  = {'.git','Data','Docs'};
-
-appThis         = filesepStandard_startup(pwd);
-appThisPaths    = findDotMFolders(appThis, exclSearchList);
-if addremove == 0
-    removeSearchPaths(appThis);
-    return;
-end
-
-appExclList = {};
-appInclList = {};
-
-% Find all root folders of apps to exclude from search paths
-for ii = 1:length(appNameExclList)
-    foo = which([appNameExclList{ii}, '.m'],'-all');
-    for jj = 1:length(foo)
-        p = filesepStandard_startup(fileparts(foo{jj}));
-        if pathscompare_startup(appThis, p)
-            continue
-        end
-        fprintf('Exclude paths for %s\n', p);
-        appExclList = [appExclList; p];
-    end
-end
-
-% Find all root folders of apps to include in search paths
-for ii = 1:length(appNameInclList)
-    foo = which([appNameInclList{ii}, '.m'],'-all');
-    for jj = 1:length(foo)
-        if jj > 1
-            p = filesepStandard_startup(fileparts(foo{jj}));
-            appExclList = [appExclList; p];
-            fprintf('Exclude paths for %s\n', p);
+    elseif isnumeric(options)
+        if options == 0
+            addremove = 0;
         else
-            p = filesepStandard_startup(fileparts(foo{jj}));
-            appInclList = [appInclList; p];
-            fprintf('Include paths for %s\n', p);
+            options = 'init';
         end
     end
-end
-
-% Remove all search paths for all other apps except for current one, to
-% make that we use only search from the current app for download shared
-% libraries (i.e, submodules).
-for ii = 1:length(appExclList)
-    removeSearchPaths(appExclList{ii})
-end
-for ii = 1:length(appInclList)    
-    removeSearchPaths(appInclList{ii})
-end
-
-addSearchPaths(appThisPaths);
-
-% Download submodules
-status = downloadLibraries(options, appname);
-if status<0
+    
+    % Add startup searchpath
+    if exist([pwd, '/Utils/submodules'],'dir')
+        %addpath([pwd, '/Utils'],'-end');
+        addpath([pwd, '/Utils/submodules'],'-end');
+    end
+    
+    % Create list of possible known similar apps that may conflic with current
+    % app
+    appNameExclList = {'Homer3','Homer2_UI','brainScape','ResolveCommonFunctions'};
+    appNameInclList = {'AtlasViewerGUI'};
+    exclSearchList  = {'.git','Data','Docs'};
+    
+    appThis         = filesepStandard_startup(pwd);
+    appThisPaths    = findDotMFolders(appThis, exclSearchList);
+    if addremove == 0
+        removeSearchPaths(appThis);
+        return;
+    end
+    
+    appExclList = {};
+    appInclList = {};
+    
+    % Find all root folders of apps to exclude from search paths
+    for ii = 1:length(appNameExclList)
+        foo = which([appNameExclList{ii}, '.m'],'-all');
+        for jj = 1:length(foo)
+            p = filesepStandard_startup(fileparts(foo{jj}));
+            if pathscompare_startup(appThis, p)
+                continue
+            end
+            fprintf('Exclude paths for %s\n', p);
+            appExclList = [appExclList; p];
+        end
+    end
+    
+    % Find all root folders of apps to include in search paths
+    for ii = 1:length(appNameInclList)
+        foo = which([appNameInclList{ii}, '.m'],'-all');
+        for jj = 1:length(foo)
+            if jj > 1
+                p = filesepStandard_startup(fileparts(foo{jj}));
+                appExclList = [appExclList; p];
+                fprintf('Exclude paths for %s\n', p);
+            else
+                p = filesepStandard_startup(fileparts(foo{jj}));
+                appInclList = [appInclList; p];
+                fprintf('Include paths for %s\n', p);
+            end
+        end
+    end
+    
+    % Remove all search paths for all other apps except for current one, to
+    % make that we use only search from the current app for download shared
+    % libraries (i.e, submodules).
+    for ii = 1:length(appExclList)
+        removeSearchPaths(appExclList{ii})
+    end
+    for ii = 1:length(appInclList)
+        removeSearchPaths(appInclList{ii})
+    end
+    
+    addSearchPaths(appThisPaths);
+    
+    % Download submodules
+    status = downloadLibraries(options, appname);
+    if status<0
         cd(currdir);
-    fprintf('ERROR: Could not download shared libraries required by this application...\n')
-    return;
-end
-setNamespace(appname);
-
-
-% Add back all search paths for all other apps except for current app
-for ii = 1:length(appInclList)
-    foo = findDotMFolders(appInclList{ii}, exclSearchList);
-    addSearchPaths(foo);
-end
-
-if exist([pwd, '/Utils/Shared/setpaths_proprietary.m'],'file')
-    setpaths_proprietary(options);
-end
-
-warning('on','MATLAB:rmpath:DirNotFound');
-
+        fprintf('ERROR: Could not download shared libraries required by this application...\n')
+        return;
+    end
+    setNamespace(appname);
+    
+    
+    % Add back all search paths for all other apps except for current app
+    for ii = 1:length(appInclList)
+        % This app's path has already been added
+        if pathscompare_startup(appInclList{ii}, appThis)
+            continue;
+        end
+        foo = findDotMFolders(appInclList{ii}, exclSearchList);
+        addSearchPaths(foo);
+    end
+    
+    if exist([pwd, '/Utils/Shared/setpaths_proprietary.m'],'file')
+        setpaths_proprietary(options);
+    end
+    
+    warning('on','MATLAB:rmpath:DirNotFound');
+    
 catch ME
     
     cd(currdir);
@@ -211,7 +216,7 @@ for iTry = 1:nTries
     [cmds, errs, msgs] = downloadSharedLibs(options, appname); %#ok<ASGLU>
     if all(errs==0 | errs == -2)
         break
-    end    
+    end
 end
 close(h)
 if all(errs==0)

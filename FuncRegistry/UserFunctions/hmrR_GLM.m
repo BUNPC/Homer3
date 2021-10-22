@@ -170,6 +170,7 @@ for iBlk=1:length(data_y)
 %         dt = t(2) - t(1);
 %     end
    
+    dt = t(2) - t(1);
     nPre = round(trange(1)/dt);
     nPost = round(trange(2)/dt);
     nTpts = size(y,1);
@@ -243,6 +244,7 @@ for iBlk=1:length(data_y)
     nCond = length(lstCond); % size(stimStates,2);
     nTrials{iBlk} = zeros(nCond,1);
     onset = zeros(nT, nCond);
+    avg_pulses = {};
     for iCond = 1:nCond
         lstT = find(stimStates(:, lstCond(iCond)) == 1);  % Indices of stims enabled (== 1)
         lstp = find((lstT+nPre) >= 1 & (lstT+nPost) <= nTpts);  % Indices of stims not clipped by signal
@@ -253,6 +255,7 @@ for iBlk=1:length(data_y)
         if ~isempty(stim(lstCond(iCond)).data)
             durations = stim(lstCond(iCond)).data(:, 2);
             amplitudes = stim(lstCond(iCond)).data(:, 3);
+            avg_pulses{iCond} = ones(round(mean(durations) / dt), 1); %#ok<AGROW>
             for i = 1:length(starts)
                 if idxBasis == 1  % Gaussian has no duration T (yet)
                    pulse_duration = 1; 
@@ -458,7 +461,7 @@ for iBlk=1:length(data_y)
     
     % Exit if not enough data to analyze the 3 here is arbitrary.
     % Certainly needs to be larger than 1
-    if length(lstInc)<3*size(A,2) | nCond==0
+    if length(lstInc)<3*size(A,2) || nCond==0
         warning('Not enough data to find a solution')
         yavg    = zeros(ntHRF,nCh,3,nCond);
         yavgstd = zeros(ntHRF,nCh,3,nCond);
@@ -637,10 +640,9 @@ for iBlk=1:length(data_y)
                     else
                         yavg(:,lstML,conc,iCond)=tbasis(:,:,conc)*tb(:,lstML,conc,iCond);
                     end
-                    
-                    % if idxBasis > 1
-                    %   pulse = ones(mean(stimDurations))
-                    %   yavg = conv(yavg, pulse)
+                    if idxBasis > 1
+                        yavg = conv(yavg, avg_pulses{iCond});
+                    end
                 end
                 
                 % Reconstruct y and yresid (y is obtained just from the HRF) and R

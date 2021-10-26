@@ -115,11 +115,12 @@ try
     % app
     appNameExclList = {'Homer3','Homer2_UI','brainScape','ResolveCommonFunctions'};
     appNameInclList = {'AtlasViewerGUI'};
-    exclSearchList  = {'.git','Data','Docs'};
+    exclSearchList  = {'.git','Data','Docs','*_install','*.app'};
     
     appThis         = filesepStandard_startup(pwd);
     appThisPaths    = findDotMFolders(appThis, exclSearchList);
     if addremove == 0
+        deleteNamespace(appname);
         removeSearchPaths(appThis);
         return;
     end
@@ -136,7 +137,7 @@ try
                 continue
             end
             fprintf('Exclude paths for %s\n', p);
-            appExclList = [appExclList; p];
+            appExclList = [appExclList; p]; %#ok<AGROW>
         end
     end
     
@@ -146,11 +147,11 @@ try
         for jj = 1:length(foo)
             if jj > 1
                 p = filesepStandard_startup(fileparts(foo{jj}));
-                appExclList = [appExclList; p];
+                appExclList = [appExclList; p]; %#ok<AGROW>
                 fprintf('Exclude paths for %s\n', p);
             else
                 p = filesepStandard_startup(fileparts(foo{jj}));
-                appInclList = [appInclList; p];
+                appInclList = [appInclList; p]; %#ok<AGROW>
                 fprintf('Include paths for %s\n', p);
             end
         end
@@ -228,7 +229,7 @@ status = -1;
 % ---------------------------------------------------
 function setpermissions(appPath)
 if isunix() || ismac()
-    if ~isempty(strfind(appPath, '/bin'))
+    if ~isempty(strfind(appPath, '/bin')) %#ok<*STREMP>
         fprintf(sprintf('chmod 755 %s/*\n', appPath));
         files = dir([appPath, '/*']);
         if ~isempty(files)

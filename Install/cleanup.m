@@ -3,14 +3,14 @@ global platform
 
 installfilename = sprintf('%s_install', lower(getAppname()));
 
-if ~exist('dirnameInstall','var') | isempty(dirnameInstall)
+if ~exist('dirnameInstall','var') || isempty(dirnameInstall)
     if exist('./Install','dir')
         dirnameInstall = filesepStandard([pwd, '/Install']);
     else
         dirnameInstall = filesepStandard(pwd);
     end
 end
-if ~exist('dirnameApp','var') | isempty(dirnameApp)
+if ~exist('dirnameApp','var') || isempty(dirnameApp)
     dirnameApp = getAppDir();
 end
 if ~exist('options','var')
@@ -21,7 +21,7 @@ end
 if exist([dirnameInstall, installfilename],'dir')
     rmdir_safe([dirnameInstall, installfilename]);
 end
-for ii=1:length(platform.exename(1))
+for ii = 1:length(platform.exename)
     if exist([dirnameInstall, platform.exename{ii}],'file')==2
         delete([dirnameInstall, platform.exename{ii}]);
     elseif exist([dirnameInstall, platform.exename{ii}],'dir')==7
@@ -49,8 +49,8 @@ if optionExists(options,'start')
     if exist([dirnameInstall, 'Buildme.log'],'file')
         delete([dirnameInstall, 'Buildme.log']);
     end
-    if exist([dirnameApp, 'Buildme.log'],'file')
-        delete([dirnameApp, 'Buildme.log']);
+    if exist([dirnameApp, 'Buildme_Setup.log'],'file')
+        delete([dirnameApp, 'Buildme_Setup.log']);
     end
 end
 if exist([dirnameInstall, 'mccExcludedFiles.log'],'file')

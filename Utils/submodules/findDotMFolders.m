@@ -73,9 +73,25 @@ b = true;
 if pname(end)=='/'
     pname(end) = '';
 end
+if ~ispathvalid_startup(pname,'dir')
+    return;
+end
 [~,f,e] = fileparts(pname);
 for ii = 1:length(exclList)
-    if strcmp(exclList{ii}, [f,e])
+    [c,d] = str2cell_startup(exclList{ii},'*');
+    if isempty(d) && strcmp(c{1}, [f,e])
+        return;
+    end
+
+    % Get list of all folders matching exclList{ii} pattern, whether it be
+    % a single folder name or a wildcard pattern
+    for jj = 1:length(c)
+        k = strfind([f,e], c{jj});
+        if isempty(k)
+            break;
+        end
+    end
+    if ~isempty(k)
         return;
     end
 end

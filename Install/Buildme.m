@@ -11,13 +11,22 @@ exclLst = {
     'Docs';
     'UnitTests'; ...
     'Install';
+    'submodules';
     'Data';
     'setpaths.m';
     'getpaths.m';
     };
 
 Buildexe(appname, exclLst)
-rootdir = filesepStandard(fileparts(which(platform.exename{1})));
+for ii = 1:length(platform.exename)
+    rootdir = filesepStandard(fileparts(which(platform.exename{ii})));
+    if ~isempty(rootdir)
+        break;
+    end    
+end
+if isempty(rootdir)
+    return;
+end
 for ii = 1:length(platform.exename)
     if exist([rootdir,  platform.exename{ii}],'file')
         movefile([rootdir,  platform.exename{ii}], dirnameInstall);

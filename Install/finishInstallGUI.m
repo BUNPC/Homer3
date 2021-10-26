@@ -32,7 +32,7 @@ global stats
 handles = stats.handles;
 
 msgFail{1}   = sprintf('%s failed to install properly. Error code %d', stats.name, stats.err);
-msgFail{2}    = 'Contact jdubb@bu.edu for help with installation.';
+msgFail{2}   = 'Contact jdubb@bu.edu for help with installation.';
 
 hGui         = handles.this;
 hMsgFinished = handles.msgFinished;
@@ -79,6 +79,9 @@ fclose(fd);
 % ---------------------------------------------------------------------------
 function finishInstallGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global stats
+global logger
+
+logger = InitLogger(logger);
 
 handles.output = hObject;
 guidata(hObject, handles);
@@ -93,7 +96,7 @@ stats.pushbuttonOKPress = false;
 stats.name = varargin{1};
 
 
-fprintf('FinishInstallGUI_OpeningFcn: dirnameApp = %s\n', stats.dirnameApp);
+logger.Write('FinishInstallGUI_OpeningFcn: dirnameApp = %s\n', stats.dirnameApp);
 
 platform = setplatformparams();
 
@@ -147,10 +150,11 @@ varargout{1} = stats.err;
 
 
 % ---------------------------------------------------------------------------
-function pushbuttonOK_Callback(hObject, eventdata, handles)
+function pushbuttonOK_Callback(~, ~, handles)
 global stats
+global logger
 
-fprintf('Completing Installation ...\n');
+logger.Write('Completing Installation ...\n');
 stats.pushbuttonOKPress = true;
 
 delete(handles.figure1);

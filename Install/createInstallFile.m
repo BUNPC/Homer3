@@ -1,5 +1,11 @@
 function createInstallFile(options)
 global installfilename
+global platform
+
+platform = [];
+
+% Start with a clean slate
+cleanup('','','start');
 
 installfilename = sprintf('%s_install', lower(getAppname()));
 [~, exename] = getAppname();
@@ -11,7 +17,7 @@ if ~exist('options','var') || isempty(options)
 end
 
 % Find installation path and add it to matlab search paths
-dirnameApp = getAppDir;
+dirnameApp = getAppDir();
 if isempty(dirnameApp)
     MessageBox('Cannot create installation package. Could not find root application folder.');
     deleteNamespace(exename)
@@ -25,9 +31,6 @@ if isempty(dirnameInstall)
 end
 addpath(dirnameInstall, '-end')
 cd(dirnameInstall);
-
-% Start with a clean slate
-cleanup(dirnameInstall, dirnameApp, 'start');
 
 % Set the executable names based on the platform type
 platform = setplatformparams();
@@ -45,19 +48,23 @@ mkdir([dirnameInstall, installfilename, '/SubjDataSample']);
 
 % Generate executables
 if ~strcmp(options, 'nobuild')
-	Buildme_Setup();
-	Buildme();
-    if islinux()
-        perl('./makesetup.pl','./run_setup.sh','./setup.sh');
-    elseif ismac()
-        perl('./makesetup.pl','./run_setup.sh','./setup.command');
+    Buildme_Setup();
+    Buildme();
+    if ~ispc()
+        c = str2cell(version(),'.');
+        mcrver = sprintf('v%s%s', c{1}, c{2});
+        if islinux()
+            perl('./makesetup.pl','./run_setup.sh','./setup.sh', mcrver);
+        elseif ismac()
+            perl('./makesetup.pl','./run_setup.sh','./setup.command', mcrver);
+        end
     end
 end
 
 dirnameDb2DotMat = findWaveletDb2([dirnameInstall, installfilename]);
 
 % Copy files to installation package folder
-for ii=1:length(platform.exename)
+for ii = 1:length(platform.exename)
     if exist([dirnameInstall, platform.exename{ii}],'file')
         copyfile([dirnameInstall, platform.exename{ii}], [dirnameInstall, installfilename, '/', platform.exename{ii}]);
     end
@@ -65,7 +72,7 @@ end
 if exist([dirnameInstall, platform.setup_script],'file')==2
     copyfile([dirnameInstall, platform.setup_script], [dirnameInstall, installfilename]);
 end
-for ii=1:length(platform.setup_exe)
+for ii = 1:length(platform.setup_exe)
     if exist([dirnameInstall, platform.setup_exe{ii}],'file')
         if ispc()
             copyfile([dirnameInstall, platform.setup_exe{1}], [dirnameInstall, installfilename, '/installtemp']);

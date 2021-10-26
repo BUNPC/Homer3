@@ -1,4 +1,4 @@
-function Buildexe(appName, exclList, flags)
+function Buildexe(appName, exclList, inclList, flags)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BuildExe allows building of the current directories project in 
@@ -14,14 +14,18 @@ rootdir = filesepStandard(pwd);
 if ~exist('appName','var')
     [~, appName] = fileparts(rootdir);
 end
-rootdir = filesepStandard(fileparts(which(appName)));
-
 if ~exist('exclList','var')
     exclList = {};
+end
+if ~exist('inclList','var')
+    inclList = {};
 end
 if ~exist('flags','var')
     flags = {};
 end
+
+rootdir = filesepStandard(fileparts(which(appName)));
+
 
 % Matlab compiler generates a readme file that overwrites the app readme
 % that already xists. Before we start build , move readme to temp file and 
@@ -62,6 +66,8 @@ appDotMFilesStr = sprintf('-v %s', appDotMFileMain');
 
 % Get all .m files which will go into making the app executable
 appDotMFiles = findDotMFiles(rootdir, exclList);
+appDotMFiles = [appDotMFiles; inclList];
+
 
 % Create compile switches string
 compileSwitches = '';
@@ -87,7 +93,7 @@ fid = fopen('./Buildme.log','w');
 fprintf(fid, '==================================:\n');
 fprintf(fid, 'Building %s from these files:\n', appName);
 fprintf(fid, '==================================:\n');
-for jj=2:length(appDotMFiles)
+for jj = 2:length(appDotMFiles)
     appDotMFilesStr = sprintf('%s -a ''%s''', appDotMFilesStr, appDotMFiles{jj});
     fprintf(fid, '%s\n', appDotMFiles{jj});
 end

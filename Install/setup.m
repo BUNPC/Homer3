@@ -16,7 +16,7 @@ try
     dirnameSrc = currdir;
     dirnameDst = getAppDir('isdeployed');
 
-    cleanup()
+    cleanup();
     
     main();
     
@@ -55,7 +55,7 @@ nSteps = 100;
 iStep = 1;
 
 fprintf('dirnameSrc = %s\n', dirnameSrc)
-fprintf('dirnameDst = %s\n', dirnameDst)
+fprintf('dirnameDst = %s\n\n', dirnameDst)
 
 logger = Logger([dirnameSrc, 'Setup']);
 
@@ -100,8 +100,10 @@ for ii = 1:length(platform.exename)
 end
 copyFile([dirnameSrc, 'db2.mat'],           dirnameDst);
 copyFile([dirnameSrc, 'AppSettings.cfg'],   dirnameDst);
+copyFile([dirnameSrc, 'DataTree'],          [dirnameDst, 'DataTree']);
 copyFile([dirnameSrc, 'FuncRegistry'],      [dirnameDst, 'FuncRegistry']);
-copyFile([dirnameSrc, 'SubjDataSample'], [dirnameDst, 'SubjDataSample']);
+copyFile([dirnameSrc, 'SubjDataSample'],    [dirnameDst, 'SubjDataSample']);
+copyFile([dirnameSrc, 'SDGcolors.csv'],     dirnameDst);
 
 % Create desktop shortcuts to Homer3
 createDesktopShortcuts(dirnameSrc, dirnameDst);
@@ -198,10 +200,14 @@ try
     logger.Write('Copying %s to %s\n', src, dst);
     copyfile(src, dst);
 
-    waitbar(iStep/nSteps, h); iStep = iStep+1;
+    if ~isempty(iStep)
+        waitbar(iStep/nSteps, h); iStep = iStep+1;
+    end
     pause(1);
 catch ME
-    close(h);
+    if ishandles(h)
+        close(h);
+    end
     printStack(ME);
     if iscell(src)
         src = src{1};
@@ -259,9 +265,10 @@ try
         system(cmd);
         
     end
-catch
+catch ME
     msg{1} = sprintf('Error: Could not create %s shortcuts on Desktop. Exiting installation.', exename);
     menu([msg{:}], 'OK');
+    printStack(ME)
     return;    
 end
 

@@ -92,6 +92,19 @@ for ii=1:length(platform.createshort_script)
     end
 end
 
+dirnameSrc = filesepStandard(fileparts(which([exename, '.m'])));
+cfg = ConfigFileClass();
+for ii = 1:length(cfg.filenames)
+    p = filesepStandard(fileparts(cfg.filenames{ii}));
+    k = strfind(p, dirnameSrc);
+    pathRelative = p(k+length(dirnameSrc):end);
+    fprintf('Copying  %s  to  %s\n', cfg.filenames{ii}, [dirnameInstall, installfilename, '/', pathRelative]);
+    if ~ispathvalid([dirnameInstall, installfilename, '/', pathRelative])
+        mkdir([dirnameInstall, installfilename, '/', pathRelative])
+    end
+    copyfile(cfg.filenames{ii}, [dirnameInstall, installfilename, '/', pathRelative]);
+end
+
 if exist([dirnameApp, 'AppSettings.cfg'],'file')
     copyfile([dirnameApp, 'AppSettings.cfg'], [dirnameInstall, installfilename]);
 end
@@ -120,6 +133,11 @@ if ispathvalid([dirnameInstall, 'uninstall.bat'])
     copyfile([dirnameInstall, 'uninstall.bat'], [dirnameInstall, installfilename, '/uninstall.bat']);
 end
 
+if exist([dirnameApp, 'SDGcolors.csv'],'file')
+    copyfile([dirnameApp, 'SDGcolors.csv'], [dirnameInstall, installfilename]);
+end
+
+
 % Zip it all up into a single installation file
 zip([dirnameInstall, installfilename, '.zip'], [dirnameInstall, installfilename]);
 
@@ -127,5 +145,7 @@ zip([dirnameInstall, installfilename, '.zip'], [dirnameInstall, installfilename]
 deleteNamespace(exename)
 fclose all;
 cleanup(dirnameInstall, dirnameApp);
+
+
 
 

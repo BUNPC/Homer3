@@ -27,6 +27,7 @@ end
 % ---------------------------------------------------------------------
 function MainGUI_Init(handles, args)
 global maingui
+global cfg
 
 % Set the figure renderer. Some renderers aren't compatible
 % with certain OSs or graphics cards. MainGUI uses the figure renderer
@@ -65,7 +66,6 @@ cla(handles.axesData)
 set(handles.togglebuttonMinimizeGUI, 'tooltipstring','Minimize GUI Window')
 
 % Set checkForUpdates checkbox based on config setting
-cfg = ConfigFileClass();
 handles.menuItemUpdateCheck.Checked = cfg.GetValue('Check For Updates');
 
 MainGUI_EnableDisableGUI(handles, 'off')
@@ -279,10 +279,15 @@ varargout{1} = maingui.unitTest;
 % --------------------------------------------------------------------
 function [eventdata, handles] = MainGUI_DeleteFcn(hObject, eventdata, handles)
 global maingui;
+global cfg
 
 if ishandles(hObject)
     delete(hObject)
 end
+if isa(cfg, 'ConfigFileClass')
+    cfg.Close();
+end
+
 if isempty(maingui)
     deleteNamespace('Homer3');
     return;
@@ -1741,10 +1746,8 @@ maingui.dataTree.currElem.ExportMeanHRF(out.trange);
 
 % --------------------------------------------------------------------
 function menuItemUpdateCheck_Callback(hObject, eventdata, handles)
-% hObject    handle to menuItemUpdateCheck (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-cfg = ConfigFileClass();
+global cfg
+
 if (strcmp(hObject.Checked,'on'))
     hObject.Checked = 'off';
     cfg.SetValue('Check For Updates','off');
@@ -1753,7 +1756,6 @@ else
     cfg.SetValue('Check For Updates','on');
 end
 cfg.Save();
-cfg.Close();
 
 
 

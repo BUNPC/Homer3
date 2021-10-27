@@ -62,6 +62,7 @@ function StimEditGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 %
 global stimEdit
 global maingui
+global cfg
 
 waitmsg = 'Please wait a few seconds while GUI loads ...';
 h = waitbar(0, waitmsg); nsteps = 5;  istep = 1;
@@ -85,8 +86,6 @@ stimEdit.pos = [];
 stimEdit.updateParentGui = [];
 stimEdit.newCondWarning = false;
 
-
-cfg = ConfigFileClass();
 stimEdit.config.autoSaveAcqFiles = cfg.GetValue('Auto Save Acquisition Files');
 
 if ~isempty(maingui)
@@ -671,6 +670,7 @@ stimEdit.dataTreeHandle.currElem.SetStimAmplitudes(icond, data(:,3));
 % -------------------------------------------------------------------
 function Save()
 global stimEdit
+global cfg
 
 if isempty(stimEdit.locDataTree)
     return;
@@ -694,7 +694,6 @@ if ~strcmpi(stimEdit.config.autoSaveAcqFiles, 'Yes')
     if q==2
         return;
     elseif q==3
-        cfg = ConfigFileClass();
         cfg.SetValue('Auto Save Acquisition Files', 'Yes');
         cfg.Save()
     end
@@ -725,10 +724,11 @@ Save()
 % -------------------------------------------------------------------
 function StimEditGUI_DeleteFcn(hObject, eventdata, handles)
 global stimEdit
+global cfg
+
 if isempty(stimEdit)
     return;
 end
-cfg = ConfigFileClass();
 if strcmp(cfg.GetValue('Stim Edit GUI Save Warnings'), sprintf('don''t ask again'))
     return;
 end

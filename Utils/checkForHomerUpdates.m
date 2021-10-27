@@ -1,6 +1,7 @@
 function checkForHomerUpdates()
+global cfg
 
-cfg = ConfigFileClass();
+cfg = InitConfig(cfg);
 
 % If user has Check For Updates enabled
 if (strcmp(cfg.GetValue('Check For Updates'),'on'))
@@ -56,7 +57,6 @@ if (strcmp(cfg.GetValue('Check For Updates'),'on'))
     end
     
 end
-cfg.Close();
 
 
 

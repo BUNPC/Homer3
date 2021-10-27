@@ -1,4 +1,4 @@
-function Buildexe(appName, exclList, inclList, flags)
+function Buildexe(appname, exclList, inclList, flags)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BuildExe allows building of the current directories project in 
@@ -11,8 +11,8 @@ function Buildexe(appName, exclList, inclList, flags)
 rootdir = filesepStandard(pwd);
 
 % Args 
-if ~exist('appName','var')
-    [~, appName] = fileparts(rootdir);
+if ~exist('appname','var')
+    [~, appname] = fileparts(rootdir);
 end
 if ~exist('exclList','var')
     exclList = {};
@@ -24,7 +24,7 @@ if ~exist('flags','var')
     flags = {};
 end
 
-rootdir = filesepStandard(fileparts(which(appName)));
+rootdir = filesepStandard(fileparts(which(appname)));
 
 
 % Matlab compiler generates a readme file that overwrites the app readme
@@ -35,33 +35,7 @@ if ispathvalid('./README.txt', 'file')
     movefile('./README.txt', 'TEMP.txt');
 end
 
-% Find main .m file
-appDotMFilesStr = '';
-sanity = 100;
-while ~ispathvalid(appDotMFilesStr, 'file')
-    
-    appDotMFileMain = sprintf('%s.m', appName);
-    
-    % Check to make sure main .m file exists
-    if ~ispathvalid([rootdir, appDotMFileMain], 'file')
-        q = menu(sprintf('Could not find the main application file %s.m. Please locate the main application file.', appName), 'OK');
-        [filenm, pathnm] = uigetfile({'*.m'}, 'Select main .m file');
-        if filenm==0
-            return;
-        end
-        [~, appName] = fileparts(filenm);
-        appDotMFileMain = [pathnm, filenm];
-        appDotMFilesStr = appDotMFileMain;
-    else
-        appDotMFilesStr = filesepStandard(sprintf('%s%s', rootdir, appDotMFileMain'));
-    end
-    
-    sanity = sanity-1;
-    if sanity<=0
-        return;
-    end
-   
-end
+appDotMFileMain = [appname, '.m'];
 appDotMFilesStr = sprintf('-v %s', appDotMFileMain');
 
 % Get all .m files which will go into making the app executable
@@ -91,7 +65,7 @@ appDotMFiles = removeEntryFromList('Buildme.m', appDotMFiles);
 % Construct files list portion of build command
 fid = fopen('./Buildme.log','w');
 fprintf(fid, '==================================:\n');
-fprintf(fid, 'Building %s from these files:\n', appName);
+fprintf(fid, 'Building %s from these files:\n', appname);
 fprintf(fid, '==================================:\n');
 for jj = 2:length(appDotMFiles)
     appDotMFilesStr = sprintf('%s -a ''%s''', appDotMFilesStr, appDotMFiles{jj});
@@ -101,7 +75,7 @@ fprintf(fid, '\n\n');
 fclose(fid);
 
 % Complete the final build command and execute it
-buildcmdstr = sprintf('mcc -o %s -W main:%s -T link:exe -d ''%s'' %s %s', appName, appName, rootdir, compileSwitches, appDotMFilesStr);
+buildcmdstr = sprintf('mcc -o %s -W main:%s -T link:exe -d ''%s'' %s %s', appname, appname, rootdir, compileSwitches, appDotMFilesStr);
 disp(buildcmdstr);
 eval(buildcmdstr);
 

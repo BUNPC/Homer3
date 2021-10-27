@@ -14,7 +14,6 @@ exclLst = {
     'submodules';
     'Data';
     'setpaths.m';
-    'getpaths.m';
     };
 
 Buildexe(appname, exclLst)

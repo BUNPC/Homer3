@@ -27,6 +27,7 @@ end
 % ---------------------------------------------------------------------
 function MainGUI_Init(handles, args)
 global maingui
+global cfg
 
 % Set the figure renderer. Some renderers aren't compatible
 % with certain OSs or graphics cards. MainGUI uses the figure renderer
@@ -65,7 +66,6 @@ cla(handles.axesData)
 set(handles.togglebuttonMinimizeGUI, 'tooltipstring','Minimize GUI Window')
 
 % Set checkForUpdates checkbox based on config setting
-cfg = ConfigFileClass();
 handles.menuItemUpdateCheck.Checked = cfg.GetValue('Check For Updates');
 
 MainGUI_EnableDisableGUI(handles, 'off')
@@ -279,10 +279,15 @@ varargout{1} = maingui.unitTest;
 % --------------------------------------------------------------------
 function [eventdata, handles] = MainGUI_DeleteFcn(hObject, eventdata, handles)
 global maingui;
+global cfg
 
 if ishandles(hObject)
     delete(hObject)
 end
+if isa(cfg, 'ConfigFileClass')
+    cfg.Close();
+end
+
 if isempty(maingui)
     deleteNamespace('Homer3');
     return;
@@ -1252,23 +1257,17 @@ end
 axes(hAxes);
 hold(hAxes, 'on');
 
-aux = maingui.dataTree.currElem.GetAuxiliary();
-t = maingui.dataTree.currElem.GetAuxiliaryTime();
+aux = maingui.dataTree.currElem.GetAux();
 
 % Check if there's any aux 
-if isempty(aux) || isempty(t)
-    set(handles.checkboxPlotAux, 'enable','off');
-    set(handles.popupmenuAux, 'enable','off');
-    return;
-end
-if isempty(aux.names)
+if isempty(aux) || isempty({aux.name})
     set(handles.checkboxPlotAux, 'enable','off');
     set(handles.popupmenuAux, 'enable','off');
     return;
 end
 
 % Enable aux gui objects and set their values based on the aux values
-set(handles.popupmenuAux, 'string', aux.names);
+set(handles.popupmenuAux, 'string', {aux.name});
 onoff = get(handles.checkboxPlotAux, 'value');
 if onoff==0
     return;
@@ -1281,10 +1280,10 @@ if iAux==0
 end
 
 hold(hAxes, 'on');
-data = aux.data(:,iAux)-min(aux.data(:,iAux));
+data = aux(iAux).dataTimeSeries - min(aux(iAux).dataTimeSeries);
 r = ylim();
 yrange = [r(1) - (r(2)-r(1)), r(1)];
-h = plot(hAxes, t, yrange(1)+(yrange(2)-yrange(1)) * (data/(max(data)-min(data))), 'k');
+h = plot(hAxes, aux(iAux).time, yrange(1) + (yrange(2) - yrange(1)) * (data / (max(data) - min(data))), 'k');
 set(h,'linewidth',1);
 hold(hAxes, 'off');
 
@@ -1747,10 +1746,8 @@ maingui.dataTree.currElem.ExportMeanHRF(out.trange);
 
 % --------------------------------------------------------------------
 function menuItemUpdateCheck_Callback(hObject, eventdata, handles)
-% hObject    handle to menuItemUpdateCheck (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-cfg = ConfigFileClass();
+global cfg
+
 if (strcmp(hObject.Checked,'on'))
     hObject.Checked = 'off';
     cfg.SetValue('Check For Updates','off');
@@ -1759,7 +1756,6 @@ else
     cfg.SetValue('Check For Updates','on');
 end
 cfg.Save();
-cfg.Close();
 
 
 

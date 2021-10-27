@@ -13,6 +13,9 @@ function errmsg = hmrR_GLM_errchk(trange, glmSolveMethod, idxBasis, paramsBasis,
     if idxBasis > 4 || idxBasis < 1
        errmsg = 'Select a valid basis function (0-4)';
        return
+    if length(trange) > 3 || length(trange) < 2
+        errmsg = 'trange must have 2 or 3 values: [start, stop] or [start, stop, dt]';
+        return
     elseif glmSolveMethod > 2 || glmSolveMethod < 1
        errmsg = 'Select a valid solve method (1-2)';
        return

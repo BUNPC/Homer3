@@ -1,15 +1,9 @@
 function [viewSetting, views] = SetView(handles, nSubjs, nRuns)
 global maingui
 
-if nSubjs==nRuns
-    set(handles.menuItemGroupViewSettingGroup,'checked','off');
-    set(handles.menuItemGroupViewSettingSubjects,'checked','on');
-    set(handles.menuItemGroupViewSettingRuns,'checked','off');
-else
-    set(handles.menuItemGroupViewSettingGroup,'checked','on');
-    set(handles.menuItemGroupViewSettingSubjects,'checked','off');
-    set(handles.menuItemGroupViewSettingRuns,'checked','off');
-end
+set(handles.menuItemGroupViewSettingGroup,'checked','on');
+set(handles.menuItemGroupViewSettingSubjects,'checked','off');
+set(handles.menuItemGroupViewSettingRuns,'checked','off');
 
 if strcmp(get(handles.menuItemGroupViewSettingGroup,'checked'),'on')
     maingui.listboxGroupTreeParams.viewSetting = maingui.listboxGroupTreeParams.views.GROUP;

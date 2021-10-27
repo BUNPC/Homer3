@@ -23,8 +23,8 @@ function d = hmrR_PreprocessIntensity_Negative( intensity )
 
 for ii=1:length(intensity)
     d = intensity(ii).GetDataTimeSeries();
-    
-    if ~isempty(d(d<=0))
+    lst = find(d(:)==0);
+    if ~isempty(lst)
         quest = {'Intensity signal has negative values.'};
         dlgtitle = 'Warning';
         btn1 = 'OPTION1: Add a dc offset';
@@ -36,14 +36,14 @@ for ii=1:length(intensity)
             case 'OPTION1: Add a dc offset'
                 for j = 1:size(d,2)
                     foo = d(:,j);
-                    if ~isempty(find(foo<0))
+                    if ~isempty(find(foo<=0))
                         d(:,j) = foo + abs(min(foo)) + eps;
                     end
                 end
             case 'OPTION2: Set values <=0 to eps'
                 for j = 1:size(d,2)
                     foo = d(:,j);
-                    if ~isempty(find(foo<0))
+                    if ~isempty(find(foo<=0))
                         d(find(foo<=0),j) = eps;
                     end
                 end

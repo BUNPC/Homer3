@@ -1,4 +1,8 @@
 function userfuncdir = FindUserFuncDir(obj)
+global cfg
+
+cfg = InitConfig(cfg);
+
 userfuncdir = {};
 dirnameApp = getAppDir();
 
@@ -14,13 +18,12 @@ for ii = 1:length(dirs)
         continue
     elseif strcmp(dirs(ii).name, 'Archive')
         obj.config = struct('InclArchivedFunctions','');
-        cfg = ConfigFileClass();
         obj.config.InclArchivedFunctions = cfg.GetValue('Include Archived User Functions');        
         if strcmp(obj.config.InclArchivedFunctions, 'Yes')
-            userfuncdir{end+1} = fullpath([userfuncdir{1}, 'Archive/']);
+            userfuncdir{end+1} = fullpath([userfuncdir{1}, 'Archive/']); %#ok<*AGROW>
         end
     else
-        userfuncdir{end+1} = fullpath([userfuncdir{1}, dirs(ii).name]);
+        userfuncdir{end+1} = filesepStandard(fullpath([userfuncdir{1}, dirs(ii).name]));
     end
 end
 

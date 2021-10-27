@@ -76,8 +76,7 @@ function [Aaux, rcMap] = hmrR_tCCA(data, aux, probe, runIdx, subjIdx, mlActMan, 
 %% flags and tCCA settings
 tCCAaux_inx = find(tCCAaux_inx); % Convert flags to list of indices
 flags.pcaf =  [0 0]; % no pca of X or AUX
-% flags.shrink = true; % perform shrinkage in the CCA
-flags.shrink = false;  % JD: set to false because rtcca generate error, "Undefined function or variable 'cshrink'".
+flags.shrink = true; % perform shrinkage in the CCA
 % flagICRegressors - selects regressor generation strategy. (0/false) chooses a common set
 % of regressors for all fNIRS channels. (1/true) generates one individual
 % regressor per fNIRS channel. This feature is currently under development,

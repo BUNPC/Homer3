@@ -1,57 +1,80 @@
 function setup()
 global h
 global nSteps
+global dirnameSrc
+global dirnameDst
 
-setNamespace('Homer3')
+try
 
-h = waitbar(0,'Installation Progress ...');
+    currdir = filesepStandard(pwd);
+        
+    h = waitbar(0,'Installation Progress ...');
+       
+    [~, exename] = getAppname();
+    setNamespace(exename)
+    
+    dirnameSrc = currdir;
+    dirnameDst = getAppDir('isdeployed');
 
-main();
+    cleanup();
+    
+    main();
+    
+    % Check that everything was installed properly
+    finishInstallGUI(exename);
+    
+    waitbar(nSteps/nSteps, h);
+    close(h);
+    
+catch ME
+    
+    printStack(ME)
+    cd(currdir)
+    if ishandles(h)
+        close(h);
+    end
+    rethrow(ME)
+        
+end
+cd(currdir)
 
-% Check that everything was installed properly
-r = finishInstallGUI();
 
-waitbar(nSteps/nSteps, h);
-close(h);
-
-cleanup();
-
-
-
+    
 
 % ------------------------------------------------------------
 function main()
 global h
 global nSteps
 global iStep
-
+global platform
+global logger
+global dirnameSrc
+global dirnameDst
 
 nSteps = 100;
 iStep = 1;
 
-if ismac()
-    dirnameSrc = '~/Downloads/homer3_install/';
-else
-	dirnameSrc = [pwd, '/'];
-end
-dirnameDst = getAppDir('isdeployed');
+fprintf('dirnameSrc = %s\n', dirnameSrc)
+fprintf('dirnameDst = %s\n\n', dirnameDst)
 
-platform = setplatformparams();
+logger = Logger([dirnameSrc, 'Setup']);
+
+[~, exename] = getAppname();
 
 v = getVernum();
-fprintf('=================================\n');
-fprintf('Setup script for Homer3 v%s.%s:\n', v{1}, v{2});
-fprintf('=================================\n\n');
+logger.Write('==========================================\n');
+logger.Write('Setup script for %s v%s.%s,%s:\n', exename, v{1}, v{2}, v{3});
+logger.Write('==========================================\n\n');
 
-fprintf('Platform params:\n');
-fprintf('  arch: %s\n', platform.arch);
-fprintf('  exename: %s\n', platform.exename{1});
-fprintf('  setup_exe: %s\n', platform.setup_exe{1});
-fprintf('  setup_script: %s\n', platform.setup_script);
-fprintf('  dirnameApp: %s\n', platform.dirnameApp);
-fprintf('  mcrpath: %s\n', platform.mcrpath);
+logger.Write('Platform params:\n');
+logger.Write('  arch: %s\n', platform.arch);
+logger.Write('  exename: %s\n', platform.exename{1});
+logger.Write('  setup_exe: %s\n', platform.setup_exe{1});
+logger.Write('  setup_script: %s\n', platform.setup_script);
+logger.Write('  dirnameApp: %s\n', platform.dirnameApp);
+logger.Write('  mcrpath: %s\n', platform.mcrpath);
 
-deleteShortcuts(platform);
+deleteShortcuts();
 
 pause(2);
 
@@ -72,36 +95,81 @@ dirnameSrc = fullpath(dirnameSrc);
 dirnameDst = fullpath(dirnameDst);
 
 % Copy files from source folder to destination installation folder
-for ii=1:length(platform.exename)
-    copyFileToInstallation([dirnameSrc, platform.exename{ii}], [dirnameDst, platform.exename{ii}]);
+for ii = 1:length(platform.exename)
+    copyFile([dirnameSrc, platform.exename{ii}], [dirnameDst, platform.exename{ii}]);
 end
-copyFileToInstallation([dirnameSrc, 'db2.mat'],           dirnameDst);
-copyFileToInstallation([dirnameSrc, 'AppSettings.cfg'],   dirnameDst);
-copyFileToInstallation([dirnameSrc, 'FuncRegistry'],      [dirnameDst, 'FuncRegistry']);
-copyFileToInstallation([dirnameSrc, 'SubjDataSample'], [dirnameDst, 'SubjDataSample']);
+copyFile([dirnameSrc, 'db2.mat'],           dirnameDst);
+copyFile([dirnameSrc, 'AppSettings.cfg'],   dirnameDst);
+copyFile([dirnameSrc, 'DataTree'],          [dirnameDst, 'DataTree']);
+copyFile([dirnameSrc, 'FuncRegistry'],      [dirnameDst, 'FuncRegistry']);
+copyFile([dirnameSrc, 'SubjDataSample'],    [dirnameDst, 'SubjDataSample']);
+copyFile([dirnameSrc, 'SDGcolors.csv'],     dirnameDst);
 
 % Create desktop shortcuts to Homer3
 createDesktopShortcuts(dirnameSrc, dirnameDst);
 
+waitbar(iStep/nSteps, h); iStep = iStep+1;
 pause(2);
 
 
 
 
 % -----------------------------------------------------------------
-function cleanup()
-if ismac()
-    rmdir_safe('~/Desktop/homer3_install/');
-    rmdir_safe('~/Downloads/homer3_install/');
+function err = cleanup()
+global dirnameSrc
+global dirnameDst
+
+err = 0;
+
+% Uninstall old installation
+try
+    if exist(dirnameDst,'dir')
+        rmdir(dirnameDst, 's');
+    end
+catch ME
+    printStack(ME);
+    msg{1} = sprintf('Error: Could not remove old installation folder %s. It might be in use by other applications.\n', dirnameDst);
+    msg{2} = sprintf('Try closing and reopening file browsers or any other applications that might be using the\n');
+    msg{3} = sprintf('installation folder and then retry installation.');
+    menu([msg{:}], 'OK');
+    pause(5);
+    rethrow(ME)
+end
+
+% Change source dir if not on PC
+if ~ispc() && ~isdeployed()
+    dirnameSrc0 = dirnameSrc;
+    
+    dirnameSrc = sprintf('~/Downloads/%s_install/', lower(getAppname));
+    fprintf('SETUP:    current folder is %s\n', pwd);   
+    rmdir_safe(sprintf('~/Desktop/%s_install/', lower(getAppname())));
+    rmdir_safe(dirnameSrc);
+    rmdir_safe('~/Desktop/Test/');
+    
+    if ispathvalid(dirnameSrc)
+        err = -1;
+    end
+    if ispathvalid('~/Desktop/%s_install/')
+        err = -1;
+    end
+    if ispathvalid('~/Desktop/Test/')
+        err = -1;
+    end
+       
+    copyFile(dirnameSrc0, dirnameSrc);
+    cd(dirnameSrc);
 end
 
 
 
+
+
 % -------------------------------------------------------------------
-function copyFileToInstallation(src, dst, type)
+function copyFile(src, dst, type)
 global h
 global nSteps
 global iStep
+global logger
 
 if ~exist('type', 'var')
     type = 'file';
@@ -129,14 +197,18 @@ try
     end
     
     % Copy file from source to destination folder
-    fprintf('Copying %s to %s\n', src, dst);
+    logger.Write('Copying %s to %s\n', src, dst);
     copyfile(src, dst);
 
-    waitbar(iStep/nSteps, h); iStep = iStep+1;
+    if ~isempty(iStep)
+        waitbar(iStep/nSteps, h); iStep = iStep+1;
+    end
     pause(1);
 catch ME
-    close(h);
-    printStack();
+    if ishandles(h)
+        close(h);
+    end
+    printStack(ME);
     if iscell(src)
         src = src{1};
     end
@@ -149,7 +221,9 @@ end
 
 
 % --------------------------------------------------------------
-function deleteShortcuts(platform)
+function deleteShortcuts()
+global platform
+
 if exist(platform.exenameDesktopPath, 'file')
     try
         delete(platform.exenameDesktopPath);
@@ -167,13 +241,14 @@ end
 
 % ---------------------------------------------------------
 function createDesktopShortcuts(dirnameSrc, dirnameDst)
+[~, exename] = getAppname();
 try
     if ispc()
         
         k = dirnameDst=='/';
         dirnameDst(k)='\';
         
-        cmd = sprintf('call "%s\\createShortcut.bat" "%s" Homer3.exe', dirnameSrc(1:end-1), dirnameDst);
+        cmd = sprintf('call "%s\\createShortcut.bat" "%s" %s.exe', dirnameSrc(1:end-1), dirnameDst, exename);
         system(cmd);
         
         cmd = sprintf('call "%s\\createShortcut.bat" "%s" SubjDataSample', dirnameSrc(1:end-1), dirnameDst(1:end-1));
@@ -190,10 +265,10 @@ try
         system(cmd);
         
     end
-catch
-    msg{1} = sprintf('Error: Could not create Homer3 shortcuts on Desktop. Exiting installation.');
+catch ME
+    msg{1} = sprintf('Error: Could not create %s shortcuts on Desktop. Exiting installation.', exename);
     menu([msg{:}], 'OK');
+    printStack(ME)
     return;    
 end
-
 

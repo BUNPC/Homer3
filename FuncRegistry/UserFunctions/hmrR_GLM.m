@@ -1,5 +1,6 @@
 % SYNTAX:
-% [yavg, yavgstd, tHRF, nTrials, ynew, yresid, ysum2, beta, R, hmrstats] = hmrR_GLM(data, stim, probe, mlActAuto, Aaux, tIncAuto, trange, rcMap, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
+% [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks, hmrstats] = ...
+% hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 %
 % UI NAME:
 % GLM_HRF_Drift_SS
@@ -23,7 +24,8 @@
 % rcMap - An array of cells (1 x #fNIRS channels) containing aux regressor
 %           indices for individual regressor-channel mapping. Currently
 %           only relevant when flagNuisanceRMethod = 3 (tCCA regressors).
-% trange - defines the range for the block average [tPre tPost]
+% trange - defines the range for the block average [tPre tPost dt]. If dt
+%           defined, time series are interpolated prior to 
 % glmSolveMethod - this specifies the GLM solution method to use
 %            1. use ordinary least squares (Ye et al (2009). NeuroImage, 44(2), 428?447.)
 %            2. use iterative weighted least squares (Barker,
@@ -43,18 +45,18 @@
 % 			         (t/(p*q))^p * exp(p-t/q)
 %                Defaults: p=8.6 q=0.547
 %                The peak is at time p*q.  The FWHM is about 2.3*sqrt(p)*q.
-% paramsBasis - Parameters for the basis function depends on idxBasis
-%               idxBasis=1 [stdev step ~ ~ ~ ~] where stdev is the width of the
+% paramsBasis - Parameters for the basis function (chosen via idxBasis)
+%               if idxBasis=1 [stdev step ~ ~ ~ ~] where stdev is the width of the
 %                  gaussian and step is the temporal spacing between
 %                  consecutive gaussians
-%               idxBasis=2. [tau sigma] applied to both HbO and HbR
-%                  or [tau1 sigma1 tau2 sigma2]
+%               if idxBasis=2. [tau sigma] applied to both HbO and HbR
+%                  or [tau1 sigma1 tau2 sigma2] recommended values [0.1 3.0 1.8 3.0]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
-%               idxBasis=3 [tau sigma] applied to both HbO and HbR
-%                  or [tau1 sigma1 tau2 sigma2]
+%               if idxBasis=3 [tau sigma] applied to both HbO and HbR
+%                  or [tau1 sigma1 tau2 sigma2] recommended values [0.1 3.0 1.8 3.0]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
-%               idxBasis=4 [p q] applied to both HbO and HbR
-%                  or [p1 q1 p2 q2]
+%               if idxBasis=4 [p q] applied to both HbO and HbR
+%                  or [p1 q1 p2 q2] recommended values [0.1 3.0 1.8 3.0]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
 % rhoSD_ssThresh - max distance for a short separation measurement. Set =0
 %          if you do not want to regress the short separation measurements.
@@ -96,7 +98,7 @@
 % trange: [-2.0, 20.0]
 % glmSolveMethod: 1
 % idxBasis: 1
-% paramsBasis: [1.0 1.0 0.0 0.0]
+% paramsBasis: [1.0 1.0]
 % rhoSD_ssThresh: 15.0
 % flagNuisanceRMethod: 1
 % driftOrder: 3
@@ -162,7 +164,13 @@ for iBlk=1:length(data_y)
     yavgstd = [];
     ysum2 = [];
     
-    dt = t(2)-t(1);
+%     if length(trange) == 3
+%         dt = trange(3);
+%     else
+%         dt = t(2) - t(1);
+%     end
+   
+    dt = t(2) - t(1);
     nPre = round(trange(1)/dt);
     nPost = round(trange(2)/dt);
     nTpts = size(y,1);
@@ -197,13 +205,13 @@ for iBlk=1:length(data_y)
             case 1 % use SS with highest correlation
                 % HbO
                 dc = squeeze(y(:,1,:));
-                dc = (dc-ones(length(dc),1)*mean(dc,1))./(ones(length(dc),1)*std(dc,[],1));
-                cc(:,:,1) = dc'*dc / length(dc);
+                dc = (dc-ones(size(dc, 1),1)*mean(dc,1))./(ones(size(dc, 1),1)*std(dc,[],1));
+                cc(:,:,1) = dc'*dc / size(dc, 1);
                 
                 % HbR
                 dc = squeeze(y(:,2,:));
-                dc = (dc-ones(length(dc),1)*mean(dc,1))./(ones(length(dc),1)*std(dc,[],1));
-                cc(:,:,2) = dc'*dc / length(dc);
+                dc = (dc-ones(size(dc, 1),1)*mean(dc,1))./(ones(size(dc, 1),1)*std(dc,[],1));
+                cc(:,:,2) = dc'*dc / size(dc, 1);
                 
                 clear dc
                 % find short separation channel with highest correlation
@@ -236,6 +244,7 @@ for iBlk=1:length(data_y)
     nCond = length(lstCond); % size(stimStates,2);
     nTrials{iBlk} = zeros(nCond,1);
     onset = zeros(nT, nCond);
+    avg_pulses = {};
     for iCond = 1:nCond
         lstT = find(stimStates(:, lstCond(iCond)) == 1);  % Indices of stims enabled (== 1)
         lstp = find((lstT+nPre) >= 1 & (lstT+nPost) <= nTpts);  % Indices of stims not clipped by signal
@@ -246,6 +255,7 @@ for iBlk=1:length(data_y)
         if ~isempty(stim(lstCond(iCond)).data)
             durations = stim(lstCond(iCond)).data(:, 2);
             amplitudes = stim(lstCond(iCond)).data(:, 3);
+            avg_pulses{iCond} = ones(round(mean(durations) / dt), 1); %#ok<AGROW>
             for i = 1:length(starts)
                 if idxBasis == 1  % Gaussian has no duration T (yet)
                    pulse_duration = 1; 
@@ -451,7 +461,7 @@ for iBlk=1:length(data_y)
     
     % Exit if not enough data to analyze the 3 here is arbitrary.
     % Certainly needs to be larger than 1
-    if length(lstInc)<3*size(A,2) | nCond==0
+    if length(lstInc)<3*size(A,2) || nCond==0
         warning('Not enough data to find a solution')
         yavg    = zeros(ntHRF,nCh,3,nCond);
         yavgstd = zeros(ntHRF,nCh,3,nCond);
@@ -629,6 +639,9 @@ for iBlk=1:length(data_y)
                         yavg(:,lstML,conc,iCond)=tbasis*tb(:,lstML,conc,iCond);
                     else
                         yavg(:,lstML,conc,iCond)=tbasis(:,:,conc)*tb(:,lstML,conc,iCond);
+                    end
+                    if idxBasis > 1
+                        yavg = conv(yavg, avg_pulses{iCond});
                     end
                 end
                 

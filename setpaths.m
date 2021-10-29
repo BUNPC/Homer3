@@ -120,7 +120,9 @@ try
     appThis         = filesepStandard_startup(pwd);
     appThisPaths    = findDotMFolders(appThis, exclSearchList);
     if addremove == 0
-        deleteNamespace(appname);
+        if exist([pwd, '/Utils/namespace'],'dir')
+            deleteNamespace(appname);
+        end
         removeSearchPaths(appThis);
         return;
     end
@@ -205,7 +207,6 @@ catch ME
 end
 
 cd(currdir);
-
 
 
 % ----------------------------------------------------

@@ -72,22 +72,19 @@ end
 % ----------------------------------------------------------
 function branch = warningGitFailedToInstall(s, appname)
 ii = 1;
-msg{ii} = sprintf('WARNING: Git failed to install the following libraries required by this application:\n\n'); ii = ii+1;
+branch = guessBranch(s, appname);
+msg{ii} = sprintf('Git was not able to install the following libraries required by this application:\n\n'); ii = ii+1;
 for jj = 1:size(s,1)
     msg{ii} = sprintf('    %s\n', s{jj,1}); ii = ii+1;
 end
 msg{ii} = sprintf('\n'); ii = ii+1; %#ok<SPRINTFN>
-msg{ii} = sprintf('Git might not be installed on your computer. '); ii = ii+1;
-msg{ii} = sprintf('These libraries can still be installed without git. The assumed submodule branch that matches '); ii = ii+1;
-msg{ii} = sprintf('the branch of the parent repo, ''%s'', is ''%s'' (see edit box below). Please edit it ', appname, guessBranch(appname)); ii = ii+1;
-msg{ii} = sprintf('if this assumption is not correct.\n\n');  ii = ii+1;
-msg{ii} = sprintf('Submodule source branch name:');  ii = ii+1;
+msg{ii} = sprintf('Git might not be installed on your computer. \n'); ii = ii+1;
+msg{ii} = sprintf('These libraries can still be installed without git. The assumed submodule branch that matches \n'); ii = ii+1;
+msg{ii} = sprintf('the branch of the parent repo, ''%s'', is ''%s''\n\n', appname, branch); ii = ii+1;
 msg = [msg{:}];
 
-branch = inputdlg(msg, 'MISSING LIBRARIES', 1,{guessBranch(appname)});
-if ~isempty(branch)
-    branch = branch{1};
-end
+fprintf(msg)
+pause(2);
 
 
 
@@ -139,15 +136,36 @@ end
 
 
 % ----------------------------------------------------
-function branchGuess = guessBranch(appname)
-branchGuess = 'development';
-[~, rootdir] = fileparts(fileparts(which([appname, '.m'])));
-k = strfind(rootdir, appname);
-if (k+length(appname)) <= length(rootdir)
+function branchGuess = guessBranch(submodules, appname)
+branchGuess = '';
+rootdir = fileparts(which([appname, '.m']));
+k = strfind(appname, 'GUI');
+if ~isempty(k)
+    appname0 = appname(1:k-1);
+end
+k = strfind(rootdir, appname0);
+if (k+length(appname0)) <= length(rootdir)
     j = 0;
-    if rootdir(k+length(appname))=='-'
+    if rootdir(k+length(appname0))=='-'
         j = 1;
     end
-    branchGuess = rootdir(k+length(appname)+j:end);
+    branchGuess = rootdir(k+length(appname0)+j:end);
 end
+fprintf('\nBranch guess:  ''%s''\n', branchGuess);
+
+% Check to see if submodule urls exist. If not edfault to 'master' branches. 
+for ii = 1:size(submodules,1)
+    url             = submodules{ii,1};
+    submodulepath   = submodules{ii,3};
+    
+    urlfull = sprintf('%s/archive/refs/heads/%s.zip', url, branchGuess);
+    [~, urlExists] = urlread(urlfull); %#ok<*URLRD>
+    if urlExists
+        fprintf('Success:  %s  exists\n', urlfull);
+    else
+        fprintf('Failed:  %s  does NOT exist. Switching to ''master'' branch\n', urlfull);
+        branchGuess = 'master';
+    end   
+end
+fprintf('\n');
 

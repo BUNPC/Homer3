@@ -142,6 +142,8 @@ rootdir = fileparts(which([appname, '.m']));
 k = strfind(appname, 'GUI');
 if ~isempty(k)
     appname0 = appname(1:k-1);
+else
+    appname0 = appname;
 end
 k = strfind(rootdir, appname0);
 if (k+length(appname0)) <= length(rootdir)

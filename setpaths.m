@@ -209,7 +209,6 @@ end
 cd(currdir);
 
 
-
 % ----------------------------------------------------
 function status = downloadLibraries(options, appname)
 status = 0;

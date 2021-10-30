@@ -1,5 +1,3 @@
-![Homer3](https://openfnirs.org/wp-content/uploads/2018/05/Figure_fNIRS2.jpg)
-
 # Homer3
 Homer3 is a open source MATLAB application used for analyzing fNIRS data to obtain estimates and maps of brain activation. It is a continuation of the work on the well-established HOMER2 software which itself evolved since the early 1990s, first as the Photon Migration Imaging Toolbox, then as HOMER.
 
@@ -7,7 +5,7 @@ Homer3 is developed and maintained by the [Boston University Neurophotonics Cent
 
 To cite Homer3 in your research:
 
-> #### Huppert, T., Diamond, S., Franceschini, M., Boas, D. (2009). HomER: a review of time-series analysis methods for near-infrared spectroscopy of the brain. Applied optics 48(10). https://dx.doi.org/10.1364/ao.48.00d280
+> ##### Huppert, T., Diamond, S., Franceschini, M., Boas, D. (2009). HomER: a review of time-series analysis methods for near-infrared spectroscopy of the brain. Applied optics 48(10). https://dx.doi.org/10.1364/ao.48.00d280
 
 ## Installation
 
@@ -35,3 +33,5 @@ We welcome contributions to Homer3 from the fNIRS community. See CONTRIBUTING.md
 ## License
 
 Homer3 is [BSD licensed](https://opensource.org/licenses/BSD-3-Clause), but we ask that you cite the original publication in your research.
+
+![Homer3](https://openfnirs.org/wp-content/uploads/2018/05/Figure_fNIRS2.jpg)

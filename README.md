@@ -28,7 +28,7 @@ Homer3 documentation is hosted via the [GitHub wiki](https://github.com/BUNPC/Ho
 
 ## Contributing to Homer3
 
-We welcome contributions to Homer3 from the fNIRS community. See CONTRIBUTING.md for development guidelines and WORKFLOW.md for a walkthrough of the cloning and version control procedures recommended for development.
+We welcome contributions to Homer3 from the fNIRS community. See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines and [WORKFLOW.md](WORKFLOW.md) for a walkthrough of the cloning and version control procedures recommended for development.
 
 ## License
 

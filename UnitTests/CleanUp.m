@@ -4,6 +4,7 @@ global QUICK_TEST
 global procStreamStyle
 global testidx;
 global logger
+global cfg
 global maingui
 
 if ~exist('standalone','var') || isempty(standalone)
@@ -52,11 +53,10 @@ end
 fclose all;
 
 % Create or restore config file
-c = ConfigFileClass();
-if c.BackupExists()
-    c.Restore()
+if cfg.BackupExists()
+    cfg.Restore()
 else
-    c.Save('backup');
+    cfg.Save('backup');
 end
 
 if ~start

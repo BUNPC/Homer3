@@ -50,8 +50,8 @@ userInterrupt(standalone)
 
 % ---------------------------------------------------
 function configureAppSettings()
-c = ConfigFileClass();
-c.SetValue('Regression Test Active','true');
-c.SetValue('Default Processing Stream Style','SNIRF');
-c.Save();
+global cfg
+cfg.SetValue('Regression Test Active','true');
+cfg.SetValue('Default Processing Stream Style','SNIRF');
+cfg.Save();
 

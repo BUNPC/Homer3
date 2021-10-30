@@ -2,6 +2,8 @@
 
 The following is an example of the fork and pull workflow, making use of the git command line interface. Users of alternative graphical interfaces are responsible for learning how to achieve equivalent functionality!
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines for development.
+
 **Please follow along with this when contributing if you are only an entry-level user of Git!**
 
 ## Forking Homer3
@@ -120,7 +122,7 @@ git push origin <working branch name>
 
 Create a pull request in the Pull Request tab of the repository website or via the Contribute button. Target the head branch you wish to contribute to, i.e. `development`.
 
-If there is a conflict, follow the above instructions for [Syncing your fork with the BUNPC repository](Syncing-your-fork-with-the-BUNPC-repository) and resolve the conflict locally by pushing a merge commit to your working branch.
+If there is a conflict, follow the above instructions for [Syncing your fork with the BUNPC repository](WORKFLOW.md#syncing-your-fork-with-the-bunpc-repository) and resolve the conflict locally by pushing a merge commit to your working branch.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for expectations regarding pull requests.
 

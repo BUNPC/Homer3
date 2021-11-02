@@ -641,8 +641,7 @@ for iBlk=1:length(data_y)
                         yavg(:,lstML,conc,iCond)=tbasis(:,:,conc)*tb(:,lstML,conc,iCond);
                     end
                     if idxBasis > 1
-                        for i = 1:length(lstML)
-                            iML = lstML(i);
+                        for iML = transpose(lstML)
                             convolved = conv(yavg(:, iML, conc, iCond), avg_pulses{iCond});
                             yavg(:, iML, conc, iCond) = convolved(1:size(yavg, 1));  % Truncate convolution
                         end

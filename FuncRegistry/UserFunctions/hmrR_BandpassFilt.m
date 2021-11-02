@@ -32,8 +32,9 @@ function [data2, ylpf] = hmrR_BandpassFilt( data, hpf, lpf )
 
 arguments
     data {mustBeNonNanData(data), mustBeFiniteData(data)}
-    hpf double {mustBeNumeric, mustBeReal}
-    lpf double {mustBeNumeric, mustBeReal, mustNotExceedNyquist(data, hpf, lpf)}
+    hpf (1,1) {mustBeNumeric, mustBeNonnegative}
+    lpf (1,1) {mustBeNumeric, mustBeNonnegative, ...
+        mustNotExceedNyquist(data, hpf, lpf), mustBeLargerThanHpf(hpf, lpf)}
 
 end
 
@@ -139,6 +140,14 @@ for ii = 1:length(data)
             num2str(fs), ' hz.'))
     end
 
+end
+end
+
+function mustBeLargerThanHpf(hpf, lpf)
+if lpf <= hpf
+    throwAsCaller(MException('Homer:InvalidFilterFrequency', ...
+            ['Low pass filter frequency value should be ' ...
+            'larger than the high pass filter frequency value']))
 end
 end
 

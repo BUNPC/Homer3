@@ -2,7 +2,7 @@
 
 We welcome contributions to the Homer3 open-source software package from the fNIRS community! This document describes the procedures for adding and editing code as well as building releases the application. 
 
-It is recommended that contributors familiarize themselves with Git and GitHub before attempting to contribute to Homer3. Links to relevant documentation are included here for your convenience. For a walkthrough of the contribution procedure, see [WORKFLOW.md](.github/WORKFLOW.md). Version control software and contribution procedures are complicated, but there is no other way to achieve collaborative development. 😊
+It is recommended that contributors familiarize themselves with Git and GitHub before attempting to contribute to Homer3. Links to relevant documentation are included here for your convenience. For a walkthrough of the contribution procedure, see [WORKFLOW.md](WORKFLOW.md). Version control software and contribution procedures are complicated, but there is no other way to achieve collaborative development. 😊
 
 > Note: As of October 2021, code shared with other applications in the openfnirs ecosystem such as the DataTree and Utils libraries are managed as submodule repositories. Submodules cannot be managed using GitHub desktop.
 
@@ -16,7 +16,7 @@ Each release is associated with a [version tag](https://github.com/BUNPC/Homer3/
 
 Version tags MUST be incremented before building a new release. The tag associated with a release CANNOT be changed unless the release is marked draft/is a pre-release.
 
-For step-by-step on how to generate and package a release for distribution, see [RELEASE.md](.github/RELEASE.md).
+For step-by-step on how to generate and package a release for distribution, see [RELEASE.md](RELEASE.md).
 
 ## Fork and pull model
 
@@ -71,4 +71,4 @@ We compile these releases for Windows and MacOS. Linux is not supported.
 
 ## Walkthrough
 
-A step-by-step walkthrough of key steps in the version control process is described in [WORKFLOW.md](.github/WORKFLOW.md).
+A step-by-step walkthrough of key steps in the version control process is described in [WORKFLOW.md](WORKFLOW.md).

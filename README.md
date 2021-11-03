@@ -15,10 +15,10 @@ Homer3 is composed only of MATLAB scripts, so the installation process for MATLA
 
 [Getting started with Homer3](https://github.com/BUNPC/Homer3/wiki/Getting-started-with-Homer3)
 
-Note that cloning the repository or using the Download .zip button on the repository webpage will not download the submodule libraries that are a part of Homer3. Without these, the application will not run. These submodules must be downloaded manually from their respective repositories and placed in the \Homer3 folder.
+Note that cloning the repository or using the Download .zip button on the repository webpage WILL NOT download the submodule libraries that are a part of Homer3. Without these, the application will not run. These submodules must be downloaded manually from their respective repositories and placed in the \Homer3 folder.
 
 ## Support
-Support for users of Homer3 is available via the [Homer3 & AtlasViewer community forum](https://openfnirs.org/community/homer3-forum/) hosted on openfnirs.org. This forum is questions about how to use Homer3.
+Support for users of Homer3 is available via the [Homer3 & AtlasViewer community forum](https://openfnirs.org/community/homer3-forum/) hosted on openfnirs.org. This forum is for questions about how to use Homer3.
 
 To report a bug or suggest a feature, please [create an issue](https://github.com/BUNPC/Homer3/issues/new/choose) here on GitHub.
 

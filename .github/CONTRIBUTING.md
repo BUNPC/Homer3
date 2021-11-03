@@ -16,7 +16,7 @@ Each release is associated with a [version tag](https://github.com/BUNPC/Homer3/
 
 As of November 2021, pull requests and commits need not increment the version tag, but version tags MUST be incremented before building a new release. The tag associated with a release CANNOT be changed unless the release is marked draft/is a pre-release.
 
-For step-by-step on how to generate and package a release for distribution, see [RELEASE.md](RELEASE.md).
+For a description of how to generate and package a release for distribution, see [RELEASE.md](RELEASE.md).
 
 ## Fork and pull model
 

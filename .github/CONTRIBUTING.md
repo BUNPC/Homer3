@@ -1,6 +1,6 @@
 # Contributing
 
-We welcome contributions to the Homer3 open-source software package from the fNIRS community! This document describes the procedures for adding and editing code as well as building releases the application. 
+We welcome contributions to the Homer3 open-source software package from the fNIRS community! This document describes the procedures for adding and editing code as well as building releases of the application for distribution. 
 
 It is recommended that contributors familiarize themselves with Git and GitHub before attempting to contribute to Homer3. Links to relevant documentation are included here for your convenience. For a walkthrough of the contribution procedure, see [WORKFLOW.md](WORKFLOW.md). Version control software and contribution procedures are complicated, but there is no other way to achieve collaborative development. 😊
 

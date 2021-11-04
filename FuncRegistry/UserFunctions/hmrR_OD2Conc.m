@@ -33,6 +33,13 @@
 % Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
 function dc = hmrR_OD2Conc( dod, probe, ppf )
 
+arguments
+    dod {mustBeOfClass(dod,'DataClass')}
+    probe {mustBeOfClass(probe,'ProbeClass')}
+    ppf {mustBeNumeric, mustBePositive}
+
+end
+
 dc = DataClass().empty();
 
 for ii=1:length(dod)
@@ -83,4 +90,15 @@ for ii=1:length(dod)
     dc(ii).SetDataTimeSeries(y2);
     dc(ii).SetTime(dod(ii).GetTime());
 end
+end
 
+%--------------------------------------------------------------------------
+% validation functions
+function mustBeOfClass(input,className)
+    % Test for specific class name
+    cname = class(input);
+    if ~strcmp(cname,className)
+        throwAsCaller(MException('Class:notCorrectClass',...
+            ['Input must be of class ', className]))
+    end
+end

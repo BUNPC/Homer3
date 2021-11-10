@@ -18,7 +18,8 @@ ii = 1;
 
 cmds{ii,1} = sprintf('cd %s', repoFull); ii = ii+1;
 cmds{ii,1} = sprintf('git config --global http.sslverify "false"'); ii = ii+1;
-cmds{ii,1} = sprintf('git submodule update --init'); ii = ii+1; %#ok<NASGU>
+%cmds{ii,1} = sprintf('git submodule update --init '); ii = ii+1; %#ok<NASGU>
+cmds{ii,1} = sprintf('git submodule update --init --recursive --remote '); ii = ii+1; %#ok<NASGU>
 
 [errs, msgs] = exeShellCmds(cmds, preview);
 

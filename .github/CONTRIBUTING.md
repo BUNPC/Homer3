@@ -8,13 +8,17 @@ It is recommended that contributors familiarize themselves with Git and GitHub b
 
 ## Release and versioning procedures
 
-[Homer3 releases](https://github.com/BUNPC/Homer3/releases) are composed of frozen source code plus compiled versions of the software for use with the [MATLAB Runtime](https://www.mathworks.com/products/compiler/matlab-runtime.html) on Windows and MacOS.
+[Homer3 releases](https://github.com/BUNPC/Homer3/releases) are composed of frozen source code from the master branch of this repository plus compiled versions of the software for use with the [MATLAB Runtime](https://www.mathworks.com/products/compiler/matlab-runtime.html) on Windows and MacOS.
 
 Releases are to be built as often as important fixes and features are merged with the `master` branch and then tested.
 
 Each release is associated with a [version tag](https://github.com/BUNPC/Homer3/tags), i.e. [`v1.32.3`](https://github.com/BUNPC/Homer3/releases/tag/v1.32.3).
 
-As of November 2021, pull requests and commits need not increment the version tag, but version tags MUST be incremented before building a new release. The tag associated with a release CANNOT be changed unless the release is marked draft/is a pre-release.
+For releases which contain only fixes to the previous release, the third value vX.X.<ins>X</ins> is to be incremented.
+
+For releases combining many fixes or a release which adds additional features to Homer3, the second value vX.<ins>X</ins>.X is to be incremented.
+
+As of November 2021, pull requests and commits need not increment the version tag, but version tags MUST be incremented before building a new release. The tag associated with a release and therefore the code itself CANNOT be changed unless the release is marked draft/is a pre-release.
 
 For a description of how to generate and package a release for distribution, see [RELEASE.md](RELEASE.md).
 

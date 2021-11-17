@@ -93,6 +93,10 @@ stats.handles.msgMoreInfo = handles.textMoreInfo;
 stats.dirnameApp = getAppDir('isdeployed');
 stats.pushbuttonOKPress = false;
 
+if isempty(varargin)
+    return
+end
+
 stats.name = varargin{1};
 
 

@@ -6,6 +6,9 @@ msgs = {};
 if ~exist('options','var') || (isnumeric(options) && options==0)
     options = 'init';
 end
+if ~optionExists_startup(options,'init') && ~optionExists_startup(options,'update') 
+    return;
+end
 
 s = parseGitSubmodulesFile();
 
@@ -77,10 +80,10 @@ msg{ii} = sprintf('Git was not able to install the following libraries required 
 for jj = 1:size(s,1)
     msg{ii} = sprintf('    %s\n', s{jj,1}); ii = ii+1;
 end
-msg{ii} = sprintf('\n'); ii = ii+1; %#ok<SPRINTFN>
+msg{ii} = sprintf('\n'); ii = ii+1;
 msg{ii} = sprintf('Git might not be installed on your computer. \n'); ii = ii+1;
 msg{ii} = sprintf('These libraries can still be installed without git. The assumed submodule branch that matches \n'); ii = ii+1;
-msg{ii} = sprintf('the branch of the parent repo, ''%s'', is ''%s''\n\n', appname, branch); ii = ii+1;
+msg{ii} = sprintf('the branch of the parent repo, ''%s'', is ''%s''\n\n', appname, branch); ii = ii+1; %#ok<NASGU>
 msg = [msg{:}];
 
 fprintf(msg)
@@ -95,7 +98,7 @@ msg{ii} = sprintf('WARNING: The following libraries required by this application
 for jj = 1:size(s,1)
     msg{ii} = sprintf('    %s\n', s{jj,1}); ii = ii+1;
 end
-msg{ii} = sprintf('\n'); ii = ii+1;
+msg{ii} = sprintf('\n'); ii = ii+1; %#ok<*SPRINTFN>
 msg{ii} = sprintf('Either a) install git and rerun setpaths or b) download the submodules manually and provide their locations. '); ii = ii+1;
 msg{ii} = sprintf('Select option:');
 msg = [msg{:}];
@@ -107,7 +110,6 @@ q = menu(msg, {'Quit setpaths, install git and rerun setpaths','Download submodu
 
 % ----------------------------------------------------------
 function addSearchPaths(s)
-kk = [];
 exclSearchList  = {'.git'};
 for ii = 1:size(s,1)
     foo = findDotMFolders(s{ii,3}, exclSearchList);
@@ -123,7 +125,7 @@ end
 % ---------------------------------------------------
 function setpermissions(appPath)
 if isunix() || ismac()
-    if ~isempty(strfind(appPath, '/bin'))
+    if ~isempty(strfind(appPath, '/bin')) %#ok<STREMP>
         fprintf(sprintf('chmod 755 %s/*\n', appPath));
         files = dir([appPath, '/*']);
         if ~isempty(files)
@@ -158,7 +160,6 @@ fprintf('\nBranch guess:  ''%s''\n', branchGuess);
 % Check to see if submodule urls exist. If not edfault to 'master' branches. 
 for ii = 1:size(submodules,1)
     url             = submodules{ii,1};
-    submodulepath   = submodules{ii,3};
     
     urlfull = sprintf('%s/archive/refs/heads/%s.zip', url, branchGuess);
     [~, urlExists] = urlread(urlfull); %#ok<*URLRD>

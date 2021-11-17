@@ -98,14 +98,14 @@ dirnameDst = fullpath(dirnameDst);
 
 % Copy files from source folder to destination installation folder
 for ii = 1:length(platform.exename)
-    copyFile([dirnameSrc, platform.exename{ii}], [dirnameDst, platform.exename{ii}]);
+    myCopyFile([dirnameSrc, platform.exename{ii}], [dirnameDst, platform.exename{ii}]);
 end
-copyFile([dirnameSrc, 'db2.mat'],           dirnameDst);
-copyFile([dirnameSrc, 'AppSettings.cfg'],   dirnameDst);
-copyFile([dirnameSrc, 'DataTree'],          [dirnameDst, 'DataTree']);
-copyFile([dirnameSrc, 'FuncRegistry'],      [dirnameDst, 'FuncRegistry']);
-copyFile([dirnameSrc, 'SubjDataSample'],    [dirnameDst, 'SubjDataSample']);
-copyFile([dirnameSrc, 'SDGcolors.csv'],     dirnameDst);
+myCopyFile([dirnameSrc, 'db2.mat'],           dirnameDst);
+myCopyFile([dirnameSrc, 'AppSettings.cfg'],   dirnameDst);
+myCopyFile([dirnameSrc, 'DataTree'],          [dirnameDst, 'DataTree']);
+myCopyFile([dirnameSrc, 'FuncRegistry'],      [dirnameDst, 'FuncRegistry']);
+myCopyFile([dirnameSrc, 'SubjDataSample'],    [dirnameDst, 'SubjDataSample']);
+myCopyFile([dirnameSrc, 'SDGcolors.csv'],     dirnameDst);
 
 % Create desktop shortcuts to Homer3
 createDesktopShortcuts(dirnameSrc, dirnameDst);
@@ -153,7 +153,7 @@ if ~ispc()
             if ispathvalid(dirnameSrc)
                 err = -1;
             end
-            copyFile(dirnameSrc0, dirnameSrc);
+            myCopyFile(dirnameSrc0, dirnameSrc);
         end
         rmdir_safe('~/Desktop/Test/');
         
@@ -166,69 +166,6 @@ if ~ispc()
         
         cd(dirnameSrc);
     end
-end
-
-
-
-
-
-% -------------------------------------------------------------------
-function copyFile(src, dst, type)
-global h
-global nSteps
-global iStep
-global logger
-
-if ~exist('type', 'var')
-    type = 'file';
-end
-
-try
-    % If src is one of several possible filenames, then src to any one of
-    % the existing files.
-    if iscell(src)
-        for ii=1:length(src)
-            if ~isempty(dir(src{ii}))
-                src = src{ii};
-                break;
-            end
-        end
-    end
-    
-    assert(logical(exist(src, type)));
-    
-    % Check if we need to untar the file 
-    k = findstr(src,'.tar.gz'); %#ok<FSTR>
-    if ~isempty(k)
-        untar(src,fileparts(src));
-        src = src(1:k-1);
-    end
-    
-    % Copy file from source to destination folder
-    
-    logmsg = sprintf('Copying %s to %s\n', src, dst);
-    if isempty(logger)
-        fprintf(logmsg);
-    else
-        logger.Write(logmsg);
-    end
-    copyfile(src, dst);
-
-    if ~isempty(iStep)
-        waitbar(iStep/nSteps, h); iStep = iStep+1;
-    end
-    pause(1);
-catch ME
-    if ishandles(h)
-        close(h);
-    end
-    printStack(ME);
-    if iscell(src)
-        src = src{1};
-    end
-    menu(sprintf('Error: Could not copy %s to installation folder.', src), 'OK');
-    pause(5);
-    rethrow(ME);
 end
 
 

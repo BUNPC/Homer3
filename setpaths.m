@@ -96,12 +96,12 @@ try
     % Parse arguments
     addremove = 1;
     if ~exist('options','var')
-        options = 'init';
+        options = '';
     elseif isnumeric(options)
         if options == 0
             addremove = 0;
         else
-            options = 'init';
+            options = '';
         end
     end
     
@@ -120,7 +120,7 @@ try
     appThis         = filesepStandard_startup(pwd);
     appThisPaths    = findDotMFolders(appThis, exclSearchList);
     if addremove == 0
-        if exist([pwd, '/Utils/namespace'],'dir')
+        if ~isempty(which('deleteNamespace.m'))
             deleteNamespace(appname);
         end
         removeSearchPaths(appThis);
@@ -178,8 +178,10 @@ try
         fprintf('ERROR: Could not download shared libraries required by this application...\n')
         return;
     end
-    setNamespace(appname);
     
+    if ~isempty(which('setNamespace.m'))
+        setNamespace(appname);
+    end    
     
     % Add back all search paths for all other apps except for current app
     for ii = 1:length(appInclList)
@@ -191,7 +193,7 @@ try
         addSearchPaths(foo);
     end
     
-    if exist([pwd, '/Utils/Shared/setpaths_proprietary.m'],'file')
+    if  ~isempty(which('setpaths_proprietary.m'))
         setpaths_proprietary(options);
     end
     

@@ -16,21 +16,24 @@ end
 repoFull = filesepStandard_startup(repo,'full');
 ii = 1;
 
+submodules = parseGitSubmodulesFile(repoFull);
+url = gitGetOrigin(repoFull);
+urlroot = fileparts(url);
+
 cmds{ii,1} = sprintf('cd %s', repoFull); ii = ii+1;
 cmds{ii,1} = sprintf('git config --global http.sslverify "false"'); ii = ii+1;
-%cmds{ii,1} = sprintf('git submodule update --init '); ii = ii+1; %#ok<NASGU>
-cmds{ii,1} = sprintf('git submodule update --init --recursive --remote '); ii = ii+1; %#ok<NASGU>
+for jj = 1:size(submodules,1)
+    [~, submodulename] = fileparts(submodules{jj,1});
+    cmds{ii,1} = sprintf('git config --file=.gitmodules submodule.%s.url %s', submodules{jj,3}(1:end-1), [urlroot, '/', submodulename]); ii = ii+1;
+end
+cmds{ii,1} = sprintf('git submodule update --init --recursive --remote'); ii = ii+1;
 
 [errs, msgs] = exeShellCmds(cmds, preview);
 
-submodules = parseGitSubmodulesFile(repo);
-
 % Set origin for submodules to be same as origin for parent repo
-url = gitGetOrigin(repoFull);
-urlroot = fileparts(url);
-for ii = 1:size(submodules,1)
-    [~, submodulename] = fileparts(submodules{ii,1});
-    gitSetOrigin([repoFull, submodules{ii,3}], [urlroot, '/', submodulename]);
+for kk = 1:size(submodules,1)
+    [~, submodulename] = fileparts(submodules{kk,1});
+    gitSetOrigin([repoFull, submodules{kk,3}], [urlroot, '/', submodulename]);
 end
 
 % Checkout branch for parent repo and submodules. First checkout the source

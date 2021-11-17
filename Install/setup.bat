@@ -8,6 +8,6 @@
 @echo.
 @echo   NOTE: In case of installation failure, refer to log file setup.log .
 @echo.
-@(call .\setup.exe  1> setup.log 2>&1) | type setup.log 
+@(call .\setup.exe)
 @move .\setup.exe .\installtemp 
 

@@ -30,6 +30,6 @@ function [vrnnum] = getVernum_Homer3()
 
 vrnnum{1} = '1';   % Major version #
 vrnnum{2} = '33';  % Major sub-version #
-vrnnum{3} = '0';   % Minor version #
+vrnnum{3} = '1';   % Minor version #
 vrnnum{4} = '0';   % Minor sub-version # or patch #: 'p1', 'p2', etc
 

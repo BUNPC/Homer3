@@ -18,25 +18,24 @@ function setpaths(options)
 %
 %   options:
 %        1. no arguments
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize
-%           all submodules to same branch and origin as parent app equivalent to numeric argument 1 or string
-%           argument 'init'.
+%           Add search paths for parent app under current folder and all its associated submodules. 
+%           It is equivalent to argument value of 1. NOTE: This option will NOT automatically 
+%           download submodules. (See 'init' or 'update' options)
 %
 %        2. 1
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize all
-%           submodules to same branch and origin as parent app equivalent to string argument 'init' or no arguments
+%           Add search paths for parent app under current folder and all its associated submodules. NOTE: 
+%           This option will NOT automatically download submodules. (See 'init' or 'update' options)
 %
 %        3. 0
 %           Remove search paths for parent app under current folder and all its associated submodules
 %
 %        4. 'init'
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize all
-%           submodules to same branch and origin as parent app equivalent to numeric argument 1 or no arguments
+%           Add search paths for parent app under current folder and all its associated submodules. Initialize
+%           all submodules to same branch and origin as parent app
 %
 %        5. 'update'
 %           Update all submodules to their latest revision for their current branches. If used on a newly
-%           downloaded parent app it will do the equivalent of setpaths with no args, setpaths('init')
-%           or setpaths(1).
+%           downloaded parent app it will do the equivalent of setpaths('init').
 %
 %        6. 'branch: <branchname>'
 %           Add search paths for parent app under current folder and all its associated submodules. Initialize all
@@ -96,12 +95,12 @@ try
     % Parse arguments
     addremove = 1;
     if ~exist('options','var')
-        options = 'init';
+        options = '';
     elseif isnumeric(options)
         if options == 0
             addremove = 0;
         else
-            options = 'init';
+            options = '';
         end
     end
     
@@ -120,7 +119,7 @@ try
     appThis         = filesepStandard_startup(pwd);
     appThisPaths    = findDotMFolders(appThis, exclSearchList);
     if addremove == 0
-        if exist([pwd, '/Utils/namespace'],'dir')
+        if ~isempty(which('deleteNamespace.m'))
             deleteNamespace(appname);
         end
         removeSearchPaths(appThis);
@@ -178,8 +177,10 @@ try
         fprintf('ERROR: Could not download shared libraries required by this application...\n')
         return;
     end
-    setNamespace(appname);
     
+    if ~isempty(which('setNamespace.m'))
+        setNamespace(appname);
+    end
     
     % Add back all search paths for all other apps except for current app
     for ii = 1:length(appInclList)
@@ -191,7 +192,7 @@ try
         addSearchPaths(foo);
     end
     
-    if exist([pwd, '/Utils/Shared/setpaths_proprietary.m'],'file')
+    if  ~isempty(which('setpaths_proprietary.m'))
         setpaths_proprietary(options);
     end
     

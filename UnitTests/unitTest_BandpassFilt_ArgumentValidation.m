@@ -50,4 +50,14 @@ verifyError(testCase,@() hmrR_BandpassFilt(acquired.data, 0.05, hpf_nonNyq), ...
 verifyError(testCase,@() hmrR_BandpassFilt(acquired.data, lpf_nonNyq, 0.01), ...
     "Homer:ExceedsNyquist")
 
+% check data is nonNan
+data_nan = acquired.data.copy();
+data_nan.dataTimeSeries(2:50) = nan;
+verifyError(testCase,@() hmrR_BandpassFilt(data_nan, 0.01, 0.05), ...
+    "Homer:ContainsNan")
 
+% check data is finite
+data_nonfinite = acquired.data.copy();
+data_nonfinite.dataTimeSeries(2:50) = inf;
+verifyError(testCase,@() hmrR_BandpassFilt(data_nonfinite, 0.01, 0.05), ...
+    "Homer:NonFiniteInput")

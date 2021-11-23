@@ -1,0 +1,4 @@
+DataTree merge=ours 
+Utils/Shared merge=ours
+.gitmodules merge=ours
+.gitattributes merge=ours

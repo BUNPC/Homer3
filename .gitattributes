@@ -1,0 +1,3 @@
+Group/DataTree merge=ours 
+Utils/Shared merge=ours
+.gitmodules merge=ours

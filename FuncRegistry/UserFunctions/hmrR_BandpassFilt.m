@@ -31,7 +31,8 @@
 function [data2, ylpf] = hmrR_BandpassFilt( data, hpf, lpf )
 
 arguments
-    data {mustBeNonNanData(data), mustBeFiniteData(data)}
+    data {mustBeOfClass(data,'DataClass'),...
+        mustBeNonNanData(data), mustBeFiniteData(data)}
     hpf (1,1) {mustBeNumeric, mustBeNonnegative}
     lpf (1,1) {mustBeNumeric, mustBeNonnegative, ...
         mustNotExceedNyquist(data, hpf, lpf), mustBeLargerThanHpf(hpf, lpf)}
@@ -87,6 +88,15 @@ end
 
 %--------------------------------------------------------------------------
 % validation functions
+function mustBeOfClass(input,className)
+    % Test for specific class name
+    cname = class(input);
+    if ~strcmp(cname,className)
+        throwAsCaller(MException('Class:notCorrectClass',...
+            ['Input must be of class ', className]))
+    end
+end
+
 function mustBeNonNanData(data)
 for ii = 1:length(data)
     if isa(data, 'DataClass')

@@ -66,8 +66,13 @@ data_nonfinite.dataTimeSeries(2:50) = inf;
 verifyError(testCase,@() hmrR_BandpassFilt(data_nonfinite, 0.01, 0.05), ...
     "Homer:NonFiniteInput")
 
+% wrong object trhows class exception
+verifyError(testCase,@() hmrR_BandpassFilt(acquired, 0.01, 0.05), ...
+    "Class:notCorrectClass")
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Expected output check
 %--------------------------------------------------------------------------
+databpf_out = hmrR_BandpassFilt(acquired, 0.01, 0.05);
 databpf_out = hmrR_BandpassFilt(acquired.data, 0.01, 0.05);
 testCase.verifyThat(databpf_out, IsEqualTo(databpf_expected))

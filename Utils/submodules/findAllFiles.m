@@ -1,4 +1,4 @@
-function files = findAllFiles(subdir, pattern)
+function fdevelopment 2iles = findAllFiles(subdir, pattern)
 files = {};
 if ~exist('subdir','var')
     subdir = pwd;

@@ -1,4 +1,4 @@
-function [errs, msgs] = exeShellCmds(cmds, preview, quiet)
+function [development 2errs, msgs] = exeShellCmds(cmds, preview, quiet)
 % Change #2
 errs = zeros(length(cmds),1) - 1;
 msgs = cell(length(cmds),1);

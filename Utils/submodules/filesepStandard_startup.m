@@ -1,4 +1,4 @@
-function pathname = filesepStandard_startup(pathname0, options)
+function pdevelopment 2athname = filesepStandard_startup(pathname0, options)
 
 %
 % Usage:

@@ -1,4 +1,4 @@
-function [url, cmds, errs, msgs] = gitGetOrigin(repo, preview, quiet)
+development 2function [url, cmds, errs, msgs] = gitGetOrigin(repo, preview, quiet)
 url = '';
 cmds = {};
 

@@ -1,3 +1,4 @@
+development 2
 function [b, cmds, errs, msgs] = gitBranchExists(repo, branch)
 b = false;
 cmds = {};

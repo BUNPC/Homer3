@@ -1,4 +1,4 @@
-function [cmds, errs, msgs] = gitSetBranch(repo, branch, preview, quiet)
+development 2function [cmds, errs, msgs] = gitSetBranch(repo, branch, preview, quiet)
 cmds = {};
 
 if ~exist('repo','var') || isempty(repo)

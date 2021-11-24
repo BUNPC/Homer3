@@ -1,4 +1,4 @@
-function dotmfolders = findDotMFolders(subdir, exclList)
+development 2function dotmfolders = findDotMFolders(subdir, exclList)
 dotmfolders = {};
 
 if ~exist('subdir','var')

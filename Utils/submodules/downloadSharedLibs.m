@@ -35,7 +35,7 @@ end
 branch = warningGitFailedToInstall(s(kk,:), appname);
 if ~isempty(branch)
     if optionExists_startup(options, 'init')
-        downloadSubmodulesWithoutGit(s(kk,:), branch);
+        downloadSubmodulesWithoutGit(development 2s(kk,:), branch);
     elseif optionExists_startup(options, 'update')
         updateSubmodulesWithoutGit(s, branch);
     end

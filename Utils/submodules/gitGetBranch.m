@@ -1,4 +1,4 @@
-development 2function [name, cmds, errs, msgs] = gitGetBranch(repo, quiet)
+development 3function [name, cmds, errs, msgs] = gitGetBranch(repo, quiet)
 name = '';
 cmds = {};
 

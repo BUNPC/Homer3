@@ -1,11 +1,15 @@
 % This script checks for expected errors given the argument validation
 % functions
+clear all; clc;
+import matlab.unittest.constraints.IsEqualTo
 
 % load test data file
 fname = 'Example_RunFuncOffline/test.snirf';
 data_nirs = {SnirfClass(fname)}; 
 acquired = data_nirs{1};
 
+% load expected data output 
+load('expected outputs/databpf_expected.mat') % databpf_expected
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Error checks
 %--------------------------------------------------------------------------
@@ -61,3 +65,9 @@ data_nonfinite = acquired.data.copy();
 data_nonfinite.dataTimeSeries(2:50) = inf;
 verifyError(testCase,@() hmrR_BandpassFilt(data_nonfinite, 0.01, 0.05), ...
     "Homer:NonFiniteInput")
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Expected output check
+%--------------------------------------------------------------------------
+databpf_out = hmrR_BandpassFilt(acquired.data, 0.01, 0.05);
+testCase.verifyThat(databpf_out, IsEqualTo(databpf_expected))

@@ -12,7 +12,7 @@
 % the data range, then the trial is excluded from the average.
 %
 % INPUT:
-% data: SNIRF.data container with the delta OD or delat concentration data
+% data: SNIRF.data container with the delta OD or delta concentration data
 % stim: SNIRF.stim container with the stimulus condition data
 % trange: defines the range for the block average [tPre tPost]
 %
@@ -20,14 +20,14 @@
 % data_avg: SNIRF.data container with the averaged results
 % data_std: SNIRF.data container with the standard deviation across trials
 % nTrials: the number of trials averaged for each condition
-% data_sum2: SNIRF.data container ...
+% data_sum2: SNIRF.data container of the squared sum of the trials
 % yTrials: a structure containing the individual trial responses
 %
 % USAGE OPTIONS:
 % Block_Average_on_Concentration_Data: [dcAvg, dcAvgStd, nTrials, dcSum2] = hmrR_BlockAvg( dc, stim, trange )
 % Block_Average_on_Delta_OD_Data: [dodAvg, dodAvgStd, nTrials, dodSum2] = hmrR_BlockAvg( dod, stim, trange )
 %
-% PARAMETERS:
+% DEFAULT PARAMETERS:
 % trange: [-2.0, 20.0]
 %
 % PREREQUISITES:
@@ -64,27 +64,32 @@ for kk=1:length(data)
     y = data(kk).GetDataTimeSeries('reshape');    % Get the data vector 
     t = data(kk).GetTime();    % Get the time vector 
     dt = t(2)-t(1);
+    % convert pre and post stimulus time to samples
     nPre = round(trange(1)/dt);
     nPost = round(trange(2)/dt);
     nTpts = size(y,1);
-    tHRF = nPre*dt:dt:nPost*dt;
+    tHRF = nPre*dt:dt:nPost*dt; % time axis for averaged response (HRF)
     if strncmp(datatype{1}, 'Hb', 2)
         ml = data(kk).GetMeasListSrcDetPairs();
+        % initialize array containing all Hb signals (HbO, HbR and Hbt)
+        % shape: time x nHb x nTrials x nConditions
         yblk = zeros(nPost-nPre+1,size(y,2),size(y,3),size(s,2));
     elseif strcmp(datatype{1}, 'dOD')
         ml = data(kk).GetMeasList();
+        % initialize array containing all OD signals 
+        % shape: time x nOD x nTrials x nConditions        
         yblk = zeros(nPost-nPre+1,size(y,2),size(s,2));
     else
         return;
     end
            
-    for iC = 1:size(s,2)
-        lstS = find(s(:,iC)==1);
-        nBlk = 0;
-        for iT = 1:length(lstS)
+    for iC = 1:size(s,2) % iterate over experimental conditions
+        lstS = find(s(:,iC)==1); % get stimuli onsets
+        nBlk = 0; % valid trials counter
+        for iT = 1:length(lstS) % iterate over block trials
             if (lstS(iT)+nPre)>=1 && (lstS(iT)+nPost)<=nTpts
                 if strncmp(datatype{1}, 'Hb', 2)
-                    nBlk = nBlk + 1;
+                    nBlk = nBlk + 1; 
                     yblk(:,:,:,nBlk) = y(lstS(iT)+[nPre:nPost],:,:); %changed from yblk(:,:,:,end+1)
                 elseif strcmp(datatype{1}, 'dOD')
                     nBlk = nBlk + 1;
@@ -103,12 +108,16 @@ for kk=1:length(data)
             
             % Loop over all channels
             for ii=1:size(yavg,3)
-                foom = ones(size(yavg,1),1)*mean(yavg(1:-nPre,:,ii,iC),1);
+                % set the baseline of the average to zero by subtracting
+                % the mean of the average for t<0.
+                foom = ones(size(yavg,1),1)*mean(yavg(1:-nPre,:,ii,iC),1); % mean of the average for t<0.
                 yavg(:,:,ii,iC) = yavg(:,:,ii,iC) - foom;
                 
+                % similarly, per block
                 for iBlk = 1:nBlk
                     yTrials(iC).yblk(:,:,ii,iBlk) = yTrials(iC).yblk(:,:,ii,iBlk) - foom;
                 end
+                % compute squared sum of the trials
                 ysum2(:,:,ii,iC) = sum( yTrials(iC).yblk(:,:,ii,1:nBlk).^2 ,4);
                 
                 % Snirf stuff: set channel descriptors
@@ -122,7 +131,7 @@ for kk=1:length(data)
                 data_std(kk).AddChannelHbR(ml(ii,1), ml(ii,2), iC);
                 data_std(kk).AddChannelHbT(ml(ii,1), ml(ii,2), iC);
                 
-                % 
+                % squared sum of the tirals
                 data_sum2(kk).AddChannelHbO(ml(ii,1), ml(ii,2), iC);
                 data_sum2(kk).AddChannelHbR(ml(ii,1), ml(ii,2), iC);
                 data_sum2(kk).AddChannelHbT(ml(ii,1), ml(ii,2), iC);
@@ -140,12 +149,16 @@ for kk=1:length(data)
 
             % Loop over all wavelengths
             for ii=1:size(yavg,2)
-                foom = ones(size(yavg,1),1)*mean(yavg(1:-nPre,ii,iC),1);
+                % set the baseline of the average to zero by subtracting
+                % the mean of the average for t<0.
+                foom = ones(size(yavg,1),1)*mean(yavg(1:-nPre,ii,iC),1); % mean of the average for t<0.
                 yavg(:,ii,iC) = yavg(:,ii,iC) - foom;
                 
+                % similarly, per block
                 for iBlk = 1:nBlk
                     yTrials(iC).yblk(:,ii,iBlk) = yTrials(iC).yblk(:,ii,iBlk) - foom;
                 end
+                % compute squared sum of the trials
                 ysum2(:,ii,iC) = sum( yTrials(iC).yblk(:,ii,1:nBlk).^2 ,3);
 
                 % Snirf stuff: set channel descriptors

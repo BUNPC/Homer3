@@ -502,7 +502,7 @@ for iBlk=1:length(data_y)
         for iSS = 1:length(mlSSlst)
             
             lstMLtmp = 1:size(ml,1);
-            if if mlSSlst(iSS)==0 && isempty(Aaux)
+            if mlSSlst(iSS)==0 && isempty(Aaux)
                 lstML = transpose(lstMLtmp(find(mlAct(lstMLtmp)==1)));
                 % lstML = 1:size(y,3);
                 At = A(:,:,conc);

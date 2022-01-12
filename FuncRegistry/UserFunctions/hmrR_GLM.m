@@ -190,7 +190,7 @@ for iBlk=1:length(data_y)
     end
     lstSS = lst(find(rhoSD<=rhoSD_ssThresh & mlAct(lst)==1));
     
-    if isempty(lstSS) || (isempty(Aaux) && flagNuisanceRMethod == 3)
+    if isempty(lstSS) 
         fprintf('There are no short separation channels in this probe ...performing regular deconvolution.\n');
         mlSSlst = 0;
     else
@@ -502,7 +502,7 @@ for iBlk=1:length(data_y)
         for iSS = 1:length(mlSSlst)
             
             lstMLtmp = 1:size(ml,1);
-            if mlSSlst(iSS)==0
+            if mlSSlst(iSS)==0 && isempty(Aaux)
                 lstML = transpose(lstMLtmp(find(mlAct(lstMLtmp)==1)));
                 % lstML = 1:size(y,3);
                 At = A(:,:,conc);

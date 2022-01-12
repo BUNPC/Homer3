@@ -23,7 +23,7 @@
 % Bandpass_Filter_OpticalDensity: dod = hmrR_BandpassFilt(dod, hpf, lpf)
 % Bandpass_Filter_Auxiliary: aux = hmrR_BandpassFilt(aux, hpf, lpf)
 %
-% PARAMETERS:
+% DEFAULT PARAMETERS:
 % hpf: [0.000]
 % lpf: [0.500]
 %

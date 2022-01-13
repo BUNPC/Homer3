@@ -190,7 +190,7 @@ for iBlk=1:length(data_y)
     end
     lstSS = lst(find(rhoSD<=rhoSD_ssThresh & mlAct(lst)==1));
     
-    if isempty(lstSS) || (isempty(Aaux) && flagNuisanceRMethod == 3)
+    if isempty(lstSS) 
         fprintf('There are no short separation channels in this probe ...performing regular deconvolution.\n');
         mlSSlst = 0;
     else
@@ -502,8 +502,8 @@ for iBlk=1:length(data_y)
         for iSS = 1:length(mlSSlst)
             
             lstMLtmp = 1:size(ml,1);
-            if mlSSlst(iSS)==0
-                lstML = lstMLtmp(find(mlAct(lstMLtmp)==1));
+            if mlSSlst(iSS)==0 && isempty(Aaux)
+                lstML = transpose(lstMLtmp(find(mlAct(lstMLtmp)==1)));
                 % lstML = 1:size(y,3);
                 At = A(:,:,conc);
             elseif flagNuisanceRMethod==0
@@ -533,7 +533,7 @@ for iBlk=1:length(data_y)
                 end
                 
             elseif flagNuisanceRMethod==2
-                lstML = lstMLtmp(find(mlAct(lstMLtmp)==1));
+                lstML = transpose(lstMLtmp(find(mlAct(lstMLtmp)==1)));
                 % lstML = 1:size(y,3);
                 Ass = mean(y(:,conc,lstSS),3);
                 At = [A(:,:,conc) Ass];
@@ -547,7 +547,7 @@ for iBlk=1:length(data_y)
                 
             elseif flagNuisanceRMethod==3
                 if ischar(rcMap{iBlk}) % no channel map: use all tCCA regressors for one group of all channels
-                    lstML = lstMLtmp(find(mlAct(lstMLtmp)==1));
+                    lstML = transpose(lstMLtmp(find(mlAct(lstMLtmp)==1)));
                     At = [A(:,:,conc) Aaux];
                     
                     if iSS == 1 && conc == 1
@@ -558,7 +558,7 @@ for iBlk=1:length(data_y)
                     end
                     
                 elseif iscell(rcMap{iBlk}) % channel map: each single regressor corresponds to one channel (nCH groups)
-                    lstML = lstMLtmp(find(mlAct(rcMap{iBlk}{conc,iSS})==1));
+                    lstML = transpose(lstMLtmp(find(mlAct(rcMap{iBlk}{conc,iSS})==1)));
                     Atcca = Aaux{iBlk}(:,rcMap{conc,iSS});
                     At = [A(:,:,conc) Atcca];
                     
@@ -641,7 +641,10 @@ for iBlk=1:length(data_y)
                         yavg(:,lstML,conc,iCond)=tbasis(:,:,conc)*tb(:,lstML,conc,iCond);
                     end
                     if idxBasis > 1
-                        yavg = conv(yavg, avg_pulses{iCond});
+                        for iML = transpose(lstML)
+                            convolved = conv(yavg(:, iML, conc, iCond), avg_pulses{iCond});
+                            yavg(:, iML, conc, iCond) = convolved(1:size(yavg, 1));  % Truncate convolution
+                        end
                     end
                 end
                 

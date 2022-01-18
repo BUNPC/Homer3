@@ -6,7 +6,7 @@
 %
 % This function uses PCA to filter only the segments of data identified as
 % a motion artifact. The motion artifacts are indicated in the tInc vector
-% by the value of 0. The number of principal components to remove are
+% by the value of 0. The number of principal components to remove is
 % determined by the nSV value.  
 %
 %

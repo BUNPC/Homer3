@@ -12,7 +12,7 @@
 % the data range, then the trial is excluded from the average.
 %
 % INPUT:
-% data: SNIRF.data container with the delta OD or delat concentration data
+% data: SNIRF.data container with the delta OD or delta concentration data
 % stim: SNIRF.stim container with the stimulus condition data
 % trange: defines the range for the block average [tPre tPost]
 %

@@ -18,6 +18,11 @@
 %
 function dod = hmrR_Intensity2OD( intensity )
 
+arguments
+    intensity {mustBeOfClass(intensity,'DataClass')}
+
+end
+
 % convert to dod
 dod = DataClass().empty();
 for ii=1:length(intensity)
@@ -29,4 +34,16 @@ for ii=1:length(intensity)
     dod(ii).SetDataTimeSeries(-log(abs(d)./(ones(nTpts,1)*dm)));
     dod(ii).SetMl(intensity(ii).GetMl());
     dod(ii).SetDataTypeDod();
+end
+end
+
+%--------------------------------------------------------------------------
+% validation functions
+function mustBeOfClass(input,className)
+    % Test for specific class name
+    cname = class(input);
+    if ~strcmp(cname,className)
+        throwAsCaller(MException('Class:notCorrectClass',...
+            ['Input must be of class ', className]))
+    end
 end

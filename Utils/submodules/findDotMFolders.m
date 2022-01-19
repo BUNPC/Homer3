@@ -86,7 +86,7 @@ for ii = 1:length(exclList)
     % Get list of all folders matching exclList{ii} pattern, whether it be
     % a single folder name or a wildcard pattern
     for jj = 1:length(c)
-        k = strfind([f,e], c{jj});
+        k = strfind(c{jj}, [f,e]);
         if isempty(k)
             break;
         end

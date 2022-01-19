@@ -7,9 +7,10 @@ cfg = InitConfig(cfg);
 if (strcmp(cfg.GetValue('Check For Updates'),'on'))
     
     % If it has been a week since Homer checked for an update
-    if (datetime - GetLastCheckForUpdates() > duration(168,0,0))        
+    if (datetime - GetLastCheckForUpdates() > duration(168,0,0))
+        
         url = 'https://openfnirs.org/software/homer/homer3/';        
-        [s,status] = urlread(url,'timeout',4);
+        [s, status] = urlread(url,'timeout',4);
         if (~status)
             % App is offline or server could not be reached
             fprintf('Server could not be reached to check for updates.')
@@ -18,40 +19,46 @@ if (strcmp(cfg.GetValue('Check For Updates'),'on'))
 
         SetLastCheckForUpdates();
         
-        % Open a hidden web browser
+        % Open a hidden web browser and poll openfnirs.org
+        % If user has a web browser open MATLAB will unfortunately just
+        % open the page there
         wb = com.mathworks.mde.webbrowser.WebBrowser.createBrowser;
-        wb.setCurrentLocation(url);
+        setCurrentLocation(wb, url);
         p = getParentRecursive(wb);
         p.setVisible(0);
         
-        version = regexp(s, 'id="version">(.*?)<\/', 'tokens');
-        desc = regexp(s, 'id="description">(.*?)<\/', 'tokens');
-        try  % Version description might not exist
-            updateTxt = [version{1}{1},': ', desc{1}{1}];
-        catch
-            updateTxt = version{1}{1};
-        end
-        web_vrnum = str2cell(version{1}{1},'.');
+        % Get latest release info from GitHub API
+        release_info = webread('https://api.github.com/repos/BUNPC/Homer3/releases/latest');
+        
+        tag = release_info.tag_name;
+        update_body_text = release_info.body;
+        dest = release_info.html_url;
+        
+        latest_vrnum = tag;
+        latest_vrnum(isletter(latest_vrnum)) = [];
+        latest_vrnum = transpose(split(latest_vrnum, '.'));
+        
         this_vrnum = getVernum();
-        promptFlag = compareVernum(web_vrnum, this_vrnum);  % If fetched vernum is greater
+        
+        promptFlag = compareVernum(latest_vrnum, this_vrnum);  % If fetched vernum is greater
         if (promptFlag)
-            choice = questdlg(sprintf(['An update for Homer3 is available:\n',...
-                updateTxt,...
+            choice = questdlg(sprintf([sprintf('An update for Homer3 is available: %s\n', tag),...
+                update_body_text,...
                 '\nWould you like to download it?']),...
                 'Update Available',...
                 'Yes','Remind me later','Don''t show this again',...
                 'Remind me later');
             if strcmp(choice, 'Yes')
-                web('https://github.com/BUNPC/Homer3/releases');
                 close(wb);
+                web(dest);
+                return;
             elseif strcmp(choice, 'Don''t show this again')
-                web('https://github.com/BUNPC/Homer3');
                 cfg.SetValue('Check For Updates', 'off');
             end
             
         end
         
-        pause(1);  % To ensure <script> is run
+        pause(1);  % To ensure <script> is run on openfnirs.org
         close(wb);
         
     end

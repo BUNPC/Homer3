@@ -6,85 +6,7 @@ function setpaths(options)
 %   setpaths
 %   setpaths(1)
 %   setpaths(0)
-%   setpaths(options)
 %
-% DESCRIPTION:
-%
-%   Sets all the paths needed by the app in the current folder. It also uses git commands to downloasd
-%   all its associated submodules if they exist and changes their branch and origin to match the parent app.
-%
-%   If GIT is NOT available, setpaths will try to download and install the non-git versions of the submodules
-%   after asking the user to input the source branch that matches the parent app.
-%
-%   options:
-%        1. no arguments
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize
-%           all submodules to same branch and origin as parent app equivalent to numeric argument 1 or string
-%           argument 'init'.
-%
-%        2. 1
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize all
-%           submodules to same branch and origin as parent app equivalent to string argument 'init' or no arguments
-%
-%        3. 0
-%           Remove search paths for parent app under current folder and all its associated submodules
-%
-%        4. 'init'
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize all
-%           submodules to same branch and origin as parent app equivalent to numeric argument 1 or no arguments
-%
-%        5. 'update'
-%           Update all submodules to their latest revision for their current branches. If used on a newly
-%           downloaded parent app it will do the equivalent of setpaths with no args, setpaths('init')
-%           or setpaths(1).
-%
-%        6. 'branch: <branchname>'
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize all
-%           submodules to same branch and origin as parent app. Checkout branch <branchname> for parent app and
-%           submodules. If branch <branchname> doesn't exist create based off current branch and then check it out.
-%
-%        7. 'branch: <branchname src>, <branchname dst>'
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize all
-%           submodules and parent repo to <branchname src> and change submodule origin to match parent app. The branch
-%           <branchname src> must exist (otherwise setpaths will fail to checkout the appropriate branch). Then create
-%           new branch <branchname dst> if it does not exist already based off <branchname src>. If branch
-%           <branchname dst> DOES exist then simply check it out.
-%
-%
-% EXAMPLES:
-%
-%   % Example 1:   Set search paths for parent app in the current folder and any associated submodules.
-%   %   Download associated submodule and change their branch and origin to match that of parent app.
-%
-%   setpaths
-%
-%
-%   % Example 2:   Remove all search paths for parent app in the current folder and its associated submodules
-%
-%   setpaths(0)
-%
-%
-%   % Example 3:   Update all submodules to their latest revision for their current branches. If used on a
-%   %   newly downloaded repo it will do the equivalent of setpaths with no args or setpaths('init').
-%
-%   setpaths('update')
-%
-%
-%   % Example 4:   Set search paths for parent app in the current folder and any associated submodules.
-%   %   Change submodule current branch and origin to match parent app. Then create/checkout branch
-%   %   'mynewbranch1'. If 'mynewbranch1' is new it will be based off 'development' branch in the parent
-%   %   app AND all submodules.
-%
-%   setpaths('branch: development, mynewbranch1')
-%
-%
-%   % Example 5:   Set search paths for parent app in the current folder and any associated submodules.
-%   %   Download associated submodule and change their branch and origin to match that of parent app.
-%   %   Then create/checkout branch 'mynewbranch1'. If 'mynewbranch1' is new it will be created in the
-%   %   parent app AND all submodules based off the current branch in each of those repos.
-%
-%   setpaths('branch: mynewbranch1')
-
 currdir = pwd;
 
 try
@@ -96,12 +18,12 @@ try
     % Parse arguments
     addremove = 1;
     if ~exist('options','var')
-        options = 'init';
+        options = '';
     elseif isnumeric(options)
         if options == 0
             addremove = 0;
         else
-            options = 'init';
+            options = '';
         end
     end
     
@@ -120,7 +42,7 @@ try
     appThis         = filesepStandard_startup(pwd);
     appThisPaths    = findDotMFolders(appThis, exclSearchList);
     if addremove == 0
-        if exist([pwd, '/Utils/namespace'],'dir')
+        if ~isempty(which('deleteNamespace.m'))
             deleteNamespace(appname);
         end
         removeSearchPaths(appThis);
@@ -178,8 +100,10 @@ try
         fprintf('ERROR: Could not download shared libraries required by this application...\n')
         return;
     end
-    setNamespace(appname);
     
+    if ~isempty(which('setNamespace.m'))
+        setNamespace(appname);
+    end
     
     % Add back all search paths for all other apps except for current app
     for ii = 1:length(appInclList)
@@ -191,7 +115,7 @@ try
         addSearchPaths(foo);
     end
     
-    if exist([pwd, '/Utils/Shared/setpaths_proprietary.m'],'file')
+    if  ~isempty(which('setpaths_proprietary.m'))
         setpaths_proprietary(options);
     end
     

@@ -7,11 +7,11 @@
 % DESCRIPTION:
 % Perform a wavelet transformation of the dod data and computes the
 % distribution of the wavelet coefficients. It sets the coefficient
-% exceeding iqr times the interquartile range to zero, because these are probably due
-% to motion artifacts. set iqr<0 to skip this function.
+% exceeding iqr times the interquartile range to zero. Set iqr<0 to skip 
+% this function.
 % 
 % The algorithm follows in part the procedure described by
-% Molavi et al.,Physiol Meas, 33, 259-270 (2012).
+% Molavi et al., Physiol Meas, 33, 259-270 (2012).
 %
 % INPUTS:
 % data_dod - SNIRF data structure data, containing delta_OD data
@@ -21,13 +21,15 @@
 %            active/inactive channels with 1 meaning active, 0 meaning inactive.
 % iqr -      parameter used to compute the statistics (iqr = 1.5 is 1.5 times the
 %            interquartile range and is usually used to detect outliers). 
-%            Increasing it, it will delete fewer coefficients.
-%            If iqr<0 then this function is skipped. 
-% turnon -   Optional argument to enable/disable this function in a processing stream chain
+%            Increasing this value will result in excluding fewer coefficients.
+%            If iqr<0 then this function is skipped
+% turnon -   Optional argument to enable/disable this function in a processing 
+%            stream chain
 %
 % OUTPUTS:
 % data_dod - SNIRF data structure containing modified delta_OD data
-%            size as dod (Channels that are not in the active ml remain unchanged)
+%            size as dod. Channels that are marked as inactive will remain unchanged
+%
 %
 % USAGE OPTIONS:
 % Wavelet_Motion_Correction:  dod = hmrR_MotionCorrectWavelet(dod, mlActMan, mlActAuto, iqr, turnon)

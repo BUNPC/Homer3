@@ -1,6 +1,7 @@
 % SYNTAX:
 % [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks, hmrstats] = ...
-% hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
+% hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis,...
+% paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 %
 % UI NAME:
 % GLM_HRF_Drift_SS
@@ -92,9 +93,11 @@
 %     (#Channels x HbX) for contrasts 
 %
 % USAGE OPTIONS:
-% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R, hmrstats] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
+% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R, hmrstats] = ...
+% hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis,...
+% paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 %
-% PARAMETERS:
+% DEFAULT PARAMETERS:
 % trange: [-2.0, 20.0]
 % glmSolveMethod: 1
 % idxBasis: 1
@@ -123,6 +126,7 @@ hmrstats = [];
 
 % Check input args
 if isempty(tIncAuto)
+    % assume there are no motion artefacts, include all data points
     tIncAuto = cell(length(data_y),1);
 end
 if isempty(mlActAuto)

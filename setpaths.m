@@ -27,17 +27,14 @@ try
         end
     end
     
-    % Add startup searchpath
-    if exist([pwd, '/Utils/submodules'],'dir')
-        %addpath([pwd, '/Utils'],'-end');
-        addpath([pwd, '/Utils/submodules'],'-end');
-    end
-    
+    % Add libraries on which Homer3 depends
+    addDependenciesSearchPaths()    
+        
     % Create list of possible known similar apps that may conflic with current
     % app
     appNameExclList = {'Homer3','Homer2_UI','brainScape','ResolveCommonFunctions'};
     appNameInclList = {'AtlasViewerGUI'};
-    exclSearchList  = {'.git','Data','Docs','*_install','*.app'};
+    exclSearchList  = {'.git','.idea','Data','Docs','*_install','*.app'};
     
     appThis         = filesepStandard_startup(pwd);
     appThisPaths    = findDotMFolders(appThis, exclSearchList);
@@ -93,14 +90,6 @@ try
     
     addSearchPaths(appThisPaths);
     
-    % Download submodules
-    status = downloadLibraries(options, appname);
-    if status<0
-        cd(currdir);
-        fprintf('ERROR: Could not download shared libraries required by this application...\n')
-        return;
-    end
-    
     if ~isempty(which('setNamespace.m'))
         setNamespace(appname);
     end
@@ -130,25 +119,18 @@ catch ME
     
 end
 
+appnames = [appname; dependencies()];
+PrintSystemInfo([], appnames)
+
 cd(currdir);
 
 
-% ----------------------------------------------------
-function status = downloadLibraries(options, appname)
-status = 0;
-nTries = 2;
-h = waitbar(0,'Downloading shared libraries.');
-for iTry = 1:nTries
-    [cmds, errs, msgs] = downloadSharedLibs(options, appname); %#ok<ASGLU>
-    if all(errs==0 | errs == -2)
-        break
-    end
-end
-close(h)
-if all(errs==0)
-    return
-end
-status = -1;
+% ---------------------------------------------------
+function d = dependencies()
+d = {    
+    'DataTree';
+    'Utils';
+    };
 
 
 % ---------------------------------------------------
@@ -166,7 +148,23 @@ end
 
 % ----------------------------------------------------
 function addSearchPaths(appPaths)
+if ischar(appPaths)
+    p = genpath(appPaths);
+    if ispc
+        delimiter = ';';
+    else
+        delimiter = ':';
+    end        
+    appPaths = str2cell(p, delimiter);
+end
+if ~exist('options', 'var')
+    options = '';
+end
+
 for kk = 1:length(appPaths)
+    if strfind(appPaths{kk}, '.git')
+        continue;
+    end
     addpath(appPaths{kk}, '-end');
     setpermissions(appPaths{kk});
 end
@@ -200,4 +198,73 @@ for kk = 1:length(p)
 end
 close(h);
 fprintf('REMOVED search paths for app %s\n', app);
+
+
+
+
+% ----------------------------------------------------
+function   addDependenciesSearchPaths()
+d = dependencies();
+for ii = 1:length(d)
+    rootpath = '';
+    if exist([pwd, '/', d{ii}],'dir')
+        rootpath = [pwd, '/'];
+    elseif exist([pwd, '/../', d{ii}],'dir')
+        rootpath = [pwd, '/../'];
+    end
+    if ~exist([rootpath, d{ii}],'dir')
+        fprintf('ERROR: Could not find required dependency %s\n', d{ii})
+        continue;
+    end
+    addSearchPaths([rootpath, d{ii}]);
+end
+
+
+
+% -----------------------------------------------------------------------------
+function [C,k] = str2cell(str, delimiters, options)
+
+% Option tells weather to keep leading whitespaces. 
+% (Trailing whitespaces are always removed)
+if ~exist('options','var')
+    options = '';
+end
+
+if ~strcmpi(options, 'keepblanks')
+    str = strtrim(str);
+end
+str = deblank(str);
+
+if ~exist('delimiters','var') || isempty(delimiters)
+    delimiters{1} = sprintf('\n');
+elseif ~iscell(delimiters)
+    foo{1} = delimiters;
+    delimiters = foo;
+end
+
+% Get indices of all the delimiters
+k=[];
+for kk=1:length(delimiters)
+    k = [k, find(str==delimiters{kk})];
+end
+j = find(~ismember(1:length(str),k));
+
+% The following line seems to hurt performance a little bit. It was 
+% meant to preallocate to speed things up but it does not seem to do that.
+% C = repmat({blanks(max(diff([k,length(str)])))}, length(k)+1, 1);
+C = {};
+ii=1; kk=1; 
+while ii<=length(j)
+    C{kk} = str(j(ii));
+    ii=ii+1;
+    jj=2;
+    while (ii<=length(j)) && ((j(ii)-j(ii-1))==1)
+        C{kk}(jj) = str(j(ii));
+        jj=jj+1;
+        ii=ii+1;
+    end
+    C{kk}(jj:end)='';
+    kk=kk+1;
+end
+C(kk:end) = [];
 

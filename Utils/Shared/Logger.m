@@ -20,18 +20,19 @@ classdef Logger < handle
             end
                                        
             % Construct log file name
-            [pname, fname, ext] = fileparts(appname);
+            [pname, fname] = fileparts(appname);
             if ~ispathvalid(pname)
                 pname = getAppDir();
                 if isempty(pname)
-                    return
+                    fname = which([appname, '.m']);
+                    [pname, fname] = fileparts(fname);
                 end
+                if isempty(pname)
+                    pname = filesepStandard(pwd);
             end
-            if isempty(ext)
-                ext = '.log';
             end
            
-            self.filename = [filesepStandard(pname), fname, ext];
+            self.filename = [filesepStandard(pname), fname, '.log'];
             self.appname = fname;           
             
             % Check if log file for this application already exists - if it does close any open handles and delete it 

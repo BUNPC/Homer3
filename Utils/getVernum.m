@@ -1,35 +1,34 @@
-function [out1] = getVernum()
-out1 = [];
-ns = getNamespace();
-if isempty(ns)
+function v = getVernum(appname)
+v = '';
+if ~exist('appname','var')
+    [~,f,e] = fileparts(pwd);
+    appname = [f,e];
+end
+appdir = getAppDir();
+if isdeployed()
+    [~,f,e] = fileparts(appdir);
+    if strcmp([f,e], appname)
+        p = appdir;
+    elseif ispathvalid([appdir, appname, '/Shared/Version.txt'])
+        p = [appdir, appname, '/Shared'];
+    elseif ispathvalid([appdir, appname, '/Version.txt'])
+        p = [appdir, appname];
+    end
+else
+    p = which(appname);
+    p = fileparts(p);
+    if ispathvalid([appdir, appname, '/Shared/Version.txt'])
+        p = [appdir, appname, '/Shared'];
+    elseif ispathvalid([appdir, '../', appname, '/Shared/Version.txt'])
+        p = [appdir, '../', appname, '/Shared'];
+    elseif ispathvalid([appdir, appname, '/Version.txt'])
+        p = [appdir, appname];
+    end
+end
+verfile = [p, '/Version.txt'];
+if ~ispathvalid(verfile)
     return;
 end
-if strcmp(ns, 'AtlasViewerGUI')
-    if nargin == 0
-        [out1] = getVernum_AtlasViewerGUI();
-    end
-elseif strcmp(ns, 'Homer3')
-    if nargin == 0
-        [out1] = getVernum_Homer3();
-    end
-end
-
-
-% ---------------------------------------------------------
-function [vrnnum] = getVernum_AtlasViewerGUI()
-
-vrnnum{1} = '2';   % Major version #
-vrnnum{2} = '16';  % Major sub-version #
-vrnnum{3} = '1';   % Minor version #
-vrnnum{4} = '0';   % Minor sub-version # or patch #: 'p1', 'p2', etc
-
-
-
-% ---------------------------------------------------------
-function [vrnnum] = getVernum_Homer3()
-
-vrnnum{1} = '1';   % Major version #
-vrnnum{2} = '33';  % Major sub-version #
-vrnnum{3} = '1';   % Minor version #
-vrnnum{4} = '0';   % Minor sub-version # or patch #: 'p1', 'p2', etc
-
+fd = fopen(verfile,'rt');
+v = fgetl(fd);
+fclose(fd);

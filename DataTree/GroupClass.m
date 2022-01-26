@@ -23,7 +23,7 @@ classdef GroupClass < TreeNodeClass
             obj.InitVersion();
 
             if nargin<3 || ~strcmp(varargin{3}, 'noprint')
-                obj.logger.Write(sprintf('Current GroupClass version %s\n', obj.GetVersionStr()));
+                obj.logger.Write('Current GroupClass version %s\n', obj.GetVersionStr());
             end
             
             obj.type    = 'group';

@@ -12,7 +12,8 @@
 % data_dod: SNIRF data structure containing delta_OD
 % span:     Determines the number of data points for calculating the smoothed
 %           value
-% turnon:   Optional argument to enable/disable this function in a processing stream chain
+% turnon:   Optional argument to enable/disable this function in a processing
+%           stream chain
 %
 % OUTPUTS:
 % data_dod: SNIRF data structure containing delta_OD after 

@@ -12,7 +12,8 @@
 %
 % INPUTS:
 % data_dc:   Concentration changes (it works with HbO and HbR)
-% mlActAuto: 
+% mlActAuto: Cell array of vectors, one for each time base in data, specifying 
+%            active/inactive channels with 1 meaning active, 0 meaning inactive
 % turnon:    Skip this function if turnon=1. Otherwise execute function.
 %            Default is to execute function if this does not exist.
 %

@@ -8,12 +8,12 @@
 % Calculate the block average for all subjects, for all common stimuli accross subjects.
 %
 % INPUTS:
-% yAvgSubjs:
-% nTrialsSubjs:
+% yAvgSubjs: NIRS data cell array of cize [Number of subjects; Number of data blocks ]
+% nTrialsSubjs: number of trials per subject, cell array of size [Number of subjects; Number of data blocks]
 %
 % OUTPUTS:
 % yAvgOut: the averaged results
-% nTrials: 
+% nTrials: number of trials per block
 %
 % USAGE OPTIONS:
 % Subj_Average_on_Concentration_Data: [dcAvg, nTrials] = hmrG_SubjAvg(dcAvgSubjs, nTrialsSubjs)

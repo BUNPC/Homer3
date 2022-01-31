@@ -8,7 +8,7 @@
 % Calculate avearge HRF standard deviation and standard error of all subjects in a group.
 %
 % INPUTS:
-% ySubjAvg:
+% ySubjAvg: NIRS data cell array of cize [Number of subjects; Number of data blocks ]
 %
 % OUTPUTS:
 % yAvgStdOut: the standard deviation across subjects.

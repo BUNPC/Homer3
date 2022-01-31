@@ -8,15 +8,17 @@
 % Calculate the p-value matrix for a single session.
 %
 % INPUTS:
-% yRuns:
-% stimRuns:
-% mlActRuns:
-% baselineRange:
-% hrfTimeWindow:
+% yRuns: Hb data, cell matrix of size [Number of runs X Number of data blocks ]
+% stimRuns: stimuli vector
+% mlActRuns: active measurement list for each run
+% baselineRange: baseline time period relative to stimuli onset in seconds
+% hrfTimeWindow: HRF time period relative to stimuli onset in seconds
 %
 % OUTPUTS:
-% pValuesS:
-% pValuesS_cond
+% pValuesS: p-value array of size [HbO/HbR/HbT; Number of channels; Number
+% of conditions], BASELINE vs CONDITION, PAIRED T-TEST
+% pValuesS_cond: p-value array of size [HbO/HbR/HbT; Number of channels; Number
+% of cominations of conditions], CONDITION vs CONDITION, UNPAIRED T-TEST
 % USAGE OPTIONS:
 % Pvalues_on_Session_Concentration_Data: [pValuesS, pValuesS_cond] = hmrS_CalcPvalue(dcRuns, stimRuns, mlActRuns, baselineRange, hrfTimeWindow)
 %

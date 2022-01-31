@@ -8,7 +8,7 @@
 % Calculate avearge HRF standard deviation of all runs for one subject. 
 %
 % INPUTS:
-% yAvgRuns:
+% yAvgRuns: all runs for one subject, cell array of size [Number of runs X Number of data blocks]
 %
 % OUTPUTS:
 % yAvgStdOut: the standard deviation across runs

@@ -18,11 +18,12 @@
 % data - this is the concentration data with dimensions #time points x [HbO/HbR/HbT] x #channels
 % stim - stimulation vector (# time points x #conditions)=1 at stim onset otherwise =0
 % probe - source detector stucture (units should be consistent with rhoSD_ssThresh)
-% mlActAuto -
-% Aaux - A matrix of auxilliary regressors (#time points x #Aux channels)
+% mlActAuto - cell array of vectors, one for each time base in data, specifying 
+%             active/inactive channels with 1 meaning active, 0 meaning inactive
+% Aaux - a matrix of auxilliary regressors (#time points x #Aux channels)
 % tIncAuto - a vector (#time points x 1) indicating which data time points
 %            are motion (=0) or not (=1)
-% rcMap - An array of cells (1 x #fNIRS channels) containing aux regressor
+% rcMap - an array of cells (1 x #fNIRS channels) containing aux regressor
 %           indices for individual regressor-channel mapping. Currently
 %           only relevant when flagNuisanceRMethod = 3 (tCCA regressors).
 % trange - defines the range for the block average [tPre tPost dt]. If dt
@@ -46,7 +47,7 @@
 % 			         (t/(p*q))^p * exp(p-t/q)
 %                Defaults: p=8.6 q=0.547
 %                The peak is at time p*q.  The FWHM is about 2.3*sqrt(p)*q.
-% paramsBasis - Parameters for the basis function (chosen via idxBasis)
+% paramsBasis - parameters for the basis function (chosen via idxBasis)
 %               if idxBasis=1 [stdev step ~ ~ ~ ~] where stdev is the width of the
 %                  gaussian and step is the temporal spacing between
 %                  consecutive gaussians
@@ -70,8 +71,8 @@
 %            2. if performed with average of all short separation channels.
 %            3. uses tCCA regressors for nuisance regression, in Aaux,
 %            mapped by rcMap, provided by hmr_tCCA()
-% driftOrder - Polynomial drift correction of this order
-% c_vector - Contrast vector, has values 1, -1 or 0. E.g. to contrast cond
+% driftOrder - polynomial drift correction of this order
+% c_vector - contrast vector, has values 1, -1 or 0. E.g. to contrast cond
 %           2 to cond 3 in an experimental paradigm with four conditions, c_vector is
 %           [0 1 -1 0]
 %
@@ -85,7 +86,7 @@
 % yresid - the residual between the data y and the GLM fit
 % ysum2 - an intermediate matrix for calculating stdev across runs
 % beta - the coefficients of the temporal basis function fit for the HRF
-%           (#coefficients x HbX x #Channels x #conditions)
+%        (#coefficients x HbX x #Channels x #conditions)
 % R - the correlation coefficient of the GLM fit to the data
 %     (#Channels x HbX)
 % hmrstats - outputs t and p values for GLM and the corresponding beta_label and ml

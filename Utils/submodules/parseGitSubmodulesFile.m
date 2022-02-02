@@ -40,6 +40,5 @@ for ii = 1:length(strs)
     end
 end
 fclose(fid);
-
 cd(currdir);
 

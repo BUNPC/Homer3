@@ -33,7 +33,7 @@ end
 if isempty(hObject)
     hObject = -1;
 end
-[verstr, vernum] = version2string();
+verstr = getVernum('Homer3');
 platform = ['R', version('-release')];
 title = sprintf('Homer3 (v%s, %s)', verstr, platform);
 

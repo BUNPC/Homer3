@@ -22,7 +22,7 @@ classdef DataTreeClass <  handle
         function obj = DataTreeClass(groupDirs, fmt, procStreamCfgFile, options)
             global logger
             global cfg
-                       
+            
             obj.InitNamespace();
             
             obj.logger              = InitLogger(logger, 'DataTreeClass');

@@ -1,14 +1,19 @@
-function PrintSystemInfo(logger, appnames)
+function PrintSystemInfo(logger, appname)
 if ~exist('logger','var')
     logger = [];
 end
-if ~exist('appnames','var') || isempty(appnames)
-    appnames = {'Untitled'};
+if ~exist('appname','var') || isempty(appname)
+    appname = {'Untitled'};
 end
 
 logger = InitLogger(logger, 'SystemInfo');
 platform = ['R', version('-release')];
 
+if ~iscell(appname)
+    appnames = [appname; getLibnames(appname)];
+else
+    appnames = appname;
+end
 for ii = 1:length(appnames)
     if strcmp(appnames{ii}, 'Untitled')
         logger.Write('Running %s, %s\n', appnames{ii}, platform);
@@ -41,5 +46,17 @@ try
 	logger.Write('\n') %#ok<*SPRINTFN>
 catch ME
 	logger.Write('%s\n', ME.message);
+end
+
+
+
+% --------------------------------------------------------------------
+function libs = getLibnames(appname)
+libs = {};
+p = which(appname);
+submodules = parseGitSubmodulesFile(fileparts(p));
+for ii = 1:size(submodules,1)
+    url             = submodules{ii,1};
+    [~, libs{ii,1}] = fileparts(url);
 end
 

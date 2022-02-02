@@ -221,8 +221,7 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 % Set the main GUI version number
-[~, V] = MainGUIVersion(hObject, 'exclpath');
-maingui.version = V;
+MainGUIVersion(hObject, 'exclpath');
 maingui.childguis = ChildGuiClass().empty();
 
 % Disable and reset all window gui objects

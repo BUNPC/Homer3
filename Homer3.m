@@ -43,7 +43,7 @@ cfg = ConfigFileClass();
 if strcmp(cfg.GetValue('Logging'), 'off')
     logger.SetDebugLevel(logger.Null());
 end
-PrintSystemInfo(logger, {'Homer3', 'DataTree', 'Utils'});
+PrintSystemInfo(logger, 'Homer3');
 checkForHomerUpdates();
 gdir = cfg.GetValue('Last Group Folder');
 if isempty(gdir)

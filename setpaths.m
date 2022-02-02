@@ -119,7 +119,7 @@ catch ME
     
 end
 
-% PrintSystemInfo([], appname)
+PrintSystemInfo([], appname)
 
 cd(currdir);
 

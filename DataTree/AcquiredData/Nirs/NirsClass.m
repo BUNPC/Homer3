@@ -185,6 +185,13 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function err = LoadTime(obj, fdata, err)
+            if nargin == 1
+                fdata.t = load(obj.GetFilename(),'-mat', 't');
+                err = 0;
+            elseif nargin == 2
+                err = 0;                
+            end
+            
             if isproperty(fdata,'t')
                 obj.t = fdata.t;
                 if ~isempty(obj.t)

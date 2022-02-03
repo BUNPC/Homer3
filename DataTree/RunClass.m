@@ -337,7 +337,14 @@ classdef RunClass < TreeNodeClass
             if nargin==1
                 iBlk=1;
             end
+            err = -1;
+            if obj.acquired.IsEmpty()
+                err = obj.acquired.LoadTime();
+            end
             t = obj.acquired.GetTime(iBlk);
+            if err==0
+                obj.acquired.FreeMemory(obj.GetFilename());                
+            end            
         end
         
         

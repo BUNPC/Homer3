@@ -388,6 +388,17 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % -------------------------------------------------------
+        function err = LoadTime(obj)
+            err = 0;
+            if isempty(obj.data)
+                obj.data = DataClass();
+                err = obj.data.LoadTime(obj.GetFilename(), [obj.location, '/data1']);
+            end
+        end
+        
+        
+        
+        % -------------------------------------------------------
         function err = LoadData(obj, fileobj)
             err = 0;
             ii=1;
@@ -671,8 +682,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             flags = zeros(length(obj.stim), 1);
             
             % Load stim from file and update it
-            snirfFile = SnirfClass();
-            snirfFile.LoadStim(fileobj);
+            snirfFile = SnirfClass(fileobj);
             
             % Update stims from file with edited stims
             for ii = 1:length(obj.stim)
@@ -697,7 +707,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % If stims were edited then update snirf file with new stims
             changes = sum(flags);
             if changes > 0
-                snirfFile.SaveStim(fileobj);
+                snirfFile.Save();
             end
             stimFromFile = snirfFile.stim;
         end

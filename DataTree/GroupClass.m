@@ -1061,7 +1061,11 @@ classdef GroupClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function BackwardCompatability(obj)
             if ispathvalid([obj.path, 'groupResults.mat'])
-                g = load([obj.path, 'groupResults.mat']);
+                try
+                    g = load([obj.path, 'groupResults.mat']);
+                catch ME
+                    g = [];
+                end
                 
                 % Do not try to restore old data older than Homer3
                 if isempty(g)

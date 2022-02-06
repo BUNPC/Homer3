@@ -5,7 +5,7 @@ global procStreamStyle
 global testidx;
 global logger
 
-t_local = tic;
+t1 = tic;
 
 reg = RegistriesClass('reset');
 
@@ -53,7 +53,7 @@ for ii = 1:nGroups
 end
 
 reportResults(status);
-toc(t_local)
+toc(t1)
 logger.Close('UnitTestsAll_Nirs');
 
 

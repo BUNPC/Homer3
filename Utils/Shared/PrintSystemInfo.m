@@ -14,6 +14,8 @@ if ~iscell(appname)
 else
     appnames = appname;
 end
+
+logger.Write('\n');
 for ii = 1:length(appnames)
     if strcmp(appnames{ii}, 'Untitled')
         logger.Write('Running %s, %s\n', appnames{ii}, platform);
@@ -22,7 +24,6 @@ for ii = 1:length(appnames)
     end
 end
 logger.Write('\n');
-
 logger.Write('============\n');
 logger.Write('SYSTEM INFO:\n');
 logger.Write('============\n');

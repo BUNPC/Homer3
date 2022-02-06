@@ -12,11 +12,11 @@ classdef RunClass < TreeNodeClass
             % Syntax:
             %   obj = RunClass()
             %   obj = RunClass(filename);
-            %   obj = RunClass(filename, iGroup, iSubj, iRun);
+            %   obj = RunClass(filename, iGroup, iSubj, iSess, iRun);
             %   obj = RunClass(run);
             %
             % Example 1:
-            %   run1     = RunClass('./s1/neuro_run01.nirs',1,1,1);
+            %   run1     = RunClass('./s1/neuro_run01.nirs',1,1,1,1);
             %   run1copy = RunClass(run1);
             %           
             obj@TreeNodeClass(varargin);            
@@ -30,17 +30,18 @@ classdef RunClass < TreeNodeClass
                 obj.Copy(varargin{1});
                 return;
             elseif isa(varargin{1}, 'FileClass')
-                [~, ~, obj.name] = varargin{1}.ExtractNames();
+                [~, ~, ~, obj.name] = varargin{1}.ExtractNames();
                 obj.path         = varargin{1}.GetFilesPath();  % Fix wrong root path 
             elseif ischar(varargin{1}) && strcmp(varargin{1},'copy')
                 return;
             elseif ischar(varargin{1}) 
                 obj.name = varargin{1};
             end
-            if nargin==4
+            if nargin==5
                 obj.iGroup = varargin{2};
                 obj.iSubj  = varargin{3};
-                obj.iRun   = varargin{4};
+                obj.iSess  = varargin{4};
+                obj.iRun   = varargin{5};
             end
             
             obj.LoadAcquiredData();
@@ -268,6 +269,20 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function LoadInputVars(obj)
+            
+            % a) Find all variables needed by proc stream
+            args = obj.procStream.GetInputArgs();
+
+            % b) Find these variables in this run
+            for ii = 1:length(args)
+                eval( sprintf('obj.inputVars.%s = obj.GetVar(args{ii});', args{ii}) );
+            end
+        end
+            
+
+        
+        % ----------------------------------------------------------------------------------
         function Calc(obj, options)
             if ~exist('options','var') || isempty(options)
                 options = 'overwrite';
@@ -275,7 +290,7 @@ classdef RunClass < TreeNodeClass
             
             % Update call application GUI using it's generic Update function 
             if ~isempty(obj.updateParentGui)
-                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
+                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun]);
             end
 
             % Load acquired data
@@ -291,18 +306,8 @@ classdef RunClass < TreeNodeClass
                 fprintf('Calculating processing stream for group %d, subject %d, run %d\n', obj.iGroup, obj.iSubj, obj.iRun);
             end
             
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Find all variables needed by proc stream, find them in this 
-            % runs, and load them to proc stream input
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            
-            % a) Find all variables needed by proc stream
-            args = obj.procStream.GetInputArgs();
-
-            % b) Find these variables in this run
-            for ii = 1:length(args)
-                eval( sprintf('obj.outputVars.%s = obj.GetVar(args{ii});', args{ii}) );
-            end
+            % Find all variables needed by proc stream, find them in this run, and load them to proc stream input
+            obj.LoadInputVars();
             
             Calc@TreeNodeClass(obj);
 

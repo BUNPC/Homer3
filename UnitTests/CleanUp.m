@@ -22,7 +22,9 @@ end
 if start
     maingui = [];
     delete(logger)
+    delete(cfg)
     logger = [];
+    cfg = [];
     close all force
     fclose all;
     reg = RegistriesClass();

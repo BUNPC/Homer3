@@ -46,7 +46,7 @@ for ii=1:length(nirsfiles)
     if nirsfiles(ii).isdir
         continue;
     end
-    [pname, fname, ext] = fileparts([nirsfiles(ii).pathfull, '/', nirsfiles(ii).name]);
+    [pname, fname, ext] = fileparts([nirsfiles(ii).rootdir, '/', nirsfiles(ii).name]);
     
     src = filesepStandard([pname,'/',fname, ext]);
     dst = filesepStandard([pname,'/',fname,'.snirf'], 'nameonly');

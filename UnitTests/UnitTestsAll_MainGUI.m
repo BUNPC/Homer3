@@ -3,7 +3,7 @@ global logger
 global testidx
 global procStreamStyle
 
-t_local = tic;
+t1 = tic;
 testidx=0;
 procStreamStyle = 'snirf';
 
@@ -35,7 +35,7 @@ for ii = 1:nGroups
 end
 
 reportResults(status);
-toc(t_local);
+toc(t1);
 logger.Close('UnitTests_MainGUI');
 close(ut.handles.MainGUI);
 

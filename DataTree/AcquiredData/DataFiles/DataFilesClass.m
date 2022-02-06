@@ -2,25 +2,32 @@ classdef DataFilesClass < handle
     
     properties
         files;
-        type;
+        filetype;
+        dirFormats;
         err;
         errmsg;
-        pathnm;
+        rootdir;
         config;
         nfiles;
         logger
+    end
+    
+    properties (Access = private)
+        lookupTable
     end
     
     methods
         
         % ----------------------------------------------------
         function obj = DataFilesClass(varargin)            
-            obj.type = '';
-            obj.pathnm = pwd;
+            obj.files = FileClass.empty();
+            obj.filetype = '';
+            obj.rootdir = pwd;
             obj.nfiles = 0;
             obj.err = -1;
             obj.errmsg = {};
-            
+            obj.dirFormats = struct('type',0, 'choices',{{}});
+
             global logger
             global cfg
             
@@ -28,6 +35,7 @@ classdef DataFilesClass < handle
             cfg    = InitConfig(cfg);
             
             obj.logger = logger;
+            obj.lookupTable = [];
             
             skipconfigfile = false;
             askToFixNameConflicts = [];
@@ -36,32 +44,32 @@ classdef DataFilesClass < handle
                 return
             end            
             if nargin==1
-                obj.pathnm = varargin{1};
+                obj.rootdir = varargin{1};
             end            
             if nargin==2
-                obj.pathnm = varargin{1};
-                obj.type = varargin{2};
+                obj.rootdir = varargin{1};
+                obj.filetype = varargin{2};
             end
             if nargin==3
-                obj.pathnm = varargin{1};
-                obj.type = varargin{2};
+                obj.rootdir = varargin{1};
+                obj.filetype = varargin{2};
                 if strcmp(varargin{3}, 'standalone')
                     skipconfigfile = true;
                 end
             end            
             if nargin==4
-                obj.pathnm = varargin{1};
-                obj.type = varargin{2};
+                obj.rootdir = varargin{1};
+                obj.filetype = varargin{2};
                 if strcmp(varargin{3}, 'standalone')
                     skipconfigfile = true;
                 end
                 askToFixNameConflicts = varargin{4};
             end
                         
-            if obj.type(1)=='.'
-                obj.type(1)='';
+            if obj.filetype(1) == '.'
+                obj.filetype(1) = '';
             end
-            obj.pathnm = filesepStandard(obj.pathnm,'full');
+            obj.rootdir = filesepStandard(obj.rootdir,'full');           
             
             % Configuration parameters
             obj.config = struct('RegressionTestActive','','AskToFixNameConflicts',1);
@@ -91,82 +99,156 @@ classdef DataFilesClass < handle
             end
             
             obj.err = 0;
-            obj.files = mydir(obj.pathnm);
-            GetDataSet(obj);
+            
+            obj.InitFolderFromats();
+            obj.GetDataSet();
         end
+        
         
         
         % -----------------------------------------------------------------------------------
         function GetDataSet(obj)
-            if exist(obj.pathnm, 'dir')~=7
-                error('Invalid subject folder: ''%s''', obj.pathnm);
+            if exist(obj.rootdir, 'dir')~=7
+                error('Invalid subject folder: ''%s''', obj.rootdir);
             end
-            obj.findDataSet(obj.type);
+            
+            for ii = 1:length(obj.dirFormats.choices)
+                obj.InitLookupTable();
+                obj.FindDataSet(ii);
+                
+                obj.ErrorCheck();
+                if ~isempty(obj.files)
+                    break
+                end
+            end
             
             % Remove any files that cannot pass the basic test of loading
             % its data
-            obj.ErrorCheck(obj.type);
             obj.ErrorCheckName();
         end
 
         
-        % ----------------------------------------------------
-        function findDataSet(obj, type)
-            obj.files = mydir([obj.pathnm, '/*.', type]);
-            
-            % Remove any files that cannot pass the basic test of loading
-            % its data
-            obj.ErrorCheck(type);
+        
+        % -----------------------------------------------------------------------------------
+        function InitFolderFromats(obj)
+            obj.dirFormats.choices = {
+                
+                %%%% 1. Flat #1
+                {
+                ['*_run*.', obj.filetype];
+                }
 
-            if isempty( obj.files )                
-                % If there are no data files in current dir, don't give up yet - check
-                % the subdirs for data files.
-                dirs = mydir(obj.pathnm);
-                for ii = 1:length(dirs)
-                    if dirs(ii).isdir && ...
-                            ~strcmp(dirs(ii).name,'.') && ...
-                            ~strcmp(dirs(ii).name,'..') && ...
-                            ~strcmp(dirs(ii).name,'hide')
-                        dirs(ii).idx = length(obj.files)+1;
-                        foos = mydir([obj.pathnm, dirs(ii).name, '/*.', type]);
-                        nfoos = length(foos);
-                        if nfoos>0
-                            for jj = 1:nfoos
-                                foos(jj).subjdir      = dirs(ii).name;
-                                foos(jj).subjdiridx   = dirs(ii).idx;
-                                foos(jj).idx          = dirs(ii).idx+jj;
-                                foos(jj).filename     = foos(jj).name;
-                                foos(jj).name         = [dirs(ii).name, '/', foos(jj).name];
-                                foos(jj).map2group    = struct('iGroup',0, 'iSubj',0, 'iRun',0);
-                                foos(jj).pathfull     = dirs(ii).pathfull;
-                                if ~foos(jj).isdir
-                                    obj.nfiles = obj.nfiles+1;
-                                end
-                            end
-                            
-                            % Add file from current subdir to files struct
-                            if isempty(obj.files)
-                                obj.files = dirs(ii);
-                            else
-                                obj.files(end+1) = dirs(ii);
-                            end
-                            obj.files(end+1:end+nfoos) = foos;                                                        
-                        end
+                %%%% 2. Flat #2
+                {
+                ['*.', obj.filetype];
+                }
+                
+                %%%% 3. Subjects 
+                {
+                '*';
+                ['*.', obj.filetype];
+                }
+
+                %%%% 4. BIDS #1,    sub-<label>[_ses-<label>][_task-<label>][_run-<index>]_nirs.snirf
+                {                
+                'sub-*';
+                'ses-*';
+                ['nirs/sub-*_run-*_nirs.', obj.filetype];
+                }
+                                
+                %%%% 5. BIDS #2 
+                {
+                'sub-*';
+                ['nirs/sub-*_run-*_nirs.', obj.filetype];
+                }
+                
+                %%%% 6. BIDS-like folder structure without file naming restrictions
+                {
+                'sub-*';
+                'ses-*';
+                ['nirs/*.', obj.filetype];
+                }
+                                
+                };
+        end
+        
+
+            
+        
+        % ----------------------------------------------------
+        function FindDataSet(obj, iFormat, iPattern, parentdir)
+            if ~exist('iFormat','var')
+                iFormat = 1;
+            end
+            if ~exist('iPattern','var')
+                iPattern = 1;
+            end            
+            if ~exist('parentdir','var')
+                parentdir = obj.rootdir;
+            end
+            
+            if iFormat > length(obj.dirFormats.choices)
+                return
+            end
+            if iPattern > length(obj.dirFormats.choices{iFormat})
+                return
+            end
+            parentdir = filesepStandard(parentdir);
+            pattern = obj.dirFormats.choices{iFormat}{iPattern};
+            
+            dirs = mydir([parentdir, pattern]);
+            
+            dirnamePrev = '';
+            for ii = 1:length(dirs)
+                if dirs(ii).IsFile()
+                    if strcmp(pattern, '*')
+                        continue
                     end
+                    if includes(dirs(ii).name, obj.filetype)
+                        if ~strcmp(dirs(ii).name, dirnamePrev)
+                            obj.AddParentDirs(dirs(ii));
+                        end
+                        obj.AddFile(dirs(ii));
+                    end
+                    
+                    if obj.dirFormats.type == 0 
+                        obj.dirFormats.type = iFormat;
+                    end
+                elseif dirs(ii).IsDir()
+                    obj.FindDataSet(iFormat, iPattern+1, [parentdir, dirs(ii).filename])
                 end
-            else
-                for ii = 1:length(obj.files)
-                    obj.files(ii).pathfull = obj.pathnm;
+                dirnamePrev = dirs(ii).name;
+            end
+        end
+        
+
+        
+        % ----------------------------------------------------
+        function AddParentDirs(obj, dir)
+            pathrel = getPathRelative([dir.rootdir, dir.name], obj.rootdir);
+            subdirs = str2cell_fast(pathrel, {'/','\'});
+            notUnique = false;
+            N = length(subdirs);
+            for ii = 1:N-1
+                if strcmp(subdirs{ii}, 'nirs')
+                    continue;
                 end
-                obj.nfiles = obj.nfiles+length(obj.files);
+                pathrel2 = buildpathfrompathparts(subdirs(1:ii));
+                if obj.SearchLookupTable(pathrel2)
+                    continue;
+                end
+                obj.files(end+1) = FileClass(pathrel2);
+                obj.AddLookupTable(obj.files(end).name)
             end
         end
         
         
         
         % ----------------------------------------------------
-        function getDataFile(obj, filename)
-            obj.files = mydir(filename);
+        function AddFile(obj, file)
+            obj.files(end+1) = file;
+            obj.nfiles = obj.nfiles+1;
+            obj.AddLookupTable(obj.files(end).filename)
         end
         
         
@@ -220,7 +302,7 @@ classdef DataFilesClass < handle
         % -----------------------------------------------------
         function errmsg = GetErrorMsg(obj, ii)
             p1      = fileparts(obj.files(ii).GetName());
-            [p2,f2] = fileparts(filesepStandard(obj.files(ii).pathfull,'nameonly:file'));
+            [p2,f2] = fileparts(filesepStandard(obj.files(ii).rootdir,'nameonly:file'));
             [~,f3]  = fileparts(p2);
             if isfile_private(obj.files(ii).GetName())
                 filetype = 'file';
@@ -301,7 +383,7 @@ classdef DataFilesClass < handle
         
         
         % ----------------------------------------------------------
-        function ErrorCheck(obj, type)
+        function ErrorCheck(obj)
             errorIdxs = [];
 
             if isempty(obj.files)
@@ -309,7 +391,7 @@ classdef DataFilesClass < handle
             end
                        
             % Assume constructor name follows from name of data format type
-            constructor = sprintf('%sClass', [upper(type(1)), type(2:end)]);
+            constructor = sprintf('%sClass', [upper(obj.filetype(1)), obj.filetype(2:end)]);
             
             % Make sure function by that name exists; otherwise no way to
             % use it to check loadability
@@ -317,13 +399,13 @@ classdef DataFilesClass < handle
                 return;
             end
             
-            % Try to create object of data type and load data into it
+            % Try to create object of data filetype and load data into it
             dataflag = false;
             for ii = 1:length(obj.files)
                 if obj.files(ii).isdir
                     continue;
                 end
-                filename = [obj.files(ii).pathfull, obj.files(ii).name];
+                filename = [obj.files(ii).rootdir, obj.files(ii).name];
                 eval( sprintf('o = %s(filename);', constructor) );
                 if o.GetError()<0
                     obj.logger.Write('FAILED error check:   %s will not be added to data set\n', filename);
@@ -347,6 +429,63 @@ classdef DataFilesClass < handle
                 return;
             end
             err = obj.err;
+        end
+                
+        % ----------------------------------------------------------
+        function PrintFolderStructure(obj, options)
+            if ~exist('options','var')
+                options = '';
+            end
+            stepsize = 3;
+            obj.logger.Write('\n');
+            obj.logger.Write('DataTreeClass - Data Set Folder Structure:\n');
+            for ii = 1:length(obj.files)
+                k = length(find(obj.files(ii).name=='/'));   
+                if ii<10, j=3; elseif ii>9 && ii<100, j=2; else j=3; end
+                if optionExists(options, 'flat')
+                    obj.logger.Write(sprintf('%d.%s%s\n', ii, blanks(j), obj.files(ii).name));
+                else
+                    if ii<10, j=3; elseif ii>9 && ii<100, j=2; else j=3; end
+                    if optionExists(options, 'numbered')
+                        n = k*stepsize+stepsize+j;
+                        obj.logger.Write(sprintf('%d.%s%s\n', ii, blanks(n), obj.files(ii).filename));
+                    else
+                        n = k*stepsize+stepsize;
+                        obj.logger.Write(sprintf('%s%s\n', blanks(n), obj.files(ii).filename));
+                    end
+                end
+            end
+            obj.logger.Write('\n');
+        end
+        
+    end
+        
+    
+    
+    methods (Access = private)
+
+        % ----------------------------------------------------------
+        function InitLookupTable(obj)
+            width = 4;
+            if isempty(obj.lookupTable)
+                obj.lookupTable = int32(zeros((10^width)-1, 1));
+            else
+                obj.lookupTable(:) = 0;                
+            end
+        end
+
+        
+        % ----------------------------------------------------------
+        function AddLookupTable(obj, str)
+            n = round(log10(length(obj.lookupTable)));
+            obj.lookupTable(string2hash(str, n)) = 1;
+        end
+
+        
+        % ----------------------------------------------------------
+        function b = SearchLookupTable(obj, str)
+            n = round(log10(length(obj.lookupTable)));
+            b = obj.lookupTable(string2hash(str, n));
         end
         
     end

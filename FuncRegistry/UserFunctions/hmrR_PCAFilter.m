@@ -12,7 +12,7 @@
 %    data, then the columns are channels as described in ml. If
 %    y is concentration data, then the third dimension is channels and the
 %    second dimension indicates HbO and HbR.
-% mlAct: 
+% mlAct: cell array that defines active channels (1 to indicate active)
 % tInc: This is a vector of length number of time points and is 1 to
 %    indicate that a time point is included in the analysis and 0 if it is to
 %    be excluded. This is useful for ignoring periods of time with strong

@@ -39,6 +39,8 @@ if (strcmp(cfg.GetValue('Check For Updates'),'on'))
         latest_vrnum = transpose(split(latest_vrnum, '.'));
         
         this_vrnum = getVernum();
+        this_vrnum(isletter(this_vrnum)) = [];
+        this_vrnum = transpose(split(this_vrnum, '.'));
         
         promptFlag = compareVernum(latest_vrnum, this_vrnum);  % If fetched vernum is greater
         if (promptFlag)

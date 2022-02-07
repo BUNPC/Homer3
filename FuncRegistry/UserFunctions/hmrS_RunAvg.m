@@ -5,12 +5,12 @@
 % Run_Average
 %
 % DESCRIPTION:
-% Calculate avearge HRF of all runs for one subject. 
+% Calculate average HRF of all runs for one subject. 
 %
 % INPUTS:
-% yAvgRuns:
-% mlActRuns:
-% nTrialsRuns:
+% yAvgRuns: all runs for one subject, cell array of size [Number of runs X Number of data blocks]
+% mlActRuns: logical cell array of size [Number of runs X Number of data blocks x Data channels*], determines active trials
+% nTrialsRuns: the number of trials averaged for each condition across all runs
 %
 % OUTPUTS:
 % yAvgOut: the averaged results

@@ -12,7 +12,7 @@ end
 
 % Create group where dataset is located
 group = filesepStandard(fileparts(location), 'nameonly');
-gid = CreateGroup(fid, group);
+gid = HDF5_CreateGroup(fid, group);
 if gid < 0
     err = -1;
     return;
@@ -23,37 +23,20 @@ err = WriteDataset(fid, location, data);
 
 
 
-
-% ----------------------------------------------------------------
-function gid = CreateGroup(fid, group)
-if group == '/'
-    gid = H5G.open(fid, '/');
-    return;
-end
-
-try
-    gid = H5G.open(fid, group);
-catch
-    [rootgroup, group] = filesepStandard(fileparts(group));
-    gid = CreateGroup(fid, rootgroup);
-    gid = H5G.create(gid, group, 'H5P_DEFAULT','H5P_DEFAULT','H5P_DEFAULT');
-end
-
-
-
 % --------------------------------------------------------------
 function err = WriteDataset(fid, location, data)
 
 err = 0;
 
-% data = HDF5_Transpose(data);
 dims = size(data);
 h5_dims = fliplr(dims);
 unlimited = H5ML.get_constant_value('H5S_UNLIMITED');
 h5_maxdims = [unlimited, unlimited];
 
-if isnumeric(data)
+if isfloat(data)
     type_id = H5T.copy('H5T_NATIVE_DOUBLE');
+if isinteger(data)
+    type_id = H5T.copy('H5T_NATIVE_INT');
 elseif ischar(data)
     type_id = H5T.copy('H5T_C_S1'); 
 else

@@ -227,8 +227,8 @@ classdef ProbeClass < FileLoadSaveClass
             end     
             hdf5write_safe(fileobj, [location, '/wavelengths'], obj.wavelengths, 'array');
             hdf5write_safe(fileobj, [location, '/wavelengthsEmission'], obj.wavelengthsEmission, 'array');
-            hdf5write_safe(fileobj, [location, '/sourcePos2D'], obj.sourcePos2D(:,1:2), 'array');
-            hdf5write_safe(fileobj, [location, '/detectorPos2D'], obj.detectorPos2D(:,1:2), 'array');
+            hdf5write_safe(fileobj, [location, '/sourcePos2D'], obj.sourcePos2D, 'array');
+            hdf5write_safe(fileobj, [location, '/detectorPos2D'], obj.detectorPos2D, 'array');
             hdf5write_safe(fileobj, [location, '/landmarkPos2D'], obj.landmarkPos2D, 'array');
             hdf5write_safe(fileobj, [location, '/sourcePos3D'], obj.sourcePos3D, 'array');
             hdf5write_safe(fileobj, [location, '/detectorPos3D'], obj.detectorPos3D, 'array');

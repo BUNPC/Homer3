@@ -37,7 +37,6 @@ function err = hdf5write_safe(fname, name, val, options)
     end
     
     if iscell(val) || isstring(val)
-        disp(val)
         if length(val) > 1 && ~force_scalar || force_array  % Returns true for single strings, believe it or not
             write_string_array(fid, fname, name, val);
         else

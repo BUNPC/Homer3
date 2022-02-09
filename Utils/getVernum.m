@@ -1,29 +1,25 @@
-function v = getVernum(appname)
+function v = getVernum(appname, appdir)
 v = '';
-if ~exist('appname','var')
+if ~exist('appname','var') || isempty(appname)
     [~,f,e] = fileparts(pwd);
     appname = [f,e];
 end
-appdir = getAppDir();
-if isdeployed()
-    [~,f,e] = fileparts(appdir);
-    if strcmp([f,e], appname)
-        p = appdir;
-    elseif ispathvalid([appdir, appname, '/Shared/Version.txt'])
-        p = [appdir, appname, '/Shared'];
-    elseif ispathvalid([appdir, appname, '/Version.txt'])
-        p = [appdir, appname];
-    end
+if ~exist('appdir','var') || isempty(appdir)
+    appdir = getAppDir();
+end
+
+libdir = '/Shared';
+
+if length(appdir) > length(libdir)  &&  strcmp( appdir( end-length(libdir)+1 : end ), libdir )
+    p = appdir;
+elseif ispathvalid_startup([appdir, libdir])
+    p = [appdir, libdir];
+elseif ispathvalid_startup([appdir, appname, libdir])
+    p = [appdir, appname, libdir];
+elseif ispathvalid_startup([appdir, appname, '.m'])
+    p = appdir;
 else
-    p = which(appname);
-    p = fileparts(p);
-    if ispathvalid([appdir, appname, '/Shared/Version.txt'])
-        p = [appdir, appname, '/Shared'];
-    elseif ispathvalid([appdir, '../', appname, '/Shared/Version.txt'])
-        p = [appdir, '../', appname, '/Shared'];
-    elseif ispathvalid([appdir, appname, '/Version.txt'])
-        p = [appdir, appname];
-    end
+    p = findFolder(appdir, appname);
 end
 verfile = [p, '/Version.txt'];
 if ~ispathvalid(verfile)
@@ -32,3 +28,4 @@ end
 fd = fopen(verfile,'rt');
 v = fgetl(fd);
 fclose(fd);
+

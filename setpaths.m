@@ -34,7 +34,7 @@ try
     % app
     appNameExclList = {'Homer3','Homer2_UI','brainScape','ResolveCommonFunctions'};
     appNameInclList = {'AtlasViewerGUI'};
-    exclSearchList  = {'.git','.idea','Data','Docs','*_install','*.app'};
+    exclSearchList  = {'.git','.idea','Data','Docs','*_install','*.app','submodules'};
     
     appThis         = filesepStandard_startup(pwd);
     appThisPaths    = findDotMFolders(appThis, exclSearchList);
@@ -79,7 +79,7 @@ try
     end
     
     % Remove all search paths for all other apps except for current one, to
-    % make that we use only search from the current app for download shared
+    % make sure that we use only search from the current app for download shared
     % libraries (i.e, submodules).
     for ii = 1:length(appExclList)
         removeSearchPaths(appExclList{ii})
@@ -119,8 +119,7 @@ catch ME
     
 end
 
-appnames = [appname; dependencies()];
-PrintSystemInfo([], appnames)
+PrintSystemInfo([], appname)
 
 cd(currdir);
 
@@ -157,10 +156,6 @@ if ischar(appPaths)
     end        
     appPaths = str2cell(p, delimiter);
 end
-if ~exist('options', 'var')
-    options = '';
-end
-
 for kk = 1:length(appPaths)
     if strfind(appPaths{kk}, '.git')
         continue;
@@ -204,19 +199,23 @@ fprintf('REMOVED search paths for app %s\n', app);
 
 % ----------------------------------------------------
 function   addDependenciesSearchPaths()
+if exist([pwd, '/Utils/submodules'],'dir')
+    addpath([pwd, '/Utils/submodules'],'-end');
+end
 d = dependencies();
 for ii = 1:length(d)
-    rootpath = '';
-    if exist([pwd, '/', d{ii}],'dir')
-        rootpath = [pwd, '/'];
-    elseif exist([pwd, '/../', d{ii}],'dir')
-        rootpath = [pwd, '/../'];
+    rootpath = findFolder(pwd, d{ii});
+    if ispathvalid_startup([rootpath, '/Shared'],'dir')
+        rootpath = [rootpath, '/Shared'];
     end
-    if ~exist([rootpath, d{ii}],'dir')
+    if ~exist(rootpath,'dir')
         fprintf('ERROR: Could not find required dependency %s\n', d{ii})
         continue;
     end
-    addSearchPaths([rootpath, d{ii}]);
+    addSearchPaths(rootpath);
+end
+if exist([pwd, '/Utils/submodules'],'dir')
+    addpath([pwd, '/Utils/submodules'],'-end');
 end
 
 

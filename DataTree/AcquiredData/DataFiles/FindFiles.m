@@ -62,7 +62,7 @@ while files.isempty()
     switch fmt
         case {'snirf','.snirf'}
             files = DataFilesClass(dirnameGroup, 'snirf');
-            filesSrc = DataFilesClass(dirnameGroup, 'nirs', '', false);           
+            filesSrc = DataFilesClass(dirnameGroup, 'nirs', '', false);
             if ~filesSrc.isempty()
                 nfolders = length(filesSrc.files)-filesSrc.nfiles;
                 if nfolders==0
@@ -97,7 +97,6 @@ while files.isempty()
             q = menu(sprintf('Homer3 only supports file formats: {%s}. Please choose one.', cell2str(supportedFormats(:,1))), ...
                     'OK','CANCEL');
             if q==2
-                files = DataFilesClass(dirnameGroup);
                 return;
             else
                 selection = checkboxinputdlg(supportedFormats(:,1), 'Select Supported File Format');
@@ -110,29 +109,33 @@ while files.isempty()
             end
     end
     
+    
+    % If no files were found ion the current format then ask user to choose
+    % another group folder
     if files.isempty()
-        switch fmt
-            case {'snirf','.snirf'}
-                msg{1} = sprintf('Homer3 did not find any %s data files to load in the current group folder. ', fmt);
-                msg{2} = sprintf('Do you want to select another group folder?');
-                q = MenuBox(msg, {'YES','NO'});
-                if q==2
-                    files = DataFilesClass();
-                    return;
-                end
-                dirnameGroup = uigetdir(pwd, 'Please select another group folder ...');
-                if dirnameGroup==0
-                    files = DataFilesClass();
-                    return;
-                end
-                
-                % Change current folder to new group
-                cd(dirnameGroup)
-                
-            case {'snirfonly'}
-                files = [];
+        if strcmp(fmt, 'snirfonly')
+            files = [];
+            return
         end
+        
+        msg{1} = sprintf('Homer3 did not find any %s data files to load in the current group folder. ', fmt);
+        msg{2} = sprintf('Do you want to select another group folder?');
+        q = MenuBox(msg, {'YES','NO'});
+        if q==2
+            return;
+        end
+        dirnameGroup = uigetdir(pwd, 'Please select another group folder ...');
+        if dirnameGroup==0
+            files = DataFilesClass(pwd, fmt);
+            return;
+        end
+        
+        % Change current folder to new group
+        cd(dirnameGroup)
     end
+       
+    fprintf('FindFiles: Found %d %s data files in %d folders\n', files.nfiles, fmt, length(files.files)-files.nfiles);
+    
 end
 
 

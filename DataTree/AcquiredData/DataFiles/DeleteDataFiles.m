@@ -86,15 +86,15 @@ for ii=1:length(datafiles)
         continue;
     end
     if strcmp(options, 'delete')
-        fprintf('Deleting %s\n', [datafiles(ii).pathfull, '/', datafiles(ii).name]);
-        delete([datafiles(ii).pathfull, '/', datafiles(ii).name]);
+        fprintf('Deleting %s\n', [datafiles(ii).rootdir, '/', datafiles(ii).name]);
+        delete([datafiles(ii).rootdir, '/', datafiles(ii).name]);
     elseif strcmp(options, 'move')
-        fprintf('Moving %s to %s\n', [datafiles(ii).pathfull, '/', datafiles(ii).name], [datafiles(ii).pathfull, '/', datafiles(ii).name, '.old']);
-        movefile([datafiles(ii).pathfull, '/', datafiles(ii).name], [datafiles(ii).pathfull, '/', datafiles(ii).name, '.old']);
+        fprintf('Moving %s to %s\n', [datafiles(ii).rootdir, '/', datafiles(ii).name], [datafiles(ii).rootdir, '/', datafiles(ii).name, '.old']);
+        movefile([datafiles(ii).rootdir, '/', datafiles(ii).name], [datafiles(ii).rootdir, '/', datafiles(ii).name, '.old']);
     elseif strcmp(options, 'restore')
         [pname, fname] = fileparts(datafiles(ii).name);
-        fprintf('Restoring %s to %s\n', [datafiles(ii).pathfull, '/', datafiles(ii).name], [datafiles(ii).pathfull, '/', pname, '/', fname]);
-        movefile([datafiles(ii).pathfull, '/', datafiles(ii).name], [datafiles(ii).pathfull, '/', pname, '/', fname]);
+        fprintf('Restoring %s to %s\n', [datafiles(ii).rootdir, '/', datafiles(ii).name], [datafiles(ii).rootdir, '/', pname, '/', fname]);
+        movefile([datafiles(ii).rootdir, '/', datafiles(ii).name], [datafiles(ii).rootdir, '/', pname, '/', fname]);
     end
     pause(0.25);
 end

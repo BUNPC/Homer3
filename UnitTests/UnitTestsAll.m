@@ -1,7 +1,7 @@
 function UnitTestsAll()
 global logger
 global cfg 
-t_local = tic;
+t1 = tic;
 
 setNamespace('Homer3')
 
@@ -24,7 +24,7 @@ cfg.Save();
 UnitTestsAll_Snirf(false);
 UnitTestsAll_MainGUI(false)
 
-toc(t_local);
+toc(t1);
 
 
 

@@ -86,6 +86,7 @@ set(handles.listboxGroupTree, 'enable', val);
 set(handles.listboxFilesErr, 'enable', val);
 set(handles.radiobuttonProcTypeGroup, 'enable', val);
 set(handles.radiobuttonProcTypeSubj, 'enable', val);
+set(handles.radiobuttonProcTypeSess, 'enable', val);
 set(handles.radiobuttonProcTypeRun, 'enable', val);
 set(handles.textStatus, 'enable', val);
 
@@ -151,6 +152,7 @@ set(handles.listboxGroupTree, 'enable', val);
 set(handles.listboxFilesErr, 'enable', val);
 set(handles.radiobuttonProcTypeGroup, 'enable', val);
 set(handles.radiobuttonProcTypeSubj, 'enable', val);
+set(handles.radiobuttonProcTypeSess, 'enable', val);
 set(handles.radiobuttonProcTypeRun, 'enable', val);
 set(handles.textStatus, 'enable', val);
 
@@ -210,7 +212,8 @@ end
 
 maingui.gid = 1;
 maingui.sid = 2;
-maingui.rid = 3;
+maingui.eid = 3;
+maingui.rid = 4;
 
 maingui.dataTree = [];
 maingui.Update = @Update;
@@ -269,7 +272,7 @@ MainGUI_EnableDisableGUI(handles,'on');
 
 
 % --------------------------------------------------------------------
-function varargout = MainGUI_OutputFcn(hObject, eventdata, handles)
+function varargout = MainGUI_OutputFcn(~, ~, ~)
 global maingui
 varargout{1} = maingui.unitTest;
 
@@ -311,7 +314,7 @@ deleteNamespace('Homer3');
 
 
 % --------------------------------------------------------------------
-function [eventdata, handles] = MainGUI_CloseFcn(hObject, eventdata, handles)
+function [eventdata, handles] = MainGUI_CloseFcn(~, eventdata, handles)
 deleteNamespace('Homer3');
 
 
@@ -323,19 +326,19 @@ global maingui;
 % Initialize listboxGroupTree params struct
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 maingui.listboxGroupTreeParams = struct('listMaps',struct('names',{{}}, 'idxs', []), ...
-                                        'views', struct('GROUP',1, 'SUBJS',2, 'RUNS',3), ...
+                                        'views', struct('GROUP',1, 'SUBJS',2, 'SESS',3, 'NOSESS',4, 'RUNS',5), ...
                                         'viewSetting',0);
                       
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Generate linear lists from group tree nodes for the 3 group views
 % in listboxGroupTree
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[nSubjs, nRuns] = GenerateGroupDisplayLists();
+[nSubjs, nSess, nRuns] = GenerateGroupDisplayLists();
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Determine the best view for the data files 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[viewSetting, views] = SetView(handles, nSubjs, nRuns);
+[viewSetting, views] = SetView(handles, nSubjs, nSess, nRuns);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set listbox used for displaying valid data
@@ -389,13 +392,13 @@ if ~isempty(handles)
 end
 
 % Select initial data tree processing element in the 'Current Processing Element' panel
-idx = [1,1,1];
+idx = [1,1,1,1];
 listboxGroupTree_Callback([], idx, handles)
 
 % Update GUI Current Element panel proc level radio button to reflect 
 % processing level the selected element
 proclevel = GetProclevel(handles);
-SetGuiProcLevel(handles, idx(1), idx(2), idx(3), proclevel);
+SetGuiProcLevel(handles, idx(1), idx(2), idx(3), idx(4), proclevel);
 
 
 
@@ -408,7 +411,7 @@ if isempty(hObject)
 end
 proclevel = GetProclevel(handles);
 iList = get(handles.listboxGroupTree,'value');
-[iGroup,iSubj,iRun] = MapList2GroupTree(iList);
+[iGroup, iSubj, iSess, iRun] = MapList2GroupTree(iList);
 switch(proclevel)
 	case maingui.gid
         if iGroup==0
@@ -423,6 +426,17 @@ switch(proclevel)
             iSubj=1;
         end
         maingui.dataTree.SetCurrElem(iGroup, iSubj);
+    case maingui.eid
+        if iGroup==0
+            iGroup=1;
+        end
+        if iSubj==0
+            iSubj=1;
+        end
+        if iSess==0
+            iSess=1;
+        end
+        maingui.dataTree.SetCurrElem(iGroup, iSubj, iSess);
     case maingui.rid
         if iGroup==0
             iGroup=1;
@@ -430,18 +444,21 @@ switch(proclevel)
         if iSubj==0
             iSubj=1;
         end
+        if iSess==0
+            iSess=1;
+        end
         if iRun==0
             iRun=1;
         end
-        maingui.dataTree.SetCurrElem(iGroup, iSubj, iRun);
+        maingui.dataTree.SetCurrElem(iGroup, iSubj, iSess, iRun);
 end
-[iGroup, iSubj, iRun] = maingui.dataTree.GetCurrElemIndexID();
+[iGroup, iSubj, iSess, iRun] = maingui.dataTree.GetCurrElemIndexID();
 if iRun == 0
     set(handles.menuItemPowerSpectrum, 'enable', 'off')
 else
     set(handles.menuItemPowerSpectrum, 'enable', 'on')
 end
-listboxGroupTree_Callback([], [iGroup,iSubj,iRun], handles)
+listboxGroupTree_Callback([], [iGroup, iSubj, iSess, iRun], handles)
 Display(handles, hObject);
 
 
@@ -464,21 +481,22 @@ end
 if isa(eventdata, 'matlab.ui.eventdata.ActionData') || isempty(eventdata)
     
     % Get the [iGroup,iSubj,iRun] mapping of the clicked lisboxFiles entry
-    [iGroup, iSubj, iRun] = MapList2GroupTree(iList);
+    [iGroup, iSubj, iSess, iRun] = MapList2GroupTree(iList);
     
     % Get the current processing level radio buttons setting
     proclevel = GetProclevel(handles);
         
     % Set new gui state based on current gui selections of listboxGroupTree
     % (iGroup, iSubj, iRun) and proc level radio buttons (proclevel)
-    SetGuiProcLevel(handles, iGroup, iSubj, iRun, proclevel);
+    SetGuiProcLevel(handles, iGroup, iSubj, iSess, iRun, proclevel);
     
 elseif ~isempty(eventdata)
     
     iGroup = eventdata(1);
     iSubj = eventdata(2);
-    iRun = eventdata(3);
-    iList = MapGroupTree2List(iGroup, iSubj, iRun);
+    iSess = eventdata(3);
+    iRun = eventdata(4);
+    iList = MapGroupTree2List(iGroup, iSubj, iSess, iRun);
     if iList==0
         return;
     end
@@ -804,14 +822,14 @@ end
 
 
 % --------------------------------------------------------------------
-function menuItemPlotProbeGUI_Callback(hObject, eventdata, handles) %#ok<DEFNU>
+function menuItemPlotProbeGUI_Callback(hObject, ~, handles)
 global maingui
 LaunchChildGuiFromMenu('PlotProbeGUI', hObject, GetDatatype(handles), maingui.condition);
 
 
 
 % -------------------------------------------------------------------
-function [eventdata, handles] = menuItemStimEditGUI_Callback(hObject, eventdata, handles) %#ok<DEFNU>
+function [eventdata, handles] = menuItemStimEditGUI_Callback(hObject, eventdata, handles)
 LaunchChildGuiFromMenu('StimEditGUI', hObject);
 
 
@@ -823,7 +841,7 @@ LaunchChildGuiFromMenu('ProcStreamEditGUI', hObject);
 
 
 % --------------------------------------------------------------------
-function menuItemDisplayPvalues_Callback(hObject, eventdata, handles)
+function menuItemDisplayPvalues_Callback(hObject, ~, ~)
 LaunchChildGuiFromMenu('PvaluesDisplayGUI', hObject);
 
 
@@ -1340,9 +1358,10 @@ switch(guiname)
         if ~isempty(maingui.handles)
             iGroup = varargin{2}(1);
             iSubj = varargin{2}(2);
-            iRun = varargin{2}(3);
-            maingui.logger.Write(sprintf('Processing iGroup=%d, iSubj=%d, iRun=%d\n', iGroup, iSubj, iRun));
-            listboxGroupTree_Callback([], [iGroup, iSubj, iRun], maingui.handles);
+            iSess = varargin{2}(3);
+            iRun = varargin{2}(4);
+            maingui.logger.Write(sprintf('Processing iGroup=%d, iSubj=%d, iSess=%d, iRun=%d\n', iGroup, iSubj, iSess, iRun));
+            listboxGroupTree_Callback([], [iGroup, iSubj, iSess, iRun], maingui.handles);
         end
     case 'PatchCallback'
         % Redisplay data axes since stims might have edited
@@ -1420,7 +1439,7 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function checkboxFixRangeX_Callback(hObject, eventdata, handles)
+function checkboxFixRangeX_Callback(hObject, ~, handles)
 global maingui
 if get(hObject,'value')==1
     maingui.plotViewOptions.ranges.X = str2num(get(handles.editFixRangeX, 'string'));
@@ -1432,7 +1451,7 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function checkboxFixRangeY_Callback(hObject, eventdata, handles)
+function checkboxFixRangeY_Callback(hObject, ~, handles)
 global maingui
 if get(hObject,'value')==1
     maingui.plotViewOptions.ranges.Y = str2num(get(handles.editFixRangeY, 'string'));
@@ -1445,19 +1464,19 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function editFixRangeX_Callback(hObject, eventdata, handles)
+function editFixRangeX_Callback(~, eventdata, handles)
 checkboxFixRangeX_Callback(handles.checkboxFixRangeX, eventdata, handles);
 
 
 % --------------------------------------------------------------------
-function editFixRangeY_Callback(hObject, eventdata, handles)
+function editFixRangeY_Callback(~, eventdata, handles)
 checkboxFixRangeY_Callback(handles.checkboxFixRangeY, eventdata, handles);
 
 
 
 
 % --------------------------------------------------------------------
-function menuItemGroupViewSettingGroup_Callback(hObject, eventdata, handles)
+function menuItemGroupViewSettingGroup_Callback(hObject, ~, handles)
 global maingui
 
 if strcmp(get(hObject, 'checked'), 'off')
@@ -1472,6 +1491,8 @@ if strcmp(get(hObject, 'checked'), 'on')
 
     maingui.listboxGroupTreeParams.viewSetting = views.GROUP;    
     set(handles.menuItemGroupViewSettingSubjects,'checked','off');
+    set(handles.menuItemGroupViewSettingSessions,'checked','off');
+    set(handles.menuItemGroupViewSettingNoSessions,'checked','off');
     set(handles.menuItemGroupViewSettingRuns,'checked','off');
 end
 
@@ -1479,7 +1500,7 @@ end
 
 
 % --------------------------------------------------------------------
-function menuItemGroupViewSettingSubjects_Callback(hObject, eventdata, handles)
+function menuItemGroupViewSettingSubjects_Callback(hObject, ~, handles)
 global maingui
 
 if strcmp(get(hObject, 'checked'), 'off')
@@ -1494,14 +1515,61 @@ if strcmp(get(hObject, 'checked'), 'on')
 
     maingui.listboxGroupTreeParams.viewSetting = views.SUBJS;
     set(handles.menuItemGroupViewSettingGroup,'checked','off');
+    set(handles.menuItemGroupViewSettingSessions,'checked','off');
+    set(handles.menuItemGroupViewSettingNoSessions,'checked','off');
     set(handles.menuItemGroupViewSettingRuns,'checked','off');
 end
 
 
 
+% --------------------------------------------------------------------
+function menuItemGroupViewSettingSessions_Callback(hObject, ~, handles)
+global maingui
+
+if strcmp(get(hObject, 'checked'), 'off')
+    set(hObject, 'checked','on');
+else
+    return;
+end
+views = maingui.listboxGroupTreeParams.views;
+if strcmp(get(hObject, 'checked'), 'on')
+    iListNew = FindGroupDisplayListMatch(views.SESS);
+    set(handles.listboxGroupTree, 'value',iListNew, 'string', maingui.listboxGroupTreeParams.listMaps(views.SESS).names);
+
+    maingui.listboxGroupTreeParams.viewSetting = views.SESS;
+    set(handles.menuItemGroupViewSettingGroup,'checked','off');
+    set(handles.menuItemGroupViewSettingSubjects,'checked','off');
+    set(handles.menuItemGroupViewSettingNoSessions,'checked','off');
+    set(handles.menuItemGroupViewSettingRuns,'checked','off');
+end
+
+
 
 % --------------------------------------------------------------------
-function menuItemGroupViewSettingRuns_Callback(hObject, eventdata, handles)
+function menuItemGroupViewSettingNoSessions_Callback(hObject, ~, handles)
+global maingui
+
+if strcmp(get(hObject, 'checked'), 'off')
+    set(hObject, 'checked','on');
+else
+    return;
+end
+views = maingui.listboxGroupTreeParams.views;
+if strcmp(get(hObject, 'checked'), 'on')
+    iListNew = FindGroupDisplayListMatch(views.NOSESS);
+    set(handles.listboxGroupTree, 'value',iListNew, 'string', maingui.listboxGroupTreeParams.listMaps(views.NOSESS).names);
+
+    maingui.listboxGroupTreeParams.viewSetting = views.NOSESS;
+    set(handles.menuItemGroupViewSettingGroup,'checked','off');
+    set(handles.menuItemGroupViewSettingSubjects,'checked','off');
+    set(handles.menuItemGroupViewSettingSessions,'checked','off');
+    set(handles.menuItemGroupViewSettingRuns,'checked','off');
+end
+
+
+
+% --------------------------------------------------------------------
+function menuItemGroupViewSettingRuns_Callback(hObject, ~, handles)
 global maingui
 
 if strcmp(get(hObject, 'checked'), 'off')
@@ -1517,23 +1585,26 @@ if strcmp(get(hObject, 'checked'), 'on')
     maingui.listboxGroupTreeParams.viewSetting = views.RUNS;
     set(handles.menuItemGroupViewSettingGroup,'checked','off');
     set(handles.menuItemGroupViewSettingSubjects,'checked','off');
+    set(handles.menuItemGroupViewSettingSessions,'checked','off');    
+    set(handles.menuItemGroupViewSettingNoSessions,'checked','off');
 end
 
 
+
 % --------------------------------------------------------------------
-function checkboxPlotAux_Callback(hObject, eventdata, handles)
+function checkboxPlotAux_Callback(hObject, ~, handles)
 Display(handles, hObject);
 
 
 
 % --------------------------------------------------------------------
-function popupmenuAux_Callback(hObject, eventdata, handles)
+function popupmenuAux_Callback(hObject, ~, handles)
 Display(handles, hObject);
 
 
 
 % --------------------------------------------------------------------
-function menuItemCopyPlots_Callback(hObject, eventdata, handles)
+function menuItemCopyPlots_Callback(~, ~, handles)
 
 xf = 1.5;
 yf = 1.5;
@@ -1558,7 +1629,7 @@ DisplayAxesSDG(hAxesSDG);
 
 
 % --------------------------------------------------------------------
-function checkboxExcludeTime_Callback(hObject, eventdata, handles)
+function checkboxExcludeTime_Callback(hObject, ~, handles)
 global maingui
 
 hAxesData = maingui.axesData.handles.axes;
@@ -2007,6 +2078,7 @@ end
 % Override
 callbacks.radiobuttonProcTypeGroup = @uipanelProcessingType_SelectionChangeFcn;
 callbacks.radiobuttonProcTypeSubj = @uipanelProcessingType_SelectionChangeFcn;
+callbacks.radiobuttonProcTypeSess = @uipanelProcessingType_SelectionChangeFcn;
 callbacks.radiobuttonProcTypeRun = @uipanelProcessingType_SelectionChangeFcn;
 
 

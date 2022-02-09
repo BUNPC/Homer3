@@ -230,6 +230,15 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function paramsOutStruct = CalcDefault(obj)
+            paramsOutStruct = struct();
+            if exist('hmrE_CalcAvg','file')
+                paramsOutStruct = hmrE_CalcAvg(obj.input.misc);
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function Calc(obj, filename)
             if ~exist('filename','var')
                 filename = '';
@@ -239,8 +248,15 @@ classdef ProcStreamClass < handle
             FcallsIdxs = obj.GetFcallsIdxs();
             nFcall = length(FcallsIdxs);
             
-            paramOut = {};
+            paramsOutStruct = struct();
             hwait = waitbar(0, 'Processing...' );
+            if nFcall==0
+            
+                paramsOutStruct = obj.CalcDefault();
+
+            else
+                
+                paramOut = {};
             for iFcall = FcallsIdxs
                 waitbar( iFcall/nFcall, hwait, sprintf('Processing... %s', obj.GetFcallNamePrettyPrint(iFcall)) );
                 
@@ -297,10 +313,12 @@ classdef ProcStreamClass < handle
             end
             
             % Copy paramOut to output
-            paramsOutStruct = struct();
             for ii=1:length(paramOut)
                 eval( sprintf('paramsOutStruct.%s = %s;', paramOut{ii}, paramOut{ii}) );
             end            
+            
+            end
+            
             obj.output.Save(paramsOutStruct, filename);
             
             obj.input.misc = [];
@@ -753,27 +771,35 @@ classdef ProcStreamClass < handle
             if fid<0
                 return;
             end
-            [G, S, R] = obj.FindSections(fid, 'nodefault');
+            [Group, Subj, Sess, Run] = obj.FindSections(fid, 'nodefault');
             fclose(fid);
             
             % Construct new contents
             switch(lower(type))
                 case {'group', 'groupclass', 'grp'}
-                    G = [ sprintf('%% group'); obj.GenerateSection(); sprintf('\n') ];
-                    S = [ sprintf('%% subj');  S; sprintf('\n') ];
-                    R = [ sprintf('%% run');   R; sprintf('\n') ];
-                case {'subj', 'session', 'subjclass'}
-                    G = [ sprintf('%% group'); G; sprintf('\n') ];
-                    S = [ sprintf('%% subj');  obj.GenerateSection(); sprintf('\n') ];
-                    R = [ sprintf('%% run');   R; sprintf('\n') ];
+                    Group = [ sprintf('%% group'); obj.GenerateSection(); sprintf('\n') ]; %#ok<*SPRINTFN>
+                    Subj = [ sprintf('%% subj');  Subj; sprintf('\n') ];
+                    Sess = [ sprintf('%% sess');  Sess; sprintf('\n') ];
+                    Run = [ sprintf('%% run');   Run; sprintf('\n') ];
+                case {'subj', 'subjclass'}
+                    Group = [ sprintf('%% group');  Group; sprintf('\n') ];
+                    Subj = [ sprintf('%% subj');  obj.GenerateSection(); sprintf('\n') ];
+                    Sess = [ sprintf('%% sess');  Sess; sprintf('\n') ];
+                    Run = [ sprintf('%% run');   Run; sprintf('\n') ];
+                case {'sess', 'sessclass'}
+                    Group = [ sprintf('%% group'); Group; sprintf('\n') ];
+                    Subj = [ sprintf('%% subj');  Subj; sprintf('\n') ];
+                    Sess = [ sprintf('%% sess');  obj.GenerateSection(); sprintf('\n')  ];
+                    Run = [ sprintf('%% run');   Run; sprintf('\n') ];
                 case {'run', 'runclass'}
-                    G = [ sprintf('%% group'); G; sprintf('\n') ];
-                    S = [ sprintf('%% subj');  S; sprintf('\n') ];
-                    R = [ sprintf('%% run');   obj.GenerateSection(); sprintf('\n') ];
+                    Group = [ sprintf('%% group'); Group; sprintf('\n') ];
+                    Subj = [ sprintf('%% subj');  Subj; sprintf('\n') ];
+                    Sess = [ sprintf('%% sess');  Sess; sprintf('\n') ];
+                    Run = [ sprintf('%% run');   obj.GenerateSection(); sprintf('\n') ];
                 otherwise
                     return;
             end
-            newcontents = [versionstamp; G; S; R];
+            newcontents = [versionstamp; Group; Subj; Sess; Run];
             
             % Write new contents to file 
             fid = fopen(fname,'w');
@@ -790,10 +816,10 @@ classdef ProcStreamClass < handle
         % Function to extract the 3 proc stream sections - group, subj, and run -
         % from a processing stream config cell array.
         % ---------------------------------------------------------------------
-        function [G, S, R] = FindSections(obj, fid, mode)
+        function [Group, Subj, Sess, Run] = FindSections(obj, fid, mode)
             %
             % Syntax:
-            %    [G, S, R] = obj.FindSections(fid, mode)
+            %    [Group, Subj, Sess, Run] = obj.FindSections(fid, mode)
             %
             % Description:
             %    Read in proc stream config file with file descriptor fid and returns the 
@@ -804,18 +830,21 @@ classdef ProcStreamClass < handle
             % Example: 
             %    fid = fopen('processOpt_ShortSep.cfg');
             %    p = ProcStreamClass();
-            %    [G, S, R] = p.FindSections(fid);
+            %    [Group, Subj, Sess, Run] = p.FindSections(fid);
             %    fclose(fid);
             %
             %    Here's the output:
             %
-            %     G = {
+            %     Group = {
             %          '@ hmrG_SubjAvg [dcAvg,dcAvgStd,nTrials,grpAvgPass] (dcAvgSubjs,dcAvgStdSubjs,SDSubjs,nTrialsSubjs tRange %0.1f�'
             %         }
-            %     S = {
+            %     Subj = {
             %          '@ hmrS_RunAvg [dcAvg,dcAvgStd,nTrials] (dcAvgRuns,dcAvgStdRuns,dcSum2Runs,mlActRuns,nTrialsRuns'
             %         }
-            %     R = {
+            %     Sess = {
+            %          ''
+            %         }
+            %     Run = {
             %         '@ hmrR_Intensity2OD dod (d'
             %         '@ hmrR_MotionArtifact tIncAuto (dod,t,SD,tIncMan tMotion %0.1f 0.5 tMask %0.1f 1.0 STDEVthresh %0.1f 50.0 AMPthresh %0.1f 5.0'
             %         '@ hmrR_BandpassFilt dod (dod,t hpf %0.3f 0.010 lpf %0.3f 0.500'
@@ -827,14 +856,15 @@ classdef ProcStreamClass < handle
                 mode = 'default';
             end
             
-            G = {};
-            S = {};
-            R = {};
+            Group = {};
+            Subj = {};
+            Sess = {};
+            Run = {};
             if ~iswholenum(fid) || fid<0
                 return;
             end
-            iG=1; iS=1; iR=1;
-            section = 'run';   % Run is the default is sections aren't labeled
+            iGroup=1; iSubj=1; iSess=1; iRun=1;
+            section = 'run';   % Run is the default if sections aren't labeled
             while ~feof(fid)
                 ln = fgetl(fid);
                 if isempty(ln) || ~ischar(ln)
@@ -846,7 +876,9 @@ classdef ProcStreamClass < handle
                     switch(lower(str))
                         case {'group','grp'}
                             section = str;
-                        case {'subj','subject','session','sess'}
+                        case {'subj','subject'}
+                            section = str;
+                        case {'session','sess'}
                             section = str;
                         case {'run'}
                             section = str;
@@ -854,25 +886,30 @@ classdef ProcStreamClass < handle
                 elseif ln(1)=='@'
                     switch(lower(section))
                         case {'group','grp'}
-                            G{iG,1} = strtrim(ln); iG=iG+1;
-                        case {'subj','subject','session','sess'}
-                            S{iS,1} = strtrim(ln); iS=iS+1;
+                            Group{iGroup,1} = strtrim(ln); iGroup=iGroup+1;
+                        case {'subj','subject'}
+                            Subj{iSubj,1} = strtrim(ln); iSubj=iSubj+1;
+                        case {'session','sess'}
+                            Sess{iSess,1} = strtrim(ln); iSess=iSess+1;
                         case {'run'}
-                            R{iR,1} = strtrim(ln); iR=iR+1;
+                            Run{iRun,1} = strtrim(ln); iRun=iRun+1;
                     end
                 end
             end
             
             % Generate default contents for all sections which are missing
             if strcmp(mode, 'default')
-                if isempty(G)
-                    G = obj.fcallStrEncodedGroup;
+                if isempty(Group)
+                    Group = obj.fcallStrEncodedGroup;
                 end
-                if isempty(S)
-                    S = obj.fcallStrEncodedSubj;
+                if isempty(Subj)
+                    Subj = obj.fcallStrEncodedSubj;
                 end
-                if isempty(R)
-                    R = obj.fcallStrEncodedRun;
+                if isempty(Sess)
+                    Sess = obj.fcallStrEncodedSess;
+                end
+                if isempty(Run)
+                    Run = obj.fcallStrEncodedRun;
                 end
             end
         end
@@ -970,14 +1007,16 @@ classdef ProcStreamClass < handle
             if ~exist('type','var')
                 return;
             end
-            [G, S, R] = obj.FindSections(fid);
+            [Group, Subj, Sess, Run] = obj.FindSections(fid);
             switch(lower(type))
                 case {'group', 'groupclass', 'grp'}
-                    obj.Decode(G);
-                case {'subj', 'session', 'subjclass'}
-                    obj.Decode(S);
+                    obj.Decode(Group);
+                case {'subj', 'subjclass'}
+                    obj.Decode(Subj);
+                case {'sess', 'sessclass'}
+                    obj.Decode(Sess);
                 case {'run', 'runclass'}
-                    obj.Decode(R);
+                    obj.Decode(Run);
                 otherwise
                     return;
             end
@@ -1137,6 +1176,7 @@ classdef ProcStreamClass < handle
         function CreateDefault(obj)
             obj.fcallStrEncodedGroup('init');
             obj.fcallStrEncodedSubj('init');
+            obj.fcallStrEncodedSess('init');
             obj.fcallStrEncodedRun('init');
         end
         
@@ -1147,8 +1187,10 @@ classdef ProcStreamClass < handle
             switch(lower(type))
                 case {'group', 'groupclass'}
                     obj2.Decode(obj.fcallStrEncodedGroup);
-                case {'subj', 'session', 'subjclass'}
+                case {'subj', 'subjclass'}
                     obj2.Decode(obj.fcallStrEncodedSubj);
+                case {'sess', 'sessclass'}
+                    obj2.Decode(obj.fcallStrEncodedSess);
                 case {'run', 'runclass'}
                     obj2.Decode(obj.fcallStrEncodedRun);
                 otherwise
@@ -1221,6 +1263,30 @@ classdef ProcStreamClass < handle
                 tmp = {...
                     obj.reg.funcReg(iS).GetUsageStrDecorated(['hmrS_RunAvg',suffix],'dcAvg'); ...
                     obj.reg.funcReg(iS).GetUsageStrDecorated(['hmrS_RunAvgStd2',suffix],'dcAvg'); ...
+                };
+                k=[]; kk=1;
+                for ii=1:length(tmp)
+                    if isempty(tmp{ii})
+                        k(kk)=ii;
+                        kk=kk+1;
+                    end
+                end
+                tmp(k) = [];
+                if ~isempty(tmp)
+                    v = tmp;
+                end
+            end
+            val = v;
+        end
+
+        
+        % ----------------------------------------------------------------------------------
+        function val = fcallStrEncodedSess(obj, init)
+            persistent v;
+            if exist('init','var') && strcmp(init,'init') && ~obj.reg.IsEmpty
+                iS = obj.reg.isubj;
+                suffix = obj.getDefaultProcStream();
+                tmp = {...
                 };
                 k=[]; kk=1;
                 for ii=1:length(tmp)

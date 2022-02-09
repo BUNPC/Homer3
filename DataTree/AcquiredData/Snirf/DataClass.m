@@ -165,6 +165,50 @@ classdef DataClass < FileLoadSaveClass
         
         
         % -------------------------------------------------------
+        function err = LoadTime(obj, fileobj, location)
+            err = 0;
+                       
+            % Arg 1
+            if ~exist('fileobj','var') || (ischar(fileobj) && ~exist(fileobj,'file'))
+                fileobj = '';
+            end
+                      
+            % Arg 2
+            if ~exist('location', 'var') || isempty(location)
+                location = '/nirs/data1';
+            elseif location(1)~='/'
+                location = ['/',location];
+            end
+                      
+            % Error checking            
+            if ~isempty(fileobj) && ischar(fileobj)
+                obj.SetFilename(fileobj);
+            elseif isempty(fileobj)
+                fileobj = obj.GetFilename();
+            end
+            if isempty(fileobj)
+               err = -1;
+               return;
+            end
+            
+            
+            try
+                % Open group
+                [gid, fid] = HDF5_GroupOpen(fileobj, location);
+                
+                obj.time = HDF5_DatasetLoad(gid, 'time');
+                                   
+                % Close group
+                HDF5_GroupClose(fileobj, gid, fid);
+            catch ME
+                err = -1;
+            end
+            
+            err = ErrorCheck(obj, err, {'time'});
+        end
+        
+        
+        % -------------------------------------------------------
         function SaveHdf5(obj, fileobj, location)
             if ~exist('fileobj', 'var') || isempty(fileobj)
                 error('Unable to save file. No file name given.')
@@ -207,7 +251,11 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------
-        function err = ErrorCheck(obj, err)
+        function err = ErrorCheck(obj, err, params)
+            if ~exist('params','var')
+                params = propnames(obj);
+            end
+            if ismember('dataTimeSeries',params)
             if obj.IsEmpty()
                 err = -1;
             end
@@ -216,6 +264,12 @@ classdef DataClass < FileLoadSaveClass
             end
             if size(obj.dataTimeSeries,2) ~= length(obj.measurementList)
                 err = -1;
+            end
+        end
+            if ismember('time',params)
+                if isempty(obj.time)
+                    err = -1;
+                end
             end
         end
         
@@ -302,6 +356,7 @@ classdef DataClass < FileLoadSaveClass
         
         % ---------------------------------------------------------
         function t = GetTime(obj)
+            
             t = obj.time;
         end
         

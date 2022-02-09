@@ -768,7 +768,7 @@ classdef GroupClass < TreeNodeClass
             
             % Create ExportTable initialized with the filled in 2D TableCell array. 
             % ExportTable object is what actually does the exporting to a file. 
-            ExportTable(obj.name, 'HRF mean', tblcells);
+            ExportTable([obj.path, obj.outputDirname, obj.name], 'HRF mean', tblcells);
         end
         
         
@@ -1061,7 +1061,11 @@ classdef GroupClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function BackwardCompatability(obj)
             if ispathvalid([obj.path, 'groupResults.mat'])
-                g = load([obj.path, 'groupResults.mat']);
+                try
+                    g = load([obj.path, 'groupResults.mat']);
+                catch ME
+                    g = [];
+                end
                 
                 % Do not try to restore old data older than Homer3
                 if isempty(g)

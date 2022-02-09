@@ -589,6 +589,7 @@ classdef SubjClass < TreeNodeClass
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
+            obj.Load();
             tblcells = obj.procStream.GenerateTableCells_MeanHRF(obj.name, obj.CondNames, trange, width, iBlk);
         end
         

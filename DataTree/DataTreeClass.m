@@ -19,13 +19,16 @@ classdef DataTreeClass <  handle
         function obj = DataTreeClass(groupDirs, fmt, procStreamCfgFile, options)
             global logger
             global cfg
+                       
+            obj.InitNamespace();
             
+            obj.logger              = InitLogger(logger, 'DataTreeClass');
+            cfg                     = InitConfig(cfg);
+
             obj.groups              = GroupClass().empty();
             obj.currElem            = TreeNodeClass().empty();
             obj.reg                 = RegistriesClass().empty();
             obj.dirnameGroups       = {};
-            obj.logger              = InitLogger(logger, 'DataTree');
-            cfg                     = InitConfig(cfg);
             
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -95,6 +98,17 @@ classdef DataTreeClass <  handle
             obj.warningflag = 0;
             
         end
+        
+        
+        
+        % --------------------------------------------------------------
+        function InitNamespace(obj)
+            nm = getNamespace();
+            if isempty(nm)
+                setNamespace('DataTreeClass');
+            end
+        end
+        
         
         
         % --------------------------------------------------------------

@@ -304,17 +304,17 @@ classdef SubjClass < TreeNodeClass
                 if ~isempty(obj.sess(iSess).procStream.output.GetVar('misc'))
                     if isfield(obj.sess(iSess).procStream.output.misc, 'stim') == 1
                         obj.inputVars.stimRuns{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.misc.stim;
-	                else
-	                        obj.inputVars.stimRuns{obj.sess(iSess).iSess}      = obj.sess(iSess).GetVar('stim');
-	                end
-	            else
+                	else
+	                    obj.inputVars.stimRuns{obj.sess(iSess).iSess}      = obj.sess(iSess).GetVar('stim');
+                	end
+            	else
                     obj.inputVars.stimRuns{obj.sess(iSess).iSess}      = obj.sess(iSess).GetVar('stim');
-	            end
+            	end
                 obj.inputVars.dcRuns{obj.sess(iSess).iSess}       = obj.sess(iSess).procStream.output.GetVar('dc');
                 obj.inputVars.AauxRuns{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.GetVar('Aaux');
                 obj.inputVars.tIncAutoRuns{obj.sess(iSess).iSess}  = obj.sess(iSess).procStream.output.GetVar('tIncAuto');
                 obj.inputVars.rcMapRuns{obj.sess(iSess).iSess}     = obj.sess(iSess).procStream.output.GetVar('rcMap');
-
+            
 	            % a) Find all variables needed by proc stream
 	            args = obj.procStream.GetInputArgs();
 
@@ -616,6 +616,7 @@ classdef SubjClass < TreeNodeClass
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
+            obj.Load();
             tblcells = obj.procStream.GenerateTableCells_MeanHRF(obj.name, obj.CondNames, trange, width, iBlk);
         end
         
@@ -662,7 +663,7 @@ classdef SubjClass < TreeNodeClass
 
             if strcmp(procElemSelect, 'all')
                 for ii = 1:length(obj.sess)
-                    obj.sess(ii).ExportHRF(iBlk);
+                    obj.sess(ii).ExportHRF('all', iBlk);
                 end
             end            
             obj.ExportHRF@TreeNodeClass(procElemSelect, iBlk);

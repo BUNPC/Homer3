@@ -739,12 +739,14 @@ classdef TreeNodeClass < handle
 
             % Update call application GUI using it's generic Update function
             if ~isempty(obj.updateParentGui)
-                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
+                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun]);
             end
             
             % Load derived data and export it
             obj.procStream.Load([obj.path, obj.GetOutputFilename()]);
-            obj.procStream.ExportHRF([obj.path, obj.GetOutputFilename()], obj.CondNames, iBlk);
+            if ~obj.DEBUG
+                obj.procStream.ExportHRF([obj.path, obj.GetOutputFilename()], obj.CondNames, iBlk);
+            end
             pause(.5);
         end
         

@@ -400,21 +400,14 @@ set(hObject, 'value', str2num(str));  % Actually update the value
 % Check if we should apply the param edit to all nodes of the current nodes
 % level
 if ~procStreamOptions.applyEditCurrNodeOnly
-    if dataTree.currElem.iSubj>0 && dataTree.currElem.iSess==0 && dataTree.currElem.iRun==0
+    if dataTree.currElem.iSubj>0 && dataTree.currElem.iRun==0
         for ii = 1:length(dataTree.groups(iG).subjs)
             dataTree.groups(iG).subjs(ii).procStream.EditParam(iFcall, iParam, val);
         end
-    elseif dataTree.currElem.iSubj>0 && dataTree.currElem.iSess>0 && dataTree.currElem.iRun==0
+    elseif dataTree.currElem.iSubj>0 && dataTree.currElem.iRun>0
         for ii = 1:length(dataTree.groups(iG).subjs)
-            for jj = 1:length(dataTree.groups(iG).subjs(ii).sess)
-                dataTree.groups(iG).subjs(ii).sess(jj).procStream.EditParam(iFcall, iParam, val);
-            end
-        end
-    elseif dataTree.currElem.iSubj>0 && dataTree.currElem.iSess>0 && dataTree.currElem.iRun>0
-        for ii = 1:length(dataTree.groups(iG).subjs)
-            for jj = 1:length(dataTree.groups(iG).subjs(ii).sess)
-                for kk = 1:length(dataTree.groups(iG).subjs(ii).sess(jj).runs)
-                    dataTree.groups(iG).subjs(ii).sess(jj).runs(kk).procStream.EditParam(iFcall, iParam, val);
+            for jj=1:length(dataTree.groups(iG).subjs(ii).runs)
+                dataTree.groups(iG).subjs(ii).runs(jj).procStream.EditParam(iFcall, iParam, val);
                 end
             end
         end

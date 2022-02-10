@@ -218,6 +218,16 @@ classdef RegistriesClass < handle
         end
             
    
+        % ----------------------------------------------------------------
+        function idx = IdxSess(obj)
+            idx=[];
+            if isempty(obj)
+                return;
+            end
+            idx = obj.isess;
+        end
+            
+   
         % ----------------------------------------------------------------------------------
         function b = IsEmpty(obj)
             b = true;

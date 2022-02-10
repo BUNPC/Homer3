@@ -636,7 +636,7 @@ classdef SessClass < TreeNodeClass
 
             if strcmp(procElemSelect, 'all')
                 for ii = 1:length(obj.runs)
-                    obj.runs(ii).ExportHRF(iBlk);
+                    obj.runs(ii).ExportHRF('all', iBlk);
                 end
             end            
             obj.ExportHRF@TreeNodeClass(procElemSelect, iBlk);

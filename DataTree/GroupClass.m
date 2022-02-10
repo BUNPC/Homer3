@@ -23,7 +23,7 @@ classdef GroupClass < TreeNodeClass
             obj.InitVersion();
 
             if nargin<3 || ~strcmp(varargin{3}, 'noprint')
-                obj.logger.Write(sprintf('Current GroupClass version %s\n', obj.GetVersionStr()));
+                obj.logger.Write('Current GroupClass version %s\n', obj.GetVersionStr());
             end
             
             obj.type    = 'group';
@@ -262,8 +262,8 @@ classdef GroupClass < TreeNodeClass
                 case 'group'
                     obj.procStream.CopyFcalls(procStream);
                 case 'subj'
-                    for ii = 1:length(obj.subjs)
-                        obj.subjs(ii).procStream.CopyFcalls(procStream);
+                    for jj = 1:length(obj.subjs)
+                        obj.subjs(jj).procStream.CopyFcalls(procStream);
                     end
                 case 'sess'
                     for ii = 1:length(obj.subjs)
@@ -319,7 +319,7 @@ classdef GroupClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function list = DepthFirstTraversalList(obj)
             list{1} = obj;
-            for ii = 1:length(obj.subjs)
+            for ii=1:length(obj.subjs)
                 list = [list; obj.subjs(ii).DepthFirstTraversalList()];
             end
         end
@@ -353,7 +353,7 @@ classdef GroupClass < TreeNodeClass
                 for jj = 1:length(obj.subjs(ii).sess)
                     if ~obj.subjs(ii).sess(jj).procStream.IsEmpty()
                         t = obj.subjs(ii).sess(jj);
-                end
+                    end
                     for kk = 1:length(obj.subjs(ii).sess)
                         if ~obj.subjs(ii).sess(jj).procStream.IsEmpty()
                             r = obj.subjs(ii).sess(kk).runs(kk);
@@ -470,9 +470,8 @@ classdef GroupClass < TreeNodeClass
                 obj.inputVars.nTrialsSubjs{obj.subjs(iSubj).iSubj}   = obj.subjs(iSubj).procStream.output.GetVar('nTrials');
             
                 obj.subjs(iSubj).FreeMemory();
-	        end
         end
-            
+        end
             
             
         % ----------------------------------------------------------------------------------
@@ -806,7 +805,7 @@ classdef GroupClass < TreeNodeClass
             
             % Create ExportTable initialized with the filled in 2D TableCell array. 
             % ExportTable object is what actually does the exporting to a file. 
-            ExportTable(obj.name, 'HRF mean', tblcells);
+            ExportTable([obj.path, obj.outputDirname, obj.name], 'HRF mean', tblcells);
         end
         
         

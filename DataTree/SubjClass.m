@@ -663,7 +663,7 @@ classdef SubjClass < TreeNodeClass
 
             if strcmp(procElemSelect, 'all')
                 for ii = 1:length(obj.sess)
-                    obj.sess(ii).ExportHRF(iBlk);
+                    obj.sess(ii).ExportHRF('all', iBlk);
                 end
             end            
             obj.ExportHRF@TreeNodeClass(procElemSelect, iBlk);

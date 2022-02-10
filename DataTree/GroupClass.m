@@ -806,7 +806,7 @@ classdef GroupClass < TreeNodeClass
             
             % Create ExportTable initialized with the filled in 2D TableCell array. 
             % ExportTable object is what actually does the exporting to a file. 
-            ExportTable(obj.name, 'HRF mean', tblcells);
+            ExportTable([obj.path, obj.outputDirname, obj.name], 'HRF mean', tblcells);
         end
         
         

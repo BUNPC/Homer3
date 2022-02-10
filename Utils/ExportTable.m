@@ -54,7 +54,7 @@ classdef ExportTable < handle
                 case {'spreadsheet'}
                     obj.ext = '.xls';
             end
-            fprintf('Exporting   %s  to  %s%s\n', fname, obj.filename, obj.ext);
+            %fprintf('Exporting   %s  to  %s%s\n', fname, obj.filename, obj.ext);
            
             obj.cells = cells;
 

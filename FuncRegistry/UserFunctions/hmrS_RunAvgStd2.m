@@ -24,13 +24,25 @@ function [yAvgStdOut, yAvgStdErrOut] = hmrS_RunAvgStd2(yAvgStdRuns, nTrialsRuns)
 yAvgStdOut = DataClass();
 yAvgStdErrOut = DataClass();
 
+if isempty(yAvgStdRuns)
+    return
+end
+if isempty(nTrialsRuns)
+    return
+end
 
 N = 0;
 var = 0;
 nDataBlks = length(yAvgStdRuns{1});
 
 % find max nCond
-for i = 1:size(nTrialsRuns, 2); niC(i) = size(nTrialsRuns{i}{1},2); end
+for i = 1:size(nTrialsRuns, 2)
+    if isempty(nTrialsRuns{i})
+        return;
+    else
+        niC(i) = size(nTrialsRuns{i}{1},2);
+    end
+end
 niC = max(niC);
 
 for iBlk = 1:nDataBlks

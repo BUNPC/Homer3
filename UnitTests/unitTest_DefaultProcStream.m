@@ -56,7 +56,7 @@ groupResults_h2 = mydir('./groupResults_homer2_*.mat');
 s = zeros(length(groupResults_h2), 2);
 for iG = 1:length(groupResults_h2)
     group_h2 = load(groupResults_h2(iG).name);
-    [~, groupResults_h2(iG).pathfull] = fileparts(groupResults_h2(iG).pathfull);
+    [~, groupResults_h2(iG).rootdir] = fileparts(groupResults_h2(iG).rootdir);
 
     s(iG,1) = compareDcAvg(group_h2, dataTree, 'dcAvg');
     s(iG,2) = compareProcStreams(dataTree, groupResults_h2(iG));
@@ -77,7 +77,7 @@ end
 logger.Write(sprintf('\n'));
 if status==0
     logger.Write(sprintf('#%d - unitTest_DefaultProcStream(''%s'', ''%s''): TEST PASSED - Homer3 output matches %s.\n', ...
-             testidx, datafmt, dirname, [groupResults_h2(iMatch).pathfull, '/', groupResults_h2(iMatch).name]));
+             testidx, datafmt, dirname, [groupResults_h2(iMatch).rootdir, '/', groupResults_h2(iMatch).name]));
 else
     logger.Write(sprintf('#%d - unitTest_DefaultProcStream(''%s'', ''%s''): TEST FAILED - Homer3 output does NOT match ANY Homer2 groupResults.\n', testidx, datafmt, dirname));
 end

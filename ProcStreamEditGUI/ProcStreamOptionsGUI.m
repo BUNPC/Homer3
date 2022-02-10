@@ -41,7 +41,7 @@ procStreamOptions.updateParentGui('ProcStreamOptionsGUI');
 
 
 % -------------------------------------------------------------
-function varargout = ProcStreamOptionsGUI_OutputFcn(hObject, eventdata, handles)
+function varargout = ProcStreamOptionsGUI_OutputFcn(hObject, ~, handles)
 handles.updateptr = @ProcStreamOptionsGUI_Update;
 handles.closeptr = @ProcStreamOptionsGUI_Close;
 if ~ishandles(hObject)
@@ -102,9 +102,9 @@ elseif length(varargin)==3
     procStreamOptions.groupDirs = varargin{1};
     if ischar(varargin{2})
         procStreamOptions.format = varargin{2};
-        if isreal(varargin{3}) & length(varargin{3})==4     
+        if isreal(varargin{3}) && length(varargin{3})==4     
             procStreamOptions.pos = varargin{3};                    % PlotProbeGUI(groupDirs, format, pos)
-        elseif iswholenum(varargin{3}) & length(varargin{3})==1
+        elseif iswholenum(varargin{3}) && length(varargin{3})==1
             procStreamOptions.applyEditCurrNodeOnly = varargin{3};  % PlotProbeGUI(groupDirs, format, applyEditCurrNodeOnly)
         end
     else
@@ -134,7 +134,7 @@ end
 
 
 % ----------------------------------------------------------
-function ProcStreamOptionsGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+function ProcStreamOptionsGUI_OpeningFcn(hObject, ~, handles, varargin)
 %
 %  Syntax:
 %
@@ -247,7 +247,7 @@ end
 set(hObject, 'units','characters');
 
 if DEBUG
-    set(hObject, 'visible','on');
+    set(hObject, 'visible','on'); %#ok<*UNRCH>
     bgc = [0.10, 0.05, 0.03];
     fgc = [0.80, 0.75, 0.95];
 else
@@ -401,13 +401,14 @@ set(hObject, 'value', str2num(str));  % Actually update the value
 % level
 if ~procStreamOptions.applyEditCurrNodeOnly
     if dataTree.currElem.iSubj>0 && dataTree.currElem.iRun==0
-        for ii=1:length(dataTree.groups(iG).subjs)
+        for ii = 1:length(dataTree.groups(iG).subjs)
             dataTree.groups(iG).subjs(ii).procStream.EditParam(iFcall, iParam, val);
         end
     elseif dataTree.currElem.iSubj>0 && dataTree.currElem.iRun>0
-        for ii=1:length(dataTree.groups(iG).subjs)
+        for ii = 1:length(dataTree.groups(iG).subjs)
             for jj=1:length(dataTree.groups(iG).subjs(ii).runs)
                 dataTree.groups(iG).subjs(ii).runs(jj).procStream.EditParam(iFcall, iParam, val);
+                end
             end
         end
     end
@@ -415,7 +416,7 @@ end
 
 
 % --------------------------------------------------------------------
-function menuExit_Callback(hObject, eventdata, handles)
+function menuExit_Callback(hObject, ~, ~)
 
 hGui=get(get(hObject,'parent'),'parent');
 close(hGui);
@@ -425,7 +426,7 @@ close(hGui);
 
 
 % -------------------------------------------------------------------
-function pushbuttonExit_Callback(hObject, eventdata, handles)
+function pushbuttonExit_Callback(~, ~, handles)
 if ishandles(handles.figure)
     delete(handles.figure);
 end
@@ -467,7 +468,7 @@ set(handles.pushbuttonExit, 'position', [Xp, Ypb, pB(3), Yb]);
 
 
 % --------------------------------------------------------------------
-function menuItemChangeGroup_Callback(hObject, eventdata, handles)
+function menuItemChangeGroup_Callback(~, ~, ~)
 pathname = uigetdir(pwd, 'Select a NIRS data group folder');
 if pathname==0
     return;
@@ -479,7 +480,7 @@ ProcStreamOptionsGUI();
 
 
 % --------------------------------------------------------------------
-function menuItemSaveGroup_Callback(hObject, eventdata, handles)
+function menuItemSaveGroup_Callback(hObject, ~, ~)
 global procStreamOptions
 if ~ishandles(hObject)
     return;

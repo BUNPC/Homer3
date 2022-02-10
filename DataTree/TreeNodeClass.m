@@ -5,6 +5,7 @@ classdef TreeNodeClass < handle
         type;
         iGroup;
         iSubj;
+        iSess;
         iRun;
         iFile;
         procStream;
@@ -14,7 +15,7 @@ classdef TreeNodeClass < handle
     end
     
     properties
-        outputVars
+        inputVars
         DEBUG
         path
         logger
@@ -36,9 +37,12 @@ classdef TreeNodeClass < handle
             obj.DEBUG = 0;
             
             obj.name = '';
+            
             obj.iGroup = 0;
             obj.iSubj = 0;
+            obj.iSess = 0;
             obj.iRun = 0;
+            
             obj.type = '';
             obj.procStream = ProcStreamClass();
             obj.err = 0;
@@ -125,6 +129,8 @@ classdef TreeNodeClass < handle
             switch(class(obj))
                 case 'RunClass'
                     objnew = RunClass('copy');
+                case 'SessClass'
+                    objnew = SessClass('copy');
                 case 'SubjClass'
                     objnew = SubjClass('copy');
                 case 'GroupClass'
@@ -151,12 +157,16 @@ classdef TreeNodeClass < handle
                 obj.type = obj2.type;
                 obj.iGroup = obj2.iGroup;
                 obj.iSubj = obj2.iSubj;
+                obj.iSess = obj2.iSess;
                 obj.iRun = obj2.iRun;
             end
             if ~isempty(obj2.procStream)
                 [pathname, filename] = fileparts([obj.path, obj.GetOutputFilename()]);                
+                
+                % Recreate the same relative dir structure under derived output
+                % folder as exists directly under the group folder
                 if ispathvalid([filesepStandard(obj.path), obj.name], 'dir')
-                    pathname = [filesepStandard(pathname), obj.name];
+                    pathname = [filesepStandard(pathname), filename];
                 end
                 obj.procStream.SaveInitOutput(pathname, filename);
                 obj.procStream.Copy(obj2.procStream, [obj.path, obj.GetOutputFilename()]);
@@ -197,15 +207,18 @@ classdef TreeNodeClass < handle
         
 
         % ----------------------------------------------------------------------------------
-        function SetIndexID(obj, iG, iS, iR)
+        function SetIndexID(obj, iGroup, iSubj, iSess, iRun)
             if nargin>1
-                obj.iGroup = iG;
+                obj.iGroup = iGroup;
             end            
             if nargin>2
-                obj.iSubj = iS;
+                obj.iSubj = iSubj;
             end
             if nargin>3
-                obj.iRun = iR;
+                obj.iSess = iSess;
+            end
+            if nargin>4
+                obj.iRun = iRun;
             end
         end
         
@@ -241,8 +254,10 @@ classdef TreeNodeClass < handle
                 obj.GroupsProcFlags(obj.iGroup, 1);
             elseif isa(obj, 'SubjClass')
                 obj.SubjsProcFlags(obj.iGroup, obj.iSubj, 1);
+            elseif isa(obj, 'SessClass')
+                obj.SubjsProcFlags(obj.iGroup, obj.iSubj, obj.iSess, 1);
             elseif isa(obj, 'RunClass')
-                obj.RunsProcFlags(obj.iGroup, obj.iSubj, obj.iRun, 1);
+                obj.RunsProcFlags(obj.iGroup, obj.iSubj, obj.iSess, obj.iRun, 1);
             end
         end
         
@@ -250,7 +265,7 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function idx = GetIndexID(obj)
-            idx = [obj.iGroup, obj.iSubj, obj.iRun];
+            idx = [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun];
         end
         
         
@@ -277,6 +292,17 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function b = IsSess(obj)
+            if strcmp('sess', obj.type)
+                b = true;
+            else
+                b = false;
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
         function b = IsRun(obj)
             if strcmp('run', obj.type)
                 b = true;
@@ -287,12 +313,12 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function b = IsSame(obj, iG, iS, iR)
+        function b = IsSame(obj, iGroup, iSubj, iSess, iRun)
             b = false;
             if isempty(obj)
                 return;
             end
-            if iG==obj.iGroup && iS==obj.iSubj && iR==obj.iRun
+            if iGroup==obj.iGroup && iSubj==obj.iSubj && iSess==obj.iSess && iRun==obj.iRun
                 b = true;
             end                
         end
@@ -690,7 +716,7 @@ classdef TreeNodeClass < handle
         % ----------------------------------------------------------------------------------
         function Calc(obj)            
             % Make variables in this subject available to processing stream input
-            obj.procStream.input.LoadVars(obj.outputVars);
+            obj.procStream.input.LoadVars(obj.inputVars);
 
             % Calculate processing stream
             obj.procStream.Calc([obj.path, obj.GetOutputFilename()]);
@@ -709,15 +735,18 @@ classdef TreeNodeClass < handle
 
         % ----------------------------------------------------------------------------------
         function ExportHRF(obj, ~, iBlk)
+            obj.logger.Write('Exporting  %s', [obj.path, obj.GetOutputFilename()]);
 
             % Update call application GUI using it's generic Update function
             if ~isempty(obj.updateParentGui)
-                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
+                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun]);
             end
             
             % Load derived data and export it
             obj.procStream.Load([obj.path, obj.GetOutputFilename()]);
-            obj.procStream.ExportHRF([obj.path, obj.GetOutputFilename()], obj.CondNames, iBlk);
+            if ~obj.DEBUG
+                obj.procStream.ExportHRF([obj.path, obj.GetOutputFilename()], obj.CondNames, iBlk);
+            end
             pause(.5);
         end
         

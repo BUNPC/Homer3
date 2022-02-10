@@ -23,7 +23,7 @@ classdef GroupClass < TreeNodeClass
             obj.InitVersion();
 
             if nargin<3 || ~strcmp(varargin{3}, 'noprint')
-                obj.logger.Write(sprintf('Current GroupClass version %s\n', obj.GetVersionStr()));
+                obj.logger.Write('Current GroupClass version %s\n', obj.GetVersionStr());
             end
             
             obj.type    = 'group';
@@ -77,8 +77,8 @@ classdef GroupClass < TreeNodeClass
             % its sub-classes or NirsClass 
             
             if nargin==1
-                obj.version{1} = '1';   % Major version #
-                obj.version{2} = '2';   % Major sub-version #
+                obj.version{1} = '2';   % Major version #
+                obj.version{2} = '0';   % Major sub-version #
                 obj.version{3} = '0';   % Minor version #
                 obj.version{4} = '0';   % Minor sub-version # or patch #: 'p1', 'p2', etc
             elseif iscell(vernum)
@@ -262,13 +262,21 @@ classdef GroupClass < TreeNodeClass
                 case 'group'
                     obj.procStream.CopyFcalls(procStream);
                 case 'subj'
-                    for jj=1:length(obj.subjs)
+                    for jj = 1:length(obj.subjs)
                         obj.subjs(jj).procStream.CopyFcalls(procStream);
                     end
+                case 'sess'
+                    for ii = 1:length(obj.subjs)
+                        for jj = 1:length(obj.subjs(ii).sess)
+                            obj.subjs(ii).sess(jj).procStream.CopyFcalls(procStream);
+                    	end
+                    end
                 case 'run'
-                    for jj=1:length(obj.subjs)
-                        for kk=1:length(obj.subjs(jj).runs)
-                            obj.subjs(jj).runs(kk).procStream.CopyFcalls(procStream);
+                    for ii = 1:length(obj.subjs)
+                        for jj = 1:length(obj.subjs(ii).sess)
+                            for kk = 1:length(obj.subjs(ii).sess(jj).runs)
+                                obj.subjs(ii).sess(jj).runs(kk).procStream.CopyFcalls(procStream);
+                        	end
                         end
                     end
             end
@@ -277,7 +285,7 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function Add(obj, subj, run)                        
+        function Add(obj, subj, sess, run)
             [~,f,e] = fileparts(subj.GetName());
             if strcmp(f, obj.name)
                 msg{1} = sprintf('WARNING: The subject being added (%s) has the same name as the group (%s) containing it. ', [f,e], obj.name);
@@ -302,8 +310,8 @@ classdef GroupClass < TreeNodeClass
                 obj.logger.Write(sprintf('   Added subject %s to group %s.\n', obj.subjs(jj).GetName, obj.GetName));
             end
                         
-            % Add run to subj
-            obj.subjs(jj).Add(run);
+            % Add sess to subj
+            obj.subjs(jj).Add(sess, run);
         end
         
         
@@ -312,7 +320,7 @@ classdef GroupClass < TreeNodeClass
         function list = DepthFirstTraversalList(obj)
             list{1} = obj;
             for ii=1:length(obj.subjs)
-                list = [list; obj.subjs(ii).DepthFirstTraversalList()]; %#ok<AGROW>
+                list = [list; obj.subjs(ii).DepthFirstTraversalList()];
             end
         end
         
@@ -336,14 +344,20 @@ classdef GroupClass < TreeNodeClass
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             g = obj;
             s = obj.subjs(1);
-            r = obj.subjs(1).runs(1);
-            for jj=1:length(obj.subjs)
-                if ~obj.subjs(jj).procStream.IsEmpty()
-                    s = obj.subjs(jj);
+            t = obj.subjs(1).sess(1);
+            r = obj.subjs(1).sess(1).runs(1);
+            for ii = 1:length(obj.subjs)
+                if ~obj.subjs(ii).procStream.IsEmpty()
+                    s = obj.subjs(ii);
                 end
-                for kk=1:length(obj.subjs(jj).runs)
-                    if ~obj.subjs(jj).runs(kk).procStream.IsEmpty()
-                        r = obj.subjs(jj).runs(kk);
+                for jj = 1:length(obj.subjs(ii).sess)
+                    if ~obj.subjs(ii).sess(jj).procStream.IsEmpty()
+                        t = obj.subjs(ii).sess(jj);
+                    end
+                    for kk = 1:length(obj.subjs(ii).sess)
+                        if ~obj.subjs(ii).sess(jj).procStream.IsEmpty()
+                            r = obj.subjs(ii).sess(kk).runs(kk);
+                end
                     end
                 end
             end
@@ -415,21 +429,49 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function LoadVars(obj, s, tHRF_common)
+        function FreeMemoryRecursive(obj)
+            if isempty(obj)
+                return
+            end
+            for ii = 1:length(obj.subjs)
+                obj.subjs(ii).FreeMemoryRecursive();
+            end
+            obj.FreeMemory();
+        end
+        
+
+
+        % ----------------------------------------------------------------------------------
+        function LoadRecursive(obj)
+            if isempty(obj)
+                return
+            end
+            for ii = 1:length(obj.subjs)
+                obj.subjs(ii).LoadRecursive();
+            end
+            obj.Load();
+        end
+                
+            
+            
+        % ----------------------------------------------------------------------------------
+        function LoadInputVars(obj, tHRF_common)
+            obj.inputVars = [];
+            for iSubj = 1:length(obj.subjs)
             % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
             % all subjects. Use smallest tHRF as the common one.
-            s.procStream.output.SettHRFCommon(tHRF_common, s.name, s.type);
+                obj.subjs(iSubj).procStream.output.SettHRFCommon(tHRF_common, obj.subjs(iSubj).name, obj.subjs(iSubj).type);
             
-            obj.outputVars.dodAvgSubjs{s.iSubj}    = s.procStream.output.GetVar('dodAvg');
-            obj.outputVars.dodAvgStdSubjs{s.iSubj} = s.procStream.output.GetVar('dodAvgStd');
-            obj.outputVars.dcAvgSubjs{s.iSubj}     = s.procStream.output.GetVar('dcAvg');
-            obj.outputVars.dcAvgStdSubjs{s.iSubj}  = s.procStream.output.GetVar('dcAvgStd');
-            obj.outputVars.tHRFSubjs{s.iSubj}      = s.procStream.output.GetTHRF();
-            obj.outputVars.nTrialsSubjs{s.iSubj}   = s.procStream.output.GetVar('nTrials');
+                obj.inputVars.dodAvgSubjs{obj.subjs(iSubj).iSubj}    = obj.subjs(iSubj).procStream.output.GetVar('dodAvg');
+                obj.inputVars.dodAvgStdSubjs{obj.subjs(iSubj).iSubj} = obj.subjs(iSubj).procStream.output.GetVar('dodAvgStd');
+                obj.inputVars.dcAvgSubjs{obj.subjs(iSubj).iSubj}     = obj.subjs(iSubj).procStream.output.GetVar('dcAvg');
+                obj.inputVars.dcAvgStdSubjs{obj.subjs(iSubj).iSubj}  = obj.subjs(iSubj).procStream.output.GetVar('dcAvgStd');
+                obj.inputVars.tHRFSubjs{obj.subjs(iSubj).iSubj}      = obj.subjs(iSubj).procStream.output.GetTHRF();
+                obj.inputVars.nTrialsSubjs{obj.subjs(iSubj).iSubj}   = obj.subjs(iSubj).procStream.output.GetVar('nTrials');
             
-            s.FreeMemory();
+                obj.subjs(iSubj).FreeMemory();
         end
-            
+        end
             
             
             
@@ -449,21 +491,17 @@ classdef GroupClass < TreeNodeClass
             end
             
             % Calculate all subjs in this session
-            s = obj.subjs;
             tHRF_common = {};
-            for iSubj = 1:length(s)
-                s(iSubj).Calc();
+            for iSubj = 1:length(obj.subjs)
+                obj.subjs(iSubj).Calc();
                 
                 % Find smallest tHRF among the subjs and make this the common one.
-                tHRF_common = s(iSubj).procStream.output.GeneratetHRFCommon(tHRF_common);
+                tHRF_common = obj.subjs(iSubj).procStream.output.GeneratetHRFCommon(tHRF_common);
             end
            
             
             % Load all the output valiraibles that might be needed by procStream.Calc() to calculate proc stream for this group
-            obj.outputVars = [];
-            for iSubj = 1:length(s)
-                obj.LoadVars(s(iSubj), tHRF_common); 
-            end
+            obj.LoadInputVars(tHRF_common); 
             
             Calc@TreeNodeClass(obj);
             
@@ -474,7 +512,7 @@ classdef GroupClass < TreeNodeClass
             
             % Update call application GUI using it's generic Update function
             if ~isempty(obj.updateParentGui)
-                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iRun]);
+                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun]);
             end
             
         end
@@ -768,7 +806,7 @@ classdef GroupClass < TreeNodeClass
             
             % Create ExportTable initialized with the filled in 2D TableCell array. 
             % ExportTable object is what actually does the exporting to a file. 
-            ExportTable(obj.name, 'HRF mean', tblcells);
+            ExportTable([obj.path, obj.outputDirname, obj.name], 'HRF mean', tblcells);
         end
         
         
@@ -1061,7 +1099,11 @@ classdef GroupClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function BackwardCompatability(obj)
             if ispathvalid([obj.path, 'groupResults.mat'])
-                g = load([obj.path, 'groupResults.mat']);
+                try
+                    g = load([obj.path, 'groupResults.mat']);
+                catch ME
+                    g = [];
+                end
                 
                 % Do not try to restore old data older than Homer3
                 if isempty(g)

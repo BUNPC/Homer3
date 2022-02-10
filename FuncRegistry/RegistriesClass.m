@@ -4,6 +4,7 @@ classdef RegistriesClass < handle
         userfuncdir
         igroup
         isubj
+        isess
         irun
         funcReg
         config        
@@ -34,7 +35,8 @@ classdef RegistriesClass < handle
             
             obj.igroup = 1;
             obj.isubj = 2;
-            obj.irun = 3;
+            obj.isess = 3;
+            obj.irun = 4;
             obj.funcReg = FuncRegClass().empty();
             obj.filename = '';
 
@@ -82,11 +84,14 @@ classdef RegistriesClass < handle
                 case 'all'
                     obj.funcReg(obj.igroup) = FuncRegClass('group');
                     obj.funcReg(obj.isubj) = FuncRegClass('subj');
+                    obj.funcReg(obj.isess) = FuncRegClass('ess');
                     obj.funcReg(obj.irun) = FuncRegClass('run');
                 case 'group'
                     obj.funcReg(obj.igroup) = FuncRegClass('group');
                 case 'subj'
                     obj.funcReg(obj.isubj) = FuncRegClass('subj');
+                case 'ess'
+                    obj.funcReg(obj.isess) = FuncRegClass('ess');
                 case 'run'
                     obj.funcReg(obj.irun) = FuncRegClass('run');
             end
@@ -122,6 +127,8 @@ classdef RegistriesClass < handle
                     itype = obj.igroup;
                 case 'hmrS_'
                     itype = obj.isubj;
+                case 'hmrE_'
+                    itype = obj.isess;
                 case 'hmrR_'
                     itype = obj.irun;
                 otherwise
@@ -139,6 +146,8 @@ classdef RegistriesClass < handle
                     itype = obj.igroup;
                 case 'hmrS_'
                     itype = obj.isubj;
+                case 'hmrE_'
+                    itype = obj.isess;
                 case 'hmrR_'
                     itype = obj.irun;
                 otherwise
@@ -161,6 +170,7 @@ classdef RegistriesClass < handle
         function Copy(obj, obj2)
             obj.igroup = obj2.igroup;
             obj.isubj = obj2.isubj;
+            obj.isess = obj2.isess;
             obj.irun = obj2.irun;
             for ii=1:length(obj2.funcReg)
                 obj.funcReg(ii) = FuncRegClass(obj2.funcReg(ii));
@@ -195,6 +205,16 @@ classdef RegistriesClass < handle
                 return;
             end
             idx = obj.irun;
+        end
+            
+   
+        % ----------------------------------------------------------------
+        function idx = IdxSess(obj)
+            idx=[];
+            if isempty(obj)
+                return;
+            end
+            idx = obj.isess;
         end
             
    
@@ -348,6 +368,8 @@ classdef RegistriesClass < handle
                 type = 'group';
             elseif strncmp(fname, 'hmrS_', 5)
                 type = 'subj';
+            elseif strncmp(fname, 'hmrE_', 5)
+                type = 'ess';
             elseif strncmp(fname, 'hmrR_', 5)
                 type = 'run';
             else

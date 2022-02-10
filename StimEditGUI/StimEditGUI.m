@@ -705,11 +705,11 @@ end
 stimEdit.dataTree.CopyStims(stimEdit.locDataTree);
 
 % Update acquisition file with new contents
-h = waitbar_improved(0, 'Saving new stim marks to %s...', stimEdit.dataTreeHandle.currElem.name);
+h = waitbar_improved(0, sprintf('Saving new stim marks to %s...', stimEdit.dataTreeHandle.currElem.name));
 stimEdit.dataTree.currElem.SaveAcquiredData()
 idx = stimEdit.dataTree.currElem.GetIndexID();
 stimEdit.dataTree.groups(idx(1)).Save()    %Need to save derived data on disk for consistency (groupResults.mat)
-waitbar_improved(1, h, 'Saving new stim marks to %s...', stimEdit.dataTreeHandle.currElem.name);
+waitbar_improved(1, h, sprintf('Saving new stim marks to %s...', stimEdit.dataTreeHandle.currElem.name));
 if ~isempty(stimEdit.updateParentGui)
     stimEdit.updateParentGui('StimEditGUI');
 end

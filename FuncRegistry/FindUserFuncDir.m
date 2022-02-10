@@ -6,10 +6,14 @@ cfg = InitConfig(cfg);
 userfuncdir = {};
 dirnameApp = getAppDir();
 
-if ~ispathvalid([dirnameApp, 'FuncRegistry/UserFunctions/'])
+rootdirRegsitry = [dirnameApp, 'FuncRegistry/UserFunctions/'];
+if ~ispathvalid(rootdirRegsitry)
+    rootdirRegsitry = filesepStandard([dirnameApp, '../FuncRegistry/UserFunctions/']);
+    if ~ispathvalid(rootdirRegsitry)
     return;
 end
-userfuncdir{1} = [dirnameApp, 'FuncRegistry/UserFunctions/'];
+end
+userfuncdir{1} = rootdirRegsitry;
 dirs = dir([userfuncdir{1}, '*']);
 for ii = 1:length(dirs)
     if ~dirs(ii).isdir

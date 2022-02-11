@@ -361,6 +361,38 @@ classdef ProcResultClass < handle
     
     
     methods
+
+        % ----------------------------------------------------------------------------------
+        function [keys, values] = GetAllData(obj)
+            % Returns names and references to all non-empty DataClass objects available as
+            % properties of the ProcResultClass instance or of the misc list
+            props = properties(obj);
+            keys = {};
+            values = {};
+            for i = 1:length(props)
+                val = eval(sprintf('obj.%s', props{i}));
+                if isa(val, 'DataClass')
+                    if ~isempty(val.dataTimeSeries) && ~isempty(val.time) && ~isempty(val.measurementList)
+                        keys{end + 1} = props{i}; %#ok<AGROW>
+                        values{end + 1} = val; %#ok<AGROW>
+                    end
+                end
+            end
+            try
+                miscnames = fields(obj.misc);
+            catch
+                return
+            end
+            for i = 1:length(miscnames)
+                val = eval(sprintf('obj.misc.%s', miscnames{i}));
+                if isa(val, 'DataClass')
+                    if ~isempty(val.dataTimeSeries) && ~isempty(val.time) && ~isempty(val.measurementList)
+                        keys{end + 1} = miscnames{i}; %#ok<AGROW>
+                        values{end + 1} = val; %#ok<AGROW>
+                    end
+                end
+            end
+        end
         
         % ----------------------------------------------------------------------------------
         function SetTHRF(obj, t)

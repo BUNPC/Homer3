@@ -509,6 +509,19 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function probe = GetProbe(obj)
+            probe = obj.sess(1).GetProbe();
+%             for sess = obj.sess
+%                for run = sess.runs
+%                     if ~(probe == run.GetProbe()) 
+%                         warning(['Probe ', run.name, 'differs from ', obj.sess(1).runs(1).name]) 
+%                     end
+%                end   
+%            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function ch = GetMeasList(obj, iBlk)
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk=1;

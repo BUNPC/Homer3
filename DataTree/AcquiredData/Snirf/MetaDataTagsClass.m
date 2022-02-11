@@ -18,7 +18,6 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             obj.tags.TimeUnit = 'unknown';
             obj.tags.FrequencyUnit = 'unknown';
             obj.tags.AppName  = 'snirf-homer3';
-            obj.tags.SnirfDraft = '3';
             
             if nargin==1
                 obj.SetFilename(varargin{1});

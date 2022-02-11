@@ -424,6 +424,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         end
         
         
+        
         % -------------------------------------------------------
         function err = LoadStim(obj, fileobj)
             err = 0;
@@ -596,7 +597,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % -------------------------------------------------------
         function SaveMetaDataTags(obj, fileobj)
-            obj.metaDataTags.SaveHdf5(fileobj, [obj.location, '/metaDataTags']);
+            if ~isempty(obj.metaDataTags)
+                obj.metaDataTags.SaveHdf5(fileobj, [obj.location, '/metaDataTags']);
+            end
         end
         
         
@@ -627,7 +630,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % -------------------------------------------------------
         function SaveProbe(obj, fileobj)
-            obj.probe.SaveHdf5(fileobj, [obj.location, '/probe']);
+            if ~isempty(obj.probe)
+                obj.probe.SaveHdf5(fileobj, [obj.location, '/probe']);
+            end
         end
         
         
@@ -1121,6 +1126,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             end
         end
         
+        
+        % ---------------------------------------------------------
+        function probe = GetProbe(obj)
+           probe = obj.probe; 
+        end
         
         
         % ---------------------------------------------------------

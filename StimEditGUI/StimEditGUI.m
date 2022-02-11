@@ -990,7 +990,7 @@ if ~isempty(conditions)
     set(handles.popupmenuConditions, 'enable', 'on');
     condition = conditions{idx};
 else  % If no stim conditions at all, disable display and prevent crash
-    enableDisableButtons('off')
+    enableDisableButtons(handles, 'off')
     conditions = {' '};
     condition = ' ';
     set(handles.popupmenuConditions, 'enable', 'off');

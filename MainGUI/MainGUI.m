@@ -1798,6 +1798,13 @@ maingui.dataTree.currElem.ExportHRF(procElemSelect);
 
 
 % --------------------------------------------------------------------
+function menuItemExportSnirf_Callback(hObject, eventdata, handles)
+global maingui
+ExportSnirfGUI(maingui.dataTree.currElem);
+
+
+
+% --------------------------------------------------------------------
 function menuItemExportSubjHRFMean_Callback(hObject, eventdata, handles)
 global maingui
 

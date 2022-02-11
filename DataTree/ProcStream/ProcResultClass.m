@@ -378,7 +378,11 @@ classdef ProcResultClass < handle
                     end
                 end
             end
-            miscnames = fields(obj.misc);
+            try
+                miscnames = fields(obj.misc);
+            catch
+                return
+            end
             for i = 1:length(miscnames)
                 val = eval(sprintf('obj.misc.%s', miscnames{i}));
                 if isa(val, 'DataClass')

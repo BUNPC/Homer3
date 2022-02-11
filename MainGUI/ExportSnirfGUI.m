@@ -59,7 +59,7 @@ output.probe = handles.currElem.GetProbe();
 name = handles.currElem.name;
 name(name == '/') = '_';
 name(name == '\') = '_';
-name(regexp(name,'.snirf')) = [];
+name = erase(name, '.snirf');
 
 if length(selected) < 1
     return

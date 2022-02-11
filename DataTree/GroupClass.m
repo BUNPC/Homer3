@@ -832,6 +832,21 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
+        function probe = GetProbe(obj)
+            probe = obj.subjs(1).GetProbe();
+%             for subj = obj.subjs
+%                 for sess = subj.sess
+%                    for run = sess.runs
+%                         if ~(probe == run.GetProbe()) 
+%                             warning(['Probe ', run.name, ' differs from ', obj.subjs(1).sess(1).runs(1).name]) 
+%                         end
+%                    end   
+%                 end
+%             end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function SD = GetSDG(obj,option)
             if exist('option','var')
                 SD = obj.subjs(1).GetSDG(option);

@@ -424,6 +424,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         end
         
         
+        
         % -------------------------------------------------------
         function err = LoadStim(obj, fileobj)
             err = 0;
@@ -1125,6 +1126,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             end
         end
         
+        
+        % ---------------------------------------------------------
+        function probe = GetProbe(obj)
+           probe = obj.probe; 
+        end
         
         
         % ---------------------------------------------------------

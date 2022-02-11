@@ -436,13 +436,15 @@ classdef SessClass < TreeNodeClass
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
+        
         % ----------------------------------------------------------------------------------
-        function SetSDG(obj,option)
-            if exist('option','var')
-                obj.SD = obj.runs(1).GetSDG(option);
-            else
-                obj.SD = obj.runs(1).GetSDG();
-            end
+        function probe = GetProbe(obj, option)
+            probe = obj.runs(1).GetProbe();
+%             for run = obj.runs
+%                if ~(probe == run.GetProbe()) 
+%                   warning(['Probe ', run.name, 'differs from ', obj.runs(1).name]) 
+%                end
+%             end
         end
         
         

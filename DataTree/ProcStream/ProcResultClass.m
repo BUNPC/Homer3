@@ -378,6 +378,16 @@ classdef ProcResultClass < handle
                     end
                 end
             end
+            miscnames = fields(obj.misc)
+            for i = 1:length(miscnames)
+                val = eval(sprintf('obj.misc.%s', miscnames{i}));
+                if isa(val, 'DataClass')
+                    if ~isempty(val.dataTimeSeries) && ~isempty(val.time) && ~isempty(val.measurementList)
+                        keys{end + 1} = miscnames{i}; %#ok<AGROW>
+                        values{end + 1} = val; %#ok<AGROW>
+                    end
+                end
+            end
         end
         
         % ----------------------------------------------------------------------------------

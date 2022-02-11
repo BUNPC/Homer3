@@ -167,11 +167,8 @@ classdef StimClass < FileLoadSaveClass
             end
             
             hdf5write_safe(fileobj, [location, '/name'], obj.name);
-                        
-            % Since this is a writable writeable parameter AFTER it's creation, we
-            % call hdf5write_safe with the 'rw' option
-            hdf5write_safe(fileobj, [location, '/data'], obj.data, 'rw:2D');
-            hdf5write_safe(fileobj, [location, '/dataLabels'], obj.dataLabels, 'rw');
+            hdf5write_safe(fileobj, [location, '/data'], obj.data, 'array');
+            hdf5write_safe(fileobj, [location, '/dataLabels'], obj.dataLabels);
         end
         
         
@@ -183,8 +180,8 @@ classdef StimClass < FileLoadSaveClass
                 H5F.close(fid);
             end
             hdf5write_safe(fileobj, [location, '/name'], obj.name);
-            hdf5write_safe(fileobj, [location, '/data'], obj.data, 'w');
-            hdf5write_safe(fileobj, [location, '/dataLabels'], obj.dataLabels, 'w');
+            hdf5write_safe(fileobj, [location, '/data'], obj.data, 'array');
+            hdf5write_safe(fileobj, [location, '/dataLabels'], obj.dataLabels);
         end
         
         

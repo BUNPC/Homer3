@@ -612,7 +612,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % -------------------------------------------------------
         function SaveStim(obj, fileobj)
             for ii=1:length(obj.stim)
-                obj.stim(ii).SaveHdf5(fileobj, [obj.location, '/stim', num2str(ii)]);
+                if ~isempty(obj.stim(ii).data)  % Do not save empty stim conditions to SNIRF files
+                    obj.stim(ii).SaveHdf5(fileobj, [obj.location, '/stim', num2str(ii)]);
+                end
             end
             if isempty(obj.stim0)
                 obj.stim0 = obj.stim.copy();

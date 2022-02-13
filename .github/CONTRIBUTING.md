@@ -31,10 +31,10 @@ In most cases, changes should be made to the [development branch](https://github
 Open a pull request via the Contribute button on your fork's page.
 
 Pull requests must meet the following requirements:
-- Pull requests must not include erroneous files or whitespace changes
-- Commit messages or the pull request description must fully document the proposed changes
-- Relevant issues and milestones must be linked
-- Pull requests require review before they can be merged into `master` or `development`.
+* Pull requests must not include erroneous files or whitespace changes
+* Commit messages or the pull request description must fully document the proposed changes
+* Relevant issues and milestones must be linked
+* Pull requests require review before they can be merged into `master` or `development`.
 
 ### Branches
 
@@ -55,24 +55,22 @@ As of February 2022, Homer3 and AtlasViewer no longer use the Git submodule util
 DataTree and Utils (as well as Homer3 and AtlasViewer) have version files in their respective root folders called Version.txt with a simple 3-number version strings. Whenever a change is made to either the standalone version or the non-standalone versions of the libraries, the version number should be manually bumped. Then using the `synSubmodules` tool, the standalone and non-standalone versions should be made to match eachother. Here's an example of how to use it:
 
 If making changes to `Homer3/DataTree` (as opposed to the standalone repo, DataTree) 
-
-	-- Bump up the version number for `DataTree`. Version number is a simple string in `Homer3/DataTree/Version.txt` 
- 	-- Commit changes to `Homer3/DataTree`.
-	-- `cd` to Homer3 root folder
-	-- Run `synSubmodules.m` with no arguments. This will clone the standalone libraries (specified in `Homer3/.gitmodules`) to a folder called `Homer3/submodules` 
-	   and copy the changes from the `Homer3/DataTree` to `Homer3/submodules/DataTree`
-	-- Commit changes to standalone version under `Homer3/submodules/DataTree`
-	-- Push changes to Homer3 and `Homer3/submodules/DataTree`.
+* Bump up the version number for `DataTree`. Version number is a simple string in `Homer3/DataTree/Version.txt` 
+* Commit changes to `Homer3/DataTree`.
+* `cd` to Homer3 root folder
+* Run `synSubmodules.m` with no arguments. This will clone the standalone libraries (specified in `Homer3/.gitmodules`) to a folder called `Homer3/submodules` and copy the changes from the `Homer3/DataTree` to `Homer3/submodules/DataTree`
+* Commit changes to standalone version under `Homer3/submodules/DataTree`
+* Push changes to Homer3 and `Homer3/submodules/DataTree`.
 	
 If making change to standalone DataTree repository:
 
-	-- Bump up the version number in `Homer3/DataTree/Version.txt`.
-  -- Commit changes changes to DataTree. 
-  Then, to update Homer3's (or AtlasViewer's) shared libaries
-	-- Clone Homer3, run `setpaths`
-	-- Run `syncSubmodules` in `/Homer3` with no arguments
-	-- Make any supporting changes in non-shared portion of Homer3 associated with the library changes. 
-	-- Commit changes to Homer3
+* Bump up the version number in `Homer3/DataTree/Version.txt`.
+* Commit changes changes to DataTree. 
+* Then, to update Homer3's (or AtlasViewer's) shared libaries
+* Clone Homer3, run `setpaths`
+* Run `syncSubmodules` in `/Homer3` with no arguments
+* Make any supporting changes in non-shared portion of Homer3 associated with the library changes. 
+* Commit changes to Homer3
 
 ## Development environment
 

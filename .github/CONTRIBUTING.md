@@ -2,9 +2,7 @@
 
 We welcome contributions to the Homer3 open-source software package from the fNIRS community! This document describes the procedures for adding and editing code as well as building releases of the application for distribution. 
 
-It is recommended that contributors familiarize themselves with Git and GitHub before attempting to contribute to Homer3. Links to relevant documentation are included here for your convenience. For a walkthrough of the contribution procedure, see [WORKFLOW.md](WORKFLOW.md). Version control software and contribution procedures are complicated, but there is no other way to achieve collaborative development. 😊
-
-> Note: As of October 2021, code shared with other applications in the openfnirs ecosystem such as the DataTree and Utils libraries are managed as submodule repositories. Submodules cannot be managed using GitHub desktop.
+It is recommended that contributors familiarize themselves with Git and GitHub before attempting to contribute to Homer3. Links to relevant documentation are included here for your convenience. For a walkthrough of the contribution procedure, see [WORKFLOW.md](WORKFLOW.md).
 
 ## Release and versioning procedures
 
@@ -36,7 +34,6 @@ Pull requests must meet the following requirements:
 - Pull requests must not include erroneous files or whitespace changes
 - Commit messages or the pull request description must fully document the proposed changes
 - Relevant issues and milestones must be linked
-- Relevant submodule pull requests must be linked
 - Pull requests require review before they can be merged into `master` or `development`.
 
 ### Branches
@@ -49,19 +46,39 @@ No one can push to master without creating a PR. **Administrators may push to `d
 
 Depending on the scale of the changes, it may be preferable to direct pull requests to a *feature branch*: this is a branch created to integrate related changes prior to merging them with the development code. This is especially useful when multiple developers are working on the same large feature, i.e. a new GUI panel being developed in `plotprobe-2`. [Creating a milestone](https://docs.github.com/en/issues/using-labels-and-milestones-to-track-work/about-milestones) related to a feature branch can help to facilitate discussion about collaborative development.
 
-## Submodules
+## Shared Libraries
 
-As of October 2021, code shared with other applications in the openfnirs ecosystem such as the [DataTree](https://github.com/BUNPC/DataTree) and [Utils](https://github.com/BUNPC/Utils) libraries are managed as [submodule repositories](https://git-scm.com/book/en/v2/Git-Tools-Submodules). Submodules cannot be managed using GitHub desktop.
+Homer3 and AtlasViewer contain shared code including the `Utils` and `DataTree' modules. To operate both apps from the same MATLAB instance simultaneously, `setpaths` populates the MATLAB path. To avoid clobbering functions or objects, we endeavor to keep the shared code similar.
 
-Contributing to submodules is mostly equivalent to contributing to the Homer3 repository. Take care to ensure that submodules changes are compatible with Homer3 and AtlasViewer by avoiding changes to interfaces and names.
+As of February 2022, Homer3 and AtlasViewer no longer use the Git submodule utility. The standalone repositoties still exist, but now Homer3 and AtlasViewer contain copies of the standalone repos. The file .gitmodules still exists to specify what code in Homer3 and AtlasViwer is shared libraries; that is, what code has a corresponding standalone repos as its source. The file .gitmodules is used by internal utilities that can be run to update Homer3 and AtlasViwer versions of the libraries and insure that they match the lastest standaone version. 
 
-If you have made combined changes to the submodule as well as Homer3, explicitly link the submodule PR to the related PR in the parent repository. The submodule PR must be accepted before the PR can be accepted in the parent repository.
+DataTree and Utils (as well as Homer3 and AtlasViewer) have version files in their respective root folders called Version.txt with a simple 3-number version strings. Whenever a change is made to either the standalone version or the non-standalone versions of the libraries, the version number should be manually bumped. Then using the `synSubmodules` tool, the standalone and non-standalone versions should be made to match eachother. Here's an example of how to use it:
+
+If making changes to `Homer3/DataTree` (as opposed to the standalone repo, DataTree) 
+
+	-- Bump up the version number for `DataTree`. Version number is a simple string in `Homer3/DataTree/Version.txt` 
+ 	-- Commit changes to `Homer3/DataTree`.
+	-- `cd` to Homer3 root folder
+	-- Run `synSubmodules.m` with no arguments. This will clone the standalone libraries (specified in `Homer3/.gitmodules`) to a folder called `Homer3/submodules` 
+	   and copy the changes from the `Homer3/DataTree` to `Homer3/submodules/DataTree`
+	-- Commit changes to standalone version under `Homer3/submodules/DataTree`
+	-- Push changes to Homer3 and `Homer3/submodules/DataTree`.
+	
+If making change to standalone DataTree repository:
+
+	-- Bump up the version number in `Homer3/DataTree/Version.txt`.
+  -- Commit changes changes to DataTree. 
+  Then, to update Homer3's (or AtlasViewer's) shared libaries
+	-- Clone Homer3, run `setpaths`
+	-- Run `syncSubmodules` in `/Homer3` with no arguments
+	-- Make any supporting changes in non-shared portion of Homer3 associated with the library changes. 
+	-- Commit changes to Homer3
 
 ## Development environment
 
 An [intallation of Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) is required.
 
-[GitHub Desktop](https://desktop.github.com/), [Visual Studio Code](https://code.visualstudio.com/), and [TortoiseSVN](https://tortoisesvn.net/) are popular GUI applications for version control. **While these applications are very useful for visualizing changes to files and resolving merge conflicts, please note that these applications offer only modest support for git submodules.** The use of command line git for management of submodules is highly recommended; see the example below.
+[GitHub Desktop](https://desktop.github.com/), [Visual Studio Code](https://code.visualstudio.com/), and [TortoiseSVN](https://tortoisesvn.net/) are popular GUI applications for version control. **While these applications are very useful for visualizing changes to files and resolving merge conflicts, familiarity with the git CLI is strongly recommended.
 
 ### MATLAB Version
 

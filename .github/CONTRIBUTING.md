@@ -48,7 +48,7 @@ Depending on the scale of the changes, it may be preferable to direct pull reque
 
 ## Shared Libraries
 
-Homer3 and AtlasViewer contain shared code including the `Utils` and `DataTree' modules. To operate both apps from the same MATLAB instance simultaneously, `setpaths` populates the MATLAB path. To avoid clobbering functions or objects, we endeavor to keep the shared code similar.
+Homer3 and AtlasViewer contain shared code including the `Utils` and `DataTree` modules. To operate both apps from the same MATLAB instance simultaneously, `setpaths` populates the MATLAB path. To avoid clobbering functions or objects, we endeavor to keep the shared code similar.
 
 As of February 2022, Homer3 and AtlasViewer no longer use the Git submodule utility. The standalone repositoties still exist, but now Homer3 and AtlasViewer contain copies of the standalone repos. The file .gitmodules still exists to specify what code in Homer3 and AtlasViwer is shared libraries; that is, what code has a corresponding standalone repos as its source. The file .gitmodules is used by internal utilities that can be run to update Homer3 and AtlasViwer versions of the libraries and insure that they match the lastest standaone version. 
 

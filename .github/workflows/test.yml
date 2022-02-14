@@ -1,5 +1,12 @@
 name: UnitTestsAll_Snirf (2021a)
-on: [push]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - main
+      - development
 jobs:
   my-job:
     name: Run MATLAB Commands

@@ -1,4 +1,4 @@
-name: UnitTestsAll_Snirf (2017b)
+name: UnitTestsAll_Snirf (2021a)
 on: [push]
 jobs:
   my-job:
@@ -10,7 +10,7 @@ jobs:
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v1
         with:
-          release: R2017b
+          release: R2021a
       - name: setpaths
         uses: matlab-actions/run-command@v1
         with:

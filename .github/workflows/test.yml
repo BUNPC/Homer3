@@ -1,4 +1,4 @@
-name: Run MATLAB Commands on GitHub-Hosted Runner
+name: UnitTestsAll_Snirf (2017b)
 on: [push]
 jobs:
   my-job:
@@ -10,8 +10,12 @@ jobs:
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v1
         with:
-          release: R2021a
-      - name: Run commands
+          release: R2017b
+      - name: setpaths
         uses: matlab-actions/run-command@v1
         with:
-          command: setpaths
+          command: setpaths;
+      - name: run tests
+        uses: matlab-actions/run-command@v1
+        with:
+          command: UnitTestsAll_Snirf

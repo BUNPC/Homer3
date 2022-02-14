@@ -1,0 +1,17 @@
+name: Run MATLAB Commands on GitHub-Hosted Runner
+on: [push]
+jobs:
+  my-job:
+    name: Run MATLAB Commands
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v1
+        with:
+          release: R2021a
+      - name: Run commands
+        uses: matlab-actions/run-command@v1
+        with:
+          command: setpaths

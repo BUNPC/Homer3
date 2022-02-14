@@ -11,11 +11,7 @@ jobs:
         uses: matlab-actions/setup-matlab@v1
         with:
           release: R2021a
-      - name: setpaths
+      - name: setpaths and run tests
         uses: matlab-actions/run-command@v1
         with:
-          command: setpaths;
-      - name: run tests
-        uses: matlab-actions/run-command@v1
-        with:
-          command: UnitTestsAll_Snirf
+          command: setpaths, UnitTestsAll_Snirf

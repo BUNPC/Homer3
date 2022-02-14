@@ -1,5 +1,8 @@
 function setpaths(options)
 
+assert 0
+////
+
 %
 % USAGE:
 %

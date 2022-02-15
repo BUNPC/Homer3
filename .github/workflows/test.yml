@@ -5,7 +5,7 @@ on:
       - master
   pull_request:
     branches:
-      - main
+      - master
       - development
 jobs:
   my-job:

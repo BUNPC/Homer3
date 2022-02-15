@@ -50,27 +50,23 @@ Depending on the scale of the changes, it may be preferable to direct pull reque
 
 Homer3 and AtlasViewer contain shared code including the `Utils` and `DataTree` modules. To operate both apps from the same MATLAB instance simultaneously, `setpaths` populates the MATLAB path. To avoid clobbering functions or objects, we endeavor to keep the shared code similar.
 
-As of February 2022, Homer3 and AtlasViewer no longer use the Git submodule utility. The standalone repositoties still exist, but now Homer3 and AtlasViewer contain copies of the standalone repos. The file .gitmodules still exists to specify what code in Homer3 and AtlasViwer is shared libraries; that is, what code has a corresponding standalone repos as its source. The file .gitmodules is used by internal utilities that can be run to update Homer3 and AtlasViwer versions of the libraries and insure that they match the lastest standaone version. 
+As of February 2022, Homer3 and AtlasViewer no longer use the Git submodule utility. The standalone repositoties still exist, but now Homer3 and AtlasViewer contain copies of the standalone repos. The file .gitmodules still exists to specify what code in Homer3 and AtlasViwer is shared libraries; that is, what code has a corresponding standalone repos as its source. The file .gitmodules is used by internal utilities that can be run to update Homer3 and AtlasViwer versions of the libraries and insure that they match the lastest standaone version.
 
-DataTree and Utils (as well as Homer3 and AtlasViewer) have version files in their respective root folders called Version.txt with a simple 3-number version strings. Whenever a change is made to either the standalone version or the non-standalone versions of the libraries, the version number should be manually bumped. Then using the `synSubmodules` tool, the standalone and non-standalone versions should be made to match eachother. Here's an example of how to use it:
+To keep Homer3 in step with its submodule repositories:
 
-If making changes to `Homer3/DataTree` (as opposed to the standalone repo, DataTree) 
-* Bump up the version number for `DataTree`. Version number is a simple string in `Homer3/DataTree/Version.txt` 
-* Commit changes to `Homer3/DataTree`.
-* `cd` to Homer3 root folder
-* Run `synSubmodules.m` with no arguments. This will clone the standalone libraries (specified in `Homer3/.gitmodules`) to a folder called `Homer3/submodules` and copy the changes from the `Homer3/DataTree` to `Homer3/submodules/DataTree`
-* Commit changes to standalone version under `Homer3/submodules/DataTree`
-* Push changes to Homer3 and `Homer3/submodules/DataTree`.
-	
-If making change to standalone DataTree repository:
-
-* Bump up the version number in `Homer3/DataTree/Version.txt`.
-* Commit changes changes to DataTree. 
-* Then, to update Homer3's (or AtlasViewer's) shared libaries
-* Clone Homer3, run `setpaths`
-* Run `syncSubmodules` in `/Homer3` with no arguments
-* Make any supporting changes in non-shared portion of Homer3 associated with the library changes. 
-* Commit changes to Homer3
+1. Make changes in Homer3 (and its copy of the shared code)
+2. Commit & push changes to a fork of Homer3.
+3. Open pull request to integrate with `BUNPC:Homer3` and link to PR created in Step 6 below.
+4. Set up local Homer3/<shared module> to track fork of shared module, i.e. `DataTree`
+```
+cd Homer3/DataTree
+git init
+git remote add origin https://github.com/jayd1860/DataTree
+git fetch
+git reset --mixed origin
+```
+5. Commit & push changes to a fork of shared module
+6. Open pull request to integrate with `BUNPC:<shared module>`, and link to PR in Step 3 above.
 
 ## Development environment
 

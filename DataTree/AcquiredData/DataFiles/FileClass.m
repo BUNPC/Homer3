@@ -157,7 +157,7 @@ classdef FileClass < matlab.mixin.Copyable
             
             % Consolidate second to last 'nirs' part with last part   
             if strcmp(parts{end-1}, 'nirs')
-                parts{end} = [parts{end-1}, parts{end}];
+                parts{end} = [parts{end-1}, '/', parts{end}];
                 parts(end-1) = [];
             end
         end
@@ -258,7 +258,7 @@ classdef FileClass < matlab.mixin.Copyable
                 subjName = obj.name;
             elseif obj.IsFile && length(parts)==2
                 subjName = parts{1};
-                sessName = [subjName '/ses-',parts{end}];
+                sessName = [subjName, '/ses-', fname];
                 runName  = obj.name;
             end
             

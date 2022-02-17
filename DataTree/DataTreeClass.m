@@ -174,7 +174,7 @@ classdef DataTreeClass <  handle
             end
             if ~isempty(k)
                 dataInit = FindFiles(obj.dirnameGroups{kk}, supportedFormats{k});
-                if isempty(dataInit) || dataInit.isempty()
+                if isempty(dataInit) || dataInit.IsEmpty()
                     return;
                 end
             else
@@ -253,7 +253,7 @@ classdef DataTreeClass <  handle
                     iter = 1;
                     while dataInit.GetError() < 0
                         dataInit = FindFiles(obj.dirnameGroups{kk}, fmt, options);
-                        if isempty(dataInit) || dataInit.isempty()
+                        if isempty(dataInit) || dataInit.IsEmpty()
                             return;
                         end
                         dataInitPrev(iter) = dataInit;

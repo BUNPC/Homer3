@@ -34,7 +34,7 @@ end
 if isempty(unitTest)
     logger = Logger('Homer3');
 elseif unitTest.IsEmpty()
-    logger = InitLogger(logger);
+    logger = InitLogger(logger, 'UnitTestsAll');
 else
     return;
 end
@@ -63,6 +63,7 @@ catch ME
     rethrow(ME);
 end
 
-logger.Close();
-
+if isempty(unitTest)
+	logger.Close();
+end
 

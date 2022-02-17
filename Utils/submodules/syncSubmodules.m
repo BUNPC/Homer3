@@ -21,8 +21,8 @@ function [cmds, errs, msgs] = syncSubmodules(repo, options, preview)
 %                          sync the two libraries
 %               Default if argument not supplied is 'init'
 %
-%   preview:    The parent repository. This is the repo that has the built-in
-%               copy of the libraries
+%   preview:    Boolean argument: if true, does not make any changes
+%               
 %
 % Examples:
 %
@@ -58,11 +58,11 @@ fprintf('\n');
 
 cmds{ii,1} = sprintf('cd %s', repoFull); ii = ii+1;
 for jj = 1:size(submodules,1)
-    [repo1, repo2, submodulename] = getRepos(submodules, jj, repoFull);
+    [repo1, repo2, date1, date2, submodulename] = getRepos(submodules, jj, repoFull);
     
     fprintf('Synching "%s" library:\n', submodulename);
-    fprintf('Repo1:  %s, v%s\n', repo1, getVernum(submodulename, repo1(1:end-1)));
-    fprintf('Repo2:  %s, v%s\n', repo2, getVernum(submodulename, repo2(1:end-1)));
+    fprintf('Repo1:  %s, %s\n', repo1, date1);
+    fprintf('Repo2:  %s, %s\n', repo2, date2);
     fprintf('====================================================================\n');
     
     identical(1) = sync(repo1, repo2, false, preview);
@@ -170,7 +170,7 @@ end
 
 
 % -----------------------------------------------------------------------------------
-function [repo1, repo2, submodulename] = getRepos(submodules, jj, repoFull)
+function [repo1, repo2, dateS1, dateS2, submodulename] = getRepos(submodules, jj, repoFull)
 [~, f, e] = fileparts(submodules{jj,1});
 submodulename = [f, e];
 
@@ -184,14 +184,14 @@ if r2(end)=='\' || r2(end)=='/'
     r2 = r2(1:end-1);
 end
 
-verstr1 = getVernum(submodulename, r1);
-verstr2 = getVernum(submodulename, r2);
+[date1, dateS1] = getLastRevisionDate(r1);
+[date2, dateS2] = getLastRevisionDate(r2);
 
-if compareVersions(verstr1, verstr2) < 1
-    repo1 = [r1, '/'];
-    repo2 = [r2, '/'];
-else
+if date1 > date2
     repo1 = [r2, '/'];
     repo2 = [r1, '/'];
+else
+    repo1 = [r1, '/'];
+    repo2 = [r2, '/'];
 end
 

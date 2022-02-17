@@ -162,7 +162,26 @@ classdef DataFilesClass < handle
                 ['nirs/sub-*_run-*_nirs.', obj.filetype];
                 }
                 
-                %%%% 6. BIDS-like folder structure without file naming restrictions
+                %%%% 6. BIDS #3
+                {
+                'sub-*';
+                ['nirs/sub-*_*_nirs.', obj.filetype];
+                }
+                
+                %%%% 7. BIDS #4 
+                {
+                '*';
+                ['nirs/sub-*_*_nirs.', obj.filetype];
+                }
+                
+                %%%% 8. BIDS folder structure
+                {
+                'sub-*';
+                'ses-*';
+                ['nirs/sub-*_run-*_nirs.', obj.filetype];
+                }
+                                
+                %%%% 9. BIDS-like folder structure without file naming restrictions
                 {
                 'sub-*';
                 'ses-*';
@@ -224,10 +243,9 @@ classdef DataFilesClass < handle
 
         
         % ----------------------------------------------------
-        function AddParentDirs(obj, dir)
-            pathrel = getPathRelative([dir.rootdir, dir.name], obj.rootdir);
+        function AddParentDirs(obj, dirname)
+            pathrel = getPathRelative([dirname.rootdir, dirname.name], obj.rootdir);
             subdirs = str2cell_fast(pathrel, {'/','\'});
-            notUnique = false;
             N = length(subdirs);
             for ii = 1:N-1
                 if strcmp(subdirs{ii}, 'nirs')
@@ -237,7 +255,7 @@ classdef DataFilesClass < handle
                 if obj.SearchLookupTable(pathrel2)
                     continue;
                 end
-                obj.files(end+1) = FileClass(pathrel2);
+                obj.files(end+1) = FileClass([obj.rootdir, '/', pathrel2]);
                 obj.AddLookupTable(obj.files(end).name)
             end
         end
@@ -305,7 +323,7 @@ classdef DataFilesClass < handle
             [p2,f2] = fileparts(filesepStandard(obj.files(ii).rootdir,'nameonly:file'));
             [~,f3]  = fileparts(p2);
             if isfile_private(obj.files(ii).GetName())
-                filetype = 'file';
+                filetype = 'file'; %#ok<*PROPLC>
             else
                 filetype = 'folder';
             end
@@ -351,7 +369,7 @@ classdef DataFilesClass < handle
             
         
         % ----------------------------------------------------------
-        function b = isempty(obj)
+        function b = IsEmpty(obj)
             if isempty(obj.files)
                 b = true;
             else
@@ -441,11 +459,23 @@ classdef DataFilesClass < handle
             obj.logger.Write('DataTreeClass - Data Set Folder Structure:\n');
             for ii = 1:length(obj.files)
                 k = length(find(obj.files(ii).name=='/'));   
-                if ii<10, j=3; elseif ii>9 && ii<100, j=2; else j=3; end
+                if ii<10
+                    j=3; 
+                elseif ii>9 && ii<100
+                    j=2;
+                else
+                    j=3;
+                end
                 if optionExists(options, 'flat')
                     obj.logger.Write(sprintf('%d.%s%s\n', ii, blanks(j), obj.files(ii).name));
                 else
-                    if ii<10, j=3; elseif ii>9 && ii<100, j=2; else j=3; end
+                    if ii<10
+                        j=3; 
+                    elseif ii>9 && ii<100
+                        j=2; 
+                    else 
+                        j=3; 
+                    end
                     if optionExists(options, 'numbered')
                         n = k*stepsize+stepsize+j;
                         obj.logger.Write(sprintf('%d.%s%s\n', ii, blanks(n), obj.files(ii).filename));

@@ -125,6 +125,27 @@ classdef ProbeClass < FileLoadSaveClass
         
         
         % -------------------------------------------------------
+        function Project_3D_to_2D(obj) 
+            if isempty(obj.landmarkPos3D)
+                
+                % When 3D landmarks aren't available use crude default 3D-to-2D projection algorithm 
+                if isempty(obj.sourcePos2D)
+                    obj.sourcePos2D = project_3D_to_2D(obj.sourcePos3D);
+                end
+                if isempty(obj.detectorPos2D)
+                    obj.detectorPos2D = project_3D_to_2D(obj.detectorPos3D);
+                end
+                
+            else
+
+                % 3D landmarks are available, use ...
+
+            end
+        end
+
+        
+        
+        % -------------------------------------------------------
         function err = LoadHdf5(obj, fileobj, location)
             err = 0;
             
@@ -173,7 +194,9 @@ classdef ProbeClass < FileLoadSaveClass
                 obj.sourceLabels              = HDF5_DatasetLoad(gid, 'sourceLabels', obj.sourceLabels);
                 obj.detectorLabels            = HDF5_DatasetLoad(gid, 'detectorLabels', obj.detectorLabels);
                 obj.landmarkLabels            = HDF5_DatasetLoad(gid, 'landmarkLabels', obj.landmarkLabels);
-                                
+                
+                obj.Project_3D_to_2D();
+                
                 % Close group
                 HDF5_GroupClose(fileobj, gid, fid);
                 

@@ -2,7 +2,19 @@ function  p2 = project_3D_to_2D(p3)
 d = distmatrix(p3);
 p2_0 = p3(:,1:2);
 fun = @(x)myfunc(x,d);
-p2 = fsolve(fun, p2_0);
+
+warnid = {'optim:fsolve:NonSquareSystem'};
+for ii = 1:length(warnid)
+    warning('OFF', warnid{ii});
+end
+
+p2 = fsolve(fun, p2_0, optimset('Display','off'));
+
+for ii = 1:length(warnid)
+    warning('ON', warnid{ii});
+end
+
+
 
 
 % -------------------------------------------------------

@@ -126,7 +126,7 @@ classdef ProbeClass < FileLoadSaveClass
         
         % -------------------------------------------------------
         function Project_3D_to_2D(obj) 
-            if isempty(obj.landmarkPos3D)
+            if isempty(obj.landmarkPos2D) || isempty(obj.landmarkPos3D)
                 
                 % When 3D landmarks aren't available use crude default 3D-to-2D projection algorithm 
                 if isempty(obj.sourcePos2D)

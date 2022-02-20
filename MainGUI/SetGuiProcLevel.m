@@ -79,15 +79,9 @@ else
             maingui.dataTree.SetCurrElem(iGroup);
         end
     elseif viewSetting == views.NOSESS
-        if listboxGroupTreeMap == maingui.rid && procLevelSelect==maingui.eid       % Case 4: Input  - List Entry maps to run(iGroup, iSubj, iRun); Proc level setting: Subj
-            set(handles.radiobuttonProcTypeSess, 'value',1);                 %         Output - Proc level setting: Run;     currElem: subj(iGroup, iSubj)
-            maingui.dataTree.SetCurrElem(iGroup, iSubj, iSess);
-        elseif listboxGroupTreeMap == maingui.rid && procLevelSelect==maingui.sid   % Case 7: Input  - List Entry maps to run(iGroup, iSubj, iRun);   Proc level setting: Group
+        if listboxGroupTreeMap == maingui.rid                                 % Case 4: Input  - List Entry maps to run(iGroup, iSubj, iRun); Proc level setting: Subj
             set(handles.radiobuttonProcTypeRun, 'value',1);                 %         Output - Proc level setting: Run;    currElem: group(iGroup)
             maingui.dataTree.SetCurrElem(iGroup, iSubj, iSess, iRun);
-        elseif listboxGroupTreeMap == maingui.rid && procLevelSelect==maingui.gid   % Case 7: Input  - List Entry maps to run(iGroup, iSubj, iRun);   Proc level setting: Group
-            set(handles.radiobuttonProcTypeGroup, 'value',1);                 %         Output - Proc level setting: Run;    currElem: group(iGroup)
-            maingui.dataTree.SetCurrElem(iGroup);
         end
     elseif viewSetting == views.SESS
         if listboxGroupTreeMap == maingui.rid && procLevelSelect==maingui.eid       % Case 4: Input  - List Entry maps to run(iGroup, iSubj, iRun); Proc level setting: Subj
@@ -122,7 +116,7 @@ end
 
 
 % --------------------------------------------------------------------
-function SaveChildGuis(handles)
+function SaveChildGuis()
 global maingui
 if isempty(maingui.childguis)
     return;

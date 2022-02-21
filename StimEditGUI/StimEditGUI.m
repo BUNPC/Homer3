@@ -285,7 +285,7 @@ figure(handles.figure);
 
 
 %---------------------------------------------------------------------------
-function axes1_ButtonDownFcn(hObject, eventdata, handles)
+function axes1_ButtonDownFcn(~, ~, handles)
 global stimEdit
 
 [point1, point2, err] = extractButtondownPoints();
@@ -789,8 +789,12 @@ end
 SetTextFilename(handles);
 
 % Try to keep the same condition as old run
+stimEdit.dataTreeHandle.currElem.Load();
 conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
 [icond, conditions] = GetConditionIdxFromPopupmenu(conditions, handles);
+if isempty(conditions)
+    return;
+end
 set(handles.popupmenuConditions, 'value',icond);
 set(handles.popupmenuConditions, 'string',conditions);
 SetUitableStimInfo(conditions{icond}, handles);

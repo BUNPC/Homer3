@@ -408,7 +408,6 @@ if ~procStreamOptions.applyEditCurrNodeOnly
         for ii = 1:length(dataTree.groups(iG).subjs)
             for jj=1:length(dataTree.groups(iG).subjs(ii).runs)
                 dataTree.groups(iG).subjs(ii).runs(jj).procStream.EditParam(iFcall, iParam, val);
-                end
             end
         end
     end

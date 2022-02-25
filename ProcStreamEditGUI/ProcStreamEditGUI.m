@@ -538,6 +538,20 @@ end
 
 
 % -------------------------------------------------------------
+function [h, N, msg] = ShowProcStreamLoadProgress()
+global procStreamEdit
+procElem    = procStreamEdit.procElem;
+listPsUsage = procStreamEdit.listPsUsage;
+N = 0;
+for iPanel = 1:length(procElem)
+    N = N + listPsUsage(iPanel).GetSize();
+end
+msg = 'Please wait for processing stream to load ...';
+h = waitbar_improved(0, msg);
+
+
+
+% -------------------------------------------------------------
 function pushbuttonSave_Callback(~, ~, ~)
 global procStreamEdit
 
@@ -552,12 +566,15 @@ listPsUsage = procStreamEdit.listPsUsage;
 reg         = procStreamEdit.dataTree.reg;
 iGroupPanel = procStreamEdit.iGroupPanel;
 iSubjPanel  = procStreamEdit.iSubjPanel;
+iSessPanel  = procStreamEdit.iSessPanel;
 iRunPanel   = procStreamEdit.iRunPanel;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % First get the user selection of proc stream function calls from the proc stream listbox 
 % (listboxFuncProcStream) and load them into the procElem for all panels.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[h, N, msg] = ShowProcStreamLoadProgress();
+kk = 0;
 for iPanel = 1:length(procElem)
     % Save current proc stream in a temp variable - we will copy the aram
     % values for any func call which reappears in the new proc stream
@@ -581,6 +598,8 @@ for iPanel = 1:length(procElem)
         fcall = reg.funcReg(MapRegIdx(iPanel)).GetFuncCallDecoded(funcname, usagename);
         CopyParamValues(fcall, procStreamPrev.fcalls);
         procElem{iPanel}.procStream.Add(fcall);
+        waitbar_improved(kk/N, h, msg);
+        kk = kk+1;
     end
     if isa(procElem{iPanel}, 'RunClass')  % Validate procstream order at run level only
        if procstreamOrderCheckDlg(procElem{iPanel}) == -1
@@ -588,6 +607,8 @@ for iPanel = 1:length(procElem)
        end
     end
 end
+close(h)
+
 
 if isempty(listPsUsage)
     MessageBox('Processing stream is empty. Please load or create a processing stream before saving it.');

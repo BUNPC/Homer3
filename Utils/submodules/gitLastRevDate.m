@@ -12,9 +12,16 @@ cmds{ii,1} = sprintf('cd %s', repoFull); ii = ii+1;
 cmds{ii,1} = sprintf('git log -1 --format=%%ci --date=short %s', file);
 [errs, msgs] = exeShellCmds(cmds, false, true);
 if all(errs==0)
-    c = str2cell(msgs{2}, ' ');
+    if ~isempty(msgs{2})
+        ds = msgs{2};
+    else
+        ds = char(datetime('now','TimeZone','local','Format','yyyy-MM-dd HH:mm:ss'));
+    end
+    c = str2cell(ds, ' ');
+    
     dateS = c{1};
     timeS = c{2};
+
     dateS(dateS=='-')='';
     timeS(timeS==':')='';    
     

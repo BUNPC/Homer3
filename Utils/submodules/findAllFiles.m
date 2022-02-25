@@ -19,7 +19,7 @@ end
 subdirFullpath = filesepStandard_startup(subdir,'full');
 f = dir([subdirFullpath, '*']);
 for ii = 1:length(f)
-    if f(ii).name(1) == '.'
+    if f(ii).name(1)=='.'
         continue
     end
     

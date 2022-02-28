@@ -32,7 +32,7 @@ end
 % Figure out the dimentions of p1 and p2 to see if they're compatible
 sz1 = size(p1);
 sz2 = size(p2);
-ndim = sz1(sz1==sz2);
+ndim = max(sz1(sz1==sz2));
 if isempty(ndim)
     if length(sz1)>2 || length(sz1)~=length(sz2)
         menu('nearest_point error: p1 and p2 number of dimensions incompatible','OK');

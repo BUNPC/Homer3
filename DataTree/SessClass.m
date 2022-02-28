@@ -657,6 +657,14 @@ classdef SessClass < TreeNodeClass
             end
         end
         
+        
+         % --------------------------------------------------------------------------
+        function ApplyParamEditsToAllRuns(obj, iFcall, iParam, val)
+            for jj = 1:length(obj.runs)
+                obj.runs(jj).procStream.EditParam(iFcall, iParam, val);
+            end
+        end
+                
     end
         
     

@@ -453,6 +453,21 @@ classdef SubjClass < TreeNodeClass
         end
         
                
+         % --------------------------------------------------------------------------
+        function ApplyParamEditsToAllSessions(obj, iFcall, iParam, val)
+            for jj = 1:length(obj.sess)
+                obj.sess(jj).procStream.EditParam(iFcall, iParam, val);
+            end
+        end
+        
+        
+        % --------------------------------------------------------------------------
+        function ApplyParamEditsToAllRuns(obj, iFcall, iParam, val)
+            for jj = 1:length(obj.sess)
+                obj.sess(jj).ApplyParamEditsToAllRuns(iFcall, iParam, val);
+            end
+        end
+        
     end
     
     
@@ -694,7 +709,7 @@ classdef SubjClass < TreeNodeClass
                 obj.sess(ii).ListOutputFilenames(options);
             end
         end
-        
+                
     end
         
     

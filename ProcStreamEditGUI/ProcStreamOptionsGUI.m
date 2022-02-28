@@ -360,7 +360,7 @@ set(handles.pushbuttonExit, 'units','normalized');
 
 
 % ----------------------------------------------------------
-function edit_Callback(hObject, eventdata, handles) 
+function edit_Callback(hObject, eventdata, ~) 
 global procStreamOptions
 
 dataTree = procStreamOptions.dataTree;
@@ -400,17 +400,7 @@ set(hObject, 'value', str2num(str));  % Actually update the value
 % Check if we should apply the param edit to all nodes of the current nodes
 % level
 if ~procStreamOptions.applyEditCurrNodeOnly
-    if dataTree.currElem.iSubj>0 && dataTree.currElem.iRun==0
-        for ii = 1:length(dataTree.groups(iG).subjs)
-            dataTree.groups(iG).subjs(ii).procStream.EditParam(iFcall, iParam, val);
-        end
-    elseif dataTree.currElem.iSubj>0 && dataTree.currElem.iRun>0
-        for ii = 1:length(dataTree.groups(iG).subjs)
-            for jj=1:length(dataTree.groups(iG).subjs(ii).runs)
-                dataTree.groups(iG).subjs(ii).runs(jj).procStream.EditParam(iFcall, iParam, val);
-            end
-        end
-    end
+    dataTree.ApplyParamEditsToAll(iFcall, iParam, val);
 end
 
 
@@ -419,8 +409,6 @@ function menuExit_Callback(hObject, ~, ~)
 
 hGui=get(get(hObject,'parent'),'parent');
 close(hGui);
-
-
 
 
 

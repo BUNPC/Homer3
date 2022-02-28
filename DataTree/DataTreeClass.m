@@ -707,6 +707,21 @@ classdef DataTreeClass <  handle
         end
         
         
+        
+        % --------------------------------------------------------------------------
+        function ApplyParamEditsToAll(obj, iFcall, iParam, val)
+            for iG = 1:length(obj.groups)                
+                if     obj.currElem.iSubj>0  && obj.currElem.iSess==0 && obj.currElem.iRun==0
+                    obj.groups(iG).ApplyParamEditsToAllSubjects(iFcall, iParam, val);
+                elseif obj.currElem.iSubj>0  && obj.currElem.iSess>0 && obj.currElem.iRun==0
+                    obj.groups(iG).ApplyParamEditsToAllSessions(iFcall, iParam, val);
+                elseif obj.currElem.iSubj>0  && obj.currElem.iSess>0 && obj.currElem.iRun>0
+                    obj.groups(iG).ApplyParamEditsToAllRuns(iFcall, iParam, val);
+                end
+            end
+        end
+        
+        
     end
     
 end

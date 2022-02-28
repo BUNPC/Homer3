@@ -1045,6 +1045,31 @@ classdef GroupClass < TreeNodeClass
                 name = sprintf('%s%s%d', base, addon, n);
             end
         end
+       
+        
+        
+        % --------------------------------------------------------------------------
+        function ApplyParamEditsToAllSubjects(obj, iFcall, iParam, val)
+            for jj = 1:length(obj.subjs)
+                obj.subjs(jj).procStream.EditParam(iFcall, iParam, val);
+            end
+        end
+        
+        
+        % --------------------------------------------------------------------------
+        function ApplyParamEditsToAllSessions(obj, iFcall, iParam, val)
+            for jj = 1:length(obj.subjs)
+                obj.subjs(jj).ApplyParamEditsToAllSessions(iFcall, iParam, val);
+            end
+        end
+        
+        
+        % --------------------------------------------------------------------------
+        function ApplyParamEditsToAllRuns(obj, iFcall, iParam, val)
+            for jj = 1:length(obj.subjs)
+                obj.subjs(jj).ApplyParamEditsToAllRuns(iFcall, iParam, val);
+            end
+        end
         
     end
     

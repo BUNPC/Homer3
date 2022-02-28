@@ -753,6 +753,31 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function ApplyParamEditToAll(obj, iFcall, iParam, val)
+            % Figure out which level we are: group, subj, sess, or run
+            if obj.iSubj==0 && obj.iSess==0 && obj.iRun==0
+                for ii = 1:length(obj.subjs)
+                    obj.subjs(ii).procStream.EditParam(iFcall, iParam, val);
+                end
+             elseif obj.iSubj>0 && obj.iSess>0 && obj.iRun==0
+                for ii = 1:length(obj.subjs)
+                    for jj = 1:length(obj.subjs(ii).sess)
+                        obj.subjs(ii).sess(jj).procStream.EditParam(iFcall, iParam, val);
+                    end
+                end
+            elseif obj.iSubj>0 && obj.iSess>0 && obj.iRun>0
+                for ii = 1:length(obj.subjs)
+                    for jj = 1:length(obj.subjs(ii).sess)
+                        for kk = 1:length(obj.subjs(ii).sess(jj).runs)
+                            obj.subjs(ii).sess(jj).runs(kk).procStream.EditParam(iFcall, iParam, val);
+                        end
+                    end
+                end
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function tblcells = ExportMeanHRF(~, ~, ~)
             tblcells = {};
         end
@@ -989,7 +1014,6 @@ classdef TreeNodeClass < handle
             end
             out = v;
         end
-        
         
     end
     

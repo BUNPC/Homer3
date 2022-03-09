@@ -186,7 +186,7 @@ classdef SubjClass < TreeNodeClass
                 sess.SetIndexID(obj.iGroup, obj.iSubj, jj);
                 sess.SetPath(obj.path);                      % Inherit root path from subject
                 obj.sess(jj) = sess;
-                obj.logger.Write('      Added session %s to subject %s.\n', obj.sess(jj).GetFileName, obj.GetFileName);
+                obj.logger.Write('      Added session  "%s"  to subject  "%s" .\n', obj.sess(jj).GetFileName, obj.GetFileName);
             end
             
             % Add sess to subj

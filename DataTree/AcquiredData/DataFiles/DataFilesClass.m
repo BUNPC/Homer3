@@ -2,6 +2,7 @@ classdef DataFilesClass < handle
     
     properties
         files;
+        filesErr;
         filetype;
         dirFormats;
         err;
@@ -21,6 +22,7 @@ classdef DataFilesClass < handle
         % ----------------------------------------------------
         function obj = DataFilesClass(varargin)            
             obj.files = FileClass.empty();
+            obj.filesErr = FileClass.empty();
             obj.filetype = '';
             obj.rootdir = pwd;
             obj.nfiles = 0;
@@ -116,15 +118,15 @@ classdef DataFilesClass < handle
                 obj.InitLookupTable();
                 obj.FindDataSet(ii);
                 
+                % Remove any files that cannot pass the basic test of loading
+                % its data
                 obj.ErrorCheck();
                 if ~isempty(obj.files)
                     break
                 end
             end
             
-            % Remove any files that cannot pass the basic test of loading
-            % its data
-            obj.ErrorCheckName();
+            obj.ErrorCheckFinal();
         end
 
         
@@ -290,6 +292,41 @@ classdef DataFilesClass < handle
         
         
         
+        % ----------------------------------------------------
+        function ErrorCheckFinal(obj)
+            obj.ErrorCheckName();
+            
+            % Find all acquisition files in group folder
+            fileNames = findTypeFiles(obj.rootdir, ['.', obj.filetype]);
+            
+            % Make alist of all files excluded from current data set  
+            for ii = 1:length(fileNames)
+                filefound = false;
+                
+                for jj = 1:length(obj.files)
+                    if pathscompare(fileNames{ii}, [obj.rootdir, obj.files(jj).name])
+                        filefound = true;
+                        break;
+                    end
+                end
+                
+                for jj = 1:length(obj.filesErr)
+                    if pathscompare(fileNames{ii}, [obj.rootdir, obj.filesErr(jj).name])
+                        filefound = true;
+                        break;
+                    end
+                end
+                
+                if ~filefound
+                    obj.filesErr(end+1) = FileClass(fileNames{ii});
+                    obj.filesErr(end).SetError('Invalid File Name');
+                end
+            end
+        
+        end
+        
+        
+        
         % --------------------------------------------------------------------------
         function answer = AskToFixNameConflicts(obj, ii)
             global cfg
@@ -349,7 +386,7 @@ classdef DataFilesClass < handle
         function pushbuttonLoadDataset_Callback(~, hObject)
             hp = get(hObject,'parent');
             hc = get(hp,'children');
-            for ii=1:length(hc)
+            for ii = 1:length(hc)
                 
                 if strcmp(get(hc(ii),'tag'),'pushbuttonLoad')
                     hButtnLoad = hc(ii);
@@ -426,7 +463,7 @@ classdef DataFilesClass < handle
                 filename = [obj.files(ii).rootdir, obj.files(ii).name];
                 eval( sprintf('o = %s(filename);', constructor) );
                 if o.GetError()<0
-                    obj.logger.Write('FAILED error check:   %s will not be added to data set\n', filename);
+                    obj.logger.Write('DataFilesClass.ErrorCheck:   FAILED error check - %s will not be added to data set\n', filename);
                     errorIdxs = [errorIdxs, ii]; %#ok<AGROW>
                 else
                     dataflag = true;
@@ -435,7 +472,12 @@ classdef DataFilesClass < handle
             if dataflag==false
                 obj.files = FileClass.empty();
             else
+                for jj = 1:length(errorIdxs)
+                    obj.filesErr(end+1) = obj.files(errorIdxs(jj)).copy;
+                    obj.filesErr(end).SetError('Invalid Data Format');
+                end
             	obj.files(errorIdxs) = [];
+                obj.nfiles = obj.nfiles - length(errorIdxs);
             end
         end
         
@@ -517,6 +559,7 @@ classdef DataFilesClass < handle
             n = round(log10(length(obj.lookupTable)));
             b = obj.lookupTable(string2hash(str, n));
         end
+        
         
     end
 end

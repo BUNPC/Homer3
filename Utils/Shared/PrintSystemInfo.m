@@ -20,7 +20,13 @@ for ii = 1:length(appnames)
     if strcmp(appnames{ii}, 'Untitled')
         logger.Write('Running %s, %s\n', appnames{ii}, platform);
     else
-        logger.Write('Running %s, (v%s), %s\n', appnames{ii}, getVernum(appnames{ii}), platform);
+        vstr = getVernum(appnames{ii});
+        if ~isempty(find(vstr==':' | vstr=='-'))
+            vstrPrefix = sprintf('Last Rev:%s', blanks(2));
+        else
+            vstrPrefix = 'v';
+        end
+        logger.Write('Running %s, (%s%s), %s\n', appnames{ii}, vstrPrefix, vstr, platform);
     end
 end
 logger.Write('\n');

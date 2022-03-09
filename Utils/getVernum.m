@@ -7,9 +7,7 @@ end
 if ~exist('appdir','var') || isempty(appdir)
     appdir = getAppDir();
 end
-
 libdir = '/Shared';
-
 if length(appdir) > length(libdir)  &&  strcmp( appdir( end-length(libdir)+1 : end ), libdir )
     p = appdir;
 elseif ispathvalid_startup([appdir, libdir])

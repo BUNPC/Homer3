@@ -19,7 +19,10 @@ urlroot = fileparts(url);
 branch = gitGetBranch(repoFull);
 
 if ispathvalid([repoFull, '/submodules'])
-    rmdir([repoFull, '/submodules'],'s')
+    try
+        rmdir([repoFull, '/submodules'],'s')
+    catch
+    end
 end
 mkdir([repoFull, '/submodules'])
 

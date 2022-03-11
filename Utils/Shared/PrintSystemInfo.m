@@ -22,11 +22,13 @@ for ii = 1:length(appnames)
     else
         vstr = getVernum(appnames{ii});
         if ~isempty(find(vstr==':' | vstr=='-'))
-            vstrPrefix = sprintf('Last Rev:%s', blanks(2));
+            vs = sprintf('(Last Rev:  %s), ', vstr);
+        elseif ~isempty(vstr)
+            vs = sprintf('(v%s), ', vstr);
         else
-            vstrPrefix = 'v';
+            vs = '';
         end
-        logger.Write('Running %s, (%s%s), %s\n', appnames{ii}, vstrPrefix, vstr, platform);
+        logger.Write('Running %s, %s %s\n', appnames{ii}, vs, platform);
     end
 end
 logger.Write('\n');

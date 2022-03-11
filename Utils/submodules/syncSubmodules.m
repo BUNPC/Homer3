@@ -142,7 +142,7 @@ for kk = 1:length(f2)
         end
     end
     
-    if ~foundflag && peerlessonly
+    if ~foundflag
         
         % If f2 does not exist in repo1 and repo2 last rev is later than
         % repo1, then ADD f2 to repo1
@@ -156,7 +156,7 @@ for kk = 1:length(f2)
         % repo1, then delete f2 from repo2
         else
             
-            q = makeChange('delete',  f2{kk}, [], repo2, preview, q);
+            q = makeChange('delete',  [], f2{kk}, repo2, preview, q);
             identical = false;
             
         end
@@ -180,13 +180,14 @@ synctool.repo2 = initRepo();
 submodulename = [f, e];
 r1 = submodules{jj,2};
 r2 = [synctool.repoParentFull, 'submodules/', submodulename];
+
 if r1(end)=='\' || r1(end)=='/'
     r1 = r1(1:end-1);
 end
 if r2(end)=='\' || r2(end)=='/'
     r2 = r2(1:end-1);
 end
-[date1, dateS1] = getLastRevisionDate(r1);
+[date1, dateS1] = getLastRevisionDate(synctool.repoParentFull, r1);
 [date2, dateS2] = getLastRevisionDate(r2);
 status1 = hasChanges(r1);
 status2 = hasChanges(r2);
@@ -242,7 +243,7 @@ switch(lower(action))
         else
             actionstr = 'Preview deleting';
         end
-        fprintf('%s %s\n', actionstr, fsrc);
+        fprintf('%s %s\n', actionstr, fdst);
 end
 
 
@@ -265,6 +266,12 @@ for ii = 1:length(added)
 end
 for ii = 1:length(deleted)
     c = str2cell(deleted{ii}, ' ');
+    if isempty(strfind(c{2}, '..'))
+        status = 1;
+    end        
+end
+for ii = 1:length(untracked)
+    c = str2cell(untracked{ii}, ' ');
     if isempty(strfind(c{2}, '..'))
         status = 1;
     end        

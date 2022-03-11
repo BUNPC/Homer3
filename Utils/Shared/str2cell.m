@@ -52,6 +52,9 @@ C(kk:end) = [];
 
 % ==================================================
 function str = removeEndingNewlines(str)
+if isempty(str)
+    return
+end
 k = [];
 if str(1)<14
     k = 1;

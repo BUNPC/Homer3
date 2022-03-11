@@ -21,6 +21,7 @@ else
 end
 verfile = [p, '/Version.txt'];
 if ~ispathvalid(verfile)
+    [~, v] = getLastRevisionDate(appdir, p);
     return;
 end
 fd = fopen(verfile,'rt');

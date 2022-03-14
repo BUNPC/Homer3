@@ -133,7 +133,11 @@ c = str2cell(pathname0, '/');
 pathname = '';
 for ii = 1:length(c)
     if isempty(pathname)
-        pathname = c{ii};
+        if pathname0(1)=='/'
+            pathname = ['/ ', c{ii}];
+        else
+            pathname = c{ii};
+        end
     else
         pathname = sprintf('%s / %s', pathname, c{ii});
     end

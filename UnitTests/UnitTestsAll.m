@@ -17,7 +17,7 @@ cfg.Save();
 
 cfg.SetValue('Default Processing Stream Style','SNIRF');
 cfg.Save();
-%UnitTestsAll_Snirf(false);
+UnitTestsAll_Snirf(false);
 UnitTestsAll_MainGUI(false)
 
 toc(t1);

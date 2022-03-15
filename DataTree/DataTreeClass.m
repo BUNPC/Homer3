@@ -261,15 +261,9 @@ classdef DataTreeClass <  handle
                         iter = iter+1;
                     end                    
                     obj.files = dataInit.files;
+                    obj.filesErr = dataInit.filesErr;
 
-                    obj.logger.Write('\n');
-
-                    % Print file and folder numbers stats
-                    nfolders = length(dataInit.files)-dataInit.nfiles;
-                    if nfolders==0
-                        nfolders = 1;
-                    end
-                    obj.logger.Write('DataTreeClass.FindAndLoadGroups: Found %d data files in %d folders\n', dataInit.nfiles, nfolders);
+                    obj.PrintDatasetFormat(dataInit);
                     
                     % Now load group files to data tree
                     obj.LoadGroup(iGroupNew, procStreamCfgFile, options);
@@ -449,7 +443,7 @@ classdef DataTreeClass <  handle
                 group.SetIndexID(jj);
                 obj.groups(jj) = group;
                 obj.groups(jj).SetPath(obj.dirnameGroups{jj})
-                obj.logger.Write('Added group %s to dataTree.\n', obj.groups(jj).GetName);
+                obj.logger.Write('Added group  "%s"  to dataTree.\n', obj.groups(jj).GetName);
             end
 
             % Add subj, sess and run to group
@@ -459,12 +453,15 @@ classdef DataTreeClass <  handle
         
         % ----------------------------------------------------------
         function ErrorCheckLoadedFiles(obj)
-            for iF=length(obj.files):-1:1
-                if ~obj.files(iF).Loadable() && obj.files(iF).IsFile()
-                    obj.filesErr(end+1) = obj.files(iF).copy;
-                    obj.files(iF) = [];
-                end                    
+            if isempty(obj.filesErr)
+                return
             end
+            obj.logger.Write('\n')
+            obj.logger.Write('DataTreeClass.ErrorCheckLoadedFiles:   WARNING - The following files in this data set were NOT loaded:\n')
+            for iF = 1:length(obj.filesErr)
+                obj.logger.Write('   %s\n', obj.filesErr(iF).name)
+            end
+            obj.logger.Write('\n')
         end
         
         
@@ -679,34 +676,29 @@ classdef DataTreeClass <  handle
         end
 
         
-        % ----------------------------------------------------------
-        function PrintFolderStructure(obj, options)
-            if ~exist('options','var')
-                options = '';
+        % -----------------------------------------------------------
+        function PrintDatasetFormat(obj, dataInit)
+            
+            % Print file and folder numbers stats
+            nfolders = length(dataInit.files)-dataInit.nfiles;
+            if nfolders==0
+                nfolders = 1;
             end
-            stepsize = 3;
+            numFilesMsg = sprintf('with %d data files in %d folders\n', dataInit.nfiles, nfolders);
             obj.logger.Write('\n');
-            obj.logger.Write('DataTreeClass - Data Set Folder Structure:\n');
-            for ii = 1:length(obj.files)
-                k = length(find(obj.files(ii).name=='/'));   
-                if ii<10, j=3; elseif ii>9 && ii<100, j=2; else j=3; end %#ok<*SEPEX>
-                if optionExists(options, 'flat')
-                    obj.logger.Write('%d.%s%s\n', ii, blanks(j), obj.files(ii).name);
-                else
-                    if ii<10, j=3; elseif ii>9 && ii<100, j=2; else j=3; end
-                    if optionExists(options, 'numbered')
-                        n = k*stepsize+stepsize+j;
-                        obj.logger.Write('%d.%s%s\n', ii, blanks(n), obj.files(ii).filename);
-                    else
-                        n = k*stepsize+stepsize;
-                        obj.logger.Write('%s%s\n', blanks(n), obj.files(ii).filename);
-                    end
-                end
+            if dataInit.nfiles == 0
+                obj.logger.Write('DataTreeClass.FindAndLoadGroups:   Did not find any data0 files %s.\n', numFilesMsg);
+            elseif dataInit.dirFormats.type > 3 && dataInit.dirFormats.type < 9
+                obj.logger.Write('DataTreeClass.FindAndLoadGroups:   Found BIDS data set %s.\n', numFilesMsg);
+            elseif dataInit.dirFormats.type < 4
+                obj.logger.Write('DataTreeClass.FindAndLoadGroups:   Found non-standard format set %s.\n', numFilesMsg);
+            elseif dataInit.dirFormats.type > 8
+                obj.logger.Write('DataTreeClass.FindAndLoadGroups:   Found non-standard but BIDS-like data set %s.\n', numFilesMsg);
             end
             obj.logger.Write('\n');
         end
-        
-        
+            
+
         
         % --------------------------------------------------------------------------
         function ApplyParamEditsToAll(obj, iFcall, iParam, val)

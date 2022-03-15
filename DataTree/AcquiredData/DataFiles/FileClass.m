@@ -19,6 +19,7 @@ classdef FileClass < matlab.mixin.Copyable
         rootdir
         err
         logger
+        errmsgs
     end
     
     methods
@@ -39,6 +40,8 @@ classdef FileClass < matlab.mixin.Copyable
             obj.rootdir    = '';
             obj.err        = -1;          % Assume file is not loadable
             obj.logger     = InitLogger(logger);            
+            obj.errmsgs    = {'Invalid Data Format','Invalid File Name'};
+            
             
             if nargin==0
                 return;
@@ -535,6 +538,20 @@ classdef FileClass < matlab.mixin.Copyable
         end
         
         
+        % -----------------------------------------------------
+        function err = SetError(obj, err)
+            if ischar(err)
+                err = find(strcmp(obj.errmsgs, err));
+            end
+            obj.err = err;
+        end
+        
+        
+        % -----------------------------------------------------
+        function msg = GetErrorMsg(obj)
+            msg = obj.errmsgs{abs(obj.err)};
+        end
+        
     end
-       
+  
 end

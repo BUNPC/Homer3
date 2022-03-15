@@ -634,20 +634,13 @@ classdef ProcStreamClass < handle
                 fprintf('Default config file exists. Processing stream will be loaded from %s\n', fname);
                 return;
             end
-            
-            % This pause is a workaround for a matlab bug in version
-            % 7.11 for Linux, where uigetfile won't block unless there's
-            % a breakpoint.
-            pause(.1);
-            [fname, pname] = uigetfile([pathname, '*.cfg'], 'Load Process Options File' );
-            if fname==0
-                fprintf('Loading default config file.\n');
+            fname = OpenFileGUI(procStreamCfgFile, pathname,'Load Processing Options File');
+            if isempty(fname)
                 fname = [pathname, procStreamCfgFile];
+                fprintf('Loading default config file.\n');
                 autoGenDefault = true;
-            else
-                fname = [pname, fname];
-            end
-            fname(fname=='\')='/';
+            end            
+            
         end
         
         

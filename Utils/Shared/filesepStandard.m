@@ -1,5 +1,4 @@
 function pathname = filesepStandard(pathname0, options)
-
 %
 % Usage:
 %    pathname = filesepStandard(pathname, options)
@@ -81,7 +80,11 @@ if ischar(pathname0)
             pathname0(end) = '';
         end
     end
-        
+    
+    if optionExists(options, 'filesepwide')
+        pathname0 = filesepwide(pathname0);
+    end
+
     % Change path to full path if option requesting it exists
     pathname = pathname0;
     return;
@@ -92,6 +95,7 @@ pathname = pathname0;
 for ii = 1:length(pathname)
     pathname{ii} = filesepStandard(pathname{ii}, options);
 end
+
 
 
 % ---------------------------------------------------------------------------
@@ -122,5 +126,21 @@ for ii = 1:length(k(:,2))
 end
 
 
+
+% --------------------------------------------------------------
+function pathname = filesepwide(pathname0)
+c = str2cell(pathname0, '/');
+pathname = '';
+for ii = 1:length(c)
+    if isempty(pathname)
+        if pathname0(1)=='/'
+            pathname = ['/ ', c{ii}];
+        else
+            pathname = c{ii};
+        end
+    else
+        pathname = sprintf('%s / %s', pathname, c{ii});
+    end
+end
 
 

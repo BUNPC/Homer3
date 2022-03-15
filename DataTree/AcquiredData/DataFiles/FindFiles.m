@@ -68,7 +68,6 @@ while files.IsEmpty()
                 if nfolders==0
                     nfolders = 1;
                 end
-                fprintf('FindFiles: Found %d .nirs data files in %d folders\n', filesSrc.nfiles, nfolders);
             end
             
             % Search for source acquisition files in .nirs format which have not
@@ -133,8 +132,6 @@ while files.IsEmpty()
         % Change current folder to new group
         cd(dirnameGroup)
     end
-       
-    fprintf('FindFiles: Found %d %s data files in %d folders\n', files.nfiles, fmt, length(files.files)-files.nfiles);
     
 end
 

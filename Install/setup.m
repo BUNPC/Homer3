@@ -65,7 +65,7 @@ logger = Logger([dirnameSrc, 'Setup']);
 
 v = getVernum();
 logger.Write('==========================================\n');
-logger.Write('Setup script for %s v%s.%s.%s:\n', exename, v{1}, v{2}, v{3});
+logger.Write('Setup script for %s v%s:\n', exename, v);
 logger.Write('==========================================\n\n');
 
 logger.Write('Platform params:\n');
@@ -106,6 +106,8 @@ copyFile([dirnameSrc, 'DataTree'],          [dirnameDst, 'DataTree']);
 copyFile([dirnameSrc, 'FuncRegistry'],      [dirnameDst, 'FuncRegistry']);
 copyFile([dirnameSrc, 'SubjDataSample'],    [dirnameDst, 'SubjDataSample']);
 copyFile([dirnameSrc, 'SDGcolors.csv'],     dirnameDst);
+copyFile([dirnameSrc, 'Version.txt'],     dirnameDst);
+copyFile([dirnameSrc, 'LastCheckForUpdates.dat'],     dirnameDst);
 
 % Create desktop shortcuts to Homer3
 createDesktopShortcuts(dirnameSrc, dirnameDst);

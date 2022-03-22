@@ -20,16 +20,17 @@ classdef Logger < handle
             end
                                        
             % Construct log file name
-            [pname, fname] = fileparts(appname);
+            [pname, fname0] = fileparts(appname);
+            fname = fname0;
             if ~ispathvalid(pname)
                 pname = getAppDir();
                 if isempty(pname)
-                    fname = which([appname, '.m']);
+                    fname = which([fname0, '.m']);
                     [pname, fname] = fileparts(fname);
                 end
                 if isempty(pname)
                     pname = filesepStandard(pwd);
-            end
+                end
             end
            
             self.filename = [filesepStandard(pname), fname, '.log'];

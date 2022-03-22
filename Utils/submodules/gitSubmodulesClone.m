@@ -1,4 +1,4 @@
-function [cmds, errs, msgs] = gitSubmodulesClone(repo, preview)
+function [cmds, errs, msgs] = gitSubmodulesClone(repo, preview, options)
 cmds = {};
 
 currdir = pwd;
@@ -9,6 +9,10 @@ end
 if ~exist('preview','var')
     preview = false;
 end
+if ~exist('options','var')
+    options = 'init';
+end
+
 
 repoFull = filesepStandard_startup(repo,'full');
 ii = 1;
@@ -18,18 +22,24 @@ url = gitGetOrigin(repoFull);
 urlroot = fileparts(url);
 branch = gitGetBranch(repoFull);
 
-if ispathvalid([repoFull, '/submodules'])
-    try
-        rmdir([repoFull, '/submodules'],'s')
-    catch
+if strcmp(options, 'update')
+    if ispathvalid([repoFull, '/submodules'])
+        try
+            rmdir([repoFull, '/submodules'],'s')
+        catch
+        end
     end
 end
-mkdir([repoFull, '/submodules'])
+if ~ispathvalid([repoFull, '/submodules'])
+    mkdir([repoFull, '/submodules'])
+end
 
 cmds{ii,1} = sprintf('cd %s', repoFull); ii = ii+1;
 for jj = 1:size(submodules,1)
     [~, submodulename] = fileparts(submodules{jj,1});
-    cmds{ii,1} = sprintf('git clone --branch %s %s %s', branch, [urlroot, '/', submodulename], [repoFull, 'submodules/', submodulename]); ii = ii+1;
+    if ~ispathvalid([repoFull, 'submodules/', submodulename])
+        cmds{ii,1} = sprintf('git clone --branch %s %s %s', branch, [urlroot, '/', submodulename], [repoFull, 'submodules/', submodulename]); ii = ii+1;
+    end
 end
 
 [errs, msgs] = exeShellCmds(cmds, preview);

@@ -256,6 +256,10 @@ classdef AuxClass < FileLoadSaveClass
                 err = -4;
                 return
             end
+            if ~ischar(obj.name)
+                err = -5;
+                return
+            end
         end
         
         

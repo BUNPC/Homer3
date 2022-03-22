@@ -62,7 +62,7 @@ classdef FileClass < matlab.mixin.Copyable
             else
                 file.rootdir = pwd;
             end
-            file.rootdir = filesepStandard(file.rootdir);            
+            file.rootdir = filesepStandard(file.rootdir, 'full');            
             
             obj.Add(file);
         end
@@ -78,15 +78,15 @@ classdef FileClass < matlab.mixin.Copyable
             end
             
             if isproperty(obj2, 'folder')
-                rootdir = [filesepStandard(obj2.folder), obj2.name]; %#ok<*PROPLC>
+                rootpath = [filesepStandard(obj2.folder), obj2.name]; %#ok<*PROPLC>
             else
-                rootdir = [filesepStandard(obj2.rootdir), obj2.name];                
+                rootpath = [filesepStandard(obj2.rootdir), obj2.name];                
             end
             
             obj.idx          = obj.idx+1;
             obj.isdir        = obj2.isdir;
             obj.filename     = obj2.name;
-            obj.name         = getPathRelative(rootdir, obj2.rootdir);
+            obj.name         = getPathRelative(rootpath, obj2.rootdir);
             obj.rootdir 	 = obj2.rootdir;
             obj.err          = 0;          % Set error to NO ERROR            
         end

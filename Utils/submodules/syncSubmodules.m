@@ -59,10 +59,7 @@ synctool.repoParentFull = filesepStandard_startup(repo,'full');
 ii = 1;
 
 submodules = parseGitSubmodulesFile(synctool.repoParentFull);
-
-if ~ispathvalid([synctool.repoParentFull, '/submodules']) || strcmp(options, 'update')
-    [cmds, errs, msgs] = gitSubmodulesClone(synctool.repoParentFull);
-end
+[cmds, errs, msgs] = gitSubmodulesClone(synctool.repoParentFull);
 
 fprintf('\n');
 
@@ -97,6 +94,12 @@ identical(2) = sync(repo2, repo1, preview, true);
 % ----------------------------------------------------------------------------
 function identical = sync(repo1, repo2, preview, peerlessonly)
 identical = true;
+
+if isempty(repo1.datetime.num) || isempty(repo2.datetime.num)
+    identical = false;
+    return;
+end
+
 if ~exist('preview','var')
     preview = false;
 end

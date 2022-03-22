@@ -217,10 +217,13 @@ classdef DataFilesClass < handle
             parentdir = filesepStandard(parentdir);
             pattern = obj.dirFormats.choices{iFormat}{iPattern};
             
-            dirs = mydir([parentdir, pattern]);
+            dirs = mydir([parentdir, pattern], obj.rootdir);
             
             dirnamePrev = '';
             for ii = 1:length(dirs)
+                if dirs(ii).IsEmpty()
+                    continue;
+                end
                 if dirs(ii).IsFile()
                     if strcmp(pattern, '*')
                         continue
@@ -257,7 +260,7 @@ classdef DataFilesClass < handle
                 if obj.SearchLookupTable(pathrel2)
                     continue;
                 end
-                obj.files(end+1) = FileClass([obj.rootdir, '/', pathrel2]);
+                obj.files(end+1) = FileClass([obj.rootdir, '/', pathrel2], obj.rootdir);
                 obj.AddLookupTable(obj.files(end).name)
             end
         end
@@ -455,6 +458,8 @@ classdef DataFilesClass < handle
             end
             
             % Try to create object of data filetype and load data into it
+            msg = 'Please wait while we check group folder for valid data files ...';
+            hwait = waitbar_improved(0, msg);
             dataflag = false;
             for ii = 1:length(obj.files)
                 if obj.files(ii).isdir
@@ -468,6 +473,7 @@ classdef DataFilesClass < handle
                 else
                     dataflag = true;
                 end
+                hwait = waitbar_improved(ii/length(obj.files), hwait, msg);
             end
             if dataflag==false
                 obj.files = FileClass.empty();
@@ -479,6 +485,7 @@ classdef DataFilesClass < handle
             	obj.files(errorIdxs) = [];
                 obj.nfiles = obj.nfiles - length(errorIdxs);
             end
+            close(hwait);
         end
         
         

@@ -137,6 +137,15 @@ if exist([dirnameApp, 'SDGcolors.csv'],'file')
     copyfile([dirnameApp, 'SDGcolors.csv'], [dirnameInstall, installfilename]);
 end
 
+if exist([dirnameApp, 'Version.txt'],'file')
+    copyfile([dirnameApp, 'Version.txt'], [dirnameInstall, installfilename]);
+end
+
+if exist([dirnameApp, 'LastCheckForUpdates.dat'],'file')
+    copyfile([dirnameApp, 'LastCheckForUpdates.dat'], [dirnameInstall, installfilename]);
+end
+
+
 
 % Zip it all up into a single installation file
 zip([dirnameInstall, installfilename, '.zip'], [dirnameInstall, installfilename]);

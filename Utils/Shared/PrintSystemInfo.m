@@ -79,7 +79,11 @@ end
 % --------------------------------------------------------------------
 function printArgs(args)
 global logger
+
 for ii = 1:length(args)
+    if strcmp(args{ii}, 'userargs')
+        break;
+    end
     if ischar(args{ii})
         logger.Write('   arg %d:  ''%s''\n', ii, args{ii});
     elseif isnumeric(args{ii})
@@ -88,6 +92,8 @@ for ii = 1:length(args)
         printArgs(args{ii});
     end
 end
+
+
 
 
 

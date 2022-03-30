@@ -52,11 +52,17 @@ classdef DataClass < FileLoadSaveClass
             elseif nargin==1
                 if isa(varargin{1}, 'DataClass')
                     obj.Copy(varargin{1});
-                elseif isa(varargin{1}, 'NirsClass')
+                elseif NirsClass(varargin{1}).IsValid()
                     obj.dataTimeSeries = varargin{1}.d;
                     obj.time = varargin{1}.t;
-                    for ii=1:size(varargin{1}.ml,1)
+                    for ii = 1:size(varargin{1}.ml,1)
                         obj.measurementList(end+1) = MeasListClass(varargin{1}.ml(ii,:));
+                    end
+                elseif NirsClass(varargin{1}).IsProbeValid()
+                    obj.dataTimeSeries = zeros(2, size(varargin{1}.MeasList,1));
+                    obj.time = zeros(2,1);
+                    for ii = 1:size(varargin{1}.MeasList,1)
+                        obj.measurementList(end+1) = MeasListClass(varargin{1}.MeasList(ii,:));
                     end
                 elseif isa(varargin{1}, 'char')
                     obj.SetFilename(varargin{1});
@@ -75,13 +81,13 @@ classdef DataClass < FileLoadSaveClass
                 if isa(varargin{3}, 'MeasListClass')
                     obj.dataTimeSeries = varargin{1};
                     obj.time = varargin{2};
-                    for ii=1:length(varargin{3})
+                    for ii = 1:length(varargin{3})
                         obj.measurementList(end+1) = MeasListClass(varargin{3}(ii));
                     end
                 else
                     obj.dataTimeSeries = varargin{1};
                     obj.time = varargin{2};
-                    for ii=1:size(varargin{3},1)
+                    for ii = 1:size(varargin{3},1)
                         obj.measurementList(end+1) = MeasListClass(varargin{3}(ii,:));
                     end
                 end
@@ -130,6 +136,12 @@ classdef DataClass < FileLoadSaveClass
             try
                 % Open group
                 [gid, fid] = HDF5_GroupOpen(fileobj, location);
+                if isstruct(gid)
+                    if gid.double < 0 
+                        err = -1;
+                        return 
+                    end
+                end                
                 
                 obj.dataTimeSeries  = HDF5_DatasetLoad(gid, 'dataTimeSeries');
                 obj.time            = HDF5_DatasetLoad(gid, 'time');
@@ -257,18 +269,26 @@ classdef DataClass < FileLoadSaveClass
             end
             if ismember('dataTimeSeries',params)
             if obj.IsEmpty()
-                err = -1;
+                    err = -2;
+                    return;
             end
             if size(obj.dataTimeSeries,1) ~= length(obj.time)
-                err = -1;
+                    err = -3;
             end
             if size(obj.dataTimeSeries,2) ~= length(obj.measurementList)
-                err = -1;
+                    err = -4;
             end
+                if all(obj.dataTimeSeries==0)
+                    err = 5;
+                end
         end
             if ismember('time',params)
                 if isempty(obj.time)
-                    err = -1;
+                    err = -6;
+                    return;
+                end
+                if all(obj.time==0)
+                    err = 7;
                 end
             end
         end

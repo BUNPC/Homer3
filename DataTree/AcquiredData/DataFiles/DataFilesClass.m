@@ -467,8 +467,11 @@ classdef DataFilesClass < handle
                 end
                 filename = [obj.files(ii).rootdir, obj.files(ii).name];
                 eval( sprintf('o = %s(filename);', constructor) );
-                if o.GetError()<0
+                if  o.GetError() < 0
                     obj.logger.Write('DataFilesClass.ErrorCheck:   FAILED error check - %s will not be added to data set\n', filename);
+                    errorIdxs = [errorIdxs, ii]; %#ok<AGROW>
+                elseif  contains(o.GetErrorMsg(), 'WARNING: ''data'' corrupt and unusable')                    
+                    obj.logger.Write('DataFilesClass.ErrorCheck:   WARNING data is unusable - %s will not be added to data set\n', filename);
                     errorIdxs = [errorIdxs, ii]; %#ok<AGROW>
                 else
                     dataflag = true;

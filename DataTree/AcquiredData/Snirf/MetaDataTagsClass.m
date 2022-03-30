@@ -19,9 +19,12 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             obj.tags.FrequencyUnit = 'unknown';
             obj.tags.AppName  = 'snirf-homer3';
             
-            if nargin==1
+            if nargin==1 && ~isempty(varargin{1})
                 obj.SetFilename(varargin{1});
                 obj.Load();
+            end
+            if nargin==2
+                obj.tags.LengthUnit = varargin{2};
             end
         end
     
@@ -95,7 +98,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             if ~exist('location', 'var') || isempty(location)
                 location = '/nirs/metaDataTags';
             elseif location(1)~='/'
-                location = ['/',location];
+                location = ['/',location]; %#ok<*NASGU>
             end
             
             if ~exist(fileobj, 'file')
@@ -152,7 +155,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function Add(obj, key, value)
+        function Add(obj, key, value) %#ok<INUSL>
             key(key==' ') = '';
             eval(sprintf('obj.tags.%s = value', key));
         end
@@ -160,20 +163,29 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function tags = Get(obj, name)
+        function val = Get(obj, name)
+            val = [];
             if ~exist('name', 'var')
-                name = '';
+                return;
             end
-            fields = propnames(obj.tags);
-            k = find(strcmp(fields, name));
-            if ~isempty(k)
-                fields = fields(k);
+            if isfield(obj.tags, name)
+                val = eval( sprintf('obj.tags.%s;', name) );
             end
-            tags = repmat(struct('key','','value',[]), length(fields), 1);
-            for ii=1:length(fields)
-                eval(sprintf('tags(ii).key = ''%s'';', fields{ii}));
-                eval(sprintf('tags(ii).value = obj.tags.%s;', fields{ii}));
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function Set(obj, name, val) %#ok<INUSL>
+            eval(sprintf('obj.tags.%s = %s;', name, val));
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetLengthUnit(obj, unit)
+            if isempty(obj)
+                return
             end
+            obj.tags.LengthUnit = unit;
         end
         
         

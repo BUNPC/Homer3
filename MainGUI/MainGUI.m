@@ -393,7 +393,9 @@ if ~isempty(handles)
         set(handles.listboxFilesErr, 'visible','on', 'value',1, 'string',listboxFilesErr)
         set(handles.textStatus, 'foregroundcolor',[0.70, 0.20, 0.10]);
         set(handles.pushbuttonHideErrors, 'visible','on');
-        h = MessageBox('WARNING: Not all data files loaded successfully. Please see Homer3 GUI for details.');
+        warningMsg = 'WARNING: Not all data files loaded successfully. Please see Homer3 GUI for details.';
+        %h = MessageBox('WARNING: Not all data files loaded successfully. Please see Homer3 GUI for details.');
+        maingui.logger.Write(warningMsg);
     else
         set(handles.listboxFilesErr, 'visible','off');
         pos1 = get(handles.listboxGroupTree, 'position');
@@ -967,7 +969,7 @@ end
 
 
 % ----------------------------------------------------------------------------------
-function hObject = DisplayData(handles, hObject, hAxes)
+function hObject = DisplayData(handles, hObject)
 global maingui
 
 if nargin<3
@@ -985,7 +987,8 @@ hf = get(hAxes,'parent');
 if ~exist('hObject','var')
     hObject=[];
 end
-if ~ishandles(hObject) && nargin<3
+if ~ishandles(hObject) && nargin<2
+    fprintf('DisplayData:    OOOPS something went wrong!!!!!!  hObject is a  "%s"  type\n', class(hObject))
     return;
 end
 if isempty(handles)

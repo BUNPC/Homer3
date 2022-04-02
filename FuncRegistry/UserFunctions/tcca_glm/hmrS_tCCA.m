@@ -1,5 +1,5 @@
 % SYNTAX:
-% status = hmrS_tCCA(subjIdx, subjName)
+% status = hmrS_tCCA(subjIdx, subjName, derivedFolder)
 %
 % UI NAME:
 % hmrS_tCCA
@@ -7,15 +7,17 @@
 % DESCRIPTION:
 %
 % INPUT:
-% subjName - the name of the subject in a group 
+% subjIdx       - 
+% subjName      - the name of the subject in a group 
+% derivedFolder - 
 %
 % OUTPUTS:
 % status - error status
 %
 % USAGE OPTIONS:
-% tCCA_filter: status = hmrS_tCCA(iSubj, name)
+% tCCA_filter: status = hmrS_tCCA(iSubj, name, outputDirname)
 %
-function status = hmrS_tCCA(subjIdx, subjName)
+function status = hmrS_tCCA(subjIdx, subjName, derivedFolder)
 
 status = 0;
 
@@ -34,7 +36,7 @@ try
             movefile(files(ii).name, [filenamePrefixName, suffix]);
             continue;
         end
-        movefile(files(ii).name, [subjName, '/', filenamePrefixName, suffix]);
+        movefile(files(ii).name, [derivedFolder, '/', subjName, '/', filenamePrefixName, suffix]);
     end
 catch
     status = -1;

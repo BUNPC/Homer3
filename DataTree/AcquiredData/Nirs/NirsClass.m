@@ -204,12 +204,12 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         % ---------------------------------------------------------
         function err = LoadTime(obj, fdata, err)
             if nargin == 1
-                fdata.t = load(obj.GetFilename(),'-mat', 't');
+                fdata = load(obj.GetFilename(),'-mat', 't');
                 err = 0;
+                return
             elseif nargin == 2
                 err = 0;
             end
-            
             
             if isproperty(fdata,'t')
                 obj.t = fdata.t;
@@ -304,19 +304,134 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function SaveMat(obj, fname, ~)
+        function SaveMat(obj, fname, options)
             if ~exist('fname','var') || isempty(fname)
                 fname = '';
+            end
+            if ~exist('options','var') || isempty(options)
+                options = 'normal';
             end
             if isempty(fname)
                 fname = obj.GetFilename();
             end
             
-            SD        = obj.SD; %#ok<*NASGU,*PROPLC>
-            s         = obj.s;
-            CondNames = obj.CondNames;
-            save(fname, '-mat', '-append', 'SD','s','CondNames');
+            [str, fields] = obj.Properties2String();
+            for ii = 1:length(fields)
+                eval( sprintf('%s = obj.%s;', fields{ii}, fields{ii}) );
+            end
+            
+            if ~ispathvalid(fname)
+                p = fileparts(fname);
+                if ~isempty(p) && ~ispathvalid(p, 'dir')
+                    mkdir(p);
+                end
+                eval( sprintf('save(fname, ''-mat'', %s)', str) );
+            elseif optionExists(options, 'normal')
+                save(fname, '-mat', '-append', 'SD','s','CondNames');
+            elseif optionExists(options, 'overwrite')
+                eval( sprintf('save(fname, ''-mat'', %s)', str) );
+            end
         end
+        
+
+        
+        % -------------------------------------------------------
+        function b = ProbeEqual(obj, obj2)
+            b = false;
+                        
+            fields{1} = propnames(obj.SD);
+            fields{2} = propnames(obj2.SD);
+            
+            fieldsToExclude = { ...
+                'MeasListAct'; ...
+                'SrcMap'; ...
+                };
+            
+            for kk = 1:length(fields)
+                for jj = 1:length(fields{kk})
+                    field = fields{kk}{jj};
+                    
+                    % Skip excluded fields
+                    if ~isempty(find(strcmp(fieldsToExclude, field))) %#ok<EFIND>
+                        continue;
+                    end                    
+                    
+                    % Now compare field
+                    if ~isfield(obj.SD,field) || ~isfield(obj2.SD,field)
+                        return;
+                    end
+                    if eval( sprintf('~strcmp(class(obj.SD.%s), class(obj2.SD.%s))', field, field) )
+                        return;
+                    end
+                    if eval( sprintf('length(obj.SD.%s) ~= length(obj2.SD.%s)', field, field) )
+                        return;
+                    end
+                    EPS = 1.0e-10; %#ok<NASGU>
+                    if eval( sprintf('iscell(obj.SD.%s)', field) )
+                        N = eval( sprintf('length(obj.SD.%s(:))', field) );
+                        for ii = 1:N
+                            if eval( sprintf('length(obj.SD.%s{ii}(:)) ~= length(obj2.SD.%s{ii}(:))', field, field) )
+                                return;
+                            end
+                            if eval( sprintf('~all(obj.SD.%s{ii}(:) == obj2.SD.%s{ii}(:))', field, field) )
+                                return;
+                            end
+                        end
+                    elseif eval( sprintf('isstruct(obj.SD.%s)', field) )
+                        if eval( sprintf('~isempty(comp_struct(obj.SD.%s, obj2.SD.%s))', field, field) )
+                            return;
+                        end
+                    else
+                        if eval( sprintf('~all( (obj.SD.%s(:) - obj2.SD.%s(:)) < EPS )', field, field) )
+                            return;
+                        end
+                    end
+                end
+            end
+            b = true;
+        end
+        
+        
+        
+        % -------------------------------------------------------
+        function B = eq(obj, obj2)
+            B = false;
+            
+            if length(obj.t) ~= length(obj2.t)
+                return;
+            end
+            if ~all(obj.t == obj2.t)
+                return;
+            end
+            
+            if length(obj.d) ~= length(obj2.d)
+                return;
+            end
+            if ~all(obj.d(:) == obj2.d(:))
+                return;
+            end
+            
+            if ~obj.ProbeEqual(obj2)
+                return;
+            end
+            
+            if length(obj.s) ~= length(obj2.s)
+                return;
+            end
+            if ~all(obj.s(:) == obj2.s(:))
+                return;
+            end
+            
+            if length(obj.aux) ~= length(obj2.aux)
+                return;
+            end
+            if ~all(obj.aux(:) == obj2.aux(:))
+                return;
+            end
+            
+            B = true;
+        end
+        
         
         
         % ---------------------------------------------------------
@@ -484,9 +599,24 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         end
         
         % ---------------------------------------------------------
-        function val = GetAux(obj)
-            val = obj.aux;
+        function val = GetAux(obj, options)
+            if ~exist('options','var')
+                options = 'struct';
+            end
+            if optionExists(options, 'matrix')
+                val = obj.aux;
+            else
+                structtype = struct('name','', 'dataTimeSeries',[]);
+                val = struct(structtype([]));
+                for ii = 1:size(obj.aux,2)
+                    val(ii).name = num2str(ii);
+                    val(ii).time = obj.t;
+                    val(ii).dataTimeSeries = obj.aux(:,ii);
+                end
+            end
         end
+        
+        
         
         % ---------------------------------------------------------
         function SetCondNames(obj, val)
@@ -637,6 +767,10 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         % ----------------------------------------------------------------------------------
         function SD = Get_SD(obj)
+            SD = [];
+            if ~obj.IsProbeValid()
+                return;
+            end
             SD = obj.SD;
         end
         
@@ -914,6 +1048,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 end
             end
         end
+
         
         
         % ----------------------------------------------------------------------------------
@@ -979,6 +1114,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         end
 
         
+        
         % ----------------------------------------------------------------------------------        
         function ErrorCheck(obj)
             if isempty(obj)
@@ -1020,6 +1156,20 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 end
             end
             
+        end
+        
+        
+        % ----------------------------------------------------------------
+        function [str, fields] = Properties2String(obj)
+            str = '';
+            fields = propnames(obj);
+            for ii = 1:length(fields)
+                if isempty(str)
+                    str = sprintf('''%s''', fields{ii});
+                else
+                    str = sprintf('%s, ''%s''', str, fields{ii});
+                end
+            end
         end
         
         

@@ -1,6 +1,6 @@
 % SYNTAX:
-% [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks, hmrstats] = ...
-% hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
+% [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks, hmrstats,bvar, betaSS_blks, dof_blks, sse_blks] = ...
+% hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector, betaList, condListF)
 %
 % UI NAME:
 % GLM_HRF_Drift_SS
@@ -58,6 +58,7 @@
 %               if idxBasis=4 [p q] applied to both HbO and HbR
 %                  or [p1 q1 p2 q2] recommended values [0.1 3.0 1.8 3.0]
 %                  where the 1 (2) indicates the parameters for HbO (HbR).
+%                  Do not work with negative t.
 % rhoSD_ssThresh - max distance for a short separation measurement. Set =0
 %          if you do not want to regress the short separation measurements.
 %          Follows the static estimate procedure described in Gagnon et al (2011).
@@ -72,7 +73,19 @@
 % driftOrder - Polynomial drift correction of this order
 % c_vector - Contrast vector, has values 1, -1 or 0. E.g. to contrast cond
 %           2 to cond 3 in an experimental paradigm with four conditions, c_vector is
-%           [0 1 -1 0]
+%           [0 1 -1 0]. Support multiple rows. If don't want contrast
+%           vector, just set it to 0.
+%
+% OPTIONAL INPUTS BELOW
+%
+% betaList - list of beta indices for T-Test. For null hypothesis,
+%           if Bi = 0, then include ith beta in betaList. Example, 
+%           for null hypothesis B4 = B5 = 0, then betaList = [4 5].
+%       condListF must be empty to use betaList. Likewise, betaList must be
+%       empty to use condListF.
+% condListF - list of condition to exclude from modeling. Has value 0 or 1.
+%           Example, for null hypothesis left = 0, then condList = [0 1]
+%           where condList represents [left, right, center). For F-Test.
 %
 % OUTPUTS:
 % yavg - the averaged results
@@ -88,11 +101,16 @@
 % R - the correlation coefficient of the GLM fit to the data
 %     (#Channels x HbX)
 % hmrstats - outputs t and p values for GLM and the corresponding beta_label and ml
-%     (#Betas x #Channels x HbX) for conditions
-%     (#Channels x HbX) for contrasts 
+%      (#Betas x #Channels x HbX) for conditions
+%      (#Channels x HbX) for contrasts
+%      betaSS_blks - the full coefficients including SS, motion, etc. 3d matrix.
+%      Can replace beta but cannot turn into 4D due to uneven number of
+%      betas.
+%      dof_blks - degree of freedom for all conditions. chromophore x channel.
+%      SSE - sum of squared errors. For F-Test. SSE is affected by condList.
 %
 % USAGE OPTIONS:
-% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R, hmrstats] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
+% GLM_HRF_Drift_SS_Concentration: [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks, hmrstats,bvar, betaSS_blks, dof_blks, sse_blks] = hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector, betaList, condListF)
 %
 % PARAMETERS:
 % trange: [-2.0, 20.0]
@@ -107,8 +125,10 @@
 % PREREQUISITES:
 % Delta_OD_to_Conc: dc = hmrR_OD2Conc( dod, probe, ppf )
 
-function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks, hmrstats] = ...
-    hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
+function [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, ...
+    beta_blks, yR_blks, hmrstats,bvar, betaSS_blks] = ...
+    hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, ...
+    glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector, betaList, condListF)
 
 % Init output
 data_yavg     = DataClass().empty();
@@ -117,7 +137,10 @@ data_ynew     = DataClass().empty();
 data_ysum2    = DataClass().empty();
 data_yresid   = DataClass().empty();
 beta_blks     = cell(length(data_y),1);
+betaSS_blks   = cell(length(data_y),1);
 yR_blks       = cell(length(data_y),1);
+dof_blks      = cell(length(data_y),1);
+sse_blks      = cell(length(data_y),1);
 beta_label = [];
 hmrstats = [];
 
@@ -213,6 +236,11 @@ for iBlk=1:length(data_y)
                 dc = (dc-ones(size(dc, 1),1)*mean(dc,1))./(ones(size(dc, 1),1)*std(dc,[],1));
                 cc(:,:,2) = dc'*dc / size(dc, 1);
                 
+                % HbT
+                dc = squeeze(y(:,3,:));
+                dc = (dc-ones(size(dc, 1),1)*mean(dc,1))./(ones(size(dc, 1),1)*std(dc,[],1));
+                cc(:,:,3) = dc'*dc / size(dc, 1);
+                
                 clear dc
                 % find short separation channel with highest correlation
                 for iML = 1:size(cc,1)
@@ -222,6 +250,9 @@ for iBlk=1:length(data_y)
                     % HbR
                     [foo,ii] = max(cc(iML,lstSS,2));
                     iNearestSS(iML,2) = lstSS(ii);
+                    % HbT
+                    [foo,ii] = max(cc(iML,lstSS,3));
+                    iNearestSS(iML,3) = lstSS(ii);
                 end
             case 2 % use average of all active SS as regressor
                 mlSSlst = 1;
@@ -241,11 +272,23 @@ for iBlk=1:length(data_y)
     %%%%%%%%%%%%%%%%
     % Get only indices of conditions with any stimStates that are 1
     lstCond = find(sum(stimStates == 1, 1) > 0);
-    nCond = length(lstCond); % size(stimStates,2);
+    origLstCond = ones(1,length(lstCond));
+    if exist('condListF','var')
+        if size(condListF,1)==1 && sum(~ismember(condListF,[0 1])) == 0
+            nCond = sum(condListF);
+            totNCond = length(lstCond);
+            origLstCond(~condListF) = 0;
+        end
+    else
+        condListF = ones(1,length(lstCond));
+        nCond = length(lstCond); %size(s,2);
+        totNCond = nCond;
+        origLstCond = condListF;
+    end
     nTrials{iBlk} = zeros(nCond,1);
-    onset = zeros(nT, nCond);
+    onset = zeros(nT, totNCond);
     avg_pulses = {};
-    for iCond = 1:nCond
+    for iCond = 1:totNCond
         lstT = find(stimStates(:, lstCond(iCond)) == 1);  % Indices of stims enabled (== 1)
         lstp = find((lstT+nPre) >= 1 & (lstT+nPost) <= nTpts);  % Indices of stims not clipped by signal
         lst = lstT(lstp);
@@ -287,8 +330,10 @@ for iBlk=1:length(data_y)
         % Modified Gamma
         if length(paramsBasis)==2
             nConc = 1;
-        else
+        elseif length(paramsBasis)==4
             nConc = 2;
+        elseif length(paramsBasis)==6
+            nConc = 3;
         end
             
         nB = 1;
@@ -311,8 +356,10 @@ for iBlk=1:length(data_y)
         % Modified Gamma and Derivative
         if length(paramsBasis)==2
             nConc = 1;
-        else
+        elseif length(paramsBasis)==4
             nConc = 2;
+        elseif length(paramsBasis)==6
+            nConc = 3;
         end
         
         nB = 2;
@@ -334,8 +381,10 @@ for iBlk=1:length(data_y)
         % AFNI Gamma function
         if length(paramsBasis)==2
             nConc = 1;
-        else
+        elseif length(paramsBasis)==4
             nConc = 2;
+        elseif length(paramsBasis)==6
+            nConc = 3;
         end
         
         nB=1;
@@ -355,20 +404,23 @@ for iBlk=1:length(data_y)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Construct design matrix
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    dA=zeros(nT,nB*nCond,2);
-    for iConc = 1:2
-        iC = 0;
-        for iCond=1:nCond
-            for b=1:nB
-                iC = iC + 1;
-                if size(tbasis,3)==1
-                    clmn = conv(onset(:,iCond),tbasis(:,b));
-                else
-                    clmn = conv(onset(:,iCond),tbasis(:,b,iConc));
+    dA=zeros(nT,nB*nCond,3);
+    for iConc = 1:3
+        iC = 0;ithCond = 0;
+        for iCond=1:totNCond
+            if condListF(iCond) == 1
+                ithCond = ithCond + 1;
+                for b=1:nB
+                    iC = iC + 1;
+                    if size(tbasis,3)==1
+                        clmn = conv(onset(:,iCond),tbasis(:,b));
+                    else
+                        clmn = conv(onset(:,iCond),tbasis(:,b,iConc));
+                    end
+                    clmn = clmn(1:nT);
+                    dA(:,iC,iConc) = clmn;
+                    beta_label{b + (ithCond-1)*nB} = ['Cond' num2str(iCond)];
                 end
-                clmn = clmn(1:nT);
-                dA(:,iC,iConc) = clmn;
-                beta_label{b + (iCond-1)*nB} = ['Cond' num2str(iCond)];
             end
         end
     end
@@ -420,9 +472,11 @@ for iBlk=1:length(data_y)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     dummy = size(beta_label,2);
     
+    A = zeros(nT,nB*nCond+driftOrder+logical(driftOrder)+nAux+nMC,3);
+    
     switch flagNuisanceRMethod
         case {0,1,2} % short separation
-            for iConc=1:2
+            for iConc=1:3
                 A(:,:,iConc)=[dA(:,:,iConc) xDrift Aaux Amotion];
                 
                 if iConc == 1
@@ -441,7 +495,7 @@ for iBlk=1:length(data_y)
                 
             end
         case 3 % tCCA regressor design matrix without Aaux (will be put in in the loop below)
-            for iConc=1:2
+            for iConc=1:3
                 A(:,:,iConc)=[dA(:,:,iConc) xDrift Amotion];
                 
                 if iConc == 1
@@ -483,7 +537,7 @@ for iBlk=1:length(data_y)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % SOLVE
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    tb = zeros(nB,nCh,2,nCond);
+    tb = zeros(nB,nCh,3,nCond);
     % b = zeros(driftOrder+1+nAux,nCh,2);
     yavg    = zeros(ntHRF,nCh,3,nCond);
     yavgstd = zeros(ntHRF,nCh,3,nCond);
@@ -491,10 +545,29 @@ for iBlk=1:length(data_y)
     yresid  = zeros(nT,3,nCh);
     ynew    = zeros(nT,3,nCh);
     yR      = zeros(nCh,3);
-    foo     = zeros(nB*nCond+driftOrder+1+nAux+nMC,nCh,2); % 4 extra for 3rd order drift + nAux
-    for conc=1:2 %only HbO and HbR
+    % no intercept term? The 1 is for SS, which is enforced here? Maybe
+    % driftOrder == 1 corresponds to intercept term?
+    foo     = zeros(nB*nCond+driftOrder+(driftOrder>0)+1+nAux+nMC,nCh,3);
+    bvar    = zeros(nB*nCond+driftOrder+(driftOrder>0)+1+nAux+nMC,nCh,3);
+    tval    = NaN(nB*nCond+driftOrder+(driftOrder>0)+1+nAux+nMC,nCh,3);
+    pval    = NaN(nB*nCond+driftOrder+(driftOrder>0)+1+nAux+nMC,nCh,3);
+    ssBeta  = zeros(nB*nCond+driftOrder+(driftOrder>0)+1+nAux+nMC,nCh,3);
+    yvar    = zeros(1,nCh,3);
+    sse     = zeros(1,nCh,3);
+    yest    = zeros(nT,nCh,3);
+    
+    dof = size(y,1)-(nB*nCond+1+driftOrder+logical(driftOrder)+nAux+nMC);
+    contrastVal = [1 -1 0];
+    
+    tval_contrast = NaN(size(c_vector,1),nCh,3);
+    pval_contrast = NaN(size(c_vector,1),nCh,3);
+    if ~exist('betaList','var') || (size(betaList,1)==1 && size(betaList,2)==1 && betaList == 0)
+        betaList = 1:nB;
+    end
+    
+    for conc=1:3 %only HbO and HbR
         
-        if flagNuisanceRMethod==1 & ~isempty(lstSS) %rhoSD_ssThresh>0
+        if flagNuisanceRMethod==1 && ~isempty(lstSS) %rhoSD_ssThresh>0
             mlSSlst = unique(iNearestSS(:,conc));
         end
         
@@ -610,12 +683,12 @@ for iBlk=1:length(data_y)
                 % Compute pseudo-inverse and deconvolve
                 if glmSolveMethod==1 % ~flagUseTed
                     pinvA=ATA\At(lstInc,:)';
-                    foo = [];
+                    %foo = [];
                     ytmp = y(lstInc,conc,lstML);
                     foo(:,lstML,conc)=pinvA*squeeze(ytmp);
                 elseif glmSolveMethod==2
                     % Use the iWLS code from Barker et al
-                    foo = [];
+                    %foo = [];
                     ytmp = y(lstInc,conc,lstML);
                     for chanIdx=1:length(lstML)
                         ytmp2 = y(lstInc,conc,lstML(chanIdx));
@@ -648,6 +721,8 @@ for iBlk=1:length(data_y)
                     end
                 end
                 
+                ssBeta(:,lstML,conc) = foo(:,lstML,conc);
+                
                 % Reconstruct y and yresid (y is obtained just from the HRF) and R
                 yresid(lstInc,conc,lstML) = ytmp - permute(At(lstInc,:)*foo(:,lstML,conc),[1 3 2]);
                 ynew(lstInc,conc,lstML) = permute(dA(lstInc,:,conc)*foo(1:(nB*nCond),lstML,conc),[1 3 2]) + yresid(lstInc,conc,lstML);
@@ -662,29 +737,46 @@ for iBlk=1:length(data_y)
                 if glmSolveMethod==1 %  OLS  ~flagUseTed
                     pAinvAinvD = diag(pinvA*pinvA');
                     yest(:,lstML,conc) = At * foo(:,lstML,conc);
-                    yvar(1,lstML,conc) = sum((squeeze(y(:,conc,lstML))-yest(:,lstML,conc)).^2)./(size(y,1)-1); % check this against eq(53) in Ye2009
+                    sse(1,lstML,conc) = sum((squeeze(y(:,conc,lstML))-yest(:,lstML,conc)).^2);
+                    yvar(1,lstML,conc) = sse(1,lstML,conc)./dof; % check this against eq(53) in Ye2009
                     for iCh = 1:length(lstML)
                         
                         % GLM stats for each condition
                         bvar(:,lstML(iCh),conc) = yvar(1,lstML(iCh),conc) * pAinvAinvD;
                         tval(:,lstML(iCh),conc) =  foo(:,lstML(iCh),conc)./sqrt(bvar(:,lstML(iCh),conc));
-                        pval(:,lstML(iCh),conc) = 1-tcdf(abs(tval(:,lstML(iCh),conc)),(size(y,1)-1));
+                        pval(:,lstML(iCh),conc) = 1-tcdf(abs(tval(:,lstML(iCh),conc)),dof);
                         %
                         
                         % GLM stats for contrast between conditions, given a c_vector exists
-                        if nCond > 1
-                            if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond)
-                                
-                                if ~exist('cv_extended') == 1
-                                    cv_dummy = [];
+                        if nCond > 1 && (sum(abs(c_vector(:))) ~= 0) && (size(c_vector,2) == nCond)
+%                             if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond)
+%                                 for irow = 1:size(c_vector,1)
+%                                     cv_extended = zeros(1,size(beta_label,2));
+%                                     cv_dummy = [];
+%                                     for m = 1:nCond
+%                                         cv_dummy = [cv_dummy ones(1,nB)*c_vector(irow,m)];
+%                                     end
+%                                     cv_extended = [cv_dummy zeros(1,size(beta_label,2)-size(cv_dummy,2))];
+% 
+%                                     tval_contrast(irow,lstML(iCh),conc) = cv_extended * foo(:,lstML(iCh),conc)./sqrt(cv_extended * (pinvA*pinvA') * yvar(:,lstML(iCh),conc) * cv_extended');
+%                                     pval_contrast(irow,lstML(iCh),conc) = 1-tcdf(abs(tval_contrast(irow,lstML(iCh),conc)),(size(y,1)-1));
+%                                 end  
+%                             end
+                            for i_row = 1:size(c_vector,1)
+                                temp_CondList = c_vector(i_row,:);
+                                p = ismember(temp_CondList,contrastVal);
+                                maxB = max(betaList);
+                                minB = min(betaList);
+                                if isempty(temp_CondList(~p)) && maxB <= nB && minB > 0
+                                    cv_extended = zeros(1,size(beta_label,2));
                                     for m = 1:nCond
-                                        cv_dummy = [cv_dummy ones(1,nB)*c_vector(m)];
+                                        if c_vector(i_row,m) ~= 0
+                                            cv_extended(1,(m-1)*nB+abs(c_vector(i_row,m))*betaList) = c_vector(i_row,m);
+                                        end
                                     end
-                                    cv_extended = [cv_dummy zeros(1,size(beta_label,2)-size(cv_dummy,2))];
+                                    tval_contrast(i_row,lstML(iCh),conc) = cv_extended * foo(:,lstML(iCh),conc)./sqrt(cv_extended * (pinvA*pinvA') * yvar(:,lstML(iCh),conc) * cv_extended');
+                                    pval_contrast(i_row,lstML(iCh),conc) = 1-tcdf(abs(tval_contrast(i_row,lstML(iCh),conc)),dof);
                                 end
-                                
-                                tval_contrast(:,lstML(iCh),conc) = cv_extended * foo(:,lstML(iCh),conc)./sqrt(cv_extended * (pinvA*pinvA') * yvar(:,lstML(iCh),conc) * cv_extended');
-                                pval_contrast(:,lstML(iCh),conc) = 1-tcdf(abs(tval_contrast(:,lstML(iCh),conc)),(size(y,1)-1));
                             end
                         end
                         %
@@ -706,18 +798,22 @@ for iBlk=1:length(data_y)
                     for iCh = 1:length(lstML)
                         
                         % GLM stats for contrast between conditions, given a c_vector exists
-                        if nCond > 1
-                            if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond)
-                                
-                                if ~exist('cv_extended') == 1
-                                    cv_dummy = [];
+                        if nCond > 1 && (sum(abs(c_vector(:))) ~= 0) && (size(c_vector,2) == nCond)
+                            for i_row = 1:size(c_vector,1)
+                                temp_CondList = c_vector(i_row,:);
+                                p = ismember(temp_CondList,contrastVal);
+                                maxB = max(betaList);
+                                minB = min(betaList);
+                                if isempty(temp_CondList(~p)) && maxB <= nB && minB > 0
+                                    cv_extended = zeros(1,size(beta_label,2));
                                     for m = 1:nCond
-                                        cv_dummy = [cv_dummy ones(1,nB)*c_vector(m)];
+                                        if c_vector(i_row,m) ~= 0
+                                            cv_extended(1,(m-1)*nB+abs(c_vector(i_row,m))*betaList) = c_vector(i_row,m);
+                                        end
                                     end
-                                    cv_extended = [cv_dummy zeros(1,size(At,2)-size(cv_dummy,2))];
+                                    tval_contrast(i_row,lstML(iCh),conc) = cv_extended * foo(:,lstML(iCh),conc)./sqrt(cv_extended * squeeze(CovB(:,:,lstML(chanIdx),conc))* cv_extended');
+                                    pval_contrast(i_row,lstML(iCh),conc) = 1-tcdf(abs(tval_contrast(i_row,lstML(iCh),conc)),dof);
                                 end
-                                tval_contrast(:,lstML(iCh),conc) = cv_extended * foo(:,lstML(iCh),conc)./sqrt(cv_extended * squeeze(CovB(:,:,lstML(chanIdx),conc))* cv_extended');
-                                pval_contrast(:,lstML(iCh),conc) = 1-tcdf(abs(tval_contrast(:,lstML(iCh),conc)),(size(y,1)-1));
                             end
                         end
                         %
@@ -739,18 +835,18 @@ for iBlk=1:length(data_y)
         end % end loop on short separation groups
     end
     
-    yavg(:,:,3,:) = yavg(:,:,1,:) + yavg(:,:,2,:);
+    %yavg(:,:,3,:) = yavg(:,:,1,:) + yavg(:,:,2,:);
     yavg = permute(yavg,[1 3 2 4]);
     
-    yavgstd(:,:,3,:) = yavgstd(:,:,1,:) + yavgstd(:,:,2,:);
+    %yavgstd(:,:,3,:) = yavgstd(:,:,1,:) + yavgstd(:,:,2,:);
     yavgstd = permute(yavgstd,[1 3 2 4]);
     
-    ysum2(:,:,3,:) = ysum2(:,:,1,:) + ysum2(:,:,2,:);
+    %ysum2(:,:,3,:) = ysum2(:,:,1,:) + ysum2(:,:,2,:);
     ysum2 = permute(ysum2,[1 3 2 4]);
     
-    yresid(:,3,:) = yresid(:,1,:) + yresid(:,2,:);
+    %yresid(:,3,:) = yresid(:,1,:) + yresid(:,2,:);
     
-    ynew(:,3,:) = ynew(:,1,:) + ynew(:,2,:);
+    %ynew(:,3,:) = ynew(:,1,:) + ynew(:,2,:);
     
     tb = permute(tb,[1 3 2 4]);
     
@@ -765,24 +861,24 @@ for iBlk=1:length(data_y)
     end
     
     foo = nTrials{iBlk};
-    nTrials{iBlk} = zeros(1,size(stimAmps,2));
+    nTrials{iBlk} = zeros(1,totNCond);
     nTrials{iBlk}(lstCond) = foo;
     
     foo = yavg;
-    yavg = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
-    yavg(:,:,:,lstCond) = foo;
+    yavg = zeros(size(foo,1),size(foo,2),size(foo,3),totNCond);
+    yavg(:,:,:,logical(origLstCond)) = foo;
     
     foo = yavgstd;
-    yavgstd = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
-    yavgstd(:,:,:,lstCond) = foo;
+    yavgstd = zeros(size(foo,1),size(foo,2),size(foo,3),totNCond);
+    yavgstd(:,:,:,logical(origLstCond)) = foo;
     
     foo = ysum2;
-    ysum2 = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
-    ysum2(:,:,:,lstCond) = foo;
+    ysum2 = zeros(size(foo,1),size(foo,2),size(foo,3),totNCond);
+    ysum2(:,:,:,logical(origLstCond)) = foo;
     
     foo = tb;
-    beta = zeros(size(foo,1),size(foo,2),size(foo,3),size(stimAmps,2));
-    beta(:,:,:,lstCond) = foo;
+    beta = zeros(size(foo,1),size(foo,2),size(foo,3),totNCond);
+    beta(:,:,:,logical(origLstCond)) = foo;
     
     %%%%%%%%%%%%%%%%%%%%%%%%%
     % Snirf stuff:
@@ -816,6 +912,9 @@ for iBlk=1:length(data_y)
     % Set other data blocks
     beta_blks{iBlk} = beta;
     yR_blks{iBlk}   = yR;
+    betaSS_blks{iBlk} = ssBeta;
+    dof_blks{iBlk} = dof;
+    sse_blks{iBlk} = sse;
     
 % stats struct
     if glmSolveMethod == 1 % for OLS
@@ -844,7 +943,7 @@ for iBlk=1:length(data_y)
     end
     
     % GLM stats for contrast between conditions, if c_vector exists
-    if (sum(abs(c_vector)) ~= 0) && (size(c_vector,2) == nCond) && nCond>1
+    if (sum(abs(c_vector(:))) ~= 0) && (size(c_vector,2) == nCond) && nCond>1
         if exist('tval_contrast')
             % set pruned channels tval to zero and pval to NaN
             tval_contrast(:,find(mlAct(1:size(ml,1))==0),:) = 0;
@@ -855,5 +954,8 @@ for iBlk=1:length(data_y)
             hmrstats.contrast = c_vector;
         end
     end
+    
+    hmrstats.sse_blks = sse_blks;
+    hmrstats.dof_blks = dof_blks;
     
 end

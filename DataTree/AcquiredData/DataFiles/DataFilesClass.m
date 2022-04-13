@@ -182,12 +182,19 @@ classdef DataFilesClass < handle
                 'ses-*';
                 ['nirs/sub-*_run-*_nirs.', obj.filetype];
                 }
-                                
+                               
                 %%%% 9. BIDS-like folder structure without file naming restrictions
                 {
                 'sub-*';
                 'ses-*';
                 ['nirs/*.', obj.filetype];
+                }
+                                
+                %%%% 10. BIDS-like folder structure without nirs sub-folder
+                {
+                'sub-*';
+                'ses-*';
+                ['*.', obj.filetype];
                 }
                                 
                 };

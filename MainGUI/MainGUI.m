@@ -1303,6 +1303,9 @@ if isempty(aux) || isempty({aux.name})
     set(handles.checkboxPlotAux, 'enable','off');
     set(handles.popupmenuAux, 'enable','off');
     return;
+else
+    set(handles.checkboxPlotAux, 'enable','on');
+    set(handles.popupmenuAux, 'enable','on');    
 end
 
 % Enable aux gui objects and set their values based on the aux values
@@ -1382,7 +1385,7 @@ switch(guiname)
             iSubj = varargin{2}(2);
             iSess = varargin{2}(3);
             iRun = varargin{2}(4);
-            maingui.logger.Write(sprintf('Processing iGroup=%d, iSubj=%d, iSess=%d, iRun=%d\n', iGroup, iSubj, iSess, iRun));
+            maingui.logger.Write('Processing iGroup=%d, iSubj=%d, iSess=%d, iRun=%d\n', iGroup, iSubj, iSess, iRun);
             listboxGroupTree_Callback([], [iGroup, iSubj, iSess, iRun], maingui.handles);
         end
     case 'PatchCallback'

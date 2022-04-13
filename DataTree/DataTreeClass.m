@@ -687,13 +687,13 @@ classdef DataTreeClass <  handle
             numFilesMsg = sprintf('with %d data files in %d folders\n', dataInit.nfiles, nfolders);
             obj.logger.Write('\n');
             if dataInit.nfiles == 0
-                obj.logger.Write('DataTreeClass.FindAndLoadGroups:   Did not find any data0 files %s.\n', numFilesMsg);
+                obj.logger.Write('DataTreeClass.PrintDatasetFormat:   Did not find any data0 files %s.\n', numFilesMsg);
             elseif dataInit.dirFormats.type > 3 && dataInit.dirFormats.type < 9
-                obj.logger.Write('DataTreeClass.FindAndLoadGroups:   Found BIDS data set %s.\n', numFilesMsg);
+                obj.logger.Write('DataTreeClass.PrintDatasetFormat:   Found BIDS data set (format #%d) with %s files.\n', dataInit.dirFormats.type, numFilesMsg);
             elseif dataInit.dirFormats.type < 4
-                obj.logger.Write('DataTreeClass.FindAndLoadGroups:   Found non-standard format set %s.\n', numFilesMsg);
+                obj.logger.Write('DataTreeClass.PrintDatasetFormat:   Found non-standard data set (format #%d)  with %s files.\n', dataInit.dirFormats.type, numFilesMsg);
             elseif dataInit.dirFormats.type > 8
-                obj.logger.Write('DataTreeClass.FindAndLoadGroups:   Found non-standard but BIDS-like data set %s.\n', numFilesMsg);
+                obj.logger.Write('DataTreeClass.PrintDatasetFormat:   Found non-standard but BIDS-like data set (format #%d) with %s files.\n', dataInit.dirFormats.type, numFilesMsg);
             end
             obj.logger.Write('\n');
         end

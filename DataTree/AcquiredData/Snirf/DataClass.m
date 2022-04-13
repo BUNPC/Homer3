@@ -249,16 +249,35 @@ classdef DataClass < FileLoadSaveClass
         
         % -------------------------------------------------------
         function b = IsEmpty(obj)
-            b = false;
+            b = true;
             if isempty(obj)
-                b = true;
+                return;
             end
             if isempty(obj.dataTimeSeries) || isempty(obj.time) || isempty(obj.measurementList)
-                b = true;
+                return;
             end
             if isempty(obj.measurementList)
                 return;
             end
+            b = false;
+        end
+        
+        
+        % -------------------------------------------------------
+        function b = IsDataValid(obj, iMeas)
+            b = false;
+            if ~exist('iMeas','var')
+                iMeas = 1:length(obj.measurementList);
+            end            
+            if all(isnan(obj.dataTimeSeries(:)))
+                return;
+            end
+            for ii = iMeas
+                if any(isnan(obj.dataTimeSeries(:, iMeas)))
+                    return;
+                end
+            end
+            b = true;
         end
         
         

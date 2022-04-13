@@ -116,6 +116,9 @@ if isempty(procStreamEdit.groupDirs)
     end
 end
 
+procStreamEdit.source = struct('value',1, 'choices',{{'Current Processing Stream', 'Config File'}});
+
+
 % Format argument
 if isempty(procStreamEdit.format)
     if length(varargin)<2
@@ -199,6 +202,10 @@ LoadProcStream(handles);
 % -------------------------------------------------------------
 function UpdateProcElem()
 global procStreamEdit
+
+if strcmp(procStreamEdit.source.choices{procStreamEdit.source.value}, 'Config File')
+    return;
+end 
 idx = procStreamEdit.dataTree.currElem.GetIndexID();
 idx(idx==0)=1;
 iG = idx(1);
@@ -504,14 +511,16 @@ if reg.IsEmpty()
     return;
 end
 
-q = MenuBox('Load current processing stream or config file?',{'Current processing stream','Config file','Cancel'});
-if q==3
+valprev = procStreamEdit.source.value;
+procStreamEdit.source.value = MenuBox('Load current processing stream or config file?',{'Current processing stream','Config file','Cancel'});
+if procStreamEdit.source.value==3
+    procStreamEdit.source.value = valprev;
     return;
 end
 reload=false;
-if q==1
+if procStreamEdit.source.value==1
     reload = true;
-elseif q==2
+elseif procStreamEdit.source.value==2
     % load cfg file
     [filename,pathname] = uigetfile( '*.cfg', 'Process Options Config File to Load From?');
     if filename == 0

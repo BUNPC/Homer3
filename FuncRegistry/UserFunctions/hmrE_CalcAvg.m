@@ -10,31 +10,51 @@ for iParam = 1:nParams
                 
         if eval( sprintf('isa(inputVars.%s{1}, ''DataClass'')', fields{iParam}) )
 
-            if eval( sprintf('isempty(outputVars.%s)', fields{iParam}) )
-                eval( sprintf('outputVars.%s = DataClass();', fields{iParam}) );
-                eval( sprintf('outputVars.%s.Copy(inputVars.%s{1});', fields{iParam}, fields{iParam}) );
-            end
-            
+            eval( sprintf('outputVars.%s = DataClass();', fields{iParam}) );            
             nRuns = eval( sprintf('length(inputVars.%s)', fields{iParam}) );
-            nMeas = eval( sprintf('size(inputVars.%s{1}.dataTimeSeries,2)', fields{iParam}) );
-            N{iParam} = zeros(nMeas,1);
-            for iMeas = 1:nMeas
+            for iRun = 1:nRuns
 
-                for iRun = 2:nRuns
-
-                    % Add each run's data vectors one measurement column at a time
-                    if eval( sprintf('any(isnan(inputVars.%s{iRun}.dataTimeSeries(:,iMeas)))', fields{iParam}) )
-                        N{iParam}(iMeas) = 0;
-                        continue;
-                    elseif eval( sprintf('any(isnan(outputVars.%s.dataTimeSeries(:,iMeas)))', fields{iParam}) )
-                        eval( sprintf('outputVars.%s.dataTimeSeries(:,iMeas) = inputVars.%s{iRun}.dataTimeSeries(:,iMeas);', fields{iParam}, fields{iParam}) );
-                    else
-                        eval( sprintf('outputVars.%s.dataTimeSeries(:,iMeas) = outputVars.%s.dataTimeSeries(:,iMeas) + inputVars.%s{iRun}.dataTimeSeries(:,iMeas);', fields{iParam}, fields{iParam}, fields{iParam}) );
-                        N{iParam}(iMeas) = N{iParam}(iMeas)+1;
-                    end
+                % If outputVar DataClass object is empty then inititalize
+                % it with the current run's data
+                if eval( sprintf('~outputVars.%s.IsDataValid()', fields{iParam}) )
                     
+                    eval( sprintf('outputVars.%s.Copy(inputVars.%s{iRun});', fields{iParam}, fields{iParam}) );
+                    nMeas = eval( sprintf('length(outputVars.%s.measurementList)', fields{iParam}) );
+                    N{iParam} = ones(nMeas,1);
+                    
+                % Otherwise add current run's data to existing output DataClass
+                % object
+                else
+                
+                    for iMeas = 1:nMeas
+                        if eval( sprintf('~inputVars.%s{iRun}.IsDataValid(iMeas)', fields{iParam}) )
+                            continue;
+                        end
+                            
+                        % Add each run's data vectors one measurement column at a time
+                        if eval( sprintf('~inputVars.%s{iRun}.IsEmpty() && ~outputVars.%s.IsEmpty()', fields{iParam}, fields{iParam}) )
+                            eval( sprintf('outputVars.%s.dataTimeSeries(:,iMeas) = outputVars.%s.dataTimeSeries(:,iMeas) + inputVars.%s{iRun}.dataTimeSeries(:,iMeas);', fields{iParam}, fields{iParam}, fields{iParam}) );
+                            N{iParam}(iMeas) = N{iParam}(iMeas)+1;
+                        end                        
+                    end
+                
                 end
                 
+            end
+            
+        elseif strcmp(fields{iParam}, 'nTrials')
+            
+            for ii = 1:length(inputVars.nTrials)
+                if isempty(inputVars.nTrials{ii}{1})
+                    continue;
+                end
+                if isempty(outputVars.nTrials)
+                    outputVars.nTrials{1} = zeros(1,length(inputVars.nTrials{ii}{1}));
+                end
+                if isempty(outputVars.nTrials{1})
+                    outputVars.nTrials{1} = zeros(1,length(inputVars.nTrials{ii}{1}));
+                end
+                outputVars.nTrials{1} = outputVars.nTrials{1} + inputVars.nTrials{ii}{1};
             end
             
         else
@@ -46,12 +66,17 @@ for iParam = 1:nParams
     end
 end
 
+% Get averages by dividing the sums by N
 for iParam = 1:length(N)
     for iMeas = 1:length(N{iParam})
+        if isempty(iMeas)
+            continue
+        end
         if N{iParam}(iMeas) > 0
             eval( sprintf('outputVars.%s.dataTimeSeries(:,iMeas) = outputVars.%s.dataTimeSeries(:,iMeas) / N{iParam}(iMeas);', fields{iParam}, fields{iParam}) );
         end
     end
 end
+
 
 

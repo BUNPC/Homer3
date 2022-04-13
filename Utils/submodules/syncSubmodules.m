@@ -59,7 +59,7 @@ synctool.repoParentFull = filesepStandard_startup(repo,'full');
 ii = 1;
 
 submodules = parseGitSubmodulesFile(synctool.repoParentFull);
-[cmds, errs, msgs] = gitSubmodulesClone(synctool.repoParentFull);
+[cmds, errs, msgs] = gitSubmodulesClone(synctool.repoParentFull, false, options);
 
 fprintf('\n');
 

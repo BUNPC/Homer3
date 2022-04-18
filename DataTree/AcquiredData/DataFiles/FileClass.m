@@ -194,8 +194,8 @@ classdef FileClass < matlab.mixin.Copyable
             %       R2.ext          ==>  [G1,  sub_R2,  ses_sub_R2,  R2]
             %       R3.ext          ==>  [G1,  sub_R3,  ses_sub_R3,  R3]
             if obj.IsFile && length(parts)==1 && length(subparts)==1
-                subjName = ['sub_', fname];
-                sessName = ['ses_', subjName];
+                subjName = ['sub-', fname];
+                sessName = ['ses-', subjName];
                 runName  = obj.name;
             end
 
@@ -212,7 +212,7 @@ classdef FileClass < matlab.mixin.Copyable
             %       S3_R3.ext       ==>  [G1,  S2,  ses_S2_R3,  R3]
             if obj.IsFile && length(parts)==1 && length(subparts)==2
                 subjName = subparts{1};
-                sessName = ['ses_', subjName, '_', fname];
+                sessName = ['ses-', subjName, '_', subjName];
                 runName  = obj.name;
             end
             
@@ -261,7 +261,7 @@ classdef FileClass < matlab.mixin.Copyable
                 subjName = obj.name;
             elseif obj.IsFile && length(parts)==2
                 subjName = parts{1};
-                sessName = [subjName, '/ses-', fname];
+                sessName = [subjName, '/ses-', subjName];
                 runName  = obj.name;
             end
             

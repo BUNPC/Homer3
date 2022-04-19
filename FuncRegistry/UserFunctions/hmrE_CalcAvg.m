@@ -45,6 +45,9 @@ for iParam = 1:nParams
         elseif strcmp(fields{iParam}, 'nTrials')
             
             for ii = 1:length(inputVars.nTrials)
+                if isempty(inputVars.nTrials{ii})
+                    continue;
+                end
                 if isempty(inputVars.nTrials{ii}{1})
                     continue;
                 end

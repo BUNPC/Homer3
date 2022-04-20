@@ -1,8 +1,6 @@
 function [cmds, errs, msgs] = gitSubmodulesClone(repo, preview, options)
 cmds = {};
 
-currdir = pwd;
-
 if ~exist('repo','var') || isempty(repo)
     repo = [pwd, '/'];
 end
@@ -23,11 +21,9 @@ urlroot = fileparts(url);
 branch = gitGetBranch(repoFull);
 
 if strcmp(options, 'update')
-    if ispathvalid([repoFull, '/submodules'])
-        try
-            rmdir([repoFull, '/submodules'],'s')
-        catch
-        end
+    try
+        rmdir([repoFull, '/submodules'],'s')
+    catch
     end
 end
 if ~ispathvalid([repoFull, '/submodules'])

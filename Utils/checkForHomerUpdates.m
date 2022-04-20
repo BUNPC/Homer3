@@ -23,7 +23,9 @@ if (strcmp(cfg.GetValue('Check For Updates'),'on'))
         % If user has a web browser open MATLAB will unfortunately just
         % open the page there
         wb = com.mathworks.mde.webbrowser.WebBrowser.createBrowser;
-        setCurrentLocation(wb, url);
+        if ~ismac()
+            setCurrentLocation(wb, url);
+        end
         p = getParentRecursive(wb);
         p.setVisible(0);
         
@@ -38,7 +40,7 @@ if (strcmp(cfg.GetValue('Check For Updates'),'on'))
         latest_vrnum(isletter(latest_vrnum)) = [];
         latest_vrnum = transpose(split(latest_vrnum, '.'));
         
-        this_vrnum = getVernum();
+        this_vrnum = str2cell(getVernum('Homer3'), '.');
         this_vrnum(isletter(this_vrnum)) = [];
         this_vrnum = transpose(split(this_vrnum, '.'));
         

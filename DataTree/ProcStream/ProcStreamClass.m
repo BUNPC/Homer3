@@ -257,65 +257,65 @@ classdef ProcStreamClass < handle
             else
                 
                 paramOut = {};
-            for iFcall = FcallsIdxs
-                waitbar( iFcall/nFcall, hwait, sprintf('Processing... %s', obj.GetFcallNamePrettyPrint(iFcall)) );
-                
-                % Parse obj.input arguments
-                argIn = obj.GetInputArgs(iFcall);
-                for ii = 1:length(argIn)
-                    if ~exist(argIn{ii},'var')
-                        eval(sprintf('%s = obj.input.GetVar(''%s'');', argIn{ii}, argIn{ii}));
-                    end
-                end
-                
-                % Parse obj.input parameters
-                [sargin, p, sarginVal] = obj.ParseInputParams(iFcall); %#ok<ASGLU>
-                
-                % Parse obj.input output arguments
-                sargout = obj.ParseOutputArgs(iFcall);
-                
-                % call function
-                fcall = sprintf('%s = %s%s%s);', sargout, obj.GetFuncCallName(iFcall), obj.fcalls(iFcall).argIn.str, sargin);
-                try
-                    eval( fcall );
-                catch ME
-                    msg = sprintf('Function %s generated error at line %d: %s', obj.fcalls(iFcall).name, ME.stack(1).line, ME.message);
-                    if strcmp(obj.config.regressionTestActive, 'false')
-                        MessageBox(msg);
-                    elseif strcmp(obj.config.regressionTestActive, 'false')
-                        fprintf('%s\n', msg);
-                    end
-                    close(hwait);
-                    rethrow(ME)
-                end
-                
-                %%%% Parse output parameters
-                
-                % remove '[', ']', and ','
-                foos = obj.fcalls(iFcall).argOut.str;
-                for ii=1:length(foos)
-                    if foos(ii)=='[' || foos(ii)==']' || foos(ii)==',' || foos(ii)=='#'
-                        foos(ii) = ' ';
-                    end
-                end
-                
-                % get parameters for Output to obj.output
-                lst = strfind(foos,' ');
-                lst = [0, lst, length(foos)+1]; %#ok<*AGROW>
-                for ii=1:length(lst)-1
-                    foo2 = foos(lst(ii)+1:lst(ii+1)-1);
-                    lst2 = strmatch( foo2, paramOut, 'exact' ); %#ok<MATCH3>
-                    idx = strfind(foo2,'foo');
-                    if isempty(lst2) && (isempty(idx) || idx>1) && ~isempty(foo2)
-                        paramOut{end+1} = foo2;
-                    end
-                end
-            end
-            
-            % Copy paramOut to output
-            for ii=1:length(paramOut)
-                eval( sprintf('paramsOutStruct.%s = %s;', paramOut{ii}, paramOut{ii}) );
-            end            
+            	for iFcall = FcallsIdxs
+	                waitbar( iFcall/nFcall, hwait, sprintf('Processing... %s', obj.GetFcallNamePrettyPrint(iFcall)) );
+	                
+	                % Parse obj.input arguments
+	                argIn = obj.GetInputArgs(iFcall);
+	                for ii = 1:length(argIn)
+	                    if ~exist(argIn{ii},'var')
+	                        eval(sprintf('%s = obj.input.GetVar(''%s'');', argIn{ii}, argIn{ii}));
+	                    end
+	                end
+	                
+	                % Parse obj.input parameters
+	                [sargin, p, sarginVal] = obj.ParseInputParams(iFcall); %#ok<ASGLU>
+	                
+	                % Parse obj.input output arguments
+	                sargout = obj.ParseOutputArgs(iFcall);
+	                
+	                % call function
+	                fcall = sprintf('%s = %s%s%s);', sargout, obj.GetFuncCallName(iFcall), obj.fcalls(iFcall).argIn.str, sargin);
+	                try
+	                    eval( fcall );
+	                catch ME
+	                    msg = sprintf('Function %s generated error at line %d: %s', obj.fcalls(iFcall).name, ME.stack(1).line, ME.message);
+	                    if strcmp(obj.config.regressionTestActive, 'false')
+	                        MessageBox(msg);
+	                    elseif strcmp(obj.config.regressionTestActive, 'false')
+	                        fprintf('%s\n', msg);
+	                    end
+	                    close(hwait);
+	                    rethrow(ME)
+	                end
+	                
+	                %%%% Parse output parameters
+	                
+	                % remove '[', ']', and ','
+	                foos = obj.fcalls(iFcall).argOut.str;
+	                for ii=1:length(foos)
+	                    if foos(ii)=='[' || foos(ii)==']' || foos(ii)==',' || foos(ii)=='#'
+	                        foos(ii) = ' ';
+	                    end
+	                end
+	                
+	                % get parameters for Output to obj.output
+	                lst = strfind(foos,' ');
+	                lst = [0, lst, length(foos)+1]; %#ok<*AGROW>
+	                for ii=1:length(lst)-1
+	                    foo2 = foos(lst(ii)+1:lst(ii+1)-1);
+	                    lst2 = strmatch( foo2, paramOut, 'exact' ); %#ok<MATCH3>
+	                    idx = strfind(foo2,'foo');
+	                    if isempty(lst2) && (isempty(idx) || idx>1) && ~isempty(foo2)
+	                        paramOut{end+1} = foo2;
+	                    end
+	                end
+	            end
+	            
+	            % Copy paramOut to output
+	            for ii=1:length(paramOut)
+	                eval( sprintf('paramsOutStruct.%s = %s;', paramOut{ii}, paramOut{ii}) );
+	            end
             
             end
             

@@ -54,8 +54,7 @@ classdef FuncCallClass < handle
             if nargin==1
                 return;
             end
-            obj.AddUsageInfo(varargin{2});
-            
+            obj.AddUsageInfo(varargin{2});            
         end
 
         
@@ -588,14 +587,9 @@ classdef FuncCallClass < handle
             end
             if isa(arg, 'RegistriesClass')
                 reg = arg;
-                
                 usagename = reg.GetUsageName(obj);
                 fcallstr = reg.GetFuncCallStrDecoded(obj.name, usagename);
-                obj.AddHelpUsageStr(fcallstr);
-                
-                if length(reg.GetUsageNames(obj.name))<2
-                    usagename = '';
-                end
+                obj.AddHelpUsageStr(fcallstr);                
             elseif ischar(arg)
                 usagename = arg;
             end

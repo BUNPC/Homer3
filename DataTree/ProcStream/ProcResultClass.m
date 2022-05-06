@@ -118,7 +118,7 @@ classdef ProcResultClass < handle
                         if isa(obj.dcAvgStd, 'DataClass')
                             obj.dcAvgStd(iBlk).TruncateTpts(abs(d));
                         else
-                            obj.dcAvgStd(n+1:m,:,:) = [];
+                            obj.dcAvgStd(n+1:m,:,:,:) = [];
                         end
                     end
                     if ~isempty(obj.dcSum2)
@@ -200,7 +200,7 @@ classdef ProcResultClass < handle
             
             obj.SetFilename(filename);
             
-            output = obj;
+            output = obj; %#ok<NASGU>
             props = propnames(vars);
             for ii=1:length(props)
                 if eval( sprintf('isproperty(output, ''%s'');', props{ii}) )

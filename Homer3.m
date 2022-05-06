@@ -65,9 +65,6 @@ catch ME
     rethrow(ME);
 end
 
-if isempty(unitTest)
-	logger.Close();
-end
 
 
 

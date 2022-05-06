@@ -119,7 +119,11 @@ classdef FileClass < matlab.mixin.Copyable
                 end
                 dirname(k) = '*';
             end
-            file = dir(dirname);
+            temp = dir(dirname);
+            if isempty(temp)
+                return;
+            end
+            file = temp(1);
         end
         
         

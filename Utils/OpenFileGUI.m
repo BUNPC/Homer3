@@ -194,7 +194,9 @@ end
 % ------------------------------------------------------------------------
 function editFilename_Callback(hObject, eventdata, handles) %#ok<*DEFNU>
 global OpenFile
-
+if ~ishandles(hObject)
+    return
+end
 if iswholenum(eventdata) && eventdata==1
     idx = get(handles.listboxFilesFolders, 'value');
     filenames = get(handles.listboxFilesFolders, 'string');
@@ -214,13 +216,16 @@ end
 
 
 % ------------------------------------------------------------------------
-function listboxFilesFolders_Callback(hObject, ~, handles)
+function listboxFilesFolders_Callback(hObject, eventdata, handles)
 global OpenFile %#ok<*GVMIS> 
 idx = get(hObject, 'value');
 filenames = get(hObject, 'string');
 if isempty(filenames)
     return;
 end
+
+mouseevent = get(get(hObject,'parent'),'selectiontype'); 
+
 if ispathvalid([OpenFile.rootpath, filenames{idx}], 'dir')
     currdir = pwd;
     cd([OpenFile.rootpath, filenames{idx}])
@@ -230,6 +235,9 @@ if ispathvalid([OpenFile.rootpath, filenames{idx}], 'dir')
     set(hObject, 'string',OpenFile.filesCurrFolder)
     set(hObject, 'value',1);
     cd(currdir)
+elseif strcmp(mouseevent, 'open')
+    set(handles.editFilename, 'string',filenames{idx});
+    pushbuttonOpen_Callback(hObject, eventdata, handles)
 end
 editFilename_Callback(handles.editFilename, 1, handles);
 

@@ -512,7 +512,9 @@ classdef DataTreeClass <  handle
             
             % Free up memory of current element before reassigning it to
             % another node. 
-            obj.currElem.FreeMemory();
+            if strcmp(obj.dataStorageScheme, 'files')
+                obj.currElem.FreeMemory();
+            end
             
             if     iSubj==0 && iSess==0 && iRun==0
                 obj.currElem = obj.groups(iGroup);

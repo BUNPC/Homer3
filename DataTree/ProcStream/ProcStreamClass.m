@@ -191,6 +191,9 @@ classdef ProcStreamClass < handle
             if ~exist('filename','var')
                 return
             end
+            if ~ispathvalid(filename, 'file')
+                return
+            end
             obj.output.FreeMemory(filename)
         end
 

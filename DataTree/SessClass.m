@@ -264,27 +264,27 @@ classdef SessClass < TreeNodeClass
                 % all runs. Use smallest tHRF as the common one.
                 obj.runs(iRun).procStream.output.SettHRFCommon(tHRF_common, obj.runs(iRun).name, obj.runs(iRun).type);
                 
-                obj.inputVars.dodAvg{obj.runs(iRun).iRun}    = obj.runs(iRun).procStream.output.GetVar('dodAvg');
-                obj.inputVars.dodAvgStd{obj.runs(iRun).iRun} = obj.runs(iRun).procStream.output.GetVar('dodAvgStd');
-                obj.inputVars.dodSum2{obj.runs(iRun).iRun}   = obj.runs(iRun).procStream.output.GetVar('dodSum2');
-                obj.inputVars.dcAvg{obj.runs(iRun).iRun}     = obj.runs(iRun).procStream.output.GetVar('dcAvg');
-                obj.inputVars.dcAvgStd{obj.runs(iRun).iRun}  = obj.runs(iRun).procStream.output.GetVar('dcAvgStd');
-                obj.inputVars.dcSum2{obj.runs(iRun).iRun}    = obj.runs(iRun).procStream.output.GetVar('dcSum2');
-                obj.inputVars.tHRF{obj.runs(iRun).iRun}      = obj.runs(iRun).procStream.output.GetTHRF();
-                obj.inputVars.mlAct{obj.runs(iRun).iRun}     = obj.runs(iRun).procStream.output.GetVar('mlActAuto');
-                obj.inputVars.nTrials{obj.runs(iRun).iRun}   = obj.runs(iRun).procStream.output.GetVar('nTrials');
+                obj.inputVars.dodAvgRuns{obj.runs(iRun).iRun}    = obj.runs(iRun).procStream.output.GetVar('dodAvg');
+                obj.inputVars.dodAvgStdRuns{obj.runs(iRun).iRun} = obj.runs(iRun).procStream.output.GetVar('dodAvgStd');
+                obj.inputVars.dodSum2Runs{obj.runs(iRun).iRun}   = obj.runs(iRun).procStream.output.GetVar('dodSum2');
+                obj.inputVars.dcAvgRuns{obj.runs(iRun).iRun}     = obj.runs(iRun).procStream.output.GetVar('dcAvg');
+                obj.inputVars.dcAvgStdRuns{obj.runs(iRun).iRun}  = obj.runs(iRun).procStream.output.GetVar('dcAvgStd');
+                obj.inputVars.dcSum2Runs{obj.runs(iRun).iRun}    = obj.runs(iRun).procStream.output.GetVar('dcSum2');
+                obj.inputVars.tHRFRuns{obj.runs(iRun).iRun}      = obj.runs(iRun).procStream.output.GetTHRF();
+                obj.inputVars.mlActRuns{obj.runs(iRun).iRun}     = obj.runs(iRun).procStream.output.GetVar('mlActAuto');
+                obj.inputVars.nTrialsRuns{obj.runs(iRun).iRun}   = obj.runs(iRun).procStream.output.GetVar('nTrials');
                 if ~isempty(obj.runs(iRun).procStream.output.GetVar('misc'))
                     if isfield(obj.runs(iRun).procStream.output.misc, 'stim') == 1
-                        obj.inputVars.stim{obj.runs(iRun).iRun}      = obj.runs(iRun).procStream.output.misc.stim;
+                        obj.inputVars.stimRuns{obj.runs(iRun).iRun}      = obj.runs(iRun).procStream.output.misc.stim;
                     else
-                        obj.inputVars.stim{obj.runs(iRun).iRun}      = obj.runs(iRun).GetVar('stim');
+                        obj.inputVars.stimRuns{obj.runs(iRun).iRun}      = obj.runs(iRun).GetVar('stim');
                     end
                 else
-                    obj.inputVars.stim{obj.runs(iRun).iRun}      = obj.runs(iRun).GetVar('stim');
+                    obj.inputVars.stimRuns{obj.runs(iRun).iRun}      = obj.runs(iRun).GetVar('stim');
                 end
-                obj.inputVars.Aaux{obj.runs(iRun).iRun}      = obj.runs(iRun).procStream.output.GetVar('Aaux');
-                obj.inputVars.tIncAuto{obj.runs(iRun).iRun}  = obj.runs(iRun).procStream.output.GetVar('tIncAuto');
-                obj.inputVars.rcMap{obj.runs(iRun).iRun}     = obj.runs(iRun).procStream.output.GetVar('rcMap');
+                obj.inputVars.AauxRuns{obj.runs(iRun).iRun}      = obj.runs(iRun).procStream.output.GetVar('Aaux');
+                obj.inputVars.tIncAutoRuns{obj.runs(iRun).iRun}  = obj.runs(iRun).procStream.output.GetVar('tIncAuto');
+                obj.inputVars.rcMapRuns{obj.runs(iRun).iRun}     = obj.runs(iRun).procStream.output.GetVar('rcMap');
                 
                 % a) Find all variables needed by proc stream
                 args = obj.procStream.GetInputArgs();

@@ -269,14 +269,14 @@ classdef GroupClass < TreeNodeClass
                     for ii = 1:length(obj.subjs)
                         for jj = 1:length(obj.subjs(ii).sess)
                             obj.subjs(ii).sess(jj).procStream.CopyFcalls(procStream);
-                    	end
+                        end
                     end
                 case 'run'
                     for ii = 1:length(obj.subjs)
                         for jj = 1:length(obj.subjs(ii).sess)
                             for kk = 1:length(obj.subjs(ii).sess(jj).runs)
                                 obj.subjs(ii).sess(jj).runs(kk).procStream.CopyFcalls(procStream);
-                        	end
+                            end
                         end
                     end
             end
@@ -295,8 +295,8 @@ classdef GroupClass < TreeNodeClass
             end
             
             % Add subject to this group
-            jj=0;
-            for ii=1:length(obj.subjs)
+            jj = 0;
+            for ii = 1:length(obj.subjs)
                 if strcmp(obj.subjs(ii).GetName(), subj.GetName())
                     jj=ii;
                     break;
@@ -344,7 +344,7 @@ classdef GroupClass < TreeNodeClass
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             g = obj;
             s = obj.subjs(1);
-            t = obj.subjs(1).sess(1);
+            e = obj.subjs(1).sess(1);
             r = obj.subjs(1).sess(1).runs(1);
             for ii = 1:length(obj.subjs)
                 if ~obj.subjs(ii).procStream.IsEmpty()
@@ -352,12 +352,12 @@ classdef GroupClass < TreeNodeClass
                 end
                 for jj = 1:length(obj.subjs(ii).sess)
                     if ~obj.subjs(ii).sess(jj).procStream.IsEmpty()
-                        t = obj.subjs(ii).sess(jj);
+                        e = obj.subjs(ii).sess(jj);
                     end
                     for kk = 1:length(obj.subjs(ii).sess)
                         if ~obj.subjs(ii).sess(jj).procStream.IsEmpty()
-                            r = obj.subjs(ii).sess(kk).runs(kk);
-                end
+                            r = obj.subjs(ii).sess(jj).runs(kk);
+                        end
                     end
                 end
             end
@@ -367,11 +367,12 @@ classdef GroupClass < TreeNodeClass
             g.CreateProcStreamDefault();
             procStreamGroup = g.GetProcStreamDefault();
             procStreamSubj = s.GetProcStreamDefault();
+            procStreamSess = e.GetProcStreamDefault();
             procStreamRun = r.GetProcStreamDefault();
             
             % If any of the tree nodes still have unintialized procStream input, ask 
             % user for a config file to load it from 
-            if g.procStream.IsEmpty() || s.procStream.IsEmpty() || r.procStream.IsEmpty()
+            if g.procStream.IsEmpty() || s.procStream.IsEmpty() || e.procStream.IsEmpty() || r.procStream.IsEmpty()
                 [fname, autoGenDefaultFile] = g.procStream.GetConfigFileName(procStreamCfgFile, obj.path);                                
                 
                 % If user did not provide procStream config filename and file does not exist
@@ -379,6 +380,7 @@ classdef GroupClass < TreeNodeClass
                 if ~exist(fname, 'file')
                     procStreamGroup.SaveConfigFile(fname, 'group');
                     procStreamSubj.SaveConfigFile(fname, 'subj');
+                    procStreamSess.SaveConfigFile(fname, 'sess');
                     procStreamRun.SaveConfigFile(fname, 'run');
                 end
                 
@@ -387,6 +389,7 @@ classdef GroupClass < TreeNodeClass
                 % Load file to the first empty procStream in the dataTree at each processing level
                 g.LoadProcStreamConfigFile(fname);
                 s.LoadProcStreamConfigFile(fname);
+                e.LoadProcStreamConfigFile(fname);
                 r.LoadProcStreamConfigFile(fname);
                 
                 % Copy the loaded procStream at each processing level to all
@@ -395,7 +398,7 @@ classdef GroupClass < TreeNodeClass
                 % If proc stream input is still empty it means the loaded config
                 % did not have valid proc stream input. If that's the case we
                 % Load a default proc stream input
-                if g.procStream.IsEmpty() || s.procStream.IsEmpty() || r.procStream.IsEmpty()
+                if g.procStream.IsEmpty() || s.procStream.IsEmpty() || e.procStream.IsEmpty() || r.procStream.IsEmpty()
                     obj.logger.Write(sprintf('Failed to load all function calls in proc stream config file. Loading default proc stream...\n'));
                     g.CopyFcalls(procStreamSubj, 'subj');
                     g.CopyFcalls(procStreamRun, 'run');
@@ -411,6 +414,7 @@ classdef GroupClass < TreeNodeClass
                         end
                         procStreamGroup.SaveConfigFile(fname, 'group');
                         procStreamSubj.SaveConfigFile(fname, 'subj');
+                        procStreamSess.SaveConfigFile(fname, 'subj');
                         procStreamRun.SaveConfigFile(fname, 'run');
                     end
                     
@@ -419,6 +423,7 @@ classdef GroupClass < TreeNodeClass
                 else                    
                     obj.logger.Write(sprintf('Loading proc stream from %s\n', fname));
                     g.CopyFcalls(s.procStream, 'subj');
+                    g.CopyFcalls(e.procStream, 'sess');
                     g.CopyFcalls(r.procStream, 'run');
                 end
             end

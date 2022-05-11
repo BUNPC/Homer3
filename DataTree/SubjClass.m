@@ -292,28 +292,28 @@ classdef SubjClass < TreeNodeClass
                 % all sessions. Use smallest tHRF as the common one.
                 obj.sess(iSess).procStream.output.SettHRFCommon(tHRF_common, obj.sess(iSess).name, obj.sess(iSess).type);
             
-                obj.inputVars.dodAvgRuns{obj.sess(iSess).iSess}    = obj.sess(iSess).procStream.output.GetVar('dodAvg');
-                obj.inputVars.dodAvgStdRuns{obj.sess(iSess).iSess} = obj.sess(iSess).procStream.output.GetVar('dodAvgStd');
-                obj.inputVars.dodSum2Runs{obj.sess(iSess).iSess}   = obj.sess(iSess).procStream.output.GetVar('dodSum2');
-                obj.inputVars.dcAvgRuns{obj.sess(iSess).iSess}     = obj.sess(iSess).procStream.output.GetVar('dcAvg');
-                obj.inputVars.dcAvgStdRuns{obj.sess(iSess).iSess}  = obj.sess(iSess).procStream.output.GetVar('dcAvgStd');
-                obj.inputVars.dcSum2Runs{obj.sess(iSess).iSess}    = obj.sess(iSess).procStream.output.GetVar('dcSum2');
-                obj.inputVars.tHRFRuns{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.GetTHRF();
-                obj.inputVars.mlActRuns{obj.sess(iSess).iSess}     = obj.sess(iSess).procStream.output.GetVar('mlActAuto');
-                obj.inputVars.nTrialsRuns{obj.sess(iSess).iSess}   = obj.sess(iSess).procStream.output.GetVar('nTrials');
+                obj.inputVars.dodAvgSess{obj.sess(iSess).iSess}    = obj.sess(iSess).procStream.output.GetVar('dodAvg');
+                obj.inputVars.dodAvgStdSess{obj.sess(iSess).iSess} = obj.sess(iSess).procStream.output.GetVar('dodAvgStd');
+                obj.inputVars.dodSum2Sess{obj.sess(iSess).iSess}   = obj.sess(iSess).procStream.output.GetVar('dodSum2');
+                obj.inputVars.dcAvgSess{obj.sess(iSess).iSess}     = obj.sess(iSess).procStream.output.GetVar('dcAvg');
+                obj.inputVars.dcAvgStdSess{obj.sess(iSess).iSess}  = obj.sess(iSess).procStream.output.GetVar('dcAvgStd');
+                obj.inputVars.dcSum2Sess{obj.sess(iSess).iSess}    = obj.sess(iSess).procStream.output.GetVar('dcSum2');
+                obj.inputVars.tHRFSess{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.GetTHRF();
+                obj.inputVars.mlActSess{obj.sess(iSess).iSess}     = obj.sess(iSess).procStream.output.GetVar('mlActAuto');
+                obj.inputVars.nTrialsSess{obj.sess(iSess).iSess}   = obj.sess(iSess).procStream.output.GetVar('nTrials');
                 if ~isempty(obj.sess(iSess).procStream.output.GetVar('misc'))
                     if isfield(obj.sess(iSess).procStream.output.misc, 'stim') == 1
-                        obj.inputVars.stimRuns{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.misc.stim;
+                        obj.inputVars.stimSess{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.misc.stim;
                 	else
-	                    obj.inputVars.stimRuns{obj.sess(iSess).iSess}      = obj.sess(iSess).GetVar('stim');
+	                    obj.inputVars.stimSess{obj.sess(iSess).iSess}      = obj.sess(iSess).GetVar('stim');
                 	end
             	else
-                    obj.inputVars.stimRuns{obj.sess(iSess).iSess}      = obj.sess(iSess).GetVar('stim');
+                    obj.inputVars.stimSess{obj.sess(iSess).iSess}      = obj.sess(iSess).GetVar('stim');
             	end
-                obj.inputVars.dcRuns{obj.sess(iSess).iSess}       = obj.sess(iSess).procStream.output.GetVar('dc');
-                obj.inputVars.AauxRuns{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.GetVar('Aaux');
-                obj.inputVars.tIncAutoRuns{obj.sess(iSess).iSess}  = obj.sess(iSess).procStream.output.GetVar('tIncAuto');
-                obj.inputVars.rcMapRuns{obj.sess(iSess).iSess}     = obj.sess(iSess).procStream.output.GetVar('rcMap');
+                obj.inputVars.dcSess{obj.sess(iSess).iSess}       = obj.sess(iSess).procStream.output.GetVar('dc');
+                obj.inputVars.AauxSess{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.GetVar('Aaux');
+                obj.inputVars.tIncAutoSess{obj.sess(iSess).iSess}  = obj.sess(iSess).procStream.output.GetVar('tIncAuto');
+                obj.inputVars.rcMapSess{obj.sess(iSess).iSess}     = obj.sess(iSess).procStream.output.GetVar('rcMap');
             
 	            % a) Find all variables needed by proc stream
 	            args = obj.procStream.GetInputArgs();

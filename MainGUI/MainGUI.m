@@ -806,7 +806,7 @@ end
 
 idx = FindChildGuiIdx('ProcStreamOptionsGUI');
 if get(hObject, 'value')
-    maingui.childguis(idx).Launch(maingui.applyEditCurrNodeOnly);
+    maingui.childguis(idx).Launch(maingui.dataTree.dirnameGroups, maingui.applyEditCurrNodeOnly);
 else
     maingui.childguis(idx).Close();
 end
@@ -910,7 +910,7 @@ UpdateArgsChildGuis(handles);
 function idx = FindChildGuiIdx(name)
 global maingui
 
-for ii=1:length(maingui.childguis)
+for ii = 1:length(maingui.childguis)
     if strcmp(maingui.childguis(ii).GetName, name)
         break;
     end
@@ -926,7 +926,8 @@ if isempty(maingui.childguis)
 end
 
 maingui.childguis(FindChildGuiIdx('PlotProbeGUI')).UpdateArgs(GetDatatype(handles), GetCondition(handles));
-maingui.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(maingui.applyEditCurrNodeOnly);
+maingui.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(maingui.dataTree.dirnameGroups, ...
+                                                                      maingui.applyEditCurrNodeOnly);
 
 
 % --------------------------------------------------------------------
@@ -936,7 +937,7 @@ if isempty(maingui.childguis)
     return;
 end
 UpdateArgsChildGuis(handles)
-for ii=1:length(maingui.childguis)
+for ii = 1:length(maingui.childguis)
     maingui.childguis(ii).Update();
 end
 

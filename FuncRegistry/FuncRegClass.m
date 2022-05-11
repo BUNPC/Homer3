@@ -6,6 +6,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
         entries
         type
         config
+        logger
     end
     
     
@@ -48,6 +49,11 @@ classdef FuncRegClass < matlab.mixin.Copyable
             %              params: {2x2 cell}
             %                help: [1x1 FuncHelpClass]
             %
+            global logger 
+            
+            logger = InitLogger(logger);
+            obj.logger = logger;
+            
             obj.entries = FuncRegEntryClass().empty();
 
             if nargin==0
@@ -93,7 +99,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
                         continue;
                     end
                     progressmsg = sprintf('Parsing %s', files{jj}(ii).name);
-                    fprintf('%s\n', progressmsg);
+                    obj.logger.Write('%s\n', progressmsg);
                     waitbar_improved(kk/N, h, sprintf(progressmsg));
                     obj.AddEntry(files{jj}(ii).name, jj);
                     kk = kk+1;

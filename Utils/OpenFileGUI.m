@@ -1,4 +1,13 @@
 function varargout = OpenFileGUI(varargin)
+% Syntax:
+%
+%       filepath = OpenFileGUI(fileWildcard, initialFolder, title)
+%
+%
+% Examples:
+%       
+%       r = OpenFileGUI('', pwd, 'diagnostics')
+%
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
     'gui_Singleton',  gui_Singleton, ...
@@ -117,7 +126,7 @@ function b = UsePlatformWindow()
 global OpenFile
 
 b = false;
-if ~ismac()
+if ~ismac() && ~strcmp(OpenFile.title, 'diagnostics')
     % This pause is a workaround for a matlab bug in version
     % 7.11 for Linux, where uigetfile won't block unless there's
     % a breakpoint.

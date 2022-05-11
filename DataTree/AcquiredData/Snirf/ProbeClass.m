@@ -121,26 +121,116 @@ classdef ProbeClass < FileLoadSaveClass
                 obj.landmarkPos2D = HDF5_DatasetLoad(gid, 'landmarkPos', [], '2D');
             end
         end
+        
+        % -------------------------------------------------------------------------------
+        function xy = convert_optodepos_to_circlular_2D_pos(obj, pos, T, norm_factor)
+            pos = [pos ones(size(pos,1),1)];
+            pos_unit_sphere = pos*T;
+            pos_unit_sphere_norm = sqrt(sum(pos_unit_sphere.^2,2));
+            pos_unit_sphere = pos_unit_sphere./pos_unit_sphere_norm ;
+
+            [azimuth,elevation,r] = cart2sph(pos_unit_sphere(:,1),pos_unit_sphere(:,2),pos_unit_sphere(:,3));
+            elevation = pi/2-elevation;
+            [x,y] = pol2cart(azimuth,elevation);      % get plane coordinates
+            xy = [x y];
+            xy = xy/norm_factor;               % set maximum to unit length
+            xy = xy/2 + 0.5;
+        end
 
         
         
         % -------------------------------------------------------
         function Project_3D_to_2D(obj) 
-            if isempty(obj.landmarkPos2D) || isempty(obj.landmarkPos3D)
-                
-                % When 3D landmarks aren't available use crude default 3D-to-2D projection algorithm 
-                if isempty(obj.sourcePos2D)
-                    obj.sourcePos2D = project_3D_to_2D(obj.sourcePos3D);
-                end
-                if isempty(obj.detectorPos2D)
-                    obj.detectorPos2D = project_3D_to_2D(obj.detectorPos3D);
-                end
-                
-            else
+            
+            if isempty(obj.sourcePos2D) && isempty(obj.detectorPos2D)
+                if isempty(obj.landmarkPos3D)
+                    if ~isempty(obj.sourcePos3D)
+                        obj.sourcePos2D = obj.sourcePos3D(:,1:2);
+                    end
+                    if ~isempty(obj.detectorPos3D)
+                        obj.detectorPos2D = obj.detectorPos3D(:,1:2);
+                    end
+%                     if isfield(obj,'DummyPos3D') & ~isempty(obj.DummyPos3D)
+%                         obj.DummyPos2D = obj.DummyPos3D(:,1:2);
+%                     end
+                else
+                    [sphere.label, sphere.theta, sphere.phi, sphere.r, sphere.xc, sphere.yc, sphere.zc] = textread('10-5-System_Mastoids_EGI129.csd','%s %f %f %f %f %f %f','commentstyle','c++');
+                    % ref pt labels used for affine transformation
+                    refpts_labels = {'T7','T8','Oz','Fpz','Cz','C3','C4','Pz','Fz'};
 
-                % 3D landmarks are available, use ...
+                    % get positions for refpts_labels from both sphere and probe ref pts
+                    for u = 1:length(refpts_labels)
+                        label = refpts_labels{u};
 
+                        idx = ismember(obj.landmarkLabels, label);
+                        if isempty(idx)
+                            return
+                        end
+                        probe_refps_pos(u,:) = obj.landmarkPos3D(idx,:);
+                        idx = ismember(sphere.label, label);
+                        sphere_refpts_pos(u,:) = [sphere.xc(idx) sphere.yc(idx) sphere.zc(idx)];
+                    end
+
+                    % get affine transformation
+                    % probe_refps*T = sphere_refpts
+                    probe_refps_pos = [probe_refps_pos ones(size(probe_refps_pos,1),1)];
+                    T = probe_refps_pos\sphere_refpts_pos;
+
+                    % tranform optode positions onto unit sphere.
+                    % opt_pos = probe.optpos_reg;
+                    % opt_pos = [opt_pos ones(size(opt_pos,1),1)];
+                    % sphere_opt_pos = opt_pos*T;
+                    % sphere_opt_pos_norm = sqrt(sum(sphere_opt_pos.^2,2));
+                    % sphere_opt_pos = sphere_opt_pos./sphere_opt_pos_norm ;
+                    %%
+                    % get 2D circular refpts for current selecetd reference point system
+                    probe_refpts_idx =  ismember(sphere.label, obj.landmarkLabels);
+
+                    % refpts_2D.pos = [sphere_xc(probe_refpts_idx) sphere_yc(probe_refpts_idx) sphere_zc(probe_refpts_idx)];
+                    refpts_2D.label = sphere.label(probe_refpts_idx);
+                    %%
+                    refpts_theta =  sphere.theta(probe_refpts_idx);
+                    refpts_phi = 90 - sphere.phi(probe_refpts_idx); % elevation angle from top axis
+
+                    refpts_theta = (2 * pi * refpts_theta) / 360; % convert to radians
+                    refpts_phi = (2 * pi * refpts_phi) / 360;
+                    [x,y] = pol2cart(refpts_theta, refpts_phi);      % get plane coordinates
+                    xy = [x y];
+
+                    %%
+                    norm_factor = max(max(xy));
+                    xy = xy/norm_factor;               % set maximum to unit length
+                    xy = xy/2 + 0.5;                    % adjust to range 0-1
+                    refpts_2D.pos = xy;
+                    obj.landmarkPos2D = refpts_2D.pos;
+
+                    %%
+                    if ~isempty(obj.sourcePos3D)
+                        obj.sourcePos2D = convert_optodepos_to_circlular_2D_pos(obj, obj.sourcePos3D, T, norm_factor);
+                    end
+                    if ~isempty(obj.detectorPos3D)
+                        obj.detectorPos2D = convert_optodepos_to_circlular_2D_pos(obj, obj.detectorPos3D, T, norm_factor);
+                    end
+%                     if isfield(obj,'DummyPos3D') & ~isempty(obj.DummyPos3D)
+%                         obj.DummyPos2D = convert_optodepos_to_circlular_2D_pos(obj.DummyPos3D, T, norm_factor);
+%                     end
+                end
             end
+%             if isempty(obj.landmarkPos2D) || isempty(obj.landmarkPos3D)
+%                 
+%                 % When 3D landmarks aren't available use crude default 3D-to-2D projection algorithm 
+%                 if isempty(obj.sourcePos2D)
+%                     obj.sourcePos2D = project_3D_to_2D(obj.sourcePos3D);
+%                 end
+%                 if isempty(obj.detectorPos2D)
+%                     obj.detectorPos2D = project_3D_to_2D(obj.detectorPos3D);
+%                 end
+%                 
+%             else
+% 
+%                 % 3D landmarks are available, use ...
+% 
+%             end
         end
 
         

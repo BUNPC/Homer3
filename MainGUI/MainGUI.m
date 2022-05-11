@@ -826,6 +826,30 @@ function menuItemPlotProbeGUI_Callback(hObject, ~, handles)
 global maingui
 LaunchChildGuiFromMenu('PlotProbeGUI', hObject, GetDatatype(handles), maingui.condition);
 
+% --------------------------------------------------------------------
+function menuItemPlotProbe2_Callback(hObject, ~, handles)
+global maingui
+
+procElem = maingui.dataTree.currElem;
+% Derived data that we want to save in a Snirf file.
+% To save in a snirf file we need to create a SnirfClass
+% object. A SnirfClass object is DataTree's implementation 
+% of the Snirf format.  
+data(1) = procElem.procStream.output.dcAvg; 
+data(2) = procElem.procStream.output.dod;
+
+% To complete SnirfClass object arguments we need to supply these
+% which we get from acquired data of the first run associated with 
+% our procElem.
+probe = procElem.acquired.probe;
+stim = procElem.acquired.stim;
+metaDataTags = procElem.acquired.metaDataTags;
+
+obj = SnirfClass(data, stim, probe, metaDataTags);
+
+% call PlotProbe2 GUI
+PlotProbe2(obj);
+
 
 
 % -------------------------------------------------------------------

@@ -79,8 +79,8 @@ classdef TreeNodeClass < handle
     methods
         
         % ---------------------------------------------------------------------------------
-        function LoadProcStreamConfigFile(obj, filename)
-            obj.procStream.LoadConfigFile(filename, class(obj));
+        function err = LoadProcStreamConfigFile(obj, filename)
+            err = obj.procStream.LoadConfigFile(filename, class(obj));
         end        
         
                 

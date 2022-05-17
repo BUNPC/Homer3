@@ -358,12 +358,25 @@ classdef SessClass < TreeNodeClass
                 indent = indent+4;
             end
             Print@TreeNodeClass(obj, indent);
-            for ii=1:length(obj.runs)
+            for ii = 1:length(obj.runs)
                 obj.runs(ii).Print(indent);
             end
         end
         
 
+        % ---------------------------------------------------------------
+        function PrintProcStream(obj)
+            fcalls = obj.procStream.GetFuncCallChain();
+            obj.logger.Write('Session processing stream:\n');
+            for ii = 1:length(fcalls)
+                obj.logger.Write('%s\n', fcalls{ii});
+            end
+            obj.logger.Write('\n');
+            obj.runs(1).PrintProcStream();
+        end
+        
+            
+            
         % ----------------------------------------------------------------------------------
         function b = IsEmpty(obj)
             b = true;

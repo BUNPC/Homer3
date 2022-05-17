@@ -5,6 +5,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
         userfuncfiles       
         entries
         type
+        typeNameIdx
         config
         logger
     end
@@ -13,7 +14,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
     methods
         
         % ----------------------------------------------------------------------------------
-        function obj = FuncRegClass(arg)
+        function obj = FuncRegClass(varargin)
             % 
             % Syntax:
             %    obj = FuncRegClass(type);
@@ -59,13 +60,17 @@ classdef FuncRegClass < matlab.mixin.Copyable
             if nargin==0
                 return;
             end
-            if isa(arg, 'FuncRegClass')
-                obj.Copy(arg);
+            
+            obj.typeNameIdx = 1;
+            if isa(varargin{1}, 'FuncRegClass')
+                obj.Copy(varargin{1});
                 return;
             end
-            
-            type = arg;
-            obj.type = type;            
+                       
+            obj.type = varargin{1};            
+            if nargin > 1
+                obj.typeNameIdx = varargin{2};
+            end
             
             % Get the parameter items from config file relevant to this class
             obj.userfuncdir = FindUserFuncDir(obj);
@@ -81,7 +86,7 @@ classdef FuncRegClass < matlab.mixin.Copyable
 
             files = cell(length(obj.userfuncdir),1);
             for jj = 1:length(obj.userfuncdir)
-                expr = sprintf('%shmr%s_*.m', obj.userfuncdir{jj}, upper(obj.type(1)));
+                expr = sprintf('%shmr%s_*.m', obj.userfuncdir{jj}, upper(obj.type(obj.typeNameIdx)));
                 files{jj} = dir(expr);
                 for iF = 1:length(files{jj})
                     files{jj}(iF).folder = obj.userfuncdir{jj};

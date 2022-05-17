@@ -124,6 +124,7 @@ classdef ParamClass < matlab.mixin.Copyable
             err = 0;  % Error checking i.e. max length
         end
         
+        
         % ----------------------------------------------------------------------------------
         function str = Encode(obj)
             str = '';
@@ -188,7 +189,28 @@ classdef ParamClass < matlab.mixin.Copyable
             end            
             scorefinal = sum(score);
         end
-                
+        
+        
+        % ----------------------------------------------------------------------------------
+        function value = DisplayValue(obj)
+            if strcmp(obj.format, '%s') || strcmp(obj.format, '%c')
+                value = ''
+            else
+                value = [];
+            end
+            format = str2cell(obj.format, ' ');
+            for ii = 1:length(obj.value)
+                if isempty(value)
+                    value = sprintf(format{ii}, obj.value(ii));
+                else
+                    value = sprintf(['%s', ' ', format{ii}], value, obj.value(ii));
+                end
+            end
+            if length(obj.value) > 1
+                value = sprintf('[%s]', value);
+            end
+        end
+        
     end
 end
 

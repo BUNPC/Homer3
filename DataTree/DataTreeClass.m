@@ -282,11 +282,25 @@ classdef DataTreeClass <  handle
                 end
                 
             end
+            
+            obj.PrintProcStream();
+            
             obj.logger.Write('Loaded data set in %0.1f seconds\n', toc(t1));
         end
         
         
-                
+
+        % ---------------------------------------------------------------
+        function PrintProcStream(obj)
+            obj.logger.Write('\n');
+            obj.logger.Write('============================================\n\n');
+            obj.groups(1).PrintProcStream();
+            obj.logger.Write('============================================\n');
+            obj.logger.Write('\n');
+        end
+        
+            
+            
         % ---------------------------------------------------------------
         function SetDataStorageScheme(obj)
 

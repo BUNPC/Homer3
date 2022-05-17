@@ -241,6 +241,43 @@ classdef ProcStreamClass < handle
         end
         
         
+        
+        % ----------------------------------------------------------------------------------
+        function fcall = GenerateFuncCallString(obj, iFcall)            
+            funcName = obj.GetFuncCallName(iFcall);
+            
+            % Inoput arguments
+            argIn = obj.ParseInputArgs(iFcall);
+            
+            % Users modifiable input parameters
+            paramsIn = obj.ParseInputParams(iFcall);
+            
+            % Output arguments
+            argOut = obj.ParseOutputArgs(iFcall);
+            
+            delimiter = '';
+            if ~isempty(obj.fcalls(iFcall).argIn) && ~isempty(obj.fcalls(iFcall).paramIn)
+                delimiter = ', ';
+            end
+            
+            % call function
+            fcall = sprintf('%s = %s(%s%s%s);', argOut, funcName, argIn, delimiter, paramsIn);
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function fcalls = GetFuncCallChain(obj)
+            N = length(obj.fcalls);
+            fcalls = cell(N,1);            
+            for ii = 1:N
+                fcalls{ii} = obj.GenerateFuncCallString(ii);
+            end
+        end
+        
+        
+        
+        
         % ----------------------------------------------------------------------------------
         function Calc(obj, filename)
             if ~exist('filename','var')
@@ -263,22 +300,16 @@ classdef ProcStreamClass < handle
             	for iFcall = FcallsIdxs
 	                waitbar( iFcall/nFcall, hwait, sprintf('Processing... %s', obj.GetFcallNamePrettyPrint(iFcall)) );
 	                
-	                % Parse obj.input arguments
+	                % Instantiate all input variables required by function call
 	                argIn = obj.GetInputArgs(iFcall);
-	                for ii = 1:length(argIn)
-	                    if ~exist(argIn{ii},'var')
-	                        eval(sprintf('%s = obj.input.GetVar(''%s'');', argIn{ii}, argIn{ii}));
-	                    end
-	                end
+                    for ii = 1:length(argIn)
+                        if ~exist(argIn{ii},'var')
+                            eval(sprintf('%s = obj.input.GetVar(''%s'');', argIn{ii}, argIn{ii}));
+                        end
+                    end
 	                
-	                % Parse obj.input parameters
-	                [sargin, p, sarginVal] = obj.ParseInputParams(iFcall); %#ok<ASGLU>
-	                
-	                % Parse obj.input output arguments
-	                sargout = obj.ParseOutputArgs(iFcall);
-	                
-	                % call function
-	                fcall = sprintf('%s = %s%s%s);', sargout, obj.GetFuncCallName(iFcall), obj.fcalls(iFcall).argIn.str, sargin);
+                    fcall = obj.GenerateFuncCallString(iFcall);
+                    
 	                try
 	                    eval( fcall );
 	                catch ME
@@ -428,66 +459,57 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function [sargin, p, sarginVal] = ParseInputParams(obj, iFcall)
+        function sargin = ParseInputParams(obj, iFcall)
             sargin = '';
-            sarginVal = '';
+            if ~exist('iFcall', 'var') || isempty(iFcall)
+                iFcall = 1;
+            end
             nParam = length(obj.fcalls(iFcall).paramIn);            
-            p = cell(nParam, 1);
-
             if isempty(obj.fcalls)
                 return;
             end
             if iFcall>length(obj.fcalls)
                 return;
-            end            
+            end
             for iP = 1:nParam
-                p{iP} = obj.fcalls(iFcall).paramIn(iP).value;
-                if length(obj.fcalls(iFcall).argIn.str)==1 && iP==1
-                    sargin = sprintf('%sp{%d}', sargin, iP);
-                    if isnumeric(p{iP})
-                        if length(p{iP})==1
-                            sarginVal = sprintf('%s%s', sarginVal, num2str(p{iP}));
-                        else
-                            sarginVal = sprintf('%s[%s]', sarginVal, num2str(p{iP}));
-                        end
-                    elseif ~isstruct(p{iP})
-                        sarginVal = sprintf('%s,%s', sarginVal, p{iP});
-                    else
-                        sarginVal = sprintf('%s,[XXX]', sarginVal);
-                    end
+                if isempty(sargin)
+                    sargin = obj.fcalls(iFcall).paramIn(iP).DisplayValue();
                 else
-                    sargin = sprintf('%s,p{%d}', sargin, iP);
-                    if isnumeric(p{iP})
-                        if length(p{iP})==1
-                            sarginVal = sprintf('%s,%s', sarginVal, num2str(p{iP}));
-                        else
-                            sarginVal = sprintf('%s,[%s]', sarginVal, num2str(p{iP}));
-                        end
-                    elseif ~isstruct(p{iP})
-                        sarginVal = sprintf('%s,%s', sarginVal, p{iP});
-                    else
-                        sarginVal = sprintf('%s,[XXX]',sarginVal);
-                    end
+                    sargin = sprintf('%s, %s', sargin, obj.fcalls(iFcall).paramIn(iP).DisplayValue());
                 end
             end
         end
         
         
         % ----------------------------------------------------------------------------------
-        function sargout = ParseOutputArgs(obj, iFcall)
-            sargout = '';
+        function argInStr = ParseInputArgs(obj, iFcall)
+            argInStr = '';
+            if ~exist('iFcall', 'var') || isempty(iFcall)
+                iFcall = 1;
+            end
             if isempty(obj.fcalls)
                 return;
             end
             if iFcall>length(obj.fcalls)
                 return;
             end            
-            sargout = obj.fcalls(iFcall).argOut.str;
-            for ii=1:length(obj.fcalls(iFcall).argOut.str)
-                if sargout(ii)=='#'
-                    sargout(ii) = ' ';
-                end
+            argInStr = obj.fcalls(iFcall).argIn.Display();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function argOutStr = ParseOutputArgs(obj, iFcall)
+            argOutStr = '';
+            if ~exist('iFcall', 'var') || isempty(iFcall)
+                iFcall = 1;
             end
+            if isempty(obj.fcalls)
+                return;
+            end
+            if iFcall>length(obj.fcalls)
+                return;
+            end            
+            argOutStr = obj.fcalls(iFcall).argOut.Display();
         end
         
         
@@ -705,9 +727,8 @@ classdef ProcStreamClass < handle
             
             % Reinitialize fcalls since we're going to overwrite them anyway
             obj.fcalls = FuncCallClass().empty();
-            obj.ParseFile(fid, type);
+            err = obj.ParseFile(fid, type);
             fclose(fid);
-            err=0;
         end
         
         
@@ -996,7 +1017,7 @@ classdef ProcStreamClass < handle
             %              help: '  Excludes stims that fall within the time points identified as �'
             %
             
-            err=-1;
+            err = -1;
             if ~exist('fid','var') || ~iswholenum(fid) || fid<0
                 return;
             end
@@ -1006,17 +1027,16 @@ classdef ProcStreamClass < handle
             [Group, Subj, Sess, Run] = obj.FindSections(fid);
             switch(lower(type))
                 case {'group', 'groupclass', 'grp'}
-                    obj.Decode(Group);
+                    err = obj.Decode(Group);
                 case {'subj', 'subjclass'}
-                    obj.Decode(Subj);
+                    err = obj.Decode(Subj);
                 case {'sess', 'sessclass'}
-                    obj.Decode(Sess);
+                    err = obj.Decode(Sess);
                 case {'run', 'runclass'}
-                    obj.Decode(Run);
+                    err = obj.Decode(Run);
                 otherwise
                     return;
             end
-            err=0;
         end
                    
     end
@@ -1032,7 +1052,7 @@ classdef ProcStreamClass < handle
     methods
                 
         % ----------------------------------------------------------------------------------
-        function Decode(obj, section)
+        function err = Decode(obj, section)
             % Syntax:
             %    obj.Decode(section)
             %    
@@ -1075,6 +1095,8 @@ classdef ProcStreamClass < handle
             %       paramIn: [1x1 ParamClass]
             %          help: '  Convert OD to concentrations�'
             % 
+            err = 0;
+            
             if nargin<2
                 return
             end
@@ -1113,6 +1135,7 @@ classdef ProcStreamClass < handle
                             kk=kk+1;
                         else
                             fprintf('  Found no similar entries. Discarding %s\n', section{ii})
+                            err = -1;
                         end
                     end
                 end

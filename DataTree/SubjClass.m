@@ -390,6 +390,19 @@ classdef SubjClass < TreeNodeClass
         end
         
 
+        % ---------------------------------------------------------------
+        function PrintProcStream(obj)
+            fcalls = obj.procStream.GetFuncCallChain();
+            obj.logger.Write('Subject processing stream:\n');
+            for ii = 1:length(fcalls)
+                obj.logger.Write('%s\n', fcalls{ii});
+            end
+            obj.logger.Write('\n');
+            obj.sess(1).PrintProcStream();
+        end
+        
+            
+            
         % ----------------------------------------------------------------------------------
         function b = IsEmpty(obj)
             b = true;

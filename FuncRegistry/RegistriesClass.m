@@ -84,14 +84,14 @@ classdef RegistriesClass < handle
                 case 'all'
                     obj.funcReg(obj.igroup) = FuncRegClass('group');
                     obj.funcReg(obj.isubj) = FuncRegClass('subj');
-                    obj.funcReg(obj.isess) = FuncRegClass('ess');
+                    obj.funcReg(obj.isess) = FuncRegClass('sess',2);
                     obj.funcReg(obj.irun) = FuncRegClass('run');
                 case 'group'
                     obj.funcReg(obj.igroup) = FuncRegClass('group');
                 case 'subj'
                     obj.funcReg(obj.isubj) = FuncRegClass('subj');
-                case 'ess'
-                    obj.funcReg(obj.isess) = FuncRegClass('ess');
+                case 'sess'
+                    obj.funcReg(obj.isess) = FuncRegClass('sess');
                 case 'run'
                     obj.funcReg(obj.irun) = FuncRegClass('run');
             end
@@ -369,7 +369,7 @@ classdef RegistriesClass < handle
             elseif strncmp(fname, 'hmrS_', 5)
                 type = 'subj';
             elseif strncmp(fname, 'hmrE_', 5)
-                type = 'ess';
+                type = 'sess';
             elseif strncmp(fname, 'hmrR_', 5)
                 type = 'run';
             else

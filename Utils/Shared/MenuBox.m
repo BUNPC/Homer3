@@ -61,7 +61,10 @@ if isempty(msg)
     return;
 end
 
+length(find(msg == sprintf('\n'))); %#ok<*SPRINTFN>
+
 nchar        = length(msg);
+nNewLines    = length(find(msg == sprintf('\n'))); %#ok<*SPRINTFN>
 ncheckboxes  = length(checkboxes);
 nbttns       = length(bttns)+ncheckboxes;
 if bttnstrlenmax<bttnstrlenmin
@@ -76,7 +79,7 @@ if Wbttn < textLineWidth
 else
     Wtext = 1.1 * Wbttn;
 end
-Htext = round(nchar / Wtext)+4;
+Htext = round(nchar / Wtext)+4 + nNewLines;
 
 % Position/dimensions in the X direction
 a    = 5;

@@ -291,7 +291,7 @@ classdef GroupClass < TreeNodeClass
                 msg{1} = sprintf('WARNING: The subject being added (%s) has the same name as the group (%s) containing it. ', [f,e], obj.name);
                 msg{2} = sprintf('The subject names should not have the same name as the group folder, otherwise '); 
                 msg{3} = sprintf('it may cause incorrect results in processing.');
-                obj.logger.Write(sprintf('%s\n', [msg{:}]));
+                obj.logger.Write('%s\n', [msg{:}]);
             end
             
             % Add subject to this group
@@ -326,22 +326,11 @@ classdef GroupClass < TreeNodeClass
         
         
         
-        % ----------------------------------------------------------------------------------
-        function InitProcStream(obj, procStreamCfgFile)
-            if isempty(obj)
-                return;
-            end
+        % #########################################################################
             
-            if ~exist('procStreamCfgFile','var')
-                procStreamCfgFile = '';
-            end
             
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Find out if we need to ask user for processing options 
-            % config file to initialize procStream.fcalls at the 
-            % run, subject or group level. First try to find the proc 
-            % input at each level from the saved derived data. 
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % -----------------------------------------------------------------------------
+        function [g, s, e, r] = GetInitialFuncCallChain(obj)
             g = obj;
             s = obj.subjs(1);
             e = obj.subjs(1).sess(1);
@@ -364,76 +353,157 @@ classdef GroupClass < TreeNodeClass
             
             % Generate procStream defaults at each level with which to initialize
             % any uninitialized procStream.input
-            g.CreateProcStreamDefault();
-            procStreamGroup = g.GetProcStreamDefault();
-            procStreamSubj = s.GetProcStreamDefault();
-            procStreamSess = e.GetProcStreamDefault();
-            procStreamRun = r.GetProcStreamDefault();
+            g.CreateProcStreamDefault();           
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function [fnameFull, status] = InitProcStreamLevel(obj, g, o, fnameFull)
+            status = 0;
             
-            % If any of the tree nodes still have unintialized procStream input, ask 
-            % user for a config file to load it from 
-            if g.procStream.IsEmpty() || s.procStream.IsEmpty() || e.procStream.IsEmpty() || r.procStream.IsEmpty()
-                [fname, autoGenDefaultFile] = g.procStream.GetConfigFileName(procStreamCfgFile, obj.path);                                
+            procStreamDefault = o.GetProcStreamDefault();
+            
+            % If any of the tree nodes still have unintialized procStream input, ask
+            % user for a config file to load it from
+            if o.procStream.IsEmpty()                
+                
+                if ~ispathvalid(fnameFull)
+                    [fnameFull, autoGenDefaultFile] = g.procStream.GetConfigFileName(fnameFull, obj.path);
+                else
+                    autoGenDefaultFile = false;
+                end
                 
                 % If user did not provide procStream config filename and file does not exist
                 % then create a config file with the default contents
-                if ~exist(fname, 'file')
-                    procStreamGroup.SaveConfigFile(fname, 'group');
-                    procStreamSubj.SaveConfigFile(fname, 'subj');
-                    procStreamSess.SaveConfigFile(fname, 'sess');
-                    procStreamRun.SaveConfigFile(fname, 'run');
+                if ~exist(fnameFull, 'file')
+                    procStreamDefault.SaveConfigFile(fnameFull, o.type);
                 end
                 
-                obj.logger.Write(sprintf('Attempting to load proc stream from %s\n', fname));
+                obj.logger.Write('Attempting to load %s-level proc stream from %s\n', o.type, fnameFull);
                 
                 % Load file to the first empty procStream in the dataTree at each processing level
-                g.LoadProcStreamConfigFile(fname);
-                s.LoadProcStreamConfigFile(fname);
-                e.LoadProcStreamConfigFile(fname);
-                r.LoadProcStreamConfigFile(fname);
-                
-                % Copy the loaded procStream at each processing level to all
-                % nodes of that level that lack procStream 
-                
+                err = o.LoadProcStreamConfigFile(fnameFull);
+
                 % If proc stream input is still empty it means the loaded config
                 % did not have valid proc stream input. If that's the case we
                 % Load a default proc stream input
-                if g.procStream.IsEmpty() || s.procStream.IsEmpty() || e.procStream.IsEmpty() || r.procStream.IsEmpty()
-                    obj.logger.Write(sprintf('Failed to load all function calls in proc stream config file. Loading default proc stream...\n'));
-                    g.CopyFcalls(procStreamSubj, 'subj');
-                    g.CopyFcalls(procStreamRun, 'run');
+                if err ~= 0
+                    [~, fname, ext] = fileparts(fnameFull);
+                    msg{1} = sprintf('Some functions at the %s-level failed to load from selected proc stream config file,  "%s".  ', o.type, [fname, ext]);
+                    msg{2} = sprintf('The functions may be obsolete or contain errors.  Loading default %s proc stream ...\n', o.type);
+                    obj.logger.Write([msg{:}]);
+                    g.CopyFcalls(procStreamDefault, o.type);
+                    status = 1;
                     
-                    % If user asked default config file to be generated ...
-                    if autoGenDefaultFile
-                        obj.logger.Write(sprintf('Generating default proc stream config file %s\n', fname));
-                        
-                        % Move exiting default config to same name with .bak extension
-                        if ~exist([fname, '.bak'], 'file')
-                            obj.logger.Write(sprintf('Moving existing %s to %s.bak\n', fname, fname));
-                            movefile(fname, [fname, '.bak']);
-                        end
-                        procStreamGroup.SaveConfigFile(fname, 'group');
-                        procStreamSubj.SaveConfigFile(fname, 'subj');
-                        procStreamSess.SaveConfigFile(fname, 'subj');
-                        procStreamRun.SaveConfigFile(fname, 'run');
-                    end
-                    
-                % Otherwise the non-default processing stream loaded from file to this group and to first subject 
+                % Otherwise the non-default processing stream loaded from file to this group and to first subject
                 % disseminate it to all subjects and all runs in this group
-                else                    
-                    obj.logger.Write(sprintf('Loading proc stream from %s\n', fname));
-                    g.CopyFcalls(s.procStream, 'subj');
-                    g.CopyFcalls(e.procStream, 'sess');
-                    g.CopyFcalls(r.procStream, 'run');
+                else
+                    
+                    obj.logger.Write('Loading proc stream from %s\n', fnameFull);
+                    g.CopyFcalls(o.procStream, o.type);
+                    
                 end
+                
             end
+        end
+
+
+        
+        % ----------------------------------------------------------------------------------
+        function ErrorCheckInitErr(obj, procStreamCfgFile, status);
+            if ~all(status==0)
+                [~, fname, ext] = fileparts(procStreamCfgFile);
+                levels = '';
+                if status(1)~=0
+                    levels = 'group';                    
+                end
+                if status(2)~=0
+                    if isempty(levels)
+                        levels = 'subject';
+                    else
+                        levels = [levels, ', subject'];
+                    end
+                end
+                if status(3)~=0
+                    if isempty(levels)
+                        levels = 'session';
+                    else
+                        levels = [levels, ', session'];
+                    end
+                end
+                if status(4)~=0
+                    if isempty(levels)
+                        levels = 'run';
+                    else
+                        levels = [levels, ', run'];
+                    end
+                end
+                k = find(levels == ',');
+                if ~isempty(k)
+                    levels = sprintf('%s and %s levels', levels(1:k-1), levels(k+2:end));
+                    procStreamLabelPlural = 'streams';
+                else
+                    levels = sprintf('%s level', levels);
+                    procStreamLabelPlural = 'stream';
+                end
+                msg{1} = sprintf('\nWARNING: There were errors loading user functions from "%s" at the %s.\n', [fname, ext], levels);
+                msg{2} = sprintf('These functions may have changed since this file was created or have errors in the help\n');
+                msg{3} = sprintf('sections of the processing stream description. Replacing %s processing\n', levels);
+                msg{4} = sprintf('%s with default processing %s ... \n', procStreamLabelPlural, procStreamLabelPlural);
+                % if strcmpi(obj.cfg.GetValue('Include Archived User Functions'), 'No')
+                %       MenuBox(msg, {'OK'});
+                % end
+                obj.logger.Write([msg{:}]);
+            end
+        end
+    
+        
+        
+        % ----------------------------------------------------------------------------------
+        function InitProcStream(obj, procStreamCfgFile)
+            if isempty(obj)
+                return;
+            end
+            
+            if ~exist('procStreamCfgFile','var')
+                procStreamCfgFile = '';
+            end
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Find out if we need to ask user for processing options
+            % config file to initialize procStream.fcalls at the
+            % run, subject or group level. First try to find the proc
+            % input at each level from the saved derived data.
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            [g, s, e, r] = obj.GetInitialFuncCallChain();
+            
+            % 
+            [procStreamCfgFile, status(1)] = obj.InitProcStreamLevel(g, g, procStreamCfgFile);
+            [procStreamCfgFile, status(2)] = obj.InitProcStreamLevel(g, s, procStreamCfgFile);
+            [procStreamCfgFile, status(3)] = obj.InitProcStreamLevel(g, e, procStreamCfgFile);
+            [~,                 status(4)] = obj.InitProcStreamLevel(g, r, procStreamCfgFile);
+            
+            obj.ErrorCheckInitErr(procStreamCfgFile, status);                        
         end
         
         
         
         
+        % ---------------------------------------------------------------
+        function PrintProcStream(obj)
+            fcalls = obj.procStream.GetFuncCallChain();
+            obj.logger.Write('Group processing stream:\n');
+            for ii = 1:length(fcalls)
+                obj.logger.Write('%s\n', fcalls{ii});
+            end
+            obj.logger.Write('\n');
+            obj.subjs(1).PrintProcStream();
+        end
         
-        % ----------------------------------------------------------------------------------
+            
+            
+       % ----------------------------------------------------------------------------------
         function FreeMemoryRecursive(obj)
             if isempty(obj)
                 return
@@ -492,7 +562,7 @@ classdef GroupClass < TreeNodeClass
                 obj.procStream.output.Flush();
             end
             if obj.DEBUG
-                obj.logger.Write(sprintf('Calculating processing stream for group %d\n', obj.iGroup))
+                obj.logger.Write('Calculating processing stream for group %d\n', obj.iGroup)
             end
             
             % Calculate all subjs in this session
@@ -511,8 +581,8 @@ classdef GroupClass < TreeNodeClass
             Calc@TreeNodeClass(obj);
             
             if obj.DEBUG
-                obj.logger.Write(sprintf('Completed processing stream for group %d\n', obj.iGroup));
-                obj.logger.Write(sprintf('\n'));
+                obj.logger.Write('Completed processing stream for group %d\n', obj.iGroup);
+                obj.logger.Write('\n');
             end
             
             % Update call application GUI using it's generic Update function
@@ -526,7 +596,7 @@ classdef GroupClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function Print(obj, indent)
-            obj.logger.Write(sprintf('\n'));
+            obj.logger.Write('\n');
             if ~exist('indent', 'var')
                 indent = 0;
             end
@@ -656,7 +726,7 @@ classdef GroupClass < TreeNodeClass
                 if isproperty(g, 'group') && isa(g.group, 'GroupClass')
                     if isproperty(g.group, 'version')
                         if ismethod(g.group, 'GetVersion')
-                            obj.logger.Write(sprintf('Saved group data, version %s exists\n', g.group.GetVersionStr()));
+                            obj.logger.Write('Saved group data, version %s exists\n', g.group.GetVersionStr());
                             group = g.group;
                         end
                     end
@@ -674,7 +744,7 @@ classdef GroupClass < TreeNodeClass
                 close(hwait);
             else
                 if exist([obj.path, obj.outputDirname, obj.outputFilename],'file')
-                    obj.logger.Write(sprintf('Warning: This folder contains old version of processing results. Will move it to *_old.mat\n'));
+                    obj.logger.Write('Warning: This folder contains old version of processing results. Will move it to *_old.mat\n');
                     [~,outputFilename] = fileparts(obj.outputFilename); %#ok<*PROPLC>
                     movefile([obj.path, obj.outputDirname, obj.outputFilename], [obj.path, obj.outputDirname, outputFilename, '_old.mat'])
                 end
@@ -691,10 +761,10 @@ classdef GroupClass < TreeNodeClass
                 hwait = [];
             end            
             
-            obj.logger.Write(sprintf('Saving processed data in %s\n', [obj.path, obj.outputDirname, obj.outputFilename]));
+            obj.logger.Write('Saving processed data in %s\n', [obj.path, obj.outputDirname, obj.outputFilename]);
             
             if ishandle(hwait)
-                obj.logger.Write(sprintf('Auto-saving processing results ...\n'), obj.logger.ProgressBar(), hwait);
+                obj.logger.Write('Auto-saving processing results ...\n', obj.logger.ProgressBar(), hwait);
             end
             
             group = GroupClass(obj);
@@ -1168,7 +1238,7 @@ classdef GroupClass < TreeNodeClass
                 end
                 
                 msg = sprintf('Detected derived data in an old Homer3 format.');
-                obj.logger.Write(sprintf('Backward Compatability: %s\n', msg));
+                obj.logger.Write('Backward Compatability: %s\n', msg);
                 
                 % If we're here it means that old format homer3 data exists
                 % AND NO new homer3 format data exists
@@ -1179,7 +1249,7 @@ classdef GroupClass < TreeNodeClass
                         obj.subjs(ii).BackwardCompatability();
                     end
                     
-                    obj.logger.Write(sprintf('Moving %s to %s\n', 'groupResults.mat', [obj.path, obj.outputDirname, obj.outputFilename]));
+                    obj.logger.Write('Moving %s to %s\n', 'groupResults.mat', [obj.path, obj.outputDirname, obj.outputFilename]);
                     movefile('groupResults.mat', [obj.path, obj.outputDirname, obj.outputFilename])
                 end
             end

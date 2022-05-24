@@ -1834,6 +1834,7 @@ ExportSnirfGUI(maingui.dataTree.currElem);
 % --------------------------------------------------------------------
 function menuItemExportHRFMean_Callback(hObject, eventdata, handles)
 global maingui
+global cfg
 
 out = ExportDataGUI(maingui.dataTree.currElem.name, '.txt', 'HRF mean', 'userargs');
 if isempty(out.datatype)
@@ -1846,12 +1847,21 @@ switch(out.procElemSelect)
         procElemSelect = 'all';
     otherwise
 end
-maingui.dataTree.currElem.ExportMeanHRF(procElemSelect, out.trange);
+
+% Update config since this could change during homer session 
+cfg = ConfigFileClass();
+
+style = cfg.GetValue('Export HRF Mean Output Style');
+if strcmp(style, 'one processing element per file')
+    maingui.dataTree.currElem.ExportMeanHRF(procElemSelect, out.trange);
+elseif strcmp(style, 'all child processing elements in one file')
+    maingui.dataTree.currElem.ExportMeanHRF_Alt(procElemSelect, out.trange);
+end
 
 
 
 % --------------------------------------------------------------------
-function menuItemUpdateCheck_Callback(hObject, eventdata, handles)
+function menuItemUpdateCheck_Callback(hObject, ~, ~)
 global cfg
 
 if (strcmp(hObject.Checked,'on'))

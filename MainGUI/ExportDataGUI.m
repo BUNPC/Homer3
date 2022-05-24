@@ -32,7 +32,7 @@ exportvar.format = '';
 exportvar.formatchoices = {'.txt'};
 
 exportvar.datatype = '';
-exportvar.datatypechoices = {'HRF','Subjects HRF mean'};
+exportvar.datatypechoices = {'HRF','HRF mean'};
 
 exportvar.trange = [0,0];
 
@@ -139,17 +139,6 @@ function figure_DeleteFcn(hObject, eventdata, handles)
 
 % ----------------------------------------------------------------
 function popupmenuDataType_Callback(hObject, eventdata, handles)
-choices   = get(handles.popupmenuDataType, 'string');
-selection = get(handles.popupmenuDataType, 'value');
-datatype = choices{selection};
-
-if strcmp(datatype, 'Subjects HRF mean')
-    set(handles.uipanelTimeRange, 'visible','on')
-    set(handles.uipanelProcElem, 'visible','off')    
-elseif strcmp(datatype, 'HRF')
-    set(handles.uipanelTimeRange, 'visible','off')
-    set(handles.uipanelProcElem, 'visible','on')    
-end
 UpdateOutput(handles)
 
 

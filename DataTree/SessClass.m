@@ -88,8 +88,9 @@ classdef SessClass < TreeNodeClass
                     obj.runs(i) = RunClass(obj2.runs(i), conditional);
                 end
                 obj.Copy@TreeNodeClass(obj2);
-            end
+            end            
         end
+        
         
         
         % --------------------------------------------------------------
@@ -189,6 +190,7 @@ classdef SessClass < TreeNodeClass
                 obj.runs(jj) = run;
                 obj.logger.Write('         Added run  "%s"  to session  "%s" .\n', obj.runs(jj).GetFileName, obj.GetFileName);
             end
+            obj.children = obj.runs;
         end
         
         
@@ -595,31 +597,6 @@ classdef SessClass < TreeNodeClass
                 
 
         % ----------------------------------------------------------------------------------
-        function tblcells = GenerateTableCells_MeanHRF(obj, trange, width, iBlk)
-            if ~exist('trange','var') || isempty(trange)
-                trange = [0,0];
-            end
-            if ~exist('width','var') || isempty(width)
-                width = 12;
-            end
-            if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk = 1;
-            end
-            tblcells = obj.procStream.GenerateTableCells_MeanHRF(obj.name, obj.CondNames, trange, width, iBlk);
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function tblcells = GenerateTableCellsHeader_MeanHRF(obj, widthCond, widthSubj)
-            tblcells = repmat(TableCell(), length(obj.CondNames), 2);
-            for iCond = 1:length(obj.CondNames)
-                % First 2 columns contain condition name and group, session or run name
-                tblcells(iCond, 1) = TableCell(obj.CondNames{iCond}, widthCond);
-                tblcells(iCond, 2) = TableCell(obj.name, widthSubj);
-            end
-        end
-        
-        % ----------------------------------------------------------------------------------
         function [fn_error, missing_args, prereqs] = CheckProcStreamOrder(obj)
             missing_args = {};
             fn_error = 0;
@@ -631,32 +608,8 @@ classdef SessClass < TreeNodeClass
                 end
             end
         end
-        
-        % ----------------------------------------------------------------------------------
-        function ExportHRF(obj, procElemSelect, iBlk)
-            if ~exist('procElemSelect','var') || isempty(procElemSelect)
-                q = MenuBox('Export only current session data OR current session data and all it''s run data?', ...
-                            {'Current session data only','Current session data and all it''s run data','Cancel'});
-                if q==1
-                    procElemSelect  = 'current';
-                elseif q==2
-                    procElemSelect  = 'all';
-                else
-                    return
-                end
-            end
-            if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk = 1;
-            end
 
-            if strcmp(procElemSelect, 'all')
-                for ii = 1:length(obj.runs)
-                    obj.runs(ii).ExportHRF('all', iBlk);
-                end
-            end            
-            obj.ExportHRF@TreeNodeClass(procElemSelect, iBlk);
-        end
-    
+        
         
         % ----------------------------------------------------------------------------------
         function r = ListOutputFilenames(obj, options)
@@ -671,7 +624,7 @@ classdef SessClass < TreeNodeClass
         end
         
         
-         % --------------------------------------------------------------------------
+        % --------------------------------------------------------------------------
         function ApplyParamEditsToAllRuns(obj, iFcall, iParam, val)
             for jj = 1:length(obj.runs)
                 obj.runs(jj).procStream.EditParam(iFcall, iParam, val);
@@ -686,18 +639,6 @@ classdef SessClass < TreeNodeClass
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Access = public)
                 
-        % ----------------------------------------------------------------------------------
-        function b = HaveOutput(obj)
-            b = false;
-            for ii = 1:length(obj.runs)
-                b = obj.runs(ii).HaveOutput();
-                if b
-                    break;
-                end
-            end
-        end
-                
-        
         % ----------------------------------------------------------------------------------
         function BackwardCompatability(obj)
             obj.BackwardCompatability@TreeNodeClass();

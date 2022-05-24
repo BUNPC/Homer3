@@ -13,6 +13,7 @@ classdef SubjClass < TreeNodeClass
             
             obj.type  = 'subj';
             obj.sess = SessClass().empty;
+
             if nargin==0
                 obj.name  = '';
                 return;
@@ -191,7 +192,7 @@ classdef SubjClass < TreeNodeClass
             
             % Add sess to subj
             obj.sess(jj).Add(run);
-            
+            obj.children = obj.sess;
         end
         
         
@@ -647,32 +648,6 @@ classdef SubjClass < TreeNodeClass
                 
 
         % ----------------------------------------------------------------------------------
-        function tblcells = GenerateTableCells_MeanHRF(obj, trange, width, iBlk)
-            if ~exist('trange','var') || isempty(trange)
-                trange = [0,0];
-            end
-            if ~exist('width','var') || isempty(width)
-                width = 12;
-            end
-            if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk = 1;
-            end
-            obj.Load();
-            tblcells = obj.procStream.GenerateTableCells_MeanHRF(obj.name, obj.CondNames, trange, width, iBlk);
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function tblcells = GenerateTableCellsHeader_MeanHRF(obj, widthCond, widthSubj)
-            tblcells = repmat(TableCell(), length(obj.CondNames), 2);
-            for iCond = 1:length(obj.CondNames)
-                % First 2 columns contain condition name and group, subject or session name
-                tblcells(iCond, 1) = TableCell(obj.CondNames{iCond}, widthCond);
-                tblcells(iCond, 2) = TableCell(obj.name, widthSubj);
-            end
-        end
-        
-        % ----------------------------------------------------------------------------------
         function [fn_error, missing_args, prereqs] = CheckProcStreamOrder(obj)
             missing_args = {};
             fn_error = 0;
@@ -685,31 +660,7 @@ classdef SubjClass < TreeNodeClass
             end
         end
         
-        % ----------------------------------------------------------------------------------
-        function ExportHRF(obj, procElemSelect, iBlk)
-            if ~exist('procElemSelect','var') || isempty(procElemSelect)
-                q = MenuBox('Export only current subject data OR current subject data and all it''s session data?', ...
-                            {'Current subject data only','Current subject data and all it''s session data','Cancel'});
-                if q==1
-                    procElemSelect  = 'current';
-                elseif q==2
-                    procElemSelect  = 'all';
-                else
-                    return
-                end
-            end
-            if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk = 1;
-            end
-
-            if strcmp(procElemSelect, 'all')
-                for ii = 1:length(obj.sess)
-                    obj.sess(ii).ExportHRF('all', iBlk);
-                end
-            end            
-            obj.ExportHRF@TreeNodeClass(procElemSelect, iBlk);
-        end
-    
+        
         
         % ----------------------------------------------------------------------------------
         function r = ListOutputFilenames(obj, options)
@@ -731,18 +682,6 @@ classdef SubjClass < TreeNodeClass
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Access = public)
                 
-        % ----------------------------------------------------------------------------------
-        function b = HaveOutput(obj)
-            b = false;
-            for ii = 1:length(obj.sess)
-                b = obj.sess(ii).HaveOutput();
-                if b
-                    break;
-                end
-            end
-        end
-                
-        
         % ----------------------------------------------------------------------------------
         function BackwardCompatability(obj)
             obj.BackwardCompatability@TreeNodeClass();

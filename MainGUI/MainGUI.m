@@ -1832,19 +1832,21 @@ ExportSnirfGUI(maingui.dataTree.currElem);
 
 
 % --------------------------------------------------------------------
-function menuItemExportSubjHRFMean_Callback(hObject, eventdata, handles)
+function menuItemExportHRFMean_Callback(hObject, eventdata, handles)
 global maingui
 
-if  ~maingui.dataTree.currElem.IsGroup()
-    MessageBox('Exporting mean HRF at this time, only applies to the currently selected group. Please select a group in the Current Processing Element panel. Then rerun the export')
-    return 
-end
-
-out = ExportDataGUI(maingui.dataTree.currElem.name,'.txt','Subjects HRF mean');
+out = ExportDataGUI(maingui.dataTree.currElem.name, '.txt', 'HRF mean', 'userargs');
 if isempty(out.datatype)
     return;
 end
-maingui.dataTree.currElem.ExportMeanHRF(out.trange);
+switch(out.procElemSelect)
+    case 'currentonly'
+        procElemSelect = 'current';
+    case 'all'
+        procElemSelect = 'all';
+    otherwise
+end
+maingui.dataTree.currElem.ExportMeanHRF(procElemSelect, out.trange);
 
 
 

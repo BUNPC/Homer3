@@ -870,15 +870,6 @@ classdef RunClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function ExportHRF(obj, ~, iBlk)
-            if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk = 1;
-            end
-            obj.ExportHRF@TreeNodeClass('', iBlk);
-        end
-
-        
-        % ----------------------------------------------------------------------------------
         function r = ListOutputFilenames(obj, options)
             if ~exist('options','var')
                 options = '';

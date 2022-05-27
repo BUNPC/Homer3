@@ -41,6 +41,7 @@ classdef ProcStreamClass < handle
                 return;
             end
             obj.CreateDefault();
+            obj.ExportProcStreamFunctions(false);
         end
         
         
@@ -233,16 +234,6 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function paramsOutStruct = CalcDefault(obj)
-            paramsOutStruct = struct();
-            if exist('hmrE_CalcAvg','file')
-                paramsOutStruct = hmrE_CalcAvg(obj.input.misc);
-            end
-        end
-        
-        
-        
-        % ----------------------------------------------------------------------------------
         function fcall = GenerateFuncCallString(obj, iFcall)            
             funcName = obj.GetFuncCallName(iFcall);
             
@@ -279,7 +270,7 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function Calc(obj, filename)
+        function fcalls = Calc(obj, filename)            
             if ~exist('filename','var')
                 filename = '';
             end
@@ -290,70 +281,66 @@ classdef ProcStreamClass < handle
             
             paramsOutStruct = struct();
             hwait = waitbar(0, 'Processing...' );
-            if nFcall==0
-            
-                paramsOutStruct = obj.CalcDefault();
-
-            else
                 
-                paramOut = {};
-            	for iFcall = FcallsIdxs
-	                waitbar( iFcall/nFcall, hwait, sprintf('Processing... %s', obj.GetFcallNamePrettyPrint(iFcall)) );
-	                
-	                % Instantiate all input variables required by function call
-	                argIn = obj.GetInputArgs(iFcall);
-                    for ii = 1:length(argIn)
-                        if ~exist(argIn{ii},'var')
-                            eval(sprintf('%s = obj.input.GetVar(''%s'');', argIn{ii}, argIn{ii}));
-                        end
+            paramOut = {};
+        	for iFcall = FcallsIdxs
+                waitbar( iFcall/nFcall, hwait, sprintf('Processing... %s', obj.GetFcallNamePrettyPrint(iFcall)) );
+                
+                % Instantiate all input variables required by function call
+                argIn = obj.GetInputArgs(iFcall);
+                for ii = 1:length(argIn)
+                    if ~exist(argIn{ii},'var')
+                        eval(sprintf('%s = obj.input.GetVar(''%s'');', argIn{ii}, argIn{ii}));
                     end
-	                
-                    fcall = obj.GenerateFuncCallString(iFcall);
-                    
-	                try
-	                    eval( fcall );
-	                catch ME
-	                    msg = sprintf('Function %s generated error at line %d: %s', obj.fcalls(iFcall).name, ME.stack(1).line, ME.message);
-	                    if strcmp(obj.config.regressionTestActive, 'false')
-	                        MessageBox(msg);
-	                    elseif strcmp(obj.config.regressionTestActive, 'false')
-	                        fprintf('%s\n', msg);
-	                    end
-	                    close(hwait);
-	                    rethrow(ME)
-	                end
-	                
-	                %%%% Parse output parameters
-	                
-	                % remove '[', ']', and ','
-	                foos = obj.fcalls(iFcall).argOut.str;
-	                for ii=1:length(foos)
-	                    if foos(ii)=='[' || foos(ii)==']' || foos(ii)==',' || foos(ii)=='#'
-	                        foos(ii) = ' ';
-	                    end
-	                end
-	                
-	                % get parameters for Output to obj.output
-	                lst = strfind(foos,' ');
-	                lst = [0, lst, length(foos)+1]; %#ok<*AGROW>
-	                for ii=1:length(lst)-1
-	                    foo2 = foos(lst(ii)+1:lst(ii+1)-1);
-	                    lst2 = strmatch( foo2, paramOut, 'exact' ); %#ok<MATCH3>
-	                    idx = strfind(foo2,'foo');
-	                    if isempty(lst2) && (isempty(idx) || idx>1) && ~isempty(foo2)
-	                        paramOut{end+1} = foo2;
-	                    end
-	                end
-	            end
-	            
-	            % Copy paramOut to output
-	            for ii=1:length(paramOut)
-	                eval( sprintf('paramsOutStruct.%s = %s;', paramOut{ii}, paramOut{ii}) );
-	            end
+                end
+                
+            fcalls{iFcall} = obj.GenerateFuncCallString(iFcall);
+                
+                try
+                eval( fcalls{iFcall} );
+                catch ME
+                    msg = sprintf('Function %s generated error at line %d: %s', obj.fcalls(iFcall).name, ME.stack(1).line, ME.message);
+                    if strcmp(obj.config.regressionTestActive, 'false')
+                        MessageBox(msg);
+                    elseif strcmp(obj.config.regressionTestActive, 'false')
+                        fprintf('%s\n', msg);
+                    end
+                    close(hwait);
+                    rethrow(ME)
+                end
+                
+                %%%% Parse output parameters
+                
+                % remove '[', ']', and ','
+                foos = obj.fcalls(iFcall).argOut.str;
+                for ii=1:length(foos)
+                    if foos(ii)=='[' || foos(ii)==']' || foos(ii)==',' || foos(ii)=='#'
+                        foos(ii) = ' ';
+                    end
+                end
+                
+                % get parameters for Output to obj.output
+                lst = strfind(foos,' ');
+                lst = [0, lst, length(foos)+1]; %#ok<*AGROW>
+                for ii=1:length(lst)-1
+                    foo2 = foos(lst(ii)+1:lst(ii+1)-1);
+                    lst2 = strmatch( foo2, paramOut, 'exact' ); %#ok<MATCH3>
+                    idx = strfind(foo2,'foo');
+                    if isempty(lst2) && (isempty(idx) || idx>1) && ~isempty(foo2)
+                        paramOut{end+1} = foo2;
+                    end
+                end
+            end
             
+            % Copy paramOut to output
+            for ii=1:length(paramOut)
+                eval( sprintf('paramsOutStruct.%s = %s;', paramOut{ii}, paramOut{ii}) );
             end
             
             obj.output.Save(paramsOutStruct, filename);
+            
+            % Save processing stream function calls
+            obj.ExportProcStream(filename, fcalls);
             
             obj.input.misc = [];
             close(hwait);
@@ -368,7 +355,32 @@ classdef ProcStreamClass < handle
         end
         
         
-        
+        % ----------------------------------------------------------------------------------        
+        function ExportProcStream(obj, filename, fcalls)
+            global logger             
+            temp = obj.output.SetFilename(filename);
+            if isempty(temp)
+                return;
+            end
+            [p,f] = fileparts(temp); 
+            fname = [filesepStandard(p), f, '_ProcStream.txt'];
+            if obj.ExportProcStreamFunctions()==true
+                fid = fopen(fname, 'w');                
+                logger.Write('Saving processing stream  %s:\n', fname);
+                for ii = 1:length(fcalls)
+                    fprintf(fid, '%s\n', fcalls{ii});
+                end
+                fclose(fid);
+            else
+                if ispathvalid(fname)
+                    logger.Write('Deleting processing stream  %s:\n', fname);
+                    try
+                        delete(fname)
+                    catch
+                    end
+                end
+            end
+        end        
         
         
         % ----------------------------------------------------------------------------------        
@@ -1742,6 +1754,23 @@ classdef ProcStreamClass < handle
         % ----------------------------------------------------------------------------------
         function ExportMeanHRF_Alt(obj, filename, tblcells)
             obj.output.ExportMeanHRF_Alt(filename, tblcells);
+        end
+        
+    end
+    
+    
+    
+    methods (Static)
+        
+        % ----------------------------------------------------------------------------------
+        function out = ExportProcStreamFunctions(arg)
+            persistent saveProcStream;
+            if nargin == 0
+                out = saveProcStream;
+                return;
+            end
+            saveProcStream = arg;
+            out = saveProcStream;
         end
         
     end

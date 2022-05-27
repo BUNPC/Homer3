@@ -715,16 +715,51 @@ classdef TreeNodeClass < handle
         end
         
         
+        
         % ----------------------------------------------------------------------------------
         function Calc(obj)            
+            
             % Make variables in this subject available to processing stream input
             obj.procStream.input.LoadVars(obj.inputVars);
 
             % Calculate processing stream
-            obj.procStream.Calc([obj.path, obj.GetOutputFilename()]);
+            fcalls = obj.procStream.Calc([obj.path, obj.GetOutputFilename()]); %#ok<NASGU>
+            
         end
         
         
+
+        % ----------------------------------------------------------------------------------
+        function ExportProcStreamFunctionsInit(obj)
+            cfg = ConfigFileClass();
+            val = cfg.GetValue('Export Processing Stream Functions');
+            if strcmpi(val, 'yes')
+                obj.procStream.ExportProcStreamFunctions(true);
+            elseif strcmpi(val, 'no')
+                obj.procStream.ExportProcStreamFunctions(false);
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ExportProcStreamFunctionsClose(obj)
+            if ~obj.procStream.ExportProcStreamFunctions()
+                if ispathvalid([obj.path, obj.outputDirname, 'ProcStreamSummary.txt'])
+                    try
+                        delete([obj.path, obj.outputDirname, 'ProcStreamSummary.txt'])
+                    catch
+                    end
+                end
+                return
+            end
+            fid = fopen([obj.path, obj.outputDirname, 'ProcStreamSummary.txt'], 'w');
+            fprintf(fid, 'SUMMARY :\n');
+            fclose(fid);
+        end
+        
+        
+                
         % ----------------------------------------------------------------------------------
         function FreeMemory(obj)
             if isempty(obj)
@@ -1196,6 +1231,7 @@ classdef TreeNodeClass < handle
             tbl = distinguishable_colors(128);
         end
    
+        
         
         % --------------------------------------------------------------------------------
         function out = SaveMemorySpace(arg)

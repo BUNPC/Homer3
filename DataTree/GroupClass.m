@@ -344,8 +344,8 @@ classdef GroupClass < TreeNodeClass
                     if ~obj.subjs(ii).sess(jj).procStream.IsEmpty()
                         e = obj.subjs(ii).sess(jj);
                     end
-                    for kk = 1:length(obj.subjs(ii).sess)
-                        if ~obj.subjs(ii).sess(jj).procStream.IsEmpty()
+                    for kk = 1:length(obj.subjs(ii).sess(jj).runs)
+                        if ~obj.subjs(ii).sess(jj).runs(kk).procStream.IsEmpty()
                             r = obj.subjs(ii).sess(jj).runs(kk);
                         end
                     end
@@ -909,35 +909,6 @@ classdef GroupClass < TreeNodeClass
     methods
         
         % ----------------------------------------------------------------------------------
-        function RenameCondition(obj, oldname, newname)
-            % Function to rename a condition. Important to remeber that changing the
-            % condition involves 2 distinct well defined steps:
-            %   a) For the current element change the name of the specified (old)
-            %      condition for ONLY for ALL the acquired data elements under the
-            %      currElem, be it run, subj, or group . In this step we DO NOT TOUCH
-            %      the condition names of the run, subject or group .
-            %   b) Rebuild condition names and tables of all the tree nodes group, subjects
-            %      and runs same as if you were loading during Homer3 startup from the
-            %      acquired data.
-            %
-            if ~exist('oldname','var') || ~ischar(oldname)
-                return;
-            end
-            if ~exist('newname','var')  || ~ischar(newname)
-                return;
-            end            
-            newname = obj.ErrCheckNewCondName(newname);
-            if obj.err ~= 0
-                return;
-            end
-            for ii=1:length(obj.subjs)
-                obj.subjs(ii).RenameCondition(oldname, newname);
-            end
-        end
-
-        
-        
-        % ----------------------------------------------------------------------------------
         function SetConditions(obj)
             if isempty(obj)
                 return;
@@ -958,6 +929,7 @@ classdef GroupClass < TreeNodeClass
                 obj.subjs(ii).SetConditions(obj.CondNames);
             end            
         end
+        
         
         % ----------------------------------------------------------------------------------
         function [fn_error, missing_args, prereqs] = CheckProcStreamOrder(obj)

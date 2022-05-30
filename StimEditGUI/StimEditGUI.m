@@ -30,7 +30,7 @@ end
 
 
 % -------------------------------------------------------------
-function varargout = StimEditGUI_OutputFcn(hObject, eventdata, handles)
+function varargout = StimEditGUI_OutputFcn(~, ~, handles)
 handles.updateptr = @Update;
 handles.closeptr = @StimEditGUI_Close;
 handles.saveptr = @Save;
@@ -39,7 +39,7 @@ varargout{1} = handles;
 
 
 % -------------------------------------------------------------------
-function StimEditGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+function StimEditGUI_OpeningFcn(hObject, ~, handles, varargin)
 %
 %  Syntax:
 %
@@ -85,6 +85,8 @@ stimEdit.format = '';
 stimEdit.pos = [];
 stimEdit.updateParentGui = [];
 stimEdit.newCondWarning = false;
+stimEdit.idx = [];
+stimEdit.filename = '';
 
 stimEdit.config.autoSaveAcqFiles = cfg.GetValue('Auto Save Acquisition Files');
 
@@ -109,7 +111,14 @@ if isempty(stimEdit.groupDirs)
     if length(varargin)<1
         stimEdit.groupDirs = filesepStandard({pwd});
     elseif ischar(varargin{1})
-        stimEdit.groupDirs = varargin{1};
+        if ispathvalid(varargin{1}, 'dir')
+            stimEdit.groupDirs = varargin{1};
+        elseif ispathvalid(varargin{1}, 'file')
+            stimEdit.filename = filesepStandard(varargin{1});
+            stimEdit.groupDirs = filesepStandard({pwd});
+        end
+    else
+        stimEdit.idx = varargin{1};
     end
 end
 
@@ -145,6 +154,12 @@ waitbar(istep/nsteps, h, waitmsg); istep = istep+1;
 
 stimEdit.version = get(hObject, 'name');
 stimEdit.dataTree = LoadDataTree(stimEdit.groupDirs, stimEdit.format, '', maingui);
+if ~isempty(stimEdit.idx)
+    stimEdit.dataTree.SetCurrElem(stimEdit.idx(1), stimEdit.idx(2), stimEdit.idx(3), stimEdit.idx(4));
+elseif ~isempty(stimEdit.filename)
+    stimEdit.idx = stimEdit.dataTree.FindProcElem(stimEdit.filename);
+    stimEdit.dataTree.SetCurrElem(stimEdit.idx(1), stimEdit.idx(2), stimEdit.idx(3), stimEdit.idx(4));
+end
 if stimEdit.dataTree.IsEmpty()
     close(h);
     return;
@@ -163,7 +178,7 @@ waitbar(istep/nsteps, h, waitmsg); istep = istep+1;
 
 InitCurrElem(stimEdit);
 
-waitbar(istep/nsteps, h, waitmsg); istep = istep+1;
+waitbar(istep/nsteps, h, waitmsg);
 
 set(get(handles.axes1,'children'), 'ButtonDownFcn', @axes1_ButtonDownFcn);
 zoom(hObject,'off');
@@ -180,14 +195,14 @@ close(h);
 
 
 % --------------------------------------------------------------------
-function pushbuttonExit_Callback(hObject, eventdata, handles)
+function pushbuttonExit_Callback(~, ~, handles)
 if ishandles(handles.figure)
     delete(handles.figure);
 end
 
 
 % --------------------------------------------------------------------
-function popupmenuConditions_Callback(hObject, eventdata, handles)
+function popupmenuConditions_Callback(hObject, ~, handles)
 conditions = get(hObject, 'string');
 idx = get(hObject, 'value');
 condition = conditions{idx};
@@ -195,7 +210,7 @@ SetUitableStimInfo(condition, handles);
 
 
 %---------------------------------------------------------------------------
-function editSelectTpts_Callback(hObject, eventdata, handles)
+function editSelectTpts_Callback(hObject, ~, handles)
 global stimEdit
 tPts_select = str2num(get(hObject,'string'));
 if isempty(tPts_select)
@@ -237,7 +252,7 @@ figure(handles.figure);
 
 
 %---------------------------------------------------------------------------
-function menuItemRenameCondition_Callback(hObject, eventdata, handles)
+function menuItemRenameCondition_Callback(~, ~, handles)
 global stimEdit
 
 % Function to rename a condition. Important to remeber that changing the
@@ -253,7 +268,7 @@ global stimEdit
 
 % Get the name of the condition you want to rename
 conditions = get(handles.popupmenuConditions, 'string');
-[index, tf] = listdlg('PromptString', {'Rename which condition?', 'This action is applied to all runs and cannot be undone!'},...
+index = listdlg('PromptString', {'Rename which condition?', 'This action is applied to all runs and cannot be undone!'},...
         'SelectionMode', 'single', 'ListString', conditions);
 if isempty(index)
    return 
@@ -371,7 +386,7 @@ else
     tPts_idxs_select = min(find(abs(t-t1)<tVals));
 end
 stims_select = GetStimsFromTpts(tPts_idxs_select);
-if isempty(stims_select) & ~all(t1==t2)
+if isempty(stims_select) && ~all(t1==t2)
     MessageBox( 'Drag mouse around the stim to edit.');
     return;
 end
@@ -382,6 +397,7 @@ AddEditDelete(tPts_idxs_select, stims_select);
 if ~isempty(h)
     delete(h);
 end
+
 
 
 % ------------------------------------------------
@@ -448,13 +464,9 @@ menu_choice = MenuBox(menuTitleStr, actionLst, 'centerright');
 
 
 % ------------------------------------------------
-function err = IsCondError(CondName, overrideLength)
+function err = IsCondError(CondName, ~)
 global stimEdit
 err = 0;
-
-if ~exist('overrideLength','var')
-    overrideLength = false;
-end
 
 iG = stimEdit.locDataTree.GetCurrElemIndexID();
 CondNamesGroup = stimEdit.locDataTree.groups(iG).GetConditions();
@@ -717,12 +729,12 @@ close(h)
 
 
 % --------------------------------------------------------------------
-function pushbuttonWriteToFile_Callback(hObject, eventdata, handles)
+function pushbuttonWriteToFile_Callback(~, ~, ~)
 Save()
 
 
 % -------------------------------------------------------------------
-function StimEditGUI_DeleteFcn(hObject, eventdata, handles)
+function StimEditGUI_DeleteFcn(~, ~, ~)
 global stimEdit
 global cfg
 
@@ -760,7 +772,7 @@ StimEditGUI();
 
 
 % --------------------------------------------------------------------
-function menuItemSaveGroup_Callback(hObject, eventdata, handles)
+function menuItemSaveGroup_Callback(hObject, ~, ~)
 global stimEdit
 if ~ishandles(hObject)
     return;
@@ -803,7 +815,7 @@ figure(handles.figure);
 
 
 % -----------------------------------------------------------
-function EnableGuiObjects(onoff, handles)
+function EnableGuiObjects(~, handles)
 if ~exist('handles','var') || isempty(handles)
     return;
 end
@@ -817,7 +829,7 @@ end
 
 
 % -----------------------------------------------------------
-function enableHandle(handle, onoff)
+function enableHandle(handle, ~)
 if eval( sprintf('ishandles(obj.handles.%s)', handle) )
     eval( sprintf('set(obj.handles.%s, ''enable'',onoff);', handle) );
 end

@@ -296,9 +296,6 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 obj.InitCondNames();
             end
             
-            % Always sort stimulus conditions and associated stims
-            % to have a predictable order for display
-            obj.SortStims();
         end
         
         
@@ -468,7 +465,12 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             
             % Copy mutable properties to new object instance;
             objnew.SD         = obj.SD;
+
+            % Always sort stimulus conditions and associated stims
+            % to have a predictable order for display
             objnew.s          = obj.s;
+            obj.SortStims();
+            
             objnew.CondNames  = obj.CondNames;
         end
         

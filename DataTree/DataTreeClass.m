@@ -466,6 +466,33 @@ classdef DataTreeClass <  handle
 
         
         % ----------------------------------------------------------
+        function idx = FindProcElem(obj, name)
+            idx = [];
+            for ii = 1:length(obj.groups)
+                if strcmp(name, obj.groups(ii).GetName())
+                    idx = obj.groups(ii).GetIndexID();
+                    break;
+                end
+                if strcmp(name, obj.groups(ii).GetFilename())
+                    idx = obj.groups(ii).GetIndexID();
+                    break;
+                end
+                idx = obj.groups(ii).FindProcElem(name);
+                if ~isempty(idx)
+                    break;
+                end
+            end
+        end
+        
+        
+        % ----------------------------------------------------------
+        function CondNames = GetConditions(obj)
+             iG = obj.GetCurrElem().iGroup;
+             CondNames = obj.groups(iG).GetConditions();
+        end
+        
+        
+        % ----------------------------------------------------------
         function ErrorCheckLoadedFiles(obj)
             if isempty(obj.filesErr)
                 return

@@ -161,6 +161,14 @@ classdef TreeNodeClass < handle
                 obj.iSubj = obj2.iSubj;
                 obj.iSess = obj2.iSess;
                 obj.iRun = obj2.iRun;
+                switch(class(obj2.children))
+                    case 'SubjClass'
+                        obj.children = obj.subjs;
+                    case 'SessClass'
+                        obj.children = obj.sess;
+                    case 'RunClass'                        
+                        obj.children = obj.runs;
+                end
             end
             if ~isempty(obj2.procStream)
                 [pathname, filename] = fileparts([obj.path, obj.GetOutputFilename()]);                
@@ -221,6 +229,34 @@ classdef TreeNodeClass < handle
             end
             if nargin>4
                 obj.iRun = iRun;
+            end
+        end
+        
+        
+        % ----------------------------------------------------------
+        function idx = FindProcElem(obj, name)
+            idx = [];
+            if strcmp(name, obj.GetName())
+                idx = obj.GetIndexID();
+                return;
+            end
+            if strcmp(name, obj.GetFilename())
+                idx = obj.GetIndexID();
+                return;
+            end
+            for ii = 1:length(obj.children)
+                if strcmp(name, obj.children(ii).GetName())
+                    idx = obj.children(ii).GetIndexID();
+                    return;
+                end
+                if strcmp(name, obj.children(ii).GetFilename())
+                    idx = obj.children(ii).GetIndexID();
+                    return;
+                end
+                idx = obj.children(ii).FindProcElem(name);
+                if ~isempty(idx)
+                    return;
+                end
             end
         end
         
@@ -486,6 +522,34 @@ classdef TreeNodeClass < handle
         end
 
         
+        % ----------------------------------------------------------------------------------
+        function RenameCondition(obj, oldname, newname)
+            % Function to rename a condition. Important to remeber that changing the
+            % condition involves 2 distinct well defined steps:
+            %   a) For the current element change the name of the specified (old)
+            %      condition for ONLY for ALL the acquired data elements under the
+            %      currElem, be it session, subj, or group . In this step we DO NOT TOUCH
+            %      the condition names of the session, subject or group .
+            %   b) Rebuild condition names and tables of all the tree nodes group, subjects
+            %      and sessions same as if you were loading during Homer3 startup from the
+            %      acquired data.
+            %
+            if ~exist('oldname','var') || ~ischar(oldname)
+                return;
+            end
+            if ~exist('newname','var')  || ~ischar(newname)
+                return;
+            end            
+            newname = obj.ErrCheckNewCondName(newname);
+            if obj.err ~= 0
+                return;
+            end
+            for ii = 1:length(obj.children)
+                obj.children(ii).RenameCondition(oldname, newname);
+            end
+        end
+        
+                
         % ----------------------------------------------------------------------------------
         function idx = GetConditionIdx(obj, CondName)
             C = obj.GetConditions();

@@ -613,35 +613,6 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function RenameCondition(obj, oldname, newname)
-            % Function to rename a condition. Important to remeber that changing the
-            % condition involves 2 distinct well defined steps:
-            %   a) For the current element change the name of the specified (old)
-            %      condition for ONLY for ALL the acquired data elements under the
-            %      currElem, be it session, subj, or group . In this step we DO NOT TOUCH
-            %      the condition names of the session, subject or group .
-            %   b) Rebuild condition names and tables of all the tree nodes group, subjects
-            %      and sessions same as if you were loading during Homer3 startup from the
-            %      acquired data.
-            %
-            if ~exist('oldname','var') || ~ischar(oldname)
-                return;
-            end
-            if ~exist('newname','var')  || ~ischar(newname)
-                return;
-            end            
-            newname = obj.ErrCheckNewCondName(newname);
-            if obj.err ~= 0
-                return;
-            end
-            for ii = 1:length(obj.sess)
-                obj.sess(ii).RenameCondition(oldname, newname);
-            end
-        end
-        
-        
-        
-        % ----------------------------------------------------------------------------------
         function aux = GetAuxiliary(obj)
             aux = [];
         end

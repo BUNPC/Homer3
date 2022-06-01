@@ -10,7 +10,6 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
         function obj = MetaDataTagsClass(varargin)
             % Set class properties not part of the SNIRF format
             obj.SetFileFormat('hdf5');
-
             obj.tags.SubjectID = 'default';
             obj.tags.MeasurementDate = datestr(now,29);
             obj.tags.MeasurementTime = datestr(now,'hh:mm:ss');
@@ -174,6 +173,14 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
                 eval(sprintf('tags(ii).key = ''%s'';', fields{ii}));
                 eval(sprintf('tags(ii).value = obj.tags.%s;', fields{ii}));
             end
+        end
+        
+         % ----------------------------------------------------------------------------------
+        function Set(obj, name, value)
+            if ~exist('name', 'var') || ~exist('value', 'var')
+                retrun
+            end                                     
+            eval( sprintf('obj.tags.%s = ''%s''', name, value) )   
         end
         
         

@@ -480,7 +480,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % -------------------------------------------------------
         function err = LoadProbe(obj, fileobj, ~)
             % get lenth unit through class method
-            LengthUnit = obj.metaDataTags.Get('LengthUnit').value;
+            LengthUnit = obj.metaDataTags.Get('LengthUnit');
             obj.probe = ProbeClass();
             err = obj.probe.LoadHdf5(fileobj, [obj.location, '/probe'], LengthUnit);
             obj.metaDataTags.Set('LengthUnit','mm');

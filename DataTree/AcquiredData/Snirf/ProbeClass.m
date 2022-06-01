@@ -135,7 +135,6 @@ classdef ProbeClass < FileLoadSaveClass
             [x,y] = pol2cart(azimuth,elevation);      % get plane coordinates
             xy = [x y];
             xy = xy/norm_factor;               % set maximum to unit length
-            xy = xy/2 + 0.5;
         end
 
         

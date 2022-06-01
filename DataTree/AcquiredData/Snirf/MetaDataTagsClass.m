@@ -192,7 +192,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             if ~exist('name', 'var') || ~exist('value', 'var')
                 retrun
             end                                     
-            eval( sprintf('obj.tags.%s = ''%s''', name, value) )   
+            eval( sprintf('obj.tags.%s = ''%s'';', name, value) )   
         end
         
         

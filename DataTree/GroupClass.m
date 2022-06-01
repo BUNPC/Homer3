@@ -307,7 +307,7 @@ classdef GroupClass < TreeNodeClass
                 subj.SetIndexID(obj.iGroup, jj);
                 subj.SetPath(obj.path);                      % Inherit root path from group
                 obj.subjs(jj) = subj;
-                obj.logger.Write('   Added subject %s to group %s.\n', obj.subjs(jj).GetFileName, obj.GetFileName);
+                obj.logger.Write('   Added subject  "%s"  to group  "%s" .\n', obj.subjs(jj).GetFileName, obj.GetFileName);
             end
                         
             % Add sess to subj

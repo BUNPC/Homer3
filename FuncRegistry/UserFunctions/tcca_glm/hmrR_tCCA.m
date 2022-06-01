@@ -123,10 +123,8 @@ if flagtCCA
         t        = data(iBlk).GetTime();
         ml       = data(iBlk).GetMeasListSrcDetPairs();
         
-        
         fq = 1/(t(2)-t(1));
-        
-        
+                
         % get  a list of active channels
         if isempty(mlActMan{iBlk})
             mlActMan{iBlk} = ones(size(ml,1)*2,1);
@@ -135,9 +133,6 @@ if flagtCCA
             mlActAuto{iBlk} = ones(size(ml,1)*2,1);
         end
         MeasListAct = mlActMan{iBlk} & mlActAuto{iBlk};
-        
-        
-        
         
         %% find the list of short and long distance channels
         lst = 1:size(ml,1);
@@ -149,9 +144,7 @@ if flagtCCA
         end
         lstSS = lst(find(rhoSD<=rhoSD_ssThresh &  MeasListAct(lst)==1)); %#ok<*FNDSB>
         lstLS = lst(find(rhoSD>rhoSD_ssThresh & MeasListAct(lst)==1));
-        
-        
-        
+       
         %% get long and short separation data
         if strncmp(datatype{1}, 'Hb', 2)
             dHbO = squeeze(d(:,1,:));
@@ -169,14 +162,12 @@ if flagtCCA
         
         %% Select and prepare aux channels
         % Extract variables from SNIRF aux
-        kk = 1;
-        for ii = 1:length(aux)
-            % only selected aux channels
-            if ismember(ii, tCCAaux_inx)
-                AUX(:,kk) = aux(ii).GetDataTimeSeries();
-                kk = kk+1;
-            end
-        end
+        s = SnirfClass();
+        s.data = data;
+        s.aux = aux;
+        AUX = s.GetAuxDataMatrix();
+        AUX = AUX(:,tCCAaux_inx);
+
         % AUX signals + add ss signal if it exists
         if exist('AUX') & ss_ch_on == 1 & ~isempty(d_short)
             AUX = [AUX, d_short]; 
@@ -232,7 +223,7 @@ if flagtCCA
                     %reduce filter matrix with the help of correlation threshold or max number of regressors
                     if ctr < 1
                         % use only auxiliary tcca components that have correlation > ct
-                        compindex=find(ADD_trn.ccac > ctr);
+                        compindex = find(ADD_trn.ccac > ctr);
                         % throw a warning that overfitting might occur if
                         % all regressor's correlations are > ctr
                         if numel(compindex) == numel(ADD_trn.ccac)
@@ -274,7 +265,7 @@ if flagtCCA
                 fprintf('hmrR_tCCA: run idx = %d. Generated and Saved tCCAfilter\n', runIdx)
                 save(filterFilename, '-ascii', 'tCCAfilter');
                 fprintf('Canonical correlation coefficients of all trained regressors:')
-                ADD_trn.ccac(compindex)
+                ADD_trn.ccac(compindex);
             case 'apply'
                 %% if the tCCAfilter variable exists, load it, apply the filtering and generate the tCCA regressors
                 % Load the filter for the iBlk data block
@@ -284,10 +275,10 @@ if flagtCCA
                 % Temporal embedding and zscoring of auxiliary data
                 aux_sigs = AUX;
                 aux_emb = aux_sigs;
-                for i=1:param.NumOfEmb
-                    aux = circshift(aux_sigs, i*param.tau, 1);
-                    aux(1:2*i,:) = repmat(aux(2*i+1,:),2*i,1);
-                    aux_emb = [aux_emb aux];
+                for i = 1:param.NumOfEmb
+                    auxmat = circshift(aux_sigs, i*param.tau, 1);
+                    auxmat(1:2*i,:) = repmat(auxmat(2*i+1,:),2*i,1);
+                    aux_emb = [aux_emb auxmat];
                 end
                 %zscore
                 aux_emb = zscore(aux_emb);

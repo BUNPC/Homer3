@@ -4,7 +4,7 @@ if ~ischar(s)
     s2 = s;
     return;
 end
-[c, k] = str2cell(s, '''');
+[c, k] = str2cell(s, '''', 'keepblanks');
 for ii = 1:length(c)
     if isempty(s2)
         s2 = c{ii};

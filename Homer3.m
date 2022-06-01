@@ -38,12 +38,14 @@ elseif unitTest.IsEmpty()
 else
     return;
 end
+
 logger.CurrTime();
 cfg = ConfigFileClass();
 if strcmp(cfg.GetValue('Logging'), 'off')
     logger.SetDebugLevel(logger.Null());
 end
-PrintSystemInfo(logger, 'Homer3');
+
+PrintSystemInfo(logger, 'Homer3', getArgs(groupDirs, inputFileFormat, unitTest, nargin));
 checkForHomerUpdates();
 gdir = cfg.GetValue('Last Group Folder');
 if isempty(gdir)
@@ -63,7 +65,19 @@ catch ME
     rethrow(ME);
 end
 
-if isempty(unitTest)
-	logger.Close();
+
+
+
+% ------------------------------------------------------------------------
+function args = getArgs(groupDirs, inputFileFormat, unitTest, nargin)
+if nargin == 0
+    args = {};
+elseif nargin == 1
+    args = {groupDirs};
+elseif nargin == 2
+    args = {groupDirs, inputFileFormat};
+elseif nargin == 3
+    args = {groupDirs, inputFileFormat, unitTest};
 end
+   
 

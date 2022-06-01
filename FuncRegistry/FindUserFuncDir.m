@@ -10,8 +10,8 @@ rootdirRegsitry = [dirnameApp, 'FuncRegistry/UserFunctions/'];
 if ~ispathvalid(rootdirRegsitry)
     rootdirRegsitry = filesepStandard([dirnameApp, '../FuncRegistry/UserFunctions/']);
     if ~ispathvalid(rootdirRegsitry)
-    return;
-end
+    	return;
+	end
 end
 userfuncdir{1} = rootdirRegsitry;
 dirs = dir([userfuncdir{1}, '*']);

@@ -19,6 +19,7 @@ classdef FileClass < matlab.mixin.Copyable
         rootdir
         err
         logger
+        errmsgs
     end
     
     methods
@@ -39,6 +40,8 @@ classdef FileClass < matlab.mixin.Copyable
             obj.rootdir    = '';
             obj.err        = -1;          % Assume file is not loadable
             obj.logger     = InitLogger(logger);            
+            obj.errmsgs    = {'Invalid Data Format','Invalid File Name'};
+            
             
             if nargin==0
                 return;
@@ -59,7 +62,7 @@ classdef FileClass < matlab.mixin.Copyable
             else
                 file.rootdir = pwd;
             end
-            file.rootdir = filesepStandard(file.rootdir);            
+            file.rootdir = filesepStandard(file.rootdir, 'full');            
             
             obj.Add(file);
         end
@@ -75,15 +78,15 @@ classdef FileClass < matlab.mixin.Copyable
             end
             
             if isproperty(obj2, 'folder')
-                rootdir = [filesepStandard(obj2.folder), obj2.name]; %#ok<*PROPLC>
+                rootpath = [filesepStandard(obj2.folder), obj2.name]; %#ok<*PROPLC>
             else
-                rootdir = [filesepStandard(obj2.rootdir), obj2.name];                
+                rootpath = [filesepStandard(obj2.rootdir), obj2.name];                
             end
             
             obj.idx          = obj.idx+1;
             obj.isdir        = obj2.isdir;
             obj.filename     = obj2.name;
-            obj.name         = getPathRelative(rootdir, obj2.rootdir);
+            obj.name         = getPathRelative(rootpath, obj2.rootdir);
             obj.rootdir 	 = obj2.rootdir;
             obj.err          = 0;          % Set error to NO ERROR            
         end
@@ -116,7 +119,11 @@ classdef FileClass < matlab.mixin.Copyable
                 end
                 dirname(k) = '*';
             end
-            file = dir(dirname);
+            temp = dir(dirname);
+            if isempty(temp)
+                return;
+            end
+            file = temp(1);
         end
         
         
@@ -191,8 +198,8 @@ classdef FileClass < matlab.mixin.Copyable
             %       R2.ext          ==>  [G1,  sub_R2,  ses_sub_R2,  R2]
             %       R3.ext          ==>  [G1,  sub_R3,  ses_sub_R3,  R3]
             if obj.IsFile && length(parts)==1 && length(subparts)==1
-                subjName = ['sub_', fname];
-                sessName = ['ses_', subjName];
+                subjName = ['sub-', fname];
+                sessName = ['ses-', subjName];
                 runName  = obj.name;
             end
 
@@ -209,7 +216,7 @@ classdef FileClass < matlab.mixin.Copyable
             %       S3_R3.ext       ==>  [G1,  S2,  ses_S2_R3,  R3]
             if obj.IsFile && length(parts)==1 && length(subparts)==2
                 subjName = subparts{1};
-                sessName = ['ses_', subjName, '_', fname];
+                sessName = ['ses-', subjName, '_', subjName];
                 runName  = obj.name;
             end
             
@@ -258,7 +265,7 @@ classdef FileClass < matlab.mixin.Copyable
                 subjName = obj.name;
             elseif obj.IsFile && length(parts)==2
                 subjName = parts{1};
-                sessName = [subjName, '/ses-', fname];
+                sessName = [subjName, '/ses-', subjName];
                 runName  = obj.name;
             end
             
@@ -535,6 +542,20 @@ classdef FileClass < matlab.mixin.Copyable
         end
         
         
+        % -----------------------------------------------------
+        function err = SetError(obj, err)
+            if ischar(err)
+                err = find(strcmp(obj.errmsgs, err));
+            end
+            obj.err = err;
+        end
+        
+        
+        % -----------------------------------------------------
+        function msg = GetErrorMsg(obj)
+            msg = obj.errmsgs{abs(obj.err)};
+        end
+        
     end
-       
+  
 end

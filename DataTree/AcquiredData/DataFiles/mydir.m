@@ -77,7 +77,7 @@ if ~exist('pathname','var') || isempty(pathname)
     pathname = pwd;
 end
 if ~exist('pathroot','var') || isempty(pathroot)
-    pathroot = pwd;
+    pathroot = fileparts(pathname);
 end
 
 if ispathvalid(pathname, 'dir') && ~includes(pathname, '*')

@@ -848,7 +848,7 @@ global maingui
 LaunchChildGuiFromMenu('PlotProbeGUI', hObject, GetDatatype(handles), maingui.condition);
 
 % --------------------------------------------------------------------
-function menuItemPlotProbe2_Callback(hObject, ~, handles)
+% function menuItemPlotProbe2_Callback(hObject, ~, handles)
 % global maingui
 
 %%%% It will be in the next release

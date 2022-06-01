@@ -21,6 +21,7 @@ classdef ProbeClass < FileLoadSaveClass
     end
     
     
+    
     methods
         
         % -------------------------------------------------------
@@ -145,70 +146,69 @@ classdef ProbeClass < FileLoadSaveClass
             if isempty(obj.sourcePos2D) && isempty(obj.detectorPos2D)
                 if isempty(obj.landmarkPos3D)
                     if ~isempty(obj.sourcePos3D)
-                        obj.sourcePos2D = obj.sourcePos3D(:,1:2);
+                        obj.sourcePos2D = project_3D_to_2D(obj.sourcePos3D);
                     end
                     if ~isempty(obj.detectorPos3D)
-                        obj.detectorPos2D = obj.detectorPos3D(:,1:2);
+                        obj.detectorPos2D = project_3D_to_2D(obj.detectorPos3D);
                     end
 %                     if isfield(obj,'DummyPos3D') & ~isempty(obj.DummyPos3D)
 %                         obj.DummyPos2D = obj.DummyPos3D(:,1:2);
 %                     end
                 else
-                    [sphere.label, sphere.theta, sphere.phi, sphere.r, sphere.xc, sphere.yc, sphere.zc] = textread('10-5-System_Mastoids_EGI129.csd','%s %f %f %f %f %f %f','commentstyle','c++');
-                    % ref pt labels used for affine transformation
-                    refpts_labels = {'T7','T8','Oz','Fpz','Cz','C3','C4','Pz','Fz'};
+                     if ~isempty(obj.sourcePos3D) && ~isempty(obj.detectorPos3D)
+                        [sphere.label, sphere.theta, sphere.phi, sphere.r, sphere.xc, sphere.yc, sphere.zc] = textread('10-5-System_Mastoids_EGI129.csd','%s %f %f %f %f %f %f','commentstyle','c++');
+                        % ref pt labels used for affine transformation
+                        refpts_labels = {'T7','T8','Oz','Fpz','Cz','C3','C4','Pz','Fz'};
 
-                    % get positions for refpts_labels from both sphere and probe ref pts
-                    for u = 1:length(refpts_labels)
-                        label = refpts_labels{u};
+                        % get positions for refpts_labels from both sphere and probe ref pts
+                        for u = 1:length(refpts_labels)
+                            label = refpts_labels{u};
 
-                        idx = ismember(obj.landmarkLabels, label);
-                        if isempty(idx)
-                            return
+                            idx = ismember(obj.landmarkLabels, label);
+                            if isempty(idx)
+                                return
+                            end
+                            probe_refps_pos(u,:) = obj.landmarkPos3D(idx,:);
+                            idx = ismember(sphere.label, label);
+                            sphere_refpts_pos(u,:) = [sphere.xc(idx) sphere.yc(idx) sphere.zc(idx)];
                         end
-                        probe_refps_pos(u,:) = obj.landmarkPos3D(idx,:);
-                        idx = ismember(sphere.label, label);
-                        sphere_refpts_pos(u,:) = [sphere.xc(idx) sphere.yc(idx) sphere.zc(idx)];
-                    end
 
-                    % get affine transformation
-                    % probe_refps*T = sphere_refpts
-                    probe_refps_pos = [probe_refps_pos ones(size(probe_refps_pos,1),1)];
-                    T = probe_refps_pos\sphere_refpts_pos;
+                        % get affine transformation
+                        % probe_refps*T = sphere_refpts
+                        probe_refps_pos = [probe_refps_pos(:,1:3) ones(size(probe_refps_pos,1),1)];
+                        T = probe_refps_pos\sphere_refpts_pos;
 
-                    % tranform optode positions onto unit sphere.
-                    % opt_pos = probe.optpos_reg;
-                    % opt_pos = [opt_pos ones(size(opt_pos,1),1)];
-                    % sphere_opt_pos = opt_pos*T;
-                    % sphere_opt_pos_norm = sqrt(sum(sphere_opt_pos.^2,2));
-                    % sphere_opt_pos = sphere_opt_pos./sphere_opt_pos_norm ;
-                    %%
-                    % get 2D circular refpts for current selecetd reference point system
-                    probe_refpts_idx =  ismember(sphere.label, obj.landmarkLabels);
+                        % tranform optode positions onto unit sphere.
+                        % opt_pos = probe.optpos_reg;
+                        % opt_pos = [opt_pos ones(size(opt_pos,1),1)];
+                        % sphere_opt_pos = opt_pos*T;
+                        % sphere_opt_pos_norm = sqrt(sum(sphere_opt_pos.^2,2));
+                        % sphere_opt_pos = sphere_opt_pos./sphere_opt_pos_norm ;
+                        %%
+                        % get 2D circular refpts for current selecetd reference point system
+                        probe_refpts_idx =  ismember(sphere.label, obj.landmarkLabels);
 
-                    % refpts_2D.pos = [sphere_xc(probe_refpts_idx) sphere_yc(probe_refpts_idx) sphere_zc(probe_refpts_idx)];
-                    refpts_2D.label = sphere.label(probe_refpts_idx);
-                    %%
-                    refpts_theta =  sphere.theta(probe_refpts_idx);
-                    refpts_phi = 90 - sphere.phi(probe_refpts_idx); % elevation angle from top axis
+                        % refpts_2D.pos = [sphere_xc(probe_refpts_idx) sphere_yc(probe_refpts_idx) sphere_zc(probe_refpts_idx)];
+                        refpts_2D.label = sphere.label(probe_refpts_idx);
+                        %%
+                        refpts_theta =  sphere.theta(probe_refpts_idx);
+                        refpts_phi = 90 - sphere.phi(probe_refpts_idx); % elevation angle from top axis
 
-                    refpts_theta = (2 * pi * refpts_theta) / 360; % convert to radians
-                    refpts_phi = (2 * pi * refpts_phi) / 360;
-                    [x,y] = pol2cart(refpts_theta, refpts_phi);      % get plane coordinates
-                    xy = [x y];
+                        refpts_theta = (2 * pi * refpts_theta) / 360; % convert to radians
+                        refpts_phi = (2 * pi * refpts_phi) / 360;
+                        [x,y] = pol2cart(refpts_theta, refpts_phi);      % get plane coordinates
+                        xy = [x y];
 
-                    %%
-                    norm_factor = max(max(xy));
-                    xy = xy/norm_factor;               % set maximum to unit length
-                    xy = xy/2 + 0.5;                    % adjust to range 0-1
-                    refpts_2D.pos = xy;
-                    obj.landmarkPos2D = refpts_2D.pos;
+                        %%
+                        norm_factor = max(max(xy));
+                        xy = xy/norm_factor;               % set maximum to unit length
+                        xy = xy/2 + 0.5;                    % adjust to range 0-1
+                        refpts_2D.pos = xy;
+                        obj.landmarkPos2D = refpts_2D.pos;
 
-                    %%
-                    if ~isempty(obj.sourcePos3D)
+                        %%
+
                         obj.sourcePos2D = convert_optodepos_to_circlular_2D_pos(obj, obj.sourcePos3D, T, norm_factor);
-                    end
-                    if ~isempty(obj.detectorPos3D)
                         obj.detectorPos2D = convert_optodepos_to_circlular_2D_pos(obj, obj.detectorPos3D, T, norm_factor);
                     end
 %                     if isfield(obj,'DummyPos3D') & ~isempty(obj.DummyPos3D)
@@ -236,7 +236,7 @@ classdef ProbeClass < FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function err = LoadHdf5(obj, fileobj, location)
+        function err = LoadHdf5(obj, fileobj, location, LengthUnit)
             err = 0;
             
             % Arg 1
@@ -250,6 +250,19 @@ classdef ProbeClass < FileLoadSaveClass
             elseif location(1)~='/'
                 location = ['/',location];
             end
+            
+            % Arg3
+            scaling = 1;
+            if exist('LengthUnit','var')
+                if strcmpi(LengthUnit,'m')
+                    scaling = 1000;
+                elseif strcmpi(LengthUnit,'cm')
+                    scaling = 10;
+                end
+            end
+            
+            
+
               
             % Error checking            
             if ~isempty(fileobj) && ischar(fileobj)
@@ -269,12 +282,12 @@ classdef ProbeClass < FileLoadSaveClass
                 % Load datasets
                 obj.wavelengths               = HDF5_DatasetLoad(gid, 'wavelengths');
                 obj.wavelengthsEmission       = HDF5_DatasetLoad(gid, 'wavelengthsEmission');
-                obj.sourcePos2D               = HDF5_DatasetLoad(gid, 'sourcePos2D', [], '2D');
-                obj.detectorPos2D             = HDF5_DatasetLoad(gid, 'detectorPos2D', [], '2D');
-                obj.landmarkPos2D             = HDF5_DatasetLoad(gid, 'landmarkPos2D', [], '2D');
-                obj.sourcePos3D               = HDF5_DatasetLoad(gid, 'sourcePos3D', [], '3D');
-                obj.detectorPos3D             = HDF5_DatasetLoad(gid, 'detectorPos3D', [], '3D');
-                obj.landmarkPos3D             = HDF5_DatasetLoad(gid, 'landmarkPos3D', [], '2D');
+                obj.sourcePos2D               = HDF5_DatasetLoad(gid, 'sourcePos2D', [], '2D')*scaling;
+                obj.detectorPos2D             = HDF5_DatasetLoad(gid, 'detectorPos2D', [], '2D')*scaling;
+                obj.landmarkPos2D             = HDF5_DatasetLoad(gid, 'landmarkPos2D', [], '2D')*scaling;
+                obj.sourcePos3D               = HDF5_DatasetLoad(gid, 'sourcePos3D', [], '3D')*scaling;
+                obj.detectorPos3D             = HDF5_DatasetLoad(gid, 'detectorPos3D', [], '3D')*scaling;
+                obj.landmarkPos3D             = HDF5_DatasetLoad(gid, 'landmarkPos3D', [], '2D')*scaling;
                 obj.frequencies               = HDF5_DatasetLoad(gid, 'frequencies');
                 obj.timeDelays                 = HDF5_DatasetLoad(gid, 'timeDelays');
                 obj.timeDelayWidths            = HDF5_DatasetLoad(gid, 'timeDelayWidths');
@@ -337,7 +350,8 @@ classdef ProbeClass < FileLoadSaveClass
             if ~exist(fileobj, 'file')
                 fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
-            end     
+            end 
+            
             hdf5write_safe(fileobj, [location, '/wavelengths'], obj.wavelengths, 'array');
             hdf5write_safe(fileobj, [location, '/wavelengthsEmission'], obj.wavelengthsEmission, 'array');
             hdf5write_safe(fileobj, [location, '/sourcePos2D'], obj.sourcePos2D, 'array');
@@ -356,6 +370,7 @@ classdef ProbeClass < FileLoadSaveClass
             hdf5write_safe(fileobj, [location, '/detectorLabels'], obj.detectorLabels, 'array');
             hdf5write_safe(fileobj, [location, '/landmarkLabels'], obj.landmarkLabels, 'array');
         end
+        
         
         
         

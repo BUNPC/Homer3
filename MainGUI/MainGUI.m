@@ -138,7 +138,7 @@ set(handles.checkboxApplyProcStreamEditToAll, 'enable', val);
 % Menu
 set(handles.ToolsMenu, 'enable', val);
 set(handles.ViewMenu, 'enable', val);
-set(handles.menuItemSaveGroup, 'enable', val);
+set(handles.menuItemSaveGroups, 'enable', val);
 set(handles.menuItemExport, 'enable', val);
 set(handles.menuItemReset, 'enable', val);
 set(handles.menuItemResetGroupFolder, 'enable', val)
@@ -165,7 +165,7 @@ set(handles.checkboxApplyProcStreamEditToAll, 'enable', val);
 % Menu
 set(handles.ToolsMenu, 'enable', val);
 set(handles.ViewMenu, 'enable', val);
-set(handles.menuItemSaveGroup, 'enable', val);
+set(handles.menuItemSaveGroups, 'enable', val);
 set(handles.menuItemExport, 'enable', val);
 set(handles.menuItemReset, 'enable', val);
 set(handles.menuItemResetGroupFolder, 'enable', val)
@@ -868,12 +868,12 @@ LaunchChildGuiFromMenu('PvaluesDisplayGUI', hObject);
 
 
 % --------------------------------------------------------------------
-function [eventdata, handles] = menuItemSaveGroup_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = menuItemSaveGroups_Callback(hObject, eventdata, handles)
 global maingui
 if ~ishandles(hObject)
     return;
 end
-maingui.dataTree.currElem.Save();
+maingui.dataTree.Save();
 
 
 

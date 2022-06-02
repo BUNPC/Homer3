@@ -161,6 +161,7 @@ classdef TreeNodeClass < handle
                 obj.iSubj = obj2.iSubj;
                 obj.iSess = obj2.iSess;
                 obj.iRun = obj2.iRun;
+                obj.CondNames = obj2.CondNames;
                 switch(class(obj2.children))
                     case 'SubjClass'
                         obj.children = obj.subjs;

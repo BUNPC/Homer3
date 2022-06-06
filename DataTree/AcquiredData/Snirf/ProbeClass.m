@@ -136,14 +136,27 @@ classdef ProbeClass < FileLoadSaveClass
             xy = [x y];
             xy = xy/norm_factor;               % set maximum to unit length
         end
+        
+        
+        % ----------------------------------------------
+        function isValid = isValidLandmarkLabels(obj)
+            isValid = 1;
+            refpts_labels = {'T7','T8','Oz','Fpz','Cz','C3','C4','Pz','Fz'};
+            for u = 1:length(refpts_labels)
+                label = refpts_labels{u};
+                idx = ismember(obj.landmarkLabels, label);
+                if sum(idx) == 0
+                    isValid = 0;
+                    return
+                end
+            end 
+        end
 
-        
-        
         % -------------------------------------------------------
         function Project_3D_to_2D(obj) 
             
             if isempty(obj.sourcePos2D) && isempty(obj.detectorPos2D)
-                if isempty(obj.landmarkPos3D)
+                if isempty(obj.landmarkPos3D) || ~obj.isValidLandmarkLabels()
                     if ~isempty(obj.sourcePos3D)
                         obj.sourcePos2D = project_3D_to_2D(obj.sourcePos3D);
                     end

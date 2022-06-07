@@ -157,15 +157,24 @@ classdef ProbeClass < FileLoadSaveClass
             
             if isempty(obj.sourcePos2D) && isempty(obj.detectorPos2D)
                 if isempty(obj.landmarkPos3D) || ~obj.isValidLandmarkLabels()
+                    optodePos3D = [];
+                    nSource = 0;
                     if ~isempty(obj.sourcePos3D)
-                        obj.sourcePos2D = project_3D_to_2D(obj.sourcePos3D);
+                        optodePos3D = obj.sourcePos3D;
+                        nSource = size(optodePos3D,1);
                     end
                     if ~isempty(obj.detectorPos3D)
-                        obj.detectorPos2D = project_3D_to_2D(obj.detectorPos3D);
+                        optodePos3D = [optodePos3D; obj.detectorPos3D];
                     end
-%                     if isfield(obj,'DummyPos3D') & ~isempty(obj.DummyPos3D)
-%                         obj.DummyPos2D = obj.DummyPos3D(:,1:2);
-%                     end
+                    if ~isempty(optodePos3D)
+                        optodePos2D = project_3D_to_2D(optodePos3D);
+                        if nSource ~= 0
+                            obj.sourcePos2D = optodePos2D(1:nSource,:);
+                        end
+                        if size(optodePos3D,1) > nSource
+                            obj.detectorPos2D = optodePos2D(nSource+1:end,:);
+                        end
+                    end
                 else
                      if ~isempty(obj.sourcePos3D) && ~isempty(obj.detectorPos3D)
                         [sphere.label, sphere.theta, sphere.phi, sphere.r, sphere.xc, sphere.yc, sphere.zc] = textread('10-5-System_Mastoids_EGI129.csd','%s %f %f %f %f %f %f','commentstyle','c++');

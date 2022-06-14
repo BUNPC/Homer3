@@ -795,7 +795,7 @@ classdef TreeNodeClass < handle
         
 
         % ----------------------------------------------------------------------------------
-        function ExportProcStreamFunctionsInit(obj)
+        function ExportProcStreamFunctionsOpen(obj)
             cfg = ConfigFileClass();
             val = cfg.GetValue('Export Processing Stream Functions');
             if strcmpi(val, 'yes')
@@ -809,17 +809,52 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function ExportProcStreamFunctionsClose(obj)
-            if ~obj.procStream.ExportProcStreamFunctions()
-                if ispathvalid([obj.path, obj.outputDirname, 'ProcStreamSummary.txt'])
-                    try
-                        delete([obj.path, obj.outputDirname, 'ProcStreamSummary.txt'])
-                    catch
-                    end
+            if ispathvalid([obj.path, obj.outputDirname, 'ProcStreamFunctionsSummary.txt'])
+                try
+                    delete([obj.path, obj.outputDirname, 'ProcStreamFunctionsSummary.txt'])
+                catch
                 end
+            end
+            if ~obj.procStream.ExportProcStreamFunctions()
                 return
             end
-            fid = fopen([obj.path, obj.outputDirname, 'ProcStreamSummary.txt'], 'w');
-            fprintf(fid, 'SUMMARY :\n');
+            obj.ExportProcStreamFunctionsSummary();
+        end
+
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ExportProcStreamFunctionsSummary(obj)
+            fid = fopen([obj.path, obj.outputDirname, 'ProcStreamFunctionsSummary.txt'], 'w');
+            fprintf(fid, 'Application Name :   %s, (v%s)\n', getNamespace(), getVernum(getNamespace()));
+            fprintf(fid, 'Date/Time        :   %s\n\n\n\n', char(datetime(datetime, 'Format','MMMM d, yyyy,   HH:mm:ss')));                        
+            procStreamFunctionsExportFilenames = findTypeFiles([obj.path, obj.outputDirname], '.txt');            
+            for ii = 1:length(procStreamFunctionsExportFilenames)
+                [~, fname, ext] = fileparts(procStreamFunctionsExportFilenames{ii});
+                fname = [fname, ext]; %#ok<AGROW>
+                if ~strcmp(fname(end-length('_ProcStream.txt')+1 : end), '_ProcStream.txt')
+                    continue;
+                end
+                k = strfind(procStreamFunctionsExportFilenames{ii}, obj.outputDirname);
+                iS = k+length(obj.outputDirname);
+                iE = length(procStreamFunctionsExportFilenames{ii}) - length('_ProcStream.txt');
+                fname = procStreamFunctionsExportFilenames{ii}(iS : iE);
+                objtype = lower(class(obj.procStream.input.acquired));
+                j = strfind(objtype, 'class');
+                acqtype = lower(objtype(1:j-1));
+                ext = ['.', acqtype];
+                if ~ispathvalid([obj.path, fname, ext])
+                    ext = '';
+                end
+                
+                fprintf(fid, '%s\n', uint32('-') + uint32(zeros(1, length([fname, ext])+2)));
+                fprintf(fid, '%s :\n', [fname, ext]);
+                fprintf(fid, '%s\n', uint32('-') + uint32(zeros(1, length([fname, ext])+2)));
+                fid2 = fopen(procStreamFunctionsExportFilenames{ii}, 'rt');
+                txt = fread(fid2, 100000);                
+                fclose(fid2);
+                fprintf(fid, '%s\n', txt);                
+            end
             fclose(fid);
         end
         

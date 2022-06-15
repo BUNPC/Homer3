@@ -23,7 +23,7 @@
 function [yAvgOut, nTrials] = hmrE_RunAvg(yAvgRuns, mlActRuns, nTrialsRuns)
 
 yAvgOut    = DataClass().empty();
-nTrials    = 0;
+nTrials    = {};
 
 % It is not guaranteed that every run has a non-empty DataClass object
 % Therefore look for indices only of non-empty run data 
@@ -172,8 +172,14 @@ for iBlk = 1:nDataBlks
         end
     end
 end
-nTrials = nTrials_tot;
-
+nTrials = cell(1,length(nTrials_tot));
+for ii = 1:length(nTrials_tot)
+    if isempty(nTrials_tot{ii})
+        nTrials{ii} = nTrials_tot{ii};
+    else
+        nTrials{ii} = nTrials_tot{ii}(1,:);
+    end
+end
 if all(err<0)
     MessageBox('Warning: All run input to hmrE_RunAvg.m is empty.')
 end

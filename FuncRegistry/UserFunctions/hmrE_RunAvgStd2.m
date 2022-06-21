@@ -1,5 +1,5 @@
 % SYNTAX:
-% [yAvgStd, yAvgStdErr] = hmrS_RunAvgStd2(yAvgStdRuns, nTrialsRuns)
+% [yAvgStd, yAvgStdErr] = hmrE_RunAvgStd2(yAvgStdRuns, nTrialsRuns)
 %
 % UI NAME:
 % Run_Average_Standard_Deviation_and_Error
@@ -16,10 +16,10 @@
 % yAvgStdErrOut: the standard error across runs.trials
 %
 % USAGE OPTIONS:
-% Run_Average_Standard_Deviation_on_Concentration_Data:  [dcAvgStd, dcAvgStdErr]  = hmrS_RunAvgStd2(dcAvgStdRuns, nTrialsRuns)
+% Run_Average_Standard_Deviation_on_Concentration_Data:  [dcAvgStd, dcAvgStdErr]  = hmrE_RunAvgStd2(dcAvgStdRuns, nTrialsRuns)
 %
 
-function [yAvgStdOut, yAvgStdErrOut] = hmrS_RunAvgStd2(yAvgStdRuns, nTrialsRuns)
+function [yAvgStdOut, yAvgStdErrOut] = hmrE_RunAvgStd2(yAvgStdRuns, nTrialsRuns)
 
 yAvgStdOut = DataClass();
 yAvgStdErrOut = DataClass();

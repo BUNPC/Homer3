@@ -138,7 +138,7 @@ set(handles.checkboxApplyProcStreamEditToAll, 'enable', val);
 % Menu
 set(handles.ToolsMenu, 'enable', val);
 set(handles.ViewMenu, 'enable', val);
-set(handles.menuItemSaveGroup, 'enable', val);
+set(handles.menuItemSaveGroups, 'enable', val);
 set(handles.menuItemExport, 'enable', val);
 set(handles.menuItemReset, 'enable', val);
 set(handles.menuItemResetGroupFolder, 'enable', val)
@@ -165,7 +165,7 @@ set(handles.checkboxApplyProcStreamEditToAll, 'enable', val);
 % Menu
 set(handles.ToolsMenu, 'enable', val);
 set(handles.ViewMenu, 'enable', val);
-set(handles.menuItemSaveGroup, 'enable', val);
+set(handles.menuItemSaveGroups, 'enable', val);
 set(handles.menuItemExport, 'enable', val);
 set(handles.menuItemReset, 'enable', val);
 set(handles.menuItemResetGroupFolder, 'enable', val)
@@ -771,31 +771,6 @@ Display(handles, hObject);
 
 
 
-% --------------------------------------------------------------------
-function [eventdata, handles] = menuCopyCurrentPlot_Callback(hObject, eventdata, handles)
-global maingui
-if ~ishandles(hObject)
-    return;
-end
-
-currElem = maingui.dataTree.currElem;
-hf = figure;
-set(hf, 'color', [1 1 1]);
-fields = fieldnames(maingui.buttonVals);
-plotname = sprintf('%s_%s', currElem.name, fields{GetDatatype(handles)});
-set(hf,'name', plotname);
-
-
-% DISPLAY DATA
-maingui.axesData.handles.axes = axes('position',[0.05 0.05 0.6 0.9]);
-
-% DISPLAY SDG
-maingui.axesSDG.handles.axes = axes('position',[0.65 0.05 0.3 0.9]);
-axis off
-
-% TBD: Display current element without help from dataTree
-
-
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = pushbuttonProcStreamOptionsGUI_Callback(hObject, eventdata, handles)
@@ -806,7 +781,7 @@ end
 
 idx = FindChildGuiIdx('ProcStreamOptionsGUI');
 if get(hObject, 'value')
-    maingui.childguis(idx).Launch(maingui.applyEditCurrNodeOnly);
+    maingui.childguis(idx).Launch(maingui.dataTree.dirnameGroups, maingui.applyEditCurrNodeOnly);
 else
     maingui.childguis(idx).Close();
 end
@@ -868,12 +843,12 @@ LaunchChildGuiFromMenu('PvaluesDisplayGUI', hObject);
 
 
 % --------------------------------------------------------------------
-function [eventdata, handles] = menuItemSaveGroup_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = menuItemSaveGroups_Callback(hObject, eventdata, handles)
 global maingui
 if ~ishandles(hObject)
     return;
 end
-maingui.dataTree.currElem.Save();
+maingui.dataTree.Save();
 
 
 
@@ -910,7 +885,7 @@ UpdateArgsChildGuis(handles);
 function idx = FindChildGuiIdx(name)
 global maingui
 
-for ii=1:length(maingui.childguis)
+for ii = 1:length(maingui.childguis)
     if strcmp(maingui.childguis(ii).GetName, name)
         break;
     end
@@ -926,7 +901,8 @@ if isempty(maingui.childguis)
 end
 
 maingui.childguis(FindChildGuiIdx('PlotProbeGUI')).UpdateArgs(GetDatatype(handles), GetCondition(handles));
-maingui.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(maingui.applyEditCurrNodeOnly);
+maingui.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(maingui.dataTree.dirnameGroups, ...
+                                                                      maingui.applyEditCurrNodeOnly);
 
 
 % --------------------------------------------------------------------
@@ -936,7 +912,7 @@ if isempty(maingui.childguis)
     return;
 end
 UpdateArgsChildGuis(handles)
-for ii=1:length(maingui.childguis)
+for ii = 1:length(maingui.childguis)
     maingui.childguis(ii).Update();
 end
 
@@ -972,28 +948,30 @@ end
 function hObject = DisplayData(handles, hObject)
 global maingui
 
-if nargin<3
-    hAxes = handles.axesData;
+if ~exist('handles','var')
+    handles = [];
 end
-if ~ishandles(hAxes)
+if ~exist('hObject','var')
+    hObject = [];
+end
+
+if isempty(handles)
     return;
 end
-hf = get(hAxes,'parent');
 
 % Some callbacks which call DisplayData serve double duty as called functions 
 % from other callbacks which in turn call DisplayData. To avoid double or
 % triple redisplaying in a single thread, exit DisplayData if hObject is
 % not a handle. 
-if ~exist('hObject','var')
-    hObject=[];
-end
 if ~ishandles(hObject) && nargin<2
-    fprintf('DisplayData:    OOOPS something went wrong!!!!!!  hObject is a  "%s"  type\n', class(hObject))
     return;
 end
-if isempty(handles)
+
+hAxes = handles.axesData;
+if ~ishandles(hAxes)
     return;
 end
+hf = get(hAxes,'parent');
 
 dataTree = maingui.dataTree;
 procElem = dataTree.currElem;
@@ -1630,27 +1608,27 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function menuItemCopyPlots_Callback(~, ~, handles)
+function menuItemCopyPlots_Callback(hObject, ~, handles)
+global maingui
 
 xf = 1.5;
 yf = 1.5;
 hf = figure();
-set(hf, 'units','characters');
 p = get(hf, 'position');
-set(hf,'position',[p(1), p(2), xf*p(3), yf*p(4)]);
+fields = fieldnames(maingui.buttonVals);
+set(hf, 'position',[p(1), p(2), xf*p(3), yf*p(4)], 'menubar','none', 'toolbar','none', 'NumberTitle','off', ...
+    'name',sprintf('%s:     %s', maingui.dataTree.currElem.GetName(), fields{log2(GetDatatype(handles))+1}));
 rePositionGuiWithinScreen(hf);
 
-figure(hf);
-
 % DISPLAY DATA
-hAxesData = axes('units','normalized', 'position',[0.05 0.30 0.60 0.50]);
-DisplayData(handles, [], hAxesData);
-
 figure(hf);
+handles.axesData = axes('units','normalized', 'position',[0.05 0.30 0.60 0.50]);
+DisplayData(handles, hObject);
 
 % DISPLAY SDG
-hAxesSDG = axes('units','normalized', 'position',[0.67 0.30 0.30 0.50]);
-DisplayAxesSDG(hAxesSDG);
+figure(hf);
+handles.axesSDG = axes('units','normalized', 'position',[0.67 0.30 0.30 0.50], 'ytick',[], 'xtick',[]);
+DisplayAxesSDG(handles);
 
 
 
@@ -1831,24 +1809,36 @@ ExportSnirfGUI(maingui.dataTree.currElem);
 
 
 % --------------------------------------------------------------------
-function menuItemExportSubjHRFMean_Callback(hObject, eventdata, handles)
+function menuItemExportHRFMean_Callback(hObject, eventdata, handles)
 global maingui
+global cfg
 
-if  ~maingui.dataTree.currElem.IsGroup()
-    MessageBox('Exporting mean HRF at this time, only applies to the currently selected group. Please select a group in the Current Processing Element panel. Then rerun the export')
-    return 
-end
-
-out = ExportDataGUI(maingui.dataTree.currElem.name,'.txt','Subjects HRF mean');
+out = ExportDataGUI(maingui.dataTree.currElem.name, '.txt', 'HRF mean', 'userargs');
 if isempty(out.datatype)
     return;
 end
-maingui.dataTree.currElem.ExportMeanHRF(out.trange);
+switch(out.procElemSelect)
+    case 'currentonly'
+        procElemSelect = 'current';
+    case 'all'
+        procElemSelect = 'all';
+    otherwise
+end
+
+% Update config since this could change during homer session 
+cfg = ConfigFileClass();
+
+style = cfg.GetValue('Export HRF Mean Output Style');
+if strcmp(style, 'one processing element per file')
+    maingui.dataTree.currElem.ExportMeanHRF(procElemSelect, out.trange);
+elseif strcmp(style, 'all child processing elements in one file')
+    maingui.dataTree.currElem.ExportMeanHRF_Alt(procElemSelect, out.trange);
+end
 
 
 
 % --------------------------------------------------------------------
-function menuItemUpdateCheck_Callback(hObject, eventdata, handles)
+function menuItemUpdateCheck_Callback(hObject, ~, ~)
 global cfg
 
 if (strcmp(hObject.Checked,'on'))

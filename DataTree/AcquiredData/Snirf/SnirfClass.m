@@ -327,6 +327,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Copy mutable properties to new object instance;
             objnew.stim = CopyHandles(obj.stim);
+            objnew.SortStims();
             
             if strcmp(options, 'extended')
                 t = obj.GetTimeCombined();
@@ -457,7 +458,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 end
                 ii=ii+1;
             end
-            obj.SortStims();
             
             % Load original, unedited stims, if they exist
             ii=1;
@@ -634,14 +634,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % -------------------------------------------------------
         function SaveStim(obj, fileobj)
-            for ii=1:length(obj.stim)
-                if ~isempty(obj.stim(ii).data)  % Do not save empty stim conditions to SNIRF files
-                    obj.stim(ii).SaveHdf5(fileobj, [obj.location, '/stim', num2str(ii)]);
-                end
+            for ii = 1:length(obj.stim)
+                obj.stim(ii).SaveHdf5(fileobj, [obj.location, '/stim', num2str(ii)]);
             end
             if isempty(obj.stim0)
                 obj.stim0 = obj.stim.copy();
-                for ii=1:length(obj.stim0)
+                for ii = 1:length(obj.stim0)
                     obj.stim0(ii).SaveHdf5(fileobj, [obj.location, '/stim0', num2str(ii)]);
                 end
             end
@@ -658,7 +656,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % -------------------------------------------------------
         function SaveAux(obj, fileobj)
-            for ii=1:length(obj.aux)
+            for ii = 1:length(obj.aux)
                 obj.aux(ii).SaveHdf5(fileobj, [obj.location, '/aux', num2str(ii)]);
             end
         end

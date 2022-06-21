@@ -328,6 +328,20 @@ classdef RunClass < TreeNodeClass
             Print@TreeNodeClass(obj, indent);
         end
         
+
+        
+        % ---------------------------------------------------------------
+        function PrintProcStream(obj)
+            fcalls = obj.procStream.GetFuncCallChain();
+            obj.logger.Write('Run processing stream:\n');
+            for ii = 1:length(fcalls)
+                obj.logger.Write('%s\n', fcalls{ii});
+            end
+            obj.logger.Write('\n');
+        end
+        
+            
+            
     end    % Public methods
     
     
@@ -854,15 +868,6 @@ classdef RunClass < TreeNodeClass
         end
         
         
-        
-        % ----------------------------------------------------------------------------------
-        function ExportHRF(obj, ~, iBlk)
-            if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk = 1;
-            end
-            obj.ExportHRF@TreeNodeClass('', iBlk);
-        end
-
         
         % ----------------------------------------------------------------------------------
         function r = ListOutputFilenames(obj, options)

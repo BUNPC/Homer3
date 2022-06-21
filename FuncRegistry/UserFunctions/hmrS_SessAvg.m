@@ -1,63 +1,63 @@
 % SYNTAX:
-% [yAvg, nTrials] = hmrS_RunAvg(yAvgRuns, mlActRuns, nTrialsRuns)
+% [yAvg, nTrials] = hmrS_SessAvg(yAvgSess, mlActSess, nTrialsSess)
 %
 % UI NAME:
-% Run_Average
+% Sess_Average
 %
 % DESCRIPTION:
 % Calculate avearge HRF of all runs for one subject. 
 %
 % INPUTS:
-% yAvgRuns:
-% mlActRuns:
-% nTrialsRuns:
+% yAvgSess:
+% mlActSess:
+% nTrialsSess:
 %
 % OUTPUTS:
 % yAvgOut: the averaged results
 % nTrials: the number of trials averaged for each condition across all runs
 %
 % USAGE OPTIONS:
-% Run_Average_on_Concentration_Data:  [dcAvg, nTrials]  = hmrS_RunAvg(dcAvgRuns, mlActRuns, nTrialsRuns)
-% Run_Average_on_Delta_OD_Data:       [dodAvg, nTrials] = hmrS_RunAvg(dodAvgRuns, mlActRuns, nTrialsRuns)
+% Sess_Average_on_Concentration_Data:  [dcAvg, nTrials]  = hmrS_SessAvg(dcAvgSess, mlActSess, nTrialsSess)
+% Sess_Average_on_Delta_OD_Data:       [dodAvg, nTrials] = hmrS_SessAvg(dodAvgSess, mlActSess, nTrialsSess)
 %
-function [yAvgOut, nTrials] = hmrS_RunAvg(yAvgRuns, mlActRuns, nTrialsRuns)
+function [yAvgOut, nTrials] = hmrS_SessAvg(yAvgSess, mlActSess, nTrialsSess)
 
 yAvgOut    = DataClass().empty();
 
-nDataBlks = length(yAvgRuns{1});
+nDataBlks = length(yAvgSess{1});
 nTrials_tot = cell(nDataBlks,1);
-err = zeros(nDataBlks, length(yAvgRuns));
+err = zeros(nDataBlks, length(yAvgSess));
 
 for iBlk = 1:nDataBlks
     
     grp1 = [];
     
-    for iRun = 1:length(yAvgRuns)
+    for iSess = 1:length(yAvgSess)
             
         yAvgOut(iBlk) = DataClass();
         
-        yAvg      = yAvgRuns{iRun}(iBlk).GetDataTimeSeries('reshape');
+        yAvg      = yAvgSess{iSess}(iBlk).GetDataTimeSeries('reshape');
         if isempty(yAvg)
-            err(iBlk, iRun) = -1;
+            err(iBlk, iSess) = -1;
             continue;
         end
-        tHRF      = yAvgRuns{iRun}(iBlk).GetTime();
-        nTrials   = nTrialsRuns{iRun}{iBlk};
-        if isempty(mlActRuns{iRun})
-            mlActRuns{iRun} = cell(length(nDataBlks),1);
+        tHRF      = yAvgSess{iSess}(iBlk).GetTime();
+        nTrials   = nTrialsSess{iSess}{iBlk};
+        if isempty(mlActSess{iSess})
+            mlActSess{iSess} = cell(length(nDataBlks),1);
         end
         
         % 
-        datatype  = yAvgRuns{iRun}(iBlk).GetDataTypeLabel();
+        datatype  = yAvgSess{iSess}(iBlk).GetDataTypeLabel();
         if strncmp(datatype{1}, 'HRF Hb', length('HRF Hb'))
-            ml    = yAvgRuns{iRun}(iBlk).GetMeasListSrcDetPairs();
+            ml    = yAvgSess{iSess}(iBlk).GetMeasListSrcDetPairs();
         elseif strcmp(datatype{1}, 'HRF dOD')
-            ml    = yAvgRuns{iRun}(iBlk).GetMeasList();
+            ml    = yAvgSess{iSess}(iBlk).GetMeasList();
         end
-        if isempty(mlActRuns{iRun}{iBlk})
-            mlActRuns{iRun}{iBlk} = ones(size(ml,1),1);
+        if isempty(mlActSess{iSess}{iBlk})
+            mlActSess{iSess}{iBlk} = ones(size(ml,1),1);
         end
-        mlAct = mlActRuns{iRun}{iBlk}(1:size(ml,1));
+        mlAct = mlActSess{iSess}{iBlk}(1:size(ml,1));
                 
         nCond = size(nTrials,2);
         yAvgOut(iBlk).SetTime(tHRF);
@@ -73,7 +73,7 @@ for iBlk = 1:nDataBlks
             for iC = 1:nCond
                 nT = nTrials(iC);
                 if nT>0
-                    if iRun==1
+                    if iSess==1
                         grp1(:,lstChInc,iC) = yAvg(:,lstChInc,iC) * nT;
                         nTrials_tot{iBlk}(lstChInc,iC) = nT;
                     else
@@ -94,14 +94,14 @@ for iBlk = 1:nDataBlks
                                                 
                         %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages. 
                         %%%% Now we can set channel descriptors for avg and standard deviation
-                        if iRun == length(yAvgRuns)
+                        if iSess == length(yAvgSess)
                             yAvgOut(iBlk).AddChannelDod(ml(iCh,1), ml(iCh,2), ml(iCh,4), iC);
                         end
                     end
                     
                     %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages.
                     %%%% Now we can set channel descriptors for avg and standard deviation
-                    if iRun == length(yAvgRuns)
+                    if iSess == length(yAvgSess)
                         yAvgOut(iBlk).AppendDataTimeSeries(yAvg(:,:,iC));
                     end
                 end
@@ -118,7 +118,7 @@ for iBlk = 1:nDataBlks
             for iC = 1:1:nCond
                 nT = nTrials(iC);
                 if nT>0
-                    if iRun==1
+                    if iSess==1
                         grp1(:,:,lstChInc,iC) = yAvg(:,:,lstChInc,iC) * nT;
                         nTrials_tot{iBlk}(lstChInc,iC) = nT;
                     else
@@ -141,7 +141,7 @@ for iBlk = 1:nDataBlks
                                                 
                         %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages. 
                         %%%% Now we can set channel descriptors for avg and standard deviation
-                        if iRun == length(yAvgRuns)
+                        if iSess == length(yAvgSess)
                             yAvgOut(iBlk).AddChannelHbO(ml(iCh,1), ml(iCh,2), iC);
                             yAvgOut(iBlk).AddChannelHbR(ml(iCh,1), ml(iCh,2), iC);
                             yAvgOut(iBlk).AddChannelHbT(ml(iCh,1), ml(iCh,2), iC);
@@ -150,7 +150,7 @@ for iBlk = 1:nDataBlks
                     
                     %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages.
                     %%%% Now we can set channel descriptors for avg and standard deviation
-                    if iRun == length(yAvgRuns)
+                    if iSess == length(yAvgSess)
                         yAvgOut(iBlk).AppendDataTimeSeries(yAvg(:,:,:,iC));
                     end
                 end                
@@ -161,6 +161,6 @@ end
 nTrials = nTrials_tot;
 
 if all(err<0)
-    MessageBox('Warning: All run input to hmrS_RunAvg.m is empty.')
+    MessageBox('Warning: All run input to hmrS_SessAvg.m is empty.')
 end
 

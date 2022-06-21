@@ -67,7 +67,37 @@ classdef ArgClass < matlab.mixin.Copyable
                     args{end}(end) = '';
                 end 
             end
-        end        
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function argStr = Display(obj)
+            argStr = '';
+            args = str2cell(obj.str,',');
+            for ii = 1:length(args)
+                if isempty(argStr)
+                    argStr = args{ii};
+                else
+                    argStr = sprintf('%s, %s', argStr, args{ii});
+                end
+            end
+            argStr(argStr=='(') = '';
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsEmpty(obj)
+            b = true;
+            if isempty(obj)
+                return;
+            end
+            if isempty(obj.str)
+                return;
+            end
+            b = false;
+        end
+        
+        
     end
 end
 

@@ -126,7 +126,9 @@ classdef ExportTable < handle
 %             fprintf('%s\n', obj.datatitle);
             h =  waitbar_improved(0, sprintf('Exporting %s to text ... 0%% complete.', obj.filename));
             for ii=1:size(obj.cells,1)
-                waitbar_improved(ii/size(obj.cells,1), h, sprintf('Exporting %s to text ... %d%% complete', obj.filename, uint32(100 * ii/size(obj.cells,1))));
+                if mod(ii,100)==0
+                    waitbar_improved(ii/size(obj.cells,1), h, sprintf('Exporting %s to text ... %d%% complete', obj.filename, uint32(100 * ii/size(obj.cells,1))));
+                end
                 for jj=1:size(obj.cells,2)
                     obj.cells(ii,jj).Write(obj.fd);
                 end

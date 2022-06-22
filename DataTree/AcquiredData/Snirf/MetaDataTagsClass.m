@@ -174,10 +174,12 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-%         function Set(obj, name, val) %#ok<INUSL>
-%             eval(sprintf('obj.tags.%s = %s;', name, val));
-%         end
-        
+        function Set(obj, name, value)
+            if ~exist('name', 'var') || ~exist('value', 'var')
+                retrun
+            end                                     
+            eval( sprintf('obj.tags.%s = ''%s'';', name, value) )   
+        end        
         
         % ----------------------------------------------------------------------------------
         function SetLengthUnit(obj, unit)
@@ -185,14 +187,6 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
                 return
             end
             obj.tags.LengthUnit = unit;
-        end
-        
-         % ----------------------------------------------------------------------------------
-        function Set(obj, name, value)
-            if ~exist('name', 'var') || ~exist('value', 'var')
-                retrun
-            end                                     
-            eval( sprintf('obj.tags.%s = ''%s'';', name, value) )   
         end
         
         

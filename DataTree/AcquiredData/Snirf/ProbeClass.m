@@ -159,15 +159,11 @@ classdef ProbeClass < FileLoadSaveClass
                 if isempty(obj.landmarkPos3D) || ~obj.isValidLandmarkLabels()
                     optodePos3D = [];
                     nSource = 0;
-                    if ~isempty(obj.sourcePos3D)
-                        optodePos3D = obj.sourcePos3D;
-                        nSource = size(optodePos3D,1);
-                    end
-                    if ~isempty(obj.detectorPos3D)
-                        optodePos3D = [optodePos3D; obj.detectorPos3D];
-                    end
-                    if ~isempty(optodePos3D)
-                        optodePos2D = project_3D_to_2D(optodePos3D);
+                    optodePos3D = [obj.sourcePos3D; obj.detectorPos3D];
+                    nSource = size(optodePos3D,1);
+                    
+                    optodePos2D = project_3D_to_2D(optodePos3D);
+                    if ~isempty(optodePos2D)
                         if nSource ~= 0
                             obj.sourcePos2D = optodePos2D(1:nSource,:);
                         end
@@ -223,7 +219,6 @@ classdef ProbeClass < FileLoadSaveClass
                         %%
                         norm_factor = max(max(xy));
                         xy = xy/norm_factor;               % set maximum to unit length
-                        xy = xy/2 + 0.5;                    % adjust to range 0-1
                         refpts_2D.pos = xy;
                         obj.landmarkPos2D = refpts_2D.pos;
 
@@ -232,26 +227,8 @@ classdef ProbeClass < FileLoadSaveClass
                         obj.sourcePos2D = convert_optodepos_to_circlular_2D_pos(obj, obj.sourcePos3D, T, norm_factor);
                         obj.detectorPos2D = convert_optodepos_to_circlular_2D_pos(obj, obj.detectorPos3D, T, norm_factor);
                     end
-%                     if isfield(obj,'DummyPos3D') & ~isempty(obj.DummyPos3D)
-%                         obj.DummyPos2D = convert_optodepos_to_circlular_2D_pos(obj.DummyPos3D, T, norm_factor);
-%                     end
                 end
             end
-%             if isempty(obj.landmarkPos2D) || isempty(obj.landmarkPos3D)
-%                 
-%                 % When 3D landmarks aren't available use crude default 3D-to-2D projection algorithm 
-%                 if isempty(obj.sourcePos2D)
-%                     obj.sourcePos2D = project_3D_to_2D(obj.sourcePos3D);
-%                 end
-%                 if isempty(obj.detectorPos2D)
-%                     obj.detectorPos2D = project_3D_to_2D(obj.detectorPos3D);
-%                 end
-%                 
-%             else
-% 
-%                 % 3D landmarks are available, use ...
-% 
-%             end
         end
 
         

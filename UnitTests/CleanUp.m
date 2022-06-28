@@ -1,4 +1,4 @@
-function CleanUp(standalone, start)
+function CleanUp(standalone, start, appname)
 global DEBUG1
 global QUICK_TEST
 global procStreamStyle
@@ -29,6 +29,8 @@ if start
     fclose all;
     reg = RegistriesClass();
     reg.DeleteSaved();
+    logger = Logger(appname);
+    cfg    = ConfigFileClass();
 end
 clear DEBUG1 testidx procStreamStyle
 
@@ -46,7 +48,7 @@ if ~start
     fprintf('\n');
     for ii = 1:length(groupFolders)
         pname = filesepStandard([rootpath, groupFolders{ii}]);
-        fprintf('Deleting %s*.snirf files: \n', pname);
+        fprintf('Deleting *.snirf files in %s: \n', pname);
         DeleteDataFiles(pname, '.snirf');
     end
     fprintf('\n\n');

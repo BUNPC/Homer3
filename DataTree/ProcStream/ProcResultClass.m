@@ -118,7 +118,7 @@ classdef ProcResultClass < handle
                         if isa(obj.dcAvgStd, 'DataClass')
                             obj.dcAvgStd(iBlk).TruncateTpts(abs(d));
                         else
-                            obj.dcAvgStd(n+1:m,:,:) = [];
+                            obj.dcAvgStd(n+1:m,:,:,:) = [];
                         end
                     end
                     if ~isempty(obj.dcSum2)
@@ -200,7 +200,7 @@ classdef ProcResultClass < handle
             
             obj.SetFilename(filename);
             
-            output = obj;
+            output = obj; %#ok<NASGU>
             props = propnames(vars);
             for ii=1:length(props)
                 if eval( sprintf('isproperty(output, ''%s'');', props{ii}) )
@@ -361,6 +361,38 @@ classdef ProcResultClass < handle
     
     
     methods
+
+        % ----------------------------------------------------------------------------------
+        function [keys, values] = GetAllData(obj)
+            % Returns names and references to all non-empty DataClass objects available as
+            % properties of the ProcResultClass instance or of the misc list
+            props = properties(obj);
+            keys = {};
+            values = {};
+            for i = 1:length(props)
+                val = eval(sprintf('obj.%s', props{i}));
+                if isa(val, 'DataClass')
+                    if ~isempty(val.dataTimeSeries) && ~isempty(val.time) && ~isempty(val.measurementList)
+                        keys{end + 1} = props{i}; %#ok<AGROW>
+                        values{end + 1} = val; %#ok<AGROW>
+                    end
+                end
+            end
+            try
+                miscnames = fields(obj.misc);
+            catch
+                return
+            end
+            for i = 1:length(miscnames)
+                val = eval(sprintf('obj.misc.%s', miscnames{i}));
+                if isa(val, 'DataClass')
+                    if ~isempty(val.dataTimeSeries) && ~isempty(val.time) && ~isempty(val.measurementList)
+                        keys{end + 1} = miscnames{i}; %#ok<AGROW>
+                        values{end + 1} = val; %#ok<AGROW>
+                    end
+                end
+            end
+        end
         
         % ----------------------------------------------------------------------------------
         function SetTHRF(obj, t)
@@ -822,8 +854,9 @@ classdef ProcResultClass < handle
         end
         
         
+        
         % ----------------------------------------------------------------------------------
-        function tblcells = GenerateTableCells_MeanHRF(obj, name, CondNames, trange, width, iBlk)
+        function tblcells = GenerateTableCells_MeanHRF_Alt(obj, name, CondNames, trange, width, iBlk)
             if ~exist('trange','var') || isempty(trange) || all(trange==0)
                 trange = [obj.tHRF(1), obj.tHRF(end)];
             end
@@ -857,53 +890,124 @@ classdef ProcResultClass < handle
         end
         
         
+
         % ----------------------------------------------------------------------------------
         function tblcells = GenerateTableCells_HRF(obj, CondNames, iBlk)
+            tblcells = [];
+            
+            if ~isa(obj.dcAvg, 'DataClass')
+                return
+            end
+            if isempty(obj.dcAvg)
+                return
+            end
+            if obj.dcAvg.IsEmpty()
+                return
+            end
+            
             if nargin<3
                 iBlk = 1;
             end
+            
             tblcells = TableCell.empty();
-            if isa(obj.dcAvg, 'DataClass')
-                dataTimeSeries  = obj.dcAvg(iBlk).GetDataTimeSeries();
-                time            = obj.dcAvg(iBlk).GetTime();
-                measList        = obj.dcAvg(iBlk).measurementList;
-                
-                % Header: row containing stim condition name
-                tblcells(2,1) = TableCell('', 12);      % Make space for time column
-                for iCh = 1:length(measList)
-                    tblcells(1,iCh+1) = TableCell(sprintf('%s', CondNames{measList(iCh).dataTypeIndex}), 12);
-                end
-                
-                % Header: row containing time label followed by Hb type 
-                tblcells(2,1) = TableCell('time', 12);      
-                for iCh = 1:length(measList)
-                    tblcells(2,iCh+1) = TableCell(sprintf('%s,%d,%d', measList(iCh).dataTypeLabel, measList(iCh).sourceIndex, measList(iCh).detectorIndex), 12);
-                end
-                
-                % Data rows
-                h = waitbar_improved(0, sprintf('Generating table cells for export ... 0%% complete.'));
-                for t = 1:size(dataTimeSeries,1)
-                    waitbar_improved(t/size(dataTimeSeries,1), h, sprintf('Generating table cells for export ... %d%% complete.', uint32(100 * t/size(dataTimeSeries,1))));
-                    
-                    % time 
-                    cname = sprintf('%s%0.3f', blanks(time(t)>=0), time(t));
-                    tblcells(t+2,1) = TableCell(cname, 12);
-                    
-                    % data
-                    for iCh = 1:length(measList)
-                        if isnan(dataTimeSeries(t,iCh))
-                            cname  = 'NaN';
-                        else
-                            cname = sprintf('%s%0.5e', blanks(dataTimeSeries(t,iCh)>=0), dataTimeSeries(t,iCh));
-                        end
-                        tblcells(t+2,iCh+1) = TableCell(cname, 12);
-                    end
-                end
-                close(h);
-            else
-                
+            
+            dataTimeSeries  = obj.dcAvg(iBlk).GetDataTimeSeries();
+            time            = obj.dcAvg(iBlk).GetTime();
+            measList        = obj.dcAvg(iBlk).measurementList;
+            
+            %%%% Row 1: Header row containing stim condition names
+            tblcells(2,1) = TableCell('', 12);      % Make space for time column
+            for iCh = 1:length(measList)
+                tblcells(1,iCh+1) = TableCell(sprintf('%s', CondNames{measList(iCh).dataTypeIndex}), 12);
             end
+            
+            %%%% Row 2: Header row containing time label followed by Hb types with source,detector indices
+            tblcells(2,1) = TableCell('time', 12);
+            for iCh = 1:length(measList)
+                tblcells(2,iCh+1) = TableCell(sprintf('%s,%d,%d', measList(iCh).dataTypeLabel, measList(iCh).sourceIndex, measList(iCh).detectorIndex), 12);
+            end
+            
+            %%%% Rows 3 and greater are time points and data for all channels
+            h = waitbar_improved(0, sprintf('Generating table cells for export ... 0%% complete.'));
+            for t = 1:size(dataTimeSeries,1)
+                if mod(t,100)==0
+                    waitbar_improved(t/size(dataTimeSeries,1), h, sprintf('Generating table cells for export ... %d%% complete.', uint32(100 * t/size(dataTimeSeries,1))));
+                end
+                
+                % time
+                cname = sprintf('%s%0.3f', blanks(time(t)>=0), time(t));
+                tblcells(t+2,1) = TableCell(cname, 12);
+                
+                % data
+                for iCh = 1:length(measList)
+                    if isnan(dataTimeSeries(t,iCh))
+                        cname  = 'NaN';
+                    else
+                        cname = sprintf('%s%0.5e', blanks(dataTimeSeries(t,iCh)>=0), dataTimeSeries(t,iCh));
+                    end
+                    tblcells(t+2,iCh+1) = TableCell(cname, 12);
+                end
+            end
+            close(h);
         end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function tblcells = GenerateTableCells_MeanHRF(obj, name, CondNames, trange, iBlk)
+            tblcells = [];
+            
+            if ~isa(obj.dcAvg, 'DataClass')
+                return
+            end
+            if isempty(obj.dcAvg)
+                return
+            end
+            if obj.dcAvg.IsEmpty()
+                return
+            end
+            
+            if nargin<3
+                iBlk = 1;
+            end
+            
+            tblcells = TableCell.empty();
+            
+            dataTimeSeries  = obj.dcAvg(iBlk).GetDataTimeSeries();
+            time            = obj.dcAvg(iBlk).GetTime();
+            measList        = obj.dcAvg(iBlk).measurementList;
+            
+            %%%% Row 1: Header row containing stim condition names
+            tblcells(2,1) = TableCell('', 12);      % Make space for time column
+            for iCh = 1:length(measList)
+                tblcells(1,iCh+1) = TableCell(sprintf('%s', CondNames{measList(iCh).dataTypeIndex}), 12);
+            end
+            
+            %%%% Row 2: Header row containing processing element label followed by Hb types with source,detector indices
+            tblcells(2,1) = TableCell(sprintf('Name'), 12);
+            for iCh = 1:length(measList)
+                tblcells(2,iCh+1) = TableCell(sprintf('%s,%d,%d', measList(iCh).dataTypeLabel, measList(iCh).sourceIndex, measList(iCh).detectorIndex), 12);
+            end
+            
+            %%%% Row 3: processing element name followed by mean HRF data for all channels
+            h = waitbar_improved(0, sprintf('Generating table cells for export ... 0%% complete.'));
+
+            % Name of processing element
+            tblcells(3,1) = TableCell(name, 12);
+            
+            % Mean HRF data
+            for iCh = 1:length(measList)                
+                iT = (time >= trange(1)) & (time <= trange(2));
+                if isnan(dataTimeSeries(iT,iCh))
+                    cname  = 'NaN';
+                else
+                    cname = sprintf('%s%0.5e', blanks(mean(dataTimeSeries(iT,iCh)) >= 0), mean(dataTimeSeries(iT,iCh)));
+                end
+                tblcells(3,iCh+1) = TableCell(cname, 12);
+            end
+            close(h);
+        end
+        
         
         
         % ----------------------------------------------------------------------------------
@@ -921,6 +1025,36 @@ classdef ProcResultClass < handle
             % Create table export data to file
             tbl = ExportTable(filename, 'HRF', tblcells);
         end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function tbl = ExportMeanHRF(obj, filename, CondNames, trange, iBlk)
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            
+            [p, f] = fileparts(obj.SetFilename(filename));
+            filename = [filesepStandard(p, 'nameonly:dir'), f];
+            
+            % Generate table cells
+            tblcells = obj.GenerateTableCells_MeanHRF(f, CondNames, trange, iBlk);
+            
+            % Create table export data to file
+            tbl = ExportTable(filename, 'HRF Mean', tblcells);
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function tbl = ExportMeanHRF_Alt(obj, filename, tblcells)
+            [p, f] = fileparts(obj.SetFilename(filename));
+            filename = [filesepStandard(p, 'nameonly:dir'), f];
+                        
+            % Create table export data to file
+            tbl = ExportTable(filename, 'HRF mean', tblcells);
+        end
+        
         
     end
     

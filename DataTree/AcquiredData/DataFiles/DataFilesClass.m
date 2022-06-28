@@ -2,6 +2,7 @@ classdef DataFilesClass < handle
     
     properties
         files;
+        filesErr;
         filetype;
         dirFormats;
         err;
@@ -21,6 +22,7 @@ classdef DataFilesClass < handle
         % ----------------------------------------------------
         function obj = DataFilesClass(varargin)            
             obj.files = FileClass.empty();
+            obj.filesErr = FileClass.empty();
             obj.filetype = '';
             obj.rootdir = pwd;
             obj.nfiles = 0;
@@ -116,15 +118,15 @@ classdef DataFilesClass < handle
                 obj.InitLookupTable();
                 obj.FindDataSet(ii);
                 
+                % Remove any files that cannot pass the basic test of loading
+                % its data
                 obj.ErrorCheck();
                 if ~isempty(obj.files)
                     break
                 end
             end
             
-            % Remove any files that cannot pass the basic test of loading
-            % its data
-            obj.ErrorCheckName();
+            obj.ErrorCheckFinal();
         end
 
         
@@ -162,11 +164,37 @@ classdef DataFilesClass < handle
                 ['nirs/sub-*_run-*_nirs.', obj.filetype];
                 }
                 
-                %%%% 6. BIDS-like folder structure without file naming restrictions
+                %%%% 6. BIDS #3
+                {
+                'sub-*';
+                ['nirs/sub-*_*_nirs.', obj.filetype];
+                }
+                
+                %%%% 7. BIDS #4 
+                {
+                '*';
+                ['nirs/sub-*_*_nirs.', obj.filetype];
+                }
+                
+                %%%% 8. BIDS folder structure
+                {
+                'sub-*';
+                'ses-*';
+                ['nirs/sub-*_run-*_nirs.', obj.filetype];
+                }
+                               
+                %%%% 9. BIDS-like folder structure without file naming restrictions
                 {
                 'sub-*';
                 'ses-*';
                 ['nirs/*.', obj.filetype];
+                }
+                                
+                %%%% 10. BIDS-like folder structure without nirs sub-folder
+                {
+                'sub-*';
+                'ses-*';
+                ['*.', obj.filetype];
                 }
                                 
                 };
@@ -196,10 +224,13 @@ classdef DataFilesClass < handle
             parentdir = filesepStandard(parentdir);
             pattern = obj.dirFormats.choices{iFormat}{iPattern};
             
-            dirs = mydir([parentdir, pattern]);
+            dirs = mydir([parentdir, pattern], obj.rootdir);
             
             dirnamePrev = '';
             for ii = 1:length(dirs)
+                if dirs(ii).IsEmpty()
+                    continue;
+                end
                 if dirs(ii).IsFile()
                     if strcmp(pattern, '*')
                         continue
@@ -224,10 +255,9 @@ classdef DataFilesClass < handle
 
         
         % ----------------------------------------------------
-        function AddParentDirs(obj, dir)
-            pathrel = getPathRelative([dir.rootdir, dir.name], obj.rootdir);
+        function AddParentDirs(obj, dirname)
+            pathrel = getPathRelative([dirname.rootdir, dirname.name], obj.rootdir);
             subdirs = str2cell_fast(pathrel, {'/','\'});
-            notUnique = false;
             N = length(subdirs);
             for ii = 1:N-1
                 if strcmp(subdirs{ii}, 'nirs')
@@ -237,7 +267,7 @@ classdef DataFilesClass < handle
                 if obj.SearchLookupTable(pathrel2)
                     continue;
                 end
-                obj.files(end+1) = FileClass(pathrel2);
+                obj.files(end+1) = FileClass([obj.rootdir, '/', pathrel2], obj.rootdir);
                 obj.AddLookupTable(obj.files(end).name)
             end
         end
@@ -268,6 +298,41 @@ classdef DataFilesClass < handle
                     obj.err = -1;
                 end
             end
+        end
+        
+        
+        
+        % ----------------------------------------------------
+        function ErrorCheckFinal(obj)
+            obj.ErrorCheckName();
+            
+            % Find all acquisition files in group folder
+            fileNames = findTypeFiles(obj.rootdir, ['.', obj.filetype]);
+            
+            % Make alist of all files excluded from current data set  
+            for ii = 1:length(fileNames)
+                filefound = false;
+                
+                for jj = 1:length(obj.files)
+                    if pathscompare(fileNames{ii}, [obj.rootdir, obj.files(jj).name])
+                        filefound = true;
+                        break;
+                    end
+                end
+                
+                for jj = 1:length(obj.filesErr)
+                    if pathscompare(fileNames{ii}, [obj.rootdir, obj.filesErr(jj).name])
+                        filefound = true;
+                        break;
+                    end
+                end
+                
+                if ~filefound
+                    obj.filesErr(end+1) = FileClass(fileNames{ii});
+                    obj.filesErr(end).SetError('Invalid File Name');
+                end
+            end
+        
         end
         
         
@@ -305,7 +370,7 @@ classdef DataFilesClass < handle
             [p2,f2] = fileparts(filesepStandard(obj.files(ii).rootdir,'nameonly:file'));
             [~,f3]  = fileparts(p2);
             if isfile_private(obj.files(ii).GetName())
-                filetype = 'file';
+                filetype = 'file'; %#ok<*PROPLC>
             else
                 filetype = 'folder';
             end
@@ -331,7 +396,7 @@ classdef DataFilesClass < handle
         function pushbuttonLoadDataset_Callback(~, hObject)
             hp = get(hObject,'parent');
             hc = get(hp,'children');
-            for ii=1:length(hc)
+            for ii = 1:length(hc)
                 
                 if strcmp(get(hc(ii),'tag'),'pushbuttonLoad')
                     hButtnLoad = hc(ii);
@@ -351,7 +416,7 @@ classdef DataFilesClass < handle
             
         
         % ----------------------------------------------------------
-        function b = isempty(obj)
+        function b = IsEmpty(obj)
             if isempty(obj.files)
                 b = true;
             else
@@ -400,6 +465,8 @@ classdef DataFilesClass < handle
             end
             
             % Try to create object of data filetype and load data into it
+            msg = 'Please wait while we check group folder for valid data files ...';
+            hwait = waitbar_improved(0, msg);
             dataflag = false;
             for ii = 1:length(obj.files)
                 if obj.files(ii).isdir
@@ -407,18 +474,28 @@ classdef DataFilesClass < handle
                 end
                 filename = [obj.files(ii).rootdir, obj.files(ii).name];
                 eval( sprintf('o = %s(filename);', constructor) );
-                if o.GetError()<0
-                    obj.logger.Write('FAILED error check:   %s will not be added to data set\n', filename);
+                if  o.GetError() < 0
+                    obj.logger.Write('DataFilesClass.ErrorCheck:   FAILED error check - %s will not be added to data set\n', filename);
+                    errorIdxs = [errorIdxs, ii]; %#ok<AGROW>
+                elseif  contains(o.GetErrorMsg(), 'WARNING: ''data'' corrupt and unusable')                    
+                    obj.logger.Write('DataFilesClass.ErrorCheck:   WARNING data is unusable - %s will not be added to data set\n', filename);
                     errorIdxs = [errorIdxs, ii]; %#ok<AGROW>
                 else
                     dataflag = true;
                 end
+                hwait = waitbar_improved(ii/length(obj.files), hwait, msg);
             end
             if dataflag==false
                 obj.files = FileClass.empty();
             else
+                for jj = 1:length(errorIdxs)
+                    obj.filesErr(end+1) = obj.files(errorIdxs(jj)).copy;
+                    obj.filesErr(end).SetError('Invalid Data Format');
+                end
             	obj.files(errorIdxs) = [];
+                obj.nfiles = obj.nfiles - length(errorIdxs);
             end
+            close(hwait);
         end
         
         
@@ -441,11 +518,23 @@ classdef DataFilesClass < handle
             obj.logger.Write('DataTreeClass - Data Set Folder Structure:\n');
             for ii = 1:length(obj.files)
                 k = length(find(obj.files(ii).name=='/'));   
-                if ii<10, j=3; elseif ii>9 && ii<100, j=2; else j=3; end
+                if ii<10
+                    j=3; 
+                elseif ii>9 && ii<100
+                    j=2;
+                else
+                    j=3;
+                end
                 if optionExists(options, 'flat')
                     obj.logger.Write(sprintf('%d.%s%s\n', ii, blanks(j), obj.files(ii).name));
                 else
-                    if ii<10, j=3; elseif ii>9 && ii<100, j=2; else j=3; end
+                    if ii<10
+                        j=3; 
+                    elseif ii>9 && ii<100
+                        j=2; 
+                    else 
+                        j=3; 
+                    end
                     if optionExists(options, 'numbered')
                         n = k*stepsize+stepsize+j;
                         obj.logger.Write(sprintf('%d.%s%s\n', ii, blanks(n), obj.files(ii).filename));
@@ -487,6 +576,7 @@ classdef DataFilesClass < handle
             n = round(log10(length(obj.lookupTable)));
             b = obj.lookupTable(string2hash(str, n));
         end
+        
         
     end
 end

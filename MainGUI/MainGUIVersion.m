@@ -1,4 +1,4 @@
-function [title, vernum] = MainGUIVersion(varargin)
+function [title, verstr] = MainGUIVersion(varargin)
 %
 % Syntax:
 %    [verstr, vernum, title] = MainGUIVersion()

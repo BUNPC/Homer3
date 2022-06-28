@@ -137,9 +137,9 @@ classdef AuxClass < FileLoadSaveClass
             end
             
             hdf5write_safe(fileobj, [location, '/name'], obj.name);
-            hdf5write_safe(fileobj, [location, '/dataTimeSeries'], obj.dataTimeSeries);
-            hdf5write_safe(fileobj, [location, '/time'], obj.time);
-            hdf5write_safe(fileobj, [location, '/timeOffset'], obj.timeOffset);
+            hdf5write_safe(fileobj, [location, '/dataTimeSeries'], obj.dataTimeSeries, 'array');
+            hdf5write_safe(fileobj, [location, '/time'], obj.time, 'array');
+            hdf5write_safe(fileobj, [location, '/timeOffset'], obj.timeOffset, 'array');
         end
         
         
@@ -254,6 +254,10 @@ classdef AuxClass < FileLoadSaveClass
             end
             if length(obj.dataTimeSeries) ~= length(obj.time)
                 err = -4;
+                return
+            end
+            if ~ischar(obj.name)
+                err = -5;
                 return
             end
         end

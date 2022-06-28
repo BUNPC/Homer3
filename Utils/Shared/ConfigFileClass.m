@@ -194,35 +194,38 @@ classdef ConfigFileClass < handle
             end
             for ii = 1:length(obj.fids)
                 if strcmp(options, 'backup')
+                    
                     copyfile(obj.filenames{ii}, [obj.filenames{ii}, '.bak'])
-                end
-                if obj.fids(ii)<0
-                    obj.fids(ii) = fopen(obj.filenames{ii}, 'w');
-                end
-                if obj.fids(ii)<0
-                    continue;
-                end
-                fprintf(obj.fids(ii), '\n');
-                for jj = 1:length(obj.params)
-                    if obj.params(jj).iSrc ~= ii
-                        continue
+                    
+                else
+                    
+                    if obj.fids(ii)<0
+                        obj.fids(ii) = fopen(obj.filenames{ii}, 'w');
                     end
-                    if iscell(obj.params(jj).valOptions) && all(~cellfun(@isempty,obj.params(jj).valOptions))
-                        fprintf(obj.fids(ii), '%% %s # %s\n', obj.params(jj).name, strjoin(obj.params(jj).valOptions,', '));
-                    elseif iscell(obj.params(jj).valOptions) && all(cellfun(@isempty,obj.params(jj).valOptions))
-                        fprintf(obj.fids(ii), '%% %s #\n', obj.params(jj).name);
-                    else
-                        fprintf(obj.fids(ii), '%% %s\n', obj.params(jj).name);
+                    if obj.fids(ii)<0
+                        continue;
                     end
-                    for kk = 1:length(obj.params(jj).val)
-                        fprintf(obj.fids(ii), '%s\n', obj.params(jj).val{kk});
+                    for jj = 1:length(obj.params)
+                        if obj.params(jj).iSrc ~= ii
+                            continue
+                        end
+                        if iscell(obj.params(jj).valOptions) && all(~cellfun(@isempty,obj.params(jj).valOptions))
+                            fprintf(obj.fids(ii), '%% %s # %s\n', obj.params(jj).name, strjoin(obj.params(jj).valOptions,', '));
+                        elseif iscell(obj.params(jj).valOptions) && all(cellfun(@isempty,obj.params(jj).valOptions))
+                            fprintf(obj.fids(ii), '%% %s #\n', obj.params(jj).name);
+                        else
+                            fprintf(obj.fids(ii), '%% %s\n', obj.params(jj).name);
+                        end
+                        for kk = 1:length(obj.params(jj).val)
+                            fprintf(obj.fids(ii), '%s\n', obj.params(jj).val{kk});
+                        end
+                        fprintf(obj.fids(ii), '\n');
                     end
-                    fprintf(obj.fids(ii), '\n');
+                    fprintf(obj.fids(ii), '%% END\n');                    
+                    fclose(obj.fids(ii));
+                    obj.fids(ii) = -1;
+                    
                 end
-                fprintf(obj.fids(ii), '%% END\n');
-                
-                fclose(obj.fids(ii));
-                obj.fids(ii) = -1;
             end
         end
         

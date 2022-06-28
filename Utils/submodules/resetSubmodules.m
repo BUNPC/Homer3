@@ -10,7 +10,6 @@ cd(repoFull);
 for jj = 1:size(submodules,1)
     fprintf('Reseting "%s":\n', submodules{jj,2});
     gitRevert(submodules{jj,2});
-    fprintf('\n');
 end
 
 

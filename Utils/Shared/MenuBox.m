@@ -46,7 +46,7 @@ end
 title = 'MENU';
 
 bttnstrlenmax = 0;
-for ii=1:length(bttns)
+for ii = 1:length(bttns)
     if length(bttns{ii})>bttnstrlenmax
         bttnstrlenmax = length(bttns{ii});
     end
@@ -61,7 +61,10 @@ if isempty(msg)
     return;
 end
 
+length(find(msg == sprintf('\n'))); %#ok<*SPRINTFN>
+
 nchar        = length(msg);
+nNewLines    = length(find(msg == sprintf('\n'))); %#ok<*SPRINTFN>
 ncheckboxes  = length(checkboxes);
 nbttns       = length(bttns)+ncheckboxes;
 if bttnstrlenmax<bttnstrlenmin
@@ -76,7 +79,7 @@ if Wbttn < textLineWidth
 else
     Wtext = 1.1 * Wbttn;
 end
-Htext = round(nchar / Wtext)+4;
+Htext = round(nchar / Wtext)+4 + nNewLines;
 
 % Position/dimensions in the X direction
 a    = 5;
@@ -170,14 +173,20 @@ set(hf, 'visible','on', 'units','normalized', 'position',p);
 set(hf, 'units','characters');
 
 % Wait for user to respond before exiting
+
+% Wait for user to respond before exiting
 t = 0;
 while bttnIds(1)==0 && ishandles(hf)
     t=t+1;
     pause(.2);
     if mod(t,30)==0
+        if optionExists(options, 'quiet')
+            continue
+        end
         fprintf('Waiting for user responce, t = %d ticks\n', t);
     end
 end
+
 
 % Call this callback in case default is preselected in the code, that way
 % we make sure that if one of the checkboxes is preselected not by user
@@ -196,7 +205,7 @@ end
 
 
 % -------------------------------------------------------------
-function pushbuttonGroup_Callback(hObject, eventdata, hb)
+function pushbuttonGroup_Callback(hObject, ~, ~)
 global bttnIds
 bttnIds(1) = str2num(get(hObject, 'tag'));
 

@@ -1,6 +1,6 @@
 function [C,k] = str2cell(str, delimiters, options)
 
-% Option tells weather to keep leading whitespaces. 
+% Option tells weather to keep leading whitespaces.
 % (Trailing whitespaces are always removed)
 if ~exist('options','var')
     options = '';
@@ -8,8 +8,10 @@ end
 
 if ~strcmpi(options, 'keepblanks')
     str = strtrim(str);
+    str = deblank(str);
+else
+    str = removeEndingNewlines(str);
 end
-str = deblank(str);
 
 if ~exist('delimiters','var') || isempty(delimiters)
     delimiters{1} = sprintf('\n');
@@ -25,11 +27,11 @@ for kk=1:length(delimiters)
 end
 j = find(~ismember(1:length(str),k));
 
-% The following line seems to hurt performance a little bit. It was 
+% The following line seems to hurt performance a little bit. It was
 % meant to preallocate to speed things up but it does not seem to do that.
 % C = repmat({blanks(max(diff([k,length(str)])))}, length(k)+1, 1);
 C = {};
-ii=1; kk=1; 
+ii=1; kk=1;
 while ii<=length(j)
     C{kk} = str(j(ii));
     ii=ii+1;
@@ -44,3 +46,25 @@ while ii<=length(j)
 end
 C(kk:end) = [];
 
+
+
+
+
+% ==================================================
+function str = removeEndingNewlines(str)
+if isempty(str)
+    return
+end
+k = [];
+if str(1)<14
+    k = 1;
+end
+if length(str)>1
+    if str(end-1)<14
+        k = [k, length(str)-1];
+    end
+    if str(end)<14
+        k = [k, length(str)];
+    end
+end
+str(k) = '';

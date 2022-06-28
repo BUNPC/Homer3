@@ -1,16 +1,12 @@
 function UnitTestsAll()
-global logger
 global cfg 
 t1 = tic;
 
 setNamespace('Homer3')
 
-CleanUp(true);
+CleanUp(true, true, 'UnitTestsAll');
 
 cleanupObj = onCleanup(@()userInterrupt_Callback(true));
-
-logger = Logger('UnitTestsAll');
-cfg = ConfigFileClass();
 
 cfg.SetValue('Regression Test Active','true');
 

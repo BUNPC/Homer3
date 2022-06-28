@@ -41,6 +41,7 @@ classdef ProcStreamClass < handle
                 return;
             end
             obj.CreateDefault();
+            obj.ExportProcStreamFunctions(false);
         end
         
         
@@ -191,6 +192,9 @@ classdef ProcStreamClass < handle
             if ~exist('filename','var')
                 return
             end
+            if ~ispathvalid(filename, 'file')
+                return
+            end
             obj.output.FreeMemory(filename)
         end
 
@@ -230,16 +234,43 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function paramsOutStruct = CalcDefault(obj)
-            paramsOutStruct = struct();
-            if exist('hmrE_CalcAvg','file')
-                paramsOutStruct = hmrE_CalcAvg(obj.input.misc);
+        function fcall = GenerateFuncCallString(obj, iFcall)            
+            funcName = obj.GetFuncCallName(iFcall);
+            
+            % Inoput arguments
+            argIn = obj.ParseInputArgs(iFcall);
+            
+            % Users modifiable input parameters
+            paramsIn = obj.ParseInputParams(iFcall);
+            
+            % Output arguments
+            argOut = obj.ParseOutputArgs(iFcall);
+            
+            delimiter = '';
+            if ~isempty(obj.fcalls(iFcall).argIn) && ~isempty(obj.fcalls(iFcall).paramIn)
+                delimiter = ', ';
+            end
+            
+            % call function
+            fcall = sprintf('%s = %s(%s%s%s);', argOut, funcName, argIn, delimiter, paramsIn);
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function fcalls = GetFuncCallChain(obj)
+            N = length(obj.fcalls);
+            fcalls = cell(N,1);            
+            for ii = 1:N
+                fcalls{ii} = obj.GenerateFuncCallString(ii);
             end
         end
         
         
+        
+        
         % ----------------------------------------------------------------------------------
-        function Calc(obj, filename)
+        function fcalls = Calc(obj, filename)            
             if ~exist('filename','var')
                 filename = '';
             end
@@ -250,17 +281,12 @@ classdef ProcStreamClass < handle
             
             paramsOutStruct = struct();
             hwait = waitbar(0, 'Processing...' );
-            if nFcall==0
-            
-                paramsOutStruct = obj.CalcDefault();
-
-            else
                 
-                paramOut = {};
-            for iFcall = FcallsIdxs
+            paramOut = {};
+        	for iFcall = FcallsIdxs
                 waitbar( iFcall/nFcall, hwait, sprintf('Processing... %s', obj.GetFcallNamePrettyPrint(iFcall)) );
                 
-                % Parse obj.input arguments
+                % Instantiate all input variables required by function call
                 argIn = obj.GetInputArgs(iFcall);
                 for ii = 1:length(argIn)
                     if ~exist(argIn{ii},'var')
@@ -268,16 +294,10 @@ classdef ProcStreamClass < handle
                     end
                 end
                 
-                % Parse obj.input parameters
-                [sargin, p, sarginVal] = obj.ParseInputParams(iFcall); %#ok<ASGLU>
+            fcalls{iFcall} = obj.GenerateFuncCallString(iFcall);
                 
-                % Parse obj.input output arguments
-                sargout = obj.ParseOutputArgs(iFcall);
-                
-                % call function
-                fcall = sprintf('%s = %s%s%s);', sargout, obj.GetFuncCallName(iFcall), obj.fcalls(iFcall).argIn.str, sargin);
                 try
-                    eval( fcall );
+                eval( fcalls{iFcall} );
                 catch ME
                     msg = sprintf('Function %s generated error at line %d: %s', obj.fcalls(iFcall).name, ME.stack(1).line, ME.message);
                     if strcmp(obj.config.regressionTestActive, 'false')
@@ -315,11 +335,12 @@ classdef ProcStreamClass < handle
             % Copy paramOut to output
             for ii=1:length(paramOut)
                 eval( sprintf('paramsOutStruct.%s = %s;', paramOut{ii}, paramOut{ii}) );
-            end            
-            
             end
             
             obj.output.Save(paramsOutStruct, filename);
+            
+            % Save processing stream function calls
+            obj.ExportProcStream(filename, fcalls);
             
             obj.input.misc = [];
             close(hwait);
@@ -334,7 +355,32 @@ classdef ProcStreamClass < handle
         end
         
         
-        
+        % ----------------------------------------------------------------------------------        
+        function ExportProcStream(obj, filename, fcalls)
+            global logger             
+            temp = obj.output.SetFilename(filename);
+            if isempty(temp)
+                return;
+            end
+            [p,f] = fileparts(temp); 
+            fname = [filesepStandard(p), f, '_ProcStream.txt'];
+            if obj.ExportProcStreamFunctions()==true
+                fid = fopen(fname, 'w');                
+                logger.Write('Saving processing stream  %s:\n', fname);
+                for ii = 1:length(fcalls)
+                    fprintf(fid, '%s\n', fcalls{ii});
+                end
+                fclose(fid);
+            else
+                if ispathvalid(fname)
+                    logger.Write('Deleting processing stream  %s:\n', fname);
+                    try
+                        delete(fname)
+                    catch
+                    end
+                end
+            end
+        end        
         
         
         % ----------------------------------------------------------------------------------        
@@ -425,66 +471,57 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function [sargin, p, sarginVal] = ParseInputParams(obj, iFcall)
+        function sargin = ParseInputParams(obj, iFcall)
             sargin = '';
-            sarginVal = '';
+            if ~exist('iFcall', 'var') || isempty(iFcall)
+                iFcall = 1;
+            end
             nParam = length(obj.fcalls(iFcall).paramIn);            
-            p = cell(nParam, 1);
-
             if isempty(obj.fcalls)
                 return;
             end
             if iFcall>length(obj.fcalls)
                 return;
-            end            
+            end
             for iP = 1:nParam
-                p{iP} = obj.fcalls(iFcall).paramIn(iP).value;
-                if length(obj.fcalls(iFcall).argIn.str)==1 && iP==1
-                    sargin = sprintf('%sp{%d}', sargin, iP);
-                    if isnumeric(p{iP})
-                        if length(p{iP})==1
-                            sarginVal = sprintf('%s%s', sarginVal, num2str(p{iP}));
-                        else
-                            sarginVal = sprintf('%s[%s]', sarginVal, num2str(p{iP}));
-                        end
-                    elseif ~isstruct(p{iP})
-                        sarginVal = sprintf('%s,%s', sarginVal, p{iP});
-                    else
-                        sarginVal = sprintf('%s,[XXX]', sarginVal);
-                    end
+                if isempty(sargin)
+                    sargin = obj.fcalls(iFcall).paramIn(iP).DisplayValue();
                 else
-                    sargin = sprintf('%s,p{%d}', sargin, iP);
-                    if isnumeric(p{iP})
-                        if length(p{iP})==1
-                            sarginVal = sprintf('%s,%s', sarginVal, num2str(p{iP}));
-                        else
-                            sarginVal = sprintf('%s,[%s]', sarginVal, num2str(p{iP}));
-                        end
-                    elseif ~isstruct(p{iP})
-                        sarginVal = sprintf('%s,%s', sarginVal, p{iP});
-                    else
-                        sarginVal = sprintf('%s,[XXX]',sarginVal);
-                    end
+                    sargin = sprintf('%s, %s', sargin, obj.fcalls(iFcall).paramIn(iP).DisplayValue());
                 end
             end
         end
         
         
         % ----------------------------------------------------------------------------------
-        function sargout = ParseOutputArgs(obj, iFcall)
-            sargout = '';
+        function argInStr = ParseInputArgs(obj, iFcall)
+            argInStr = '';
+            if ~exist('iFcall', 'var') || isempty(iFcall)
+                iFcall = 1;
+            end
             if isempty(obj.fcalls)
                 return;
             end
             if iFcall>length(obj.fcalls)
                 return;
             end            
-            sargout = obj.fcalls(iFcall).argOut.str;
-            for ii=1:length(obj.fcalls(iFcall).argOut.str)
-                if sargout(ii)=='#'
-                    sargout(ii) = ' ';
-                end
+            argInStr = obj.fcalls(iFcall).argIn.Display();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function argOutStr = ParseOutputArgs(obj, iFcall)
+            argOutStr = '';
+            if ~exist('iFcall', 'var') || isempty(iFcall)
+                iFcall = 1;
             end
+            if isempty(obj.fcalls)
+                return;
+            end
+            if iFcall>length(obj.fcalls)
+                return;
+            end            
+            argOutStr = obj.fcalls(iFcall).argOut.Display();
         end
         
         
@@ -634,20 +671,13 @@ classdef ProcStreamClass < handle
                 fprintf('Default config file exists. Processing stream will be loaded from %s\n', fname);
                 return;
             end
-            
-            % This pause is a workaround for a matlab bug in version
-            % 7.11 for Linux, where uigetfile won't block unless there's
-            % a breakpoint.
-            pause(.1);
-            [fname, pname] = uigetfile([pathname, '*.cfg'], 'Load Process Options File' );
-            if fname==0
-                fprintf('Loading default config file.\n');
+            fname = OpenFileGUI(procStreamCfgFile, pathname,'Load Processing Options File');
+            if isempty(fname)
                 fname = [pathname, procStreamCfgFile];
+                fprintf('Loading default config file.\n');
                 autoGenDefault = true;
-            else
-                fname = [pname, fname];
-            end
-            fname(fname=='\')='/';
+            end            
+            
         end
         
         
@@ -709,9 +739,8 @@ classdef ProcStreamClass < handle
             
             % Reinitialize fcalls since we're going to overwrite them anyway
             obj.fcalls = FuncCallClass().empty();
-            obj.ParseFile(fid, type);
+            err = obj.ParseFile(fid, type);
             fclose(fid);
-            err=0;
         end
         
         
@@ -1000,7 +1029,7 @@ classdef ProcStreamClass < handle
             %              help: '  Excludes stims that fall within the time points identified as �'
             %
             
-            err=-1;
+            err = -1;
             if ~exist('fid','var') || ~iswholenum(fid) || fid<0
                 return;
             end
@@ -1010,17 +1039,16 @@ classdef ProcStreamClass < handle
             [Group, Subj, Sess, Run] = obj.FindSections(fid);
             switch(lower(type))
                 case {'group', 'groupclass', 'grp'}
-                    obj.Decode(Group);
+                    err = obj.Decode(Group);
                 case {'subj', 'subjclass'}
-                    obj.Decode(Subj);
+                    err = obj.Decode(Subj);
                 case {'sess', 'sessclass'}
-                    obj.Decode(Sess);
+                    err = obj.Decode(Sess);
                 case {'run', 'runclass'}
-                    obj.Decode(Run);
+                    err = obj.Decode(Run);
                 otherwise
                     return;
             end
-            err=0;
         end
                    
     end
@@ -1036,7 +1064,7 @@ classdef ProcStreamClass < handle
     methods
                 
         % ----------------------------------------------------------------------------------
-        function Decode(obj, section)
+        function err = Decode(obj, section)
             % Syntax:
             %    obj.Decode(section)
             %    
@@ -1079,6 +1107,8 @@ classdef ProcStreamClass < handle
             %       paramIn: [1x1 ParamClass]
             %          help: '  Convert OD to concentrations�'
             % 
+            err = 0;
+            
             if nargin<2
                 return
             end
@@ -1117,6 +1147,7 @@ classdef ProcStreamClass < handle
                             kk=kk+1;
                         else
                             fprintf('  Found no similar entries. Discarding %s\n', section{ii})
+                            err = -1;
                         end
                     end
                 end
@@ -1261,8 +1292,8 @@ classdef ProcStreamClass < handle
                 iS = obj.reg.isubj;
                 suffix = obj.getDefaultProcStream();
                 tmp = {...
-                    obj.reg.funcReg(iS).GetUsageStrDecorated(['hmrS_RunAvg',suffix],'dcAvg'); ...
-                    obj.reg.funcReg(iS).GetUsageStrDecorated(['hmrS_RunAvgStd2',suffix],'dcAvg'); ...
+                    obj.reg.funcReg(iS).GetUsageStrDecorated(['hmrS_SessAvg',suffix],'dcAvg'); ...
+                    obj.reg.funcReg(iS).GetUsageStrDecorated(['hmrS_SessAvgStd2',suffix],'dcAvg'); ...
                 };
                 k=[]; kk=1;
                 for ii=1:length(tmp)
@@ -1284,9 +1315,11 @@ classdef ProcStreamClass < handle
         function val = fcallStrEncodedSess(obj, init)
             persistent v;
             if exist('init','var') && strcmp(init,'init') && ~obj.reg.IsEmpty
-                iS = obj.reg.isubj;
+                iS = obj.reg.isess;
                 suffix = obj.getDefaultProcStream();
                 tmp = {...
+                    obj.reg.funcReg(iS).GetUsageStrDecorated(['hmrE_RunAvg',suffix],'dcAvg'); ...
+                    obj.reg.funcReg(iS).GetUsageStrDecorated(['hmrE_RunAvgStd2',suffix],'dcAvg'); ...
                 };
                 k=[]; kk=1;
                 for ii=1:length(tmp)
@@ -1659,6 +1692,18 @@ classdef ProcStreamClass < handle
     methods        
         
         % ----------------------------------------------------------------------------------
+        function tblcells = GenerateTableCells_MeanHRF_Alt(obj, name, CondNames, trange, width, iBlk)
+            if nargin<4
+                width = 12;
+            end
+            if nargin<5
+                iBlk = 1;
+            end
+            tblcells = obj.output.GenerateTableCells_MeanHRF_Alt(name, CondNames, trange, width, iBlk);
+        end
+
+            
+        % ----------------------------------------------------------------------------------
         function [tblcells, maxwidth] = GenerateTableCellsHeader_MeanHRF(obj, iBlk)
             if nargin<2
                 iBlk = 1;
@@ -1694,6 +1739,38 @@ classdef ProcStreamClass < handle
                 iBlk = 1;
             end
             obj.output.ExportHRF(filename, CondNames, iBlk);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ExportMeanHRF(obj, filename, CondNames, trange, iBlk)
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            obj.output.ExportMeanHRF(filename, CondNames, trange, iBlk);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ExportMeanHRF_Alt(obj, filename, tblcells)
+            obj.output.ExportMeanHRF_Alt(filename, tblcells);
+        end
+        
+    end
+    
+    
+    
+    methods (Static)
+        
+        % ----------------------------------------------------------------------------------
+        function out = ExportProcStreamFunctions(arg)
+            persistent saveProcStream;
+            if nargin == 0
+                out = saveProcStream;
+                return;
+            end
+            saveProcStream = arg;
+            out = saveProcStream;
         end
         
     end

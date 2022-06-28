@@ -13,6 +13,7 @@ classdef SubjClass < TreeNodeClass
             
             obj.type  = 'subj';
             obj.sess = SessClass().empty;
+
             if nargin==0
                 obj.name  = '';
                 return;
@@ -186,12 +187,12 @@ classdef SubjClass < TreeNodeClass
                 sess.SetIndexID(obj.iGroup, obj.iSubj, jj);
                 sess.SetPath(obj.path);                      % Inherit root path from subject
                 obj.sess(jj) = sess;
-                obj.logger.Write('      Added session %s to subject %s.\n', obj.sess(jj).GetFileName, obj.GetName);
+                obj.logger.Write('      Added session  "%s"  to subject  "%s" .\n', obj.sess(jj).GetFileName, obj.GetFileName);
             end
             
             % Add sess to subj
             obj.sess(jj).Add(run);
-            
+            obj.children = obj.sess;
         end
         
         
@@ -292,28 +293,28 @@ classdef SubjClass < TreeNodeClass
                 % all sessions. Use smallest tHRF as the common one.
                 obj.sess(iSess).procStream.output.SettHRFCommon(tHRF_common, obj.sess(iSess).name, obj.sess(iSess).type);
             
-                obj.inputVars.dodAvgRuns{obj.sess(iSess).iSess}    = obj.sess(iSess).procStream.output.GetVar('dodAvg');
-                obj.inputVars.dodAvgStdRuns{obj.sess(iSess).iSess} = obj.sess(iSess).procStream.output.GetVar('dodAvgStd');
-                obj.inputVars.dodSum2Runs{obj.sess(iSess).iSess}   = obj.sess(iSess).procStream.output.GetVar('dodSum2');
-                obj.inputVars.dcAvgRuns{obj.sess(iSess).iSess}     = obj.sess(iSess).procStream.output.GetVar('dcAvg');
-                obj.inputVars.dcAvgStdRuns{obj.sess(iSess).iSess}  = obj.sess(iSess).procStream.output.GetVar('dcAvgStd');
-                obj.inputVars.dcSum2Runs{obj.sess(iSess).iSess}    = obj.sess(iSess).procStream.output.GetVar('dcSum2');
-                obj.inputVars.tHRFRuns{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.GetTHRF();
-                obj.inputVars.mlActRuns{obj.sess(iSess).iSess}     = obj.sess(iSess).procStream.output.GetVar('mlActAuto');
-                obj.inputVars.nTrialsRuns{obj.sess(iSess).iSess}   = obj.sess(iSess).procStream.output.GetVar('nTrials');
+                obj.inputVars.dodAvgSess{obj.sess(iSess).iSess}    = obj.sess(iSess).procStream.output.GetVar('dodAvg');
+                obj.inputVars.dodAvgStdSess{obj.sess(iSess).iSess} = obj.sess(iSess).procStream.output.GetVar('dodAvgStd');
+                obj.inputVars.dodSum2Sess{obj.sess(iSess).iSess}   = obj.sess(iSess).procStream.output.GetVar('dodSum2');
+                obj.inputVars.dcAvgSess{obj.sess(iSess).iSess}     = obj.sess(iSess).procStream.output.GetVar('dcAvg');
+                obj.inputVars.dcAvgStdSess{obj.sess(iSess).iSess}  = obj.sess(iSess).procStream.output.GetVar('dcAvgStd');
+                obj.inputVars.dcSum2Sess{obj.sess(iSess).iSess}    = obj.sess(iSess).procStream.output.GetVar('dcSum2');
+                obj.inputVars.tHRFSess{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.GetTHRF();
+                obj.inputVars.mlActSess{obj.sess(iSess).iSess}     = obj.sess(iSess).procStream.output.GetVar('mlActAuto');
+                obj.inputVars.nTrialsSess{obj.sess(iSess).iSess}   = obj.sess(iSess).procStream.output.GetVar('nTrials');
                 if ~isempty(obj.sess(iSess).procStream.output.GetVar('misc'))
                     if isfield(obj.sess(iSess).procStream.output.misc, 'stim') == 1
-                        obj.inputVars.stimRuns{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.misc.stim;
+                        obj.inputVars.stimSess{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.misc.stim;
                 	else
-	                    obj.inputVars.stimRuns{obj.sess(iSess).iSess}      = obj.sess(iSess).GetVar('stim');
+	                    obj.inputVars.stimSess{obj.sess(iSess).iSess}      = obj.sess(iSess).GetVar('stim');
                 	end
             	else
-                    obj.inputVars.stimRuns{obj.sess(iSess).iSess}      = obj.sess(iSess).GetVar('stim');
+                    obj.inputVars.stimSess{obj.sess(iSess).iSess}      = obj.sess(iSess).GetVar('stim');
             	end
-                obj.inputVars.dcRuns{obj.sess(iSess).iSess}       = obj.sess(iSess).procStream.output.GetVar('dc');
-                obj.inputVars.AauxRuns{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.GetVar('Aaux');
-                obj.inputVars.tIncAutoRuns{obj.sess(iSess).iSess}  = obj.sess(iSess).procStream.output.GetVar('tIncAuto');
-                obj.inputVars.rcMapRuns{obj.sess(iSess).iSess}     = obj.sess(iSess).procStream.output.GetVar('rcMap');
+                obj.inputVars.dcSess{obj.sess(iSess).iSess}       = obj.sess(iSess).procStream.output.GetVar('dc');
+                obj.inputVars.AauxSess{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.GetVar('Aaux');
+                obj.inputVars.tIncAutoSess{obj.sess(iSess).iSess}  = obj.sess(iSess).procStream.output.GetVar('tIncAuto');
+                obj.inputVars.rcMapSess{obj.sess(iSess).iSess}     = obj.sess(iSess).procStream.output.GetVar('rcMap');
             
 	            % a) Find all variables needed by proc stream
 	            args = obj.procStream.GetInputArgs();
@@ -390,6 +391,19 @@ classdef SubjClass < TreeNodeClass
         end
         
 
+        % ---------------------------------------------------------------
+        function PrintProcStream(obj)
+            fcalls = obj.procStream.GetFuncCallChain();
+            obj.logger.Write('Subject processing stream:\n');
+            for ii = 1:length(fcalls)
+                obj.logger.Write('%s\n', fcalls{ii});
+            end
+            obj.logger.Write('\n');
+            obj.sess(1).PrintProcStream();
+        end
+        
+            
+            
         % ----------------------------------------------------------------------------------
         function b = IsEmpty(obj)
             b = true;
@@ -453,6 +467,21 @@ classdef SubjClass < TreeNodeClass
         end
         
                
+         % --------------------------------------------------------------------------
+        function ApplyParamEditsToAllSessions(obj, iFcall, iParam, val)
+            for jj = 1:length(obj.sess)
+                obj.sess(jj).procStream.EditParam(iFcall, iParam, val);
+            end
+        end
+        
+        
+        % --------------------------------------------------------------------------
+        function ApplyParamEditsToAllRuns(obj, iFcall, iParam, val)
+            for jj = 1:length(obj.sess)
+                obj.sess(jj).ApplyParamEditsToAllRuns(iFcall, iParam, val);
+            end
+        end
+        
     end
     
     
@@ -505,6 +534,19 @@ classdef SubjClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function bbox = GetSdgBbox(obj)
             bbox = obj.sess(1).GetSdgBbox();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function probe = GetProbe(obj)
+            probe = obj.sess(1).GetProbe();
+%             for sess = obj.sess
+%                for run = sess.runs
+%                     if ~(probe == run.GetProbe()) 
+%                         warning(['Probe ', run.name, 'differs from ', obj.sess(1).runs(1).name]) 
+%                     end
+%                end   
+%            end
         end
         
         
@@ -571,66 +613,11 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function RenameCondition(obj, oldname, newname)
-            % Function to rename a condition. Important to remeber that changing the
-            % condition involves 2 distinct well defined steps:
-            %   a) For the current element change the name of the specified (old)
-            %      condition for ONLY for ALL the acquired data elements under the
-            %      currElem, be it session, subj, or group . In this step we DO NOT TOUCH
-            %      the condition names of the session, subject or group .
-            %   b) Rebuild condition names and tables of all the tree nodes group, subjects
-            %      and sessions same as if you were loading during Homer3 startup from the
-            %      acquired data.
-            %
-            if ~exist('oldname','var') || ~ischar(oldname)
-                return;
-            end
-            if ~exist('newname','var')  || ~ischar(newname)
-                return;
-            end            
-            newname = obj.ErrCheckNewCondName(newname);
-            if obj.err ~= 0
-                return;
-            end
-            for ii = 1:length(obj.sess)
-                obj.sess(ii).RenameCondition(oldname, newname);
-            end
-        end
-        
-        
-        
-        % ----------------------------------------------------------------------------------
         function aux = GetAuxiliary(obj)
             aux = [];
         end
                 
 
-        % ----------------------------------------------------------------------------------
-        function tblcells = GenerateTableCells_MeanHRF(obj, trange, width, iBlk)
-            if ~exist('trange','var') || isempty(trange)
-                trange = [0,0];
-            end
-            if ~exist('width','var') || isempty(width)
-                width = 12;
-            end
-            if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk = 1;
-            end
-            obj.Load();
-            tblcells = obj.procStream.GenerateTableCells_MeanHRF(obj.name, obj.CondNames, trange, width, iBlk);
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function tblcells = GenerateTableCellsHeader_MeanHRF(obj, widthCond, widthSubj)
-            tblcells = repmat(TableCell(), length(obj.CondNames), 2);
-            for iCond = 1:length(obj.CondNames)
-                % First 2 columns contain condition name and group, subject or session name
-                tblcells(iCond, 1) = TableCell(obj.CondNames{iCond}, widthCond);
-                tblcells(iCond, 2) = TableCell(obj.name, widthSubj);
-            end
-        end
-        
         % ----------------------------------------------------------------------------------
         function [fn_error, missing_args, prereqs] = CheckProcStreamOrder(obj)
             missing_args = {};
@@ -644,31 +631,7 @@ classdef SubjClass < TreeNodeClass
             end
         end
         
-        % ----------------------------------------------------------------------------------
-        function ExportHRF(obj, procElemSelect, iBlk)
-            if ~exist('procElemSelect','var') || isempty(procElemSelect)
-                q = MenuBox('Export only current subject data OR current subject data and all it''s session data?', ...
-                            {'Current subject data only','Current subject data and all it''s session data','Cancel'});
-                if q==1
-                    procElemSelect  = 'current';
-                elseif q==2
-                    procElemSelect  = 'all';
-                else
-                    return
-                end
-            end
-            if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk = 1;
-            end
-
-            if strcmp(procElemSelect, 'all')
-                for ii = 1:length(obj.sess)
-                    obj.sess(ii).ExportHRF('all', iBlk);
-                end
-            end            
-            obj.ExportHRF@TreeNodeClass(procElemSelect, iBlk);
-        end
-    
+        
         
         % ----------------------------------------------------------------------------------
         function r = ListOutputFilenames(obj, options)
@@ -681,7 +644,7 @@ classdef SubjClass < TreeNodeClass
                 obj.sess(ii).ListOutputFilenames(options);
             end
         end
-        
+                
     end
         
     
@@ -690,18 +653,6 @@ classdef SubjClass < TreeNodeClass
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Access = public)
                 
-        % ----------------------------------------------------------------------------------
-        function b = HaveOutput(obj)
-            b = false;
-            for ii = 1:length(obj.sess)
-                b = obj.sess(ii).HaveOutput();
-                if b
-                    break;
-                end
-            end
-        end
-                
-        
         % ----------------------------------------------------------------------------------
         function BackwardCompatability(obj)
             obj.BackwardCompatability@TreeNodeClass();

@@ -1,9 +1,12 @@
-function PrintSystemInfo(logger, appname)
+function PrintSystemInfo(logger, appname, varargin)
 if ~exist('logger','var')
     logger = [];
 end
 if ~exist('appname','var') || isempty(appname)
     appname = {'Untitled'};
+end
+if ~exist('args','var') || isempty(args)
+    args = {};
 end
 
 logger = InitLogger(logger, 'SystemInfo');
@@ -20,9 +23,19 @@ for ii = 1:length(appnames)
     if strcmp(appnames{ii}, 'Untitled')
         logger.Write('Running %s, %s\n', appnames{ii}, platform);
     else
-        logger.Write('Running %s, (v%s), %s\n', appnames{ii}, getVernum(appnames{ii}), platform);
+        vstr = getVernum(appnames{ii});
+        if ~isempty(find(vstr==':' | vstr=='-'))
+            vs = sprintf('(Last Rev:  %s), ', vstr);
+        elseif ~isempty(vstr)
+            vs = sprintf('(v%s), ', vstr);
+        else
+            vs = '';
+        end
+        logger.Write('Running %s, %s %s\n', appnames{ii}, vs, platform);
     end
 end
+printArgs(varargin);
+
 logger.Write('\n');
 logger.Write('============\n');
 logger.Write('SYSTEM INFO:\n');
@@ -60,4 +73,27 @@ for ii = 1:size(submodules,1)
     url             = submodules{ii,1};
     [~, libs{ii,1}] = fileparts(url);
 end
+
+
+
+% --------------------------------------------------------------------
+function printArgs(args)
+global logger
+
+for ii = 1:length(args)
+    if strcmp(args{ii}, 'userargs')
+        break;
+    end
+    if ischar(args{ii})
+        logger.Write('   arg %d:  ''%s''\n', ii, args{ii});
+    elseif isnumeric(args{ii})
+        logger.Write('   arg %d:  %s\n', ii, num2str(args{ii}));
+    elseif iscell(args{ii})
+        printArgs(args{ii});
+    end
+end
+
+
+
+
 

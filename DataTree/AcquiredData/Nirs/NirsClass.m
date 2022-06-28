@@ -7,12 +7,12 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         d
         aux
         CondNames
-    end    
-
+    end
+    
     % Properties not part of the NIRS format. These parameters aren't loaded or saved to nirs files
     properties (Access = private)
         errmargin
-    end    
+    end
     
     methods
         
@@ -23,17 +23,19 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             %   obj = NirsClass()
             %   obj = NirsClass(filename);
             %   obj = NirsClass(filename, dataStorageScheme);
-            %   
+            %   obj = NirsClass(SD);
+            %   obj = NirsClass(SD, dataStorageScheme);
+            %
             %
             % Example 1:
             %   nirs = NirsClass('./s1/neuro_run01.nirs')
-            %    
+            %
             %   Here's some of the output:
             %
             %       nirs ==>
-            % 
+            %
             %           NirsClass with properties:
-            % 
+            %
             %                      SD: [1x1 struct]
             %                       t: [12698x1 double]
             %                       s: [12698x2 double]
@@ -48,8 +50,8 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             
             % Initialize Nirs public properties
             obj.Initialize();
-
-            % Set base class properties not part of NIRS format 
+            
+            % Set base class properties not part of NIRS format
             obj.SetFilename('');
             obj.SetFileFormat('mat');
             obj.errmargin = 1e-3;
@@ -57,14 +59,29 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             if nargin==0
                 return;
             end
+            
+            % Else we have at least 1 input arg
+            if isa(varargin{1}, 'NirsClass')
+                obj.Copy(varargin{1});
+            elseif isstruct(varargin{1})
+                if isfield(varargin{1}, 'd') && isfield(varargin{1}, 'SD')
+                    obj.CopyStruct(varargin{1})                    
+                elseif isfield(varargin{1}, 'DetPos') && isfield(varargin{1}, 'SrcPos')
+                    obj.CopyProbe(varargin{1})
+                end
+            elseif isa(varargin{1}, 'SnirfClass')
+                obj.ConvertSnirf(varargin{1});
+            end
+
+            if ~ischar(varargin{1}) && nargin==1
+                obj.ErrorCheck();
+                return
+            end
+            
             if nargin==2
                 obj.SetDataStorageScheme(varargin{2});
             end
             
-            if isa(varargin{1}, 'NirsClass')
-                obj.Copy(varargin{1});
-                return;
-            end
             filename = varargin{1};
             if ~exist('filename','var') || ~exist(filename,'file')
                 obj = NirsClass.empty();
@@ -76,14 +93,15 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             if strcmpi(obj.GetDataStorageScheme(), 'memory')
                 obj.Load(filename);
             end
+            obj.ErrorCheck();
         end
         
         
         % -------------------------------------------------------
         function Initialize(obj)
             Initialize@AcqDataClass(obj);
-
-            obj.SD        = struct([]);
+            
+            obj.SD        = obj.InitProbe();
             obj.t         = [];
             obj.s         = [];
             obj.d         = [];
@@ -99,6 +117,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 '''SD'' is invalid.'
                 '''aux'' is invalid.'
                 '''s'' is invalid.'
+                'WARNING: ''data'' corrupt and unusable'                
                 'error unknown.'
                 };
             
@@ -109,15 +128,15 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         function SortStims(obj)
             [~,idx] = sort(obj.CondNames);
             obj.CondNames = obj.CondNames(idx);
-            obj.s = obj.s(:,idx);            
+            obj.s = obj.s(:,idx);
         end
         
         
         % ---------------------------------------------------------
         function err = LoadMat(obj, fname, ~)
             err = 0;
-
-            try 
+            
+            try
                 % Arg 1
                 if ~exist('fname','var') || ~exist(fname,'file')
                     fname = '';
@@ -154,7 +173,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 err = obj.LoadRawData(fdata, err);
                 err = obj.LoadTime(fdata, err);
                 err = obj.LoadProbeMeasList(fdata, err);
-                                
+                
                 % Optional fields
                 err = obj.LoadAux(fdata, err);
                 err = obj.LoadStims(fdata, err);
@@ -162,8 +181,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             catch
                 
                 
-                
-            end            
+            end
             warning('on', 'MATLAB:load:variableNotFound');
             
         end
@@ -186,10 +204,11 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         % ---------------------------------------------------------
         function err = LoadTime(obj, fdata, err)
             if nargin == 1
-                fdata.t = load(obj.GetFilename(),'-mat', 't');
+                fdata = load(obj.GetFilename(),'-mat', 't');
                 err = 0;
+                return
             elseif nargin == 2
-                err = 0;                
+                err = 0;
             end
             
             if isproperty(fdata,'t')
@@ -204,14 +223,14 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             end
             if length(fdata.t) ~= size(fdata.d,1) && err == 0
                 err = -3;
-            end            
+            end
         end
         
-                
+        
         % ---------------------------------------------------------
         function err = LoadProbeMeasList(obj, fdata, err)
             if isproperty(fdata,'SD')
-                obj.SetSD(fdata.SD);
+                obj.CopyProbe(fdata.SD);
                 if isempty(obj.SD) && err == 0
                     err = -4;
                 end
@@ -229,11 +248,11 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 err = 5;
             end
         end
-       
         
-                
+        
+        
         % ---------------------------------------------------------
-        function err = LoadStims(obj, fdata, err)                        
+        function err = LoadStims(obj, fdata, err)
             if ischar(fdata)
                 fname = fdata;
                 
@@ -246,22 +265,22 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 if exist(fname, 'file') ~= 2
                     err = -1;
                     return;
-                end                              
+                end
                 warning('off', 'MATLAB:load:variableNotFound');
                 fdata = load(fname,'-mat', 's','CondNames','t');
             end
-        
+            
             if ~isproperty(fdata,'s')
-                if err==0 
-                    err = 6; 
+                if err==0
+                    err = 6;
                 end
                 return;
             end
             
             obj.s = fdata.s;
             if size(fdata.s,1) ~= size(fdata.t)
-                if err==0 
-                    err = -6; 
+                if err==0
+                    err = -6;
                 end
                 return;
             end
@@ -277,28 +296,140 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 obj.InitCondNames();
             end
             
-            % Always sort stimulus conditions and associated stims 
-            % to have a predictable order for display
-            obj.SortStims();
         end
         
         
         
         % ---------------------------------------------------------
-        function SaveMat(obj, fname, ~)
+        function SaveMat(obj, fname, options)
             if ~exist('fname','var') || isempty(fname)
                 fname = '';
+            end
+            if ~exist('options','var') || isempty(options)
+                options = 'normal';
             end
             if isempty(fname)
                 fname = obj.GetFilename();
             end
             
-            SD        = obj.SD; %#ok<*NASGU,*PROPLC>
-            s         = obj.s;
-            CondNames = obj.CondNames;
-            save(fname, '-mat', '-append', 'SD','s','CondNames');            
+            [str, fields] = obj.Properties2String();
+            for ii = 1:length(fields)
+                eval( sprintf('%s = obj.%s;', fields{ii}, fields{ii}) );
+            end
+            
+            if ~ispathvalid(fname)
+                p = fileparts(fname);
+                if ~isempty(p) && ~ispathvalid(p, 'dir')
+                    mkdir(p);
+                end
+                eval( sprintf('save(fname, ''-mat'', %s)', str) );
+            elseif optionExists(options, 'normal')
+                save(fname, '-mat', '-append', 'SD','s','CondNames');
+            elseif optionExists(options, 'overwrite')
+                eval( sprintf('save(fname, ''-mat'', %s)', str) );
+            end
         end
-                
+        
+
+        
+        % -------------------------------------------------------
+        function b = ProbeEqual(obj, obj2)
+            b = false;
+                        
+            fields{1} = propnames(obj.SD);
+            fields{2} = propnames(obj2.SD);
+            
+            fieldsToExclude = { ...
+                'MeasListAct'; ...
+                'SrcMap'; ...
+                };
+            
+            for kk = 1:length(fields)
+                for jj = 1:length(fields{kk})
+                    field = fields{kk}{jj};
+                    
+                    % Skip excluded fields
+                    if ~isempty(find(strcmp(fieldsToExclude, field))) %#ok<EFIND>
+                        continue;
+                    end                    
+                    
+                    % Now compare field
+                    if ~isfield(obj.SD,field) || ~isfield(obj2.SD,field)
+                        return;
+                    end
+                    if eval( sprintf('~strcmp(class(obj.SD.%s), class(obj2.SD.%s))', field, field) )
+                        return;
+                    end
+                    if eval( sprintf('length(obj.SD.%s) ~= length(obj2.SD.%s)', field, field) )
+                        return;
+                    end
+                    EPS = 1.0e-10; %#ok<NASGU>
+                    if eval( sprintf('iscell(obj.SD.%s)', field) )
+                        N = eval( sprintf('length(obj.SD.%s(:))', field) );
+                        for ii = 1:N
+                            if eval( sprintf('length(obj.SD.%s{ii}(:)) ~= length(obj2.SD.%s{ii}(:))', field, field) )
+                                return;
+                            end
+                            if eval( sprintf('~all(obj.SD.%s{ii}(:) == obj2.SD.%s{ii}(:))', field, field) )
+                                return;
+                            end
+                        end
+                    elseif eval( sprintf('isstruct(obj.SD.%s)', field) )
+                        if eval( sprintf('~isempty(comp_struct(obj.SD.%s, obj2.SD.%s))', field, field) )
+                            return;
+                        end
+                    else
+                        if eval( sprintf('~all( (obj.SD.%s(:) - obj2.SD.%s(:)) < EPS )', field, field) )
+                            return;
+                        end
+                    end
+                end
+            end
+            b = true;
+        end
+        
+        
+        
+        % -------------------------------------------------------
+        function B = eq(obj, obj2)
+            B = false;
+            
+            if length(obj.t) ~= length(obj2.t)
+                return;
+            end
+            if ~all(obj.t == obj2.t)
+                return;
+            end
+            
+            if length(obj.d) ~= length(obj2.d)
+                return;
+            end
+            if ~all(obj.d(:) == obj2.d(:))
+                return;
+            end
+            
+            if ~obj.ProbeEqual(obj2)
+                return;
+            end
+            
+            if length(obj.s) ~= length(obj2.s)
+                return;
+            end
+            if ~all(obj.s(:) == obj2.s(:))
+                return;
+            end
+            
+            if length(obj.aux) ~= length(obj2.aux)
+                return;
+            end
+            if ~all(obj.aux(:) == obj2.aux(:))
+                return;
+            end
+            
+            B = true;
+        end
+        
+        
         
         % ---------------------------------------------------------
         function err = Copy(obj, obj2)
@@ -322,7 +453,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         % -------------------------------------------------------
         function objnew = CopyMutable(obj, ~)
-
+            
             % If we're working off the snirf file instead of loading everything into memory
             % then we have to load stim here from file before accessing it.
             if strcmpi(obj.GetDataStorageScheme(), 'files')
@@ -334,10 +465,15 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             
             % Copy mutable properties to new object instance;
             objnew.SD         = obj.SD;
+
+            % Always sort stimulus conditions and associated stims
+            % to have a predictable order for display
             objnew.s          = obj.s;
+            obj.SortStims();
+            
             objnew.CondNames  = obj.CondNames;
         end
-
+        
         
         
         % ---------------------------------------------------------
@@ -404,18 +540,18 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             end
             b = false;
         end
-        
+                
     end
     
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % Basic methods to Set/Get native variable 
+    % Basic methods to Set/Get native variable
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
-
+        
         % ---------------------------------------------------------
         function SetDataTimeSeries(obj, val)
-            obj.d = val;            
+            obj.d = val;
         end
         
         % ---------------------------------------------------------
@@ -425,7 +561,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 iBlk=1;
             end
             if iBlk>1
-            	return
+                return
             end
             val = obj.d;
         end
@@ -445,11 +581,6 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         end
         
         % ---------------------------------------------------------
-        function SetSD(obj, val)
-            obj.SD = val;            
-        end
-        
-        % ---------------------------------------------------------
         function val = GetSD(obj)
             val = obj.SD;
         end
@@ -466,17 +597,32 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function SetAux(obj, val)
-            obj.aux = val;        
+            obj.aux = val;
         end
         
         % ---------------------------------------------------------
-        function val = GetAux(obj)
-            val = obj.aux;
+        function val = GetAux(obj, options)
+            if ~exist('options','var')
+                options = 'struct';
+            end
+            if optionExists(options, 'matrix')
+                val = obj.aux;
+            else
+                structtype = struct('name','', 'dataTimeSeries',[]);
+                val = struct(structtype([]));
+                for ii = 1:size(obj.aux,2)
+                    val(ii).name = num2str(ii);
+                    val(ii).time = obj.t;
+                    val(ii).dataTimeSeries = obj.aux(:,ii);
+                end
+            end
         end
+        
+        
         
         % ---------------------------------------------------------
         function SetCondNames(obj, val)
-            obj.CondNames = val;            
+            obj.CondNames = val;
         end
         
         % ---------------------------------------------------------
@@ -491,7 +637,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
     % Methods that must be implemented as a child class of AcqDataClass
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
-
+        
         % ---------------------------------------------------------
         function val = GetFormatVersion(obj)
             val = obj.formatVersion;
@@ -501,17 +647,11 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         function val = GetFormatVersionString(obj)
             val = sprintf('NIRS v%s', obj.GetFormatVersion());
         end
-               
+        
         
         % ---------------------------------------------------------
         function SD = GetSDG(obj, option)
             SD = obj.SD;
-        end
-        
-        
-        % ---------------------------------------------------------
-        function SetSDG(obj, SD)
-            obj.SD = SD;
         end
         
         
@@ -531,7 +671,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         function SetStims_MatInput(obj,s,t,CondNames)
             obj.s = s;
         end
-                
+        
         
         % ---------------------------------------------------------
         function s = GetStims(obj, t)
@@ -560,7 +700,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         function CondNames = GetConditions(obj)
             CondNames = obj.CondNames;
         end
-                
+        
         
         % ---------------------------------------------------------
         function srcpos = GetSrcPos(obj,option)
@@ -598,7 +738,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             iDataBlks = 1;
             ich={ich};
         end
-
+        
         
         % ---------------------------------------------------------
         function t = GetAuxiliaryTime(obj)
@@ -629,6 +769,10 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         % ----------------------------------------------------------------------------------
         function SD = Get_SD(obj)
+            SD = [];
+            if ~obj.IsProbeValid()
+                return;
+            end
             SD = obj.SD;
         end
         
@@ -641,12 +785,12 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         function s = Get_s(obj)
             s = obj.s;
         end
-
+        
         % ----------------------------------------------------------------------------------
         function CondNames = Get_CondNames(obj)
             CondNames = obj.CondNames;
         end
-                
+        
     end
     
     
@@ -664,7 +808,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 obj.CondNames{icol} = condition;
             else
                 icol = k;
-            end      
+            end
             [~, tidx] = nearest_point(obj.t, tPts);
             obj.s(tidx, icol) = 1;
             obj.SortStims();
@@ -684,7 +828,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             if isempty(j)
                 return;
             end
-                        
+            
             % Find all stims for any conditions which match the time points.
             k = [];
             for ii=1:length(tPts)
@@ -705,7 +849,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             
             j = find(strcmp(obj.CondNames, condition));
             if isempty(j)
-                % Destination condition wasn't found in data, so add new condition 
+                % Destination condition wasn't found in data, so add new condition
                 j = size(obj.s,2)+1;
                 obj.s(:,j) = zeros(1,length(obj.t));
                 obj.CondNames{j} = condition;
@@ -758,8 +902,8 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         function duration = GetStimDuration(obj, icond)
             duration = [];
         end
-                
-                
+        
+        
         % ----------------------------------------------------------------------------------
         function SetStimAmplitudes(obj, icond, vals)
             return;
@@ -787,8 +931,8 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             obj.CondNames{k} = newname;
             obj.SortStims();
         end
-
-        % ----------------------------------------------------------------------------------        
+        
+        % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
             nbytes = 0;
             nbytes = nbytes + sizeof(obj.t);
@@ -798,6 +942,238 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             nbytes = nbytes + sizeof(obj.aux);
             nbytes = nbytes + sizeof(obj.CondNames);
         end
+
+        
+        
+        % ----------------------------------------------------------------------------------
+        function landmarks = InitLandmarks(obj)
+            landmarks = struct('pos',[], 'labels',{{}});
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SD = InitProbe(obj)
+            SD = struct(...
+                'Lambda',[], ...
+                'SrcPos',[], ...
+                'DetPos',[], ...
+                'DummyPos',[], ...
+                'SrcPos3D',[], ...
+                'DetPos3D',[], ...
+                'DummyPos3D',[], ...
+                'SrcGrommetType',{{}}, ...
+                'DetGrommetType',{{}}, ...
+                'DummyGrommetType',{{}}, ...
+                'SrcGrommetRot',[], ...
+                'DetGrommetRot',[], ...
+                'DummyGrommetRot',[], ...
+                'nDummys',0, ...
+                'Landmarks',obj.InitLandmarks(), ...
+                'Landmarks2D',obj.InitLandmarks(), ...
+                'Landmarks3D',obj.InitLandmarks(), ...
+                'MeasList',[], ...
+                'MeasListAct',[], ...
+                'SpringList',[], ...
+                'AnchorList',[], ...
+                'SrcMap',[], ...
+                'SpatialUnit','', ...
+                'xmin',0, ...
+                'xmax',0, ...
+                'ymin',0, ...
+                'ymax',0, ...
+                'auxChannels',[] ...
+                );
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsProbeValid(obj)
+            b = false;
+            if ~isfield(obj.SD, 'SrcPos')
+                return;
+            end
+            if ~isfield(obj.SD, 'DetPos')
+                return;
+            end
+            if ~isfield(obj.SD, 'MeasList')
+                return;
+            end
+            if ~isfield(obj.SD, 'Lambda')
+                return;
+            end
+            if isempty(obj.SD.SrcPos)
+                return;
+            end
+            if isempty(obj.SD.DetPos)
+                return;
+            end
+            if isempty(obj.SD.MeasList)
+                return;
+            end
+            if isempty(obj.SD.Lambda)
+                return;
+            end
+            b = true;
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = IsValid(obj)
+            b = ~obj.IsEmpty();
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = CopyProbe(obj, SD)            
+            fields = propnames(obj.SD);
+            for ii = 1:length(fields)
+                if eval( sprintf('isfield(SD, ''%s'')', fields{ii}) )
+                    eval( sprintf('obj.SD.%s = SD.%s;', fields{ii}, fields{ii}) );
+                end
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = CopyStruct(obj, s)            
+            fields = propnames(obj);
+            for ii = 1:length(fields)
+                if eval( sprintf('isfield(s, ''%s'')', fields{ii}) )
+                    if strcmp(fields{ii}, 'SD')
+                        obj.CopyProbe(s.SD);
+                    else
+                        eval( sprintf('obj.%s = s.%s;', fields{ii}, fields{ii}) );
+                    end
+                end
+            end
+        end
+
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ConvertSnirfProbe(obj, snirf)
+            obj.SD.Lambda = snirf.probe.wavelengths;
+            obj.SD.SrcPos = snirf.probe.sourcePos2D;
+            obj.SD.DetPos = snirf.probe.detectorPos2D;
+            obj.SD.SrcPos3D = snirf.probe.sourcePos3D;
+            obj.SD.DetPos3D = snirf.probe.detectorPos3D;
+            obj.SD.MeasList = snirf.GetMeasList();
+            obj.SD.SpatialUnit = snirf.GetLengthUnit();
+            obj.SD.Landmarks.pos        = snirf.probe.landmarkPos2D;
+            obj.SD.Landmarks2D.pos      = snirf.probe.landmarkPos2D;
+            obj.SD.Landmarks3D.pos      = snirf.probe.landmarkPos3D;
+            obj.SD.Landmarks.labels     = snirf.probe.landmarkLabels;
+            obj.SD.Landmarks2D.labels   = snirf.probe.landmarkLabels;
+            obj.SD.Landmarks3D.labels   = snirf.probe.landmarkLabels;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ConvertSnirfData(obj, snirf)
+            obj.d = snirf.data(1).dataTimeSeries;
+            obj.t = snirf.data(1).time;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ConvertSnirfStim(obj, snirf)
+            obj.s = zeros(length(obj.t), length(snirf.stim));
+            for ii = 1:length(snirf.stim)
+                k = round(nearest_point(obj.t, snirf.stim(ii).data(:,1)));
+                for jj = 1:length(k)
+                    if k(jj) == 0
+                        k(jj) = 1;
+                    end
+                    if k(jj) > length(obj.t)
+                        k(jj) = length(obj.t);
+                    end
+                    obj.s(k(jj),ii) = 1;
+                end
+                obj.CondNames{ii} = snirf.stim(ii).name;
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ConvertSnirfAux(obj, snirf)
+            obj.aux = zeros(length(obj.t), length(snirf.aux));
+            for ii = 1:length(snirf.aux)
+                obj.aux(:,ii) = snirf.aux(ii).dataTimeSeries;
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ConvertSnirf(obj, snirf)
+            obj.ConvertSnirfProbe(snirf);
+            obj.d = snirf.data(1).dataTimeSeries;
+            obj.t = snirf.data(1).time;
+            obj.ConvertSnirfStim(snirf);
+            obj.ConvertSnirfAux(snirf);
+        end
+
+        
+        
+        % ----------------------------------------------------------------------------------        
+        function ErrorCheck(obj)
+            if isempty(obj)
+                return
+            end
+            if isempty(obj.SD.SrcGrommetType)
+                for ii = 1:size(obj.SD.SrcPos,1)
+                    obj.SD.SrcGrommetType{ii} = 'none';
+                end
+            end
+            
+            if isempty(obj.SD.DetGrommetType)
+                for ii = 1:size(obj.SD.DetPos,1)
+                    obj.SD.DetGrommetType{ii} = 'none';
+                end
+            end
+            
+            if isempty(obj.SD.DummyGrommetType)
+                for ii = 1:size(obj.SD.DummyPos,1)
+                    obj.SD.DummyGrommetType{ii} = 'none';
+                end
+            end
+            
+            if isempty(obj.SD.SrcGrommetRot)
+                for ii = 1:size(obj.SD.SrcPos,1)
+                    obj.SD.SrcGrommetRot(ii) = 0;
+                end
+            end
+            
+            if isempty(obj.SD.DetGrommetRot)
+                for ii = 1:size(obj.SD.DetPos,1)
+                    obj.SD.DetGrommetRot(ii) = 0;
+                end
+            end
+            
+            if isempty(obj.SD.DummyGrommetRot)
+                for ii = 1:size(obj.SD.DummyPos,1)
+                    obj.SD.DummyGrommetRot(ii) = 0;
+                end
+            end
+            
+        end
+        
+        
+        % ----------------------------------------------------------------
+        function [str, fields] = Properties2String(obj)
+            str = '';
+            fields = propnames(obj);
+            for ii = 1:length(fields)
+                if isempty(str)
+                    str = sprintf('''%s''', fields{ii});
+                else
+                    str = sprintf('%s, ''%s''', str, fields{ii});
+                end
+            end
+        end
+        
         
     end
     
@@ -805,8 +1181,8 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
     % Private methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Access = private)
-                
+        
     end  % Private methods
-   
+    
 end
 

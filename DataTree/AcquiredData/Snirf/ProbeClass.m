@@ -157,10 +157,8 @@ classdef ProbeClass < FileLoadSaveClass
             
             if isempty(obj.sourcePos2D) && isempty(obj.detectorPos2D)
                 if isempty(obj.landmarkPos3D) || ~obj.isValidLandmarkLabels()
-                    optodePos3D = [];
-                    nSource = 0;
+                    nSource = size(obj.sourcePos3D,1);
                     optodePos3D = [obj.sourcePos3D; obj.detectorPos3D];
-                    nSource = size(optodePos3D,1);
                     
                     optodePos2D = project_3D_to_2D(optodePos3D);
                     if ~isempty(optodePos2D)

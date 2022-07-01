@@ -8,6 +8,8 @@ classdef GroupClass < TreeNodeClass
     
     properties % (Access = private)
         outputFilename
+        oldDerivedPaths
+        derivedPathBidsCompliant
     end
     
     
@@ -21,7 +23,9 @@ classdef GroupClass < TreeNodeClass
             obj@TreeNodeClass(varargin);
 
             obj.InitVersion();
-
+            obj.oldDerivedPaths = {obj.path, [obj.path, 'homerOutput']};
+            obj.derivedPathBidsCompliant = 'derivatives/homer';
+            
             if nargin<3 || ~strcmp(varargin{3}, 'noprint')
                 obj.logger.Write('Current GroupClass version %s\n', obj.GetVersionStr());
             end
@@ -1071,48 +1075,76 @@ classdef GroupClass < TreeNodeClass
 
         % ----------------------------------------------------------------------------------
         function BackwardCompatability(obj)
-            if ispathvalid([obj.path, 'groupResults.mat'])
-                try
-                    g = load([obj.path, 'groupResults.mat']);
-                catch ME
-                    g = [];
-                end
-                
-                % Do not try to restore old data older than Homer3
-                if isempty(g)
-                    return;
-                end
-                if ~isproperty(g,'group')
-                    return;
-                end
-                if ~isa(g.group, 'GroupClass')
-                    return;
-                end
-                
-                % Do not try to restore old data if there is already data
-                % in the new format
-                if obj.HaveOutput()
-                    return;
-                end
-                
-                msg = sprintf('Detected derived data in an old Homer3 format.');
-                obj.logger.Write('Backward Compatability: %s\n', msg);
-                
-                % If we're here it means that old format homer3 data exists
-                % AND NO new homer3 format data exists
-                q = MenuBox(sprintf('%s. Do you want to save it in the new format?', msg),{'Yes','No'});
-                if q==1
-                    obj.BackwardCompatability@TreeNodeClass();
-                    for ii = 1:length(obj.subjs)
-                        obj.subjs(ii).BackwardCompatability();
+            for jj = 1:length(obj.oldDerivedPaths)
+                oldDerivedPath = filesepStandard(obj.oldDerivedPaths{jj});
+                if ispathvalid([oldDerivedPath, 'groupResults.mat'])
+                    try
+                        g = load([oldDerivedPath, 'groupResults.mat']);
+                    catch
+                        g = [];
                     end
                     
-                    obj.logger.Write('Moving %s to %s\n', 'groupResults.mat', [obj.path, obj.outputDirname, obj.outputFilename]);
-                    movefile('groupResults.mat', [obj.path, obj.outputDirname, obj.outputFilename])
+                    % Do not try to restore old data older than Homer3
+                    if isempty(g)
+                        return;
+                    end
+                    if ~isproperty(g,'group')
+                        return;
+                    end
+                    if ~isa(g.group, 'GroupClass')
+                        return;
+                    end
+                    
+                    % Do not try to restore old data if there is already data
+                    % in the new format
+                    if obj.HaveOutput()
+                        return;
+                    end
+                    
+                    oldDerivedPathRel = pathsubtract(oldDerivedPath, obj.path);
+                    if oldDerivedPathRel(end) == '/' || oldDerivedPathRel(end) == '\'
+                        oldDerivedPathRel(end) = '';
+                    end
+                    msg{1} = sprintf('Detected derived data in older Homer3 folder "%s" ', oldDerivedPathRel);
+                    if pathscompare(obj.derivedPathBidsCompliant, obj.outputDirname, 'nameonly')
+                        msg{2} = sprintf('The current derived output folder, "%s", is BIDS compliant. ', ...
+                            filesepStandard(obj.derivedPathBidsCompliant, 'filesepwide:nameonly'));
+                    else
+                        msg{2} = '.';
+                    end
+                    msg = [msg{:}];
+                    obj.logger.Write('Backward Compatability:   %s\n', msg);
+                    
+                    % If we're here it means that old format homer3 data exists
+                    % AND NO new homer3 format data exists
+                    q = MenuBox(sprintf('%s Do you want to move %s to the new folder?', msg, oldDerivedPathRel),{'Yes','No'});
+                    if q==1
+                        if ispathvalid([obj.path, obj.outputDirname])
+                            try
+                                rmdir([obj.path, obj.outputDirname], 's')
+                            catch
+                                MenuBox(sprintf('ERROR:  Could not remove new derived folder'),{'OK'});
+                                return
+                            end
+                        end
+                        obj.logger.Write('Moving %s to %s\n', oldDerivedPath, [obj.path, obj.outputDirname]);
+                        movefile(oldDerivedPath, [obj.path, obj.outputDirname])
+                        
+                        if ispathvalid([obj.path, obj.outputDirname, obj.outputFilename])
+                            if ~strcmp(obj.outputFilename, 'groupResults.mat')
+                                obj.logger.Write('Moving %s to %s\n', [obj.path, obj.outputDirname, 'groupResults.mat'], ...
+                                    [obj.path, obj.outputDirname, obj.outputFilename])
+                                movefile([obj.path, obj.outputDirname, 'groupResults.mat'], [obj.path, obj.outputDirname, obj.outputFilename])
+                            end
+                        end
+                    end
+                    break
                 end
-            end
+                
+            end            
         end
             
+        
     end  % Private methods
 
 end % classdef GroupClass < TreeNodeClass

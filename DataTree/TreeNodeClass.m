@@ -825,19 +825,22 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function ExportProcStreamFunctionsSummary(obj)
+            fmt = '.json';
+            suffix = ['_processing',fmt];
+            
             fid = fopen([obj.path, obj.outputDirname, 'ProcStreamFunctionsSummary.txt'], 'w');
             fprintf(fid, 'Application Name :   %s, (v%s)\n', getNamespace(), getVernum(getNamespace()));
             fprintf(fid, 'Date/Time        :   %s\n\n\n\n', char(datetime(datetime, 'Format','MMMM d, yyyy,   HH:mm:ss')));                        
-            procStreamFunctionsExportFilenames = findTypeFiles([obj.path, obj.outputDirname], '.txt');            
+            procStreamFunctionsExportFilenames = findTypeFiles([obj.path, obj.outputDirname], fmt);            
             for ii = 1:length(procStreamFunctionsExportFilenames)
                 [~, fname, ext] = fileparts(procStreamFunctionsExportFilenames{ii});
                 fname = [fname, ext]; %#ok<AGROW>
-                if ~strcmp(fname(end-length('_ProcStream.txt')+1 : end), '_ProcStream.txt')
+                if ~strcmp(fname(end-length(suffix)+1 : end), suffix)
                     continue;
                 end
                 k = strfind(procStreamFunctionsExportFilenames{ii}, obj.outputDirname);
                 iS = k+length(obj.outputDirname);
-                iE = length(procStreamFunctionsExportFilenames{ii}) - length('_ProcStream.txt');
+                iE = length(procStreamFunctionsExportFilenames{ii}) - length(suffix);
                 fname = procStreamFunctionsExportFilenames{ii}(iS : iE);
                 objtype = lower(class(obj.procStream.input.acquired));
                 j = strfind(objtype, 'class');
@@ -850,10 +853,12 @@ classdef TreeNodeClass < handle
                 fprintf(fid, '%s\n', uint32('-') + uint32(zeros(1, length([fname, ext])+2)));
                 fprintf(fid, '%s :\n', [fname, ext]);
                 fprintf(fid, '%s\n', uint32('-') + uint32(zeros(1, length([fname, ext])+2)));
-                fid2 = fopen(procStreamFunctionsExportFilenames{ii}, 'rt');
-                txt = fread(fid2, 100000);                
-                fclose(fid2);
-                fprintf(fid, '%s\n', txt);                
+                txt = loadjson(procStreamFunctionsExportFilenames{ii});
+                fcalls = txt.Processing.FunctionsCalls;
+                for kk = 1:length(fcalls)
+                    fprintf(fid, '%s\n', fcalls{kk});
+                end
+                fprintf(fid, '\n\n');
             end
             fclose(fid);
         end

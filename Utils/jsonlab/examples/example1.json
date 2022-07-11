@@ -1,0 +1,33 @@
+ {
+     "firstName": "John",
+     "lastName": "Smith",
+     "age": 25,
+     "address":
+     {
+         "streetAddress": "21 2nd Street\nKAKA\nMAMA\nMoo Moo Moo\nMARY HAD A LITTLE LAMB\n",
+         "city": "New York",
+         "state": "NY",
+         "postalCode": "10021"
+     },
+     "phoneNumber":
+     [
+         {
+           "type": "home",
+           "number": "212 555-1234"
+         },
+         {
+           "type": "fax",
+           "number": "646 555-4567"
+         }
+     ],
+	 "ProcessingStream": 
+	 [
+		"KAKA1", 
+		"KAKA2", 
+		"KAKA3", 
+		"KAKA4", 
+		"KAKA5", 
+		"KAKA6", 
+		"KAKA7"
+	 ]
+ }

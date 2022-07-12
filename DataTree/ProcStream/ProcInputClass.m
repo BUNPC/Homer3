@@ -233,21 +233,24 @@ classdef ProcInputClass < handle
             end
             if isempty(obj.mlActMan)
                 obj.mlActMan{iBlk} = ml;
+            elseif isempty(obj.mlActMan{iBlk})
+               obj.mlActMan{iBlk} = ml; 
             elseif length(obj.mlActMan{iBlk}) == length(ml)
                obj.mlActMan{iBlk} = ml; 
             end
         end
 
+        
         % ----------------------------------------------------------------------------------
         function ml = GetMeasListVis(obj, iBlk)
-        if ~exist('iBlk','var')
-            iBlk = 1;
-        end
-        if ~isempty(obj.mlVis)
-            ml = obj.mlVis{iBlk};
-        else
-            ml = []; 
-        end
+            if ~exist('iBlk','var')
+                iBlk = 1;
+            end
+            if ~isempty(obj.mlVis)
+                ml = obj.mlVis{iBlk};
+            else
+                ml = [];
+            end
         end
         
         

@@ -500,15 +500,6 @@ classdef SessClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function ch = GetMeasList(obj, iBlk)
-            if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk=1;
-            end
-            ch = obj.runs(1).GetMeasList(iBlk);
-        end
-                
-        
-        % ----------------------------------------------------------------------------------
         function wls = GetWls(obj)
             wls = obj.runs(1).GetWls();
         end

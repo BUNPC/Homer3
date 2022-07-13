@@ -551,15 +551,6 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function ch = GetMeasList(obj, iBlk)
-            if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk=1;
-            end
-            ch = obj.sess(1).GetMeasList(iBlk);
-        end
-                
-        
-        % ----------------------------------------------------------------------------------
         function wls = GetWls(obj)
             wls = obj.sess(1).GetWls();
         end

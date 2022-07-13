@@ -559,6 +559,31 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function ch = GetMeasList(obj, iBlk)
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk=1;
+            end
+            ch = [];
+            for ii = 1:length(obj.children)
+                if isempty(ch)
+                    ch = obj.children(ii).GetMeasList(iBlk);
+                else
+                    temp = obj.children(ii).GetMeasList(iBlk);
+                    if length(ch.MeasListActMan) == length(temp.MeasListActMan)
+                        ch.MeasListActMan = ch.MeasListActMan | temp.MeasListActMan;
+                    end
+                    if length(ch.MeasListActAuto) == length(temp.MeasListActAuto)
+                        ch.MeasListActAuto = ch.MeasListActAuto | temp.MeasListActAuto;
+                    end
+                    if length(ch.MeasListVis) == length(temp.MeasListVis)
+                        ch.MeasListVis = ch.MeasListVis | temp.MeasListVis;
+                    end
+                end
+            end
+        end
+                
+        
+        % ----------------------------------------------------------------------------------
         function varval = GetVar(obj, varname)
             varval = [];
             if isproperty(obj, varname)

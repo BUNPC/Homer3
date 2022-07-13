@@ -283,7 +283,7 @@ classdef ProcStreamClass < handle
             hwait = waitbar(0, 'Processing...' );
                 
             paramOut = {};
-        	for iFcall = FcallsIdxs
+            for iFcall = FcallsIdxs
                 waitbar( iFcall/nFcall, hwait, sprintf('Processing... %s', obj.GetFcallNamePrettyPrint(iFcall)) );
                 
                 % Instantiate all input variables required by function call
@@ -294,10 +294,10 @@ classdef ProcStreamClass < handle
                     end
                 end
                 
-            fcalls{iFcall} = obj.GenerateFuncCallString(iFcall);
+                fcalls{iFcall} = obj.GenerateFuncCallString(iFcall);
                 
                 try
-                eval( fcalls{iFcall} );
+                    eval( fcalls{iFcall} );
                 catch ME
                     msg = sprintf('Function %s generated error at line %d: %s', obj.fcalls(iFcall).name, ME.stack(1).line, ME.message);
                     if strcmp(obj.config.regressionTestActive, 'false')
@@ -313,7 +313,7 @@ classdef ProcStreamClass < handle
                 
                 % remove '[', ']', and ','
                 foos = obj.fcalls(iFcall).argOut.str;
-                for ii=1:length(foos)
+                for ii = 1:length(foos)
                     if foos(ii)=='[' || foos(ii)==']' || foos(ii)==',' || foos(ii)=='#'
                         foos(ii) = ' ';
                     end
@@ -322,7 +322,7 @@ classdef ProcStreamClass < handle
                 % get parameters for Output to obj.output
                 lst = strfind(foos,' ');
                 lst = [0, lst, length(foos)+1]; %#ok<*AGROW>
-                for ii=1:length(lst)-1
+                for ii = 1:length(lst)-1
                     foo2 = foos(lst(ii)+1:lst(ii+1)-1);
                     lst2 = strmatch( foo2, paramOut, 'exact' ); %#ok<MATCH3>
                     idx = strfind(foo2,'foo');
@@ -333,7 +333,7 @@ classdef ProcStreamClass < handle
             end
             
             % Copy paramOut to output
-            for ii=1:length(paramOut)
+            for ii = 1:length(paramOut)
                 eval( sprintf('paramsOutStruct.%s = %s;', paramOut{ii}, paramOut{ii}) );
             end
             
@@ -356,6 +356,27 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------        
+        function mlActMan = CompressMlActMan(obj)
+            mlActMan = [];
+            if isempty(obj.input.mlActMan)
+                return
+            end
+            mlActMan = compressLogicalArray(obj.input.mlActMan{1});
+        end
+        
+        
+        % ----------------------------------------------------------------------------------        
+        function tIncMan = CompresstIncMan(obj)
+            tIncMan = [];
+            if isempty(obj.input.tIncMan)
+                return
+            end
+            tIncMan = compressLogicalArray(obj.input.tIncMan{1});
+        end
+                
+                
+                
+        % ----------------------------------------------------------------------------------        
         function ExportProcStream(obj, filename, fcalls)
             global logger             
             temp = obj.output.SetFilename(filename);
@@ -363,13 +384,17 @@ classdef ProcStreamClass < handle
                 return;
             end
             [p,f] = fileparts(temp); 
-            fname = [filesepStandard(p), f, '_ProcStream.txt'];
+            fname = [filesepStandard(p), f, '_processing.json'];
             if obj.ExportProcStreamFunctions()==true
-                fid = fopen(fname, 'w');                
                 logger.Write('Saving processing stream  %s:\n', fname);
-                for ii = 1:length(fcalls)
-                    fprintf(fid, '%s\n', fcalls{ii});
-                end
+                appname = sprintf('%s, (v%s)', getNamespace(), getVernum(getNamespace()));
+                dt      = sprintf('%s', char(datetime(datetime, 'Format','MMMM d, yyyy,   HH:mm:ss')));
+                mlActManCompressed = obj.CompressMlActMan();
+                tIncManCompressed = obj.CompresstIncMan();
+                jsonstruct = struct('ApplicationName',appname, 'DateTime',dt, 'tIncMan',tIncManCompressed, 'mlActMan',mlActManCompressed, 'FunctionsCalls',{fcalls});
+                jsonStr = savejson('Processing', jsonstruct);
+                fid = fopen(fname, 'w');
+                fwrite(fid, jsonStr, 'uint8');
                 fclose(fid);
             else
                 if ispathvalid(fname)

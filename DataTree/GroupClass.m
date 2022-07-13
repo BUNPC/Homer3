@@ -870,15 +870,6 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function ch = GetMeasList(obj, iBlk)
-            if ~exist('iBlk','var')
-                iBlk=1;
-            end
-            ch = obj.subjs(1).GetMeasList(iBlk);
-        end
-
-        
-        % ----------------------------------------------------------------------------------
         function wls = GetWls(obj)
             wls = obj.subjs(1).GetWls();
         end

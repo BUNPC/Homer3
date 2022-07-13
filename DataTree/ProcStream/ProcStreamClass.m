@@ -391,9 +391,9 @@ classdef ProcStreamClass < handle
                 dt      = sprintf('%s', char(datetime(datetime, 'Format','MMMM d, yyyy,   HH:mm:ss')));
                 mlActManCompressed = obj.CompressMlActMan();
                 tIncManCompressed = obj.CompresstIncMan();
-                jsonstruct = struct('ApplicationNsme',appname, 'DateTime',dt, 'ExcludedTime',tIncManCompressed, 'ExcludedChannels',mlActManCompressed, 'FunctionsCalls',{fcalls});
+                jsonstruct = struct('ApplicationName',appname, 'DateTime',dt, 'tIncMan',tIncManCompressed, 'mlActMan',mlActManCompressed, 'FunctionsCalls',{fcalls});
                 jsonStr = savejson('Processing', jsonstruct);
-                fid = fopen(fname, 'w');                
+                fid = fopen(fname, 'w');
                 fwrite(fid, jsonStr, 'uint8');
                 fclose(fid);
             else

@@ -12,6 +12,10 @@ installfilename = sprintf('%s_install', lower(getAppname()));
 
 setNamespace(exename)
 
+% Generate a LastCheckForUpdates.dat in case that we  haven't run Homer
+% before creating a build
+checkForHomerUpdates()
+
 if ~exist('options','var') || isempty(options)
     options = 'all';
 end

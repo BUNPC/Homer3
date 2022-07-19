@@ -23,6 +23,7 @@ classdef TreeNodeClass < handle
         pathOutputAlt        
         outputDirname
         cfg
+        chVis
     end
     
     methods        
@@ -575,11 +576,46 @@ classdef TreeNodeClass < handle
                     if length(ch.MeasListActAuto) == length(temp.MeasListActAuto)
                         ch.MeasListActAuto = ch.MeasListActAuto | temp.MeasListActAuto;
                     end
-                    if length(ch.MeasListVis) == length(temp.MeasListVis)
-                        ch.MeasListVis = ch.MeasListVis | temp.MeasListVis;
                     end
                 end
             end
+                
+        
+        % ----------------------------------------------------------------------------------
+        function SetMeasListVis(obj, chVis, iBlk)
+            if ~exist('chVis','var')
+                chVis = [];
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            if ~isempty(obj.children)
+                ch = obj.children(1).GetMeasList(iBlk);
+            else
+                ch = obj.GetMeasList(iBlk);
+            end
+            if isempty(chVis)
+                obj.chVis = ones(size(ch.MeasList,1),1);
+            else
+                obj.chVis = chVis;
+            end
+         end
+                
+        
+        % ----------------------------------------------------------------------------------
+        function chVis = GetMeasListVis(obj, iBlk)
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            if isempty(obj.chVis)
+                if ~isempty(obj.children)
+                    ch = obj.children(1).GetMeasList(iBlk);
+                else
+                    ch = obj.GetMeasList(iBlk);
+                end
+                obj.chVis = ones(size(ch.MeasList,1),1);
+            end
+            chVis = obj.chVis;
         end
                 
         

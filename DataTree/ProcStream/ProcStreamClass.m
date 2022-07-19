@@ -25,16 +25,12 @@ classdef ProcStreamClass < handle
             obj.config = struct('procStreamCfgFile','', 'defaultProcStream','','suffix','');
             obj.config.procStreamCfgFile    = cfg.GetValue('Processing Stream Config File');
             obj.config.regressionTestActive = cfg.GetValue('Regression Test Active');
-            copyOptions = '';
-            if strcmpi(obj.getDefaultProcStream(), '_nirs')
-                copyOptions = 'extended';
-            end
             
             % By the time this class constructor is called we should already have a saved registry 
             % to load. (Defintiely would not want to be generating the registry for each instance of this class!!)
             obj.reg = RegistriesClass();
             
-            obj.input = ProcInputClass(acquired, copyOptions);
+            obj.input = ProcInputClass(acquired);
             obj.output = ProcResultClass();
             
             if nargin==0
@@ -1477,15 +1473,6 @@ classdef ProcStreamClass < handle
                 iBlk = [];
             end
             mlActAuto = obj.output.GetVar('mlActAuto',iBlk);
-        end
-
-        
-        % ----------------------------------------------------------------------------------
-        function mlVis = GetMeasListVis(obj, iBlk)
-            if ~exist('iBlk','var')
-                iBlk = [];
-            end
-            mlVis = obj.input.GetVar('mlVis',iBlk);
         end
 
         

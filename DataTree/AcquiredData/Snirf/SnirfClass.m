@@ -328,11 +328,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % Copy mutable properties to new object instance;
             objnew.stim = CopyHandles(obj.stim);
             objnew.SortStims();
-            
-            if strcmp(options, 'extended')
-                t = obj.GetTimeCombined();
-                objnew.data = DataClass([],t,[]);
-            end
         end
         
         

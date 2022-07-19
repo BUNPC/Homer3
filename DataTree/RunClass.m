@@ -458,17 +458,12 @@ classdef RunClass < TreeNodeClass
             ch.MeasList        = obj.acquired.GetMeasList(iBlk);
             ch.MeasListActMan  = obj.procStream.GetMeasListActMan(iBlk);
             ch.MeasListActAuto = obj.procStream.GetMeasListActAuto(iBlk);
-            ch.MeasListVis     = obj.procStream.GetMeasListVis(iBlk);
             if isempty(ch.MeasListActMan)
                 obj.InitMlActMan();  % TODO find a more sensical place to do this
                 ch.MeasListActMan  = obj.procStream.GetMeasListActMan(iBlk);
             end
             if isempty(ch.MeasListActAuto)
                 ch.MeasListActAuto = ones(size(ch.MeasList,1),1);
-            end
-            if isempty(ch.MeasListVis)
-                obj.InitMlVis();
-                ch.MeasListVis = obj.procStream.GetMeasListVis(iBlk);
             end
             ch.MeasListAct     = bitand(ch.MeasListActMan, ch.MeasListActMan);
         end

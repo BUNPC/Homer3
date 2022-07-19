@@ -1035,7 +1035,8 @@ for iBlk = iDataBlks
     end
     
     ch      = procElem.GetMeasList(iBlk);
-    chVis   = find(ch.MeasListVis(iChBlk)==1);
+    mlVis   = procElem.GetMeasListVis();
+    chVis   = find(mlVis(iChBlk)==1);
     d       = [];
     dStd    = [];
     t       = [];

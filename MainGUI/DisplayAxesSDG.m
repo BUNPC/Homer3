@@ -107,12 +107,13 @@ MeasList = [];
 MeasListActMan = [];
 MeasListActAuto = [];
 MeasListVis = [];
-for iBlk = 1:nDataBlks   
+for iBlk = 1:nDataBlks
     ch              = maingui.dataTree.currElem.GetMeasList(iBlk);
+    chVis           = maingui.dataTree.currElem.GetMeasListVis(iBlk);
     MeasList        = [MeasList; ch.MeasList];
     MeasListActMan  = [MeasListActMan; ch.MeasListActMan];
     MeasListActAuto = [MeasListActAuto; ch.MeasListActAuto];
-    MeasListVis     = [MeasListVis; ch.MeasListVis];
+    MeasListVis     = [MeasListVis; chVis];
 end
 ml    = MeasList(MeasList(:,1)>0,:);
 lstML = find(ml(:,4)==1); %cw6info.displayLambda);

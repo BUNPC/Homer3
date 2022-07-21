@@ -1422,6 +1422,83 @@ classdef ProcStreamClass < handle
         end
         
         
+        % ---------------------------------------------------------
+        function ml = GetMeasurementList(obj, options, iBlk)
+            ml = [];
+            if ~exist('options','var')
+                options = 'conc';
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            for ii = 1:length(iBlk)
+                switch(lower(options))
+                    case 'od'
+                        if ii <= length(obj.output.dod)
+                            ml = [ml; obj.output.dod(ii).measurementList];
+                        end
+                    case {'conc','hb','hbo','hbr','hbt'}
+                        if ii <= length(obj.output.dc)
+                            ml = [ml; obj.output.dc(ii).measurementList];
+                        end
+                    case {'od hrf','od_hrf'}
+                        if ii <= length(obj.output.dodAvg)
+                            ml = [ml; obj.output.dodAvg(ii).measurementList];
+                        end
+                    case {'hb hrf','conc hrf','hb_hrf','conc_hrf'}
+                        if ii <= length(obj.output.dcAvg)
+                            ml = [ml; obj.output.dcAvg(ii).measurementList];
+                        end
+                end
+            end
+        end
+        
+                
+        
+        % ---------------------------------------------------------
+        function t = GetTHRF(obj, iBlk)
+            t = [];
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            t = obj.output.tHRF;
+        end
+        
+        
+        
+        % ---------------------------------------------------------
+        function dataTimeSeries = GetDataTimeSeries(obj, options, iBlk)
+            dataTimeSeries = [];
+            if ~exist('options','var')
+                options = 'conc';
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            for ii = 1:length(iBlk)
+                switch(lower(options))
+                    case 'od'
+                        if ii <= length(obj.output.dod)
+                            dataTimeSeries = [dataTimeSeries, obj.output.dod(ii).dataTimeSeries];
+                        end
+                    case {'conc','hb','hbo','hbr','hbt'}
+                        if ii <= length(obj.output.dc)
+                            dataTimeSeries = [dataTimeSeries; obj.output.dc(ii).dataTimeSeries];
+                        end
+                    case {'od hrf','od_hrf'}
+                        if ii <= length(obj.output.dodAvg)
+                            dataTimeSeries = [dataTimeSeries; obj.output.dodAvg(ii).dataTimeSeries];
+                        end
+                    case {'hb hrf','conc hrf','hb_hrf','conc_hrf'}
+                        if ii <= length(obj.output.dcAvg)
+                            dataTimeSeries = [dataTimeSeries; obj.output.dcAvg(ii).dataTimeSeries];
+                        end
+                end
+            end
+        end
+        
+                
+        
         % ----------------------------------------------------------------------------------
         function SetTincMan(obj, val, iBlk)
             if ~exist('iBlk','var')

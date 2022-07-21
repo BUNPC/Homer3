@@ -64,9 +64,9 @@ for iBlk = 1:nDataBlks
         % 
         datatype  = yAvgRuns{iRun}(iBlk).GetDataTypeLabel();
         if strncmp(datatype{1}, 'HRF Hb', length('HRF Hb'))
-            ml    = yAvgRuns{iRun}(iBlk).GetMeasListSrcDetPairs();
+            ml    = yAvgRuns{iRun}(iBlk).GetMeasListSrcDetPairs('reshape');
         elseif strcmp(datatype{1}, 'HRF dOD')
-            ml    = yAvgRuns{iRun}(iBlk).GetMeasList();
+            ml    = yAvgRuns{iRun}(iBlk).GetMeasList('reshape');
         end
         if isempty(mlActRuns{iRun}{iBlk})
             mlActRuns{iRun}{iBlk} = ones(size(ml,1),1);
@@ -156,7 +156,11 @@ for iBlk = 1:nDataBlks
                         %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages. 
                         %%%% Now we can set channel descriptors for avg and standard deviation
                         if iRun == length(yAvgRuns)
+                            try
                             yAvgOut(iBlk).AddChannelHbO(ml(iCh,1), ml(iCh,2), iC);
+                            catch
+                                d =1;
+                            end
                             yAvgOut(iBlk).AddChannelHbR(ml(iCh,1), ml(iCh,2), iC);
                             yAvgOut(iBlk).AddChannelHbT(ml(iCh,1), ml(iCh,2), iC);
                         end

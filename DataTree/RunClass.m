@@ -1,9 +1,5 @@
 classdef RunClass < TreeNodeClass
-    
-    properties % (Access = private)
-        acquired;
-    end
-    
+       
     methods
                 
         % ----------------------------------------------------------------------------------
@@ -19,7 +15,7 @@ classdef RunClass < TreeNodeClass
             %   run1     = RunClass('./s1/neuro_run01.nirs',1,1,1,1);
             %   run1copy = RunClass(run1);
             %           
-            obj@TreeNodeClass(varargin);            
+            obj@TreeNodeClass(varargin);
             
             obj.type  = 'run';
             if nargin==0
@@ -396,7 +392,11 @@ classdef RunClass < TreeNodeClass
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            d = obj.acquired.GetDataTimeSeries(options, iBlk);
+            if isempty(options) || strcmp(options, 'reshape')
+                d = obj.acquired.GetDataTimeSeries(options, iBlk);
+            else
+                d = obj.GetDataTimeSeries@TreeNodeClass(options, iBlk);
+            end
         end
         
         
@@ -447,10 +447,15 @@ classdef RunClass < TreeNodeClass
             obj.procStream.input.SetMeasListVis(ones(size(ch, 1), 1));
         end
             
+        
+        
         % ----------------------------------------------------------------------------------
-        function ch = GetMeasList(obj, iBlk)
+        function ch = GetMeasList(obj, options, iBlk)
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk=1;
+            end
+            if ~exist('options','var')
+                options = '';
             end
             
             ch = struct('MeasList',[], 'MeasListVis',[], 'MeasListActMan',[], 'MeasListActAuto',[]);
@@ -466,6 +471,11 @@ classdef RunClass < TreeNodeClass
                 ch.MeasListActAuto = ones(size(ch.MeasList,1),1);
             end
             ch.MeasListAct     = bitand(ch.MeasListActMan, ch.MeasListActMan);
+            if strcmp(options,'reshape')
+                [ch.MeasList, order] = sortrows(ch.MeasList);
+                ch.MeasListActMan = ch.MeasListActMan(order);
+                ch.MeasListActAuto = ch.MeasListActAuto(order);
+            end
         end
 
         

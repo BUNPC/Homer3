@@ -168,7 +168,7 @@ classdef DataClass < FileLoadSaveClass
                 
                 % Close group
                 HDF5_GroupClose(fileobj, gid, fid);
-            catch ME
+            catch
                 err = -1;
             end
             
@@ -212,7 +212,7 @@ classdef DataClass < FileLoadSaveClass
                                    
                 % Close group
                 HDF5_GroupClose(fileobj, gid, fid);
-            catch ME
+            catch
                 err = -1;
             end
             
@@ -287,20 +287,20 @@ classdef DataClass < FileLoadSaveClass
                 params = propnames(obj);
             end
             if ismember('dataTimeSeries',params)
-            if obj.IsEmpty()
+                if obj.IsEmpty()
                     err = -2;
                     return;
-            end
-            if size(obj.dataTimeSeries,1) ~= length(obj.time)
+                end
+                if size(obj.dataTimeSeries,1) ~= length(obj.time)
                     err = -3;
-            end
-            if size(obj.dataTimeSeries,2) ~= length(obj.measurementList)
+                end
+                if size(obj.dataTimeSeries,2) ~= length(obj.measurementList)
                     err = -4;
-            end
+                end
                 if all(obj.dataTimeSeries==0)
                     err = 5;
                 end
-        end
+            end
             if ismember('time',params)
                 if isempty(obj.time)
                     err = -6;
@@ -333,7 +333,10 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasList(obj)
+        function ml = GetMeasList(obj, options)
+            if ~exist('options', 'var')
+                options = '';
+            end
             % Preallocate for speed 
             ml = ones(length(obj.measurementList), 4);
             
@@ -355,22 +358,35 @@ classdef DataClass < FileLoadSaveClass
             
             % Remove unused rows that were pre-allocated
             ml(ii+1:end,:) = [];
-
-            % Sort according to wavelength
-            ml = sortrows(ml,4);
+            if strcmp(options, 'reshape')
+                ml = sortrows(ml);
+            end            
+        end
+        
+        
+        
+        % ---------------------------------------------------------
+        function ml = GetMeasListSrcDetPairs(obj, options)
+            if ~exist('options', 'var')
+                options = '';
+            end
+            ml = zeros(0, 2);
+            jj=1;
+            for ii=1:length(obj.measurementList)
+                if isempty(find(ml(:,1) == obj.measurementList(ii).sourceIndex & ml(:,2) == obj.measurementList(ii).detectorIndex))
+                    ml(jj,:) = [obj.measurementList(ii).sourceIndex, obj.measurementList(ii).detectorIndex];
+                    jj=jj+1;
+                end
+            end
+            if strcmp(options, 'reshape')
+                ml = sortrows(ml);
+            end
         end
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasListSrcDetPairs(obj)
-            ml = zeros(0, 2);
-            jj=1;
-            for ii=1:length(obj.measurementList)
-                if isempty(find(ml(:,1)==obj.measurementList(ii).GetSourceIndex() & ml(:,2)==obj.measurementList(ii).GetDetectorIndex()))
-                    ml(jj,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex()];
-                    jj=jj+1;
-                end
-            end
+        function ml = GetMeasurementList(obj)
+            ml = obj.measurementList;
         end
         
         
@@ -400,9 +416,11 @@ classdef DataClass < FileLoadSaveClass
         end
         
         
+        
         % ---------------------------------------------------------
-        function d = GetDataTimeSeries(obj, options)
+        function [d, order] = GetDataTimeSeries(obj, options)
             d = [];
+            order = [];
             if ~exist('options','var') || isempty(options)
                 options = '';
             end
@@ -413,51 +431,155 @@ classdef DataClass < FileLoadSaveClass
                 d = obj.dataTimeSeries;
                 return
             end
-            
-            % Get information for each ch in d matrix
+                      
             dataTypeLabels = {};
-            srcDetPairs = zeros(0,2);
+            srcs = zeros(0,2);
+            dets = zeros(0,2);
             conditions = [];
             wavelengths = [];
-            hh=1; jj=1; kk=1; ll=1;
-            for ii=1:length(obj.measurementList)
-                if ~ismember(obj.measurementList(ii).GetDataTypeLabel(), dataTypeLabels)
-                    dataTypeLabels{hh} = obj.measurementList(ii).GetDataTypeLabel();
+            hh=1; jj=1; kk=1; ll=1; mm=1;
+            for ii = 1:length(obj.measurementList)
+                if ~ismember(obj.measurementList(ii).dataTypeLabel, dataTypeLabels) && ~isempty(obj.measurementList(ii).dataTypeLabel)
+                    dataTypeLabels{hh} = obj.measurementList(ii).dataTypeLabel; %#ok<*AGROW>
                     hh=hh+1;
                 end
-                if isempty(find(srcDetPairs(:,1)==obj.measurementList(ii).GetSourceIndex() & srcDetPairs(:,2)==obj.measurementList(ii).GetDetectorIndex()))
-                    srcDetPairs(jj,:) = [obj.measurementList(ii).GetSourceIndex(), obj.measurementList(ii).GetDetectorIndex()];
+                if isempty(find(srcs == obj.measurementList(ii).GetSourceIndex()))
+                    srcs(jj) = obj.measurementList(ii).GetSourceIndex();
                     jj=jj+1;
                 end
-                if ~ismember(obj.measurementList(ii).GetCondition(), conditions)
-                    conditions(kk) = obj.measurementList(ii).GetCondition();
+                if isempty(find(dets == obj.measurementList(ii).GetDetectorIndex())) %#ok<*EFIND>
+                    dets(kk) = obj.measurementList(ii).GetDetectorIndex();
                     kk=kk+1;
                 end
-                if ~ismember(obj.measurementList(ii).GetWavelengthIndex(), wavelengths)
-                    wavelengths(ll) = obj.measurementList(ii).GetWavelengthIndex();
+                if ~ismember(obj.measurementList(ii).GetCondition(), conditions) && obj.measurementList(ii).GetCondition() > 0
+                    conditions(ll) = obj.measurementList(ii).GetCondition();
                     ll=ll+1;
                 end
+                if ~ismember(obj.measurementList(ii).GetWavelengthIndex(), wavelengths) && obj.measurementList(ii).GetWavelengthIndex()>0
+                    wavelengths(mm) = obj.measurementList(ii).GetWavelengthIndex();
+                    mm=mm+1;
+                end
             end
-            dim1 = length(obj.dataTimeSeries(:,1));
-            if all(wavelengths(:)~=0) && all(conditions(:)==0)
-                dim2 = length(wavelengths(:)) * size(srcDetPairs,1);
-                dim3 = 1;
-                dim4 = 1;
-            elseif all(wavelengths(:)~=0) && all(conditions(:)~=0)
-                dim2 = length(wavelengths(:)) * size(srcDetPairs,1);
-                dim3 = length(conditions(:));
-                dim4 = 1;
-            elseif all(wavelengths(:)==0) && all(conditions(:)==0)
-                dim2 = length(dataTypeLabels);
-                dim3 = size(srcDetPairs,1);
-                dim4 = 1;
-            elseif all(wavelengths(:)==0) && all(conditions(:)~=0)
-                dim2 = length(dataTypeLabels);
-                dim3 = size(srcDetPairs,1);
-                dim4 = length(conditions(:));
+            
+            hbTypes         = {'hbo','hbr','hbt'};
+            nWavelengths    = length(wavelengths);
+            nDataTypeLabels = length(dataTypeLabels);
+            nCond           = length(conditions);
+            ml              = obj.GetMeasListSrcDetPairs('reshape');
+            
+            kk = 1;
+            if nWavelengths > 0 && nCond == 0
+                
+                for iWl = 1:nWavelengths
+                    for iS = 1:length(srcs)
+                        for iD = 1:length(dets)
+                            
+                            for ii = 1:length(obj.measurementList)
+                                if obj.measurementList(ii).sourceIndex == iS && ...
+                                   obj.measurementList(ii).detectorIndex == iD &&  ...
+                                   obj.measurementList(ii).wavelengthIndex == iWl
+                                    
+                                    iSrcDetPair = find(ml(:,1)==iS & ml(:,2)==iD);
+                                    d(:, iWl, iSrcDetPair) = obj.dataTimeSeries(:,ii); %#ok<*FNDSB>
+                                    
+                                    
+                                    order(kk) = ii;
+                                    kk = kk+1;
+                                    break;
+
+                                end
+                                
+                            end
+                        end
+                    end
+                end
+                
+            elseif nWavelengths > 0 && nCond > 0 
+                
+                for iWl = 1:nWavelengths
+                    for iS = 1:length(srcs)
+                        for iD = 1:length(dets)
+                            for iCond = 1:nCond
+                            
+                                for ii = 1:length(obj.measurementList)
+                                    if obj.measurementList(ii).sourceIndex == iS && ...
+                                       obj.measurementList(ii).detectorIndex == iD &&  ...
+                                       obj.measurementList(ii).wavelengthIndex == iWl && ...
+                                       obj.measurementList(ii).dataTypeIndex == iCond
+                                        
+                                        iSrcDetPair = find(ml(:,1)==iS & ml(:,2)==iD);
+                                        d(:, iWl, iSrcDetPair, iCond) = obj.dataTimeSeries(:,ii);
+                                        
+                                        order(kk) = ii;
+                                        kk = kk+1;
+                                        break;
+
+                                    end
+                                end
+                                
+                            end     
+                        end
+                    end
+                end
+                
+            elseif nDataTypeLabels > 0 && nCond == 0 
+                
+                for iHbType = 1:length(hbTypes)
+                    for iS = 1:length(srcs)
+                        for iD = 1:length(dets)
+                            
+                            for ii = 1:length(obj.measurementList)
+                                if obj.measurementList(ii).sourceIndex == iS && ...
+                                   obj.measurementList(ii).detectorIndex == iD && ...
+                                   ~isempty(strfind(lower(obj.measurementList(ii).dataTypeLabel), hbTypes{iHbType}))
+
+                                    iSrcDetPair = find(ml(:,1)==iS & ml(:,2)==iD);
+                                    d(:, iHbType, iSrcDetPair) = obj.dataTimeSeries(:,ii);
+
+                                    order(kk) = ii;
+                                    kk = kk+1;                                    
+                                    break;
+
+                                end
+
+                            end
+                            
+                        end
+                    end
+                end
+                
+            elseif nDataTypeLabels > 0 && nCond > 0 
+                
+                for iHbType = 1:length(hbTypes)
+                    for iS = 1:length(srcs)
+                        for iD = 1:length(dets)
+                            for iCond = 1:nCond
+                            
+                                for ii = 1:length(obj.measurementList)
+                                    if obj.measurementList(ii).sourceIndex == iS && ...
+                                       obj.measurementList(ii).detectorIndex == iD &&  ...
+                                       ~isempty(strfind(lower(obj.measurementList(ii).dataTypeLabel), hbTypes{iHbType})) && ...
+                                       obj.measurementList(ii).dataTypeIndex == iCond
+                                        
+                                        iSrcDetPair = find(ml(:,1)==iS & ml(:,2)==iD);
+                                        d(:, iHbType, iSrcDetPair, iCond) = obj.dataTimeSeries(:,ii);
+                                        
+                                        order(kk) = ii;
+                                        kk = kk+1;
+                                        break;
+
+                                    end
+                                end
+                                
+                            end     
+                        end
+                    end
+                end
+                
             end
-            d = reshape(obj.dataTimeSeries, dim1, dim2, dim3, dim4);
+            
         end
+        
         
         
         % ---------------------------------------------------------
@@ -467,6 +589,7 @@ classdef DataClass < FileLoadSaveClass
             end
             obj.dataTimeSeries = val;
         end
+        
         
         
         % ---------------------------------------------------------

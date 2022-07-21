@@ -121,7 +121,7 @@ if flagtCCA
         d        = data(iBlk).GetDataTimeSeries('reshape');
         datatype = data(iBlk).GetDataTypeLabel();  % Get the input data type
         t        = data(iBlk).GetTime();
-        ml       = data(iBlk).GetMeasListSrcDetPairs();
+        ml       = data(iBlk).GetMeasListSrcDetPairs('reshape');
         
         fq = 1/(t(2)-t(1));
                 

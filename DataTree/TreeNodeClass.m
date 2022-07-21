@@ -9,6 +9,7 @@ classdef TreeNodeClass < handle
         iRun;
         iFile;
         children;
+        acquired;
         procStream;
         err;
         CondNames;
@@ -47,6 +48,7 @@ classdef TreeNodeClass < handle
             
             obj.type = '';
             obj.procStream = ProcStreamClass();
+            obj.acquired = [];
             obj.err = 0;
             obj.CondNames = {};
             obj.path = filesepStandard(pwd);            
@@ -559,12 +561,81 @@ classdef TreeNodeClass < handle
         end
         
         
-        % ----------------------------------------------------------------------------------
-        function ch = GetMeasList(obj, iBlk)
-            if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk=1;
+        % ---------------------------------------------------------
+        function ml = GetMeasurementList(obj, options, iBlk)
+            ml = [];
+            if ~exist('options','var')
+                options = 'RAW';
             end
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            for ii = 1:length(iBlk)
+                switch(lower(options))
+                    case 'raw'
+                        if isempty(obj.acquired)
+                            continue
+                        end
+                        ml = [ml; obj.acquired.GetMeasurementList(ii)]; %#ok<*AGROW>
+                    case 'od'
+                        ml = [ml; obj.procStream.GetMeasurementList('od',ii)];
+                    case {'conc','hb','hbo','hbr','hbt'}
+                        ml = [ml; obj.procStream.GetMeasurementList('conc',ii)];
+                    case {'od hrf','od_hrf'}
+                        ml = [ml; obj.procStream.GetMeasurementList('od hrf',ii)];
+                    case {'hb hrf','conc hrf','hb_hrf','conc_hrf'}
+                        ml = [ml; obj.procStream.GetMeasurementList('conc hrf',ii)];
+                end
+            end
+        end
+        
+        
+        
+        % ---------------------------------------------------------
+        function [d, t] = GetDataTimeSeries(obj, options, iBlk)
+            d = [];
+            t = [];            
+            if ~exist('options','var')
+                options = 'RAW';
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            for ii = 1:length(iBlk)
+                switch(lower(options))
+                    case 'raw'
+                        if isempty(obj.acquired)
+                            continue
+                        end
+                        d = [d, obj.acquired.GetDataTimeSeries(ii)]; %#ok<*AGROW>
+                        t = [t; obj.GetTime(ii)];
+                    case 'od'
+                        d = [d, obj.procStream.GetDataTimeSeries('od',ii)];
+                        t = [t; obj.GetTime(ii)];
+                    case {'conc','hb','hbo','hbr','hbt'}
+                        d = [d, obj.procStream.GetDataTimeSeries('conc',ii)];
+                        t = [t; obj.GetTime(ii)];
+                    case {'od hrf','od_hrf'}
+                        d = [d, obj.procStream.GetDataTimeSeries('od hrf',ii)];
+                        t = [t; obj.procStream.GetTHRF(ii)];
+                    case {'hb hrf','conc hrf','hb_hrf','conc_hrf'}
+                        d = [d, obj.procStream.GetDataTimeSeries('conc hrf',ii)];
+                        t = [t; obj.procStream.GetTHRF(ii)];
+                end
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ch = GetMeasList(obj, options, iBlk)
             ch = [];
+            if ~exist('options','var')
+                options = '';
+            end
+            if ~exist('iBlk','var')
+                iBlk = 1;
+            end
             for ii = 1:length(obj.children)
                 if isempty(ch)
                     ch = obj.children(ii).GetMeasList(iBlk);
@@ -576,10 +647,16 @@ classdef TreeNodeClass < handle
                     if length(ch.MeasListActAuto) == length(temp.MeasListActAuto)
                         ch.MeasListActAuto = ch.MeasListActAuto | temp.MeasListActAuto;
                     end
-                    end
                 end
             end
-                
+            if strcmp(options,'reshape')
+                [ch.MeasList, order] = sortrows(ch.MeasList);
+                ch.MeasListActMan = ch.MeasListActMan(order);
+                ch.MeasListActAuto = ch.MeasListActAuto(order);
+            end
+        end
+
+        
         
         % ----------------------------------------------------------------------------------
         function SetMeasListVis(obj, chVis, iBlk)
@@ -774,12 +851,6 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function d = GetDataTimeSeries(~, ~, ~)
-            d = [];
-        end
-
-        
-        % ----------------------------------------------------------------------------------
         function t = GetTime(~, ~)
             t = [];
         end
@@ -895,7 +966,7 @@ classdef TreeNodeClass < handle
             procStreamFunctionsExportFilenames = findTypeFiles([obj.path, obj.outputDirname], fmt);            
             for ii = 1:length(procStreamFunctionsExportFilenames)
                 [~, fname, ext] = fileparts(procStreamFunctionsExportFilenames{ii});
-                fname = [fname, ext]; %#ok<AGROW>
+                fname = [fname, ext];
                 if ~strcmp(fname(end-length(suffix)+1 : end), suffix)
                     continue;
                 end

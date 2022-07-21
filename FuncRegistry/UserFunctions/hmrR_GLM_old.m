@@ -150,7 +150,7 @@ for iBlk=1:length(data_y)
     
     y      = data_y(iBlk).GetDataTimeSeries('reshape');
     t      = data_y(iBlk).GetTime();
-    ml     = data_y(iBlk).GetMeasListSrcDetPairs();
+    ml     = data_y(iBlk).GetMeasListSrcDetPairs('reshape');
     SrcPos = probe.GetSrcPos();
     DetPos = probe.GetDetPos();
     if isempty(mlActAuto{iBlk})

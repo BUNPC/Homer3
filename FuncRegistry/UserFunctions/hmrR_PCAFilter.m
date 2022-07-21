@@ -70,7 +70,7 @@ for iBlk=1:length(data_y)
     % Get all the input data from the arguments
     y        = data_y(iBlk).GetDataTimeSeries('reshape');
     t        = data_y(iBlk).GetTime();
-    MeasList = data_y(iBlk).GetMeasList();
+    MeasList = data_y(iBlk).GetMeasList('reshape');
     if isempty(mlAct{iBlk})
         mlAct{iBlk} = ones(size(MeasList,1),1);
     end

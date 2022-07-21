@@ -121,13 +121,13 @@ nUp=length(unique([sPos(:,2); dPos(:,2)]))+1;
 axWid = axFactor(1) * 1/nAcross;
 axHgt = axFactor(2) * 1/nUp;
 
-axXoff=mean([sPos(:,1);dPos(:,1)])-.5;
-axYoff=mean([sPos(:,2);dPos(:,2)])-.5;
+axXoff = mean([sPos(:,1);dPos(:,1)])-.5;
+axYoff = mean([sPos(:,2);dPos(:,2)])-.5;
 
 ml    = ch.MeasList;
 lst   = find(ch.MeasList(:,4)==1);
 mlAct = (ch.MeasListActMan(lst) & ch.MeasListActAuto(lst)) * 1;
-mlAct(~ch.MeasListVis(lst)) = -1;  % -1 if channel is hidden
+%mlAct(~ch.MeasListVis(lst)) = -1;  % -1 if channel is hidden
 
 %This is the plotting routine
 try

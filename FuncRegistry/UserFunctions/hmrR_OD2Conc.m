@@ -42,8 +42,8 @@ for ii=1:length(dod)
     SrcPos = probe.GetSrcPos();
     DetPos = probe.GetDetPos();
     nWav   = length(Lambda);
-    ml     = dod(ii).GetMeasList();
-    y      = dod(ii).GetDataTimeSeries();
+    ml     = dod(ii).GetMeasList('reshape');
+    y      = dod(ii).GetDataTimeSeries('reshape');
     
     if length(ppf) < nWav
         warning('Length of ppf does not match the number of wavelengths. Falling back to ppf=1 for all wavelengths.');

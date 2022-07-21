@@ -50,9 +50,9 @@ for iBlk = 1:nDataBlks
         % 
         datatype  = yAvgSess{iSess}(iBlk).GetDataTypeLabel();
         if strncmp(datatype{1}, 'HRF Hb', length('HRF Hb'))
-            ml    = yAvgSess{iSess}(iBlk).GetMeasListSrcDetPairs();
+            ml    = yAvgSess{iSess}(iBlk).GetMeasListSrcDetPairs('reshape');
         elseif strcmp(datatype{1}, 'HRF dOD')
-            ml    = yAvgSess{iSess}(iBlk).GetMeasList();
+            ml    = yAvgSess{iSess}(iBlk).GetMeasList('reshape');
         end
         if isempty(mlActSess{iSess}{iBlk})
             mlActSess{iSess}{iBlk} = ones(size(ml,1),1);

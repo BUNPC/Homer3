@@ -998,8 +998,6 @@ if ~ishandles(hAxes)
 end
 hf = get(hAxes,'parent');
 
-dataTree = maingui.dataTree;
-procElem = dataTree.currElem;
 EnableDisableGuiPlotBttns(handles);
 
 axes(hAxes)
@@ -1011,122 +1009,39 @@ set(hAxes,'ygrid','on');
 xlabel(hAxes, '');
 ylabel(hAxes, '');
 
+[iCh, linecolors, linestyles, linewidths] = GetSelectedChannels(handles);
+[d, t]  = GetDataTimeSeries(handles);
 
-linecolor  = maingui.axesData.linecolor;
-linestyle  = maingui.axesData.linestyle;
-datatype   = GetDatatype(handles);
-condition  = GetCondition(handles);
-% iCh0       = maingui.axesSDG.iCh;
-iCh0       = GetSelectedChannelIdxs();
-iWl        = GetWl(handles);
-hbType     = GetHbType(handles);
-sclConc    = maingui.sclConc;        % convert Conc from Molar to uMolar
-showStdErr = GetShowStdErrEnabled(handles);
+maingui.logger.Write('Displaying   time: [%dx%d],    data: [%dx%d],   channels [%s]\n', size(t,1), size(t,2), size(d,1), size(d,2), num2str(iCh(:)'))
 
-[iDataBlks, iCh] = procElem.GetDataBlocksIdxs(iCh0);
-maingui.logger.Write(sprintf('Displaying channels [%s] in data blocks [%s]\n', num2str(iCh0(:)'), num2str(iDataBlks(:)')))
-iColor = 1;
-for iBlk = iDataBlks
-
-    if isempty(iCh)
-        iChBlk  = [];
+%%% Plot data
+if ~isempty(d)
+    xx = xlim(hAxes);
+    yy = ylim(hAxes);
+    if strcmpi(get(hAxes,'ylimmode'),'manual')
+        flagReset = 0;
     else
-        iChBlk  = iCh{iBlk};
+        flagReset = 1;
     end
-    
-    ch      = procElem.GetMeasList(iBlk);
-    mlVis   = procElem.GetMeasListVis();
-    chVis   = find(mlVis(iChBlk)==1);
-    d       = [];
-    dStd    = [];
-    t       = [];
-    nTrials = [];    
-    
-    % Get plot data from dataTree
-    if datatype == maingui.buttonVals.RAW
-        d = procElem.GetDataTimeSeries('same', iBlk);
-        t = procElem.GetTime(iBlk);
-    elseif datatype == maingui.buttonVals.OD
-        d = procElem.GetDod(iBlk);
-        t = procElem.GetTime(iBlk);
-    elseif datatype == maingui.buttonVals.CONC
-        d = procElem.GetDc(iBlk);
-        t = procElem.GetTime(iBlk);
-    elseif datatype == maingui.buttonVals.OD_HRF
-        d = procElem.GetDodAvg([], iBlk);
-        t = procElem.GetTHRF(iBlk);
-        if showStdErr
-            dStd = procElem.GetDodAvgStd(iBlk);
-        end
-        nTrials = procElem.GetNtrials(iBlk);
-        if isempty(condition)
-            return;
-        end
-    elseif datatype == maingui.buttonVals.CONC_HRF
-        d = procElem.GetDcAvg([], iBlk);
-        t = procElem.GetTHRF(iBlk);
-        if showStdErr
-            dStd = procElem.GetDcAvgStd([], iBlk) * sclConc;
-        end
-        nTrials = procElem.GetNtrials(iBlk);
-        if isempty(condition)
-            return;
-        end
-    end
-    
-    %%% Plot data
-    if ~isempty(d)
-        xx = xlim(hAxes);
-        yy = ylim(hAxes);
-        if strcmpi(get(hAxes,'ylimmode'),'manual')
-            flagReset = 0;
-        else
-            flagReset = 1;
-        end
         hold(hAxes, 'on');
-        
-        % Set the axes ranges
-        if flagReset==1
-            set(hAxes,'xlim',[t(1), t(end)]);
-            set(hAxes,'ylimmode','auto');
-        else
-            set(hAxes,'xlim',xx);
-            set(hAxes,'ylim',yy);
-        end
-        
-        linecolors = linecolor(iColor:iColor+length(iChBlk)-1,:);
-        
-        % Plot data
-        if datatype == maingui.buttonVals.RAW || datatype == maingui.buttonVals.OD || datatype == maingui.buttonVals.OD_HRF
-            if  datatype == maingui.buttonVals.OD_HRF
-                d = d(:,:,condition);
-            end
-            d = procElem.reshape_y(d, ch.MeasList);
-            DisplayDataRawOrOD(hAxes, t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
-
-            % Set the x-axis label
-            xlabel(hAxes, 'Time (s)', 'FontSize', 11);
-        elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
-            if  datatype == maingui.buttonVals.CONC_HRF
-                d = d(:,:,:,condition);
-            end
-            d = d * sclConc;
-            DisplayDataConc(hAxes, t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
-            
-            % Set the x-axis label
-            xlabel(hAxes, 'Time (s)', 'FontSize', 11);
-
-            % Set the y-axis label
-            ppf  		= procElem.GetVar('ppf');
-            lengthUnit 	= procElem.GetVar('LengthUnit');
-            if any(ppf==1) && ~isempty(lengthUnit)
-                ylabel(hAxes, ['\muM ' lengthUnit], 'FontSize', 11);
-            else
-                ylabel(hAxes, '\muM', 'FontSize', 11);
-            end
-        end
+    
+    % Set the axes ranges
+    if flagReset==1
+        set(hAxes,'xlim',[t(1), t(end)]);
+        set(hAxes,'ylimmode','auto');
+    else
+        set(hAxes,'xlim',xx);
+        set(hAxes,'ylim',yy);
     end
-    iColor = iColor+length(iChBlk);
+	
+    % Plot data
+    h = zeros(1, length(iCh));
+    for ii = 1:length(iCh)
+        h(ii) = plot(hAxes, t, d(:,iCh(ii)));
+        set(h(ii), 'color',     linecolors(ii,:));
+        set(h(ii), 'linestyle', linestyles{ii});        
+        set(h(ii), 'linewidth', linewidths(ii));        
+    end
 end
 
 % Set Zoom on/off

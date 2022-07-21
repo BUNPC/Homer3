@@ -59,7 +59,7 @@ for iBlk = 1:nDataBlks
     % get tHRF and ml from yAvgRuns
     for iRun = 1:length(yAvgStdRuns)
         tHRF    = yAvgStdRuns{iRun}(iBlk).GetTime();
-        ml    = yAvgStdRuns{iRun}(iBlk).GetMeasListSrcDetPairs();
+        ml    = yAvgStdRuns{iRun}(iBlk).GetMeasListSrcDetPairs('reshape');
         if ~isempty(ml)
             break
         end

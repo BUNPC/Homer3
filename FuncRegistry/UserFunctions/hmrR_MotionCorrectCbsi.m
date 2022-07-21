@@ -48,8 +48,8 @@ if isempty(mlActAuto)
 end
 
 for iBlk=1:length(data_dc)
-    dc = data_dc(iBlk).GetDataTimeSeries();
-    ml = data_dc(iBlk).GetMeasListSrcDetPairs();
+    dc = data_dc(iBlk).GetDataTimeSeries('reshape');
+    ml = data_dc(iBlk).GetMeasListSrcDetPairs('reshape');
     
     dc = reshape(dc, size(dc,1), 3, size(dc,2)/3);
     

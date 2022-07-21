@@ -12,18 +12,13 @@ if ~exist('orderNew','var')
     orderNew = [];
 end
 
-nwl = length(nirs1.SD.Lambda);
-N = size(nirs1.SD.MeasList,1)/nwl;
+N = size(nirs1.SD.MeasList,1);
 if isempty(orderNew)
     orderNew = randperm(N);
 end
 nirs2 = NirsClass(nirs1);
-for iW = 1:nwl
-    iS = (iW-1)*N + 1;
-    iE = (iW-1)*N + N;
-    nirs2.SD.MeasList(iS:iE,:) = nirs1.SD.MeasList(iS-1 + orderNew, :);
-    nirs2.d(:,iS:iE)           = nirs1.d(:,iS-1 + orderNew);
-end
+nirs2.SD.MeasList = nirs1.SD.MeasList(orderNew,:);
+nirs2.d = nirs1.d(:,orderNew);
 
 if ischar(nirs1_0)
     nirs2.Save(filename, 'overwrite');

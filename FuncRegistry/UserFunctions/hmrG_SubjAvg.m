@@ -49,9 +49,9 @@ for iBlk = 1:nDataBlks
         nT        = nTrialsSubjs{iSubj}{iBlk};
         datatype  = yAvgSubjs{iSubj}(iBlk).GetDataTypeLabel();
         if strncmp(datatype{1}, 'HRF Hb', length('HRF Hb'))
-            ml    = yAvgSubjs{iSubj}(iBlk).GetMeasListSrcDetPairs();
+            ml    = yAvgSubjs{iSubj}(iBlk).GetMeasListSrcDetPairs('reshape');
         elseif strcmp(datatype{1}, 'HRF dOD')
-            ml    = yAvgSubjs{iSubj}(iBlk).GetMeasList();
+            ml    = yAvgSubjs{iSubj}(iBlk).GetMeasList('reshape');
         end
                 
         nCond = size(nT,2);

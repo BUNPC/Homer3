@@ -92,9 +92,9 @@ end
 
 for iBlk=1:length(data)
 
-    d           = data(iBlk).GetDataTimeSeries();
+    d           = data(iBlk).GetDataTimeSeries('reshape');
     fs          = data(iBlk).GetTime();
-    MeasList    = data(iBlk).GetMeasList();
+    MeasList    = data(iBlk).GetMeasList('reshape');
     Lambda      = probe.GetWls();
     nWav        = length(Lambda);
     

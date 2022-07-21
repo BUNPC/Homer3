@@ -31,7 +31,6 @@ pValues = cell(length(yRuns{1}),1);
 
 % extract fq and number of conditions from the first run:
 snirf = SnirfClass(yRuns{1}, stimRuns{1});
-ml = yRuns{1}.GetMeasListSrcDetPairs();
 t = snirf.GetTimeCombined();
 s = snirf.GetStims(t);
 ncond = size(s,2);
@@ -57,7 +56,7 @@ for iBlk = 1:nDataBlks
             if isempty(mlActRuns{iRun})
                 mlActRuns{iRun} = cell(length(nDataBlks),1);
             end
-            ml    = yRuns{iRun}(iBlk).GetMeasListSrcDetPairs();
+            ml    = yRuns{iRun}(iBlk).GetMeasListSrcDetPairs('reshape');
             
             if isempty(mlActRuns{iRun}{iBlk})
                 mlActRuns{iRun}{iBlk} = ones(size(ml,1),1);
@@ -126,7 +125,7 @@ for iBlk = 1:length(nDataBlks)
             if isempty(mlActRuns{iRun})
                 mlActRuns{iRun} = cell(length(nDataBlks),1);
             end
-            ml = yRuns{iRun}(iBlk).GetMeasListSrcDetPairs();
+            ml = yRuns{iRun}(iBlk).GetMeasListSrcDetPairs('reshape');
             
             if isempty(mlActRuns{iRun}{iBlk})
                 mlActRuns{iRun}{iBlk} = ones(size(ml,1),1);

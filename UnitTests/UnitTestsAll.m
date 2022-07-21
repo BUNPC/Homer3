@@ -1,5 +1,9 @@
 function UnitTestsAll()
-global cfg 
+global cfg
+global SCRAMBLE
+
+SCRAMBLE = false;
+
 t1 = tic;
 
 setNamespace('Homer3')

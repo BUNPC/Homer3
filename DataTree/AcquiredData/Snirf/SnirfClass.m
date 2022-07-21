@@ -980,6 +980,22 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
+        function ml = GetMeasurementList(obj, iBlk)
+            ml = [];
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            if iBlk>length(obj.data)
+                return;
+            end
+            for ii = 1:length(iBlk)
+                ml = [ml; obj.data(ii).measurementList];
+            end
+        end
+        
+        
+        
+        % ---------------------------------------------------------
         function datamat = GetDataTimeSeries(obj, options, iBlk)
             datamat = [];
             if ~exist('options','var')

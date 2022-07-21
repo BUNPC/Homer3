@@ -16,12 +16,12 @@ else
 end
 
 y        = plotprobe.y{iBlk};
+ch       = plotprobe.dataTree.currElem.GetMeasList('reshape',iBlk);
 t        = plotprobe.t{iBlk};
 tMarkInt = plotprobe.tMarkInt;
 axScl    = plotprobe.axScl;
 tMarkAmp = plotprobe.tMarkAmp;
 tMarkVis = plotprobe.tMarkShow;
-ch       = plotprobe.dataTree.currElem.GetMeasList(iBlk);
 SD       = plotprobe.dataTree.currElem.GetSDG('2D');
 
 data = getappdata(handles.figure, 'data');

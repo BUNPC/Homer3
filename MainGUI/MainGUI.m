@@ -1010,7 +1010,7 @@ xlabel(hAxes, '');
 ylabel(hAxes, '');
 
 [iCh, linecolors, linestyles, linewidths] = GetSelectedChannels(handles);
-[d, t]  = GetDataTimeSeries(handles);
+[d, dStd, t]  = GetDataTimeSeries(handles);
 
 maingui.logger.Write('Displaying   time: [%dx%d],    data: [%dx%d],   channels [%s]\n', size(t,1), size(t,2), size(d,1), size(d,2), num2str(iCh(:)'))
 
@@ -1023,7 +1023,7 @@ if ~isempty(d)
     else
         flagReset = 1;
     end
-        hold(hAxes, 'on');
+    hold(hAxes, 'on');
     
     % Set the axes ranges
     if flagReset==1
@@ -1040,8 +1040,29 @@ if ~isempty(d)
         h(ii) = plot(hAxes, t, d(:,iCh(ii)));
         set(h(ii), 'color',     linecolors(ii,:));
         set(h(ii), 'linestyle', linestyles{ii});        
-        set(h(ii), 'linewidth', linewidths(ii));        
+        set(h(ii), 'linewidth', linewidths(ii));
+        if ~isempty(dStd)
+            idxs = 1:10:length(t);
+            h2 = errorbar(hAxes, t(idxs), d(idxs, iCh(ii)), dStd(idxs, iCh(ii)),'.');
+            set(h2,'color', linecolors(ii,:));
+        end        
     end
+    
+    % Set the x-axis label
+    xlabel(hAxes, 'Time (s)', 'FontSize', 11);
+    
+    % Set the y-axis label
+    datatype = GetDatatype(handles);
+    if datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
+        ppf  		= maingui.dataTree.currElem.GetVar('ppf');
+        lengthUnit 	= maingui.dataTree.currElem.GetVar('LengthUnit');
+        if any(ppf==1) && ~isempty(lengthUnit)
+            ylabel(hAxes, ['\muM ' lengthUnit], 'FontSize', 11);
+        else
+            ylabel(hAxes, '\muM', 'FontSize', 11);
+        end
+    end
+    
 end
 
 % Set Zoom on/off

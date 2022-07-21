@@ -618,8 +618,14 @@ classdef TreeNodeClass < handle
                     case {'od hrf','od_hrf'}
                         d = [d, obj.procStream.GetDataTimeSeries('od hrf',ii)];
                         t = [t; obj.procStream.GetTHRF(ii)];
+                    case {'od hrf std','od_hrf_std'}
+                        d = [d, obj.procStream.GetDataTimeSeries('od hrf std',ii)];
+                        t = [t; obj.procStream.GetTHRF(ii)];
                     case {'hb hrf','conc hrf','hb_hrf','conc_hrf'}
                         d = [d, obj.procStream.GetDataTimeSeries('conc hrf',ii)];
+                        t = [t; obj.procStream.GetTHRF(ii)];
+                    case {'hb hrf std','conc hrf std','hb_hrf_std','conc_hrf_std'}
+                        d = [d, obj.procStream.GetDataTimeSeries('conc hrf std',ii)];
                         t = [t; obj.procStream.GetTHRF(ii)];
                 end
             end

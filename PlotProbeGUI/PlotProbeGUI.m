@@ -784,20 +784,17 @@ if ~isempty(CondNames)
 else
     name = sprintf('   %s,    condition:  none', treeNodeName, CondNames{plotprobe.condition});
 end
-n = length(name) + 0.20*length(name);
+n = length(name) + 0.5*length(name);
 set(handles.textFilename, 'units','characters');
 p1 = get(handles.textFilename, 'position');
 set(handles.textFilename, 'position',[p1(1), p1(2), n, p1(4)], 'string',name);
-
-set(handles.textFilename, 'units','centimeters');
-set(handles.textFilenameFrame, 'units','centimeters');
+p1 = get(handles.textFilename, 'position');
 
 % Set the border frame size and position to be relative to text box holding the name 
-p1 = get(handles.textFilename, 'position');
+set(handles.textFilenameFrame, 'units','characters');
 p2 = get(handles.textFilenameFrame, 'position');
-set(handles.textFilename, 'position',[p2(1)+abs(p1(2)-p2(2)), p1(2), p1(3), p1(4)]);
-p1 = get(handles.textFilename, 'position');
-set(handles.textFilenameFrame, 'position',[p2(1), p2(2), p1(3)+(2*abs(p1(1)-p2(1))), p2(4)]);
+set(handles.textFilenameFrame, 'position',[p2(1), p2(2), p1(3)+(2.5*abs(p1(1)-p2(1))), p2(4)]);
+p2 = get(handles.textFilenameFrame, 'position');
 
 % Return to normalized units for textbox
 set(handles.textFilename, 'units','normalized');

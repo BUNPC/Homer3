@@ -1493,6 +1493,14 @@ classdef ProcStreamClass < handle
                         if ii <= length(obj.output.dcAvg)
                             dataTimeSeries = [dataTimeSeries; obj.output.dcAvg(ii).dataTimeSeries];
                         end
+                    case {'od hrf std','od_hrf_std'}
+                        if ii <= length(obj.output.dodAvg)
+                            dataTimeSeries = [dataTimeSeries; obj.output.dodAvgStd(ii).dataTimeSeries];
+                        end
+                    case {'hb hrf std','conc hrf std','hb_hrf_std','conc_hrf_std'}
+                        if ii <= length(obj.output.dcAvg)
+                            dataTimeSeries = [dataTimeSeries; obj.output.dcAvgStd(ii).dataTimeSeries];
+                        end
                 end
             end
         end

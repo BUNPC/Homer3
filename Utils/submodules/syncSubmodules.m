@@ -108,9 +108,10 @@ if ~exist('peerlessonly','var')
 end
 f1_1 = findTypeFiles(repo1.path, '.m');
 f1_2 = findTypeFiles(repo1.path, '.txt');
+f1_2 = findTypeFiles(repo1.path, '.cfg');
 f1_3 = findTypeFiles(repo1.path, '.numberfiles');
 f2_1 = findTypeFiles(repo2.path, '.m');
-f2_2 = findTypeFiles(repo2.path, '.txt');
+f2_2 = findTypeFiles(repo2.path, '.cfg');
 f2_3 = findTypeFiles(repo2.path, '.numberfiles');
 f1 = [f1_1; f1_2; f1_3];
 f2 = [f2_1; f2_2; f2_3];

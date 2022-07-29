@@ -1029,6 +1029,18 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function filename = ExportHRF_GetFilename(obj, filename)
+            [p, f] = fileparts(obj.SetFilename(filename));
+            filename = [filesepStandard(p, 'nameonly:dir'), f];
+            
+            % Create table export data to file
+            tbl = ExportTable(filename, 'HRF');
+            filename = tbl.GetFilenameFull();
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
         function tbl = ExportMeanHRF(obj, filename, CondNames, trange, iBlk)
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;

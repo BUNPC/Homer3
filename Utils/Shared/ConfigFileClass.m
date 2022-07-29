@@ -611,6 +611,9 @@ classdef ConfigFileClass < handle
                 if strcmp(dirs(ii).name, '..')
                     continue;
                 end
+                if strcmp(dirs(ii).name, 'submodules')
+                    continue;
+                end
                 obj.FindCfgFiles([rootdir, dirs(ii).name]);
             end
         end

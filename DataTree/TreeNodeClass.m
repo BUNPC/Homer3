@@ -1091,6 +1091,13 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function filename = ExportHRF_GetFilename(obj)
+            filename = obj.procStream.ExportHRF_GetFilename([obj.path, obj.GetOutputFilename()]);
+        end
+    
+        
+        
+        % ----------------------------------------------------------------------------------
         function tblcells = ExportMeanHRF_Alt(obj, procElemSelect, trange, iBlk)
             tblcells = [];
             if isempty(obj.children)

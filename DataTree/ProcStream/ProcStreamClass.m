@@ -1840,6 +1840,12 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function filename = ExportHRF_GetFilename(obj, filename)
+            filename = obj.output.ExportHRF_GetFilename(filename);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function ExportMeanHRF(obj, filename, CondNames, trange, iBlk)
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;

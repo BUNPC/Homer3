@@ -142,7 +142,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     if nargin==2
                         tfactors = varargin{2};
                     end
-                    dotnirs = varargin{1};
+                    dotnirs = NirsClass(varargin{1});
                     obj.GenSimulatedTimeBases(dotnirs, tfactors);
                     
                     % Required fields

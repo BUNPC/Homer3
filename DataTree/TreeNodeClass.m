@@ -665,9 +665,9 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function SetMeasListVis(obj, chVis, iBlk)
-            if ~exist('chVis','var')
-                chVis = [];
+        function SetMeasListVis(obj, sdpair, iBlk)
+            if ~exist('sdpair','var')
+                sdpair = [];
             end
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
@@ -677,10 +677,18 @@ classdef TreeNodeClass < handle
             else
                 ch = obj.GetMeasList(iBlk);
             end
-            if isempty(chVis)
-                obj.chVis = ones(size(ch.MeasList,1),1);
+            if isempty(sdpair)
+                idxs = find(ch.MeasList(:,4)==1);
+                obj.chVis = [ch.MeasList(idxs,1:2), ones(size(idxs,1),1)];
             else
-                obj.chVis = chVis;
+                k = find(obj.chVis(:,1) == sdpair(1,1) & obj.chVis(:,2) == sdpair(1,2));
+                if ~isempty(k)
+                    if obj.chVis(k,3) == 0
+                        obj.chVis(k,3) = 1;
+                    else
+                        obj.chVis(k,3) = 0;
+                    end
+                end
             end
          end
                 
@@ -696,7 +704,8 @@ classdef TreeNodeClass < handle
                 else
                     ch = obj.GetMeasList(iBlk);
                 end
-                obj.chVis = ones(size(ch.MeasList,1),1);
+                idxs = find(ch.MeasList(:,4)==1);
+                obj.chVis = [ch.MeasList(idxs,1:2), ones(size(idxs,1),1)];
             end
             chVis = obj.chVis;
         end

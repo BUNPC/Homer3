@@ -1,4 +1,4 @@
-function [iCh, linecolors, linestyles, linewidths] = GetSelectedChannels(handles)
+function iCh = GetSelectedChannels(handles)
 global maingui
 
 iCh         = [];
@@ -10,16 +10,6 @@ iSrcDet     = maingui.axesSDG.iSrcDet;
 iCond       = GetCondition(handles); 
 ml          = GetMeasurementList(handles);
 
-hbTypes     = {'hbo','hbr','hbt'};
-
-linecolorsAvailable  = maingui.axesData.linecolor;
-linestylesAvailable  = {'-','--',':','-.'};
-linewidthsAvailable   = [2, 2, 2.5, 2, 2];
-
-linecolors  = zeros(length(iSrcDet)*length(hbType), 3);
-linestyles  = cell(1,length(iSrcDet)*length(hbType));
-linewidths  = zeros(1,length(iSrcDet)*length(hbType));
-hh = 1;
 for kk = 1:size(iSrcDet,1)
     for ii = 1:length(ml)
         
@@ -31,10 +21,6 @@ for kk = 1:size(iSrcDet,1)
                     ml(ii).wavelengthIndex == iWl(jj)
                 
                      iCh = [iCh, ii]; %#ok<*AGROW>
-                     linecolors(hh, :)  = linecolorsAvailable(kk, :);
-                     linestyles{hh}     = linestylesAvailable{iWl(jj)};
-                     linewidths(hh)     = linewidthsAvailable(iWl(jj));
-                     hh = hh+1;
 
                 end
             end
@@ -48,11 +34,6 @@ for kk = 1:size(iSrcDet,1)
                    strcmp(ml(ii).dataTypeLabel, hbType{jj})
 
                      iCh = [iCh, ii];
-                     iHb = find(strcmpi(hbTypes, hbType{jj}));
-                     linecolors(hh, :)  = linecolorsAvailable(kk, :);
-                     linestyles{hh}     = linestylesAvailable{iHb};
-                     linewidths(hh)     = linewidthsAvailable(iHb);
-                     hh = hh+1;
                      
                 end
             end
@@ -67,10 +48,6 @@ for kk = 1:size(iSrcDet,1)
                    ml(ii).dataTypeIndex   == iCond
 
                      iCh = [iCh, ii];
-                     linecolors(hh, :)  = linecolorsAvailable(kk, :);
-                     linestyles{hh}     = linestylesAvailable{iWl(jj)};
-                     linewidths(hh)     = linewidthsAvailable(iWl(jj));
-                     hh = hh+1;
 
                 end
             
@@ -87,11 +64,6 @@ for kk = 1:size(iSrcDet,1)
                    ml(ii).dataTypeIndex   == iCond
 
                      iCh = [iCh, ii];
-                     iHb = find(strcmpi(hbTypes, hbType{jj}));
-                     linecolors(hh, :)  = linecolorsAvailable(kk, :);
-                     linestyles{hh}     = linestylesAvailable{iHb}; %#ok<*FNDSB>
-                     linewidths(hh)     = linewidthsAvailable(iHb);
-                     hh = hh+1;
 
                 end
             

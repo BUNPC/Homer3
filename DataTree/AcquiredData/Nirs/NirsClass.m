@@ -650,14 +650,25 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function SD = GetSDG(obj, option)
+        function SD = GetSDG(obj, ~)
             SD = obj.SD;
         end
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasList(obj, iBlk)
+        function ml = GetMeasList(obj, ~)
             ml = obj.SD.MeasList;
+        end
+        
+        
+        % ---------------------------------------------------------
+        function ml = GetMeasurementList(obj, ~)
+            ml = MeasListClass();
+            for ii = 1:size(obj.SD.MeasList,1)
+                ml(ii).sourceIndex = obj.SD.MeasList(ii,1);
+                ml(ii).detectorIndex = obj.SD.MeasList(ii,2);
+                ml(ii).wavelengthIndex = obj.SD.MeasList(ii,4);
+            end
         end
         
         
@@ -668,7 +679,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function SetStims_MatInput(obj,s,t,CondNames)
+        function SetStims_MatInput(obj, s, ~, ~)
             obj.s = s;
         end
         
@@ -703,13 +714,13 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function srcpos = GetSrcPos(obj,option)
+        function srcpos = GetSrcPos(obj, ~)
             srcpos = obj.SD.SrcPos;
         end
         
         
         % ---------------------------------------------------------
-        function detpos = GetDetPos(obj,option)
+        function detpos = GetDetPos(obj, ~)
             detpos = obj.SD.DetPos;
         end
         
@@ -728,13 +739,13 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function n = GetDataBlocksNum(obj)
+        function n = GetDataBlocksNum(~)
             n = 1;
         end
         
         
         % ----------------------------------------------------------------------------------
-        function [iDataBlks, ich] = GetDataBlocksIdxs(obj, ich)
+        function [iDataBlks, ich] = GetDataBlocksIdxs(~, ich)
             iDataBlks = 1;
             ich={ich};
         end
@@ -882,30 +893,30 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimTpts(obj, icond, tpts)
+        function SetStimTpts(~, ~, ~)
             return;
         end
         
         
         % ----------------------------------------------------------------------------------
-        function tpts = GetStimTpts(obj, icond)
+        function tpts = GetStimTpts(~, ~)
             tpts = [];
         end
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimDuration(obj, icond, duration)
+        function SetStimDuration(~, ~, ~)
             return;
         end
         
         % ----------------------------------------------------------------------------------
-        function duration = GetStimDuration(obj, icond)
+        function duration = GetStimDuration(~, ~)
             duration = [];
         end
         
         
         % ----------------------------------------------------------------------------------
-        function SetStimAmplitudes(obj, icond, vals)
+        function SetStimAmplitudes(~, ~, ~)
             return;
         end
         
@@ -1127,34 +1138,36 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                     obj.SD.SrcGrommetType{ii} = 'none';
                 end
             end
-            
             if isempty(obj.SD.DetGrommetType)
                 for ii = 1:size(obj.SD.DetPos,1)
                     obj.SD.DetGrommetType{ii} = 'none';
                 end
             end
-            
             if isempty(obj.SD.DummyGrommetType)
                 for ii = 1:size(obj.SD.DummyPos,1)
                     obj.SD.DummyGrommetType{ii} = 'none';
                 end
             end
-            
             if isempty(obj.SD.SrcGrommetRot)
                 for ii = 1:size(obj.SD.SrcPos,1)
                     obj.SD.SrcGrommetRot(ii) = 0;
                 end
             end
-            
             if isempty(obj.SD.DetGrommetRot)
                 for ii = 1:size(obj.SD.DetPos,1)
                     obj.SD.DetGrommetRot(ii) = 0;
                 end
             end
-            
             if isempty(obj.SD.DummyGrommetRot)
                 for ii = 1:size(obj.SD.DummyPos,1)
                     obj.SD.DummyGrommetRot(ii) = 0;
+                end
+            end
+            if isempty(obj.CondNames)
+                for ii = 1:size(obj.s,2)
+                    if length(obj.s(:,ii)) == length(obj.t)
+                        obj.CondNames{ii} = num2str(ii);
+                    end
                 end
             end
             

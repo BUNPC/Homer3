@@ -54,9 +54,9 @@ if ~ishandles(handles)
 else
     hAxes = handles;    
 end
-iCh         = maingui.axesSDG.iCh;
-iSrcDet     = maingui.axesSDG.iSrcDet;
-color       = maingui.axesSDG.linecolor;
+iCh          = maingui.axesSDG.iCh;
+iSrcDet      = maingui.axesSDG.iSrcDet;
+SDPairColors = maingui.axesSDG.SDPairColors;
 
 SD          = maingui.dataTree.currElem.GetSDG('2D');
 
@@ -116,73 +116,86 @@ for iBlk = 1:nDataBlks
     MeasListVis     = [MeasListVis; chVis];
 end
 ml    = MeasList(MeasList(:,1)>0,:);
-lstML = find(ml(:,4)==1); %cw6info.displayLambda);
-lstIncl = find(MeasListActMan(1:length(lstML))==1);
-lstExclMan = find(MeasListActMan(1:length(lstML))==0);
-lstExclAuto = find(MeasListActAuto(1:length(lstML))==0);
-lstInvisible = find(MeasListVis(1:length(lstML))==0);
-hCh = zeros(length(lstML),1);
+lstSDPairs = find(ml(:,4)==1); %cw6info.displayLambda);
+lstIncl = find(MeasListActMan==1);
+lstExclMan = find(MeasListActMan==0);
+lstExclAuto = find(MeasListActAuto==0);
+lstInvisible = find(MeasListVis(:,3)==0);
+hCh = zeros(length(lstSDPairs),1);
 
 % Draw all channels
-for ii = 1:length(lstML)
-    hCh(ii) = line2(SD.SrcPos(ml(lstML(ii),1),:), SD.DetPos(ml(lstML(ii),2),:), [], gridsize, hAxes);
-    if ismember(ii,lstExclAuto)
-        % Draw auto-excluded channel
-        col = [1.00 0.6 0.6];
-        lstyle = '--';
-    elseif ismember(ii, lstExclMan)
-        % Draw manually excluded channel
-        col = [1.00 1.00 1.00] * 0.85;
-        lstyle = '--';
-    elseif ismember(ii, lstIncl)
-        % Draw included channel
-        col = [1.00 1.00 1.00] * 0.85;
-        lstyle = '-';
+for ii = 1:length(lstSDPairs)
+    linestyle = [];
+    hCh(ii) = line2(SD.SrcPos(ml(lstSDPairs(ii),1),:), SD.DetPos(ml(lstSDPairs(ii),2),:), [], gridsize, hAxes);
+    
+    % Draw auto-excluded channel
+    for kk = 1:length(lstExclAuto)
+       if all(ml(lstSDPairs(ii),:) == ml(lstExclAuto(kk),:))
+           col = [1.00 0.6 0.6];
+           linestyle = '--';
+           break;
+       end
     end
+    
+    % Draw manually-excluded channel
+    if isempty(linestyle)
+        for kk = 1:length(lstExclMan)
+            if all(ml(lstSDPairs(ii),:) == ml(lstExclMan(kk),:))
+                col = [1.00 1.00 1.00] * 0.85;
+                linestyle = '--';
+                break;
+            end
+        end
+    end
+    
+    % Draw included channel
+    if isempty(linestyle)
+        for kk = 1:length(lstIncl)
+            if all(ml(lstSDPairs(ii),:) == ml(lstIncl(kk),:))
+                col = [1.00 1.00 1.00] * 0.85;
+                linestyle = '-';
+                break;
+            end
+        end
+    end
+    
     if ismember(ii, lstInvisible)
-        lwidth = 1; 
+        linewidth = 1; 
     else
-        lwidth = 3;
+        linewidth = 3;
     end
-    set(hCh(ii), 'color', col, 'linewidth', lwidth, 'ButtonDownFcn', bttndownfcn, 'linestyle', lstyle);
+    
+    set(hCh(ii), 'color',col, 'linewidth',linewidth, 'ButtonDownFcn',bttndownfcn, 'linestyle',linestyle);
 end
 
+
 % Draw the user-selected channels
-if ~isempty(iSrcDet) && iSrcDet(1,1)~=0
-    lst2 = zeros(1,length(iCh));
-    lst3 = find(MeasList(:,4)==1);
-    for ii=1:length(iCh)
-        lst2(ii) = find(MeasList(lst3,1)==MeasList(iCh(ii),1) & MeasList(lst3,2)==MeasList(iCh(ii),2) );
-    end
-    iCh2 = lst2;
+for idx = 1:size(iSrcDet,1)
+    linewidth = 3;
+    hCh(idx+ii) = line2(SD.SrcPos(iSrcDet(idx,1),:), SD.DetPos(iSrcDet(idx,2),:), [], gridsize, hAxes);
     
-    for idx = 1:size(iSrcDet,1)
-        lwidth = 3;
-        hCh(idx+ii) = line2(SD.SrcPos(iSrcDet(idx,1),:), SD.DetPos(iSrcDet(idx,2),:), [], gridsize, hAxes);
-        % Attach toggle callback to the selected channels for function on
-        % second click
-        set(hCh(idx+ii),'color',color(idx,:), 'ButtonDownFcn',sprintf('toggleLinesAxesSDG_ButtonDownFcn(gcbo,[%d],guidata(gcbo))',idx), 'linewidth',2);
-        
-        if ~isempty(iCh)
-           
-            if ~MeasListActMan(iCh2(idx)) || ~MeasListActAuto(iCh2(idx))
-                lstyle = '--'; 
-            else
-                lstyle = '-';
-            end
-       
-            if ~MeasListVis(iCh2(idx))
-                lwidth = 1;
-            else
-                lwidth = 3;
-            end
-            
+    % Attach toggle callback to the selected channels for function on
+    % second click
+    iSD = GetSelectedSDPairIndex( iSrcDet(idx,1), iSrcDet(idx,2) );
+    set(hCh(idx+ii), 'color',SDPairColors(iSD,:), 'ButtonDownFcn',sprintf('toggleLinesAxesSDG_ButtonDownFcn(gcbo,[%d],guidata(gcbo))',idx), 'linewidth',2);
+    
+    if ~isempty(iCh)
+        if ~MeasListActMan(iCh(idx)) || ~MeasListActAuto(iCh(idx))
+            linestyle = '--';
+        else
+            linestyle = '-';
         end
         
-        set(hCh(idx+ii),'linewidth', lwidth, 'linestyle', lstyle);
-        
+        k = find(MeasListVis(:,1) == iSrcDet(idx,1) & MeasListVis(:,2) == iSrcDet(idx,2));
+        if ~isempty(k)
+            if MeasListVis(k,3) == 0
+                linewidth = 1;
+            else
+                linewidth = 3;
+            end
+        end
     end
-    
+    set(hCh(idx+ii),'linewidth', linewidth, 'linestyle',linestyle);    
 end
 
 if (maingui.axesSDG.handles.axes == hAxes)
@@ -218,3 +231,5 @@ if isempty(UNIT_TEST) || ~UNIT_TEST
 end
 
 % fprintf('DisplayAxesSDG: Elapsed Time - %0.3f\n', toc);
+
+

@@ -20,7 +20,7 @@ classdef DataFilesClass < handle
     methods
         
         % ----------------------------------------------------
-        function obj = DataFilesClass(varargin)            
+        function obj = DataFilesClass(varargin)
             obj.files = FileClass.empty();
             obj.filesErr = FileClass.empty();
             obj.filetype = '';
@@ -477,7 +477,10 @@ classdef DataFilesClass < handle
                 if  o.GetError() < 0
                     obj.logger.Write('DataFilesClass.ErrorCheck:   FAILED error check - %s will not be added to data set\n', filename);
                     errorIdxs = [errorIdxs, ii]; %#ok<AGROW>
-                elseif  contains(o.GetErrorMsg(), 'WARNING: ''data'' corrupt and unusable')                    
+                elseif  contains(o.GetErrorMsg(), '''data'' corrupt and unusable')                    
+                    obj.logger.Write('DataFilesClass.ErrorCheck:   WARNING data is unusable - %s will not be added to data set\n', filename);
+                    errorIdxs = [errorIdxs, ii]; %#ok<AGROW>
+                elseif  contains(o.GetErrorMsg(), '''data'' is invalid')                    
                     obj.logger.Write('DataFilesClass.ErrorCheck:   WARNING data is unusable - %s will not be added to data set\n', filename);
                     errorIdxs = [errorIdxs, ii]; %#ok<AGROW>
                 else

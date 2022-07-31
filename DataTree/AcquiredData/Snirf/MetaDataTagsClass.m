@@ -82,6 +82,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
                 err = -1;
                 
             end
+            obj.SetError(err);
             
         end
         

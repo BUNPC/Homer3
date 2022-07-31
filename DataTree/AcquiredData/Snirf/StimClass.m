@@ -135,6 +135,7 @@ classdef StimClass < FileLoadSaveClass
                 end
                 
             end
+            obj.SetError(err); 
         end
         
         

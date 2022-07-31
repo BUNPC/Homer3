@@ -1009,8 +1009,10 @@ set(hAxes,'ygrid','on');
 xlabel(hAxes, '');
 ylabel(hAxes, '');
 
-[iCh, linecolors, linestyles, linewidths] = GetSelectedChannels(handles);
+ml = GetMeasurementList(handles);
+iCh = GetSelectedChannels(handles);
 [d, dStd, t]  = GetDataTimeSeries(handles);
+chVis = maingui.dataTree.currElem.chVis;
 
 maingui.logger.Write('Displaying   time: [%dx%d],    data: [%dx%d],   channels [%s]\n', size(t,1), size(t,2), size(d,1), size(d,2), num2str(iCh(:)'))
 
@@ -1035,11 +1037,18 @@ if ~isempty(d)
     end
 	
     % Plot data
+    [linecolors, linestyles, linewidths] = SetDataPlotLineStyles(handles, iCh);
     h = zeros(1, length(iCh));
     for ii = 1:length(iCh)
+        k = find(chVis(:,1) == ml(iCh(ii)).sourceIndex & chVis(:,2) == ml(iCh(ii)).detectorIndex);
+        if ~isempty(k)
+            if chVis(k, 3) == false
+                continue
+            end
+        end
         h(ii) = plot(hAxes, t, d(:,iCh(ii)));
         set(h(ii), 'color',     linecolors(ii,:));
-        set(h(ii), 'linestyle', linestyles{ii});        
+        set(h(ii), 'linestyle', linestyles{ii});
         set(h(ii), 'linewidth', linewidths(ii));
         if ~isempty(dStd)
             idxs = 1:10:length(t);
@@ -1824,7 +1833,7 @@ iCh = maingui.axesSDG.iCh;
 n_channels = length(iCh);
 if n_channels > 0
     iSrcDet = maingui.axesSDG.iSrcDet;
-    colors = maingui.axesSDG.linecolor;
+    colors = maingui.axesSDG.SDPairColors;
     d = maingui.dataTree.currElem.GetDataTimeSeries();
     t = maingui.dataTree.currElem.GetTime();
     if isempty(t)
@@ -2078,7 +2087,7 @@ iCh = maingui.axesSDG.iCh;
 n_channels = length(iCh);
 if n_channels > 0
     iSrcDet = maingui.axesSDG.iSrcDet;
-    colors = maingui.axesSDG.linecolor;
+    colors = maingui.axesSDG.SDPairColors;
     d = maingui.dataTree.currElem.GetDataTimeSeries();
     t = maingui.dataTree.currElem.GetTime();
     if isempty(t)

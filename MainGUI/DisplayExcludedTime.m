@@ -91,9 +91,9 @@ global maingui
 
 if strcmp(get(get(hAxes, 'parent'),'renderer'),'zbuffer')
     if strcmp(mode,'auto')
-        col=[1.0 0.1 0.1];
+        col = [1.0 0.1 0.1];
     elseif strcmp(mode,'autoch')
-        col=maingui.axesSDG.linecolor(iCh,:);
+        col = maingui.axesSDG.SDPairColors(iCh,:);
         for ii=1:length(col)
             if col(ii)<.5
                 col(ii) = col(ii)+.1;
@@ -108,7 +108,7 @@ else
     if strcmp(mode,'auto')
         col=[1.0 0.0 0.0];
     elseif strcmp(mode,'autoch')
-        col=maingui.axesSDG.linecolor(iCh,:);
+        col=maingui.axesSDG.SDPairColors(iCh,:);
     else
         col=[1.0 0.0 1.0];
     end

@@ -269,12 +269,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             obj.errmsgs = {
                 'MATLAB could not load the file.'
                 '''formatVersion'' is invalid.'
-                '''metaDataTags'' is invalid.'
-                '''data'' is invalid.'
-                '''stim'' is invalid and could not be loaded'
-                '''probe'' is invalid.'
-                '''aux'' is invalid and could not be loaded'
-                'WARNING: ''data'' corrupt and unusable'
+                '''metaDataTags'' field is invalid.'
+                '''data'' field is invalid.'
+                '''stim'' field has corrupt data. Some or all stims could not be loaded'
+                '''probe'' field is invalid.'
+                '''aux'' field is invalid and could not be loaded'
+                'WARNING: ''data'' field corrupt and unusable'
                 };
         end
         
@@ -450,6 +450,18 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     obj.stim(ii).delete();
                     obj.stim(ii) = [];
                     break;
+                else
+                    for kk = 1:ii-1
+                        if strcmp(obj.stim(kk).name, obj.stim(ii).name)
+                            obj.stim(ii).delete();
+                            obj.stim(ii) = [];
+                            err = err-6;
+                            break
+                        end
+                    end
+                    if err ~= 0
+                        break;
+                    end
                 end
                 ii=ii+1;
             end
@@ -573,7 +585,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 elseif errtmp == 5 && err >= 0
                 	err = 8;
                 elseif errtmp > 0 && err >= 0
-                    err = 4;                    
+                    err = 4;
                 end
 
                 %%%% Load stim

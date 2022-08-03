@@ -1093,8 +1093,8 @@ classdef GroupClass < TreeNodeClass
                     end
                     
                     oldDerivedPathRel = pathsubtract(oldDerivedPath, obj.path);
-                    if oldDerivedPathRel(end) == '/' || oldDerivedPathRel(end) == '\'
-                        oldDerivedPathRel(end) = '';
+                    if isempty(oldDerivedPathRel)
+                        return
                     end
                     msg{1} = sprintf('Detected derived data in older Homer3 folder "%s" ', oldDerivedPathRel);
                     if pathscompare(obj.derivedPathBidsCompliant, obj.outputDirname, 'nameonly')

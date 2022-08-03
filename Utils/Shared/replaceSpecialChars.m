@@ -9,7 +9,7 @@ for ii = 1:length(c)
     if isempty(s2)
         s2 = c{ii};
     else
-        s2 = sprintf('%s''''%s', s2, c{ii});
+        s2 = sprintf('"%s" %s', s2, c{ii});
     end
 end
 

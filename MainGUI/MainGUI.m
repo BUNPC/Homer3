@@ -75,6 +75,7 @@ MainGUI_EnableDisableGUI(handles, 'off')
 if ~isempty(maingui.unitTest)
     maingui.unitTest.Initialize(handles, @UnitTestInit);
 end
+maingui.errcolor = [0.70, 0.20, 0.10];
 
 
 
@@ -239,7 +240,7 @@ maingui.childguis(4) = ChildGuiClass('PlotProbeGUI');
 maingui.childguis(5) = ChildGuiClass('PvaluesDisplayGUI');
 
 % Load date files into group tree object
-maingui.dataTree  = LoadDataTree(maingui.groupDirs, maingui.format, procStreamFile);
+maingui.dataTree = LoadDataTree(maingui.groupDirs, maingui.format, procStreamFile);
 if maingui.dataTree.IsEmpty()
     return;
 end
@@ -270,6 +271,7 @@ maingui.logger.CurrTime(sprintf('MainGUI: Startup time - %0.1f seconds\n', toc(s
 
 % If data set has no errors enable window gui objects
 MainGUI_EnableDisableGUI(handles,'on');
+
 
 
 
@@ -327,9 +329,23 @@ function [eventdata, handles] = MainGUI_CloseFcn(~, eventdata, handles)
 deleteNamespace('Homer3');
 
 
+% --------------------------------------------------------------------
+function [nFileSuccess, nFilesWarning, nFilesFailed] = WarningsReport(handles)
+global maingui
+warnings = maingui.dataTree.GetWarningsReport();
+[nFileSuccess, nFilesWarning, nFilesFailed] = maingui.dataTree.GetErrorStats();
+if ~isempty(warnings)
+    set(handles.MainGUI,'visible','on')
+    MessageBox(warnings, 'WARNINGS')
+    %set(handles.listboxGroupTree, 'foregroundcolor',maingui.errcolor)
+end
+
+
+
 % --------------------------------------------------------------------------------------------
 function DisplayGroupTree(handles)
 global maingui;
+[nFileSuccess, nFilesWarning, nFilesFailed] = WarningsReport(handles);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initialize listboxGroupTree params struct
@@ -354,8 +370,6 @@ maingui.listboxGroupTreeParams = struct('listMaps',struct('names',{{}}, 'idxs', 
 % Get the GUI listboxGroupTree setting 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 listboxGroup = maingui.listboxGroupTreeParams.listMaps(viewSetting).names;
-nFiles = length(maingui.listboxGroupTreeParams.listMaps(views.RUNS).names);
-nFilesErr = length(maingui.dataTree.filesErr);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set listbox used for displaying files that did not load correctly
@@ -364,12 +378,6 @@ listboxFilesErr = {};
 kk = 1;
 for ii = 1:length(maingui.dataTree.filesErr)
     nspaces = 0;
-    %     if ~strcmp(maingui.dataTree.filesErr(ii).name, maingui.dataTree.filesErr(ii).filename)
-    %         listboxFilesErr{kk} = pathsubtract(maingui.dataTree.filesErr(ii).name, maingui.dataTree.filesErr(ii).filename, 'nochange');
-    %         kk = kk+1;
-    %         nspaces = 8;
-    %     end
-    %     listboxFilesErr{kk}   = sprintf('%s%s', blanks(nspaces), maingui.dataTree.filesErr(ii).filename);
     listboxFilesErr{kk}   = sprintf('%s%s', blanks(nspaces), filesepStandard(maingui.dataTree.filesErr(ii).name, 'filesepwide'));
     kk = kk+1;
 end
@@ -380,8 +388,9 @@ end
 if ~isempty(handles)
     % Report status in the status text object
     set( handles.textStatus, 'string', { ...
-        sprintf('%d files loaded successfully',nFiles), ...
-        sprintf('%d files failed to load',nFilesErr) ...
+        sprintf('%d files loaded successfully', nFileSuccess), ...
+        sprintf('%d files loaded with warnings',nFilesWarning), ...
+        sprintf('%d files failed to load', nFilesFailed) ...
         } );
     
     if ~isempty(listboxGroup)
@@ -389,19 +398,26 @@ if ~isempty(handles)
         set(handles.listboxGroupTree, 'string',listboxGroup)
     end
     
-    if ~isempty(listboxFilesErr)
-        set(handles.listboxFilesErr, 'visible','on', 'value',1, 'string',listboxFilesErr)
-        set(handles.textStatus, 'foregroundcolor',[0.70, 0.20, 0.10]);
-        set(handles.pushbuttonHideErrors, 'visible','on');
+    if nFilesFailed > 0 || nFilesWarning > 0
+        set(handles.textStatus, 'foregroundcolor',maingui.errcolor);
+        if nFilesFailed > 0
+            set(handles.listboxFilesErr, 'visible','on', 'value',1, 'string',listboxFilesErr)
+            set(handles.pushbuttonHideErrors, 'visible','on');
+        else
+            set(handles.listboxFilesErr, 'visible','off');
+            set(handles.pushbuttonHideErrors, 'visible','off');
+            pos1 = get(handles.listboxGroupTree, 'position');
+            pos2 = get(handles.listboxFilesErr, 'position');
+            set(handles.listboxGroupTree, 'position', [pos1(1) pos2(2) pos1(3) .98-pos2(2)]);
+        end
         warningMsg = 'WARNING: Not all data files loaded successfully. Please see Homer3 GUI for details.';
-        %h = MessageBox('WARNING: Not all data files loaded successfully. Please see Homer3 GUI for details.');
         maingui.logger.Write(warningMsg);
     else
         set(handles.listboxFilesErr, 'visible','off');
+        set(handles.pushbuttonHideErrors, 'visible','off');
         pos1 = get(handles.listboxGroupTree, 'position');
         pos2 = get(handles.listboxFilesErr, 'position');
         set(handles.listboxGroupTree, 'position', [pos1(1) pos2(2) pos1(3) .98-pos2(2)]);
-        set(handles.pushbuttonHideErrors, 'visible','off');
     end
 end
 

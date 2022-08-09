@@ -62,15 +62,25 @@ if ~exist('nSV','var')
     return
 end
 
-for iBlk=1:length(data_y)
+for iBlk = 1:length(data_y)
     
     % Initialize the main output data with the input data
     data_yc(iBlk) = DataClass(data_y(iBlk));
         
+    if ~isempty(data_yc(iBlk).measurementList)
+	    if data_yc(iBlk).measurementList(1).wavelengthIndex > 0
+	        option = '';
+	    else
+	        option = 'reshape';
+	    end
+    else
+	    option = '';
+    end
+    
     % Get all the input data from the arguments
-    y        = data_y(iBlk).GetDataTimeSeries('reshape');
+    y        = data_y(iBlk).GetDataTimeSeries(option);
     t        = data_y(iBlk).GetTime();
-    MeasList = data_y(iBlk).GetMeasList('reshape');
+    MeasList = data_y(iBlk).GetMeasList(option);
     if isempty(mlAct{iBlk})
         mlAct{iBlk} = ones(size(MeasList,1),1);
     end
@@ -101,9 +111,9 @@ for iBlk=1:length(data_y)
         yc = y;
         for iConc = 1:2
             y = squeeze(yo(:,iConc,:));
-            y=detrend(y);
+            y = detrend(y);
             c = y.' * y;
-            [v,s,foo] = svd(c);
+            [v,s] = svd(c);
             u = y*v*inv(s);
             svs{iBlk}(:,iConc) = diag(s)/sum(diag(s));
             if nSV{iBlk}(iConc)<1 % find number of SV to get variance up to nSV
@@ -134,7 +144,7 @@ for iBlk=1:length(data_y)
             y = squeeze(yo);
             
             c = y.' * y;
-            [V,St,foo] = svd(c);
+            [V,St] = svd(c);
             svs{iBlk} = diag(St) / sum(diag(St));
             %        [foo,St,V] = svd(y);
             %        svs{iBlk} = diag(St).^2/sum(diag(St).^2);
@@ -163,7 +173,7 @@ for iBlk=1:length(data_y)
                 yo = squeeze(yo);
                 
                 c = yo.' * yo;
-                [V,St,foo] = svd(c);
+                [V,St] = svd(c);
                 svs{iBlk}(:,iW) = diag(St) / sum(diag(St));
                 %        [foo,St,V] = svd(y);
                 %        svs{iBlk} = diag(St).^2/sum(diag(St).^2);

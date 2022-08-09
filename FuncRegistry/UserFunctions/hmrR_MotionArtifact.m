@@ -92,9 +92,9 @@ end
 
 for iBlk=1:length(data)
 
-    d           = data(iBlk).GetDataTimeSeries('reshape');
+    d           = data(iBlk).GetDataTimeSeries();
     fs          = data(iBlk).GetTime();
-    MeasList    = data(iBlk).GetMeasList('reshape');
+    MeasList    = data(iBlk).GetMeasList();
     Lambda      = probe.GetWls();
     nWav        = length(Lambda);
     
@@ -112,45 +112,41 @@ for iBlk=1:length(data)
         mlActAuto{iBlk} = ones(size(MeasList,1),1);
     end
     MeasListAct = mlActMan{iBlk} & mlActAuto{iBlk};        
-    
-    % Calculate the diff of d to to set the threshold if ncssesary
-    diff_d = diff(d);
-    
+      
     % set artifact buffer for tMask seconds on each side of spike
     art_buffer = round(tMask*fs); % time in seconds times sample rate
     
     % get list of active channels
     lstAct = zeros(size(MeasList,1),1);
     lst1 = find(MeasList(:,4)==1);
-    for ii=1:nWav
-        for jj=1:length(lst1)
-            lst(jj) = find(MeasList(:,1)==MeasList(lst1(jj),1) & ...
-                MeasList(:,2)==MeasList(lst1(jj),2) & ...
-                MeasList(:,4)==ii );
+    for iW = 1:nWav
+        for jj = 1:length(lst1)
+            lst(jj) = find(MeasList(:,1) == MeasList(lst1(jj),1) & ...
+                           MeasList(:,2) == MeasList(lst1(jj),2) & ...
+                           MeasList(:,4) == iW );
             lstAct(lst(jj)) = MeasListAct(jj);
         end
     end
     lstAct = find(lstAct==1);
     
     % calculate std_diff for each channel
-    std_diff=std(d(2:end,lstAct)-d(1:end-1,lstAct),0,1);
+    std_diff = std(d(2:end, lstAct) - d(1:end-1, lstAct), 0, 1);
     
     % calculate max_diff across channels for different time delays
-    max_diff = zeros(size(d,1)-1,length(lstAct));
-    for ii=1:round(tMotion*fs)
-        max_diff = max([abs(d((ii+1):end,lstAct)-d(1:(end-ii),lstAct)); zeros(ii-1,length(lstAct))], max_diff);
+    max_diff = zeros(size(d,1)-1, length(lstAct));
+    for ii = 1:round(tMotion*fs)
+        max_diff = max( [abs(d((ii+1):end, lstAct) - d(1:(end-ii), lstAct));  zeros(ii-1, length(lstAct))],  max_diff );
     end
     
     % find indices with motion artifacts based on std_thresh or amp_thresh
-    bad_inds = [];
     mc_thresh = std_diff*std_thresh;
-    bad_inds = find( max(max_diff > ones(size(max_diff,1),1)*mc_thresh ,[],2)==1 | ...
-        max(max_diff,[],2) > amp_thresh  );
+    bad_inds = find( max(max_diff  >  ones(size(max_diff,1),1) * mc_thresh, [], 2) == 1 | ...
+                     max(max_diff,[],2) > amp_thresh );
     
     % Eliminate time points before or after motion artifacts
     if ~isempty(bad_inds)
-        bad_inds = repmat(bad_inds, 1, 2*art_buffer+1)+repmat(-art_buffer:art_buffer,length(bad_inds), 1);
-        bad_inds = bad_inds((bad_inds>0)&(bad_inds<=(size(d, 1)-1)));
+        bad_inds = repmat(bad_inds, 1, 2*art_buffer+1) + repmat(-art_buffer:art_buffer, length(bad_inds), 1);
+        bad_inds = bad_inds((bad_inds>0) & (bad_inds<=(size(d, 1)-1)));
         
         % exclude points that were manually excluded
         bad_inds(find(tIncMan{iBlk}(bad_inds)==0)) = [];
@@ -158,13 +154,7 @@ for iBlk=1:length(data)
         % Set t and diff of data to 0 at the bad inds
         tIncAuto{iBlk}(1+bad_inds) = 0; % bad inds calculated on diff so add 1        
     end
-    
-    % calculate the variance due to motion relative to total variance
-    lst = find(tIncAuto{iBlk}==0);
-    dstd0 = std(d(lst,:),[],1);
-    lst = find(tIncAuto{iBlk}==1);
-    dstd1 = std(d(lst,:),[],1);
-    
+       
 end
 
 

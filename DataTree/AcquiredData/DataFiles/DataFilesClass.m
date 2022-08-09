@@ -472,19 +472,19 @@ classdef DataFilesClass < handle
                 if obj.files(ii).isdir
                     continue;
                 end
-                filename = obj.files(ii).name;
+                filename = [obj.rootdir, obj.files(ii).name];
                 eval( sprintf('o = %s(filename);', constructor) );
                 if  o.GetError() < 0
-                    obj.logger.Write('DataFilesClass.ErrorCheck - ERROR: In file "%s" %s. File will not be added to data set\n', filename, o.GetErrorMsg());
+                    obj.logger.Write('DataFilesClass.ErrorCheck - ERROR: In file "%s" %s. File will not be added to data set\n', obj.files(ii).name, o.GetErrorMsg());
                     errorIdxs = [errorIdxs, ii]; %#ok<AGROW>
                 elseif  contains(o.GetErrorMsg(), '''data'' field corrupt and unusable')                    
-                    obj.logger.Write('DataFilesClass.ErrorCheck - WARNING: In file "%s" %s. File will not be added to data set\n', filename, o.GetErrorMsg());
+                    obj.logger.Write('DataFilesClass.ErrorCheck - WARNING: In file "%s" %s. File will not be added to data set\n', obj.files(ii).name, o.GetErrorMsg());
                     errorIdxs = [errorIdxs, ii]; %#ok<AGROW>
                 elseif  contains(o.GetErrorMsg(), '''data'' field is invalid')                    
-                    obj.logger.Write('DataFilesClass.ErrorCheck - WARNING: In file "%s" %s. File will not be added to data set\n', filename, o.GetErrorMsg());
+                    obj.logger.Write('DataFilesClass.ErrorCheck - WARNING: In file "%s" %s. File will not be added to data set\n', obj.files(ii).name, o.GetErrorMsg());
                     errorIdxs = [errorIdxs, ii]; %#ok<AGROW>
                 elseif ~isempty(o.GetErrorMsg())
-                    obj.logger.Write('DataFilesClass.ErrorCheck - WARNING: In file  "%s"  %s. File will be added anyway.\n', filename, o.GetErrorMsg());
+                    obj.logger.Write('DataFilesClass.ErrorCheck - WARNING: In file  "%s"  %s. File will be added anyway.\n', obj.files(ii).name, o.GetErrorMsg());
                     dataflag = true;
                 else
                     dataflag = true;

@@ -144,7 +144,6 @@ classdef FileLoadSaveClass < matlab.mixin.Copyable
         function err = GetError(obj)
             err = [];
             if isempty(obj)
-                fprintf('Warning: object is empty.')
                 return
             end
             err = obj.err;

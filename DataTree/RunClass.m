@@ -333,7 +333,6 @@ classdef RunClass < TreeNodeClass
             for ii = 1:length(fcalls)
                 obj.logger.Write('%s\n', fcalls{ii});
             end
-            obj.logger.Write('\n');
         end
         
             

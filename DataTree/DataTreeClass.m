@@ -294,9 +294,17 @@ classdef DataTreeClass <  handle
         
 
         % ---------------------------------------------------------------
-        function PrintProcStream(obj)
+        function PrintProcStream(obj, banner)
+            if ~exist('banner','var')
+                banner = '';
+            end
             obj.logger.Write('\n');
-            obj.logger.Write('============================================\n\n');
+            obj.logger.Write('============================================\n');
+            if ~isempty(banner)
+                obj.logger.Write('%s', banner);
+                obj.logger.Write('\n');
+                obj.logger.Write('\n');
+            end
             obj.groups(1).PrintProcStream();
             obj.logger.Write('============================================\n');
             obj.logger.Write('\n');
@@ -707,6 +715,8 @@ classdef DataTreeClass <  handle
 
         % ----------------------------------------------------------
         function CalcCurrElem(obj)
+            banner = sprintf('Calculating derived data at %s with the following processing stream:\n\n', char(datetime(datetime, 'Format','HH:mm:ss, MMMM d, yyyy')));
+            obj.PrintProcStream(banner);
             obj.currElem.ExportProcStreamFunctionsOpen();
             obj.currElem.Calc();
             obj.currElem.ExportProcStreamFunctionsClose();

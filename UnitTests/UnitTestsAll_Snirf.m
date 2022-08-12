@@ -16,7 +16,7 @@ testidx=0;
 procStreamStyle = 'snirf';
 
 % Clean up before we start
-CleanUp(standalone, true, 'UnitTestsAll_Snirf');
+UnitTests_Init(standalone, true, 'UnitTestsAll_Snirf');
 logger.WriteNoNewline('################################################################');
 logger.CurrTime('Starting UnitTestsAll_Snirf ...');
 

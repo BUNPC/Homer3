@@ -43,7 +43,7 @@ fprintf('\n');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Change processing stream param values to newval
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[dataTree, procStreamConfigFile] = changeProcStream(datafmt, 'processOpt_default_homer3', 'hmrR_BandpassFilt', 'lpf', newval);
+[dataTree, procStreamConfigFile] = changeProcStream(datafmt, 'processOpt_default_homer3', 'hmrR_BandpassFilt_old', 'lpf', newval);
 if isempty(dataTree)
     status = exitEarly(sprintf('#%d - unitTest_BandpassFilt_LPF(''%s'', ''%s'', %0.1f): SKIPPING - This test does not apply to %s.\n', ...
                                testidx, datafmt, dirname, newval, dirname), logger);

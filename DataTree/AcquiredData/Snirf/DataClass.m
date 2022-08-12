@@ -575,10 +575,10 @@ classdef DataClass < FileLoadSaveClass
                             end     
                         end
                     end
-                end
-                
+                end                
             end
             
+            d = simulateDataError(d);
         end
         
         
@@ -589,6 +589,20 @@ classdef DataClass < FileLoadSaveClass
                 return;
             end
             obj.dataTimeSeries = val;
+        end
+        
+        
+        
+        % ---------------------------------------------------------
+        function SetInactiveChannelData(obj)            
+            for iMeas = 1:size(obj.dataTimeSeries,2)
+                % We set the criteria for deciding if a channel is inactive if ALL it's 
+                % data points are zero. Is this a safe assumption? Maybe we should create 
+                % a config parameter for this?
+                if all(obj.dataTimeSeries(:,iMeas) == 0)
+                    obj.dataTimeSeries(:,iMeas) = obj.dataTimeSeries(:,iMeas)/0;
+                end
+            end
         end
         
         

@@ -169,9 +169,6 @@ classdef ProcResultClass < handle
             if isempty(filename)
                 return;
             end
-            if ~exist('options', 'var')
-                options = '';
-            end
             
             % It is important that this function can assume that the
             % filename path + '.mat' exists
@@ -186,6 +183,31 @@ classdef ProcResultClass < handle
             end
             filename = obj.filename;
         end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetInactiveChannelData(obj)
+            if isa(obj.dc, 'DataClass')
+                obj.dc.SetInactiveChannelData();
+            end
+            if isa(obj.dod, 'DataClass')
+                obj.dod.SetInactiveChannelData();
+            end
+            if isa(obj.dcAvg, 'DataClass')
+                obj.dcAvg.SetInactiveChannelData();
+            end
+            if isa(obj.dodAvg, 'DataClass')
+                obj.dodAvg.SetInactiveChannelData();
+            end
+            if isa(obj.dcAvgStd, 'DataClass')
+                obj.dcAvgStd.SetInactiveChannelData();
+            end
+            if isa(obj.dodAvgStd, 'DataClass')
+                obj.dodAvgStd.SetInactiveChannelData();
+            end
+        end
+
         
         
         % ----------------------------------------------------------------------------------
@@ -209,6 +231,9 @@ classdef ProcResultClass < handle
                     eval( sprintf('output.misc.%s = vars.%s;', props{ii}, props{ii}) );
                 end
             end
+            
+            obj.SetInactiveChannelData();
+            
             
             % If file name is not an empty string, save results to file and  ree memory
             % to save memory space

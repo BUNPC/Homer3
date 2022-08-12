@@ -29,4 +29,5 @@ for ii = 1:length(dirs)
 end
 groupFolders(kk:end) = [];
 
+logger.Write('\n');
 

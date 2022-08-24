@@ -133,6 +133,15 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
+        function SortData(obj)
+            [obj.SD.MeasList, order] = sortrows(obj.SD.MeasList,4);
+            obj.d = obj.d(:,order);
+            [obj.SD.MeasList, order] = sortrows(obj.SD.MeasList,4);
+            obj.d = obj.d(:,order);
+        end
+        
+        
+        % ---------------------------------------------------------
         function err = LoadMat(obj, fname, ~)
             err = 0;
             
@@ -468,10 +477,9 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
 
             % Always sort stimulus conditions and associated stims
             % to have a predictable order for display
-            objnew.s          = obj.s;
-            obj.SortStims();
-            
+            objnew.s          = obj.s;            
             objnew.CondNames  = obj.CondNames;
+            objnew.SortStims();
         end
         
         
@@ -1093,15 +1101,19 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         function ConvertSnirfStim(obj, snirf)
             obj.s = zeros(length(obj.t), length(snirf.stim));
             for ii = 1:length(snirf.stim)
-                k = round(nearest_point(obj.t, snirf.stim(ii).data(:,1)));
-                for jj = 1:length(k)
-                    if k(jj) == 0
-                        k(jj) = 1;
+                if isempty(snirf.stim(ii).data)
+                    ik = [];
+                else
+                    [~,ik] = nearest_point(obj.t, snirf.stim(ii).data(:,1));
+                end
+                for jj = 1:length(ik)
+                    if ik(jj) == 0
+                        ik(jj) = 1;
                     end
-                    if k(jj) > length(obj.t)
-                        k(jj) = length(obj.t);
+                    if ik(jj) > length(obj.t)
+                        ik(jj) = length(obj.t);
                     end
-                    obj.s(k(jj),ii) = 1;
+                    obj.s(ik(jj),ii) = 1;
                 end
                 obj.CondNames{ii} = snirf.stim(ii).name;
             end

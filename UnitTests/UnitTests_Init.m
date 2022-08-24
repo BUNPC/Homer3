@@ -45,7 +45,7 @@ if start
     reg.DeleteSaved();
     
     SCRAMBLE         = true;
-    ERROR_ODDS_CONST = generateErrorOddsConstant(5);    
+    ERROR_ODDS_CONST = generateErrorOddsConstant(0);    
 end
 
 % Clean up after ourselves; delete non-versioned acquisition files and

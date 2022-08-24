@@ -54,7 +54,7 @@ if isempty(mlActMan)
     mlActMan = cell(length(data),1);
 end
 
-for iBlk=1:length(data)
+for iBlk = 1:length(data)
     
     d        = data(iBlk).GetDataTimeSeries();
     t        = data(iBlk).GetTime();
@@ -82,6 +82,10 @@ for iBlk=1:length(data)
     idxs3 = [];
     nLambda = length(Lambda);
     lst1 = find(MeasList(:,4)==1);    
+
+    % Start by including all channels
+    chanList = ones(size(MeasList,1),1);
+    
     for ii = 1:nLambda
         lst = [];
         rhoSD = [];
@@ -91,10 +95,7 @@ for iBlk=1:length(data)
                            MeasList(:,4)==ii);
             rhoSD(jj) = norm( SrcPos(MeasList(lst1(jj),1),:) - DetPos(MeasList(lst1(jj),2),:) );
         end
-        
-        % Start by including all channels
-        chanList(1:length(lst1),ii) = 1;
-        
+                
         % dRange exclusion criteria
         idxs1 = [idxs1, find(dmean(lst)<=dRange(1) | dmean(lst)>=dRange(2))];
         
@@ -106,7 +107,7 @@ for iBlk=1:length(data)
         
         idxsExcl = unique([idxs1(:)', idxs2(:)', idxs3(:)']);
         
-        chanList(idxsExcl, ii) = 0;
+        chanList(lst(idxsExcl)) = 0;
     end
     
     idxs4 = find(mlActMan{iBlk}(:,3) == 0);

@@ -117,7 +117,7 @@ for iBlk = 1:nDataBlks
     MeasListVis     = [MeasListVis; chVis];
 end
 ml    = MeasList(MeasList(:,1)>0,:);
-lstSDPairs = find(ml(:,4)==1); %cw6info.displayLambda);
+lstSDPairs = find(ml(:,4)==iWl_gui); %cw6info.displayLambda);
 lstInvisible = find(MeasListVis(:,3)==0);
 hCh = zeros(length(lstSDPairs),1);
 

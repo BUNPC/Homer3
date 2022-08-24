@@ -101,7 +101,7 @@ for iBlk = 1:length(data)
     mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, MeasList);
     lstAct1 = mlAct_Matrix2IndexList(mlActAuto{iBlk}, MeasList);
     lstAct2 = mlAct_Matrix2IndexList(mlActMan{iBlk}, MeasList);
-    lstAct = lstAct1 | lstAct2;
+    lstAct = unique([lstAct1(:)', lstAct2(:)']);
     
     if length(fs)~=1
         fs = 1/(fs(2)-fs(1));

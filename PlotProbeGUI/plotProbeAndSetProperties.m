@@ -16,7 +16,9 @@ else
 end
 
 y        = plotprobe.y{iBlk};
-ch       = plotprobe.dataTree.currElem.GetMeasList('reshape',iBlk);
+ch.MeasList = plotprobe.dataTree.currElem.procStream.output.dcAvg.GetMeasurementList('matrix');
+k = find(ch.MeasList(:,4) == 1);
+ch.MeasList = ch.MeasList(k,:);
 t        = plotprobe.t{iBlk};
 tMarkInt = plotprobe.tMarkInt;
 axScl    = plotprobe.axScl;

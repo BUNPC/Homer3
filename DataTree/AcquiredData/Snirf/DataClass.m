@@ -386,8 +386,30 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasurementList(obj)
+        function ml = GetMeasurementList(obj, option)
+            if ~exist('option','var')
+                option = '';
+            end            
+            hbTypes         = {'hbo','hbr','hbt'};
+            if isempty(option)
             ml = obj.measurementList;
+            elseif strcmp(option,'matrix')                
+                ml = zeros(length(obj.measurementList),4);
+                for ii = 1:length(obj.measurementList)
+                    k = 0;
+                    for jj = 1:length(hbTypes)
+                        if ~isempty(strfind(lower(obj.measurementList(ii).dataTypeLabel), hbTypes{jj}))
+                            k = jj;
+                            break;
+                        end
+                    end
+                    if obj.measurementList(ii).wavelengthIndex > 0
+                        ml(ii,:) = [obj.measurementList(ii).sourceIndex, obj.measurementList(ii).detectorIndex, obj.measurementList(ii).dataTypeIndex, obj.measurementList(ii).wavelengthIndex];
+                    elseif k > 0
+                        ml(ii,:) = [obj.measurementList(ii).sourceIndex, obj.measurementList(ii).detectorIndex, obj.measurementList(ii).dataTypeIndex, k];                        
+                    end
+                end
+            end
         end
         
         
@@ -482,7 +504,6 @@ classdef DataClass < FileLoadSaveClass
                                     
                                     iSrcDetPair = find(ml(:,1)==srcs(iS) & ml(:,2)==dets(iD));
                                     d(:, iWl, iSrcDetPair) = obj.dataTimeSeries(:,ii); %#ok<*FNDSB>
-                                    
                                     
                                     order(kk) = ii;
                                     kk = kk+1;

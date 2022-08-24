@@ -68,16 +68,12 @@ for kk=1:length(data_dod)
     dodWavelet  = dod;
     MeasList    = data_dod(kk).GetMeasList();   
     
-    if isempty(mlActMan{kk})
-        mlActMan{kk} = ones(size(MeasList,1),1);
-    end
-    if isempty(mlActAuto{kk})
-        mlActAuto{kk} = ones(size(MeasList,1),1);
-    end
+    mlActMan{iBlk} = mlAct_Initialize(mlActMan{iBlk}, MeasList);
+    mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, MeasList);
+    lstAct1 = mlAct_Matrix2IndexList(mlActAuto{iBlk}, MeasList);
+    lstAct2 = mlAct_Matrix2IndexList(mlActMan{iBlk}, MeasList);
+    lstAct = [lstAct1(:)', lstAct2(:)'];
     
-    MeasListAct = mlActMan{kk} & mlActAuto{kk};
-    
-    lstAct = find(MeasListAct==1);
     SignalLength = size(dod,1); % #time points of original signal
     N = ceil(log2(SignalLength)); % #of levels for the wavelet decomposition
     DataPadded = zeros(2^N,1); % data length should be power of 2

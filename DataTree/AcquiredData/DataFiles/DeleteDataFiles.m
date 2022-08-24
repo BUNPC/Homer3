@@ -70,7 +70,7 @@ end
 % Get final list of data files
 datafiles = mydir(dirname);
 if iscell(datafiles0)
-    for ii=1:length(datafiles0)
+    for ii = 1:length(datafiles0)
         datafiles(ii) = mydir([dirname, datafiles0{ii}]);
     end
 elseif ischar(datafiles0)
@@ -81,7 +81,7 @@ end
 
 
 % Delete data files
-for ii=1:length(datafiles)
+for ii = 1:length(datafiles)
     if datafiles(ii).isdir
         continue;
     end

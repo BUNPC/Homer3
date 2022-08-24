@@ -642,7 +642,21 @@ classdef TreeNodeClass < handle
             if ~exist('iBlk','var')
                 iBlk = 1;
             end
-            for ii = 1:length(obj.children)
+                        
+            % The following code is for calculating and displaying pruned channels
+            % (mlActAuto) in higher processing levels: Group, Subject, and Session
+            % It works well to for identifying inactive channels BUT is
+            % very slow the higher the level (thus is slowest when displaying group probe) 
+            % So for now commenting out until it can be optimized. In other
+            % words we set mlAct display at the Group, Subject, and Session to all
+            % active for now, until it can be optimized. NOTE: this will NOT have an effect on
+            % processing as mlActAuto is only used at the run level
+            % processing. Channel pruning at the higher level is a natural consequence 
+            % of inactive run channels being set to NaN and so on up the processing chain
+            % jdubb, 08/17/2022
+            if 0
+                
+                for ii = 1:length(obj.children) %#ok<UNRCH>
                 if isempty(ch)
                     ch = obj.children(ii).GetMeasList(iBlk);
                 else
@@ -655,11 +669,27 @@ classdef TreeNodeClass < handle
                     end
                 end
             end
-            if strcmp(options,'reshape')
-                [ch.MeasList, order] = sortrows(ch.MeasList);
-                ch.MeasListActMan = ch.MeasListActMan(order);
-                ch.MeasListActAuto = ch.MeasListActAuto(order);
+                
+            else
+                
+                ch = obj.children(1).GetMeasList(iBlk);
+	            if strcmp(options,'reshape')
+	                    ch.MeasList = sortrows(ch.MeasList);
+	            end
+                ch.MeasListActMan(:,3) = 1;
+                ch.MeasListActAuto(:,3) = 1;
+                
             end
+        end
+
+        
+        
+        % ----------------------------------------------------------------------------------
+        function SetMeasListActMan(obj, ml)
+            if ~exist('ml','var')
+                ml = [];
+            end
+            obj.procStream.input.SetMeasListActMan(ml);
         end
 
         

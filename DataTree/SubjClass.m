@@ -288,6 +288,7 @@ classdef SubjClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function LoadInputVars(obj, tHRF_common)
+            obj.inputVars.nTrialsSess = [];
             for iSess = 1:length(obj.sess)
                 % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
                 % all sessions. Use smallest tHRF as the common one.
@@ -301,7 +302,11 @@ classdef SubjClass < TreeNodeClass
                 obj.inputVars.dcSum2Sess{obj.sess(iSess).iSess}    = obj.sess(iSess).procStream.output.GetVar('dcSum2');
                 obj.inputVars.tHRFSess{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.GetTHRF();
                 obj.inputVars.mlActSess{obj.sess(iSess).iSess}     = obj.sess(iSess).procStream.output.GetVar('mlActAuto');
-                obj.inputVars.nTrialsSess{obj.sess(iSess).iSess}   = obj.sess(iSess).procStream.output.GetVar('nTrials');
+                if isempty(obj.inputVars.nTrialsSess)
+                    obj.inputVars.nTrialsSess                      = obj.sess(iSess).procStream.output.GetVar('nTrials');
+                else
+                    obj.inputVars.nTrialsSess                      = obj.inputVars.nTrialsSess + obj.sess(iSess).procStream.output.GetVar('nTrials');
+                end
                 if ~isempty(obj.sess(iSess).procStream.output.GetVar('misc'))
                     if isfield(obj.sess(iSess).procStream.output.misc, 'stim') == 1
                         obj.inputVars.stimSess{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.misc.stim;

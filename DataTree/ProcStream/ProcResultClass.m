@@ -337,6 +337,10 @@ classdef ProcResultClass < handle
                 return;
             end            
             
+            if ~ispathvalid([filename, '.mat'], 'file')
+                return
+            end
+            
             % Free memory for this object
             obj.Initialize();
         end

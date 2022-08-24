@@ -299,14 +299,18 @@ classdef DataTreeClass <  handle
                 banner = '';
             end
             obj.logger.Write('\n');
-            obj.logger.Write('============================================\n');
+            if ~isempty(banner)
+            	obj.logger.Write('============================================\n');
+            end
             if ~isempty(banner)
                 obj.logger.Write('%s', banner);
                 obj.logger.Write('\n');
                 obj.logger.Write('\n');
             end
             obj.groups(1).PrintProcStream();
-            obj.logger.Write('============================================\n');
+            if ~isempty(banner)
+            	obj.logger.Write('============================================\n');
+            end
             obj.logger.Write('\n');
         end
         

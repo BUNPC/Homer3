@@ -72,6 +72,7 @@ for iBlk = 1:nDataBlks
             mlActRuns{iRun}{iBlk} = ones(size(ml,1),1);
         end
         mlAct = mlActRuns{iRun}{iBlk}(1:size(ml,1));
+        lstChInc = 1:length(mlAct);
                 
         nCond = size(nTrials,2);
         yAvgOut(iBlk).SetTime(tHRF);
@@ -83,41 +84,49 @@ for iBlk = 1:nDataBlks
                 nTrials_tot{iBlk} = zeros(size(yAvg,2), nCond);
             end
             
-            lstChInc = find(mlAct==1);
             for iC = 1:nCond
                 nT = nTrials(iC);
                 if nT>0
                     if iRun==1
-                        grp1(:,lstChInc,iC) = yAvg(:,lstChInc,iC) * nT;
-                        nTrials_tot{iBlk}(lstChInc,iC) = nT;
+                        for iCh = 1:length(lstChInc) %size(yAvg,2)
+                            % Check if channel is active or if it was inactive (pruned for whatever reason)
+                            if all(isnan(yAvg(:,lstChInc(iCh),iC)))
+                                continue;
+                            end
+                            
+                            % Initialize grp1 with 1st run's data
+                            grp1(:,lstChInc(iCh),iC) = yAvg(:,lstChInc(iCh,iC)) * nT;
+                            nTrials_tot{iBlk}(iCh,iC) = nT;
+                        end                        
                     else
-                        for iCh=1:length(lstChInc) %size(yAvg,2)
+                        for iCh = 1:length(lstChInc) %size(yAvg,2)
+                            % Check if channel is active or if it was inactive (pruned for whatever reason)
+                            if all(isnan(yAvg(:,lstChInc(iCh),iC)))
+                                continue;
+                            end
+                            
                             % Make sure 3rd arg to interp1 is column vector to guarauntee interp1 output is column vector
                             % which matches grp1 dimensions when adding the two.
-                            grp1(:,lstChInc(iCh),iC) = grp1(:,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,lstChInc(iCh),iC),tHRF(:)) * nT;
-                            nTrials_tot{iBlk}(lstChInc(iCh),iC) = nTrials_tot{iBlk}(lstChInc(iCh),iC) + nT;
+                            grp1(:,lstChInc(iCh),iC) = grp1(:,lstChInc(iCh),iC) + interp1(tHRF, yAvg(:,lstChInc(iCh),iC), tHRF(:)) * nT;
+                            nTrials_tot{iBlk}(iCh,iC) = nTrials_tot{iBlk}(iCh,iC) + nT;
                         end
                     end
                 end
             end
             
-            if ~isempty(grp1)
+            if iRun == length(yAvgRuns)
                 for iC = 1:size(grp1,3)
                     for iCh = 1:size(grp1,2)
                         yAvg(:,iCh,iC) = grp1(:,iCh,iC) / nTrials_tot{iBlk}(iCh,iC);
                                                 
                         %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages. 
                         %%%% Now we can set channel descriptors for avg and standard deviation
-                        if iRun == length(yAvgRuns)
-                            yAvgOut(iBlk).AddChannelDod(ml(iCh,1), ml(iCh,2), ml(iCh,4), iC);
-                        end
+                        yAvgOut(iBlk).AddChannelDod(ml(iCh,1), ml(iCh,2), ml(iCh,4), iC);
                     end
                     
                     %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages.
                     %%%% Now we can set channel descriptors for avg and standard deviation
-                    if iRun == length(yAvgRuns)
-                        yAvgOut(iBlk).AppendDataTimeSeries(yAvg(:,:,iC));
-                    end
+                    yAvgOut(iBlk).AppendDataTimeSeries(yAvg(:,:,iC));
                 end
             end
             
@@ -128,52 +137,60 @@ for iBlk = 1:nDataBlks
                 nTrials_tot{iBlk} = zeros(size(yAvg,3), nCond);
             end
             
-            lstChInc = find(mlAct==1);
             for iC = 1:1:nCond
                 nT = nTrials(iC);
                 if nT>0
                     if iRun==1
-                        grp1(:,:,lstChInc,iC) = yAvg(:,:,lstChInc,iC) * nT;
-                        nTrials_tot{iBlk}(lstChInc,iC) = nT;
+                        for iCh = 1:length(lstChInc) %size(yAvg,3)
+                            for iHb = 1:size(yAvg,2)
+                                % Check if channel is active or if it was inactive (pruned for whatever reason)
+                                if all(isnan(yAvg(:,iHb,lstChInc(iCh),iC)))
+                                    continue;
+                                end
+                                
+                                % Initialize grp1 with 1st run's data
+                                grp1(:,iHb,lstChInc(iCh),iC) = yAvg(:,iHb,lstChInc(iCh),iC) * nT;
+                            end
+                            nTrials_tot{iBlk}(iCh,iC) = nT;
+                        end
                     else
-                        for iCh=1:length(lstChInc) %size(yAvg,3)
-                            for iHb=1:size(yAvg,2)
+                        for iCh = 1:length(lstChInc) %size(yAvg,3)
+                            for iHb = 1:size(yAvg,2)
+                                % Check if channel is active or if it was inactive (pruned for whatever reason)
+                                if all(isnan(yAvg(:,iHb,lstChInc(iCh),iC)))
+                                    continue;
+                                end
+                                
                                 % Make sure 3rd arg to interp1 is column vector to guarauntee interp1 output is column vector
                                 % which matches grp1 dimensions when adding the two.
-                                grp1(:,iHb,lstChInc(iCh),iC) = grp1(:,iHb,lstChInc(iCh),iC) + interp1(tHRF,yAvg(:,iHb,lstChInc(iCh),iC),tHRF(:)) * nT;
+                                grp1(:,iHb,lstChInc(iCh),iC) = grp1(:,iHb,lstChInc(iCh),iC) + interp1(tHRF, yAvg(:,iHb,lstChInc(iCh),iC), tHRF(:)) * nT;
                             end
-                            nTrials_tot{iBlk}(lstChInc(iCh),iC) = nTrials_tot{iBlk}(lstChInc(iCh),iC) + nT;
+                            nTrials_tot{iBlk}(iCh,iC) = nTrials_tot{iBlk}(iCh,iC) + nT;
                         end
                     end
                 end
             end
             
-            if ~isempty(grp1)
+            if iRun == length(yAvgRuns)
                 for iC = 1:size(grp1,4)
                     for iCh = 1:size(grp1,3)
                         yAvg(:,:,iCh,iC) = grp1(:,:,iCh,iC) / nTrials_tot{iBlk}(iCh,iC);
-                                                
-                        %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages. 
+                        
+                        %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages.
                         %%%% Now we can set channel descriptors for avg and standard deviation
-                        if iRun == length(yAvgRuns)
-                            try
-                            yAvgOut(iBlk).AddChannelHbO(ml(iCh,1), ml(iCh,2), iC);
-                            catch
-                                d =1;
-                            end
-                            yAvgOut(iBlk).AddChannelHbR(ml(iCh,1), ml(iCh,2), iC);
-                            yAvgOut(iBlk).AddChannelHbT(ml(iCh,1), ml(iCh,2), iC);
-                        end
+                        yAvgOut(iBlk).AddChannelHbO(ml(iCh,1), ml(iCh,2), iC);
+                        yAvgOut(iBlk).AddChannelHbR(ml(iCh,1), ml(iCh,2), iC);
+                        yAvgOut(iBlk).AddChannelHbT(ml(iCh,1), ml(iCh,2), iC);
                     end
                     
                     %%%% Snirf stuff: Once we get to the last run, we've accumulated our averages.
                     %%%% Now we can set channel descriptors for avg and standard deviation
-                    if iRun == length(yAvgRuns)
-                        yAvgOut(iBlk).AppendDataTimeSeries(yAvg(:,:,:,iC));
-                    end
-                end                
-            end            
+                    yAvgOut(iBlk).AppendDataTimeSeries(yAvg(:,:,:,iC));
+                end
+            end
+            
         end
+        
     end
 end
 nTrials = cell(1,length(nTrials_tot));

@@ -6,16 +6,20 @@ if ~exist('options','var')
     options = 'sort';
 end
 rootdir = filesepStandard(rootdir);
-files = DataFilesClass(pwd, 'snirf');
+files = DataFilesClass(rootdir, 'snirf');
+files = files.files;
 for ii = 1:length(files)
-    fname = filesepStandard([rootdir, files(1).name]);
+    if files(ii).IsDir()
+        continue
+    end
+    fname = filesepStandard([files(ii).rootdir, files(ii).name]);    
     s = SnirfClass(fname);
     n = NirsClass(s);
     if optionExists(options, 'sort')
         n.SortData();
     end
-    [pname, fname] = filesepStandard(fname);
-    fnameNew = [pname, fname, '.nirs'];
+    [pname, fname] = fileparts(fname);
+    fnameNew = [filesepStandard(pname), fname, '.nirs'];
     fprintf('Converting %s to %s\n', fname, fnameNew)
     n.Save(fnameNew);
 end

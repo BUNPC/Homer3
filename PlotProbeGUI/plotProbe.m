@@ -125,9 +125,7 @@ axXoff = mean([sPos(:,1);dPos(:,1)])-.5;
 axYoff = mean([sPos(:,2);dPos(:,2)])-.5;
 
 ml    = ch.MeasList;
-lst   = find(ch.MeasList(:,4)==1);
-mlAct = (ch.MeasListActMan(lst) & ch.MeasListActAuto(lst)) * 1;
-%mlAct(~ch.MeasListVis(lst)) = -1;  % -1 if channel is hidden
+mlAct = ones(size(ml,1),1);
 
 %This is the plotting routine
 try
@@ -172,7 +170,7 @@ try
     if ~isempty(y)
         lstW1 = find(ml(:,4)==1);
         lstW2 = find(ml(:,4)==2);
-        nCh = length(mlAct);
+        nCh = length(lstW1);
         nDataTypes = ndims(y);
 
         % To eliminate displayed data drifting when scaling y up 

@@ -58,7 +58,7 @@ if isempty(tIncCh)
     tIncCh = cell(length(data_dod),1);
 end
 if p>1 || p<0    % if p outside its authorized range, exit with warning
-    display('Parameter has to be between 0 and 1. Returning with no correction');
+    fprintf('Parameter has to be between 0 and 1. Returning with no correction\n');
     return;
 end
 
@@ -67,15 +67,14 @@ for iBlk=1:length(data_dod)
     dod         = data_dod(iBlk).GetDataTimeSeries();
     t           = data_dod(iBlk).GetTime();
     MeasList    = data_dod(iBlk).GetMeasList();
-    if isempty(mlAct{iBlk})
-        mlAct{iBlk} = ones(size(MeasList,1),1);
-    end
-    MeasListAct = mlAct{iBlk};
+    
+    mlAct{iBlk} = mlAct_Initialize(mlAct{iBlk}, MeasList);
+    lstAct = mlAct_Matrix2IndexList(mlAct{iBlk}, MeasList);
+    
     if isempty(tIncCh{iBlk})
         tIncCh{iBlk} = ones(size(dod));
     end
     
-    lstAct = find(MeasListAct==1);
     
     fs = 1/mean(t(2:end)-t(1:end-1));
     
@@ -83,7 +82,6 @@ for iBlk=1:length(data_dod)
     dtShort = 0.3;  % seconds
     dtLong  = 3;    % seconds
             
-    lstAct = find(MeasListAct==1);
     dodSpline = dod;
     t = t(:);  % needs to be a column vector
     

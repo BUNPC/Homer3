@@ -260,7 +260,7 @@ classdef SessClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function LoadInputVars(obj, tHRF_common)
-            
+			obj.inputVars.nTrialsRuns = [];
             for iRun = 1:length(obj.runs)
                 % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
                 % all runs. Use smallest tHRF as the common one.

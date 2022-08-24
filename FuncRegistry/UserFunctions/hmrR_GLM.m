@@ -155,10 +155,10 @@ for iBlk = 1:length(data_y)
     ml     = data_y(iBlk).GetMeasListSrcDetPairs('reshape');
     SrcPos = probe.GetSrcPos();
     DetPos = probe.GetDetPos();
-    if isempty(mlActAuto{iBlk})
-        mlActAuto{iBlk} = ones(size(ml,1),1);
-    end
-    mlAct = mlActAuto{iBlk};
+    
+    mlActMatrix = mlAct_Initialize(mlActAuto{iBlk}, ml);
+    mlAct       = mlAct_Matrix2BinaryVector(mlActMatrix, ml);
+    
     if isempty(tIncAuto{iBlk})
         tIncAuto{iBlk} = ones(length(t),1);
     end
@@ -184,7 +184,7 @@ for iBlk = 1:length(data_y)
     end
     lstSS = lst(find(rhoSD<=rhoSD_ssThresh & mlAct(lst)==1));
     
-    if isempty(lstSS) 
+    if isempty(lstSS)
         fprintf('There are no short separation channels in this probe ...performing regular deconvolution.\n');
         mlSSlst = 0;
     else
@@ -225,8 +225,6 @@ for iBlk = 1:length(data_y)
                 elseif iscell(rcMap{iBlk}) % use channel regressor map
                     mlSSlst = 1:size(rcMap,2);
                 end
-                
-                
         end
     end
     

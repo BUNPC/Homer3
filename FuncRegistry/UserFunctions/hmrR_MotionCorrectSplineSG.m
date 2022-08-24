@@ -56,12 +56,11 @@ for iBlk=1:length(data_d)
     dod             = data_d(iBlk).GetDataTimeSeries();
     t               = data_d(iBlk).GetTime();
     SD.MeasList     = data_d(iBlk).GetMeasList();
-    if isempty(mlActAuto{iBlk})
-        mlActAuto{iBlk} = ones(size(SD.MeasList,1),1);
-    end    
-    SD.MeasListAct  = mlActAuto{iBlk};
+
+    mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, SD.MeasList);
+    SD.MeasListAct  = mlAct_Matrix2BinaryVector(mlActAuto{iBlk}, SD.MeasList);
     
-    [tIncCh, tInc] = hmrR_tInc_baselineshift_Ch_Nirs(dod, t); % finding the baseline shift motions
+    tIncCh = hmrR_tInc_baselineshift_Ch_Nirs(dod, t); % finding the baseline shift motions
     
     fs = abs(1/(t(2)-t(1)));
     % extending signal for motion detection purpose (12 sec from each edge)
@@ -78,7 +77,7 @@ for iBlk=1:length(data_d)
     t2 = (0:(1/fs):(length(dod)/fs))';
     t2 = t2(1:length(dod),1);
     
-    [dodLP, ylpf] = hmrR_BandpassFilt_Nirs(dod, fs, 0, 2);
+    dodLP = hmrR_BandpassFilt_Nirs(dod, fs, 0, 2);
     
     %%%% Spline Interpolation
     dod = hmrR_MotionCorrectSpline_Nirs(dodLP, t2, SD, tIncCh, p);
@@ -93,5 +92,6 @@ for iBlk=1:length(data_d)
     dod = sgolayfilt(dod,K,FrameSize_sec);
 
     data_d(iBlk).SetDataTimeSeries(dod);
+    
 end
 

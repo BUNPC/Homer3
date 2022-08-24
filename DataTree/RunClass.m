@@ -351,6 +351,9 @@ classdef RunClass < TreeNodeClass
             if nargin==1
                 iBlk=1;
             end
+
+            % Sometimes the caller is NOT the current element in which case we need to load 
+            % (when dataStorageScheme = 'file' mode) here explicitely.
             err = -1;
             if obj.acquired.IsEmpty()
                 err = obj.acquired.LoadTime();
@@ -364,13 +367,34 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function t = GetTimeCombined(obj)
+            % Sometimes the caller is NOT the current element in which case we need to load 
+            % (when dataStorageScheme = 'file' mode) here explicitely.
+            err = -1;
+            if obj.acquired.IsEmpty()
+                err = obj.acquired.LoadTime();
+            end
             t = obj.acquired.GetTimeCombined();
+            if err==0
+                obj.acquired.FreeMemory(obj.GetFilename());                
+            end
         end
             
             
         % ----------------------------------------------------------------------------------
         function t = GetAuxiliaryTime(obj)
+            % Sometimes the caller is NOT the current element in which case we need to load 
+            % (when dataStorageScheme = 'file' mode) here explicitely. BUT this needs to be 
+            % optimized to NOT load the whole thing, just aux - see GetTime()/ GetTimeCombined(). 
+            % TBD. jdubb, 08/17/2022
+            err = -1;
+            if obj.acquired.IsEmpty()
+                obj.acquired.Load();
+                err = obj.GetError();                
+            end
             t = obj.acquired.GetAuxiliaryTime();
+            if err==0
+                obj.acquired.FreeMemory(obj.GetFilename());                
+            end
         end
 
         
@@ -416,6 +440,14 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function SD = GetSDG(obj,option)
+            % Sometimes the caller is NOT the current element in which case we need to load 
+            % (when dataStorageScheme = 'file' mode) here explicitely. BUT this needs to be 
+            % optimized to NOT load the whole thing, just SDG. TBD. jdubb, 08/17/2022
+            err = -1;
+            if obj.acquired.IsEmpty()
+                obj.acquired.Load();
+                err = obj.GetError();                
+            end
             SD.Lambda  = obj.acquired.GetWls();
             if exist('option','var')
                 SD.SrcPos  = obj.acquired.GetSrcPos(option);
@@ -423,6 +455,9 @@ classdef RunClass < TreeNodeClass
             else
                 SD.SrcPos  = obj.acquired.GetSrcPos();
                 SD.DetPos  = obj.acquired.GetDetPos();
+            end
+            if err==0
+                obj.acquired.FreeMemory(obj.GetFilename());                
             end
         end
         
@@ -433,17 +468,18 @@ classdef RunClass < TreeNodeClass
             if ~exist('iBlk','var')
                 iBlk = 1;
             end
-            ch = obj.acquired.GetMeasList(iBlk);
-            obj.procStream.input.SetMeasListActMan(ones(size(ch, 1), 1));
+            ml = obj.acquired.data.GetMeasListSrcDetPairs(iBlk);
+            obj.procStream.input.SetMeasListActMan([ml, ones(size(ml, 1), 1)]);
         end
+        
         
         % ----------------------------------------------------------------------------------
         function InitMlVis(obj, iBlk)
             if ~exist('iBlk','var')
                 iBlk = 1;
             end
-            ch = obj.acquired.GetMeasList(iBlk);
-            obj.procStream.input.SetMeasListVis(ones(size(ch, 1), 1));
+            ml = obj.acquired.data.GetMeasListSrcDetPairs(iBlk);
+            obj.procStream.input.SetMeasListActMan([ml, ones(size(ml, 1), 1)]);
         end
             
         
@@ -459,21 +495,26 @@ classdef RunClass < TreeNodeClass
             
             ch = struct('MeasList',[], 'MeasListVis',[], 'MeasListActMan',[], 'MeasListActAuto',[]);
             
+            % Sometimes the caller is NOT the current element in which case we need to load 
+            % (when dataStorageScheme = 'file' mode) here explicitely. BUT this needs to be 
+            % optimized to NOT load the whole thing, just SDG. TBD. jdubb, 08/17/2022
+            err = -1;
+            if obj.acquired.IsEmpty()
+                obj.acquired.Load();
+                err = obj.GetError();
+            end
+            
             ch.MeasList        = obj.acquired.GetMeasList(iBlk);
             ch.MeasListActMan  = obj.procStream.GetMeasListActMan(iBlk);
             ch.MeasListActAuto = obj.procStream.GetMeasListActAuto(iBlk);
-            if isempty(ch.MeasListActMan)
-                obj.InitMlActMan();  % TODO find a more sensical place to do this
-                ch.MeasListActMan  = obj.procStream.GetMeasListActMan(iBlk);
-            end
-            if isempty(ch.MeasListActAuto)
-                ch.MeasListActAuto = ones(size(ch.MeasList,1),1);
-            end
-            ch.MeasListAct     = bitand(ch.MeasListActMan, ch.MeasListActMan);
+            
+            ch.MeasListActMan  = mlAct_Initialize(ch.MeasListActMan, ch.MeasList);
+            ch.MeasListActAuto = mlAct_Initialize(ch.MeasListActAuto, ch.MeasList);
             if strcmp(options,'reshape')
-                [ch.MeasList, order] = sortrows(ch.MeasList);
-                ch.MeasListActMan = ch.MeasListActMan(order);
-                ch.MeasListActAuto = ch.MeasListActAuto(order);
+                ch.MeasList = sortrows(ch.MeasList);
+            end
+            if err==0
+                obj.acquired.FreeMemory(obj.GetFilename());                
             end
         end
 

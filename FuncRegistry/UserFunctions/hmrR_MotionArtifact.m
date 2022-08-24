@@ -90,13 +90,18 @@ if isempty(mlActAuto)
     mlActAuto = cell(length(data),1);
 end
 
-for iBlk=1:length(data)
+for iBlk = 1:length(data)
 
     d           = data(iBlk).GetDataTimeSeries();
     fs          = data(iBlk).GetTime();
     MeasList    = data(iBlk).GetMeasList();
-    Lambda      = probe.GetWls();
-    nWav        = length(Lambda);
+
+    % Get list of active channels 
+    mlActMan{iBlk} = mlAct_Initialize(mlActMan{iBlk}, MeasList);
+    mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, MeasList);
+    lstAct1 = mlAct_Matrix2IndexList(mlActAuto{iBlk}, MeasList);
+    lstAct2 = mlAct_Matrix2IndexList(mlActMan{iBlk}, MeasList);
+    lstAct = lstAct1 | lstAct2;
     
     if length(fs)~=1
         fs = 1/(fs(2)-fs(1));
@@ -105,30 +110,10 @@ for iBlk=1:length(data)
         tIncMan{iBlk} = ones(size(d,1),1);
     end
     tIncAuto{iBlk} = tIncMan{iBlk};
-    if isempty(mlActMan{iBlk})
-        mlActMan{iBlk} = ones(size(MeasList,1),1);
-    end
-    if isempty(mlActAuto{iBlk})
-        mlActAuto{iBlk} = ones(size(MeasList,1),1);
-    end
-    MeasListAct = mlActMan{iBlk} & mlActAuto{iBlk};        
       
     % set artifact buffer for tMask seconds on each side of spike
-    art_buffer = round(tMask*fs); % time in seconds times sample rate
-    
-    % get list of active channels
-    lstAct = zeros(size(MeasList,1),1);
-    lst1 = find(MeasList(:,4)==1);
-    for iW = 1:nWav
-        for jj = 1:length(lst1)
-            lst(jj) = find(MeasList(:,1) == MeasList(lst1(jj),1) & ...
-                           MeasList(:,2) == MeasList(lst1(jj),2) & ...
-                           MeasList(:,4) == iW );
-            lstAct(lst(jj)) = MeasListAct(jj);
-        end
-    end
-    lstAct = find(lstAct==1);
-    
+    art_buffer = round(tMask*fs); % time in seconds times sample rate    
+
     % calculate std_diff for each channel
     std_diff = std(d(2:end, lstAct) - d(1:end-1, lstAct), 0, 1);
     
@@ -156,5 +141,4 @@ for iBlk=1:length(data)
     end
        
 end
-
 

@@ -107,13 +107,9 @@ for iBlk = 1:length(data)
     tInc{iBlk}   = ones(size(d,1),1);
     tIncCh{iBlk} = ones(size(d,1), size(MeasList,1));
     
-    if isempty(mlActMan{iBlk})
-        mlActMan{iBlk} = ones(size(MeasList,1),1);
-    end
-    if isempty(mlActAuto{iBlk})
-        mlActAuto{iBlk} = ones(size(MeasList,1),1);
-    end
-    MeasListAct = mlActMan{iBlk} & mlActAuto{iBlk};      
+    mlActMan{iBlk} = mlAct_Initialize(mlActMan{iBlk}, MeasList);
+    mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, MeasList);
+    MeasListAct = mlActMan{iBlk}(:,3) & mlActAuto{iBlk}(:,3);
         
     % Calculate the diff of d to to set the threshold if ncssesary
        

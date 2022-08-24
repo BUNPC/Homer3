@@ -134,7 +134,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function SortData(obj)
-            [obj.SD.MeasList, order] = sortrows(obj.SD.MeasList,4);
+            [obj.SD.MeasList, order] = sortrows(obj.SD.MeasList);
             obj.d = obj.d(:,order);
             [obj.SD.MeasList, order] = sortrows(obj.SD.MeasList,4);
             obj.d = obj.d(:,order);
@@ -1046,7 +1046,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function b = CopyProbe(obj, SD)            
+        function CopyProbe(obj, SD)            
             fields = propnames(obj.SD);
             for ii = 1:length(fields)
                 if eval( sprintf('isfield(SD, ''%s'')', fields{ii}) )

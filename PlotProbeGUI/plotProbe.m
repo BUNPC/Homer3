@@ -14,9 +14,9 @@
 %          <DATA TIME POINTS> x <CHANNELS OF ALL WAVELENGTHS>
 %
 %     If empty, then the probe is plotted with lines joining sources 
-%     and detectors in the ch.MeasList with solid line and
+%     and detectors in the ml with solid line and
 %     dotted line distringuishing active measurements as indicated in
-%     ch.MeasListActMan
+%     mlActMan
 %
 % t - is the corresponding time vector
 %
@@ -41,12 +41,9 @@
 % toggle nearest neighbors
 % assuming y is concentration data... need to check dimensions
 
-function h = plotProbe( y, t, SD, ch, ystd, axFactor, tStep, tAmp, tVis)
+function h = plotProbe( y, t, SD, ml, ~, axFactor, tStep, tAmp, tVis)
 
-EXPLODE_THRESH = 0.02;
-EXPLODE_VECTOR = [0.02, 0.08];
-
-h=[];
+h = [];
 
 % Get initial arg values
 if ~exist('y','var')
@@ -74,8 +71,8 @@ end
 if ~isempty(t)
     if ~exist('tStep','var') || isempty(tStep) || tStep>t(end)
         tStep = t(end);
-    elseif tStep<5 && tStep~=0
-        tStep = 5;
+    elseif tStep<2 && tStep~=0
+        tStep = 2;
     end
 end
 if ~exist('tAmp','var') || isempty(tAmp) || tAmp<0
@@ -86,18 +83,16 @@ end
 if ~exist('SD','var') || isempty(SD)
     return;
 end
-if ~exist('ch','var') || isempty(ch)
-    return;
-end
+
 
 % This section will give the option to display subsections of the probe
 % based on nearest-neighbor etc distances.  If the probe only has one
 % distance, this option is not given
-Distances=((SD.SrcPos(ch.MeasList(:,1),1) - SD.DetPos(ch.MeasList(:,2),1)).^2 +...
-           (SD.SrcPos(ch.MeasList(:,1),2) - SD.DetPos(ch.MeasList(:,2),2)).^2 +...
-           (SD.SrcPos(ch.MeasList(:,1),3) - SD.DetPos(ch.MeasList(:,2),3)).^2).^0.5;
-nearneighborLst=ones(length(Distances),1);
-lstNN=find(nearneighborLst==1);
+Distances = ((SD.SrcPos(ml(:,1),1) - SD.DetPos(ml(:,2),1)).^2 +...
+             (SD.SrcPos(ml(:,1),2) - SD.DetPos(ml(:,2),2)).^2 +...
+             (SD.SrcPos(ml(:,1),3) - SD.DetPos(ml(:,2),3)).^2).^0.5;
+nearneighborLst = ones(length(Distances),1);
+lstNN = find(nearneighborLst==1);
 
 %Use the probe SD positions to define the look of this plot
 sPos = SD.SrcPos;
@@ -114,9 +109,8 @@ sd2axScl = max(sdWid,sdHgt);
 sPos = sPos / sd2axScl;
 dPos = dPos / sd2axScl;            %            xlim([min(t) max(t)])
 
-
-nAcross=length(unique([sPos(:,1); dPos(:,1)]))+1;
-nUp=length(unique([sPos(:,2); dPos(:,2)]))+1;
+nAcross = length(unique([sPos(:,1); dPos(:,1)]))+1;
+nUp = length(unique([sPos(:,2); dPos(:,2)]))+1;
 
 axWid = axFactor(1) * 1/nAcross;
 axHgt = axFactor(2) * 1/nUp;
@@ -124,214 +118,161 @@ axHgt = axFactor(2) * 1/nUp;
 axXoff = mean([sPos(:,1);dPos(:,1)])-.5;
 axYoff = mean([sPos(:,2);dPos(:,2)])-.5;
 
-ml    = ch.MeasList;
 mlAct = ones(size(ml,1),1);
 
 %This is the plotting routine
-try
-    % Initialize channel idx for try/catch. Catch uses it 
-    % to display which channel was being processed when 
-    % error ocurred.
-    idx = 0;
+% Initialize channel idx for try/catch. Catch uses it
+% to display which channel was being processed when
+% error ocurred.
+color = [
+    1.00 0.00 0.00;
+    0.00 0.00 1.00;
+    0.00 1.00 0.00;
+    1.00 0.00 1.00;
+    0.00 1.00 1.00;
+    0.50 0.80 0.30
+    ];
 
-    if ndims(y)==3
-        color=[
-               1.00 0.00 0.00;
-               0.00 0.00 1.00;
-               0.00 1.00 0.00;
-               1.00 0.00 1.00;
-               0.00 1.00 1.00;
-               0.50 0.80 0.30
-              ];
-    else
-        if SD.Lambda(1)<SD.Lambda(2)
-            color=[
-                    0.00 0.00 1.00;
-                    1.00 0.00 0.00;
-                    0.00 1.00 1.00;
-                    1.00 0.00 1.00;
-                    0.50 0.80 0.30
-                  ];
-        else
-            color=[
-                    1.00 0.00 0.00;
-                    0.00 0.00 1.00;
-                    1.00 0.00 1.00;
-                    0.00 1.00 1.00;
-                    0.50 0.80 0.30
-                  ];
-        end
-    end
+% ha = subplot(1,1,1);
+minT = min(t);
+maxT = max(t);
+
+nTSteps = round(t(end)/tStep);
+tStep = tStep/(t(2)-t(1));
+
+if ~isempty(y)
+    iSrc = ml(1,1);
+    iDet = ml(1,2);
+    iMeasSDpair = find( (ml(:,1) == iSrc)  &  (ml(:,2) == iDet) );
+    nDataTypes = length(iMeasSDpair);
+    nSDpairs = size(ml,1)/nDataTypes;
+    iSDpairs = find( ml(:,4) == 1 );
         
-    % ha = subplot(1,1,1);
-    minT = min(t);
-    maxT = max(t);
+    minAmp = min(min(y));
+    maxAmp = max(max(y));
     
-    if ~isempty(y)
-        lstW1 = find(ml(:,4)==1);
-        lstW2 = find(ml(:,4)==2);
-        nCh = length(lstW1);
-        nDataTypes = ndims(y);
-
-        % To eliminate displayed data drifting when scaling y up 
-        % or down offset data to align min/max midpoint with zero.
-        [Avg, offset] = offsetData(y,nCh,nDataTypes);
-        
-        if ndims(Avg)==3
-            minAmp=min(min(min(Avg)));
-            maxAmp=max(max(max(Avg)));
-        else
-            minAmp=min(min(Avg));
-            maxAmp=max(max(Avg));
-        end
-
-        if length(tAmp)==2
-            cmin = tAmp(1);
-            cmax = tAmp(2);
-        else
-            cmin = minAmp;
-            cmax = maxAmp;
-        end
-
-        nTSteps = round(t(end)/tStep);
-        tStep = tStep/(t(2)-t(1));
-        h=zeros(nCh,nDataTypes+nTSteps);
-        ls=repmat({''},nCh,1);
-        lw=zeros(nCh,nDataTypes+nTSteps);
-        lv=repmat({''},nCh,nDataTypes+nTSteps);
-        lc=zeros(nCh,nDataTypes+nTSteps,3);
-        
-        xyas = [];
-        
-        for idx=1:length(lstW1)
+    if length(tAmp)==2
+        cmin = tAmp(1);
+        cmax = tAmp(2);
+    else
+        cmin = minAmp;
+        cmax = maxAmp;
+    end
+    
+    h  = zeros(nSDpairs, nDataTypes);
+    ls = repmat({''}, nSDpairs, 1);
+    lw = zeros(nSDpairs, nDataTypes);
+    lv = repmat({''}, nSDpairs, nDataTypes);
+    lc = zeros(nSDpairs, nDataTypes, 3);
+    
+    xyas = [];
+    
+    try
+        for iSD = 1:length(iSDpairs)
             
-            % Record line graphics properties based on the object type
-            [lc,lv,lw,ls] = setLineProperties(lc,lv,lw,ls,idx,mlAct,color,nDataTypes,nTSteps);
+            % Get all measurements with current source and detector pair
+            iSrc = ml(iSDpairs(iSD),1);
+            iDet = ml(iSDpairs(iSD),2);
+            iSDpairAllMeas = find( (ml(:,1) == iSrc)  &  (ml(:,2) == iDet) );
             
-            xa = (sPos(ml(lstW1(idx),1),1) + dPos(ml(lstW1(idx),2),1))/2 - axXoff;
-            ya = (sPos(ml(lstW1(idx),1),2) + dPos(ml(lstW1(idx),2),2))/2 - axYoff;
+            % To eliminate displayed data drifting when scaling y up
+            % or down offset data to align min/max midpoint with zero.
+            [y, yOffset] = offsetData(y, iSDpairAllMeas);
             
-            for i = 1:size(xyas, 1)
-               if sqrt((xyas(i, 1) - xa)^2 + (xyas(i, 2) - ya)^2) < EXPLODE_THRESH
-                   xa = xa + EXPLODE_VECTOR(1);
-                   ya = ya + EXPLODE_VECTOR(2);
-               end
-            end
-            
-            xyas = [xyas; [xa, ya]];
-            hold on
-            
-            xT = xa-axWid/4 + axWid*((t-minT)/(maxT-minT))/2;
-            if ndims(Avg)==3
-                AvgT = ya-axHgt/4 + axHgt*((Avg(:,:,idx)-cmin)/(cmax-cmin))/2;
-            else
-                AvgT(:,1) = ya-axHgt/4 + axHgt*((Avg(:,lstW1(idx))-cmin)/(cmax-cmin))/2;
-                AvgT(:,2) = ya-axHgt/4 + axHgt*((Avg(:,lstW2(idx))-cmin)/(cmax-cmin))/2;
-            end
-            
-            
-            if ~isempty(ystd) % Plot error bars if available
-                h(idx,1)=errorbar(xT, AvgT(:,1), ystd(:,1), 'color',color(1,:), 'visible',lv{idx,1});
-                if size(AvgT,2)>1
-                    h(idx,2)=errorbar(xT, AvgT(:,2), ystd(:,2), 'color',color(2,:), 'visible',lv{idx,2});
-                end
-                if size(AvgT,2)>2
-                    h(idx,3)=errorbar(xT, AvgT(:,3), ystd(:,3), 'color',color(3,:), 'visible',lv{idx,3});
-                end
-            else % Plot data without error bars
-                h(idx,1)=plot( xT, AvgT(:,1),'color',color(1,:), 'visible',lv{idx, 1});
-                if size(AvgT,2)>1
-                    h(idx,2)=plot( xT, AvgT(:,2),'color',color(2,:), 'visible',lv{idx, 2});
-                end
-                if size(AvgT,2)>2
-                    h(idx,3)=plot( xT, AvgT(:,3),'color',color(3,:), 'visible',lv{idx, 3});
-                end 
+            for iMeasType = 1:length(iSDpairAllMeas)
+                
+                % Record line graphics properties based on the object type
+                [lc,lv,lw,ls] = setLineProperties(lc,lv,lw,ls,iMeasType,mlAct,color,nDataTypes,nTSteps);
+                
+                xa = ( sPos(ml(iSDpairAllMeas(iMeasType),1), 1) + dPos(ml(iSDpairAllMeas(iMeasType),2), 1) ) / 2 - axXoff;
+                ya = ( sPos(ml(iSDpairAllMeas(iMeasType),1), 2) + dPos(ml(iSDpairAllMeas(iMeasType),2), 2) ) / 2 - axYoff;
+                
+                xyas = [xyas; [xa, ya]];
+                
+                xT = xa-axWid/4 + axWid*((t-minT)/(maxT-minT))/2;
+                AvgT = ya-axHgt/4 + axHgt*((y(:,iSDpairAllMeas(iMeasType))-cmin)/(cmax-cmin))/2;
+                
+                hold on
+                h(iSD,iMeasType) = plot( xT, AvgT,'color',color(iMeasType,:), 'visible','on', 'linewidth',2);
+                
             end
             
             % Plot time markers starting with stim onset
             if length(tAmp)==1
-                AvgTmax0=max(max(AvgT));
-                AvgTmin0=min(min(AvgT));
+                AvgTmax0 = max(max(AvgT));
+                AvgTmin0 = min(min(AvgT));
                 if tAmp==0
                     % tAmp is a relative amplitude
-                    AvgTmax=AvgTmax0;
-                    AvgTmin=AvgTmin0;
+                    AvgTmax = AvgTmax0;
+                    AvgTmin = AvgTmin0;
                 else
                     % tAmp is a fixed amplitude
-                    AvgTmax=ya-axHgt/4 + axHgt*((tAmp-cmin)/(cmax-cmin))/2;
-                    AvgTmin=ya-axHgt/4 + axHgt*((0-cmin)/(cmax-cmin))/2;
-                    AvgTmax=AvgTmax+AvgTmin0-AvgTmin;
-                    AvgTmin=AvgTmin0;
+                    AvgTmax = ya-axHgt/4 + axHgt*((tAmp-cmin)/(cmax-cmin))/2;
+                    AvgTmin = ya-axHgt/4 + axHgt*((0-cmin)/(cmax-cmin))/2;
+                    AvgTmax = AvgTmax+AvgTmin0-AvgTmin;
+                    AvgTmin = AvgTmin0;
                 end
                 if abs(AvgTmin-AvgTmax)<1.0e-10
-                    AvgTmin=AvgTmin-(AvgTmin*.01);
-                    AvgTmax=AvgTmax+(AvgTmax*.01);
+                    AvgTmin = AvgTmin-(AvgTmin*.01);
+                    AvgTmax = AvgTmax+(AvgTmax*.01);
                 end
             elseif length(tAmp)==2
                 % tAmp is a fixed range
                 AvgTmax = ya-axHgt/4 + axHgt*(((cmax-offset(idx))-cmin)/(cmax-cmin))/2;
                 AvgTmin = ya-axHgt/4 + axHgt*(((cmin-offset(idx))-cmin)/(cmax-cmin))/2;
             end
-            ii = nDataTypes+1;
-            yStim = [AvgTmin,AvgTmax];
+            kk = nDataTypes+1;
+            yMark = [AvgTmin,AvgTmax]-yOffset;
             xT0 = xT(find(t==0));
             xTStep = tStep*(xT(2)-xT(1));
-            if strcmp(lv{idx, ii}, 'off')
-               tvis_ch = 'off'; 
+            if strcmp(lv{iSD(1),kk}, 'off')
+                tvis_ch = 'off';
             else
                 tvis_ch = tVis;
             end
-            for xTi=xT0:xTStep:xT(end)
-                xTi = [xTi xTi];
-                h(idx,ii) = plot(xTi, yStim, 'color', 'k', 'visible', tvis_ch);
-                lw(idx,ii) = 1.0;
-                ii=ii+1;
-                if ii-ndims(Avg)>nTSteps
-                    break;
-                end
+            for xTi = xT0:xTStep:xT(end)
+                xTi = [xTi, xTi];
+                hTmarks = plot(xTi, yMark, 'color','k', 'visible',tvis_ch);
+                h(iSD,kk) = hTmarks;
+                lw(iSD,kk) = 1.0;
+                kk = kk+1;
             end
             
         end
-
-        % After plotting all the data, modify lines colors, styles, and width
-        for idx=1:length(lstW1)
-            for j=1:size(h,2)
-                set(h(idx,j),'color',lc(idx,j,:),'linestyle',ls{idx},'linewidth',lw(idx,j));
-            end
-        end
+        
+    catch
+        
+        menu(sprintf('plotProbe exited with ERROR while plotting data for channel # %d',iSD),'OK');
+        h=[];
+        
     end
-    
-    
-    % Plot the optodes on the axes
-    if ismac() || islinux()
-        fs = 14;
-    else
-        fs = 11;
-    end        
-    for idx2=1:size(sPos,1)
-        xa = sPos(idx2,1) - axXoff;
-        ya = sPos(idx2,2) - axYoff;
+end
 
-        ht=text(xa,ya,sprintf('S%d',idx2));
-        set(ht,'fontweight','bold','fontsize',fs)
-        set(ht,'color',[1 0 0])
 
-    end
-    for idx2=1:size(dPos,1)
-        xa = dPos(idx2,1) - axXoff;
-        ya = dPos(idx2,2) - axYoff;
-
-        ht=text(xa,ya,sprintf('D%d',idx2));
-        set(ht,'fontweight','bold','fontsize',fs)
-        set(ht,'color',[0 0 1])            
-    end
+% Plot the optodes on the axes
+if ismac() || islinux()
+    fs = 14;
+else
+    fs = 11;
+end
+for idx2=1:size(sPos,1)
+    xa = sPos(idx2,1) - axXoff;
+    ya = sPos(idx2,2) - axYoff;
     
-catch
-    
-    menu(sprintf('plotProbe exited with ERROR while plotting data for channel # %d',idx),'OK');
-    h=[];
+    ht=text(xa,ya,sprintf('S%d',idx2));
+    set(ht,'fontweight','bold','fontsize',fs)
+    set(ht,'color',[1 0 0])
     
 end
+for idx2=1:size(dPos,1)
+    xa = dPos(idx2,1) - axXoff;
+    ya = dPos(idx2,2) - axYoff;
+    
+    ht = text(xa,ya,sprintf('D%d',idx2));
+    set(ht,'fontweight','bold','fontsize',fs)
+    set(ht,'color',[0 0 1])
+end
+
 hold off
 
 
@@ -377,49 +318,32 @@ end
 
 
 
-
 % ------------------------------------------------------
-function [y,ampMp] = offsetData(y,nCh,nDataTypes)
+function [y,ampMp] = offsetData(y, k)
+minAmp = min(min(y(:,k)));
+maxAmp = max(max(y(:,k)));
 
-if nDataTypes==3
-    minAmp=squeeze(min(min(y)));
-    maxAmp=squeeze(max(max(y)));
-elseif nDataTypes==2
-    for idx=1:nCh
-        minAmp(idx)=min(min(y(:,[idx idx+nCh])));
-        maxAmp(idx)=max(max(y(:,[idx idx+nCh])));
-    end
-end
-
-% Find amplitude mid-point 
+% Find amplitude mid-point and shift data midpoint to zero
 ampDiff = maxAmp - minAmp;
 ampMp   = minAmp + ampDiff/2;
-for idx=1:nCh
-    % Shift data midpoint to zero
-    if nDataTypes==3
-        y(:,:,idx) = y(:,:,idx) - ampMp(idx);
-    else
-        y(:,[idx idx+nCh]) = y(:,[idx idx+nCh]) - ampMp(idx);
-    end
-end
+y(:,k) = y(:,k) - ampMp;
 
 
 
 
 % ------------------------------------------------------
-function b = isProbeDrawn(SD)
-b = false;
-nOpt = size(SD.SrcPos,1)+size(SD.DetPos,1);
-hc = get(gca, 'children');
-nOptDrawn = 0;
-for ii=1:length(hc)
-    if strcmpi(hc(ii).Type, 'Text')
-        if hc(ii).String(1)=='S' || hc(ii).String(1)=='D'
-            nOptDrawn = nOptDrawn+1;
-        end
+function [y,ampMp] = offsetData2(y, iSDpairs, nSDpairs, ml)
+nDataTypes = size(y,2) / nSDpairs;
+minAmp = min(y(iSDpairs));
+maxAmp = max(y(iSDpairs));
+
+% Find amplitude mid-point and shift data midpoint to zero
+ampDiff = maxAmp - minAmp;
+ampMp   = minAmp + ampDiff/2;
+for iSD = 1:nSDpairs
+    for iDt = 1:nDataTypes 
+        iSDmeas = find(ml(iSDpairs,4) == iDt);
+        y(:,iSDmeas) = y(:,iSDmeas) - ampMp(iSD);
     end
-end
-if nOptDrawn==nOpt
-    b = true;
 end
 

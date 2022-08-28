@@ -273,7 +273,7 @@ SetTextFilename(handles);
 DisplayData(handles, hObject);
 
 if ~menuItemSyncBrowsing_Callback(handles.menuItemSyncBrowsing, 'get')
-    menuItemSyncBrowsing_Callback(handles.menuItemSyncBrowsing, '', handles);
+    menuItemSyncBrowsing_Callback(handles.menuItemSyncBrowsing, '');
 end
 
 
@@ -497,7 +497,7 @@ if length(foo)~=1
     foo = plotprobe.tMarkInt;
 elseif ~isnumeric(foo)
     foo = plotprobe.tMarkInt;
-elseif foo<5 || foo>t(end)
+elseif foo<2 || foo>t(end)
     foo = plotprobe.tMarkInt;
 end
 plotprobe.tMarkInt = foo;
@@ -507,7 +507,7 @@ set(hObject,'string', sprintf('%0.1f ',plotprobe.tMarkInt) );
 ClearAxesData(handles);
 
 nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
-for iBlk=1:nDataBlks
+for iBlk = 1:nDataBlks
     plotProbeAndSetProperties(handles, iBlk);
 end
 
@@ -697,7 +697,8 @@ end
 nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 plotprobe.y = cell(nDataBlks,1);
 plotprobe.t = cell(nDataBlks,1);
-   
+
+tMarkAmp = str2num(get(handles.editPlotProbeTimeMarkersAmp, 'string'));
 for iBlk = 1:nDataBlks
     if datatype == plotprobe.datatypeVals.OD_HRF
         plotprobe.y{iBlk} = plotprobe.dataTreeHandle.currElem.GetDodAvg(condition, iBlk);
@@ -706,7 +707,7 @@ for iBlk = 1:nDataBlks
     elseif datatype == plotprobe.datatypeVals.CONC_HRF
         plotprobe.y{iBlk} = plotprobe.dataTreeHandle.currElem.GetDcAvg(condition, iBlk);
         plotprobe.t{iBlk} = plotprobe.dataTreeHandle.currElem.GetTHRF();
-        plotprobe.tMarkAmp = plotprobe.tMarkAmp/1e6;
+        plotprobe.tMarkAmp = tMarkAmp/1e6;
         plotprobe.tMarkUnits = '(micro-molars)';
     end
     

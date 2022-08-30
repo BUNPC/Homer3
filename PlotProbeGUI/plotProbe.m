@@ -43,6 +43,9 @@
 
 function h = plotProbe( y, t, SD, ml, ~, axFactor, tStep, tAmp, tVis)
 
+EXPLODE_THRESH = 0.02;
+EXPLODE_VECTOR = [0.02, 0.08];
+
 h = [];
 
 % Get initial arg values
@@ -51,6 +54,12 @@ if ~exist('y','var')
 end
 if ~exist('ystd','var')
     ystd = [];
+end
+if ~exist('SD','var') 
+    SD = [];
+end
+if ~exist('ml','var')
+    ml = [];
 end
 if ~exist('tVis','var')
     tVis = 'on';
@@ -80,7 +89,16 @@ if ~exist('tAmp','var') || isempty(tAmp) || tAmp<0
 end
 
 % Conditions causing early exit
-if ~exist('SD','var') || isempty(SD)
+if isempty(y)
+    hold off
+    return;
+end
+if isempty(ml)
+    hold off
+    return;
+end
+if isempty(SD)
+    hold off
     return;
 end
 
@@ -186,6 +204,13 @@ if ~isempty(y)
                 
                 xa = ( sPos(ml(iSDpairAllMeas(iMeasType),1), 1) + dPos(ml(iSDpairAllMeas(iMeasType),2), 1) ) / 2 - axXoff;
                 ya = ( sPos(ml(iSDpairAllMeas(iMeasType),1), 2) + dPos(ml(iSDpairAllMeas(iMeasType),2), 2) ) / 2 - axYoff;
+                            
+%                 for i = 1:size(xyas, 1)
+%                     if sqrt((xyas(i, 1) - xa)^2 + (xyas(i, 2) - ya)^2) < EXPLODE_THRESH
+%                         xa = xa + EXPLODE_VECTOR(1);
+%                         ya = ya + EXPLODE_VECTOR(2);
+%                     end
+%                 end
                 
                 xyas = [xyas; [xa, ya]];
                 
@@ -236,9 +261,8 @@ if ~isempty(y)
                 h(iSD,kk) = hTmarks;
                 lw(iSD,kk) = 1.0;
                 kk = kk+1;
-            end
-            
-        end
+            end            
+        end        
         
     catch
         
@@ -246,6 +270,7 @@ if ~isempty(y)
         h=[];
         
     end
+    
 end
 
 
@@ -255,19 +280,16 @@ if ismac() || islinux()
 else
     fs = 11;
 end
-for idx2=1:size(sPos,1)
+for idx2 = 1:size(sPos,1)
     xa = sPos(idx2,1) - axXoff;
-    ya = sPos(idx2,2) - axYoff;
-    
-    ht=text(xa,ya,sprintf('S%d',idx2));
+    ya = sPos(idx2,2) - axYoff;    
+    ht = text(xa,ya,sprintf('S%d',idx2));
     set(ht,'fontweight','bold','fontsize',fs)
     set(ht,'color',[1 0 0])
-    
 end
-for idx2=1:size(dPos,1)
+for idx2 = 1:size(dPos,1)
     xa = dPos(idx2,1) - axXoff;
     ya = dPos(idx2,2) - axYoff;
-    
     ht = text(xa,ya,sprintf('D%d',idx2));
     set(ht,'fontweight','bold','fontsize',fs)
     set(ht,'color',[0 0 1])
@@ -328,22 +350,4 @@ ampDiff = maxAmp - minAmp;
 ampMp   = minAmp + ampDiff/2;
 y(:,k) = y(:,k) - ampMp;
 
-
-
-
-% ------------------------------------------------------
-function [y,ampMp] = offsetData2(y, iSDpairs, nSDpairs, ml)
-nDataTypes = size(y,2) / nSDpairs;
-minAmp = min(y(iSDpairs));
-maxAmp = max(y(iSDpairs));
-
-% Find amplitude mid-point and shift data midpoint to zero
-ampDiff = maxAmp - minAmp;
-ampMp   = minAmp + ampDiff/2;
-for iSD = 1:nSDpairs
-    for iDt = 1:nDataTypes 
-        iSDmeas = find(ml(iSDpairs,4) == iDt);
-        y(:,iSDmeas) = y(:,iSDmeas) - ampMp(iSD);
-    end
-end
 

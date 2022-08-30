@@ -126,13 +126,9 @@ if flagtCCA
         fq = 1/(t(2)-t(1));
                 
         % get  a list of active channels
-        if isempty(mlActMan{iBlk})
-            mlActMan{iBlk} = ones(size(ml,1)*2,1);
-        end
-        if isempty(mlActAuto{iBlk})
-            mlActAuto{iBlk} = ones(size(ml,1)*2,1);
-        end
-        MeasListAct = mlActMan{iBlk} & mlActAuto{iBlk};
+        mlActMan{iBlk} = mlAct_Initialize(mlActMan{iBlk}, ml);
+        mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, ml);
+        MeasListAct = mlActMan{iBlk}(:,3) & mlActAuto{iBlk}(:,3);
         
         %% find the list of short and long distance channels
         lst = 1:size(ml,1);

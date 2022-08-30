@@ -615,7 +615,10 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function SetInactiveChannelData(obj)            
+        function SetInactiveChannelData(obj)
+            if obj.IsEmpty()
+                return
+            end
             for iMeas = 1:size(obj.dataTimeSeries,2)
                 % We set the criteria for deciding if a channel is inactive if ALL it's 
                 % data points are zero. Is this a safe assumption? Maybe we should create 

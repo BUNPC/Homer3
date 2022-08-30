@@ -30,4 +30,5 @@ elseif plotConcVal && ~plotHRFVal
 elseif plotConcVal && plotHRFVal
     datatype      = c.CONC_HRF;
 end
+maingui.datatype = datatype;
  

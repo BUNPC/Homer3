@@ -12,7 +12,11 @@ elseif isvector(mlAct0) && (length(mlAct0) > length(k))
 elseif size(mlAct0,1) == length(k)
     mlAct = mlAct0;
 elseif size(ml,2) == 2
-    mlAct = mlAct0;
+    if ~isempty(mlAct0)
+        mlAct = mlAct0;
+    else
+        mlAct = [ ml(k,1:2), ones(size(ml(k,:),1),2) ];
+    end        
 else
     mlAct = [ ml(k,1:2), ones(size(ml(k,:),1),1), ml(k,4) ];
 end

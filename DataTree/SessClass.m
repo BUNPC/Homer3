@@ -332,6 +332,10 @@ classdef SessClass < TreeNodeClass
                 tHRF_common = obj.runs(iRun).procStream.output.GeneratetHRFCommon(tHRF_common);
             end
             
+            % Update call application GUI using it's generic Update function 
+            if ~isempty(obj.updateParentGui)
+                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun]);
+            end
             
             % Load all the variables that might be needed by procStream.Calc() to calculate proc stream for this session
             obj.LoadInputVars(tHRF_common);
@@ -342,12 +346,7 @@ classdef SessClass < TreeNodeClass
                 fprintf('Completed processing stream for group %d, session %d\n', obj.iGroup, obj.iSubj);
                 fprintf('\n');
             end
-            
-            % Update call application GUI using it's generic Update function 
-            if ~isempty(obj.updateParentGui)
-                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun]);
-            end
-            
+                        
         end
                
         

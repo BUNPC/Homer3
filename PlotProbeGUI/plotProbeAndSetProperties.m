@@ -93,8 +93,8 @@ if ~isempty(plotprobe.y{iBlk})
     if ~isempty(plotprobe.y{iBlk})
         plotprobe.y{iBlk} = plotprobe.y{iBlk}(:,k);
     end
-    if ~isempty(plotprobe.y{iBlk})
-        plotprobe.ystd{iBlk} = plotprobe.y{iBlk}(:,k);
+    if ~isempty(plotprobe.ystd{iBlk})
+        plotprobe.ystd{iBlk} = plotprobe.ystd{iBlk}(:,k);
     end
     if ~isempty(plotprobe.ml{iBlk})
         plotprobe.ml{iBlk} = plotprobe.ml{iBlk}(k,:);

@@ -263,7 +263,9 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function fcalls = Calc(obj, filename)            
+        function fcalls = Calc(obj, filename)
+            global logger
+            
             if ~exist('filename','var')
                 filename = '';
             end
@@ -295,9 +297,9 @@ classdef ProcStreamClass < handle
                     msg = sprintf('Function %s generated error at line %d: %s', obj.fcalls(iFcall).name, ME.stack(1).line, ME.message);
                     if strcmp(obj.config.regressionTestActive, 'false')
                         MessageBox(msg);
-                    elseif strcmp(obj.config.regressionTestActive, 'false')
-                        fprintf('%s\n', msg);
                     end
+                    logger.Write('%s\n', msg);
+                    printStack(ME);
                     close(hwait);
                     rethrow(ME)
                 end

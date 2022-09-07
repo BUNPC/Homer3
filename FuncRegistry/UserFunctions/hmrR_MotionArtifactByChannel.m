@@ -94,7 +94,7 @@ for iBlk = 1:length(data)
     d           = data(iBlk).GetDataTimeSeries();
     fs          = data(iBlk).GetTime();
     MeasList    = data(iBlk).GetMeasList();
-    Lambda      = probe.GetWls();
+    nDataTypes  = unique(MeasList(:,4));
     
     if length(fs)~=1
         fs = 1/(fs(2)-fs(1));
@@ -102,30 +102,25 @@ for iBlk = 1:length(data)
        
     if isempty(tIncMan{iBlk})
         tIncMan{iBlk} = ones(size(d,1),1);
-    end
-    
+    end    
     tInc{iBlk}   = ones(size(d,1),1);
     tIncCh{iBlk} = ones(size(d,1), size(MeasList,1));
     
     mlActMan{iBlk} = mlAct_Initialize(mlActMan{iBlk}, MeasList);
     mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, MeasList);
     MeasListAct = mlActMan{iBlk}(:,3) & mlActAuto{iBlk}(:,3);
-        
-    % Calculate the diff of d to to set the threshold if ncssesary
-       
+    
     % set artifact buffer for tMask seconds on each side of spike
     art_buffer = round(tMask*fs); % time in seconds times sample rate
     
     % get list of active channels
-    %lstAct = find(MeasListAct==1);
     lstAct = zeros(size(MeasList,1),1);
-    nLambda = length(Lambda);
     lst1 = find(MeasList(:,4)==1);
-    for ii = 1:nLambda
+    for ii = 1:nDataTypes
         for jj = 1:length(lst1)
             lst(jj) = find(MeasList(:,1)==MeasList(lst1(jj),1) & ...
                            MeasList(:,2)==MeasList(lst1(jj),2) & ...
-                           MeasList(:,4)==ii );
+                           MeasList(:,4)==ii);
             lstAct(lst(jj)) = MeasListAct(jj);
         end
     end

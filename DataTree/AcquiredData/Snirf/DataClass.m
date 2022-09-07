@@ -6,6 +6,9 @@ classdef DataClass < FileLoadSaveClass
         measurementList
     end
     
+    properties
+        cache
+    end
     
     methods
         
@@ -46,6 +49,7 @@ classdef DataClass < FileLoadSaveClass
             
             % Set SNIRF fomat properties
             obj.measurementList = MeasListClass().empty();
+            obj.cache = struct('measurementListMatrix',[]);
             
             if nargin==0
                 return;
@@ -387,13 +391,20 @@ classdef DataClass < FileLoadSaveClass
         
         % ---------------------------------------------------------
         function ml = GetMeasurementList(obj, option)
+            ml = [];
             if ~exist('option','var')
                 option = '';
             end            
             hbTypes         = {'hbo','hbr','hbt'};
             if isempty(option)
-            ml = obj.measurementList;
-            elseif strcmp(option,'matrix')                
+                ml = obj.measurementList;
+            elseif strncmp(option,'matrix',length('matrix'))
+                if ~isempty(obj.cache) && ~isempty(obj.cache.measurementListMatrix)
+                    if strcmp(option,'matrix')
+                        ml = obj.cache.measurementListMatrix;
+                        return
+                    end
+                end
                 ml = zeros(length(obj.measurementList),4);
                 for ii = 1:length(obj.measurementList)
                     k = 0;
@@ -409,6 +420,9 @@ classdef DataClass < FileLoadSaveClass
                         ml(ii,:) = [obj.measurementList(ii).sourceIndex, obj.measurementList(ii).detectorIndex, obj.measurementList(ii).dataTypeIndex, k];                        
                     end
                 end
+                
+                % Cache the results to avoid recalculating 
+                obj.cache.measurementListMatrix = ml;
             end
         end
         

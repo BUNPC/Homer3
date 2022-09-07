@@ -62,11 +62,11 @@ if isempty(mlActAuto)
     mlActAuto = cell(length(data_dod),1);
 end
 
-for kk=1:length(data_dod)
+for iBlk = 1:length(data_dod)
 
-    dod         = data_dod(kk).GetDataTimeSeries();
+    dod         = data_dod(iBlk).GetDataTimeSeries();
     dodWavelet  = dod;
-    MeasList    = data_dod(kk).GetMeasList();   
+    MeasList    = data_dod(iBlk).GetMeasList();   
     
     mlActMan{iBlk} = mlAct_Initialize(mlActMan{iBlk}, MeasList);
     mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, MeasList);
@@ -109,7 +109,7 @@ for kk=1:length(data_dod)
         
         dodWavelet(:,idx_ch) = ARSignal(1:length(dod));
     end
-    data_dod(kk).SetDataTimeSeries(dodWavelet);
+    data_dod(iBlk).SetDataTimeSeries(dodWavelet);
     
 end
 

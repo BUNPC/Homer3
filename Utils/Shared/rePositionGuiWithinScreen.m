@@ -12,7 +12,14 @@ p = guiOutsideScreenBorders(hfig);
 % then pos correction, then change back to initial units before 
 % returning from function
 uf0 = get(hfig, 'units');
-set(hfig, 'units','normalized', 'position',p);
+set(hfig, 'units','normalized');
+p0 = get(hfig, 'position');
+if p(2)<0
+    if p(4)-p(2) >= 1
+        p(2) = p0(2);
+    end
+end
+set(hfig, 'position',p);
 
 % Change units back to initial state
 set(hfig, 'units', uf0);

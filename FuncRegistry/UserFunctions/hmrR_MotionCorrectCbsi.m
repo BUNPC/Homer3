@@ -48,7 +48,7 @@ if isempty(mlActAuto)
 end
 
 for iBlk = 1:length(data_dc)
-    dc = data_dc(iBlk).GetDataTimeSeries('reshape');
+    [dc, order] = data_dc(iBlk).GetDataTimeSeries('reshape');
     ml = data_dc(iBlk).GetMeasListSrcDetPairs('reshape');
         
     mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, ml);
@@ -71,7 +71,7 @@ for iBlk = 1:length(data_dc)
         dcCbsi(:,2,idx_ch) = -(1/alfa)*dcCbsi(:,1,idx_ch);
         dcCbsi(:,3,idx_ch) = dcCbsi(:,1,idx_ch) + dcCbsi(:,2,idx_ch);
     end
-    dcCbsi = reshape(dcCbsi, size(dcCbsi,1), size(dcCbsi,2)*size(dcCbsi,3));    
+    dcCbsi(:,order) = dcCbsi(:,:);
     data_dc(iBlk).SetDataTimeSeries(dcCbsi);
 end
 

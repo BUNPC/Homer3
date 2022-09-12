@@ -115,13 +115,15 @@ set(handles.textPanDisplay, 'enable', val);
 % Plot type selected panel
 set(handles.listboxPlotConc, 'enable', val);
 set(handles.listboxPlotWavelength, 'enable', val);
+
 set(handles.radiobuttonPlotRaw, 'enable', val);
 set(handles.radiobuttonPlotOD,  'enable', val);
 set(handles.radiobuttonPlotConc, 'enable', val);
+set(handles.checkboxPlotHRF, 'enable', val);
+
 set(handles.popupmenuAux, 'enable', val);
 set(handles.checkboxPlotAux, 'enable', val);
 set(handles.popupmenuConditions, 'enable', val);
-set(handles.checkboxPlotHRF, 'enable', val);
 
 % Motion artifact panel
 set(handles.checkboxShowExcludedTimeManual, 'enable', val);
@@ -252,6 +254,10 @@ InitGuiControls(handles);
 
 % Display data from currently selected processing element
 DisplayGroupTree(handles);
+
+% If data set has no errors enable window gui objects
+MainGUI_EnableDisableGUI(handles,'on');
+
 Display(handles, hObject);
 
 % Store Original X and Y Lims for AxesSDG
@@ -269,8 +275,6 @@ set(hObject,'name', title);
 maingui.logger.InitChapters()
 maingui.logger.CurrTime(sprintf('MainGUI: Startup time - %0.1f seconds\n', toc(startuptimer)));
 
-% If data set has no errors enable window gui objects
-MainGUI_EnableDisableGUI(handles,'on');
 
 
 

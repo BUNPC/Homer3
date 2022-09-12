@@ -670,7 +670,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasurementList(obj, ~)
+        function ml = GetMeasurementList(obj, ~, ~)
             ml = MeasListClass();
             for ii = 1:size(obj.SD.MeasList,1)
                 ml(ii).sourceIndex = obj.SD.MeasList(ii,1);

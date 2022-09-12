@@ -118,8 +118,8 @@ classdef ProcStreamClass < handle
 
         % ----------------------------------------------------------------------------------
         function B = isequal(obj, obj2)
-            B = 0;
-            if isa(obj2, 'ProcStream')
+            B = false;
+            if isa(obj2, 'ProcStreamClass')
                 for ii=1:length(obj.fcalls)
                     if ii>length(obj2.fcalls)
                         return
@@ -167,8 +167,10 @@ classdef ProcStreamClass < handle
                         return;
                     end
                 end
+            else
+                return
             end
-            B = 1;
+            B = true;
         end
 
         
@@ -1422,36 +1424,42 @@ classdef ProcStreamClass < handle
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasurementList(obj, options, iBlk)
+        function ml = GetMeasurementList(obj, matrixMode, iBlks, dataType)
             ml = [];
-            if ~exist('options','var')
-                options = 'conc';
+            if ~exist('matrixMode','var')
+                matrixMode = '';
             end
-            if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk = 1;
+            if ~exist('iBlks','var') || isempty(iBlks)
+                iBlks = 1;
             end
-            for ii = 1:length(iBlk)
-                switch(lower(options))
+            if ~exist('dataType','var')
+                dataType = 'conc';
+            end
+            for iBlk = 1:length(iBlks)
+                switch(lower(dataType))
                     case 'od'
-                        if ii <= length(obj.output.dod)
-                            ml = [ml; obj.output.dod(ii).measurementList];
+                        if iBlk <= length(obj.output.dod)
+                            ml = [ml; obj.output.dod(iBlk).GetMeasurementList(matrixMode)];
                         end
+                        break;
                     case {'conc','hb','hbo','hbr','hbt'}
-                        if ii <= length(obj.output.dc)
-                            ml = [ml; obj.output.dc(ii).measurementList];
+                        if iBlk <= length(obj.output.dc)
+                            ml = [ml; obj.output.dc(iBlk).GetMeasurementList(matrixMode)];
                         end
+                        break;
                     case {'od hrf','od_hrf'}
-                        if ii <= length(obj.output.dodAvg)
-                            ml = [ml; obj.output.dodAvg(ii).measurementList];
+                        if iBlk <= length(obj.output.dodAvg)
+                            ml = [ml; obj.output.dodAvg(iBlk).GetMeasurementList(matrixMode)];
                         end
+                        break;
                     case {'hb hrf','conc hrf','hb_hrf','conc_hrf'}
-                        if ii <= length(obj.output.dcAvg)
-                            ml = [ml; obj.output.dcAvg(ii).measurementList];
+                        if iBlk <= length(obj.output.dcAvg)
+                            ml = [ml; obj.output.dcAvg(iBlk).GetMeasurementList(matrixMode)];
                         end
+                        break;
                 end
             end
-        end
-        
+        end        
                 
         
         % ---------------------------------------------------------

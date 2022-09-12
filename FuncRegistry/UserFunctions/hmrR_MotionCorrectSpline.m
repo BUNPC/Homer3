@@ -71,10 +71,8 @@ for iBlk=1:length(data_dod)
     mlAct{iBlk} = mlAct_Initialize(mlAct{iBlk}, MeasList);
     lstAct = mlAct_Matrix2IndexList(mlAct{iBlk}, MeasList);
     
-    if isempty(tIncCh{iBlk})
-        tIncCh{iBlk} = ones(size(dod));
-    end
-    
+    tIncCh{iBlk} = tIncCh_Initialize(tIncCh{iBlk}, dod, MeasList);
+    tIncChBlk    = tIncCh{iBlk}(1:length(t),:);
     
     fs = 1/mean(t(2:end)-t(1:end-1));
     
@@ -89,18 +87,18 @@ for iBlk=1:length(data_dod)
         
         idx_ch = lstAct(ii);
         
-        lstMA = find(tIncCh{iBlk}(:,idx_ch)==0);   % sublist of motion artifact segments
+        lstMA = find(tIncChBlk(:,idx_ch)==0);   % sublist of motion artifact segments
         
         if ~isempty(lstMA)
             
             % Find indexes of starts and ends of MA segments
-            lstMs = find(diff(tIncCh{iBlk}(:,idx_ch))==-1);   % starting indexes of mvt segments
-            lstMf = find(diff(tIncCh{iBlk}(:,idx_ch))==1);    % ending indexes of mvt segments
+            lstMs = find(diff(tIncChBlk(:,idx_ch))==-1);   % starting indexes of mvt segments
+            lstMf = find(diff(tIncChBlk(:,idx_ch))==1);    % ending indexes of mvt segments
             
             % Case where there's a single MA segment, that either starts at the
             % beginning or ends at the end of the total time duration
             if isempty(lstMf)
-                lstMf = size(tIncCh{iBlk},1);
+                lstMf = size(tIncChBlk,1);
             end
             if isempty(lstMs)
                 lstMs = 1;
@@ -111,7 +109,7 @@ for iBlk=1:length(data_dod)
                 lstMs = [1;lstMs];
             end
             if lstMs(end)>lstMf(end)
-                lstMf(end+1,1) = size(tIncCh{iBlk},1);
+                lstMf(end+1,1) = size(tIncChBlk,1);
             end
             
             lstMl = lstMf-lstMs;    % lengths of MA segments
@@ -160,7 +158,7 @@ for iBlk=1:length(data_dod)
                 if length(lstMs)>1
                     SegNextLength = length(lstMf(1):(lstMs(2)));
                 else
-                    SegNextLength = length(lstMf(1):size(tIncCh{iBlk},1));
+                    SegNextLength = length(lstMf(1):size(tIncChBlk,1));
                 end
                 if SegNextLength < dtShort*fs
                     windNext = SegNextLength;

@@ -390,18 +390,24 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasurementList(obj, option)
+        function ml = GetMeasurementList(obj, matrixMode, reshape)
             ml = [];
-            if ~exist('option','var')
-                option = '';
+            if ~exist('matrixMode','var')
+                matrixMode = '';
+            end
+            if ~exist('reshape', 'var')
+                reshape = '';
             end            
             hbTypes         = {'hbo','hbr','hbt'};
-            if isempty(option)
+            if isempty(matrixMode)
                 ml = obj.measurementList;
-            elseif strncmp(option,'matrix',length('matrix'))
+            elseif strncmp(matrixMode,'matrix',length('matrix'))
                 if ~isempty(obj.cache) && ~isempty(obj.cache.measurementListMatrix)
-                    if strcmp(option,'matrix')
+                    if strcmp(matrixMode,'matrix')
                         ml = obj.cache.measurementListMatrix;
+                        if strcmp(reshape, 'reshape')
+                            ml = sortrows(ml);
+                        end
                         return
                     end
                 end
@@ -417,12 +423,16 @@ classdef DataClass < FileLoadSaveClass
                     if obj.measurementList(ii).wavelengthIndex > 0
                         ml(ii,:) = [obj.measurementList(ii).sourceIndex, obj.measurementList(ii).detectorIndex, obj.measurementList(ii).dataTypeIndex, obj.measurementList(ii).wavelengthIndex];
                     elseif k > 0
-                        ml(ii,:) = [obj.measurementList(ii).sourceIndex, obj.measurementList(ii).detectorIndex, obj.measurementList(ii).dataTypeIndex, k];                        
+                        ml(ii,:) = [obj.measurementList(ii).sourceIndex, obj.measurementList(ii).detectorIndex, obj.measurementList(ii).dataTypeIndex, k];
                     end
                 end
                 
-                % Cache the results to avoid recalculating 
+                % Cache the results to avoid recalculating
                 obj.cache.measurementListMatrix = ml;
+                if strcmp(reshape, 'reshape')
+                    ml = sortrows(ml);
+                end
+                
             end
         end
         
@@ -447,8 +457,7 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function t = GetTime(obj)
-            
+        function t = GetTime(obj)            
             t = obj.time;
         end
         
@@ -530,7 +539,7 @@ classdef DataClass < FileLoadSaveClass
                     for iS = 1:length(srcs)
                         for iD = 1:length(dets)
                             for iCond = 1:nCond
-                            
+                                
                                 k = find(measurementList(:,1)==srcs(iS) & measurementList(:,2)==dets(iD) & measurementList(:,3)==iCond &  measurementList(:,4)==iWl);
                                 if ~isempty(k)
                                     iSrcDetPair = find(ml(:,1)==srcs(iS) & ml(:,2)==dets(iD));
@@ -538,13 +547,13 @@ classdef DataClass < FileLoadSaveClass
                                     order(kk) = k;
                                     kk = kk+1;
                                 end
-
-                            end     
+                                
+                            end
                         end
                     end
                 end
                 
-            elseif nDataTypeLabels > 0 && nCond == 0 
+            elseif nDataTypeLabels > 0 && nCond == 0
                 
                 for iHbType = 1:length(hbTypes)
                     for iS = 1:length(srcs)
@@ -562,13 +571,13 @@ classdef DataClass < FileLoadSaveClass
                     end
                 end
                 
-            elseif nDataTypeLabels > 0 && nCond > 0 
+            elseif nDataTypeLabels > 0 && nCond > 0
                 
                 for iHbType = 1:length(hbTypes)
                     for iS = 1:length(srcs)
                         for iD = 1:length(dets)
                             for iCond = 1:nCond
-
+                                
                                 k = find(measurementList(:,1)==srcs(iS) & measurementList(:,2)==dets(iD) & measurementList(:,3)==iCond &  measurementList(:,4)==iHbType);
                                 if ~isempty(k)
                                     iSrcDetPair = find(ml(:,1)==srcs(iS) & ml(:,2)==dets(iD));
@@ -577,10 +586,10 @@ classdef DataClass < FileLoadSaveClass
                                     kk = kk+1;
                                 end
                                 
-                            end     
+                            end
                         end
                     end
-                end                
+                end
             end
             
             d = simulateDataError(d);

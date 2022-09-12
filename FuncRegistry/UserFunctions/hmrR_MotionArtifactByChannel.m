@@ -94,8 +94,7 @@ for iBlk = 1:length(data)
     d           = data(iBlk).GetDataTimeSeries();
     fs          = data(iBlk).GetTime();
     MeasList    = data(iBlk).GetMeasList();
-    nDataTypes  = unique(MeasList(:,4));
-    
+
     if length(fs)~=1
         fs = 1/(fs(2)-fs(1));
     end
@@ -104,27 +103,17 @@ for iBlk = 1:length(data)
         tIncMan{iBlk} = ones(size(d,1),1);
     end    
     tInc{iBlk}   = ones(size(d,1),1);
-    tIncCh{iBlk} = ones(size(d,1), size(MeasList,1));
-    
+    tIncCh{iBlk} = tIncCh_Initialize(tIncCh{iBlk}, d, MeasList);
+
+    % get list of active channels
     mlActMan{iBlk} = mlAct_Initialize(mlActMan{iBlk}, MeasList);
     mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, MeasList);
-    MeasListAct = mlActMan{iBlk}(:,3) & mlActAuto{iBlk}(:,3);
+    lstAct1 = mlAct_Matrix2IndexList(mlActAuto{iBlk}, MeasList);
+    lstAct2 = mlAct_Matrix2IndexList(mlActMan{iBlk}, MeasList);
+    lstAct = unique([lstAct1(:)', lstAct2(:)']);
     
     % set artifact buffer for tMask seconds on each side of spike
-    art_buffer = round(tMask*fs); % time in seconds times sample rate
-    
-    % get list of active channels
-    lstAct = zeros(size(MeasList,1),1);
-    lst1 = find(MeasList(:,4)==1);
-    for ii = 1:nDataTypes
-        for jj = 1:length(lst1)
-            lst(jj) = find(MeasList(:,1)==MeasList(lst1(jj),1) & ...
-                           MeasList(:,2)==MeasList(lst1(jj),2) & ...
-                           MeasList(:,4)==ii);
-            lstAct(lst(jj)) = MeasListAct(jj);
-        end
-    end
-    lstAct = find(lstAct==1);
+    art_buffer = round(tMask*fs); % time in seconds times sample rate    
     
     % LOOP OVER CHANNELS
     for iCh = 1:length(lstAct)
@@ -159,13 +148,10 @@ for iBlk = 1:length(data)
             
             % Set t and diff of data to 0 at the bad inds
             tInc{iBlk}(1+bad_inds) = 0; % bad inds calculated on diff so add 1
-            tIncCh{iBlk}(1+bad_inds,lstAct(iCh)) = 0;
+            tIncCh{iBlk}(1+bad_inds, lstAct(iCh)) = 0;
         end
         
     end % loop over channels
-    
-    tInc{iBlk}(find(tIncMan{iBlk}==0)) = 0;
-    tIncCh{iBlk}(find(tIncMan{iBlk}==0),:) = 0;
     
 end
 

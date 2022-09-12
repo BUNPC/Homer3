@@ -1,5 +1,6 @@
-function hbType = GetHbType(handles)
-hbType = '';
+function [hbTypeStr, hbTypeIdx] = GetHbType(handles)
+hbTypeStr = {};
+hbTypeIdx = [];
 if nargin==0
     return
 end
@@ -14,9 +15,9 @@ end
 if isempty(s)
     return;
 end
-for ii = 1:length(idx)
-    hbType{ii} = s{idx(ii)};
-end
+hbTypeStr = s(idx);
+hbTypeIdx = idx;
+
 
 
 

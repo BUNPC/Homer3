@@ -1029,11 +1029,13 @@ ml = GetMeasurementList(handles);
 iCh = GetSelectedChannels(handles);
 [d, dStd, t]  = GetDataTimeSeries(handles);
 chVis = maingui.dataTree.currElem.chVis;
+[linecolors, linestyles, linewidths] = SetDataPlotLineStyles(handles, iCh);
 
 maingui.logger.Write('Displaying   time: [%dx%d],    data: [%dx%d],   channels [%s]\n', size(t,1), size(t,2), size(d,1), size(d,2), num2str(iCh(:)'))
 
 %%% Plot data
 if ~isempty(d)
+    
     xx = xlim(hAxes);
     yy = ylim(hAxes);
     if strcmpi(get(hAxes,'ylimmode'),'manual')
@@ -1053,10 +1055,9 @@ if ~isempty(d)
     end
 	
     % Plot data
-    [linecolors, linestyles, linewidths] = SetDataPlotLineStyles(handles, iCh);
     h = zeros(1, length(iCh));
     for ii = 1:length(iCh)
-        k = find(chVis(:,1) == ml(iCh(ii)).sourceIndex & chVis(:,2) == ml(iCh(ii)).detectorIndex);
+        k = find(chVis(:,1) == ml(iCh(ii),1) & chVis(:,2) == ml(iCh(ii),2));
         if ~isempty(k)
             if chVis(k, 3) == false
                 continue
@@ -1115,15 +1116,7 @@ else
 end
 
 DisplayAux(handles, hAxes);
-if get(handles.checkboxShowExcludedTimeManual, 'value')
-    DisplayExcludedTime(handles, 'manual', hAxes);
-end
-if get(handles.checkboxShowExcludedTimeAuto, 'value')
-    DisplayExcludedTime(handles, 'auto', hAxes);
-end
-if get(handles.checkboxShowExcludedTimeAutoByChannel, 'value')
-    DisplayExcludedTime(handles, 'autoch', hAxes);
-end
+DisplayExcludedTime(handles, hAxes, ml, iCh, chVis, linecolors);
 DisplayStim(handles, hAxes);
 UpdateCondPopupmenu(handles);
 UpdateDatatypePanel(handles);

@@ -12,47 +12,36 @@ linecolors  = zeros(length(iCh), 3);
 linestyles  = cell(1, length(iCh));
 linewidths  = zeros(1, length(iCh));
 
-kk = 1;
 for ii = 1:length(iCh)
     
     if datatype == maingui.buttonVals.RAW   ||   datatype == maingui.buttonVals.OD
-        iSD = GetSelectedSDPairIndex(ml(iCh(ii)).sourceIndex, ml(iCh(ii)).detectorIndex);
+        iSD = GetSelectedSDPairIndex(ml(iCh(ii),1), ml(iCh(ii),2));
         linecolors(ii, :)  = linecolorsAvailable(iSD, :);
-        linestyles{ii}     = linestylesAvailable{ml(iCh(ii)).wavelengthIndex};
-        linewidths(ii)     = linewidthsAvailable(ml(iCh(ii)).wavelengthIndex);
-        kk = kk+1;
+        linestyles{ii}     = linestylesAvailable{ml(iCh(ii),4)};
+        linewidths(ii)     = linewidthsAvailable(ml(iCh(ii),4));
         
     elseif datatype == maingui.buttonVals.CONC
                         
-        iHb = HbLabel2Index(ml(iCh(ii)).dataTypeLabel);
-        if isempty(iHb)
-            iHb = 1;
-        end
-        iSD = GetSelectedSDPairIndex(ml(iCh(ii)).sourceIndex, ml(iCh(ii)).detectorIndex);
+        iHb = ml(iCh(ii),4);
+        iSD = GetSelectedSDPairIndex(ml(iCh(ii),1), ml(iCh(ii),2));
         linecolors(ii, :)  = linecolorsAvailable(iSD, :);
         linestyles{ii}     = linestylesAvailable{iHb};
         linewidths(ii)     = linewidthsAvailable(iHb);        
-        kk = kk+1;
         
     elseif datatype == maingui.buttonVals.OD_HRF
         
-        iSD = GetSelectedSDPairIndex(ml(iCh(ii)).sourceIndex, ml(iCh(ii)).detectorIndex);
+        iSD = GetSelectedSDPairIndex(ml(iCh(ii),1), ml(iCh(ii),2));
         linecolors(ii, :)  = linecolorsAvailable(iSD, :);
-        linestyles{ii}     = linestylesAvailable{ml(iCh(ii)).wavelengthIndex};
-        linewidths(ii)     = linewidthsAvailable(ml(iCh(ii)).wavelengthIndex);
-        kk = kk+1;
+        linestyles{ii}     = linestylesAvailable{ml(iCh(ii),4)};
+        linewidths(ii)     = linewidthsAvailable(ml(iCh(ii),4));
         
     elseif datatype == maingui.buttonVals.CONC_HRF
         
-        iHb = HbLabel2Index(ml(iCh(ii)).dataTypeLabel);
-        if isempty(iHb)
-            iHb = 1;
-        end
-        iSD = GetSelectedSDPairIndex(ml(iCh(ii)).sourceIndex, ml(iCh(ii)).detectorIndex);
+        iHb = ml(iCh(ii),4);
+        iSD = GetSelectedSDPairIndex(ml(iCh(ii),1), ml(iCh(ii),2));
         linecolors(ii, :)  = linecolorsAvailable(iSD, :);
         linestyles{ii}     = linestylesAvailable{iHb};
         linewidths(ii)     = linewidthsAvailable(iHb);
-        kk = kk+1;
         
     end
     

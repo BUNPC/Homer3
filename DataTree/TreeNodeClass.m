@@ -562,29 +562,28 @@ classdef TreeNodeClass < handle
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasurementList(obj, options, iBlk)
+        function ml = GetMeasurementList(obj, matrixMode, iBlks, dataType)
             ml = [];
-            if ~exist('options','var')
-                options = 'RAW';
+            if ~exist('matrixMode','var')
+                matrixMode = '';
             end
-            if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk = 1;
+            if ~exist('dataType','var')
+                dataType = 'raw';
             end
-            for ii = 1:length(iBlk)
-                switch(lower(options))
+            if ~exist('iBlk','var') || isempty(iBlks)
+                iBlks = 1;
+            end
+            for iBlk = 1:length(iBlks)
+                switch(lower(dataType))
                     case 'raw'
                         if isempty(obj.acquired)
                             continue
                         end
-                        ml = [ml; obj.acquired.GetMeasurementList(ii)]; %#ok<*AGROW>
-                    case 'od'
-                        ml = [ml; obj.procStream.GetMeasurementList('od',ii)];
-                    case {'conc','hb','hbo','hbr','hbt'}
-                        ml = [ml; obj.procStream.GetMeasurementList('conc',ii)];
-                    case {'od hrf','od_hrf'}
-                        ml = [ml; obj.procStream.GetMeasurementList('od hrf',ii)];
-                    case {'hb hrf','conc hrf','hb_hrf','conc_hrf'}
-                        ml = [ml; obj.procStream.GetMeasurementList('conc hrf',ii)];
+                        ml = [ml; obj.acquired.GetMeasurementList(matrixMode, iBlk)]; %#ok<*AGROW>
+                        break
+                    otherwise
+                        ml = [ml; obj.procStream.GetMeasurementList(matrixMode, iBlk, dataType)];
+                        break
                 end
             end
         end

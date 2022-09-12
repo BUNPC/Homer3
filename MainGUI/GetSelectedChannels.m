@@ -5,7 +5,7 @@ iCh         = [];
 
 datatype    = GetDatatype(handles);
 iWl         = GetWl(handles);
-hbType      = GetHbType(handles);
+[~, hbTypeIdx] = GetHbType(handles);
 iSrcDet     = maingui.axesSDG.iSrcDet;
 iCond       = GetCondition(handles); 
 ml          = GetMeasurementList(handles);
@@ -16,9 +16,9 @@ for kk = 1:size(iSrcDet,1)
         if datatype == maingui.buttonVals.RAW   ||   datatype == maingui.buttonVals.OD
             
             for jj = 1:length(iWl)
-                if  ml(ii).sourceIndex     == iSrcDet(kk,1)   && ...
-                    ml(ii).detectorIndex   == iSrcDet(kk,2)   && ...
-                    ml(ii).wavelengthIndex == iWl(jj)
+                if  ml(ii,1) == iSrcDet(kk,1)   && ...
+                    ml(ii,2) == iSrcDet(kk,2)   && ...
+                    ml(ii,4) == iWl(jj)
                 
                      iCh = [iCh, ii]; %#ok<*AGROW>
 
@@ -27,11 +27,11 @@ for kk = 1:size(iSrcDet,1)
             
         elseif datatype == maingui.buttonVals.CONC
             
-            for jj = 1:length(hbType)
+            for jj = 1:length(hbTypeIdx)
 
-                if ml(ii).sourceIndex     == iSrcDet(kk,1)   && ...
-                   ml(ii).detectorIndex   == iSrcDet(kk,2)   && ...
-                   strcmp(ml(ii).dataTypeLabel, hbType{jj})
+                if ml(ii,1) == iSrcDet(kk,1)   && ...
+                   ml(ii,2) == iSrcDet(kk,2)   && ...
+                   ml(ii,4) == hbTypeIdx(jj)
 
                      iCh = [iCh, ii];
                      
@@ -42,10 +42,10 @@ for kk = 1:size(iSrcDet,1)
             
             for jj = 1:length(iWl)
 
-                if ml(ii).sourceIndex     == iSrcDet(kk,1)   && ...
-                   ml(ii).detectorIndex   == iSrcDet(kk,2)   && ...
-                   ml(ii).wavelengthIndex == iWl(jj)         && ...
-                   ml(ii).dataTypeIndex   == iCond
+                if ml(ii,1) == iSrcDet(kk,1)   && ...
+                   ml(ii,2) == iSrcDet(kk,2)   && ...
+                   ml(ii,4) == iWl(jj)         && ...
+                   ml(ii,3) == iCond
 
                      iCh = [iCh, ii];
 
@@ -55,13 +55,12 @@ for kk = 1:size(iSrcDet,1)
             
         elseif datatype == maingui.buttonVals.CONC_HRF
 
-            for jj = 1:length(hbType)
+            for jj = 1:length(hbTypeIdx)
 
-                if ml(ii).sourceIndex     == iSrcDet(kk,1)   && ...
-                   ml(ii).detectorIndex   == iSrcDet(kk,2)   && ...
-                   (strcmpi(ml(ii).dataTypeLabel, ['hrf ', hbType{jj}]) || ...
-                   strcmpi(ml(ii).dataTypeLabel, [hbType{jj}, ' hrf']))     && ...
-                   ml(ii).dataTypeIndex   == iCond
+                if ml(ii,1) == iSrcDet(kk,1)    && ...
+                   ml(ii,2) == iSrcDet(kk,2)    && ...
+                   ml(ii,4) == hbTypeIdx(jj)    && ...
+                   ml(ii,3) == iCond
 
                      iCh = [iCh, ii];
 

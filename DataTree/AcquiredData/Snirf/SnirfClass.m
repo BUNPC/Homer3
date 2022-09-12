@@ -992,8 +992,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasurementList(obj, iBlk)
+        function ml = GetMeasurementList(obj, matrixMode, iBlk)
             ml = [];
+            if ~exist('matrixMode','var')
+                matrixMode = '';
+            end
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
@@ -1001,7 +1004,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 return;
             end
             for ii = 1:length(iBlk)
-                ml = [ml; obj.data(ii).measurementList];
+                ml = [ml; obj.data(ii).GetMeasurementList(matrixMode)];
             end
         end
         

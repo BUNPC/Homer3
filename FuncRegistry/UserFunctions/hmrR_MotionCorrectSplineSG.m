@@ -53,7 +53,7 @@ end
 
 for iBlk = 1:length(data_d)
 
-    [dod, t, SD.MeasList, order] = data_d(iBlk).GetDataTimeSeries('reshape;wavelength');
+    [dod, t, SD.MeasList, order] = data_d(iBlk).GetDataTimeSeries('matrix : reshape : wavelength');
     dod = dod(:,:);
     
     mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, SD.MeasList);

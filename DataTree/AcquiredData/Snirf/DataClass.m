@@ -464,140 +464,310 @@ classdef DataClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function [d, order] = GetDataTimeSeries(obj, options)
+        function [d, t, ml, order] = GetDataTimeSeries(obj, options)
+            %
+            % SYNTAX:
+            %       d = GetDataTimeSeries(obj)
+            %       [d, t] = GetDataTimeSeries(obj)
+            %       [d, t, ml] = GetDataTimeSeries(obj)
+            %       [d, t, ml, order] = GetDataTimeSeries(obj)
+            %       d = GetDataTimeSeries(obj, options)
+            %       [d, t] = GetDataTimeSeries(obj, options)
+            %       [d, t, ml] = GetDataTimeSeries(obj, options)
+            %       [d, t, ml, order] = GetDataTimeSeries(obj, options)
+            %
+            % DESCRIPTION:
+            %       If no argument is supplied, or if option='', then dataTimeSeries and accompanying 
+            %       measurementList is returned as is, as it exists in the SNIRF object. 
+            %
+            %       If option is supplied then we have the following option values possible values which can be 
+            %       mixed and matched. The options are combined in one string argument with colon ':'. 
+            %       
+            %           'reshape'  - dataTimeSeries will be sorted, reshaped and reordered with the following dimensions:  
+            %               
+            %                        [ dataTimePoints,  sdPairIndex,  dataType, condition ]
+            %                   
+            %                        and all dimensions sorted in ascending order. The slowest dimensions to change will be 
+            %                        from right-to-left. That is, sdPairIndex, dataType, condition. The rows of measurement list, ml, 
+            %                        will follow this order in linear form. That is, the order of ml will index the columns 
+            %                        of d squeezed into 2 dimensions d(:,:)
+            %       
+            %           'matrix'   - dataTimeSeries will not be modified but ml will be returned as a 2D matrix instead of a 
+            %                        MeasListClass structure. It's rows will have the same order as the structure elements. 
+            %       
+            %           'datatype' - used in combination with reshape. dataTimeSeries will be reshaped as above but the 
+            %                        slowest dimensions to change will be reversed from left-to-right, that is, 
+            %                        condition, dataType, sdPair:  
+            %  
+            %           'linear'   - Reordering as shown above with reshape and datatype, but d will be squeezed into 2D 
+            %                        array
+            % 
+            %  EXAMPLES:
+            %       
+            %       %%%% dod is a DataClass object containing optical density data, with 4 sources, 8 detectors, 9 sd pairs, and 2 wavelengths.
+            %       %%%% dc is a DataClass object containing concentration data, with 4 sources, 8 detectors, 9 sd pairs, and 3 Hb data types:  hbo, hbr, and hbt. 
+            %
+            %
+            %       % Example 1:  Return OD dataTimeSeries, time and  measurementList unchanged.
+            %       [d, t, ml, order] = dod.GetDataTimeSeries();
+            %
+            %
+            %       % Example 2:  Return OD dataTimeSeries, and time unchanged and measurementList (ml) as a 2D matrix. Channel order is unchanged.
+            %       [d, t, ml, order] = dod.GetDataTimeSeries('matrix');
+            %
+            %
+            %       % Example 3:  Return concentration dataTimeSeries as a 3D array (d), and measurementList (ml) as a 2D array. Channel order is sorted, 
+            %                     with slowest dimension to change being Hb type. 
+            %       [d, t, ml, order] = dc.GetDataTimeSeries('matrix:reshape');
+            %
+            %
+            %       % Example 4:  Return concentration dataTimeSeries as a 3D array (d), and measurementList (ml) as a 2D array. Channel order is sorted, 
+            %                     with slowest dimension to change being sdPair. 
+            %       [d, t, ml, order] = dc.GetDataTimeSeries('matrix:reshape:datatype');
+            %
+            %
+            %       % Example 5:  Return concentration dataTimeSeries as a 2D array (d), and measurementList (ml) as a 2D array. Channel order is sorted, 
+            %                     with slowest dimension to change being sdPair (ie. same channel as Example 4). 
+            %       [d, t, ml, order] = dc.GetDataTimeSeries('matrix:reshape:datatype:linear');
+            %
+            %
+            %
             d = [];
+            t = [];
+            ml = [];
             order = [];
+            
             if ~exist('options','var') || isempty(options)
                 options = '';
             end
+            if isempty(obj)
+                return;
+            end            
             if isempty(obj.dataTimeSeries)
                 return;
             end
-            if ~strcmp(options, 'reshape')
+            
+            reshapeOption = '';
+            if contains(options, 'reshape')
+                reshapeOption = 'reshape';
+            end
+            dimSlow = 'sdpair';
+            if contains(lower(options), 'condition')
+                dimSlow = 'condition';
+            elseif contains(lower(options), 'datatype')
+                dimSlow = 'datatype';
+            elseif contains(lower(options), 'wavelength')
+                dimSlow = 'datatype';
+            elseif contains(lower(options), 'hbtype')
+                dimSlow = 'datatype';
+            end
+            matrixOption = '';
+            if contains(options, 'matrix')
+                matrixOption = 'matrix';
+            end
+            
+            t = obj.time;
+            if ~strcmp(reshapeOption, 'reshape')
                 d = obj.dataTimeSeries;
+                ml = obj.GetMeasurementList(matrixOption);
+                order = 1:size(d,2);
                 return
-            end
-                      
-            dataTypeLabels = {};
-            srcs = zeros(0,1);
-            dets = zeros(0,1);
-            conditions = [];
-            wavelengths = [];
-            hh=1; jj=1; kk=1; ll=1; mm=1;
-            for ii = 1:length(obj.measurementList)
-                if ~ismember(obj.measurementList(ii).dataTypeLabel, dataTypeLabels) && ~isempty(obj.measurementList(ii).dataTypeLabel)
-                    dataTypeLabels{hh} = obj.measurementList(ii).dataTypeLabel; %#ok<*AGROW>
-                    hh=hh+1;
-                end
-                if isempty(find(srcs == obj.measurementList(ii).GetSourceIndex()))
-                    srcs(jj) = obj.measurementList(ii).GetSourceIndex();
-                    jj=jj+1;
-                end
-                if isempty(find(dets == obj.measurementList(ii).GetDetectorIndex())) %#ok<*EFIND>
-                    dets(kk) = obj.measurementList(ii).GetDetectorIndex();
-                    kk=kk+1;
-                end
-                if ~ismember(obj.measurementList(ii).GetCondition(), conditions) && obj.measurementList(ii).GetCondition() > 0
-                    conditions(ll) = obj.measurementList(ii).GetCondition();
-                    ll=ll+1;
-                end
-                if ~ismember(obj.measurementList(ii).GetWavelengthIndex(), wavelengths) && obj.measurementList(ii).GetWavelengthIndex()>0
-                    wavelengths(mm) = obj.measurementList(ii).GetWavelengthIndex();
-                    mm=mm+1;
-                end
-            end
+            end            
             
-            % Sort all the dimension data
-            srcs            = sort(srcs);
-            dets            = sort(dets);
-            wavelengths     = sort(wavelengths);
-            hbTypes         = sort(dataTypeLabels);            
-            conditions      = sort(conditions);
-            
-            nWavelengths    = length(wavelengths);
-            nDataTypeLabels = length(hbTypes);
-            nCond           = length(conditions);
-
             measurementListFull = obj.GetMeasurementList('matrix');
             measurementListSDpairs = obj.GetMeasListSrcDetPairs('reshape');
             
-            kk = 1;
-            if nWavelengths > 0 && nCond == 0
-                
-                for iS = 1:length(srcs)
-                    for iD = 1:length(dets)
-                        for iWl = 1:nWavelengths
-                            
-                            k = find(measurementListFull(:,1)==srcs(iS) & measurementListFull(:,2)==dets(iD) & measurementListFull(:,4)==wavelengths(iWl));
-                            if ~isempty(k)
-                                iSDPair = find(measurementListSDpairs(:,1)==srcs(iS) & measurementListSDpairs(:,2)==dets(iD));
-                                d(:, iWl, iSDPair) = obj.dataTimeSeries(:,k); %#ok<*FNDSB>
-                                order(kk) = k;
-                                kk = kk+1;
-                            end
-                            
-                        end
-                    end
-                end
-                
-            elseif nWavelengths > 0 && nCond > 0 
-                
-                for iS = 1:length(srcs)
-                    for iD = 1:length(dets)
-                        for iWl = 1:nWavelengths
-                            for iCond = 1:nCond
-                                
-                                k = find(measurementListFull(:,1)==srcs(iS) & measurementListFull(:,2)==dets(iD) & measurementListFull(:,3)==iCond &  measurementListFull(:,4)==wavelengths(iWl));
-                                if ~isempty(k)
-                                    iSDPair = find(measurementListSDpairs(:,1)==srcs(iS) & measurementListSDpairs(:,2)==dets(iD));
-                                    d(:, iWl, iSDPair, iCond) = obj.dataTimeSeries(:,k);
-                                    order(kk) = k;
-                                    kk = kk+1;
-                                end
-                                
-                            end
-                        end
-                    end
-                end
-                
-            elseif nDataTypeLabels > 0 && nCond == 0 
-                
-                for iS = 1:length(srcs)
-                    for iD = 1:length(dets)
-                        for iHbType = 1:length(hbTypes)
-                            
-                            k = find(measurementListFull(:,1)==srcs(iS) & measurementListFull(:,2)==dets(iD) & measurementListFull(:,4)==iHbType);
-                            if ~isempty(k)
-                                iSDPair = find(measurementListSDpairs(:,1)==srcs(iS) & measurementListSDpairs(:,2)==dets(iD));
-                                d(:, iHbType, iSDPair) = obj.dataTimeSeries(:,k);
-                                order(kk) = k;
-                                kk = kk+1;
-                            end
-                            
-                        end
-                    end
-                end
-                
-            elseif nDataTypeLabels > 0 && nCond > 0 
-                
-                for iS = 1:length(srcs)
-                    for iD = 1:length(dets)
-                        for iHbType = 1:length(hbTypes)
-                            for iCond = 1:nCond
+            % Sort all the dimension data
+            srcs       = sort(unique(measurementListFull(:,1)));
+            dets       = sort(unique(measurementListFull(:,2)));
+            conditions = sort(unique(measurementListFull(:,3)));
+            dataTypes  = sort(unique(measurementListFull(:,4)));
 
-                                k = find(measurementListFull(:,1)==srcs(iS) & measurementListFull(:,2)==dets(iD) & measurementListFull(:,3)==iCond &  measurementListFull(:,4)==iHbType);
+            if obj.measurementList(1).wavelengthIndex > 0
+                wavelengths     = dataTypes;
+                hbTypes         = [];
+            else
+                wavelengths     = [];
+                hbTypes         = dataTypes;
+            end
+            if conditions == 0
+                conditions = [];
+            end
+            nWavelengths    = length(wavelengths);
+            nDataTypeLabels = length(hbTypes);
+            nCond           = length(conditions);
+            
+            kk = 1;            
+            if strcmp(dimSlow, 'sdpair')
+                
+                if nWavelengths > 0 && nCond == 0
+                    
+                    for iS = 1:length(srcs)
+                        for iD = 1:length(dets)
+                            for iWl = 1:nWavelengths
+                                
+                                k = find(measurementListFull(:,1)==srcs(iS) & measurementListFull(:,2)==dets(iD) & measurementListFull(:,4)==wavelengths(iWl));
                                 if ~isempty(k)
                                     iSDPair = find(measurementListSDpairs(:,1)==srcs(iS) & measurementListSDpairs(:,2)==dets(iD));
-                                    d(:, iHbType, iSDPair, iCond) = obj.dataTimeSeries(:,k);
+                                    d(:, iWl, iSDPair) = obj.dataTimeSeries(:,k); %#ok<*FNDSB>
                                     order(kk) = k;
                                     kk = kk+1;
                                 end
                                 
-                            end     
+                            end
                         end
                     end
-                end                
+                    
+                elseif nWavelengths > 0 && nCond > 0
+                    
+                    for iS = 1:length(srcs)
+                        for iD = 1:length(dets)
+                            for iWl = 1:nWavelengths
+                                for iCond = 1:nCond
+                                    
+                                    k = find(measurementListFull(:,1)==srcs(iS) & measurementListFull(:,2)==dets(iD) & measurementListFull(:,3)==iCond &  measurementListFull(:,4)==wavelengths(iWl));
+                                    if ~isempty(k)
+                                        iSDPair = find(measurementListSDpairs(:,1)==srcs(iS) & measurementListSDpairs(:,2)==dets(iD));
+                                        d(:, iWl, iSDPair, iCond) = obj.dataTimeSeries(:,k);
+                                        order(kk) = k;
+                                        kk = kk+1;
+                                    end
+                                    
+                                end
+                            end
+                        end
+                    end
+                    
+                elseif nDataTypeLabels > 0 && nCond == 0
+                    
+                    for iS = 1:length(srcs)
+                        for iD = 1:length(dets)
+                            for iHbType = 1:length(hbTypes)
+                                
+                                k = find(measurementListFull(:,1)==srcs(iS) & measurementListFull(:,2)==dets(iD) & measurementListFull(:,4)==iHbType);
+                                if ~isempty(k)
+                                    iSDPair = find(measurementListSDpairs(:,1)==srcs(iS) & measurementListSDpairs(:,2)==dets(iD));
+                                    d(:, iHbType, iSDPair) = obj.dataTimeSeries(:,k);
+                                    order(kk) = k;
+                                    kk = kk+1;
+                                end
+                                
+                            end
+                        end
+                    end
+                    
+                elseif nDataTypeLabels > 0 && nCond > 0
+                    
+                    for iS = 1:length(srcs)
+                        for iD = 1:length(dets)
+                            for iHbType = 1:length(hbTypes)
+                                for iCond = 1:nCond
+                                    
+                                    k = find(measurementListFull(:,1)==srcs(iS) & measurementListFull(:,2)==dets(iD) & measurementListFull(:,3)==iCond &  measurementListFull(:,4)==iHbType);
+                                    if ~isempty(k)
+                                        iSDPair = find(measurementListSDpairs(:,1)==srcs(iS) & measurementListSDpairs(:,2)==dets(iD));
+                                        d(:, iHbType, iSDPair, iCond) = obj.dataTimeSeries(:,k);
+                                        order(kk) = k;
+                                        kk = kk+1;
+                                    end
+                                    
+                                end
+                            end
+                        end
+                    end
+                end
+                
+            elseif strcmp(dimSlow, 'condition') || strcmp(dimSlow, 'datatype')
+                
+                if nWavelengths > 0 && nCond == 0
+                    
+                    for iWl = 1:nWavelengths
+                        for iS = 1:length(srcs)
+                            for iD = 1:length(dets)
+                                
+                                k = find(measurementListFull(:,1)==srcs(iS) & measurementListFull(:,2)==dets(iD) & measurementListFull(:,4)==wavelengths(iWl));
+                                if ~isempty(k)
+                                    iSDPair = find(measurementListSDpairs(:,1)==srcs(iS) & measurementListSDpairs(:,2)==dets(iD));
+                                    d(:, iWl, iSDPair) = obj.dataTimeSeries(:,k); %#ok<*FNDSB>
+                                    order(kk) = k;
+                                    kk = kk+1;
+                                end
+                                
+                            end
+                        end
+                    end
+                    
+                elseif nWavelengths > 0 && nCond > 0
+                    
+                    for iCond = 1:nCond
+                        for iWl = 1:nWavelengths
+                            for iS = 1:length(srcs)
+                                for iD = 1:length(dets)
+                                    
+                                    k = find(measurementListFull(:,1)==srcs(iS) & measurementListFull(:,2)==dets(iD) & measurementListFull(:,3)==iCond &  measurementListFull(:,4)==wavelengths(iWl));
+                                    if ~isempty(k)
+                                        iSDPair = find(measurementListSDpairs(:,1)==srcs(iS) & measurementListSDpairs(:,2)==dets(iD));
+                                        d(:, iWl, iSDPair, iCond) = obj.dataTimeSeries(:,k);
+                                        order(kk) = k;
+                                        kk = kk+1;
+                                    end
+                                    
+                                end
+                            end
+                        end
+                    end
+                    
+                elseif nDataTypeLabels > 0 && nCond == 0
+                    
+                    for iHbType = 1:length(hbTypes)
+                        for iS = 1:length(srcs)
+                            for iD = 1:length(dets)
+                                
+                                k = find(measurementListFull(:,1)==srcs(iS) & measurementListFull(:,2)==dets(iD) & measurementListFull(:,4)==iHbType);
+                                if ~isempty(k)
+                                    iSDPair = find(measurementListSDpairs(:,1)==srcs(iS) & measurementListSDpairs(:,2)==dets(iD));
+                                    d(:, iHbType, iSDPair) = obj.dataTimeSeries(:,k);
+                                    order(kk) = k;
+                                    kk = kk+1;
+                                end
+                                
+                            end
+                        end
+                    end
+                    
+                elseif nDataTypeLabels > 0 && nCond > 0
+                    
+                    for iCond = 1:nCond
+                        for iHbType = 1:length(hbTypes)
+                            for iS = 1:length(srcs)
+                                for iD = 1:length(dets)
+                                    
+                                    k = find(measurementListFull(:,1)==srcs(iS) & measurementListFull(:,2)==dets(iD) & measurementListFull(:,3)==iCond &  measurementListFull(:,4)==iHbType);
+                                    if ~isempty(k)
+                                        iSDPair = find(measurementListSDpairs(:,1)==srcs(iS) & measurementListSDpairs(:,2)==dets(iD));
+                                        d(:, iHbType, iSDPair, iCond) = obj.dataTimeSeries(:,k);
+                                        order(kk) = k;
+                                        kk = kk+1;
+                                    end
+                                    
+                                end
+                            end
+                        end
+                    end
+                end
+                
             end
+            
+            ml = measurementListFull(order,:);
+            
+            if contains(options, 'linear') 
+                d = d(:,:);
+            end
+            if ~contains(options, 'matrix')
+                ml = obj.measurementList;
+                ml(order) = ml;
+            end
+
             
             d = simulateDataError(d);
         end

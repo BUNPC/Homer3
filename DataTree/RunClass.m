@@ -399,16 +399,16 @@ classdef RunClass < TreeNodeClass
 
         
         % ----------------------------------------------------------------------------------
-        function d = GetRawData(obj, iBlk)
+        function [d, t, ml] = GetRawData(obj, iBlk)
             if nargin<2
                 iBlk = 1;
             end
-            d = obj.acquired.GetDataTimeSeries('', iBlk);
+            [d, t, ml] = obj.acquired.GetDataTimeSeries('', iBlk);
         end
         
         
         % ----------------------------------------------------------------------------------
-        function d = GetDataTimeSeries(obj, options, iBlk)
+        function [d, t, ml] = GetDataTimeSeries(obj, options, iBlk)
             if ~exist('options','var')
                 options = '';
             end
@@ -416,9 +416,9 @@ classdef RunClass < TreeNodeClass
                 iBlk = 1;
             end
             if isempty(options) || strcmp(options, 'reshape')
-                d = obj.acquired.GetDataTimeSeries(options, iBlk);
+                [d, t, ml] = obj.acquired.GetDataTimeSeries(options, iBlk);
             else
-                d = obj.GetDataTimeSeries@TreeNodeClass(options, iBlk);
+                [d, t, ml] = obj.GetDataTimeSeries@TreeNodeClass(options, iBlk);
             end
         end
         

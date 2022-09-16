@@ -591,9 +591,10 @@ classdef TreeNodeClass < handle
         
         
         % ---------------------------------------------------------
-        function [d, t] = GetDataTimeSeries(obj, options, iBlk)
+        function [d, t, ml] = GetDataTimeSeries(obj, options, iBlk)
             d = [];
             t = [];            
+            ml = [];
             if ~exist('options','var')
                 options = 'RAW';
             end
@@ -608,24 +609,31 @@ classdef TreeNodeClass < handle
                         end
                         d = [d, obj.acquired.GetDataTimeSeries(ii)]; %#ok<*AGROW>
                         t = [t; obj.GetTime(ii)];
+                        ml = [ml, obj.acquired.GetMeasurementList('matrix',ii)];
                     case 'od'
                         d = [d, obj.procStream.GetDataTimeSeries('od',ii)];
                         t = [t; obj.GetTime(ii)];
+                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'od')];
                     case {'conc','hb','hbo','hbr','hbt'}
                         d = [d, obj.procStream.GetDataTimeSeries('conc',ii)];
                         t = [t; obj.GetTime(ii)];
+                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'conc')];
                     case {'od hrf','od_hrf'}
                         d = [d, obj.procStream.GetDataTimeSeries('od hrf',ii)];
                         t = [t; obj.procStream.GetTHRF(ii)];
+                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'od hrf')];
                     case {'od hrf std','od_hrf_std'}
                         d = [d, obj.procStream.GetDataTimeSeries('od hrf std',ii)];
                         t = [t; obj.procStream.GetTHRF(ii)];
+                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'od hrf std')];
                     case {'hb hrf','conc hrf','hb_hrf','conc_hrf'}
                         d = [d, obj.procStream.GetDataTimeSeries('conc hrf',ii)];
                         t = [t; obj.procStream.GetTHRF(ii)];
+                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'conc hrf')];
                     case {'hb hrf std','conc hrf std','hb_hrf_std','conc_hrf_std'}
                         d = [d, obj.procStream.GetDataTimeSeries('conc hrf std',ii)];
                         t = [t; obj.procStream.GetTHRF(ii)];
+                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'conc hrf std')];
                 end
             end
         end

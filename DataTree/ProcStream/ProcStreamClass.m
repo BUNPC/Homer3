@@ -120,8 +120,17 @@ classdef ProcStreamClass < handle
         function B = isequal(obj, obj2)
             B = false;
             if isa(obj2, 'ProcStreamClass')
-                for ii=1:length(obj.fcalls)
+                % Compare in both direction obj -> obj2  AND  obj2 -> obj
+                for ii = 1:length(obj.fcalls)
                     if ii>length(obj2.fcalls)
+                        return
+                    end
+                    if obj.fcalls(ii) ~= obj2.fcalls(ii)
+                        return;
+                    end
+                end
+                for ii = 1:length(obj2.fcalls)
+                    if ii>length(obj.fcalls)
                         return
                     end
                     if obj.fcalls(ii) ~= obj2.fcalls(ii)
@@ -153,7 +162,9 @@ classdef ProcStreamClass < handle
                 if length(obj.fcalls) ~= length(obj2.procFunc.funcName)
                     return;
                 end
-                for ii=1:length(obj.fcalls)
+                
+                % Compare in both direction obj -> obj2  AND  obj2 -> obj
+                for ii = 1:length(obj.fcalls)
                     obj3.funcName        = obj2.procFunc.funcName{ii};
                     obj3.funcNameUI      = obj2.procFunc.funcNameUI{ii};
                     obj3.funcArgOut      = obj2.procFunc.funcArgOut{ii};
@@ -490,6 +501,7 @@ classdef ProcStreamClass < handle
             end
             args = unique([args{:}], 'stable');
         end
+        
         
         
         % ----------------------------------------------------------------------------------

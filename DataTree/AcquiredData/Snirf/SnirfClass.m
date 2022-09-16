@@ -1011,8 +1011,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function datamat = GetDataTimeSeries(obj, options, iBlk)
-            datamat = [];
+        function [d, t, ml] = GetDataTimeSeries(obj, options, iBlk)
+            d = [];
+            t = [];
+            ml = [];
             if ~exist('options','var')
                 options = '';
             end
@@ -1022,7 +1024,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if iBlk>length(obj.data)
                 return;
             end
-            datamat = obj.data(iBlk).GetDataTimeSeries(options);
+            [d, t, ml] = obj.data(iBlk).GetDataTimeSeries(options);
         end
         
         

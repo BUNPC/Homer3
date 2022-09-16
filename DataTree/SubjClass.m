@@ -305,7 +305,10 @@ classdef SubjClass < TreeNodeClass
                 if isempty(obj.inputVars.nTrialsSess)
                     obj.inputVars.nTrialsSess                      = obj.sess(iSess).procStream.output.GetVar('nTrials');
                 else
-                    obj.inputVars.nTrialsSess                      = obj.inputVars.nTrialsSess + obj.sess(iSess).procStream.output.GetVar('nTrials');
+                    nTrialsSess                                    = obj.sess(iSess).procStream.output.GetVar('nTrials');
+                    for iBlk = 1:length(obj.inputVars.nTrialsSess)
+                        obj.inputVars.nTrialsSess{iBlk}            = obj.inputVars.nTrialsSess{iBlk} + nTrialsSess{iBlk};
+                    end
                 end
                 if ~isempty(obj.sess(iSess).procStream.output.GetVar('misc'))
                     if isfield(obj.sess(iSess).procStream.output.misc, 'stim') == 1

@@ -41,47 +41,40 @@ function updateData(handles, iBlk)
 global plotprobe
 plotprobe.tMarkAmp = str2num(get(handles.editPlotProbeTimeMarkersAmp, 'string'));
 
+d = [];
 if plotprobe.datatype == plotprobe.datatypeVals.OD_HRF
-    plotprobe.y{iBlk} = plotprobe.dataTree.currElem.procStream.output.dodAvg(iBlk).GetDataTimeSeries();
-    plotprobe.ml{iBlk} = plotprobe.dataTree.currElem.procStream.output.dodAvg(iBlk).GetMeasurementList('matrix');
-    if handles.radiobuttonShowStd.Value
-        plotprobe.ystd{iBlk} = plotprobe.dataTree.currElem.procStream.output.dodAvgStd(iBlk).GetDataTimeSeries();
-    else
-        plotprobe.ystd{iBlk} = [];
-    end
-    plotprobe.t{iBlk} = plotprobe.dataTree.currElem.procStream.output.dodAvg(iBlk).GetTime();
+    d = plotprobe.dataTree.currElem.procStream.output.dodAvg;
     plotprobe.tMarkUnits = '(AU)';
 elseif plotprobe.datatype == plotprobe.datatypeVals.CONC_HRF
-    plotprobe.y{iBlk} = plotprobe.dataTree.currElem.procStream.output.dcAvg(iBlk).GetDataTimeSeries();
-    plotprobe.ml{iBlk} = plotprobe.dataTree.currElem.procStream.output.dcAvg(iBlk).GetMeasurementList('matrix');
-    if handles.radiobuttonShowStd.Value
-        plotprobe.ystd{iBlk} = plotprobe.dataTree.currElem.procStream.output.dcAvgStd(iBlk).GetDataTimeSeries();
-    else
-        plotprobe.ystd{iBlk} = [];
-    end
-    plotprobe.t{iBlk} = plotprobe.dataTree.currElem.procStream.output.dcAvg(iBlk).GetTime();
+    d = plotprobe.dataTree.currElem.procStream.output.dcAvg;
     plotprobe.tMarkAmp = plotprobe.tMarkAmp/1e6;
     plotprobe.tMarkUnits = '(micro-molars)';
 elseif plotprobe.datatype == plotprobe.datatypeVals.CONC
-    plotprobe.y{iBlk} = plotprobe.dataTree.currElem.procStream.output.dc(iBlk).GetDataTimeSeries();
-    plotprobe.ml{iBlk} = plotprobe.dataTree.currElem.procStream.output.dc(iBlk).GetMeasurementList('matrix');
-    plotprobe.ystd{iBlk} = [];
-    plotprobe.t{iBlk} = plotprobe.dataTree.currElem.procStream.output.dc(iBlk).GetTime();
+    d = plotprobe.dataTree.currElem.procStream.output.dc;
 elseif plotprobe.datatype == plotprobe.datatypeVals.OD
-    plotprobe.y{iBlk} = plotprobe.dataTree.currElem.procStream.output.dod(iBlk).GetDataTimeSeries();
-    plotprobe.ml{iBlk} = plotprobe.dataTree.currElem.procStream.output.dod(iBlk).GetMeasurementList('matrix');
-    plotprobe.ystd{iBlk} = [];
-    plotprobe.t{iBlk} = plotprobe.dataTree.currElem.procStream.output.dod(iBlk).GetTime();
+    d = plotprobe.dataTree.currElem.procStream.output.dod;
 elseif plotprobe.datatype == plotprobe.datatypeVals.RAW
-    plotprobe.y{iBlk} = plotprobe.dataTree.currElem.acquired.data(iBlk).GetDataTimeSeries();
-    plotprobe.ml{iBlk} = plotprobe.dataTree.currElem.acquired.data(iBlk).GetMeasurementList('matrix');
-    plotprobe.ystd{iBlk} = [];
-    plotprobe.t{iBlk} = plotprobe.dataTree.currElem.acquired.data(iBlk).GetTime();
+    if ~isempty(plotprobe.dataTree.currElem.acquired)
+        d = plotprobe.dataTree.currElem.acquired.data;
+    end
+end
+
+if isempty(d)    
+    plotprobe.y{1}       = [];
+    plotprobe.ml{1}      = [];
+    plotprobe.ystd{1}    = [];
+    plotprobe.t{1}       = [];
 else
-    plotprobe.y{iBlk} = [];
-    plotprobe.ml{iBlk} = [];
-    plotprobe.ystd{iBlk} = [];
-    plotprobe.t{iBlk} = [];    
+    for ii = 1:length(d)
+        plotprobe.y{iBlk}       = d(iBlk).GetDataTimeSeries();
+        plotprobe.ml{iBlk}      = d(iBlk).GetMeasurementList('matrix');
+        if handles.radiobuttonShowStd.Value
+            plotprobe.ystd{iBlk} = d(iBlk).GetDataTimeSeries();
+        else
+            plotprobe.ystd{iBlk} = [];
+        end
+        plotprobe.t{iBlk}       = d(iBlk).GetTime();
+    end
 end
 
 % Apply condition to isolate data to be displayed
@@ -103,6 +96,4 @@ end
 
 % Get probe
 plotprobe.SD = plotprobe.dataTree.currElem.GetSDG('2D');
-
-
 

@@ -48,7 +48,7 @@ if isempty(mlActAuto)
 end
 
 for iBlk = 1:length(data_dc)
-    [dc, order] = data_dc(iBlk).GetDataTimeSeries('reshape');
+    [dc, ~, ~, order] = data_dc(iBlk).GetDataTimeSeries('reshape');
     ml = data_dc(iBlk).GetMeasListSrcDetPairs('reshape');
         
     mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, ml);

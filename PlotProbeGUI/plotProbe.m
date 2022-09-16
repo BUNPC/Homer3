@@ -306,7 +306,7 @@ function [lc,lv,lw,ls] = setLineProperties(lc,lv,lw,ls,idx,mlAct,color,nDataType
 if mlAct(idx)==0  % Make manually and automaticaly pruned or disabled channels dotted
     ls{idx} = ':';
     for ii=1:nDataTypes
-        lw(idx,ii) = 2.0;
+        lw(idx,ii) = 1;
         lc(idx,ii,:) = color(ii,:);
         lv{idx,ii} = 'on';
     end
@@ -317,7 +317,7 @@ if mlAct(idx)==0  % Make manually and automaticaly pruned or disabled channels d
 elseif mlAct(idx)==1
     ls{idx} = '-';
     for ii=1:nDataTypes
-        lw(idx,ii) = 2.0;
+        lw(idx,ii) = 1;
         lc(idx,ii,:) = color(ii,:);
         lv{idx,ii} = 'on';
     end

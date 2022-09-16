@@ -112,6 +112,7 @@ if ~isempty(tInc)
         h(ii) = patch(handles.axesData, [p(ii,1) p(ii,2) p(ii,2) p(ii,1) p(ii,1)], [yy(1) yy(1) yy(2) yy(2) yy(1)], col, ...
                       'facealpha',0.4, 'edgecolor','none');
     end
+    set(handles.axesData, 'ylim',[yy(1), yy(2)]);
     tPtsExclTot = [tPtsExclTot(:)', tPtsExcl(:)'];
 end
 

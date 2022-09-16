@@ -5,8 +5,8 @@ datatype    = GetDatatype(handles);
 ml          = GetMeasurementList(handles);
 
 linecolorsAvailable  = maingui.axesData.SDPairColors;
-linestylesAvailable  = {'-','--',':','-.'};
-linewidthsAvailable   = [2, 2, 2.5, 2, 2];
+linestylesAvailable  = {'-',':','-.','--'};
+linewidthsAvailable   = [1.5, 2.0, 1.5, 1.5, 1.5];
 
 linecolors  = zeros(length(iCh), 3);
 linestyles  = cell(1, length(iCh));

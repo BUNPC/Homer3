@@ -26,6 +26,12 @@ for ii = 1:length(dirs)
         if strcmp(obj.config.InclArchivedFunctions, 'Yes')
             userfuncdir{end+1} = fullpath([userfuncdir{1}, 'Archive/']); %#ok<*AGROW>
         end
+    elseif strcmp(dirs(ii).name, 'Sim')
+        obj.config = struct('InclArchivedFunctions','');
+        obj.config.InclArchivedFunctions = cfg.GetValue('Include Archived User Functions');        
+        if strcmp(obj.config.InclArchivedFunctions, 'Yes')
+            userfuncdir{end+1} = fullpath([userfuncdir{1}, 'Sim/']); %#ok<*AGROW>
+        end
     else
         userfuncdir{end+1} = filesepStandard(fullpath([userfuncdir{1}, dirs(ii).name]));
     end

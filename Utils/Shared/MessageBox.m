@@ -12,7 +12,7 @@ end
 
 % Display message box
 hm = msgbox(msg, title);
-resizeBox(hm, msg, title)
+%resizeBox(hm, msg, title)
  
 if optionExists(options, 'nowait')
     return

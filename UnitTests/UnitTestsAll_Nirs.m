@@ -17,7 +17,7 @@ DEBUG1=0;
 testidx=0;
 procStreamStyle = 'nirs';
 
-CleanUp(standalone);
+UnitTests_Init(standalone);
 logger = InitLogger(logger, 'UnitTestsAll_Nirs');
 logger.WriteNoNewline('################################################################');
 logger.CurrTime('Starting UnitTestsAll_Nirs ...');

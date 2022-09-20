@@ -5,9 +5,6 @@ end
 if ~exist('appname','var') || isempty(appname)
     appname = {'Untitled'};
 end
-if ~exist('args','var') || isempty(args)
-    args = {};
-end
 
 logger = InitLogger(logger, 'SystemInfo');
 platform = ['R', version('-release')];

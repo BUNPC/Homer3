@@ -18,7 +18,7 @@ if strcmp(ns, 'AtlasViewerGUI')
     elseif nargin == 5
         [out1] = points_on_line_AtlasViewerGUI(inp1, inp2, inp3, inp4, inp5);
     end
-elseif strcmp(ns, 'Homer3')
+elseif strcmp(ns, 'Homer3') || strcmp(ns, 'DataTreeClass')
     if nargin == 0
         [out1] = points_on_line_Homer3();
     elseif nargin == 1

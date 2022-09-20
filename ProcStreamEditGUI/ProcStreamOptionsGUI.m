@@ -199,6 +199,7 @@ Initialize(handles);
 ParseArgs(varargin);
 
 procStreamOptions.err=0;
+procStreamOptions.psPrev = ProcStreamClass();
 
 if ~isempty(maingui)
     procStreamOptions.updateParentGui = maingui.Update;
@@ -252,9 +253,14 @@ global procStreamOptions
 DEBUG = 0;
 hObject = handles.figure;
 
+ps = procStreamOptions.dataTree.currElem.procStream;
+if ps.isequal(procStreamOptions.psPrev)
+    return
+end
+procStreamOptions.psPrev.CopyFcalls(ps);
+
 ResetDisplay(handles);
 
-ps = procStreamOptions.dataTree.currElem.procStream;
 fcalls = ps.fcalls;
 nFcalls = length(fcalls);
 if nFcalls==0
@@ -325,8 +331,12 @@ for k = 1:nFcalls
     
     % Draw function call divider for clarity
     p(end+1,:) = [0, Ypfk+b/2, Xst, .3]; %#ok<*AGROW>
-    h(end+1,:) = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',p(end,:),...
-                                    'enable','off');
+    h(end+1,:) = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',p(end,:), 'enable','off');
+    if DEBUG
+        fprintf('    %d) Divider:   p = [%0.1f, %0.1f, %0.1f, %0.1f]\n', k, p(1), p(2), p(3), p(4));
+    end
+    
+    
     % Draw function call
     p(end+1,:) = [a, Ypfk, Xsf, Ys];
     if numUsages(k)>1
@@ -363,6 +373,7 @@ for k = 1:nFcalls
                                         'horizontalalignment','center', ...
                                         'Callback',fcn);
     end
+    
 end
 
 % Set all GUI objects except figure to normalized units, so it can be
@@ -374,6 +385,9 @@ set(h, 'units','normalized');
 % set(hObject, 'units','pixels');
 setGuiFonts(hObject);
 rePositionGuiWithinScreen(hObject);
+
+p = get(hObject, 'position');
+fprintf('ProcStreamOptionsGUI  size: [%0.2f, %0.2f]\n', p(3), p(4));
 
 figure(handles.figure);
 set(handles.pushbuttonExit, 'units','normalized');

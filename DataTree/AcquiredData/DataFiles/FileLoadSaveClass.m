@@ -142,6 +142,10 @@ classdef FileLoadSaveClass < matlab.mixin.Copyable
         
         % -------------------------------------------------------
         function err = GetError(obj)
+            err = [];
+            if isempty(obj)
+                return
+            end
             err = obj.err;
         end
         

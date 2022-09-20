@@ -199,13 +199,13 @@ classdef ProbeClass < FileLoadSaveClass
                         % sphere_opt_pos = opt_pos*T;
                         % sphere_opt_pos_norm = sqrt(sum(sphere_opt_pos.^2,2));
                         % sphere_opt_pos = sphere_opt_pos./sphere_opt_pos_norm ;
-                        %%
+                        %
                         % get 2D circular refpts for current selecetd reference point system
                         probe_refpts_idx =  ismember(sphere.label, obj.landmarkLabels);
 
                         % refpts_2D.pos = [sphere_xc(probe_refpts_idx) sphere_yc(probe_refpts_idx) sphere_zc(probe_refpts_idx)];
                         refpts_2D.label = sphere.label(probe_refpts_idx);
-                        %%
+                        %
                         refpts_theta =  sphere.theta(probe_refpts_idx);
                         refpts_phi = 90 - sphere.phi(probe_refpts_idx); % elevation angle from top axis
 
@@ -214,14 +214,13 @@ classdef ProbeClass < FileLoadSaveClass
                         [x,y] = pol2cart(refpts_theta, refpts_phi);      % get plane coordinates
                         xy = [x y];
 
-                        %%
+                        %
                         norm_factor = max(max(xy));
                         xy = xy/norm_factor;               % set maximum to unit length
                         refpts_2D.pos = xy;
                         obj.landmarkPos2D = refpts_2D.pos;
 
-                        %%
-
+                        %
                         obj.sourcePos2D = convert_optodepos_to_circlular_2D_pos(obj, obj.sourcePos3D, T, norm_factor);
                         obj.detectorPos2D = convert_optodepos_to_circlular_2D_pos(obj, obj.detectorPos3D, T, norm_factor);
                     end
@@ -302,7 +301,7 @@ classdef ProbeClass < FileLoadSaveClass
                 assert(obj.IsValid())
                 
             catch 
-                err=-1;
+                err = -1;
                 return;
             end
             
@@ -324,7 +323,7 @@ classdef ProbeClass < FileLoadSaveClass
                     obj.detectorPos3D(:,3) = 0;
                 end
             end
-            
+            obj.SetError(err); 
         end
 
         

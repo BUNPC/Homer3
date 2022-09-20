@@ -25,16 +25,12 @@ classdef ProcStreamClass < handle
             obj.config = struct('procStreamCfgFile','', 'defaultProcStream','','suffix','');
             obj.config.procStreamCfgFile    = cfg.GetValue('Processing Stream Config File');
             obj.config.regressionTestActive = cfg.GetValue('Regression Test Active');
-            copyOptions = '';
-            if strcmpi(obj.getDefaultProcStream(), '_nirs')
-                copyOptions = 'extended';
-            end
             
             % By the time this class constructor is called we should already have a saved registry 
             % to load. (Defintiely would not want to be generating the registry for each instance of this class!!)
             obj.reg = RegistriesClass();
             
-            obj.input = ProcInputClass(acquired, copyOptions);
+            obj.input = ProcInputClass(acquired);
             obj.output = ProcResultClass();
             
             if nargin==0
@@ -122,10 +118,19 @@ classdef ProcStreamClass < handle
 
         % ----------------------------------------------------------------------------------
         function B = isequal(obj, obj2)
-            B = 0;
-            if isa(obj2, 'ProcStream')
-                for ii=1:length(obj.fcalls)
+            B = false;
+            if isa(obj2, 'ProcStreamClass')
+                % Compare in both direction obj -> obj2  AND  obj2 -> obj
+                for ii = 1:length(obj.fcalls)
                     if ii>length(obj2.fcalls)
+                        return
+                    end
+                    if obj.fcalls(ii) ~= obj2.fcalls(ii)
+                        return;
+                    end
+                end
+                for ii = 1:length(obj2.fcalls)
+                    if ii>length(obj.fcalls)
                         return
                     end
                     if obj.fcalls(ii) ~= obj2.fcalls(ii)
@@ -157,7 +162,9 @@ classdef ProcStreamClass < handle
                 if length(obj.fcalls) ~= length(obj2.procFunc.funcName)
                     return;
                 end
-                for ii=1:length(obj.fcalls)
+                
+                % Compare in both direction obj -> obj2  AND  obj2 -> obj
+                for ii = 1:length(obj.fcalls)
                     obj3.funcName        = obj2.procFunc.funcName{ii};
                     obj3.funcNameUI      = obj2.procFunc.funcNameUI{ii};
                     obj3.funcArgOut      = obj2.procFunc.funcArgOut{ii};
@@ -171,8 +178,10 @@ classdef ProcStreamClass < handle
                         return;
                     end
                 end
+            else
+                return
             end
-            B = 1;
+            B = true;
         end
 
         
@@ -190,9 +199,6 @@ classdef ProcStreamClass < handle
         % ----------------------------------------------------------------------------------
         function FreeMemory(obj, filename)
             if ~exist('filename','var')
-                return
-            end
-            if ~ispathvalid(filename, 'file')
                 return
             end
             obj.output.FreeMemory(filename)
@@ -270,7 +276,9 @@ classdef ProcStreamClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function fcalls = Calc(obj, filename)            
+        function fcalls = Calc(obj, filename)
+            global logger
+            
             if ~exist('filename','var')
                 filename = '';
             end
@@ -302,9 +310,9 @@ classdef ProcStreamClass < handle
                     msg = sprintf('Function %s generated error at line %d: %s', obj.fcalls(iFcall).name, ME.stack(1).line, ME.message);
                     if strcmp(obj.config.regressionTestActive, 'false')
                         MessageBox(msg);
-                    elseif strcmp(obj.config.regressionTestActive, 'false')
-                        fprintf('%s\n', msg);
                     end
+                    logger.Write('%s\n', msg);
+                    printStack(ME);
                     close(hwait);
                     rethrow(ME)
                 end
@@ -493,6 +501,7 @@ classdef ProcStreamClass < handle
             end
             args = unique([args{:}], 'stable');
         end
+        
         
         
         % ----------------------------------------------------------------------------------
@@ -1426,6 +1435,97 @@ classdef ProcStreamClass < handle
         end
         
         
+        % ---------------------------------------------------------
+        function ml = GetMeasurementList(obj, matrixMode, iBlks, dataType)
+            ml = [];
+            if ~exist('matrixMode','var')
+                matrixMode = '';
+            end
+            if ~exist('iBlks','var') || isempty(iBlks)
+                iBlks = 1;
+            end
+            if ~exist('dataType','var')
+                dataType = 'conc';
+            end
+            for iBlk = 1:length(iBlks)
+                switch(lower(dataType))
+                    case 'od'
+                        if iBlk <= length(obj.output.dod)
+                            ml = [ml; obj.output.dod(iBlk).GetMeasurementList(matrixMode)];
+                        end
+                        break;
+                    case {'conc','hb','hbo','hbr','hbt'}
+                        if iBlk <= length(obj.output.dc)
+                            ml = [ml; obj.output.dc(iBlk).GetMeasurementList(matrixMode)];
+                        end
+                        break;
+                    case {'od hrf','od_hrf'}
+                        if iBlk <= length(obj.output.dodAvg)
+                            ml = [ml; obj.output.dodAvg(iBlk).GetMeasurementList(matrixMode)];
+                        end
+                        break;
+                    case {'hb hrf','conc hrf','hb_hrf','conc_hrf'}
+                        if iBlk <= length(obj.output.dcAvg)
+                            ml = [ml; obj.output.dcAvg(iBlk).GetMeasurementList(matrixMode)];
+                        end
+                        break;
+                end
+            end
+        end        
+                
+        
+        % ---------------------------------------------------------
+        function t = GetTHRF(obj, iBlk)
+            t = [];
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            t = obj.output.tHRF;
+        end
+        
+        
+        
+        % ---------------------------------------------------------
+        function dataTimeSeries = GetDataTimeSeries(obj, options, iBlk)
+            dataTimeSeries = [];
+            if ~exist('options','var')
+                options = 'conc';
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            for ii = 1:length(iBlk)
+                switch(lower(options))
+                    case 'od'
+                        if ii <= length(obj.output.dod)
+                            dataTimeSeries = [dataTimeSeries, obj.output.dod(ii).dataTimeSeries];
+                        end
+                    case {'conc','hb','hbo','hbr','hbt'}
+                        if ii <= length(obj.output.dc)
+                            dataTimeSeries = [dataTimeSeries; obj.output.dc(ii).dataTimeSeries];
+                        end
+                    case {'od hrf','od_hrf'}
+                        if ii <= length(obj.output.dodAvg)
+                            dataTimeSeries = [dataTimeSeries; obj.output.dodAvg(ii).dataTimeSeries];
+                        end
+                    case {'hb hrf','conc hrf','hb_hrf','conc_hrf'}
+                        if ii <= length(obj.output.dcAvg)
+                            dataTimeSeries = [dataTimeSeries; obj.output.dcAvg(ii).dataTimeSeries];
+                        end
+                    case {'od hrf std','od_hrf_std'}
+                        if ii <= length(obj.output.dodAvg)
+                            dataTimeSeries = [dataTimeSeries; obj.output.dodAvgStd(ii).dataTimeSeries];
+                        end
+                    case {'hb hrf std','conc hrf std','hb_hrf_std','conc_hrf_std'}
+                        if ii <= length(obj.output.dcAvg)
+                            dataTimeSeries = [dataTimeSeries; obj.output.dcAvgStd(ii).dataTimeSeries];
+                        end
+                end
+            end
+        end
+        
+                
+        
         % ----------------------------------------------------------------------------------
         function SetTincMan(obj, val, iBlk)
             if ~exist('iBlk','var')
@@ -1477,15 +1577,6 @@ classdef ProcStreamClass < handle
                 iBlk = [];
             end
             mlActAuto = obj.output.GetVar('mlActAuto',iBlk);
-        end
-
-        
-        % ----------------------------------------------------------------------------------
-        function mlVis = GetMeasListVis(obj, iBlk)
-            if ~exist('iBlk','var')
-                iBlk = [];
-            end
-            mlVis = obj.input.GetVar('mlVis',iBlk);
         end
 
         
@@ -1764,6 +1855,12 @@ classdef ProcStreamClass < handle
                 iBlk = 1;
             end
             obj.output.ExportHRF(filename, CondNames, iBlk);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function filename = ExportHRF_GetFilename(obj, filename)
+            filename = obj.output.ExportHRF_GetFilename(filename);
         end
         
         

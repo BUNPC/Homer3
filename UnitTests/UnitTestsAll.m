@@ -1,15 +1,15 @@
 function UnitTestsAll()
-global cfg 
+global cfg
+
 t1 = tic;
 
 setNamespace('Homer3')
 
-CleanUp(true, true, 'UnitTestsAll');
+UnitTests_Init(true, true, 'UnitTestsAll');
 
 cleanupObj = onCleanup(@()userInterrupt_Callback(true));
 
 cfg.SetValue('Regression Test Active','true');
-
 cfg.SetValue('Include Archived User Functions','Yes');
 cfg.SetValue('Default Processing Stream Style','NIRS');
 cfg.Save();

@@ -68,14 +68,9 @@ for iBlk=1:length(data_d)
 
     d           = data_d(iBlk).GetDataTimeSeries();
     MeasList    = data_d(iBlk).GetMeasList();
-    if isempty(mlActMan{iBlk})
-        mlActMan{iBlk} = ones(size(MeasList,1),1);
-    end
-    if isempty(mlActAuto{iBlk})  
-        mlActAuto{iBlk} = ones(size(MeasList,1),1);
-    end
-    
-    mlAct = mlActMan{iBlk} & mlActAuto{iBlk};
+    mlActMan{iBlk} = mlAct_Initialize(mlActMan{iBlk}, MeasList);
+    mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, MeasList);    
+    mlAct = mlActMan{iBlk}(:,3) & mlActAuto{iBlk}(:,3);
 
     if isempty(tIncMan{iBlk})
         tIncMan{iBlk} = ones(size(d,1),1);

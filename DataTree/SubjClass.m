@@ -288,11 +288,12 @@ classdef SubjClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function LoadInputVars(obj, tHRF_common)
+            obj.inputVars.nTrialsSess = [];
             for iSess = 1:length(obj.sess)
-            	% Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
+                % Set common tHRF: make sure size of tHRF, dcAvg and dcAvg is same for
                 % all sessions. Use smallest tHRF as the common one.
                 obj.sess(iSess).procStream.output.SettHRFCommon(tHRF_common, obj.sess(iSess).name, obj.sess(iSess).type);
-            
+                
                 obj.inputVars.dodAvgSess{obj.sess(iSess).iSess}    = obj.sess(iSess).procStream.output.GetVar('dodAvg');
                 obj.inputVars.dodAvgStdSess{obj.sess(iSess).iSess} = obj.sess(iSess).procStream.output.GetVar('dodAvgStd');
                 obj.inputVars.dodSum2Sess{obj.sess(iSess).iSess}   = obj.sess(iSess).procStream.output.GetVar('dodSum2');
@@ -301,34 +302,41 @@ classdef SubjClass < TreeNodeClass
                 obj.inputVars.dcSum2Sess{obj.sess(iSess).iSess}    = obj.sess(iSess).procStream.output.GetVar('dcSum2');
                 obj.inputVars.tHRFSess{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.GetTHRF();
                 obj.inputVars.mlActSess{obj.sess(iSess).iSess}     = obj.sess(iSess).procStream.output.GetVar('mlActAuto');
-                obj.inputVars.nTrialsSess{obj.sess(iSess).iSess}   = obj.sess(iSess).procStream.output.GetVar('nTrials');
+                if isempty(obj.inputVars.nTrialsSess)
+                    obj.inputVars.nTrialsSess                      = obj.sess(iSess).procStream.output.GetVar('nTrials');
+                else
+                    nTrialsSess                                    = obj.sess(iSess).procStream.output.GetVar('nTrials');
+                    for iBlk = 1:length(obj.inputVars.nTrialsSess)
+                        obj.inputVars.nTrialsSess{iBlk}            = obj.inputVars.nTrialsSess{iBlk} + nTrialsSess{iBlk};
+                    end
+                end
                 if ~isempty(obj.sess(iSess).procStream.output.GetVar('misc'))
                     if isfield(obj.sess(iSess).procStream.output.misc, 'stim') == 1
                         obj.inputVars.stimSess{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.misc.stim;
-                	else
-	                    obj.inputVars.stimSess{obj.sess(iSess).iSess}      = obj.sess(iSess).GetVar('stim');
-                	end
-            	else
+                    else
+                        obj.inputVars.stimSess{obj.sess(iSess).iSess}      = obj.sess(iSess).GetVar('stim');
+                    end
+                else
                     obj.inputVars.stimSess{obj.sess(iSess).iSess}      = obj.sess(iSess).GetVar('stim');
-            	end
+                end
                 obj.inputVars.dcSess{obj.sess(iSess).iSess}       = obj.sess(iSess).procStream.output.GetVar('dc');
                 obj.inputVars.AauxSess{obj.sess(iSess).iSess}      = obj.sess(iSess).procStream.output.GetVar('Aaux');
                 obj.inputVars.tIncAutoSess{obj.sess(iSess).iSess}  = obj.sess(iSess).procStream.output.GetVar('tIncAuto');
                 obj.inputVars.rcMapSess{obj.sess(iSess).iSess}     = obj.sess(iSess).procStream.output.GetVar('rcMap');
-            
-	            % a) Find all variables needed by proc stream
-	            args = obj.procStream.GetInputArgs();
-
+                
+                % a) Find all variables needed by proc stream
+                args = obj.procStream.GetInputArgs();
+                
                 % b) Find these variables in this session
-	            for ii = 1:length(args)
+                for ii = 1:length(args)
                     if ~eval( sprintf('isproperty(obj.inputVars, ''%s'')', args{ii}) )
                         eval( sprintf('obj.inputVars.%s = obj.GetVar(args{ii});', args{ii}) );
-    	            end
-        	    end
-            
-            	% Free session memory
-            	obj.sess(iSess).FreeMemory()
-        	end
+                    end
+                end
+                
+                % Free session memory
+                obj.sess(iSess).FreeMemory()
+            end
         end
             
                    
@@ -358,6 +366,10 @@ classdef SubjClass < TreeNodeClass
                 tHRF_common = obj.sess(iSess).procStream.output.GeneratetHRFCommon(tHRF_common);
             end
             
+            % Update call application GUI using it's generic Update function 
+            if ~isempty(obj.updateParentGui)
+                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun]);
+            end
             
             % Load all the variables that might be needed by procStream.Calc() to calculate proc stream for this subject
             obj.LoadInputVars(tHRF_common);
@@ -368,12 +380,7 @@ classdef SubjClass < TreeNodeClass
                 fprintf('Completed processing stream for group %d, subject %d\n', obj.iGroup, obj.iSubj);
                 fprintf('\n');
             end
-            
-            % Update call application GUI using it's generic Update function 
-            if ~isempty(obj.updateParentGui)
-                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun]);
-            end
-            
+                        
         end
                 
         

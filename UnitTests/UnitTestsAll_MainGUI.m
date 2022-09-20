@@ -12,7 +12,8 @@ if ~exist('standalone','var')
 end
 
 % Clean up before we start
-CleanUp(standalone, true, 'UnitTests_MainGUI');
+UnitTests_Init(standalone, true, 'UnitTests_MainGUI');
+
 logger.WriteNoNewline('################################################################');
 logger.CurrTime('Starting UnitTests_MainGUI ...');
 

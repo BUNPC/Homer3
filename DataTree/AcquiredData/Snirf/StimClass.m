@@ -134,7 +134,8 @@ classdef StimClass < FileLoadSaveClass
                     err = 1;
                 end
                 
-            end
+            end            
+            obj.SetError(err); 
         end
         
         
@@ -267,16 +268,18 @@ classdef StimClass < FileLoadSaveClass
             err = 0;
             
             % According to SNIRF spec, stim data is invalid if it has > 0 AND < 3 columns
-            if isempty(obj.data)
-                return;
+            if isempty(obj.name)
+                err = -3;
             end
-            if size(obj.data, 2)<3
-                err = -2;
-                return;
+            if ~isempty(obj.data) && size(obj.data,2)<3
+                err = err-4;
+                if size(obj.data, 2) ~= length(obj.dataLabels)
+                    err = err-5;
+                end
             end
         end
         
-                
+
     end
     
     

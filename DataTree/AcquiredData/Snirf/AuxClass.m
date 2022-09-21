@@ -110,6 +110,8 @@ classdef AuxClass < FileLoadSaveClass
                 end
                 
             end
+            
+            obj.SetError(err); 
         end
 
         

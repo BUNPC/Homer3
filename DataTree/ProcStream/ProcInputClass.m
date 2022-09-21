@@ -242,31 +242,6 @@ classdef ProcInputClass < handle
 
         
         % ----------------------------------------------------------------------------------
-        function ml = GetMeasListVis(obj, iBlk)
-            if ~exist('iBlk','var')
-                iBlk = 1;
-            end
-            if ~isempty(obj.mlVis)
-                ml = obj.mlVis{iBlk};
-            else
-                ml = [];
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function SetMeasListVis(obj, ml, iBlk)
-            if ~exist('iBlk','var')
-                iBlk = 1;
-            end
-            if isempty(obj.mlVis)
-                obj.mlVis{iBlk} = ml;
-            elseif length(obj.mlVis{iBlk}) == length(ml)
-               obj.mlVis{iBlk} = ml; 
-            end
-        end
-        
-        % ----------------------------------------------------------------------------------
         function n = GetDataBlocksNum(obj)
             n = length(obj.tIncMan);
         end

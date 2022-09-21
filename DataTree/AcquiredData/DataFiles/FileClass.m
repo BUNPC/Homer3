@@ -19,7 +19,7 @@ classdef FileClass < matlab.mixin.Copyable
         rootdir
         err
         logger
-        errmsgs
+        errmsg
     end
     
     methods
@@ -38,9 +38,9 @@ classdef FileClass < matlab.mixin.Copyable
             obj.filename   = '';
             obj.map2group  = struct('iGroup',0, 'iSubj',0, 'iSess',0, 'iRun',0);
             obj.rootdir    = '';
-            obj.err        = -1;          % Assume file is not loadable
+            obj.errmsg     = '';          % Assume file is not loadable
             obj.logger     = InitLogger(logger);            
-            obj.errmsgs    = {'Invalid Data Format','Invalid File Name'};
+            obj.errmsg    = '';
             
             
             if nargin==0
@@ -538,22 +538,19 @@ classdef FileClass < matlab.mixin.Copyable
         
         % -----------------------------------------------------
         function err = GetError(obj)
-            err = obj.err;
+            err = ~isempty(obj.errmsg);
         end
         
         
         % -----------------------------------------------------
-        function err = SetError(obj, err)
-            if ischar(err)
-                err = find(strcmp(obj.errmsgs, err));
-            end
-            obj.err = err;
+        function SetError(obj, errmsg)
+            obj.errmsg = errmsg;
         end
         
         
         % -----------------------------------------------------
         function msg = GetErrorMsg(obj)
-            msg = obj.errmsgs{abs(obj.err)};
+            msg = obj.errmsg;
         end
         
     end

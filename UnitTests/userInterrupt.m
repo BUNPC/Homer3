@@ -2,6 +2,6 @@ function userInterrupt(standalone)
 global procStreamStyle
 global testidx
 
-CleanUp(standalone, false);
+UnitTests_Init(standalone, false);
 testidx=[];
 procStreamStyle=[];

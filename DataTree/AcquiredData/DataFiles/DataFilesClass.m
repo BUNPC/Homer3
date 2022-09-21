@@ -20,7 +20,7 @@ classdef DataFilesClass < handle
     methods
         
         % ----------------------------------------------------
-        function obj = DataFilesClass(varargin)            
+        function obj = DataFilesClass(varargin)
             obj.files = FileClass.empty();
             obj.filesErr = FileClass.empty();
             obj.filetype = '';
@@ -472,25 +472,34 @@ classdef DataFilesClass < handle
                 if obj.files(ii).isdir
                     continue;
                 end
-                filename = [obj.files(ii).rootdir, obj.files(ii).name];
+                filename = [obj.rootdir, obj.files(ii).name];
                 eval( sprintf('o = %s(filename);', constructor) );
                 if  o.GetError() < 0
-                    obj.logger.Write('DataFilesClass.ErrorCheck:   FAILED error check - %s will not be added to data set\n', filename);
+                    obj.logger.Write('DataFilesClass.ErrorCheck - ERROR: In file "%s" %s. File will not be added to data set\n', obj.files(ii).name, o.GetErrorMsg());
                     errorIdxs = [errorIdxs, ii]; %#ok<AGROW>
-                elseif  contains(o.GetErrorMsg(), 'WARNING: ''data'' corrupt and unusable')                    
-                    obj.logger.Write('DataFilesClass.ErrorCheck:   WARNING data is unusable - %s will not be added to data set\n', filename);
+                elseif  contains(o.GetErrorMsg(), '''data'' field corrupt and unusable')                    
+                    obj.logger.Write('DataFilesClass.ErrorCheck - WARNING: In file "%s" %s. File will not be added to data set\n', obj.files(ii).name, o.GetErrorMsg());
                     errorIdxs = [errorIdxs, ii]; %#ok<AGROW>
+                elseif  contains(o.GetErrorMsg(), '''data'' field is invalid')                    
+                    obj.logger.Write('DataFilesClass.ErrorCheck - WARNING: In file "%s" %s. File will not be added to data set\n', obj.files(ii).name, o.GetErrorMsg());
+                    errorIdxs = [errorIdxs, ii]; %#ok<AGROW>
+                elseif ~isempty(o.GetErrorMsg())
+                    obj.logger.Write('DataFilesClass.ErrorCheck - WARNING: In file  "%s"  %s. File will be added anyway.\n', obj.files(ii).name, o.GetErrorMsg());
+                    dataflag = true;
                 else
                     dataflag = true;
                 end
+                if ~isempty(o.GetErrorMsg())
+                    obj.files(ii).SetError(o.GetErrorMsg());
+                end
                 hwait = waitbar_improved(ii/length(obj.files), hwait, msg);
             end
+            
             if dataflag==false
                 obj.files = FileClass.empty();
             else
                 for jj = 1:length(errorIdxs)
                     obj.filesErr(end+1) = obj.files(errorIdxs(jj)).copy;
-                    obj.filesErr(end).SetError('Invalid Data Format');
                 end
             	obj.files(errorIdxs) = [];
                 obj.nfiles = obj.nfiles - length(errorIdxs);

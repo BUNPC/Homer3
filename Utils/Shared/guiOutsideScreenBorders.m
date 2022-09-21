@@ -65,6 +65,9 @@ if p(4)>=ScreenHeight
     b(4) = p(4) - ScreenHeight;
 end
 p = p - b;
+if p(4)==1
+    p(2)=0;
+end
 
 % Set the screen units back to initial units
 set(0,'units',us0);

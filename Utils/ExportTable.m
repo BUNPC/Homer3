@@ -65,6 +65,9 @@ classdef ExportTable < handle
                 end
             end
             
+            if isempty(cells)
+                return;
+            end
             obj.Open();
             obj.Save();
             obj.Close();
@@ -108,6 +111,13 @@ classdef ExportTable < handle
             end
             fclose(obj.fd);
             obj.fd = -1;
+        end
+        
+        
+        
+        % ----------------------------------------------------------------
+        function filenameFull = GetFilenameFull(obj)
+            filenameFull = [obj.pathname, obj.filename, obj.ext];
         end
         
     end

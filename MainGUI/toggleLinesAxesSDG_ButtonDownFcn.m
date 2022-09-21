@@ -1,55 +1,32 @@
-function toggleLinesAxesSDG_ButtonDownFcn(hObject, eventdata, handles)
-
-% This function is called when the user clicks on one of the meausrement
-% lines in the SDG window
-
+function toggleLinesAxesSDG_ButtonDownFcn(hObject, ~, handles)
+% This function is called when the user clicks directly on one of the measurement
+% lines in the SDG axes
 global maingui;
 
-hAxesSDG = handles.axesSDG;
-iSrcDet  = maingui.axesSDG.iSrcDet;
+SD    = maingui.dataTree.currElem.GetSDG('2D');
+ch    = maingui.dataTree.currElem.GetMeasList();
 
-SD       = maingui.dataTree.currElem.GetSDG('2D');
-ch       = maingui.dataTree.currElem.GetMeasList();
-Lambda   = maingui.dataTree.currElem.GetWls();
-
-idx = eventdata;
+iWl_gui = GetWl(handles);
 
 mouseevent = get(get(get(hObject,'parent'),'parent'),'selectiontype');
 
-% Change measListAct
-h2 = get(hAxesSDG, 'children');  %The list of all the lines currently displayed
-
 % Get the index of clicked channel
-lst = [];
-for ii=1:length(Lambda)
-    lst1 = find(ch.MeasList(:, 4) == ii);
-    lst2 = find(ch.MeasList(lst1, 1) == iSrcDet(idx, 1) & ...
-                ch.MeasList(lst1, 2) == iSrcDet(idx, 2) );
-            
-    lst = [lst, length(lst1) * (ii - 1) + lst2];
-    
-end
+[iS, iD] = GetSelectedChannels(hObject, SD, ch);
 
 %%%% Mouse right click: toggle channel visibility
 if strcmp(mouseevent, 'alt')
-    if all(ch.MeasListVis(lst))  % If the selected channel is visible
-        ch.MeasListVis(lst) = 0;
-    else
-        ch.MeasListVis(lst) = 1;
-    end
-    % TODO implement a more elegant setter
-    maingui.dataTree.currElem.procStream.input.SetMeasListVis(ch.MeasListVis);
+    maingui.dataTree.currElem.SetMeasListVis([iS, iD]);
     maingui.Update('PatchCallback');  % Refresh data display
     
 %%%% Mouse left click: toggle manual exclude/deactivate channel
 elseif strcmp(mouseevent, 'normal')
-    if all(ch.MeasListActMan(lst))  % If the selected channel is active
-        ch.MeasListActMan(lst) = 0;
+    iChSelected = find(ch.MeasListActMan(:,1) == iS  &  ch.MeasListActMan(:,2) == iD);
+    if ch.MeasListActMan(iChSelected(iWl_gui),3)  % If the selected channel is active
+        ch.MeasListActMan(iChSelected(iWl_gui),3) = 0;
     else
-        ch.MeasListActMan(lst) = 1;
-    end
-    % TODO implement a more elegant setter
-    maingui.dataTree.currElem.procStream.input.SetMeasListActMan(ch.MeasListActMan);
+        ch.MeasListActMan(iChSelected(iWl_gui),3) = 1;
+    end    
+    maingui.dataTree.currElem.SetMeasListActMan(ch.MeasListActMan);
     
 %%%% Exit function for any other mouse event 
 else
@@ -57,4 +34,18 @@ else
 end
 
 DisplayAxesSDG(handles);
+
+
+
+
+% -------------------------------------------------------------------------------
+function [iS, iD] = GetSelectedChannels(hObject, SD, ch)
+xdata = get(hObject,'xdata');
+ydata = get(hObject,'ydata');
+ml    = ch.MeasList;
+SD_clicked_pos = [xdata(:), ydata(:), zeros(length(xdata),1)];
+
+[~, iS] = nearest_point(SD.SrcPos, SD_clicked_pos(1,:));
+[~, iD] = nearest_point(SD.DetPos, SD_clicked_pos(2,:));
+
 

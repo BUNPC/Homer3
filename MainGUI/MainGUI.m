@@ -75,6 +75,7 @@ MainGUI_EnableDisableGUI(handles, 'off')
 if ~isempty(maingui.unitTest)
     maingui.unitTest.Initialize(handles, @UnitTestInit);
 end
+maingui.errcolor = [0.70, 0.20, 0.10];
 
 
 
@@ -114,13 +115,15 @@ set(handles.textPanDisplay, 'enable', val);
 % Plot type selected panel
 set(handles.listboxPlotConc, 'enable', val);
 set(handles.listboxPlotWavelength, 'enable', val);
+
 set(handles.radiobuttonPlotRaw, 'enable', val);
 set(handles.radiobuttonPlotOD,  'enable', val);
 set(handles.radiobuttonPlotConc, 'enable', val);
+set(handles.checkboxPlotHRF, 'enable', val);
+
 set(handles.popupmenuAux, 'enable', val);
 set(handles.checkboxPlotAux, 'enable', val);
 set(handles.popupmenuConditions, 'enable', val);
-set(handles.checkboxPlotHRF, 'enable', val);
 
 % Motion artifact panel
 set(handles.checkboxShowExcludedTimeManual, 'enable', val);
@@ -239,7 +242,7 @@ maingui.childguis(4) = ChildGuiClass('PlotProbeGUI');
 maingui.childguis(5) = ChildGuiClass('PvaluesDisplayGUI');
 
 % Load date files into group tree object
-maingui.dataTree  = LoadDataTree(maingui.groupDirs, maingui.format, procStreamFile);
+maingui.dataTree = LoadDataTree(maingui.groupDirs, maingui.format, procStreamFile);
 if maingui.dataTree.IsEmpty()
     return;
 end
@@ -251,6 +254,10 @@ InitGuiControls(handles);
 
 % Display data from currently selected processing element
 DisplayGroupTree(handles);
+
+% If data set has no errors enable window gui objects
+MainGUI_EnableDisableGUI(handles,'on');
+
 Display(handles, hObject);
 
 % Store Original X and Y Lims for AxesSDG
@@ -268,8 +275,7 @@ set(hObject,'name', title);
 maingui.logger.InitChapters()
 maingui.logger.CurrTime(sprintf('MainGUI: Startup time - %0.1f seconds\n', toc(startuptimer)));
 
-% If data set has no errors enable window gui objects
-MainGUI_EnableDisableGUI(handles,'on');
+
 
 
 
@@ -327,9 +333,23 @@ function [eventdata, handles] = MainGUI_CloseFcn(~, eventdata, handles)
 deleteNamespace('Homer3');
 
 
+% --------------------------------------------------------------------
+function [nFileSuccess, nFilesWarning, nFilesFailed] = WarningsReport(handles)
+global maingui
+warnings = maingui.dataTree.GetWarningsReport();
+[nFileSuccess, nFilesWarning, nFilesFailed] = maingui.dataTree.GetErrorStats();
+if ~isempty(warnings)
+    set(handles.MainGUI,'visible','on')
+    MessageBox(warnings, 'WARNINGS')
+    %set(handles.listboxGroupTree, 'foregroundcolor',maingui.errcolor)
+end
+
+
+
 % --------------------------------------------------------------------------------------------
 function DisplayGroupTree(handles)
 global maingui;
+[nFileSuccess, nFilesWarning, nFilesFailed] = WarningsReport(handles);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initialize listboxGroupTree params struct
@@ -354,8 +374,6 @@ maingui.listboxGroupTreeParams = struct('listMaps',struct('names',{{}}, 'idxs', 
 % Get the GUI listboxGroupTree setting 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 listboxGroup = maingui.listboxGroupTreeParams.listMaps(viewSetting).names;
-nFiles = length(maingui.listboxGroupTreeParams.listMaps(views.RUNS).names);
-nFilesErr = length(maingui.dataTree.filesErr);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set listbox used for displaying files that did not load correctly
@@ -364,12 +382,6 @@ listboxFilesErr = {};
 kk = 1;
 for ii = 1:length(maingui.dataTree.filesErr)
     nspaces = 0;
-    %     if ~strcmp(maingui.dataTree.filesErr(ii).name, maingui.dataTree.filesErr(ii).filename)
-    %         listboxFilesErr{kk} = pathsubtract(maingui.dataTree.filesErr(ii).name, maingui.dataTree.filesErr(ii).filename, 'nochange');
-    %         kk = kk+1;
-    %         nspaces = 8;
-    %     end
-    %     listboxFilesErr{kk}   = sprintf('%s%s', blanks(nspaces), maingui.dataTree.filesErr(ii).filename);
     listboxFilesErr{kk}   = sprintf('%s%s', blanks(nspaces), filesepStandard(maingui.dataTree.filesErr(ii).name, 'filesepwide'));
     kk = kk+1;
 end
@@ -380,8 +392,9 @@ end
 if ~isempty(handles)
     % Report status in the status text object
     set( handles.textStatus, 'string', { ...
-        sprintf('%d files loaded successfully',nFiles), ...
-        sprintf('%d files failed to load',nFilesErr) ...
+        sprintf('%d files loaded successfully', nFileSuccess), ...
+        sprintf('%d files loaded with warnings',nFilesWarning), ...
+        sprintf('%d files failed to load', nFilesFailed) ...
         } );
     
     if ~isempty(listboxGroup)
@@ -389,19 +402,26 @@ if ~isempty(handles)
         set(handles.listboxGroupTree, 'string',listboxGroup)
     end
     
-    if ~isempty(listboxFilesErr)
-        set(handles.listboxFilesErr, 'visible','on', 'value',1, 'string',listboxFilesErr)
-        set(handles.textStatus, 'foregroundcolor',[0.70, 0.20, 0.10]);
-        set(handles.pushbuttonHideErrors, 'visible','on');
+    if nFilesFailed > 0 || nFilesWarning > 0
+        set(handles.textStatus, 'foregroundcolor',maingui.errcolor);
+        if nFilesFailed > 0
+            set(handles.listboxFilesErr, 'visible','on', 'value',1, 'string',listboxFilesErr)
+            set(handles.pushbuttonHideErrors, 'visible','on');
+        else
+            set(handles.listboxFilesErr, 'visible','off');
+            set(handles.pushbuttonHideErrors, 'visible','off');
+            pos1 = get(handles.listboxGroupTree, 'position');
+            pos2 = get(handles.listboxFilesErr, 'position');
+            set(handles.listboxGroupTree, 'position', [pos1(1) pos2(2) pos1(3) .98-pos2(2)]);
+        end
         warningMsg = 'WARNING: Not all data files loaded successfully. Please see Homer3 GUI for details.';
-        %h = MessageBox('WARNING: Not all data files loaded successfully. Please see Homer3 GUI for details.');
         maingui.logger.Write(warningMsg);
     else
         set(handles.listboxFilesErr, 'visible','off');
+        set(handles.pushbuttonHideErrors, 'visible','off');
         pos1 = get(handles.listboxGroupTree, 'position');
         pos2 = get(handles.listboxFilesErr, 'position');
         set(handles.listboxGroupTree, 'position', [pos1(1) pos2(2) pos1(3) .98-pos2(2)]);
-        set(handles.pushbuttonHideErrors, 'visible','off');
     end
 end
 
@@ -998,8 +1018,6 @@ if ~ishandles(hAxes)
 end
 hf = get(hAxes,'parent');
 
-dataTree = maingui.dataTree;
-procElem = dataTree.currElem;
 EnableDisableGuiPlotBttns(handles);
 
 axes(hAxes)
@@ -1011,121 +1029,70 @@ set(hAxes,'ygrid','on');
 xlabel(hAxes, '');
 ylabel(hAxes, '');
 
+ml = GetMeasurementList(handles);
+iCh = GetSelectedChannels(handles);
+[d, dStd, t]  = GetDataTimeSeries(handles);
+chVis = maingui.dataTree.currElem.chVis;
+[linecolors, linestyles, linewidths] = SetDataPlotLineStyles(handles, iCh);
 
-linecolor  = maingui.axesData.linecolor;
-linestyle  = maingui.axesData.linestyle;
-datatype   = GetDatatype(handles);
-condition  = GetCondition(handles);
-% iCh0       = maingui.axesSDG.iCh;
-iCh0       = GetSelectedChannelIdxs();
-iWl        = GetWl(handles);
-hbType     = GetHbType(handles);
-sclConc    = maingui.sclConc;        % convert Conc from Molar to uMolar
-showStdErr = GetShowStdErrEnabled(handles);
+maingui.logger.Write('Displaying   time: [%dx%d],    data: [%dx%d],   channels [%s]\n', size(t,1), size(t,2), size(d,1), size(d,2), num2str(iCh(:)'))
 
-[iDataBlks, iCh] = procElem.GetDataBlocksIdxs(iCh0);
-maingui.logger.Write(sprintf('Displaying channels [%s] in data blocks [%s]\n', num2str(iCh0(:)'), num2str(iDataBlks(:)')))
-iColor = 1;
-for iBlk = iDataBlks
-
-    if isempty(iCh)
-        iChBlk  = [];
+%%% Plot data
+if ~isempty(d)
+    
+    xx = xlim(hAxes);
+    yy = ylim(hAxes);
+    if strcmpi(get(hAxes,'ylimmode'),'manual')
+        flagReset = 0;
     else
-        iChBlk  = iCh{iBlk};
+        flagReset = 1;
+    end
+    hold(hAxes, 'on');
+    
+    % Set the axes ranges
+    if flagReset==1
+        set(hAxes,'xlim',[t(1), t(end)]);
+        set(hAxes,'ylimmode','auto');
+    else
+        set(hAxes,'xlim',xx);
+        set(hAxes,'ylim',yy);
+    end
+	
+    % Plot data
+    h = zeros(1, length(iCh));
+    for ii = 1:length(iCh)
+        k = find(chVis(:,1) == ml(iCh(ii),1) & chVis(:,2) == ml(iCh(ii),2));
+        if ~isempty(k)
+            if chVis(k, 3) == false
+                continue
+            end
+        end
+        h(ii) = plot(hAxes, t, d(:,iCh(ii)));
+        set(h(ii), 'color',     linecolors(ii,:));
+        set(h(ii), 'linestyle', linestyles{ii});
+        set(h(ii), 'linewidth', linewidths(ii));
+        if ~isempty(dStd)
+            idxs = 1:10:length(t);
+            h2 = errorbar(hAxes, t(idxs), d(idxs, iCh(ii)), dStd(idxs, iCh(ii)),'.');
+            set(h2,'color', linecolors(ii,:));
+        end        
     end
     
-    ch      = procElem.GetMeasList(iBlk);
-    chVis   = find(ch.MeasListVis(iChBlk)==1);
-    d       = [];
-    dStd    = [];
-    t       = [];
-    nTrials = [];    
+    % Set the x-axis label
+    xlabel(hAxes, 'Time (s)', 'FontSize', 11);
     
-    % Get plot data from dataTree
-    if datatype == maingui.buttonVals.RAW
-        d = procElem.GetDataTimeSeries('same', iBlk);
-        t = procElem.GetTime(iBlk);
-    elseif datatype == maingui.buttonVals.OD
-        d = procElem.GetDod(iBlk);
-        t = procElem.GetTime(iBlk);
-    elseif datatype == maingui.buttonVals.CONC
-        d = procElem.GetDc(iBlk);
-        t = procElem.GetTime(iBlk);
-    elseif datatype == maingui.buttonVals.OD_HRF
-        d = procElem.GetDodAvg([], iBlk);
-        t = procElem.GetTHRF(iBlk);
-        if showStdErr
-            dStd = procElem.GetDodAvgStd(iBlk);
-        end
-        nTrials = procElem.GetNtrials(iBlk);
-        if isempty(condition)
-            return;
-        end
-    elseif datatype == maingui.buttonVals.CONC_HRF
-        d = procElem.GetDcAvg([], iBlk);
-        t = procElem.GetTHRF(iBlk);
-        if showStdErr
-            dStd = procElem.GetDcAvgStd([], iBlk) * sclConc;
-        end
-        nTrials = procElem.GetNtrials(iBlk);
-        if isempty(condition)
-            return;
-        end
-    end
-    
-    %%% Plot data
-    if ~isempty(d)
-        xx = xlim(hAxes);
-        yy = ylim(hAxes);
-        if strcmpi(get(hAxes,'ylimmode'),'manual')
-            flagReset = 0;
+    % Set the y-axis label
+    datatype = GetDatatype(handles);
+    if datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
+        ppf  		= maingui.dataTree.currElem.GetVar('ppf');
+        lengthUnit 	= maingui.dataTree.currElem.GetVar('LengthUnit');
+        if any(ppf==1) && ~isempty(lengthUnit)
+            ylabel(hAxes, ['\muM ' lengthUnit], 'FontSize', 11);
         else
-            flagReset = 1;
-        end
-        hold(hAxes, 'on');
-        
-        % Set the axes ranges
-        if flagReset==1
-            set(hAxes,'xlim',[t(1), t(end)]);
-            set(hAxes,'ylimmode','auto');
-        else
-            set(hAxes,'xlim',xx);
-            set(hAxes,'ylim',yy);
-        end
-        
-        linecolors = linecolor(iColor:iColor+length(iChBlk)-1,:);
-        
-        % Plot data
-        if datatype == maingui.buttonVals.RAW || datatype == maingui.buttonVals.OD || datatype == maingui.buttonVals.OD_HRF
-            if  datatype == maingui.buttonVals.OD_HRF
-                d = d(:,:,condition);
-            end
-            d = procElem.reshape_y(d, ch.MeasList);
-            DisplayDataRawOrOD(hAxes, t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
-
-            % Set the x-axis label
-            xlabel(hAxes, 'Time (s)', 'FontSize', 11);
-        elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
-            if  datatype == maingui.buttonVals.CONC_HRF
-                d = d(:,:,:,condition);
-            end
-            d = d * sclConc;
-            DisplayDataConc(hAxes, t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
-            
-            % Set the x-axis label
-            xlabel(hAxes, 'Time (s)', 'FontSize', 11);
-
-            % Set the y-axis label
-            ppf  		= procElem.GetVar('ppf');
-            lengthUnit 	= procElem.GetVar('LengthUnit');
-            if any(ppf==1) && ~isempty(lengthUnit)
-                ylabel(hAxes, ['\muM ' lengthUnit], 'FontSize', 11);
-            else
-                ylabel(hAxes, '\muM', 'FontSize', 11);
-            end
+            ylabel(hAxes, '\muM', 'FontSize', 11);
         end
     end
-    iColor = iColor+length(iChBlk);
+    
 end
 
 % Set Zoom on/off
@@ -1153,15 +1120,7 @@ else
 end
 
 DisplayAux(handles, hAxes);
-if get(handles.checkboxShowExcludedTimeManual, 'value')
-    DisplayExcludedTime(handles, 'manual', hAxes);
-end
-if get(handles.checkboxShowExcludedTimeAuto, 'value')
-    DisplayExcludedTime(handles, 'auto', hAxes);
-end
-if get(handles.checkboxShowExcludedTimeAutoByChannel, 'value')
-    DisplayExcludedTime(handles, 'autoch', hAxes);
-end
+DisplayExcludedTime(handles, hAxes, ml, iCh, chVis, linecolors);
 DisplayStim(handles, hAxes);
 UpdateCondPopupmenu(handles);
 UpdateDatatypePanel(handles);
@@ -1887,7 +1846,7 @@ iCh = maingui.axesSDG.iCh;
 n_channels = length(iCh);
 if n_channels > 0
     iSrcDet = maingui.axesSDG.iSrcDet;
-    colors = maingui.axesSDG.linecolor;
+    colors = maingui.axesSDG.SDPairColors;
     d = maingui.dataTree.currElem.GetDataTimeSeries();
     t = maingui.dataTree.currElem.GetTime();
     if isempty(t)
@@ -2141,7 +2100,7 @@ iCh = maingui.axesSDG.iCh;
 n_channels = length(iCh);
 if n_channels > 0
     iSrcDet = maingui.axesSDG.iSrcDet;
-    colors = maingui.axesSDG.linecolor;
+    colors = maingui.axesSDG.SDPairColors;
     d = maingui.dataTree.currElem.GetDataTimeSeries();
     t = maingui.dataTree.currElem.GetTime();
     if isempty(t)

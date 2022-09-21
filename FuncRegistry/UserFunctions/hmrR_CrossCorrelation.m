@@ -33,7 +33,7 @@ function [cc, ml, cc_thresh] = hmrR_CrossCorrelation(data, cc_thresh, plot_on)
 
 for iBlk=1:length(data)
     y      = data(iBlk).GetDataTimeSeries('reshape');
-    ml     = data(iBlk).GetMeasListSrcDetPairs();
+    ml     = data(iBlk).GetMeasListSrcDetPairs('reshape');
 end
 
 % HbO

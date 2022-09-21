@@ -62,22 +62,18 @@ if isempty(mlActAuto)
     mlActAuto = cell(length(data_dod),1);
 end
 
-for kk=1:length(data_dod)
+for iBlk = 1:length(data_dod)
 
-    dod         = data_dod(kk).GetDataTimeSeries();
+    dod         = data_dod(iBlk).GetDataTimeSeries();
     dodWavelet  = dod;
-    MeasList    = data_dod(kk).GetMeasList();   
+    MeasList    = data_dod(iBlk).GetMeasList();   
     
-    if isempty(mlActMan{kk})
-        mlActMan{kk} = ones(size(MeasList,1),1);
-    end
-    if isempty(mlActAuto{kk})
-        mlActAuto{kk} = ones(size(MeasList,1),1);
-    end
+    mlActMan{iBlk} = mlAct_Initialize(mlActMan{iBlk}, MeasList);
+    mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, MeasList);
+    lstAct1 = mlAct_Matrix2IndexList(mlActAuto{iBlk}, MeasList);
+    lstAct2 = mlAct_Matrix2IndexList(mlActMan{iBlk}, MeasList);
+    lstAct = unique([lstAct1(:)', lstAct2(:)']);
     
-    MeasListAct = mlActMan{kk} & mlActAuto{kk};
-    
-    lstAct = find(MeasListAct==1);
     SignalLength = size(dod,1); % #time points of original signal
     N = ceil(log2(SignalLength)); % #of levels for the wavelet decomposition
     DataPadded = zeros(2^N,1); % data length should be power of 2
@@ -113,7 +109,7 @@ for kk=1:length(data_dod)
         
         dodWavelet(:,idx_ch) = ARSignal(1:length(dod));
     end
-    data_dod(kk).SetDataTimeSeries(dodWavelet);
+    data_dod(iBlk).SetDataTimeSeries(dodWavelet);
     
 end
 

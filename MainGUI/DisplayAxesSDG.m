@@ -42,21 +42,22 @@ global UNIT_TEST
 
 tic;
 
+if ~exist('handles','var')
+    handles = [];
+end
+
 % This function plots the probe geometry
 % Command line call:
 % plotAxes_SDG(guidata(gcbo),bool);
 %
-if nargin==0
-    return;
+if isempty(handles)
+    maingui.axesSDG = InitAxesSDG(handles);
 end
-if ~ishandles(handles)
-    hAxes = handles.axesSDG;
-else
-    hAxes = handles;    
-end
-iCh         = maingui.axesSDG.iCh;
-iSrcDet     = maingui.axesSDG.iSrcDet;
-color       = maingui.axesSDG.linecolor;
+hAxes        = maingui.axesSDG.handles.axes;
+iCh          = maingui.axesSDG.iCh;
+iSrcDet      = maingui.axesSDG.iSrcDet;
+SDPairColors = maingui.axesSDG.SDPairColors;
+iWl_gui      = GetWl(handles);
 
 SD          = maingui.dataTree.currElem.GetSDG('2D');
 
@@ -107,81 +108,84 @@ MeasList = [];
 MeasListActMan = [];
 MeasListActAuto = [];
 MeasListVis = [];
-for iBlk = 1:nDataBlks   
+for iBlk = 1:nDataBlks
     ch              = maingui.dataTree.currElem.GetMeasList(iBlk);
+    chVis           = maingui.dataTree.currElem.GetMeasListVis(iBlk);
     MeasList        = [MeasList; ch.MeasList];
     MeasListActMan  = [MeasListActMan; ch.MeasListActMan];
     MeasListActAuto = [MeasListActAuto; ch.MeasListActAuto];
-    MeasListVis     = [MeasListVis; ch.MeasListVis];
+    MeasListVis     = [MeasListVis; chVis];
 end
 ml    = MeasList(MeasList(:,1)>0,:);
-lstML = find(ml(:,4)==1); %cw6info.displayLambda);
-lstIncl = find(MeasListActMan(1:length(lstML))==1);
-lstExclMan = find(MeasListActMan(1:length(lstML))==0);
-lstExclAuto = find(MeasListActAuto(1:length(lstML))==0);
-lstInvisible = find(MeasListVis(1:length(lstML))==0);
-hCh = zeros(length(lstML),1);
+lstSDPairs = find(ml(:,4)==iWl_gui); %cw6info.displayLambda);
+lstInvisible = find(MeasListVis(:,3)==0);
+hCh = zeros(length(lstSDPairs),1);
+
+
+LINESTYLE_MAN_EXCL = ':';
+LINESTYLE_AUTO_EXCL = '--';
+LINESTYLE_MAN_AND_AUTO_EXCL = '-.';
 
 % Draw all channels
-for ii = 1:length(lstML)
-    hCh(ii) = line2(SD.SrcPos(ml(lstML(ii),1),:), SD.DetPos(ml(lstML(ii),2),:), [], gridsize, hAxes);
-    if ismember(ii,lstExclAuto)
-        % Draw auto-excluded channel
+for ii = 1:length(lstSDPairs)
+    hCh(ii) = line2(SD.SrcPos(ml(lstSDPairs(ii),1),:), SD.DetPos(ml(lstSDPairs(ii),2),:), [], gridsize, hAxes);
+    
+    col = [1.00 1.00 1.00] * 0.85;
+    linestyle = '-';
+    linewidth = 3;
+    
+    % Draw auto-excluded channel
+    k1 = find( (MeasListActMan(:,1) == ml(lstSDPairs(ii),1))  &  (MeasListActMan(:,2) == ml(lstSDPairs(ii),2))  &  (MeasListActMan(:,4) == ml(lstSDPairs(ii),4)) );
+    k2 = find( (MeasListActAuto(:,1) == ml(lstSDPairs(ii),1))  &  (MeasListActAuto(:,2) == ml(lstSDPairs(ii),2))  &  (MeasListActAuto(:,4) == ml(lstSDPairs(ii),4)) );
+
+    if (~isempty(k1) && MeasListActMan(k1,3) == 0) && (~isempty(k2) && MeasListActAuto(k2,3) == 0)
         col = [1.00 0.6 0.6];
-        lstyle = '--';
-    elseif ismember(ii, lstExclMan)
-        % Draw manually excluded channel
+        linestyle = LINESTYLE_MAN_AND_AUTO_EXCL;
+    elseif ~isempty(k1) &&  MeasListActMan(k1,3) == 0
         col = [1.00 1.00 1.00] * 0.85;
-        lstyle = '--';
-    elseif ismember(ii, lstIncl)
-        % Draw included channel
-        col = [1.00 1.00 1.00] * 0.85;
-        lstyle = '-';
+        linestyle = LINESTYLE_MAN_EXCL;
+    elseif ~isempty(k2) && MeasListActAuto(k2,3) == 0
+        col = [1.00 0.6 0.6];
+        linestyle = LINESTYLE_AUTO_EXCL;
     end
+
     if ismember(ii, lstInvisible)
-        lwidth = 1; 
-    else
-        lwidth = 3;
+        linewidth = 1; 
     end
-    set(hCh(ii), 'color', col, 'linewidth', lwidth, 'ButtonDownFcn', bttndownfcn, 'linestyle', lstyle);
+    
+    set(hCh(ii), 'color',col, 'linewidth',linewidth, 'ButtonDownFcn',bttndownfcn, 'linestyle',linestyle);
 end
 
+
 % Draw the user-selected channels
-if ~isempty(iSrcDet) && iSrcDet(1,1)~=0
-    lst2 = zeros(1,length(iCh));
-    lst3 = find(MeasList(:,4)==1);
-    for ii=1:length(iCh)
-        lst2(ii) = find(MeasList(lst3,1)==MeasList(iCh(ii),1) & MeasList(lst3,2)==MeasList(iCh(ii),2) );
-    end
-    iCh2 = lst2;
+for idx = 1:size(iSrcDet,1)
+    hCh(idx+ii) = line2(SD.SrcPos(iSrcDet(idx,1),:), SD.DetPos(iSrcDet(idx,2),:), [], gridsize, hAxes);
     
-    for idx = 1:size(iSrcDet,1)
-        lwidth = 3;
-        hCh(idx+ii) = line2(SD.SrcPos(iSrcDet(idx,1),:), SD.DetPos(iSrcDet(idx,2),:), [], gridsize, hAxes);
-        % Attach toggle callback to the selected channels for function on
-        % second click
-        set(hCh(idx+ii),'color',color(idx,:), 'ButtonDownFcn',sprintf('toggleLinesAxesSDG_ButtonDownFcn(gcbo,[%d],guidata(gcbo))',idx), 'linewidth',2);
+    % Attach toggle callback to the selected channels for function on
+    % second click
+    iSD = GetSelectedSDPairIndex( iSrcDet(idx,1), iSrcDet(idx,2) );
+    set(hCh(idx+ii), 'color',SDPairColors(iSD,:), 'ButtonDownFcn',sprintf('toggleLinesAxesSDG_ButtonDownFcn(gcbo,[%d],guidata(gcbo))',idx), 'linewidth',2);
+    
+    linestyle = '-';
+    linewidth = 3;
+    if ~isempty(iCh)
+        k1 = find( (MeasListActMan(:,1)==iSrcDet(idx,1))  &  (MeasListActMan(:,2)==iSrcDet(idx,2))  &  (MeasListActMan(:,4)==iWl_gui) );
+        k2 = find( (MeasListActAuto(:,1)==iSrcDet(idx,1))  &  (MeasListActAuto(:,2)==iSrcDet(idx,2)) &  (MeasListActMan(:,4)==iWl_gui) );
+        k3 = find( (MeasListVis(:,1) == iSrcDet(idx,1))  &  (MeasListVis(:,2) == iSrcDet(idx,2)));
         
-        if ~isempty(iCh)
-           
-            if ~MeasListActMan(iCh2(idx)) || ~MeasListActAuto(iCh2(idx))
-                lstyle = '--'; 
-            else
-                lstyle = '-';
-            end
-       
-            if ~MeasListVis(iCh2(idx))
-                lwidth = 1;
-            else
-                lwidth = 3;
-            end
-            
+        if (~isempty(k1) && MeasListActMan(k1,3) == 0) && (~isempty(k2) && MeasListActAuto(k2,3) == 0)
+            linestyle = LINESTYLE_MAN_AND_AUTO_EXCL;
+        elseif ~isempty(k1) &&  MeasListActMan(k1,3) == 0
+            linestyle = LINESTYLE_MAN_EXCL;
+        elseif ~isempty(k2) && MeasListActAuto(k2,3) == 0
+            linestyle = LINESTYLE_AUTO_EXCL;
         end
-        
-        set(hCh(idx+ii),'linewidth', lwidth, 'linestyle', lstyle);
-        
+                
+        if ~isempty(k3) && MeasListVis(k3,3) == 0
+            linewidth = 1;
+        end
     end
-    
+    set(hCh(idx+ii),'linewidth', linewidth, 'linestyle',linestyle);    
 end
 
 if (maingui.axesSDG.handles.axes == hAxes)
@@ -217,3 +221,5 @@ if isempty(UNIT_TEST) || ~UNIT_TEST
 end
 
 % fprintf('DisplayAxesSDG: Elapsed Time - %0.3f\n', toc);
+
+

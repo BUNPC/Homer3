@@ -579,7 +579,11 @@ classdef GroupClass < TreeNodeClass
                 tHRF_common = obj.subjs(iSubj).procStream.output.GeneratetHRFCommon(tHRF_common);
             end
            
-            
+            % Update call application GUI using it's generic Update function
+            if ~isempty(obj.updateParentGui)
+                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun]);
+            end
+                        
             % Load all the output valiraibles that might be needed by procStream.Calc() to calculate proc stream for this group
             obj.LoadInputVars(tHRF_common); 
             
@@ -588,11 +592,6 @@ classdef GroupClass < TreeNodeClass
             if obj.DEBUG
                 obj.logger.Write('Completed processing stream for group %d\n', obj.iGroup);
                 obj.logger.Write('\n');
-            end
-            
-            % Update call application GUI using it's generic Update function
-            if ~isempty(obj.updateParentGui)
-                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun]);
             end
             
         end
@@ -1093,8 +1092,8 @@ classdef GroupClass < TreeNodeClass
                     end
                     
                     oldDerivedPathRel = pathsubtract(oldDerivedPath, obj.path);
-                    if oldDerivedPathRel(end) == '/' || oldDerivedPathRel(end) == '\'
-                        oldDerivedPathRel(end) = '';
+                    if isempty(oldDerivedPathRel)
+                        return
                     end
                     msg{1} = sprintf('Detected derived data in older Homer3 folder "%s" ', oldDerivedPathRel);
                     if pathscompare(obj.derivedPathBidsCompliant, obj.outputDirname, 'nameonly')

@@ -1,4 +1,4 @@
-function CleanUp(standalone, start, appname)
+function UnitTests_Init(standalone, start, appname)
 global DEBUG1
 global QUICK_TEST
 global procStreamStyle
@@ -6,6 +6,8 @@ global testidx;
 global logger
 global cfg
 global maingui
+global SCRAMBLE
+global ERROR_ODDS_CONST
 
 if ~exist('standalone','var') || isempty(standalone)
     standalone = true;
@@ -23,13 +25,11 @@ if start
     maingui = [];
     delete(logger)
     delete(cfg)
-    logger = [];
-    cfg = [];
     close all force
     fclose all;
-    reg = RegistriesClass();
-    reg.DeleteSaved();
-    logger = Logger(appname);
+
+    logger = Logger(appname);   
+    logger.Write('**** SYSTEM TEST START:  %s ****\n\n', char(datetime(datetime, 'Format','MMMM d, yyyy, HH:mm:ss')));    
     cfg    = ConfigFileClass();
 end
 clear DEBUG1 testidx procStreamStyle
@@ -40,21 +40,26 @@ procStreamStyle = [];
 QUICK_TEST = [0,0];
 
 groupFolders = FindUnitTestsFolders();
-rootpath = filesepStandard(fileparts(which('Homer3.m')));
+if start
+    reg = RegistriesClass();
+    reg.DeleteSaved();
+    
+    SCRAMBLE         = true;
+    ERROR_ODDS_CONST = generateErrorOddsConstant(0);    
+end
 
 % Clean up after ourselves; delete non-versioned acquisition files and
 % try to SVN revert all changes if project is under version control
 if ~start
-    fprintf('\n');
+    rootpath = filesepStandard(fileparts(which('Homer3.m')));
+    logger.Write('\n');
     for ii = 1:length(groupFolders)
         pname = filesepStandard([rootpath, groupFolders{ii}]);
-        fprintf('Deleting *.snirf files in %s: \n', pname);
+        logger.Write('Deleting *.snirf files in %s: \n', pname);
         DeleteDataFiles(pname, '.snirf');
     end
-    fprintf('\n\n');
+    logger.Write('\n\n');
 end
-
-fclose all;
 
 % Create or restore config file
 if cfg.BackupExists()
@@ -64,6 +69,7 @@ else
 end
 
 if ~start
+    logger.Write('**** SYSTEM TEST END:  %s ****\n\n', char(datetime(datetime, 'Format','MMMM d, yyyy, HH:mm:ss')));
     logger.Close();
 end
 

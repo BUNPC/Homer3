@@ -142,7 +142,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     if nargin==2
                         tfactors = varargin{2};
                     end
-                    dotnirs = varargin{1};
+                    dotnirs = NirsClass(varargin{1});
                     obj.GenSimulatedTimeBases(dotnirs, tfactors);
                     
                     % Required fields
@@ -269,12 +269,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             obj.errmsgs = {
                 'MATLAB could not load the file.'
                 '''formatVersion'' is invalid.'
-                '''metaDataTags'' is invalid.'
-                '''data'' is invalid.'
-                '''stim'' is invalid and could not be loaded'
-                '''probe'' is invalid.'
-                '''aux'' is invalid and could not be loaded'
-                'WARNING: ''data'' corrupt and unusable'
+                '''metaDataTags'' field is invalid.'
+                '''data'' field is invalid.'
+                '''stim'' field has corrupt data. Some or all stims could not be loaded'
+                '''probe'' field is invalid.'
+                '''aux'' field is invalid and could not be loaded'
+                'WARNING: ''data'' field corrupt and unusable'
                 };
         end
         
@@ -328,11 +328,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % Copy mutable properties to new object instance;
             objnew.stim = CopyHandles(obj.stim);
             objnew.SortStims();
-            
-            if strcmp(options, 'extended')
-                t = obj.GetTimeCombined();
-                objnew.data = DataClass([],t,[]);
-            end
         end
         
         
@@ -455,6 +450,18 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     obj.stim(ii).delete();
                     obj.stim(ii) = [];
                     break;
+                else
+                    for kk = 1:ii-1
+                        if strcmp(obj.stim(kk).name, obj.stim(ii).name)
+                            obj.stim(ii).delete();
+                            obj.stim(ii) = [];
+                            err = err-6;
+                            break
+                        end
+                    end
+                    if err ~= 0
+                        break;
+                    end
                 end
                 ii=ii+1;
             end
@@ -578,7 +585,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 elseif errtmp == 5 && err >= 0
                 	err = 8;
                 elseif errtmp > 0 && err >= 0
-                    err = 4;                    
+                    err = 4;
                 end
 
                 %%%% Load stim
@@ -985,8 +992,29 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function datamat = GetDataTimeSeries(obj, options, iBlk)
-            datamat = [];
+        function ml = GetMeasurementList(obj, matrixMode, iBlk)
+            ml = [];
+            if ~exist('matrixMode','var')
+                matrixMode = '';
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            if iBlk>length(obj.data)
+                return;
+            end
+            for ii = 1:length(iBlk)
+                ml = [ml; obj.data(ii).GetMeasurementList(matrixMode)];
+            end
+        end
+        
+        
+        
+        % ---------------------------------------------------------
+        function [d, t, ml] = GetDataTimeSeries(obj, options, iBlk)
+            d = [];
+            t = [];
+            ml = [];
             if ~exist('options','var')
                 options = '';
             end
@@ -996,7 +1024,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if iBlk>length(obj.data)
                 return;
             end
-            datamat = obj.data(iBlk).GetDataTimeSeries(options);
+            [d, t, ml] = obj.data(iBlk).GetDataTimeSeries(options);
         end
         
         

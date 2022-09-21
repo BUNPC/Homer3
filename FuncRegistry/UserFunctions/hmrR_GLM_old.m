@@ -150,13 +150,13 @@ for iBlk=1:length(data_y)
     
     y      = data_y(iBlk).GetDataTimeSeries('reshape');
     t      = data_y(iBlk).GetTime();
-    ml     = data_y(iBlk).GetMeasListSrcDetPairs();
+    ml     = data_y(iBlk).GetMeasListSrcDetPairs('reshape');
     SrcPos = probe.GetSrcPos();
     DetPos = probe.GetDetPos();
-    if isempty(mlActAuto{iBlk})
-        mlActAuto{iBlk} = ones(size(ml,1),1);
-    end
-    mlAct = mlActAuto{iBlk};
+    
+    mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, ml);
+    mlAct = mlAct_Matrix2BinaryVector(mlActAuto{iBlk}, ml);
+    
     if isempty(tIncAuto{iBlk})
         tIncAuto{iBlk} = ones(length(t),1);
     end

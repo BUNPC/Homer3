@@ -47,27 +47,22 @@ if isempty(mlActAuto)
     mlActAuto = cell(length(data_dc),1);
 end
 
-for iBlk=1:length(data_dc)
-    dc = data_dc(iBlk).GetDataTimeSeries();
-    ml = data_dc(iBlk).GetMeasListSrcDetPairs();
+for iBlk = 1:length(data_dc)
+    [dc, ~, ~, order] = data_dc(iBlk).GetDataTimeSeries('reshape');
+    ml = data_dc(iBlk).GetMeasListSrcDetPairs('reshape');
+        
+    mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, ml);
+    lstAct          = mlAct_Matrix2IndexList(mlActAuto{iBlk}, ml);
     
-    dc = reshape(dc, size(dc,1), 3, size(dc,2)/3);
-    
-    if isempty(mlActAuto{iBlk})
-        mlActAuto{iBlk} = ones(size(ml,1),1);
-    end    
-    mlAct = mlActAuto{iBlk};
-
-    lstAct = find(mlAct(1:size(ml,1))==1);
     dcCbsi = dc;
     
     for ii = 1:length(lstAct)
         idx_ch = lstAct(ii);
         
-        dc_oxy = squeeze(dc(:,1,idx_ch)-mean(dc(:,1,idx_ch),1));
-        dc_deoxy = squeeze(dc(:,2,idx_ch)-mean(dc(:,2,idx_ch),1));
+        dc_oxy   = squeeze(dc(:,1,idx_ch) - mean(dc(:,1,idx_ch),1));
+        dc_deoxy = squeeze(dc(:,2,idx_ch) - mean(dc(:,2,idx_ch),1));
         
-        sd_oxy = std(dc_oxy,0,1);
+        sd_oxy   = std(dc_oxy,0,1);
         sd_deoxy = std(dc_deoxy,0,1);
         
         alfa = sd_oxy/sd_deoxy;
@@ -76,7 +71,7 @@ for iBlk=1:length(data_dc)
         dcCbsi(:,2,idx_ch) = -(1/alfa)*dcCbsi(:,1,idx_ch);
         dcCbsi(:,3,idx_ch) = dcCbsi(:,1,idx_ch) + dcCbsi(:,2,idx_ch);
     end
-    dcCbsi = reshape(dcCbsi, size(dcCbsi,1), size(dcCbsi,2)*size(dcCbsi,3));    
+    dcCbsi(:,order) = dcCbsi(:,:);
     data_dc(iBlk).SetDataTimeSeries(dcCbsi);
 end
 

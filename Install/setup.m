@@ -5,8 +5,6 @@ global dirnameSrc
 global dirnameDst
 
 try
-
-    setNamespace('Homer3');
     
     currdir = filesepStandard(pwd);
         
@@ -45,7 +43,7 @@ cd(currdir)
 
 % ------------------------------------------------------------
 function main()
-global h
+global h            %#ok<*GVMIS> 
 global nSteps
 global iStep
 global platform
@@ -145,11 +143,12 @@ end
 
 % Change source dir if not on PC
 if ~ispc()
-    dirnameSrc = sprintf('~/Downloads/%s_install/', lower(getAppname));
+    dirnameSrc0 = dirnameSrc;
+    dirnameSrc = sprintf('%sDownloads/%s_install/', homePageFullPath(), lower(getAppname));
     fprintf('SETUP:    current folder is %s\n', pwd);   
     
     if ~isdeployed()
-        rmdir_safe(sprintf('~/Desktop/%s_install/', lower(getAppname())));
+        rmdir_safe(sprintf('%sDesktop/%s_install/', homePageFullPath(), lower(getAppname())));
         if ~pathscompare(dirnameSrc, dirnameSrc0)
             rmdir_safe(dirnameSrc);            
             if ispathvalid(dirnameSrc)
@@ -157,15 +156,14 @@ if ~ispc()
             end
             copyFile(dirnameSrc0, dirnameSrc);
         end
-        rmdir_safe('~/Desktop/Test/');
+        rmdir_safe(sprintf('%sDesktop/Test/', homePageFullPath()));
         
-        if ispathvalid('~/Desktop/%s_install/')
+        if ispathvalid(sprintf('%sDesktop/%s_install/', homePageFullPath()))
             err = -1;
         end
-        if ispathvalid('~/Desktop/Test/')
+        if ispathvalid(sprintf('%sDesktop/Test/', homePageFullPath()))
             err = -1;
         end
-        
         cd(dirnameSrc);
     end
 end
@@ -287,4 +285,7 @@ catch ME
     printStack(ME)
     return;    
 end
+
+
+
 

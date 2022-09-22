@@ -17,10 +17,10 @@ if ~ispathvalid(repoParent)
     return
 end
 
-
-if pathscompare(repoParentFull, subdir)
+if pathscompare_startup(repoParentFull, subdir)
     [dateNum, dateStr] = gitLastRevDate(repoParentFull);
 else
-    subdir = pathsubtract(subdir, repoParentFull);
+    subdir = pathsubtract_startup(subdir, repoParentFull);
     [dateNum, dateStr] = gitLastRevDate(repoParentFull, subdir);
 end
+

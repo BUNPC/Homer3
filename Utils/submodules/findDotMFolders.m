@@ -1,4 +1,7 @@
 function dotmfolders = findDotMFolders(subdir, exclList)
+global MAXPATHLENGTH
+MAXPATHLENGTH = 8;
+
 dotmfolders = {};
 
 if ~exist('subdir','var')
@@ -49,6 +52,7 @@ end
 
 % -------------------------------------------------------------------------
 function b = isdotmfolder(folder)
+global MAXPATHLENGTH
 b = false;
 if ~ispathvalid_startup(folder, 'dir')
     return
@@ -61,6 +65,14 @@ if isempty(dir([folder,'/*.m']))
         return
     end
     return;
+else
+    rootdir = which('findDotMFolders');
+    rootdir = fileparts(rootdir);
+    rootdir = pathsubtract_startup(rootdir, 'Utils/submodules','nochange');
+    p = pathsubtract_startup(folder, rootdir);
+    if length(find(p=='/')) > MAXPATHLENGTH
+        return
+    end
 end
 b = true;
 

@@ -705,7 +705,7 @@ classdef ProcStreamClass < handle
                 fprintf('Default config file exists. Processing stream will be loaded from %s\n', fname);
                 return;
             end
-            fname = OpenFileGUI(procStreamCfgFile, pathname,'Load Processing Options File');
+            fname = OpenFileGUI(procStreamCfgFile, pathname,'Load Processing Options File','.cfg');
             if isempty(fname)
                 fname = [pathname, procStreamCfgFile];
                 fprintf('Loading default config file.\n');

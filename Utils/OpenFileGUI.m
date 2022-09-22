@@ -114,11 +114,12 @@ for ii = 1:length(files)
         filenames{kk,1} = files(ii).name;  %#ok<*AGROW>
         kk = kk+1;
     elseif ispathvalid([OpenFile.rootpath, files(ii).name], 'dir')
-        dirnames{mm,1} = files(ii).name;  %#ok<*AGROW>
+        dirnames{mm,1} = [files(ii).name, '/'];  %#ok<*AGROW>
         mm = mm+1;
     end
 end
 OpenFile.filesCurrFolder = [dirnames; filenames];
+
 
 
 % ------------------------------------------------------------------------
@@ -183,7 +184,8 @@ end
 setGuiFonts(hObject, fs)
 
 % Set focus on file name edit box
-uicontrol(handles.editFilename);
+% uicontrol(handles.editFilename);
+uicontrol(handles.listboxFilesFolders);
 waitForGui(hObject, true);
 
 
@@ -226,7 +228,18 @@ end
 
 % ------------------------------------------------------------------------
 function listboxFilesFolders_Callback(hObject, eventdata, handles)
-global OpenFile %#ok<*GVMIS> 
+global OpenFile %#ok<*GVMIS>
+
+keypress = getappdata(hObject, 'keypress');
+if isempty(keypress)
+    setappdata(hObject, 'keypress',0)
+elseif keypress == 1
+    setappdata(hObject, 'keypress',0)
+    return
+else
+    setappdata(hObject, 'keypress',0)
+end
+
 idx = get(hObject, 'value');
 filenames = get(hObject, 'string');
 if isempty(filenames)
@@ -296,3 +309,14 @@ close(handles.figure1);
 
 % ------------------------------------------------------------------------
 function dummyfunc(~, ~, ~)
+
+
+% ------------------------------------------------------------------------
+function listboxFilesFolders_KeyPressFcn(hObject, eventdata, handles)
+if strcmp(eventdata.Key, 'downarrow') || strcmp(eventdata.Key, 'uparrow')
+    setappdata(hObject, 'keypress',1)
+elseif strcmp(eventdata.Key, 'return')
+    editFilename_Callback(handles.editFilename, 1, handles);
+end
+
+

@@ -8,6 +8,7 @@ classdef DataClass < FileLoadSaveClass
     
     properties
         cache
+        diagnostic
     end
     
     methods
@@ -50,6 +51,7 @@ classdef DataClass < FileLoadSaveClass
             % Set SNIRF fomat properties
             obj.measurementList = MeasListClass().empty();
             obj.cache = struct('measurementListMatrix',[]);
+            obj.diagnostic = false;
             
             if nargin==0
                 return;
@@ -768,7 +770,16 @@ classdef DataClass < FileLoadSaveClass
                 ml(order) = ml;
             end
 
+            obj.SimulateErrors(d);
+        end
+        
+        
             
+        % ---------------------------------------------------------
+        function d = SimulateErrors(obj, d)
+            if obj.diagnostic == false
+                return
+            end
             d = simulateDataError(d);
         end
         

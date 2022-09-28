@@ -36,7 +36,7 @@ try
     appNameInclList = {};
     exclSearchList  = {'.git','Data','Docs','*_install','*.app'};
     
-    appThis         = filesepStandard_startup(pwd);
+    appThis         = filesepStandard(pwd);
     appThisPaths    = findDotMFolders(appThis, exclSearchList);
     if addremove == 0
         if ~isempty(which('deleteNamespace.m'))
@@ -53,8 +53,8 @@ try
     for ii = 1:length(appNameExclList)
         foo = which([appNameExclList{ii}, '.m'],'-all');
         for jj = 1:length(foo)
-            p = filesepStandard_startup(fileparts(foo{jj}));
-            if pathscompare_startup(appThis, p)
+            p = filesepStandard(fileparts(foo{jj}));
+            if pathscompare(appThis, p)
                 continue
             end
             fprintf('Exclude paths for %s\n', p);
@@ -67,11 +67,11 @@ try
         foo = which([appNameInclList{ii}, '.m'],'-all');
         for jj = 1:length(foo)
             if jj > 1
-                p = filesepStandard_startup(fileparts(foo{jj}));
+                p = filesepStandard(fileparts(foo{jj}));
                 appExclList = [appExclList; p]; %#ok<AGROW>
                 fprintf('Exclude paths for %s\n', p);
             else
-                p = filesepStandard_startup(fileparts(foo{jj}));
+                p = filesepStandard(fileparts(foo{jj}));
                 appInclList = [appInclList; p]; %#ok<AGROW>
                 fprintf('Include paths for %s\n', p);
             end
@@ -97,7 +97,7 @@ try
     % Add back all search paths for all other apps except for current app
     for ii = 1:length(appInclList)
         % This app's path has already been added
-        if pathscompare_startup(appInclList{ii}, appThis)
+        if pathscompare(appInclList{ii}, appThis)
             continue;
         end
         foo = findDotMFolders(appInclList{ii}, exclSearchList);
@@ -118,9 +118,6 @@ catch ME
     rethrow(ME)
     
 end
-
-appnames = [appname; dependencies()];
-PrintSystemInfo([], appnames)
 
 cd(currdir);
 
@@ -184,7 +181,7 @@ end
 r = version('-release');
 msg = sprintf('Removing search paths for %s ...', appname);
 h = waitbar(0, msg);
-p = str2cell_startup(p, delimiter);
+p = str2cell(p, delimiter);
 for kk = 1:length(p)
     if mod(kk,100)==0
         waitbar(kk/length(p), h);
@@ -192,7 +189,7 @@ for kk = 1:length(p)
     if ~isempty(strfind(lower(p{kk}), 'matlab')) && ~isempty(strfind(p{kk}, r))
         continue;
     end
-    if ~isempty(strfind(filesepStandard_startup(p{kk}), app))
+    if ~isempty(strfind(filesepStandard(p{kk}), app))
         rmpath(p{kk});
     end
 end
@@ -267,4 +264,148 @@ while ii<=length(j)
     kk=kk+1;
 end
 C(kk:end) = [];
+
+
+
+
+% -------------------------------------------------------------------------
+function dotmfolders = findDotMFolders(subdir, exclList)
+global MAXPATHLENGTH
+MAXPATHLENGTH = 8;
+
+dotmfolders = {};
+
+if ~exist('subdir','var')
+    subdir = pwd;
+end
+if ~exist('exclList','var')
+    exclList = {};
+end
+
+if ~iscell(exclList)
+    exclList = {exclList};
+end
+
+subdirFullpath = filesepStandard(subdir,'full');
+
+if ~ispathvalid(subdirFullpath, 'dir')
+    fprintf('Warning: folder %s doesn''t exist\n', subdirFullpath);
+    return;
+end
+
+% If current subjdir is in the exclList then go back to curr dir and exit
+if isExcluded(subdirFullpath, exclList)
+    return;
+end
+
+dirs = dir([subdirFullpath, '*']);
+if isempty(dirs)
+    return;
+end
+
+if isdotmfolder(subdirFullpath)
+    dotmfolders = {filesepStandard(subdirFullpath, 'nameonly')};
+end
+
+for ii = 1:length(dirs)
+    if ~dirs(ii).isdir
+        continue;
+    end
+    if dirs(ii).name(1) == '.'
+        continue;
+    end
+    dotmfolders = [dotmfolders; findDotMFolders([subdirFullpath, dirs(ii).name], exclList)]; %#ok<AGROW>
+end
+
+
+
+
+
+% -------------------------------------------------------------------------
+function b = isdotmfolder(folder)
+global MAXPATHLENGTH
+b = false;
+if ~ispathvalid(folder, 'dir')
+    return
+end
+if isempty(dir([folder,'/*.m']))
+    % Exceptions to rule that 'dotm' folder must have at least one '.m' file: 
+    % it is a an executable folder (i.e. '/bin')
+    if ~isempty(strfind(folder, '/bin/')) %#ok<*STREMP>
+        b = true;
+        return
+    end
+    return;
+else
+    rootdir = which('findDotMFolders');
+    rootdir = fileparts(rootdir);
+    rootdir = pathsubtract(rootdir, 'Utils/submodules','nochange');
+    p = pathsubtract(folder, rootdir);
+    if length(find(p=='/')) > MAXPATHLENGTH
+        return
+    end
+end
+b = true;
+
+
+
+
+% -------------------------------------------------------------------------
+function b = isExcluded(pname, exclList)
+b = true;
+if pname(end)=='/'
+    pname(end) = '';
+end
+if ~ispathvalid(pname,'dir')
+    return;
+end
+[~,f,e] = fileparts(pname);
+for ii = 1:length(exclList)
+    [c,d] = str2cell(exclList{ii},'*');
+    if isempty(d) && strcmp(c{1}, [f,e])
+        return;
+    end
+
+    % Get list of all folders matching exclList{ii} pattern, whether it be
+    % a single folder name or a wildcard pattern
+    for jj = 1:length(c)
+        k = strfind(c{jj}, [f,e]);
+        if isempty(k)
+            break;
+        end
+    end
+    if ~isempty(k)
+        return;
+    end
+end
+b = false;
+
+
+
+% -------------------------------------------------------------------------
+function diff = pathsubtract(p2_0, p1_0, options)
+if ~exist('options','var')
+    options = '';
+end
+if optionExists(options, 'nochange')
+    option = '';
+else
+    option = 'full';
+end
+p1 = filesepStandard(p1_0, option);
+p2 = filesepStandard(p2_0, option);
+if isempty(p1)
+    p1 = p1_0;
+end
+if isempty(p2)
+    p2 = p2_0;
+end
+k = strfind(p2, p1);
+if ~isempty(k) && k(1)==1
+    diff = p2(k(1)+length(p1):end);
+elseif ~isempty(k)
+    diff = p2(1:k(1)-1);
+else
+    diff = '';
+end
 

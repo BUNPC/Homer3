@@ -106,16 +106,16 @@ end
 if ~exist('peerlessonly','var')
     peerlessonly = false;
 end
-f1_1 = findTypeFiles(repo1.path, '.m');
-f1_2 = findTypeFiles(repo1.path, '.txt');
-f1_2 = findTypeFiles(repo1.path, '.cfg');
-f1_3 = findTypeFiles(repo1.path, '.numberfiles');
-f2_1 = findTypeFiles(repo2.path, '.m');
-f2_2 = findTypeFiles(repo2.path, '.cfg');
-f2_3 = findTypeFiles(repo2.path, '.numberfiles');
-f1 = [f1_1; f1_2; f1_3];
-f2 = [f2_1; f2_2; f2_3];
 
+fileTypes = {'.m','.txt','.cfg','.numberfiles','.fig'};
+for iRepo = 1:2
+    for iFt = 1:length(fileTypes)
+        if eval( sprintf('~exist(''f%d'',''var'')', iRepo) )
+            eval( sprintf('f%d = {};', iRepo) )
+        end
+        eval( sprintf('f%d = [f%d; findTypeFiles(repo%d.path, fileTypes{iFt})];', iRepo, iRepo, iRepo) )
+    end
+end
 q = 0;
 for kk = 1:length(f2)
     
@@ -152,7 +152,7 @@ for kk = 1:length(f2)
         % repo1, then ADD f2 to repo1
         if repo2.datetime.num > repo1.datetime.num  
             
-            p = pathsubtract(f2{kk}, repo2.path);
+            p = pathsubtract_startup(f2{kk}, repo2.path);
             q = makeChange('add',  f2{kk}, [repo1.path, p], repo1, preview, q);
             identical = false;
             

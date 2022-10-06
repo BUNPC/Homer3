@@ -315,6 +315,8 @@ function dummyfunc(~, ~, ~)
 function listboxFilesFolders_KeyPressFcn(hObject, eventdata, handles)
 if strcmp(eventdata.Key, 'downarrow') || strcmp(eventdata.Key, 'uparrow')
     setappdata(hObject, 'keypress',1)
+elseif strcmp(eventdata.Key, 'home') || strcmp(eventdata.Key, 'end')
+    setappdata(hObject, 'keypress',1)
 elseif strcmp(eventdata.Key, 'return')
     editFilename_Callback(handles.editFilename, 1, handles);
 end

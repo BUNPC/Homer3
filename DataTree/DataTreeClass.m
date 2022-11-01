@@ -139,6 +139,7 @@ classdef DataTreeClass <  handle
             end
             obj.SetCurrElem(iGroup, iSubj, iSess, iRun);
             obj.groups(iGroup).SetConditions();
+            obj.dataStorageScheme = obj2.dataStorageScheme;
         end
         
         
@@ -374,6 +375,14 @@ classdef DataTreeClass <  handle
             obj.ErrorCheckLoadedFiles();
 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Export stim to TSV files 
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            [stimExport, stimExportOptions] = obj.AutoExportStim();
+            if stimExport
+                obj.groups(iGroup).ExportStim(stimExportOptions)
+            end
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Generate the stimulus conditions for the group tree
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.groups(iGroup).SetConditions();
@@ -451,6 +460,44 @@ classdef DataTreeClass <  handle
         end
 
 
+        
+        % ----------------------------------------------------------
+        function [exportStim, options] = AutoExportStim(obj)
+            global cfg 
+            v1 = cfg.GetValue('Export Stim To TSV File');
+            v2 = cfg.GetValue('Export Stim To TSV File Regenerate');            
+            exportStim = false;
+            options = '';
+            if strcmpi(v1, 'yes')
+                exportStim = true;
+            end
+            if strcmpi(v1, 'Yes_Delete_Old')
+                exportStim = true;
+                options = 'removeStim';
+            end
+            if strcmpi(v2, 'yes')
+                if isempty(options)
+                    options = 'regenerate';
+                else
+                    options = [options, ':regenerate'];
+                end
+            end
+        end
+        
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ReloadStim(obj)
+            for ii = 1:length(obj.groups)
+                obj.groups(ii).ReloadStim();
+                obj.groups(ii).SetConditions();
+            end
+        end 
+        
+        
+        
+        
        
         % ----------------------------------------------------------
         function Add(obj, group, subj, sess, run)

@@ -240,6 +240,7 @@ maingui.childguis(2) = ChildGuiClass('ProcStreamOptionsGUI');
 maingui.childguis(3) = ChildGuiClass('StimEditGUI');
 maingui.childguis(4) = ChildGuiClass('PlotProbeGUI');
 maingui.childguis(5) = ChildGuiClass('PvaluesDisplayGUI');
+maingui.childguis(6) = ChildGuiClass('configSettingsGUI');
 
 % Load date files into group tree object
 maingui.dataTree = LoadDataTree(maingui.groupDirs, maingui.format, procStreamFile);
@@ -2051,7 +2052,9 @@ maingui.axesSDG.ylim = bbox(3:4);
 
 % --------------------------------------------------------------------
 function menuItemAppConfigGUI_Callback(~, ~, ~)
-configSettingsGUI();
+global maingui
+idx = FindChildGuiIdx('configSettingsGUI');
+maingui.childguis(idx).Launch();
 
 
 
@@ -2149,3 +2152,16 @@ else
     set(hObject, 'string','/\');
     set(handles.listboxGroupTree, 'position', [pos1(1), pos1(2)-x, pos1(3), pos1(4)+x]);
 end
+
+
+
+% ----------------------------------------------------------
+function menuItemExportStim_Callback(~, ~, ~)
+global maingui
+out = ExportDataGUI(maingui.dataTree.currElem.name,'.tsv','Stim', 'userargs');
+if isempty(out.format) && isempty(out.datatype)
+    return;
+end
+maingui.dataTree.currElem.ExportStim();
+
+

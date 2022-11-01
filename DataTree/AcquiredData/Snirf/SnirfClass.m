@@ -69,6 +69,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %           measurementList: [1x8 MeasListClass]
             %
             
+            obj = obj@AcqDataClass(varargin);
+            
             % Initialize properties from SNIRF spec
             obj.Initialize()
             
@@ -305,6 +307,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if ~isempty(obj2.GetFilename()) && isempty(obj.GetFilename())
                 obj.SetFilename(obj2.GetFilename());
             end
+            obj.SetDataStorageScheme(obj2.GetDataStorageScheme());
         end
         
         
@@ -328,6 +331,18 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % Copy mutable properties to new object instance;
             objnew.stim = CopyHandles(obj.stim);
             objnew.SortStims();
+            objnew.SetDataStorageScheme(obj.GetDataStorageScheme());            
+        end
+        
+        
+        
+        % -------------------------------------------------------
+        function ReloadStim(obj, obj2)            
+            if strcmpi(obj2.GetDataStorageScheme(), 'files')
+                obj2.LoadStim(obj2.GetFilename());
+            end
+            obj.stim = CopyHandles(obj2.stim);
+            obj.SortStims();
         end
         
         
@@ -439,6 +454,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         % -------------------------------------------------------
         function err = LoadStim(obj, fileobj)
             err = 0;
+            
+            if obj.LoadStimOverride(obj.GetFilename())                
+                return
+            end
             
             ii=1;
             while 1
@@ -751,12 +770,9 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % -------------------------------------------------------
         function CopyStim(obj, obj2)
+            obj.stim = StimClass.empty();
             for ii = 1:length(obj2.stim)
-                if ii > length(obj.stim)
                     obj.stim(ii) = StimClass(obj2.stim(ii));
-                else
-                    obj.stim(ii).Copy(obj2.stim(ii));
-                end
             end
         end        
         
@@ -768,7 +784,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Load stims from file
             snirf = SnirfClass();
-            snirf.LoadStim(obj.GetFilename);
+            snirf.SetFilename(obj.GetFilename())
+            snirf.LoadStim(obj.GetFilename());
             stimFromFile = snirf.stim;
             
             % Update stims from file with edited stims
@@ -1176,7 +1193,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if nargin==1
                 return;
             end
-            CondNamesLocal = unique({obj.stim.name});
+            
+            % Bug fix: unique with no arguments changes the order by
+            % sorting. Here order should be preserved or else we have problems. 
+            % Add the 'stable' argument to preseerve order. JD, Nov 1, 2022
+            CondNamesLocal = unique({obj.stim.name}, 'stable');
             stimnew = StimClass().empty;
             for ii=1:length(CondNames)
                 k = find(strcmp(CondNamesLocal, CondNames{ii}));

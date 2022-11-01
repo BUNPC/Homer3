@@ -953,6 +953,10 @@ classdef GroupClass < TreeNodeClass
             end
         end
 
+    end
+    
+    
+    methods
         
         % ----------------------------------------------------------------------------------
         function r = ListOutputFilenames(obj, options)

@@ -525,6 +525,15 @@ classdef RunClass < TreeNodeClass
         end
         
         
+        
+        % ----------------------------------------------------------------------------------
+        function ReloadStim(obj)
+            obj.acquired.LoadStim();
+            obj.procStream.CopyStims(obj.acquired)
+        end
+        
+        
+        
         % ----------------------------------------------------------------------------------
         function s = GetStims(obj, t)            
             % Proc stream output 
@@ -845,6 +854,35 @@ classdef RunClass < TreeNodeClass
             vals = obj.procStream.input.GetStimValSettings();
         end        
         
+        
+        % ----------------------------------------------------------------------------------        
+        function ExportStim(obj, options)            
+            if ~exist('options','var')
+                options = '';
+            end
+            SnirfFile2Tsv(obj.acquired, '', options);
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function fname = DeleteExportStim(obj)
+            fname = obj.acquired.GetStimTsvFilename();
+            if ispathvalid(fname)
+                try
+                    fprintf('Delete  %s\n', fname)
+                    delete(fname);
+                catch
+                end
+            end
+        end
+        
+    end
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
         
         % ----------------------------------------------------------------------------------        
         function nbytes = MemoryRequired(obj, option)

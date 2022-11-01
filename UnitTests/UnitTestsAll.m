@@ -12,6 +12,7 @@ cleanupObj = onCleanup(@()userInterrupt_Callback(true));
 cfg.SetValue('Regression Test Active','true');
 cfg.SetValue('Include Archived User Functions','Yes');
 cfg.SetValue('Default Processing Stream Style','NIRS');
+cfg.SetValue('Export Stim To TSV File','Yes');
 cfg.Save();
 % UnitTestsAll_Nirs(false);
 

@@ -190,9 +190,17 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function Reset(obj)
+            global cfg
             obj.procStream.output.Reset([obj.path, obj.GetOutputFilename()]);
             delete([obj.path, obj.GetOutputFilename(), '*.txt']);
             delete([obj.path, 'tCCAfilter_*.txt'])
+            v = '';
+            if ~isempty(cfg)
+                v = cfg.GetValue('Include Archived User Functions');
+            end
+            if strcmpi(v, 'yes')
+                delete([obj.path, '*_events.tsv'])
+            end                
         end
         
         
@@ -517,6 +525,14 @@ classdef TreeNodeClass < handle
         % ----------------------------------------------------------------------------------
         function s = GetStims(~, ~)
             s = [];
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ReloadStim(obj)
+            for ii = 1:length(obj.children)
+                obj.children(ii).ReloadStim();
+            end            
         end
         
         
@@ -980,8 +996,7 @@ classdef TreeNodeClass < handle
 
         % ----------------------------------------------------------------------------------
         function ExportProcStreamFunctionsOpen(obj)
-            cfg = ConfigFileClass();
-            val = cfg.GetValue('Export Processing Stream Functions');
+            val = obj.cfg.GetValue('Export Processing Stream Functions');
             if strcmpi(val, 'yes')
                 obj.procStream.ExportProcStreamFunctions(true);
             elseif strcmpi(val, 'no')
@@ -1049,6 +1064,27 @@ classdef TreeNodeClass < handle
         
         
                 
+        % ----------------------------------------------------------------------------------
+        function ExportStim(obj, options)
+            if ~exist('options','var')
+                options = '';
+            end
+            for ii = 1:length(obj.children)
+                obj.children(ii).ExportStim(options);
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function DeleteExportStim(obj)
+            for ii = 1:length(obj.children)
+                obj.children(ii).DeleteExportStim();
+            end
+        end
+        
+        
+        
         % ----------------------------------------------------------------------------------
         function FreeMemory(obj)
             if isempty(obj)

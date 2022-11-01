@@ -88,6 +88,7 @@ for ii = 1:length(datafiles)
     if strcmp(options, 'delete')
         fprintf('Deleting %s\n', [datafiles(ii).rootdir, '/', datafiles(ii).name]);
         delete([datafiles(ii).rootdir, '/', datafiles(ii).name]);
+        delete([datafiles(ii).rootdir, '/*_events.tsv']);
     elseif strcmp(options, 'move')
         fprintf('Moving %s to %s\n', [datafiles(ii).rootdir, '/', datafiles(ii).name], [datafiles(ii).rootdir, '/', datafiles(ii).name, '.old']);
         movefile([datafiles(ii).rootdir, '/', datafiles(ii).name], [datafiles(ii).rootdir, '/', datafiles(ii).name, '.old']);

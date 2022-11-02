@@ -101,11 +101,11 @@ if ~isempty(maingui)
     set(handles.menuItemSyncBrowsing, 'enable','on');
 else
     setNamespace('Homer3');
-    cfg = ConfigFileClass();
     set(handles.menuItemChangeGroup, 'enable','on');
     set(handles.menuItemSaveGroup, 'enable','on');
     set(handles.menuItemSyncBrowsing, 'enable','off');
 end
+cfg = ConfigFileClass();
 
 stimEdit.config.autoSaveAcqFiles = cfg.GetValue('Auto Save Acquisition Files');
 
@@ -199,6 +199,9 @@ close(h);
 if strcmpi(cfg.GetValue('Load Stim From TSV File'), 'yes')
     %EnableGuiObjects('off', handles);
     MakeInvisibleGuiObjects(handles);
+    set(handles.menuItemReloadStim, 'enable','on')
+else
+    set(handles.menuItemReloadStim, 'enable','off')
 end
 
 
@@ -1474,6 +1477,15 @@ StimCSV_Write(conds,stimLabels,stimData);
 % --------------------------------------------------------------------
 function menuItemReloadStim_Callback(~, ~, handles)
 global stimEdit
+global cfg 
+
+if strcmpi(cfg.GetValue('Load Stim From TSV File'), 'yes')
+    EnableGuiObjects('on', handles);
+    set(handles.menuItemReloadStim, 'enable','on')
+else
+    set(handles.menuItemReloadStim, 'enable','off')
+end
+
 stimEdit.locDataTree.ReloadStim();
 stimEdit.dataTree.CopyStims(stimEdit.locDataTree)
 Display(handles);

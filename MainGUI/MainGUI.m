@@ -747,11 +747,15 @@ Display(handles, hObject);
 % --------------------------------------------------------------------
 function [eventdata, handles] = menuItemChangeGroup_Callback(hObject, eventdata, handles)
 global maingui
+global cfg
 if ~ishandles(hObject)
     return;
 end
 fmt = maingui.format;
 unitTest = maingui.unitTest;
+
+% Update config settings
+cfg = ConfigFileClass();
 
 % Change directory
 pathnm = uigetdir( cd, 'Pick the new directory' );

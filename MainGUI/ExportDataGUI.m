@@ -170,17 +170,30 @@ if strcmp(choices{idx}, 'Stim')
     if length(k)==1
         set(handles.popupmenuExportFormat, 'value',k);
     end
-    set(handles.radiobuttonCurrProcElemOnly, 'enable','off');
-    set(handles.radiobuttonCurrProcElemOnly, 'value',0);
-    set(handles.radiobuttonCurrProcElemAndSubTree, 'value',1);
+    EnableHRFOptions(handles, 'off')
 else    
-    set(handles.radiobuttonCurrProcElemOnly, 'enable','on');
+    EnableHRFOptions(handles, 'on')
 end
 set(handles.editTimeRangeMin, 'visible',val);
 set(handles.editTimeRangeMax, 'visible',val);
 set(handles.textTimeRange, 'visible',val);
 set(handles.textTimeRangeMin, 'visible',val);
 set(handles.textTimeRangeMax, 'visible',val);
+
+
+
+% ----------------------------------------------------------------
+function EnableHRFOptions(handles, onoff)
+if strcmpi(onoff, 'off')
+    set(handles.checkboxLoad, 'enable','off');
+    set(handles.checkboxLoad, 'value',0);
+    set(handles.radiobuttonCurrProcElemOnly, 'enable','off');
+    set(handles.radiobuttonCurrProcElemOnly, 'value',0);
+    set(handles.radiobuttonCurrProcElemAndSubTree, 'value',1);
+else
+    set(handles.radiobuttonCurrProcElemOnly, 'enable','on');
+    set(handles.checkboxLoad, 'enable','on');
+end
 
 
 
@@ -393,4 +406,3 @@ set(hc, 'position', [ii-1, pc(2), pc(3), pc(4)])
 set(0, 'units', us0);
 set(hp, 'units', up0);
 set(hc, 'units', uc0);
-

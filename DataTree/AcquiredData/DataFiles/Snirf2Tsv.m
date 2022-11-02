@@ -1,8 +1,10 @@
-function Snirf2Tsv(rootdir)
+function Snirf2Tsv(rootdir, options)
 if ~exist('rootdir','var')
     rootdir = pwd;
 end
-if ischar(rootdir)
+if ~exist('options','var')
+    options = pwd;
+end
 rootdir = filesepStandard(rootdir);
 files = DataFilesClass(rootdir, 'snirf');
 files = files.files;
@@ -19,8 +21,16 @@ for ii = 1:length(files)
     fnameNew = [filesepStandard(pname), fname(1:k-1), '_events.tsv'];
     src = [filesepStandard(pname), fname, ext1];
     dst = fnameNew;
-    fprintf('Converting   %s   to   %s\n', src, dst);
-    SnirfFile2Tsv(src, dst, 'removeStim');
+    if optionExists(options, 'delete') || optionExists(options, 'remove')
+        if ispathvalid(dst)
+            fprintf('Deleting  %s\n', dst);
+            delete(dst);
+        end
+    else
+        fprintf('Converting   %s   to   %s\n', src, dst);
+        SnirfFile2Tsv(src, dst, 'removeStim');
+    end
 end
+
 
 

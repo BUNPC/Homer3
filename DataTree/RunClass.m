@@ -528,7 +528,7 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function ReloadStim(obj)
-            obj.acquired.LoadStim();
+            obj.acquired.LoadStim(obj.acquired.GetFilename());
             obj.procStream.CopyStims(obj.acquired)
         end
         

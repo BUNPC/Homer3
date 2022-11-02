@@ -139,7 +139,12 @@ classdef AcqDataClass < matlab.mixin.Copyable
         
         % -------------------------------------------------------
         function status = LoadStimOverride(obj, fileobj)
-            status = 0;
+            global cfg
+            status = false;
+            cfg = InitConfig(cfg);
+            if strcmpi(cfg.GetValue('Load Stim From TSV File'), 'no')
+                return
+            end
             obj.bids = struct('stim',{{}});            
             if isempty(fileobj)
                 return

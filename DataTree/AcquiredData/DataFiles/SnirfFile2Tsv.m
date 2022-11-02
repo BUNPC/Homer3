@@ -11,7 +11,7 @@ else
     s = src;
 end
 if s.IsEmpty()
-    s.LoadStim()
+    s.LoadStim(s.GetFilename());
 end
 if ~exist('dst','var')
     dst = '';

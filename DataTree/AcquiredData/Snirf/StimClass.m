@@ -224,7 +224,7 @@ classdef StimClass < FileLoadSaveClass
             end
             
             % Now check contents
-            if ~all(obj.data(:)==obj2.data(:))
+            if ~all( abs(obj.data(:)-obj2.data(:)) < (obj.errmargin/10) )
                 return;
             end
             

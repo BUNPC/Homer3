@@ -1095,7 +1095,7 @@ classdef GroupClass < TreeNodeClass
                         return;
                     end
                     
-                    oldDerivedPathRel = pathsubtract(oldDerivedPath, obj.path);
+                    oldDerivedPathRel = pathsubtract_startup(oldDerivedPath, obj.path);
                     if isempty(oldDerivedPathRel)
                         return
                     end
@@ -1122,6 +1122,9 @@ classdef GroupClass < TreeNodeClass
                             end
                         end
                         obj.logger.Write('Moving %s to %s\n', oldDerivedPath, [obj.path, obj.outputDirname]);
+                        if ~ispathvalid([obj.path, obj.outputDirname])
+                            mkdir([obj.path, obj.outputDirname]);
+                        end
                         movefile(oldDerivedPath, [obj.path, obj.outputDirname])
                         
                         if ispathvalid([obj.path, obj.outputDirname, obj.outputFilename])

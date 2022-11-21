@@ -299,7 +299,7 @@ classdef RunClass < TreeNodeClass
             end
             
             if obj.DEBUG
-                fprintf('Calculating processing stream for group %d, subject %d, run %d\n', obj.iGroup, obj.iSubj, obj.iRun);
+                fprintf('Calculating processing stream for group %d, subject %d, session %d, run %d\n', obj.iGroup, obj.iSubj, obj.iSess, obj.iRun);
             end
             
             % Find all variables needed by proc stream, find them in this run, and load them to proc stream input
@@ -308,9 +308,9 @@ classdef RunClass < TreeNodeClass
             Calc@TreeNodeClass(obj);
 
             if obj.DEBUG
-                obj.logger.Write(sprintf('Completed processing stream for group %d, subject %d, run %d\n', obj.iGroup, obj.iSubj, obj.iRun));
+                obj.logger.Write(sprintf('Completed processing stream for group %d, subject %d, session %d, run %d\n', obj.iGroup, obj.iSubj, obj.iSess, obj.iRun));
                 obj.logger.Write('\n')
-            end            
+            end
         end
 
 
@@ -519,6 +519,7 @@ classdef RunClass < TreeNodeClass
         end
 
         
+        
         % ----------------------------------------------------------------------------------
         function SetStims_MatInput(obj, s, t, CondNames)
             obj.procStream.SetStims_MatInput(s, t, CondNames);
@@ -528,8 +529,16 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function ReloadStim(obj)
+            % Update call application GUI using it's generic Update function 
+            if ~isempty(obj.updateParentGui)
+                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun]);
+            end
+            if obj.DEBUG
+                fprintf('group %d, subject %d, session %d, run %d\n', obj.iGroup, obj.iSubj, obj.iSess, obj.iRun);
+            end
             obj.acquired.LoadStim(obj.acquired.GetFilename());
             obj.procStream.CopyStims(obj.acquired)
+            pause(.5)
         end
         
         

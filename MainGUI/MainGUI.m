@@ -179,6 +179,7 @@ set(handles.menuItemResetGroupFolder, 'enable', val)
 function eventdata = MainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global maingui
 global logger
+global cfg
 
 setNamespace('Homer3');
 
@@ -276,7 +277,13 @@ set(hObject,'name', title);
 maingui.logger.InitChapters()
 maingui.logger.CurrTime(sprintf('MainGUI: Startup time - %0.1f seconds\n', toc(startuptimer)));
 
-
+if strcmpi(cfg.GetValue('Load Stim From TSV File'), 'yes')
+    set(handles.menuItemStimEditGUI, 'visible','off')
+    set(handles.menuItemReloadStim, 'visible','on')
+else
+    set(handles.menuItemStimEditGUI, 'visible','on')
+    set(handles.menuItemReloadStim, 'visible','off')
+end
 
 
 
@@ -329,9 +336,12 @@ deleteNamespace('Homer3');
 
 
 
+
 % --------------------------------------------------------------------
 function [eventdata, handles] = MainGUI_CloseFcn(~, eventdata, handles)
 deleteNamespace('Homer3');
+
+
 
 
 % --------------------------------------------------------------------
@@ -344,6 +354,7 @@ if ~isempty(warnings)
     MessageBox(warnings, 'WARNINGS')
     %set(handles.listboxGroupTree, 'foregroundcolor',maingui.errcolor)
 end
+
 
 
 
@@ -1153,12 +1164,14 @@ procElem = dataTree.currElem;
 if ~strcmp(procElem.type, 'run')
     return;
 end
+if ~exist('hAxes','var')
+    hAxes = handles.axesData;
+end
 if ~ishandles(hAxes)
     return;
 end
 axes(hAxes);
 hold(hAxes,'on');
-
 datatype = GetDatatype(handles);
 if datatype == maingui.buttonVals.RAW_HRF
     return;
@@ -2167,5 +2180,16 @@ if isempty(out.format) && isempty(out.datatype)
     return;
 end
 maingui.dataTree.currElem.ExportStim();
+
+
+
+
+% --------------------------------------------------------------------
+function menuItemReloadStim_Callback(~, ~, handles)
+global maingui
+[iGroup, iSubj, iSess, iRun] = maingui.dataTree.GetCurrElemIndexID();
+maingui.dataTree.ReloadStim();
+Update('DataTreeClass',[iGroup, iSubj, iSess, iRun]);
+DisplayStim(handles);
 
 

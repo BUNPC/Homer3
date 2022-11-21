@@ -489,14 +489,10 @@ classdef DataTreeClass <  handle
         
         % ----------------------------------------------------------------------------------
         function ReloadStim(obj)
-            for ii = 1:length(obj.groups)
-                obj.groups(ii).ReloadStim();
-                obj.groups(ii).SetConditions();
-            end
-        end 
-        
-        
-        
+            obj.currElem.ReloadStim();
+            obj.currElem.SetConditions();
+        end
+                
         
        
         % ----------------------------------------------------------
@@ -525,6 +521,7 @@ classdef DataTreeClass <  handle
             obj.groups(jj).Add(subj, sess, run);            
         end
 
+        
         
         % ----------------------------------------------------------
         function idx = FindProcElem(obj, name)

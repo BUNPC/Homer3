@@ -528,12 +528,19 @@ classdef TreeNodeClass < handle
         end
         
         
+        
         % ----------------------------------------------------------------------------------
         function ReloadStim(obj)
+            % Update call application GUI using it's generic Update function 
+            if ~isempty(obj.updateParentGui)
+                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun]);
+            end
             for ii = 1:length(obj.children)
                 obj.children(ii).ReloadStim();
             end            
+            pause(.5);
         end
+        
         
         
         % ----------------------------------------------------------------------------------
@@ -541,6 +548,7 @@ classdef TreeNodeClass < handle
             CondNames = obj.CondNames;
         end
 
+        
         
         % ----------------------------------------------------------------------------------
         function RenameCondition(obj, oldname, newname)

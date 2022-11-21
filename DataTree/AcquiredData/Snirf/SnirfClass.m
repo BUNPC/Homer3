@@ -1059,23 +1059,18 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 obj2 = obj.data(1);            
             end
             
-            % Get all aux channels to be on the same time base with
-            % obj2 which by default is the data
-            p = round(1/mean(diff(obj2.GetTime())));
-            d0 = obj2.GetDataTimeSeries();
-            Nmin = size(d0,1);
+            datamat = zeros(size(obj2.dataTimeSeries,1), length(obj.aux));
+            
+            % Get all aux channels to be on the same time base with obj2 which by default is the data
             for ii = 1:length(obj.aux)
-                q = round(1/mean(diff(obj.aux(ii).GetTime())));
-                d = obj.aux(ii).GetDataTimeSeries();
-                temp{ii} = resample(d, p, q);
-                if size(temp{ii},1) < Nmin
-                    Nmin = size(temp{ii},1);
+                if length(obj2.GetTime()) < length(obj.aux(ii).GetTime())   % dessimate
+                    p = length(obj2.GetTime());
+                    q = length(obj.aux(ii).GetTime());
+                elseif length(obj2.GetTime()) > length(obj.aux(ii).GetTime())  % interpolate
+                    p = length(obj.aux(ii).GetTime());
+                    q = length(obj2.GetTime());                    
                 end
-            end
-
-            % Create data matrix 
-            for ii = 1:length(temp)
-                datamat(:,ii) = temp{ii}(1:Nmin); %#ok<*AGROW>
+                datamat(:,ii) = resample(obj.aux(ii).GetDataTimeSeries(), p, q);
             end
         end
         

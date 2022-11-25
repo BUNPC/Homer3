@@ -547,6 +547,7 @@ elseif ~isempty(eventdata)
         return;
     end
     set(hObject,'value', iList);
+    drawnow
     
 end
 
@@ -598,7 +599,7 @@ end
 % Restore original selection listboxGroupTree
 set(handles.listboxGroupTree, 'value',val0);
 
-h = waitbar(0,'Auto-saving processing results. Please wait ...');
+h = waitbar_improved(0,'Auto-saving processing results. Please wait ...');
 maingui.dataTree.Save(h);
 close(h);
 Display(handles, hObject);

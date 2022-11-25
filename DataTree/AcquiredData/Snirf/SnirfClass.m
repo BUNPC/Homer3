@@ -1068,7 +1068,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     q = length(obj.aux(ii).GetTime());
                 elseif length(obj2.GetTime()) > length(obj.aux(ii).GetTime())  % interpolate
                     p = length(obj.aux(ii).GetTime());
-                    q = length(obj2.GetTime());                    
+                    q = length(obj2.GetTime());
+                else
+                    p = length(obj2.GetTime());
+                    q = length(obj.aux(ii).GetTime());
                 end
                 datamat(:,ii) = resample(obj.aux(ii).GetDataTimeSeries(), p, q);
             end

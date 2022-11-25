@@ -291,11 +291,11 @@ classdef ProcStreamClass < handle
             nFcall = length(FcallsIdxs);
             
             paramsOutStruct = struct();
-            hwait = waitbar(0, 'Processing...' );
+            hwait = waitbar_improved(0, 'Processing...' );
                 
             paramOut = {};
             for iFcall = FcallsIdxs
-                waitbar( iFcall/nFcall, hwait, sprintf('Processing... %s', obj.GetFcallNamePrettyPrint(iFcall)) );
+                waitbar_improved( iFcall/nFcall, hwait, sprintf('Processing... %s', obj.fcalls(iFcall).GetName()) );
                 
                 % Instantiate all input variables required by function call
                 argIn = obj.GetInputArgs(iFcall);
@@ -316,7 +316,7 @@ classdef ProcStreamClass < handle
                     end
                     logger.Write('%s\n', msg);
                     printStack(ME);
-                    close(hwait);
+                    waitbar_improved(hwait, 'close');
                     rethrow(ME)
                 end
                 
@@ -354,7 +354,7 @@ classdef ProcStreamClass < handle
             obj.ExportProcStream(filename, fcalls);
             
             obj.input.misc = [];
-            close(hwait);
+            waitbar_improved(hwait, 'close');
             
         end
         

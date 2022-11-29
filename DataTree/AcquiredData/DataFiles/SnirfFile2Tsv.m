@@ -23,11 +23,12 @@ end
 if ~exist('options','var')
     options = '';
 end
-
 if isempty(s.stim)
-    return
+    s0 = StimClass();
+else
+    s0 = s.stim(1);
 end
-tsv = [s.stim(1).dataLabels(:)', 'trial_type'];
+tsv = [s0.dataLabels(:)', 'trial_type'];
 data = [];
 for ii = 1:length(s.stim)
     iS = size(tsv,1)+1;

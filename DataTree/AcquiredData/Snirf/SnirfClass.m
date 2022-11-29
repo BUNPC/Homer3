@@ -459,6 +459,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 return
             end
             
+            obj.stim  = StimClass().empty();
+            
             ii=1;
             while 1
                 if ii > length(obj.stim)
@@ -561,6 +563,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Don't reload if not empty
             if ~obj.IsEmpty()
+                obj.LoadStim(fileobj);
                 err = obj.GetError();     % preserve error state if exiting early
                 return;
             end
@@ -772,50 +775,25 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         function CopyStim(obj, obj2)
             obj.stim = StimClass.empty();
             for ii = 1:length(obj2.stim)
-                    obj.stim(ii) = StimClass(obj2.stim(ii));
+                obj.stim(ii) = StimClass(obj2.stim(ii));
             end
         end        
         
         
         % -------------------------------------------------------
-        function changes = StimChangesMade(obj)
-            
-            flags = zeros(length(obj.stim), 1);
-            
+        function changes = StimChangesMade(obj)                        
             % Load stims from file
             snirf = SnirfClass();
             snirf.SetFilename(obj.GetFilename())
             snirf.LoadStim(obj.GetFilename());
-            stimFromFile = snirf.stim;
-            
-            % Update stims from file with edited stims
-            for ii = 1:length(obj.stim)
-                for jj = 1:length(stimFromFile)
-                    if strcmp(obj.stim(ii).GetName(), stimFromFile(jj).GetName())
-                        if obj.stim(ii) ~= stimFromFile(jj)
-                            flags(ii) = 1;
-                        else
-                            flags(ii) = -1;
-                        end
-                        break;
-                    end
-                end
-                if flags(ii)==0
-                    % We have new stimulus condition added
-                    if ~obj.stim(ii).IsEmpty()
-                        flags(ii) = 1;
-                    end
-                end
-            end
-            flags(flags ~= 1) = 0;
-            changes = sum(flags)>0;
+            changes = obj.EqualStim(snirf);            
         end
         
         
         
         % -------------------------------------------------------
         function b = DataModified(obj)
-            b = obj.StimChangesMade();
+            b = ~obj.StimChangesMade();
         end
         
         
@@ -855,21 +833,62 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if ~strcmp(obj.formatVersion, obj2.formatVersion)
                 return;
             end
-            if length(obj.data)~=length(obj2.data)
+            if ~obj.EqualData(obj2)
                 return;
             end
-            for ii=1:length(obj.data)
-                if obj.data(ii)~=obj2.data(ii)
+            if ~obj.EqualStim(obj2)
+                return;
+            end
+            if obj.probe ~= obj2.probe
+                return;
+            end
+            if ~obj.EqualAux(obj2)
+                return;
+            end
+            B = true;
+        end
+        
+        
+        
+        % --------------------------------------------------------------------
+        function b = EqualMetaDataTags(obj, obj2)
+            b = false;
+            if length(obj.metaDataTags) ~= length(obj2.metaDataTags)
+                return;
+            end
+            for ii = 1:length(obj.metaDataTags)
+                if obj.metaDataTags(ii) ~= obj2.metaDataTags(ii)
                     return;
                 end
             end
-            if length(obj.stim)~=length(obj2.stim)
+            b = true;
+        end
+        
+        
+        
+        % --------------------------------------------------------------------
+        function b = EqualData(obj, obj2)
+            b = false;
+            if length(obj.data) ~= length(obj2.data)
                 return;
             end
-            for ii=1:length(obj.stim)
+            for ii = 1:length(obj.data)
+                if obj.data(ii) ~= obj2.data(ii)
+                    return;
+                end
+            end
+            b = true;
+        end
+        
+        
+        
+        % --------------------------------------------------------------------
+        function b = EqualStim(obj, obj2)
+            b = false;
+            for ii = 1:length(obj.stim)
                 flag = false;
-                for jj=1:length(obj2.stim)
-                    if obj.stim(ii)==obj2.stim(jj)
+                for jj = 1:length(obj2.stim)
+                    if obj.stim(ii) == obj2.stim(jj)
                         flag = true;
                         break;
                     end
@@ -878,27 +897,53 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     return;
                 end
             end
-            if obj.probe~=obj2.probe
-                return;
-            end
-            if length(obj.aux)~=length(obj2.aux)
-                return;
-            end
-            for ii=1:length(obj.aux)
-                if obj.aux(ii)~=obj2.aux(ii)
+            for ii = 1:length(obj2.stim)
+                flag = false;
+                for jj = 1:length(obj.stim)
+                    if obj2.stim(ii) == obj.stim(jj)
+                        flag = true;
+                        break;
+                    end
+                end
+                if flag==false
                     return;
                 end
             end
-            if length(obj.metaDataTags)~=length(obj2.metaDataTags)
-                return;
-            end
-            for ii=1:length(obj.metaDataTags)
-                if obj.metaDataTags(ii)~=obj2.metaDataTags(ii)
-                    return;
-                end
-            end
-            B = true;
+            b = true;
         end
+        
+        
+        
+        % --------------------------------------------------------------------
+        function b = EqualAux(obj, obj2)
+            b = false;
+            for ii = 1:length(obj.aux)
+                flag = false;
+                for jj = 1:length(obj2.aux)
+                    if obj.aux(ii) == obj2.aux(jj)
+                        flag = true;
+                        break;
+                    end
+                end
+                if flag==false
+                    return;
+                end
+            end
+            for ii = 1:length(obj2.aux)
+                flag = false;
+                for jj = 1:length(obj.aux)
+                    if obj2.aux(ii) == obj.aux(jj)
+                        flag = true;
+                        break;
+                    end
+                end
+                if flag==false
+                    return;
+                end
+            end
+            b = true;
+        end
+        
         
     end
     

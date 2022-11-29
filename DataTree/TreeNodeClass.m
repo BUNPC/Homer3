@@ -543,6 +543,13 @@ classdef TreeNodeClass < handle
         
         
         
+        % --------------------------------------------------------------
+        function CopyStimAcquired(obj)
+            obj.procStream.CopyStims(obj.acquired);
+        end
+               
+        
+        
         % ----------------------------------------------------------------------------------
         function CondNames = GetConditions(obj)
             CondNames = obj.CondNames;

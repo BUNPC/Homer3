@@ -490,7 +490,7 @@ classdef DataTreeClass <  handle
         % ----------------------------------------------------------------------------------
         function ReloadStim(obj)
             obj.currElem.ReloadStim();
-            obj.currElem.SetConditions();
+            obj.SetConditions();
         end
                 
         
@@ -621,7 +621,19 @@ classdef DataTreeClass <  handle
             if isempty(obj.groups)
                 return;
             end
+            changeflag = false;
+            if obj.currElem.AcquiredDataModified()
+                changeflag = true;
+            end
+            
             err = obj.currElem.Load();
+            
+            % Check if stims were edited for current element in any way by checking if acquired data was modified. 
+            % If current element stims were edited then re
+            if changeflag
+                obj.currElem.CopyStimAcquired();
+                obj.SetConditions();
+            end
         end
 
 
@@ -721,6 +733,15 @@ classdef DataTreeClass <  handle
 
 
 
+        % ----------------------------------------------------------
+        function SetConditions(obj)
+            for ii = 1:length(obj.groups)
+                obj.groups(ii).SetConditions();
+            end
+        end
+        
+        
+        
         % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
             nbytes = 0;

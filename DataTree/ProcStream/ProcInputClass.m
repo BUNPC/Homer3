@@ -83,7 +83,7 @@ classdef ProcInputClass < handle
         % --------------------------------------------------------------
         function CopyStims(obj, obj2)
             if isa(obj2, 'ProcInputClass')
-            obj.acquired.CopyStim(obj2.acquired);
+                obj.acquired.CopyStim(obj2.acquired);
             elseif isa(obj2, 'AcqDataClass')
                 obj.acquired.CopyStim(obj2);
             end

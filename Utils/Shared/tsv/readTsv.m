@@ -6,6 +6,12 @@ end
 if ~exist('option', 'var')
     option = '';
 end
+
+[p,f,e] = fileparts(filename);
+if isempty(e)
+    e = '.tsv';
+end
+filename = [filesepStandard(p), f, e];
 if ~ispathvalid(filename, 'file')
     return;
 end

@@ -94,7 +94,7 @@ classdef ProcStreamClass < handle
         % --------------------------------------------------------------
         function CopyStims(obj, obj2)
             if isa(obj2, 'ProcStreamClass')
-            obj.input.CopyStims(obj2.input);
+                obj.input.CopyStims(obj2.input);
             else
                 obj.input.CopyStims(obj2);
             end

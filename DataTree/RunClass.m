@@ -68,8 +68,8 @@ classdef RunClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function err = Load(obj)
             err = 0;
-            err1 = obj.LoadDerivedData();
-            err2 = obj.LoadAcquiredData();            
+            err1 = obj.LoadAcquiredData();            
+            err2 = obj.LoadDerivedData();
             if ~(err1==0 && err2==0)
                 err = -1;
             end

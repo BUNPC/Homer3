@@ -383,11 +383,6 @@ classdef DataTreeClass <  handle
             end
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Generate the stimulus conditions for the group tree
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.groups(iGroup).SetConditions();
-
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Load derived or post-acquisition data from a file if it
             % exists
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -400,6 +395,11 @@ classdef DataTreeClass <  handle
             	obj.groups(iGroup).InitProcStream(procStreamCfgFile);
             end
             
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Generate the stimulus conditions for the group tree
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            obj.groups(iGroup).SetConditions();
+
         end
         
         

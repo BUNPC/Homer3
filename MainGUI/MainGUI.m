@@ -934,7 +934,6 @@ global maingui
 if ~ishandles(hObject)
     return;
 end
-
 if get(hObject, 'value')
     maingui.applyEditCurrNodeOnly = false;
 else
@@ -943,10 +942,10 @@ end
 UpdateArgsChildGuis(handles);
 
 
+
 % --------------------------------------------------------------------
 function idx = FindChildGuiIdx(name)
 global maingui
-
 for ii = 1:length(maingui.childguis)
     if strcmp(maingui.childguis(ii).GetName, name)
         break;
@@ -955,13 +954,13 @@ end
 idx = ii;
 
 
+
 % --------------------------------------------------------------------
 function UpdateArgsChildGuis(handles)
 global maingui
 if isempty(maingui.childguis)
     return;
 end
-
 maingui.childguis(FindChildGuiIdx('PlotProbeGUI')).UpdateArgs(GetDatatype(handles), GetCondition(handles));
 maingui.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(maingui.dataTree.dirnameGroups, ...
                                                                       maingui.applyEditCurrNodeOnly);
@@ -2069,10 +2068,20 @@ maingui.axesSDG.ylim = bbox(3:4);
 
 
 % --------------------------------------------------------------------
-function menuItemAppConfigGUI_Callback(~, ~, ~)
+function menuItemAppConfigGUI_Callback(~, ~, handles)
 global maingui
+global cfg
 idx = FindChildGuiIdx('configSettingsGUI');
-maingui.childguis(idx).Launch();
+maingui.childguis(idx).LaunchWaitForExit();
+cfg.Update();
+if strcmpi(cfg.GetValue('Load Stim From TSV File'), 'yes')
+    set(handles.menuItemStimEditGUI, 'visible','off')
+    set(handles.menuItemReloadStim, 'visible','on')
+else
+    set(handles.menuItemStimEditGUI, 'visible','on')
+    set(handles.menuItemReloadStim, 'visible','off')
+end
+
 
 
 

@@ -786,14 +786,14 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             snirf = SnirfClass();
             snirf.SetFilename(obj.GetFilename())
             snirf.LoadStim(obj.GetFilename());
-            changes = obj.EqualStim(snirf);            
+            changes = ~obj.EqualStim(snirf);
         end
         
         
         
         % -------------------------------------------------------
         function b = DataModified(obj)
-            b = ~obj.StimChangesMade();
+            b = obj.StimChangesMade();
         end
         
         
@@ -894,7 +894,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     end
                 end
                 if flag==false
-                    return;
+                    % If obj condition was NOT found in obj2 BUT it is empty (no data), then we don't 
+                    % count that as a unequal criteria, that is, obj and obj2 are still considered equal
+                    if ~obj.stim(ii).IsEmpty()
+                        return;
+                    end
                 end
             end
             for ii = 1:length(obj2.stim)
@@ -906,7 +910,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     end
                 end
                 if flag==false
-                    return;
+                    % If obj2 condition was NOT found in obj BUT it is empty (no data), then we don't 
+                    % count that as a unequal criteria, that is, obj and obj2 are still considered equal
+                    if ~obj2.stim(ii).IsEmpty()
+                        return;
+                    end
                 end
             end
             b = true;

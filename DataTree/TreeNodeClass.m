@@ -626,6 +626,7 @@ classdef TreeNodeClass < handle
             d = [];
             t = [];            
             ml = [];
+            datatypes = obj.procStream.GetDataTypes();
             if ~exist('options','var')
                 options = 'RAW';
             end
@@ -634,34 +635,34 @@ classdef TreeNodeClass < handle
             end
             for ii = 1:length(iBlk)
                 switch(lower(options))
-                    case 'raw'
+                    case datatypes.RAW
                         if isempty(obj.acquired)
                             continue
                         end
                         d = [d, obj.acquired.GetDataTimeSeries(ii)]; %#ok<*AGROW>
                         t = [t; obj.GetTime(ii)];
                         ml = [ml, obj.acquired.GetMeasurementList('matrix',ii)];
-                    case 'od'
+                    case datatypes.OPTICAL_DENSITY
                         d = [d, obj.procStream.GetDataTimeSeries('od',ii)];
                         t = [t; obj.GetTime(ii)];
                         ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'od')];
-                    case {'conc','hb','hbo','hbr','hbt'}
+                    case datatypes.CONCENTRATION
                         d = [d, obj.procStream.GetDataTimeSeries('conc',ii)];
                         t = [t; obj.GetTime(ii)];
                         ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'conc')];
-                    case {'od hrf','od_hrf'}
+                    case datatypes.HRF_OPTICAL_DENSITY
                         d = [d, obj.procStream.GetDataTimeSeries('od hrf',ii)];
                         t = [t; obj.procStream.GetTHRF(ii)];
                         ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'od hrf')];
-                    case {'od hrf std','od_hrf_std'}
+                    case datatypes.HRF_OPTICAL_DENSITY_STD
                         d = [d, obj.procStream.GetDataTimeSeries('od hrf std',ii)];
                         t = [t; obj.procStream.GetTHRF(ii)];
                         ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'od hrf std')];
-                    case {'hb hrf','conc hrf','hb_hrf','conc_hrf'}
+                    case datatypes.HRF_CONCENTRATION
                         d = [d, obj.procStream.GetDataTimeSeries('conc hrf',ii)];
                         t = [t; obj.procStream.GetTHRF(ii)];
                         ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'conc hrf')];
-                    case {'hb hrf std','conc hrf std','hb_hrf_std','conc_hrf_std'}
+                    case datatypes.HRF_CONCENTRATION_STD
                         d = [d, obj.procStream.GetDataTimeSeries('conc hrf std',ii)];
                         t = [t; obj.procStream.GetTHRF(ii)];
                         ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'conc hrf std')];

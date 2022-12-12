@@ -8,7 +8,11 @@ k = 1:size(ml,1);
 if isvector(mlAct0) && (length(mlAct0) == length(k))
     mlAct = [ ml(:,1:2), mlAct0, ml(:,4) ];
 elseif isvector(mlAct0) && (length(mlAct0) > length(k))
-    mlAct = [ ml(k,1:2), ones(size(ml(k,:),1),1), ml(k,4) ];
+    if size(ml,2) == 2
+        mlAct = [ ml(k,1:2), ones(size(ml(k,:),1),2) ];
+    else
+        mlAct = [ ml(k,1:2), ones(size(ml(k,:),1),1), ml(k,4) ];
+    end
 elseif size(mlAct0,1) == length(k)
     mlAct = mlAct0;
 elseif size(ml,2) == 2

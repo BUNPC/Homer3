@@ -142,10 +142,19 @@ mlAct = ones(size(ml,1),1);
 % Initialize channel idx for try/catch. Catch uses it
 % to display which channel was being processed when
 % error ocurred.
-color = [
+colorActive = [
     1.00 0.00 0.00;
     0.00 0.00 1.00;
     0.00 1.00 0.00;
+    1.00 0.00 1.00;
+    0.00 1.00 1.00;
+    0.50 0.80 0.30
+    ];
+
+colorInactive = [
+    0.80 0.00 0.20;
+    0.00 0.20 0.80;
+    0.20 0.80 0.00;
     1.00 0.00 1.00;
     0.00 1.00 1.00;
     0.50 0.80 0.30
@@ -182,87 +191,88 @@ if ~isempty(y)
     lw = zeros(nSDpairs, nDataTypes);
     lv = repmat({''}, nSDpairs, nDataTypes);
     lc = zeros(nSDpairs, nDataTypes, 3);
-    
-    xyas = [];
-    
+        
     try
-        for iSD = 1:length(iSDpairs)
-            
-            % Get all measurements with current source and detector pair
-            iSrc = ml(iSDpairs(iSD),1);
-            iDet = ml(iSDpairs(iSD),2);
-            iSDpairAllMeas = find( (ml(:,1) == iSrc)  &  (ml(:,2) == iDet) );
-            
-            % To eliminate displayed data drifting when scaling y up
-            % or down offset data to align min/max midpoint with zero.
-            [y, yOffset] = offsetData(y, iSDpairAllMeas);
-            
-            for iMeasType = 1:length(iSDpairAllMeas)
-                
-                % Record line graphics properties based on the object type
-                [lc,lv,lw,ls] = setLineProperties(lc,lv,lw,ls,iMeasType,mlAct,color,nDataTypes,nTSteps);
-                
-                xa = ( sPos(ml(iSDpairAllMeas(iMeasType),1), 1) + dPos(ml(iSDpairAllMeas(iMeasType),2), 1) ) / 2 - axXoff;
-                ya = ( sPos(ml(iSDpairAllMeas(iMeasType),1), 2) + dPos(ml(iSDpairAllMeas(iMeasType),2), 2) ) / 2 - axYoff;
-                            
-%                 for i = 1:size(xyas, 1)
-%                     if sqrt((xyas(i, 1) - xa)^2 + (xyas(i, 2) - ya)^2) < EXPLODE_THRESH
-%                         xa = xa + EXPLODE_VECTOR(1);
-%                         ya = ya + EXPLODE_VECTOR(2);
-%                     end
-%                 end
-                
-                xyas = [xyas; [xa, ya]];
-                
-                xT = xa-axWid/4 + axWid*((t-minT)/(maxT-minT))/2;
-                AvgT = ya-axHgt/4 + axHgt*((y(:,iSDpairAllMeas(iMeasType))-cmin)/(cmax-cmin))/2;
-                
-                hold on
-                h(iSD,iMeasType) = plot( xT, AvgT,'color',color(iMeasType,:), 'visible','on', 'linewidth',2);
-                
-            end
-            
-            % Plot time markers starting with stim onset
-            if length(tAmp)==1
-                AvgTmax0 = max(max(AvgT));
-                AvgTmin0 = min(min(AvgT));
-                if tAmp==0
-                    % tAmp is a relative amplitude
-                    AvgTmax = AvgTmax0;
-                    AvgTmin = AvgTmin0;
-                else
-                    % tAmp is a fixed amplitude
-                    AvgTmax = ya-axHgt/4 + axHgt*((tAmp-cmin)/(cmax-cmin))/2;
-                    AvgTmin = ya-axHgt/4 + axHgt*((0-cmin)/(cmax-cmin))/2;
-                    AvgTmax = AvgTmax+AvgTmin0-AvgTmin;
-                    AvgTmin = AvgTmin0;
-                end
-                if abs(AvgTmin-AvgTmax)<1.0e-10
-                    AvgTmin = AvgTmin-(AvgTmin*.01);
-                    AvgTmax = AvgTmax+(AvgTmax*.01);
-                end
-            elseif length(tAmp)==2
-                % tAmp is a fixed range
-                AvgTmax = ya-axHgt/4 + axHgt*(((cmax-offset(idx))-cmin)/(cmax-cmin))/2;
-                AvgTmin = ya-axHgt/4 + axHgt*(((cmin-offset(idx))-cmin)/(cmax-cmin))/2;
-            end
-            kk = nDataTypes+1;
-            yMark = [AvgTmin,AvgTmax]-yOffset;
-            xT0 = xT(find(t==0));
-            xTStep = tStep*(xT(2)-xT(1));
-            if strcmp(lv{iSD(1),kk}, 'off')
-                tvis_ch = 'off';
-            else
-                tvis_ch = tVis;
-            end
-            for xTi = xT0:xTStep:xT(end)
-                xTi = [xTi, xTi];
-                hTmarks = plot(xTi, yMark, 'color','k', 'visible',tvis_ch);
-                h(iSD,kk) = hTmarks;
-                lw(iSD,kk) = 1.0;
-                kk = kk+1;
-            end            
-        end        
+	    for iSD = 1:length(iSDpairs)
+	        
+	        % Get all measurements with current source and detector pair
+	        iSrc = ml(iSDpairs(iSD),1);
+	        iDet = ml(iSDpairs(iSD),2);
+	        iSDpairAllMeas = find( (ml(:,1) == iSrc)  &  (ml(:,2) == iDet) );
+	        
+	        % To eliminate displayed data drifting when scaling y up
+	        % or down offset data to align min/max midpoint with zero.
+	        [y, yOffset] = offsetData(y, iSDpairAllMeas);
+	        
+	        if ml(iSDpairAllMeas(1),5) == 1
+	            color = colorActive;
+	            linewidth = 2;
+	            linestyle = '-';
+	        else
+	            color = colorInactive;
+	            linewidth = 1;
+	            linestyle = '--';
+	        end
+	        
+	        
+	        for iMeasType = 1:length(iSDpairAllMeas)
+	                        
+	            % Record line graphics properties based on the object type
+	            [lc,lv,lw,ls] = setLineProperties(lc,lv,lw,ls,iMeasType,mlAct,color,nDataTypes,nTSteps);
+	            
+	            xa = ( sPos(ml(iSDpairAllMeas(iMeasType),1), 1) + dPos(ml(iSDpairAllMeas(iMeasType),2), 1) ) / 2 - axXoff;
+	            ya = ( sPos(ml(iSDpairAllMeas(iMeasType),1), 2) + dPos(ml(iSDpairAllMeas(iMeasType),2), 2) ) / 2 - axYoff;
+	            
+	            xT = xa-axWid/4 + axWid*((t-minT)/(maxT-minT))/2;
+	            AvgT = ya-axHgt/4 + axHgt*((y(:,iSDpairAllMeas(iMeasType))-cmin)/(cmax-cmin))/2;
+	            
+	            hold on
+	            
+	            h(iSD,iMeasType) = plot( xT, AvgT,'color',color(iMeasType,:), 'visible','on', 'linewidth',linewidth, 'linestyle',linestyle );
+	            
+	        end
+	        
+	        % Plot time markers starting with stim onset
+	        if length(tAmp)==1
+	            AvgTmax0 = max(max(AvgT));
+	            AvgTmin0 = min(min(AvgT));
+	            if tAmp==0
+	                % tAmp is a relative amplitude
+	                AvgTmax = AvgTmax0;
+	                AvgTmin = AvgTmin0;
+	            else
+	                % tAmp is a fixed amplitude
+	                AvgTmax = ya-axHgt/4 + axHgt*((tAmp-cmin)/(cmax-cmin))/2;
+	                AvgTmin = ya-axHgt/4 + axHgt*((0-cmin)/(cmax-cmin))/2;
+	                AvgTmax = AvgTmax+AvgTmin0-AvgTmin;
+	                AvgTmin = AvgTmin0;
+	            end
+	            if abs(AvgTmin-AvgTmax)<1.0e-10
+	                AvgTmin = AvgTmin-(AvgTmin*.01);
+	                AvgTmax = AvgTmax+(AvgTmax*.01);
+	            end
+	        elseif length(tAmp)==2
+	            % tAmp is a fixed range
+	            AvgTmax = ya-axHgt/4 + axHgt*(((cmax-offset(idx))-cmin)/(cmax-cmin))/2;
+	            AvgTmin = ya-axHgt/4 + axHgt*(((cmin-offset(idx))-cmin)/(cmax-cmin))/2;
+	        end
+	        kk = nDataTypes+1;
+	        yMark = [AvgTmin,AvgTmax]-yOffset;
+	        xT0 = xT(find(t==0));
+	        xTStep = tStep*(xT(2)-xT(1));
+	        if strcmp(lv{iSD(1),kk}, 'off')
+	            tvis_ch = 'off';
+	        else
+	            tvis_ch = tVis;
+	        end
+	        for xTi = xT0:xTStep:xT(end)
+	            xTi = [xTi, xTi];
+	            hTmarks = plot(xTi, yMark, 'color','k', 'visible',tvis_ch);
+	            h(iSD,kk) = hTmarks;
+	            lw(iSD,kk) = 1.0;
+	            kk = kk+1;
+	        end
+        end
         
     catch
         

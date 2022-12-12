@@ -231,6 +231,15 @@ switch(lower(action))
     case 'add'
         if preview == false
             actionstr = 'Adding';
+            
+            % NOTE: As of Matlab R2020b, copyfile does not create the
+            % folder containing the destination file, if that folder does
+            % not already exist. Therefore we check if it exists; if not we
+            % create it.
+            p = fileparts(fdst);
+            if ~ispathvalid(p)
+                mkdir(p)
+            end
             copyfile(fsrc, fdst);
             gitAdd(repo.path, fdst);
         else

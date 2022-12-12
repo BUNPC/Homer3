@@ -14,6 +14,7 @@ function selection = MenuBox(msg, bttns, relativePos, textLineWidth, options)
 %   q = MenuBox('Please select option',{'option1','option2','option3'}, 'lowerleft');
 %   q = MenuBox('Please select option',{'option1','option2','option3'}, 'upperright',80);
 %   q = MenuBox('Please select option',{'option1','option2','option3'},[],[],'dontAskAgain');
+%   q = MenuBox('Please select option',{'option1','option2','option3'},[],[],'askEveryTime');
 %   q = MenuBox('Please select option',{'option1','option2','option3'},'centerright',[],'dontAskAgainOptions');
 %   q = MenuBox('Please select option',{'option1','option2','option3'},[],75,'dontAskAgain');
 %

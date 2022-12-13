@@ -139,6 +139,7 @@ classdef DataTreeClass <  handle
             end
             obj.SetCurrElem(iGroup, iSubj, iSess, iRun);
             obj.groups(iGroup).SetConditions();
+            obj.dataStorageScheme = obj2.dataStorageScheme;
         end
         
         
@@ -374,10 +375,13 @@ classdef DataTreeClass <  handle
             obj.ErrorCheckLoadedFiles();
 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Generate the stimulus conditions for the group tree
+            % Export stim to TSV files 
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            obj.groups(iGroup).SetConditions();
-
+            [stimExport, stimExportOptions] = obj.AutoExportStim();
+            if stimExport
+                obj.groups(iGroup).ExportStim(stimExportOptions)
+            end
+            
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Load derived or post-acquisition data from a file if it
             % exists
@@ -391,6 +395,11 @@ classdef DataTreeClass <  handle
             	obj.groups(iGroup).InitProcStream(procStreamCfgFile);
             end
             
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Generate the stimulus conditions for the group tree
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            obj.groups(iGroup).SetConditions();
+
         end
         
         
@@ -451,6 +460,40 @@ classdef DataTreeClass <  handle
         end
 
 
+        
+        % ----------------------------------------------------------
+        function [exportStim, options] = AutoExportStim(obj)
+            global cfg 
+            v1 = cfg.GetValue('Export Stim To TSV File');
+            v2 = cfg.GetValue('Export Stim To TSV File Regenerate');            
+            exportStim = false;
+            options = '';
+            if strcmpi(v1, 'yes')
+                exportStim = true;
+            end
+            if strcmpi(v1, 'Yes_Delete_Old')
+                exportStim = true;
+                options = 'removeStim';
+            end
+            if strcmpi(v2, 'yes')
+                if isempty(options)
+                    options = 'regenerate';
+                else
+                    options = [options, ':regenerate'];
+                end
+            end
+        end
+        
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ReloadStim(obj)
+            obj.currElem.ReloadStim();
+            obj.SetConditions();
+        end
+                
+        
        
         % ----------------------------------------------------------
         function Add(obj, group, subj, sess, run)
@@ -478,6 +521,7 @@ classdef DataTreeClass <  handle
             obj.groups(jj).Add(subj, sess, run);            
         end
 
+        
         
         % ----------------------------------------------------------
         function idx = FindProcElem(obj, name)
@@ -577,7 +621,19 @@ classdef DataTreeClass <  handle
             if isempty(obj.groups)
                 return;
             end
+            changeflag = false;
+            if obj.currElem.AcquiredDataModified()
+                changeflag = true;
+            end
+            
             err = obj.currElem.Load();
+            
+            % Check if stims were edited for current element in any way by checking if acquired data was modified. 
+            % If current element stims were edited then re
+            if changeflag
+                obj.currElem.CopyStimAcquired();
+                obj.SetConditions();
+            end
         end
 
 
@@ -677,6 +733,15 @@ classdef DataTreeClass <  handle
 
 
 
+        % ----------------------------------------------------------
+        function SetConditions(obj)
+            for ii = 1:length(obj.groups)
+                obj.groups(ii).SetConditions();
+            end
+        end
+        
+        
+        
         % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
             nbytes = 0;

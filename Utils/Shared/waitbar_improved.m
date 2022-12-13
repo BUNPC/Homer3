@@ -1,6 +1,14 @@
 function h = waitbar_improved(X, msg, varargin)
+global cfg
+cfg = InitConfig(cfg);
 
 h = [];
+
+quietMode = cfg.GetValue('Quiet Mode');
+if strcmpi(quietMode, 'on')
+    return
+end
+
 if nargin<2
     return;
 end
@@ -8,6 +16,9 @@ end
 if nargin==2
     if ~ischar(msg)
         msg = '';
+    end
+    if ishandle(X) && strcmpi(get(X,'Type'),'figure')
+        h = X;
     end
 elseif nargin==3
     h = msg;
@@ -18,7 +29,12 @@ nchar = length(msg);
 
 if ishandles(h)
     
-    buff = 20;    
+    if strcmpi(msg, 'close')
+        close(h);
+        return;
+    end
+    
+    buff = 20;
     set(h, 'units','characters');
     hc = get(h, 'children');    
     for ii = 1:length(hc)

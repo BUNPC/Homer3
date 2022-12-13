@@ -35,10 +35,10 @@ exportvar.filename = '';
 exportvar.hFigPlot = -1;
 exportvar.format = '';
 % exportvar.formatchoices = {'.txt','.xls'};
-exportvar.formatchoices = {'.txt'};
+exportvar.formatchoices = {'.txt','.tsv'};
 
 exportvar.datatype = '';
-exportvar.datatypechoices = {'HRF','HRF mean'};
+exportvar.datatypechoices = {'HRF','HRF mean','Stim'};
 
 exportvar.trange = [0,0];
 
@@ -149,6 +149,8 @@ function figure_DeleteFcn(~, ~, ~)
 
 % ----------------------------------------------------------------
 function popupmenuDataType_Callback(hObject, ~, handles)
+global exportvar
+
 UpdateOutput(handles)
 choices = get(hObject, 'string');
 idx = get(hObject, 'value');
@@ -163,11 +165,35 @@ if isempty(strfind(choices{idx}, 'mean'))
 else
     val = 'on';
 end
+if strcmp(choices{idx}, 'Stim')
+    k = find(strcmp(exportvar.formatchoices, '.tsv'));
+    if length(k)==1
+        set(handles.popupmenuExportFormat, 'value',k);
+    end
+    EnableHRFOptions(handles, 'off')
+else    
+    EnableHRFOptions(handles, 'on')
+end
 set(handles.editTimeRangeMin, 'visible',val);
 set(handles.editTimeRangeMax, 'visible',val);
 set(handles.textTimeRange, 'visible',val);
 set(handles.textTimeRangeMin, 'visible',val);
 set(handles.textTimeRangeMax, 'visible',val);
+
+
+
+% ----------------------------------------------------------------
+function EnableHRFOptions(handles, onoff)
+if strcmpi(onoff, 'off')
+    set(handles.checkboxLoad, 'enable','off');
+    set(handles.checkboxLoad, 'value',0);
+    set(handles.radiobuttonCurrProcElemOnly, 'enable','off');
+    set(handles.radiobuttonCurrProcElemOnly, 'value',0);
+    set(handles.radiobuttonCurrProcElemAndSubTree, 'value',1);
+else
+    set(handles.radiobuttonCurrProcElemOnly, 'enable','on');
+    set(handles.checkboxLoad, 'enable','on');
+end
 
 
 

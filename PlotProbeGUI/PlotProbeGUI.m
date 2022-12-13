@@ -283,6 +283,7 @@ else
     set(handles.menuItemSaveGroup, 'enable','on');
     set(handles.menuItemSyncBrowsing, 'enable','off');
 end
+plotprobe.dataTypeWarning = struct('datatype','', 'selection',[0,false], 'menuboxoption','askEveryTime');
 
 setappdata(hObject, 'figures',hObject);
 setappdata(hObject, 'data',{});
@@ -293,6 +294,7 @@ DisplayData(handles, hObject);
 if ~menuItemSyncBrowsing_Callback(handles.menuItemSyncBrowsing, 'get')
     menuItemSyncBrowsing_Callback(handles.menuItemSyncBrowsing, '');
 end
+
 
 
 

@@ -160,18 +160,35 @@ classdef ChildGuiClass < handle
             if ishandle(obj.handles.figure)
                 set(obj.handles.figure, 'visible',obj.visible, 'CloseRequestFcn',@obj.Close);
                 set(obj.handles.figure, 'visible',obj.visible, 'DeleteFcn',@obj.Close);
-%                 if ~isempty(obj.lastpos)
-%                     % Even though we pass the last position arg to the GUI
-%                     % there's no guarantee, the gui will take advantage of
-%                     % it. Therefore we make sure to set last gui position if it
-%                     % is available. 
-%                     p = obj.lastpos;
-%                     set(obj.handles.figure, 'position',[p(1),p(2),p(3),p(4)]);
-%                 end
                 obj.SetTitle();
                 
                 % Try to make sure child gui is not obscured by prent gui
                 obj.PositionFigures();
+            end
+        end
+        
+        
+        % -------------------------------------------------------------------
+        function LaunchWaitForExit(obj, varargin)
+            argStr = obj.CreateArgString(varargin);
+            if isempty(argStr)
+                obj.Launch();
+            else
+                eval( sprintf('obj.Launch(%s)', argStr) );
+            end
+            waitForGui(obj.handles.figure);
+        end
+        
+        
+        % -------------------------------------------------------------------
+        function argStr = CreateArgString(obj, args)
+            argStr = '';
+            for ii = 1:length(args)
+                if isempty(argStr)
+                    argStr = sprintf('varargin{%d}', ii);
+                else
+                    argStr = sprintf('%s, varargin{%d}', argStr, ii);
+                end
             end
         end
         

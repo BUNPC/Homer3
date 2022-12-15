@@ -190,9 +190,17 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function Reset(obj)
+            global cfg
             obj.procStream.output.Reset([obj.path, obj.GetOutputFilename()]);
             delete([obj.path, obj.GetOutputFilename(), '*.txt']);
             delete([obj.path, 'tCCAfilter_*.txt'])
+            v = '';
+            if ~isempty(cfg)
+                v = cfg.GetValue('Include Archived User Functions');
+            end
+            if strcmpi(v, 'yes')
+                delete([obj.path, '*_events.tsv'])
+            end                
         end
         
         
@@ -520,11 +528,34 @@ classdef TreeNodeClass < handle
         end
         
         
+        
+        % ----------------------------------------------------------------------------------
+        function ReloadStim(obj)
+            % Update call application GUI using it's generic Update function 
+            if ~isempty(obj.updateParentGui)
+                obj.updateParentGui('DataTreeClass', [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun]);
+            end
+            for ii = 1:length(obj.children)
+                obj.children(ii).ReloadStim();
+            end            
+            pause(.5);
+        end
+        
+        
+        
+        % --------------------------------------------------------------
+        function CopyStimAcquired(obj)
+            obj.procStream.CopyStims(obj.acquired);
+        end
+               
+        
+        
         % ----------------------------------------------------------------------------------
         function CondNames = GetConditions(obj)
             CondNames = obj.CondNames;
         end
 
+        
         
         % ----------------------------------------------------------------------------------
         function RenameCondition(obj, oldname, newname)
@@ -595,6 +626,7 @@ classdef TreeNodeClass < handle
             d = [];
             t = [];            
             ml = [];
+            datatypes = obj.procStream.GetDataTypes();
             if ~exist('options','var')
                 options = 'RAW';
             end
@@ -603,34 +635,34 @@ classdef TreeNodeClass < handle
             end
             for ii = 1:length(iBlk)
                 switch(lower(options))
-                    case 'raw'
+                    case datatypes.RAW
                         if isempty(obj.acquired)
                             continue
                         end
                         d = [d, obj.acquired.GetDataTimeSeries(ii)]; %#ok<*AGROW>
                         t = [t; obj.GetTime(ii)];
                         ml = [ml, obj.acquired.GetMeasurementList('matrix',ii)];
-                    case 'od'
+                    case datatypes.OPTICAL_DENSITY
                         d = [d, obj.procStream.GetDataTimeSeries('od',ii)];
                         t = [t; obj.GetTime(ii)];
                         ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'od')];
-                    case {'conc','hb','hbo','hbr','hbt'}
+                    case datatypes.CONCENTRATION
                         d = [d, obj.procStream.GetDataTimeSeries('conc',ii)];
                         t = [t; obj.GetTime(ii)];
                         ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'conc')];
-                    case {'od hrf','od_hrf'}
+                    case datatypes.HRF_OPTICAL_DENSITY
                         d = [d, obj.procStream.GetDataTimeSeries('od hrf',ii)];
                         t = [t; obj.procStream.GetTHRF(ii)];
                         ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'od hrf')];
-                    case {'od hrf std','od_hrf_std'}
+                    case datatypes.HRF_OPTICAL_DENSITY_STD
                         d = [d, obj.procStream.GetDataTimeSeries('od hrf std',ii)];
                         t = [t; obj.procStream.GetTHRF(ii)];
                         ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'od hrf std')];
-                    case {'hb hrf','conc hrf','hb_hrf','conc_hrf'}
+                    case datatypes.HRF_CONCENTRATION
                         d = [d, obj.procStream.GetDataTimeSeries('conc hrf',ii)];
                         t = [t; obj.procStream.GetTHRF(ii)];
                         ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'conc hrf')];
-                    case {'hb hrf std','conc hrf std','hb_hrf_std','conc_hrf_std'}
+                    case datatypes.HRF_CONCENTRATION_STD
                         d = [d, obj.procStream.GetDataTimeSeries('conc hrf std',ii)];
                         t = [t; obj.procStream.GetTHRF(ii)];
                         ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'conc hrf std')];
@@ -980,8 +1012,7 @@ classdef TreeNodeClass < handle
 
         % ----------------------------------------------------------------------------------
         function ExportProcStreamFunctionsOpen(obj)
-            cfg = ConfigFileClass();
-            val = cfg.GetValue('Export Processing Stream Functions');
+            val = obj.cfg.GetValue('Export Processing Stream Functions');
             if strcmpi(val, 'yes')
                 obj.procStream.ExportProcStreamFunctions(true);
             elseif strcmpi(val, 'no')
@@ -1049,6 +1080,27 @@ classdef TreeNodeClass < handle
         
         
                 
+        % ----------------------------------------------------------------------------------
+        function ExportStim(obj, options)
+            if ~exist('options','var')
+                options = '';
+            end
+            for ii = 1:length(obj.children)
+                obj.children(ii).ExportStim(options);
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function DeleteExportStim(obj)
+            for ii = 1:length(obj.children)
+                obj.children(ii).DeleteExportStim();
+            end
+        end
+        
+        
+        
         % ----------------------------------------------------------------------------------
         function FreeMemory(obj)
             if isempty(obj)

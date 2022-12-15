@@ -21,10 +21,10 @@ if strcmp(mouseevent, 'alt')
 %%%% Mouse left click: toggle manual exclude/deactivate channel
 elseif strcmp(mouseevent, 'normal')
     iChSelected = find(ch.MeasListActMan(:,1) == iS  &  ch.MeasListActMan(:,2) == iD);
-    if ch.MeasListActMan(iChSelected(iWl_gui),3)  % If the selected channel is active
-        ch.MeasListActMan(iChSelected(iWl_gui),3) = 0;
+    if ch.MeasListActMan(iChSelected,3)  % If the selected channel is active
+        ch.MeasListActMan(iChSelected,3) = 0;
     else
-        ch.MeasListActMan(iChSelected(iWl_gui),3) = 1;
+        ch.MeasListActMan(iChSelected,3) = 1;
     end    
     maingui.dataTree.currElem.SetMeasListActMan(ch.MeasListActMan);
     

@@ -1,22 +1,28 @@
-function configSettingsGUI(varargin)
+function handles = configSettingsGUI(varargin)
+handles = [];
 
 % Parse args
-[filenames, nParamsPerCol, options] = ParseArgs(varargin);
+[filenames, nParamsPerCol, lastpos, options] = ParseArgs(varargin);
 
 InitializeGuiStruct(filenames, options);
 hf = CreateGui();
 ResetGui(hf);
-ResizeGui(hf, nParamsPerCol);
+ResizeGui(hf, nParamsPerCol, lastpos);
 hBttnSave = DrawBttns(hf);
 DrawConfigParams(hf, hBttnSave);
-
+handles.figure = hf;
 
 
 % ----------------------------------------------------------
-function [filenames, nParamsPerCol, options] = ParseArgs(args)
+function [filenames, nParamsPerCol, lastpos, options] = ParseArgs(args)
 filenames = {};
 nParamsPerCol = [];
+lastpos = [];
 options = '';
+if ~isempty(args) && isnumeric(args{end}) && length(args{end})==4
+    lastpos = args{end};
+    args(end) = [];
+end
 if length(args)==1
     if iscell(args{1}) || ischar(args{1})
         filenames = args{1};
@@ -85,7 +91,8 @@ cfgGui = struct(...
     'ysizeParamsAll',0, ...
     'xsizeParamsAll',0, ...
     'nParamsPerCol',8, ...
-    'handle',[] ...
+    'handle',[], ...
+    'pos',[] ...
     );
 
 cfgGui.filedata = ConfigFileClass(filenames);
@@ -141,7 +148,7 @@ end
 
 
 % -------------------------------------------------------------
-function ResizeGui(hf, nParamsPerCol)
+function ResizeGui(hf, nParamsPerCol, ~)
 global cfgGui
 
 cfgGui.nParamsPerCol = nParamsPerCol;

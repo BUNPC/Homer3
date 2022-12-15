@@ -26,7 +26,13 @@ classdef ConfigFileClass < handle
                 end
             end
             obj.FindCfgFiles(rootdir);
-            
+            obj.Update();            
+        end
+        
+        
+        
+        % ---------------------------------------------------
+        function Update(obj)        
             kk = [];
             for ii = 1:length(obj.filenames)
                 obj.fids(ii) = fopen(obj.filenames{ii},'rt');
@@ -46,10 +52,10 @@ classdef ConfigFileClass < handle
                     rethrow(ME)
                 end
             end
-            
             obj.Close();
             obj.linestr = '';
         end
+        
         
         
         % ----------------------------------------------------

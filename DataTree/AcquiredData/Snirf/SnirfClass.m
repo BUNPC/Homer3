@@ -69,6 +69,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             %           measurementList: [1x8 MeasListClass]
             %
             
+            obj = obj@AcqDataClass(varargin);
+            
             % Initialize properties from SNIRF spec
             obj.Initialize()
             
@@ -305,6 +307,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if ~isempty(obj2.GetFilename()) && isempty(obj.GetFilename())
                 obj.SetFilename(obj2.GetFilename());
             end
+            obj.SetDataStorageScheme(obj2.GetDataStorageScheme());
         end
         
         
@@ -328,6 +331,18 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             % Copy mutable properties to new object instance;
             objnew.stim = CopyHandles(obj.stim);
             objnew.SortStims();
+            objnew.SetDataStorageScheme(obj.GetDataStorageScheme());            
+        end
+        
+        
+        
+        % -------------------------------------------------------
+        function ReloadStim(obj, obj2)            
+            if strcmpi(obj2.GetDataStorageScheme(), 'files')
+                obj2.LoadStim(obj2.GetFilename());
+            end
+            obj.stim = CopyHandles(obj2.stim);
+            obj.SortStims();
         end
         
         
@@ -440,6 +455,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         function err = LoadStim(obj, fileobj)
             err = 0;
             
+            if obj.LoadStimOverride(obj.GetFilename())                
+                return
+            end
+            
+            obj.stim  = StimClass().empty();
+            
             ii=1;
             while 1
                 if ii > length(obj.stim)
@@ -542,6 +563,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
             % Don't reload if not empty
             if ~obj.IsEmpty()
+                obj.LoadStim(fileobj);
                 err = obj.GetError();     % preserve error state if exiting early
                 return;
             end
@@ -751,47 +773,20 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % -------------------------------------------------------
         function CopyStim(obj, obj2)
+            obj.stim = StimClass.empty();
             for ii = 1:length(obj2.stim)
-                if ii > length(obj.stim)
-                    obj.stim(ii) = StimClass(obj2.stim(ii));
-                else
-                    obj.stim(ii).Copy(obj2.stim(ii));
-                end
+                obj.stim(ii) = StimClass(obj2.stim(ii));
             end
         end        
         
         
         % -------------------------------------------------------
-        function changes = StimChangesMade(obj)
-            
-            flags = zeros(length(obj.stim), 1);
-            
+        function changes = StimChangesMade(obj)                        
             % Load stims from file
             snirf = SnirfClass();
-            snirf.LoadStim(obj.GetFilename);
-            stimFromFile = snirf.stim;
-            
-            % Update stims from file with edited stims
-            for ii = 1:length(obj.stim)
-                for jj = 1:length(stimFromFile)
-                    if strcmp(obj.stim(ii).GetName(), stimFromFile(jj).GetName())
-                        if obj.stim(ii) ~= stimFromFile(jj)
-                            flags(ii) = 1;
-                        else
-                            flags(ii) = -1;
-                        end
-                        break;
-                    end
-                end
-                if flags(ii)==0
-                    % We have new stimulus condition added
-                    if ~obj.stim(ii).IsEmpty()
-                        flags(ii) = 1;
-                    end
-                end
-            end
-            flags(flags ~= 1) = 0;
-            changes = sum(flags)>0;
+            snirf.SetFilename(obj.GetFilename())
+            snirf.LoadStim(obj.GetFilename());
+            changes = ~obj.EqualStim(snirf);
         end
         
         
@@ -838,21 +833,102 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if ~strcmp(obj.formatVersion, obj2.formatVersion)
                 return;
             end
-            if length(obj.data)~=length(obj2.data)
+            if ~obj.EqualData(obj2)
                 return;
             end
-            for ii=1:length(obj.data)
-                if obj.data(ii)~=obj2.data(ii)
+            if ~obj.EqualStim(obj2)
+                return;
+            end
+            if obj.probe ~= obj2.probe
+                return;
+            end
+            if ~obj.EqualAux(obj2)
+                return;
+            end
+            B = true;
+        end
+        
+        
+        
+        % --------------------------------------------------------------------
+        function b = EqualMetaDataTags(obj, obj2)
+            b = false;
+            if length(obj.metaDataTags) ~= length(obj2.metaDataTags)
+                return;
+            end
+            for ii = 1:length(obj.metaDataTags)
+                if obj.metaDataTags(ii) ~= obj2.metaDataTags(ii)
                     return;
                 end
             end
-            if length(obj.stim)~=length(obj2.stim)
+            b = true;
+        end
+        
+        
+        
+        % --------------------------------------------------------------------
+        function b = EqualData(obj, obj2)
+            b = false;
+            if length(obj.data) ~= length(obj2.data)
                 return;
             end
-            for ii=1:length(obj.stim)
+            for ii = 1:length(obj.data)
+                if obj.data(ii) ~= obj2.data(ii)
+                    return;
+                end
+            end
+            b = true;
+        end
+        
+        
+        
+        % --------------------------------------------------------------------
+        function b = EqualStim(obj, obj2)
+            b = false;
+            for ii = 1:length(obj.stim)
                 flag = false;
-                for jj=1:length(obj2.stim)
-                    if obj.stim(ii)==obj2.stim(jj)
+                for jj = 1:length(obj2.stim)
+                    if obj.stim(ii) == obj2.stim(jj)
+                        flag = true;
+                        break;
+                    end
+                end
+                if flag==false
+                    % If obj condition was NOT found in obj2 BUT it is empty (no data), then we don't 
+                    % count that as a unequal criteria, that is, obj and obj2 are still considered equal
+                    if ~obj.stim(ii).IsEmpty()
+                        return;
+                    end
+                end
+            end
+            for ii = 1:length(obj2.stim)
+                flag = false;
+                for jj = 1:length(obj.stim)
+                    if obj2.stim(ii) == obj.stim(jj)
+                        flag = true;
+                        break;
+                    end
+                end
+                if flag==false
+                    % If obj2 condition was NOT found in obj BUT it is empty (no data), then we don't 
+                    % count that as a unequal criteria, that is, obj and obj2 are still considered equal
+                    if ~obj2.stim(ii).IsEmpty()
+                        return;
+                    end
+                end
+            end
+            b = true;
+        end
+        
+        
+        
+        % --------------------------------------------------------------------
+        function b = EqualAux(obj, obj2)
+            b = false;
+            for ii = 1:length(obj.aux)
+                flag = false;
+                for jj = 1:length(obj2.aux)
+                    if obj.aux(ii) == obj2.aux(jj)
                         flag = true;
                         break;
                     end
@@ -861,27 +937,21 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     return;
                 end
             end
-            if obj.probe~=obj2.probe
-                return;
-            end
-            if length(obj.aux)~=length(obj2.aux)
-                return;
-            end
-            for ii=1:length(obj.aux)
-                if obj.aux(ii)~=obj2.aux(ii)
+            for ii = 1:length(obj2.aux)
+                flag = false;
+                for jj = 1:length(obj.aux)
+                    if obj2.aux(ii) == obj.aux(jj)
+                        flag = true;
+                        break;
+                    end
+                end
+                if flag==false
                     return;
                 end
             end
-            if length(obj.metaDataTags)~=length(obj2.metaDataTags)
-                return;
-            end
-            for ii=1:length(obj.metaDataTags)
-                if obj.metaDataTags(ii)~=obj2.metaDataTags(ii)
-                    return;
-                end
-            end
-            B = true;
+            b = true;
         end
+        
         
     end
     
@@ -1042,23 +1112,21 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 obj2 = obj.data(1);            
             end
             
-            % Get all aux channels to be on the same time base with
-            % obj2 which by default is the data
-            p = round(1/mean(diff(obj2.GetTime())));
-            d0 = obj2.GetDataTimeSeries();
-            Nmin = size(d0,1);
+            datamat = zeros(size(obj2.dataTimeSeries,1), length(obj.aux));
+            
+            % Get all aux channels to be on the same time base with obj2 which by default is the data
             for ii = 1:length(obj.aux)
-                q = round(1/mean(diff(obj.aux(ii).GetTime())));
-                d = obj.aux(ii).GetDataTimeSeries();
-                temp{ii} = resample(d, p, q);
-                if size(temp{ii},1) < Nmin
-                    Nmin = size(temp{ii},1);
+                if length(obj2.GetTime()) < length(obj.aux(ii).GetTime())   % dessimate
+                    p = length(obj2.GetTime());
+                    q = length(obj.aux(ii).GetTime());
+                elseif length(obj2.GetTime()) > length(obj.aux(ii).GetTime())  % interpolate
+                    p = length(obj.aux(ii).GetTime());
+                    q = length(obj2.GetTime());
+                else
+                    p = length(obj2.GetTime());
+                    q = length(obj.aux(ii).GetTime());
                 end
-            end
-
-            % Create data matrix 
-            for ii = 1:length(temp)
-                datamat(:,ii) = temp{ii}(1:Nmin); %#ok<*AGROW>
+                datamat(:,ii) = resample(obj.aux(ii).GetDataTimeSeries(), p, q);
             end
         end
         
@@ -1176,7 +1244,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if nargin==1
                 return;
             end
-            CondNamesLocal = unique({obj.stim.name});
+            
+            % Bug fix: unique with no arguments changes the order by
+            % sorting. Here order should be preserved or else we have problems. 
+            % Add the 'stable' argument to preseerve order. JD, Nov 1, 2022
+            CondNamesLocal = unique({obj.stim.name}, 'stable');
             stimnew = StimClass().empty;
             for ii=1:length(CondNames)
                 k = find(strcmp(CondNamesLocal, CondNames{ii}));

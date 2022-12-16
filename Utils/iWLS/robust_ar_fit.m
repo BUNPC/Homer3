@@ -1,69 +1,18 @@
-function [beta, P] = robust_ar_fit( y )
-	warning('off','stats:statrobustfit:IterationLimit')
-
-    yf = y;
-    yb = flipud(y);
+function [coef, res, wres, ymoco] = robust_ar_fit( y, Pmax )
+    [~, res] = ar_fit(y, Pmax);
     
-    bic0 = 1; bic = 0;
-    P = 0; Pmax = 100;
-    beta0 = []; beta = [];
-    while bic0 > bic && P < Pmax
-        beta0 = beta;
-        bic0 = bic;
-        P = P+1; 
-        
-        % forward design matrix
-        Xf = zeros(length(yf)-P,P+1);
-        Xf(:,1) = ones(length(yf)-P,1);
-        for j = 1:P
-            Xf(:,j+1) = yf(j+1:end-P+j);
-        end
-
-        % backward design matrix
-        Xb = zeros(length(yb)-P,P+1);
-        Xb(:,1) = ones(length(yb)-P,1);
-        for j = 1:P
-            Xb(:,j+1) = yb(j+1:end-P+j);
-        end
-
-        %  weighted least squares
-        y = [yf(1:end-P); yb(1:end-P)];
-        X = [Xf; Xb];
-
-        beta = pinv(X) * y;
-        r = y - X*beta;
-        
-        w = biweight(r);
-        beta = pinv((repmat(w,[1 size(X,2)]).*X))* (w.*y);
-        r = y - X*beta;
-
-%         % robust regression
-%         y = [yf(1:end-P); yb(1:end-P)];
-%         X = [Xf; Xb];
-%         [beta, ~] = robustfit(X,y,[],[],'off');
-%         r = y-X*beta;
-   
-        % AIC & BIC
-        n = length(r);
-        LL = -n/2*log(2*pi*var(r))  - n/2;
-
-        bic = -LL + P/2*log(n);
-        
-    end
+    w = wfun(res);
+    [coef, ~] = ar_fit(w.*y, Pmax);
     
-    if P > 1
-        beta = beta0;
-    end
+    res     = filter([1; -coef(2:end)], 1, y-coef(1));
+    wres    = filter([1; -coef(2:end)], 1, w.*y-coef(1));
     
+    ymoco   = filter(1, [1; -coef(2:end)], w.*res);
 end
 
-function w = biweight( r )
-    c = 4.685;
-    sig = mad(r,1)/.6745;
-
-    r = r/sig;
+function w = wfun(r)
+    s = mad(r, 0) / 0.6745;
+    r = r/s/4.685;
     
-    lst = r < c & r > -c;
-    w = zeros( size(r) );
-    w(lst) = abs(1 - (r(lst)/c).^2);
+    w = (1 - r.^2) .* (r < 1 & r > -1);
 end

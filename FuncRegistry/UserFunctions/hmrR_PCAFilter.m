@@ -81,10 +81,9 @@ for iBlk = 1:length(data_y)
     y        = data_y(iBlk).GetDataTimeSeries(option);
     t        = data_y(iBlk).GetTime();
     MeasList = data_y(iBlk).GetMeasList(option);
-    if isempty(mlAct{iBlk})
-        mlAct{iBlk} = ones(size(MeasList,1),1);
-    end
-    MeasListAct = mlAct{iBlk};
+    mlActMatrix = mlAct_Initialize(mlAct{iBlk}, MeasList);
+    mlAct       = mlAct_Matrix2BinaryVector(mlActMatrix, MeasList);
+    MeasListAct = mlAct;
     if isempty(tInc{iBlk})
         tInc{iBlk} = ones(length(t),1);
     end

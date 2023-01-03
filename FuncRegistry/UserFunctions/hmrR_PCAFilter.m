@@ -12,7 +12,9 @@
 %    data, then the columns are channels as described in ml. If
 %    y is concentration data, then the third dimension is channels and the
 %    second dimension indicates HbO and HbR.
-% mlAct: 
+% mlAct: List of active / inactive channels in the form of a Nx4 matrix where
+%    N is the number of channels. Every row represents a channel with
+%    columns [ source, detector, active status, datatype (e.g. wavelength or Hb type) ] 
 % tInc: This is a vector of length number of time points and is 1 to
 %    indicate that a time point is included in the analysis and 0 if it is to
 %    be excluded. This is useful for ignoring periods of time with strong
@@ -78,9 +80,9 @@ for iBlk = 1:length(data_y)
     end
     
     % Get all the input data from the arguments
-    y        = data_y(iBlk).GetDataTimeSeries(option);
-    t        = data_y(iBlk).GetTime();
-    MeasList = data_y(iBlk).GetMeasList(option);
+    y           = data_y(iBlk).GetDataTimeSeries(option);
+    t           = data_y(iBlk).GetTime();
+    MeasList    = data_y(iBlk).GetMeasList(option);
     mlActMatrix = mlAct_Initialize(mlAct{iBlk}, MeasList);
     mlAct       = mlAct_Matrix2BinaryVector(mlActMatrix, MeasList);
     MeasListAct = mlAct;
@@ -163,6 +165,7 @@ for iBlk = 1:length(data_y)
             yc(lstInc,lstAct) = yo - y*V*ev*V';
             
         elseif length(nSV{iBlk})==2
+            
             % apply to each wavelength individually
             % verify that length(nSV{iBlk})==length(wavelengths)
             yc = y;

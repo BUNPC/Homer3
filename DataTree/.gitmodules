@@ -2,5 +2,5 @@
 	path = Utils
 	url = https://github.com/BUNPC/Utils
 [submodule "FuncRegistry"]
-	path = DataTree
+	path = FuncRegistry
 	url = https://github.com/BUNPC/FuncRegistry

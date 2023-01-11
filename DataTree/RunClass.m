@@ -866,8 +866,12 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------        
         function ExportStim(obj, options)            
+            global cfg
             if ~exist('options','var')
                 options = '';
+                if strcmpi(cfg.GetValue('Load Stim from TSV file'), 'no')
+                    options = 'regenerate';
+                end
             end
             SnirfFile2Tsv(obj.acquired, '', options);
         end

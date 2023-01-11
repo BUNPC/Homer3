@@ -1,4 +1,4 @@
-function tsv = readTsv(filename, option)
+function [tsv, tabReplacefFlag] = readTsv(filename, option)
 tsv = struct([]);
 if ~exist('filename', 'var')
     filename = '';
@@ -21,6 +21,8 @@ if strcmp(option, 'numstr2num')
 end
 fid = fopen(filename, 'rt');
 kk = 1;
+ncols = 0;
+tabReplacefFlag = false;
 while 1
     line = fgetl(fid);
     if line==-1
@@ -36,7 +38,19 @@ while 1
         line(line<9) = '';
     end
     
-    c = str2cell(line, {sprintf('\t')});
+    delimiter = findDelimiter(strtrim(line), ncols);
+    
+    % If delimiter contains non-tab spaces then raise flag that 
+    % they need to be replaces by tabs in a tav file
+    if ~isempty(find(strcmp(delimiter,' ')))
+        fprintf('WARNING: file %s uses space separators instead of tabs. This could confuse some applitions\n', filename);
+        tabReplacefFlag = true;
+    end
+    
+    c = str2cell(strtrim(line), delimiter);
+    if ncols == 0
+        ncols = length(c);
+    end
     if isempty(tsv)
         tsv = cell(1,length(c));
     end
@@ -51,5 +65,47 @@ while 1
     kk = kk+1;
 end
 fclose(fid);
+
+
+% If delimiter contains non-tab spaces then raise flag that
+% they need to be replaces by tabs in a tav file
+if tabReplacefFlag
+    fprintf('Rewriting file %s to replace space separators with tabs\n', filename);
+    writeTsv(filename, tsv);
+end
+
+
+
+
+% -------------------------------------------------------------------------
+function delimiter = findDelimiter(line, ncols)
+delimiter = ' ';
+ntabSections = length(str2cell(line, sprintf('\t')));  % number of sections separated by spaces
+ntabs = ntabSections-1;   % number of tabs
+nspaceSections = length(str2cell(line, sprintf(' ')));  % number of sections separated by spaces
+nspaces = nspaceSections-1;   % number of spaces
+if ncols==0
+    if ntabs>0 && nspaces==0
+        delimiter = sprintf('\t');
+    elseif ntabs==0 && nspaces>0
+        delimiter = sprintf(' ');
+    elseif ntabs>0 && nspaces>0
+        delimiter = sprintf('\t');
+    end
+else
+    if ntabs>0 && nspaces==0 && ntabs+1==ncols
+        delimiter = sprintf('\t');
+    elseif ntabs==0 && nspaces>0 && nspaces+1==ncols
+        delimiter = sprintf(' ');
+    elseif ntabs>0 && nspaces>0
+        if ntabs+1 == ncols
+            delimiter = sprintf(' ');
+        elseif nspaces+1 == ncols
+            delimiter = sprintf('\t');
+        else
+            delimiter = {sprintf('\t'), ' '};
+        end
+    end
+end
 
 

@@ -1529,32 +1529,32 @@ classdef ProcStreamClass < handle
             switch(lower(options))
                 case obj.datatypes.OPTICAL_DENSITY
                     if iBlk <= length(obj.output.dod)
-                        dataTimeSeries = [dataTimeSeries, obj.output.dod(iBlk).dataTimeSeries];
+                        dataTimeSeries = obj.output.dod(iBlk).dataTimeSeries;
                         time = obj.output.dod(iBlk).time;
                     end
                 case obj.datatypes.CONCENTRATION
                     if iBlk <= length(obj.output.dc)
-                        dataTimeSeries = [dataTimeSeries; obj.output.dc(iBlk).dataTimeSeries];
+                        dataTimeSeries = obj.output.dc(iBlk).dataTimeSeries;
                         time = obj.output.dc(iBlk).time;
                     end
                 case obj.datatypes.HRF_OPTICAL_DENSITY
                     if iBlk <= length(obj.output.dodAvg)
-                        dataTimeSeries = [dataTimeSeries; obj.output.dodAvg(iBlk).dataTimeSeries];
+                        dataTimeSeries = obj.output.dodAvg(iBlk).dataTimeSeries;
                         time = obj.output.dodAvg(iBlk).time;
                     end
                 case obj.datatypes.HRF_CONCENTRATION
                     if iBlk <= length(obj.output.dcAvg)
-                        dataTimeSeries = [dataTimeSeries; obj.output.dcAvg(iBlk).dataTimeSeries];
+                        dataTimeSeries = obj.output.dcAvg(iBlk).dataTimeSeries;
                         time = obj.output.dcAvg(iBlk).time;
                     end
                 case obj.datatypes.HRF_CONCENTRATION_STD
                     if iBlk <= length(obj.output.dodAvg)
-                        dataTimeSeries = [dataTimeSeries; obj.output.dodAvgStd(iBlk).dataTimeSeries];
+                        dataTimeSeries = obj.output.dodAvgStd(iBlk).dataTimeSeries;
                         time = obj.output.dodAvgStd(iBlk).time;
                     end
                 case obj.datatypes.HRF_OPTICAL_DENSITY_STD
                     if iBlk <= length(obj.output.dcAvg)
-                        dataTimeSeries = [dataTimeSeries; obj.output.dcAvgStd(iBlk).dataTimeSeries];
+                        dataTimeSeries = obj.output.dcAvgStd(iBlk).dataTimeSeries;
                         time = obj.output.dcAvgStd(iBlk).time;
                     end
             end

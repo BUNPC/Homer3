@@ -11,7 +11,7 @@ if strcmp(ns, 'AtlasViewerGUI')
     elseif nargin == 2
         setGuiFonts_AtlasViewerGUI(inp1, inp2);
     end
-elseif strcmp(ns, 'Homer3')
+elseif strcmp(ns, 'Homer3') || strcmp(ns, 'DataTreeClass') 
     if nargin == 0
         setGuiFonts_Homer3();
     elseif nargin == 1

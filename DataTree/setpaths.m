@@ -197,19 +197,15 @@ fprintf('REMOVED search paths for app %s\n', app);
 
 % ----------------------------------------------------
 function   addDependenciesSearchPaths()
-d = dependencies();
-for ii = 1:length(d)
-    rootpath = '';
-    if exist([pwd, '/', d{ii}],'dir')
-        rootpath = [pwd, '/'];
-    elseif exist([pwd, '/../', d{ii}],'dir')
-        rootpath = [pwd, '/../'];
-    end
-    if ~exist([rootpath, d{ii}],'dir')
-        fprintf('ERROR: Could not find required dependency %s\n', d{ii})
+submodules = downloadDependencies();
+for ii = 1:size(submodules)
+    submodulespath = [pwd, '/', submodules{ii,end}];
+    if ~exist(submodulespath,'dir')
+        fprintf('ERROR: Could not find required dependency %s\n', submodules{ii,end})
         continue;
     end
-    addSearchPaths([rootpath, d{ii}]);
+    fprintf('Adding searchpaths for submodule %s\n', submodulespath);
+    addSearchPaths(submodulespath);
 end
 
 

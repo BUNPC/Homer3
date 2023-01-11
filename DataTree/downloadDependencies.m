@@ -1,29 +1,23 @@
-function downloadependencies(repoParent, urlroot, branch)
+function submodules = downloadDependencies(repoParent)
 %
 % Syntax:
-%   downloadependencies(repoParent, urlroot, branch)
-%   downloadependencies(repoParent, urlroot)
-%   downloadependencies(repoParent)
-%   downloadependencies()
+%   downloadDependencies(repoParent, urlroot, branch)
+%   downloadDependencies(repoParent, urlroot)
+%   downloadDependencies(repoParent)
+%   downloadDependencies()
 %
 % Examples:
-%   downloadependencies('c:\users\public\DataTree', 'https://github.com/jayd1860', 'development')
+%   downloadDependencies()
+%   downloadDependencies('c:\users\public\DataTree')
 %
 %
 
 if ~exist('repoParent','var')
     repoParent = pwd;
 end
-if ~exist('urlroot','var')
-    url = gitGetOrigin(repoParent);
-    urlroot = fileparts(url);
-end
-if ~exist('branch','var')
-    branch = gitGetBranch(repoParent);
-end
 repoParentFull = fullpath_startup(repoParent);
 submodules = parseGitSubmodulesFile(repoParentFull);
-[cmds, errs, msgs] = gitSubmodulesClone(repoParentFull, false, 'init');
+gitSubmodulesClone(repoParentFull, false, 'init');
 
 
 

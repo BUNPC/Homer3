@@ -26,24 +26,24 @@ function [cmds, errs, msgs] = syncSubmodules(repo, options, preview)
 %
 % Examples:
 %
-%   % Next 3 examples will only preview but will not change anything in the destination repo
+%   % Next three examples will only preview but will not change anything in the destination repo
 %
-%   syncSubmodules();
-%   syncSubmodules(pwd);
-%   syncSubmodules(pwd, 'init');
+%       syncSubmodules();
+%       syncSubmodules(pwd);
+%       syncSubmodules(pwd, 'init');
+%       syncSubmodules(pwd, 'init', true);
 %
 %
-%   % Next 2 examples will make changes in the destination repo
+%   % Next two examples will make changes in the destination repo, that is
+%   % your local repo with the later git commit
 %
-%   syncSubmodules(pwd, 'init', false);
-%   syncSubmodules(pwd, 'update', false);
+%       syncSubmodules(pwd, 'init', false);
+%       syncSubmodules(pwd, 'update', false);
 %
 %
 global synctool
 
 synctool = struct('repoParentFull','', 'repo1',[], 'repo2',[]);
-
-cmds = {};
 
 if ~exist('repo','var') || isempty(repo)
     repo = [pwd, '/'];
@@ -107,7 +107,7 @@ if ~exist('peerlessonly','var')
     peerlessonly = false;
 end
 
-fileTypes = {'.m','.txt','.cfg','.numberfiles','.fig'};
+fileTypes = {'.m','.txt','.cfg','.numberfiles','.fig','.gitmodules'};
 for iRepo = 1:2
     for iFt = 1:length(fileTypes)
         if eval( sprintf('~exist(''f%d'',''var'')', iRepo) )

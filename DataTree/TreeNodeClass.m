@@ -25,6 +25,7 @@ classdef TreeNodeClass < handle
         outputDirname
         cfg
         chVis
+        hFig
     end
     
     methods        
@@ -57,6 +58,7 @@ classdef TreeNodeClass < handle
 
             obj.InitParentAppFunc();
             obj.children = [];
+            obj.hFig = [];
             
             % If this constructor is called from this class' copy method,
             % then we want to exit before we obliterate the persistent
@@ -624,7 +626,7 @@ classdef TreeNodeClass < handle
         % ---------------------------------------------------------
         function [d, t, ml] = GetDataTimeSeries(obj, options, iBlk)
             d = [];
-            t = [];            
+            t = [];
             ml = [];
             datatypes = obj.procStream.GetDataTypes();
             if ~exist('options','var')
@@ -633,40 +635,31 @@ classdef TreeNodeClass < handle
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            for ii = 1:length(iBlk)
-                switch(lower(options))
-                    case datatypes.RAW
-                        if isempty(obj.acquired)
-                            continue
-                        end
-                        d = [d, obj.acquired.GetDataTimeSeries(ii)]; %#ok<*AGROW>
-                        t = [t; obj.GetTime(ii)];
-                        ml = [ml, obj.acquired.GetMeasurementList('matrix',ii)];
-                    case datatypes.OPTICAL_DENSITY
-                        d = [d, obj.procStream.GetDataTimeSeries('od',ii)];
-                        t = [t; obj.GetTime(ii)];
-                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'od')];
-                    case datatypes.CONCENTRATION
-                        d = [d, obj.procStream.GetDataTimeSeries('conc',ii)];
-                        t = [t; obj.GetTime(ii)];
-                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'conc')];
-                    case datatypes.HRF_OPTICAL_DENSITY
-                        d = [d, obj.procStream.GetDataTimeSeries('od hrf',ii)];
-                        t = [t; obj.procStream.GetTHRF(ii)];
-                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'od hrf')];
-                    case datatypes.HRF_OPTICAL_DENSITY_STD
-                        d = [d, obj.procStream.GetDataTimeSeries('od hrf std',ii)];
-                        t = [t; obj.procStream.GetTHRF(ii)];
-                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'od hrf std')];
-                    case datatypes.HRF_CONCENTRATION
-                        d = [d, obj.procStream.GetDataTimeSeries('conc hrf',ii)];
-                        t = [t; obj.procStream.GetTHRF(ii)];
-                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'conc hrf')];
-                    case datatypes.HRF_CONCENTRATION_STD
-                        d = [d, obj.procStream.GetDataTimeSeries('conc hrf std',ii)];
-                        t = [t; obj.procStream.GetTHRF(ii)];
-                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'conc hrf std')];
-                end
+            switch(lower(options))
+                case datatypes.RAW
+                    if isempty(obj.acquired)
+                        return
+                    end
+                    [d, t] = obj.acquired.GetDataTimeSeries(iBlk); %#ok<*AGROW>
+                    ml = obj.acquired.GetMeasurementList('matrix',iBlk);
+                case datatypes.OPTICAL_DENSITY
+                    [d, t] = obj.procStream.GetDataTimeSeries('od',iBlk);
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'od');
+                case datatypes.CONCENTRATION
+                    [d, t] = obj.procStream.GetDataTimeSeries('conc',iBlk);
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'conc');
+                case datatypes.HRF_OPTICAL_DENSITY
+                    [d, t] = obj.procStream.GetDataTimeSeries('od hrf',iBlk);
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'od hrf');
+                case datatypes.HRF_OPTICAL_DENSITY_STD
+                    [d, t] = obj.procStream.GetDataTimeSeries('od hrf std',iBlk);
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'od hrf std');
+                case datatypes.HRF_CONCENTRATION
+                    [d, t] = obj.procStream.GetDataTimeSeries('conc hrf',iBlk);
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'conc hrf');
+                case datatypes.HRF_CONCENTRATION_STD
+                    [d, t] = obj.procStream.GetDataTimeSeries('conc hrf std',iBlk);
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'conc hrf std');
             end
         end
         
@@ -674,7 +667,6 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function ch = GetMeasList(obj, options, iBlk)
-            ch = [];
             if ~exist('options','var')
                 options = '';
             end
@@ -998,14 +990,99 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function Calc(obj)            
-            
+        function Calc(obj)                        
             % Make variables in this subject available to processing stream input
             obj.procStream.input.LoadVars(obj.inputVars);
 
             % Calculate processing stream
-            fcalls = obj.procStream.Calc([obj.path, obj.GetOutputFilename()]); %#ok<NASGU>
-            
+            fcalls = obj.procStream.Calc([obj.path, obj.GetOutputFilename()]); %#ok<NASGU>            
+        end
+        
+        
+
+        % ----------------------------------------------------------------------------------
+        function hfig = Plot(obj, datatype, iChs, iBlk, hAxes)
+            %
+            % Syntax:
+            %   TreeNodeClass.Plot(datatype, iChs, iBlk, hAxes)
+            %
+            % Example:
+            %   
+            %   TreeNodeClass.Plot('conc hrf', [1,2,3])
+            %
+            d = [];
+            t = [];
+            datatypes = obj.procStream.GetDataTypes();
+            hfig = [];
+            if ~exist('datatype','var')
+                datatype = 'conc hrf';
+            end
+            if ~exist('iChs','var')
+                iChs = 1;
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            s = [];
+            switch(lower(datatype))
+                case datatypes.RAW
+                    if isempty(obj.acquired)
+                        return
+                    end
+                    [d, t] = obj.acquired.GetDataTimeSeries('', iBlk);
+                    s = obj.procStream.input.acquired.stim;
+                case datatypes.OPTICAL_DENSITY
+                    [d, t] = obj.procStream.GetDataTimeSeries('od',iBlk);
+                    s = obj.procStream.input.acquired.stim;
+                case datatypes.CONCENTRATION
+                    [d, t] = obj.procStream.GetDataTimeSeries('conc',iBlk);
+                    s = obj.procStream.input.acquired.stim;
+                case datatypes.HRF_OPTICAL_DENSITY
+                    [d, t] = obj.procStream.GetDataTimeSeries('od hrf',iBlk);
+                case datatypes.HRF_OPTICAL_DENSITY_STD
+                    [d, t] = obj.procStream.GetDataTimeSeries('od hrf std',iBlk);
+                case datatypes.HRF_CONCENTRATION
+                    [d, t] = obj.procStream.GetDataTimeSeries('conc hrf',iBlk);
+                case datatypes.HRF_CONCENTRATION_STD
+                    [d, t] = obj.procStream.GetDataTimeSeries('conc hrf std',iBlk);
+            end
+            if isempty(d)
+                fprintf('No data to plot\n');
+                return;
+            end
+            if ~exist('hAxes','var')
+                if ishandles(obj.hFig)
+                    close(obj.hFig);
+                end
+                hAxes = gca();
+                obj.hFig = gcf;
+            end
+            if ishandles(obj.hFig)
+                figname = sprintf('PROCESSING ELEMENT: "%s" (ID = [%s]) ;   DATATYPE: "%s";   CHANNELS: [ %s ]', obj.GetName(), ...
+                                  num2str([obj.iGroup, obj.iSubj, obj.iSess, obj.iRun]), datatype, num2str(iChs));
+                namesize = uint32(length(figname)/3);
+                set(obj.hFig, 'units','characters');
+                p1 = get(obj.hFig, 'position');
+                set(obj.hFig, 'name',figname, 'menubar','none', 'NumberTitle','off', 'position',[p1(1)/2, p1(2), p1(3)+namesize, p1(4)]);
+            end
+            plot(hAxes, t, d(:,iChs));
+            set(hAxes, 'xlim', [t(1), t(end)]);
+            hold on
+            if ~isempty(s)
+                ylim = get(hAxes, 'ylim');
+                d = (1e-4)*(ylim(2)-ylim(1));
+                yrange = [ylim(1)+d, ylim(2)-d];
+                CondColTbl = obj.CondColTbl();
+                for jj = 1:length(s)
+                    for ii = 1:size(s(jj).data,1)
+                        plot(hAxes, s(jj).data(ii,1)*[1,1], yrange, 'color',CondColTbl(jj,:));
+                    end
+                end
+            end
+            drawnow;
+            pause(.1);
+            hfig = obj.hFig;
+            hold off
         end
         
         
@@ -1082,8 +1159,12 @@ classdef TreeNodeClass < handle
                 
         % ----------------------------------------------------------------------------------
         function ExportStim(obj, options)
+            global cfg
             if ~exist('options','var')
                 options = '';
+                if strcmpi(cfg.GetValue('Load Stim from TSV file'), 'no')
+                    options = 'regenerate';
+                end
             end
             for ii = 1:length(obj.children)
                 obj.children(ii).ExportStim(options);

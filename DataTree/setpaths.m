@@ -36,7 +36,7 @@ try
     appNameInclList = {};
     exclSearchList  = {'.git','Data','Docs','*_install','*.app'};
     
-    appThis         = filesepStandard(pwd);
+    appThis         = filesepStandard_startup(pwd);
     appThisPaths    = findDotMFolders(appThis, exclSearchList);
     if addremove == 0
         if ~isempty(which('deleteNamespace.m'))
@@ -53,8 +53,8 @@ try
     for ii = 1:length(appNameExclList)
         foo = which([appNameExclList{ii}, '.m'],'-all');
         for jj = 1:length(foo)
-            p = filesepStandard(fileparts(foo{jj}));
-            if pathscompare(appThis, p)
+            p = filesepStandard_startup(fileparts(foo{jj}));
+            if pathscompare_startup(appThis, p)
                 continue
             end
             fprintf('Exclude paths for %s\n', p);
@@ -67,11 +67,11 @@ try
         foo = which([appNameInclList{ii}, '.m'],'-all');
         for jj = 1:length(foo)
             if jj > 1
-                p = filesepStandard(fileparts(foo{jj}));
+                p = filesepStandard_startup(fileparts(foo{jj}));
                 appExclList = [appExclList; p]; %#ok<AGROW>
                 fprintf('Exclude paths for %s\n', p);
             else
-                p = filesepStandard(fileparts(foo{jj}));
+                p = filesepStandard_startup(fileparts(foo{jj}));
                 appInclList = [appInclList; p]; %#ok<AGROW>
                 fprintf('Include paths for %s\n', p);
             end
@@ -79,7 +79,7 @@ try
     end
     
     % Remove all search paths for all other apps except for current one, to
-    % make that we use only search from the current app for download shared
+    % make sure that we use only search from the current app for download shared
     % libraries (i.e, submodules).
     for ii = 1:length(appExclList)
         removeSearchPaths(appExclList{ii})
@@ -97,7 +97,7 @@ try
     % Add back all search paths for all other apps except for current app
     for ii = 1:length(appInclList)
         % This app's path has already been added
-        if pathscompare(appInclList{ii}, appThis)
+        if pathscompare_startup(appInclList{ii}, appThis)
             continue;
         end
         foo = findDotMFolders(appInclList{ii}, exclSearchList);
@@ -144,7 +144,7 @@ end
 
 
 % ----------------------------------------------------
-function addSearchPaths(appPaths, options)
+function addSearchPaths(appPaths)
 if ischar(appPaths)
     p = genpath(appPaths);
     if ispc
@@ -152,12 +152,8 @@ if ischar(appPaths)
     else
         delimiter = ':';
     end        
-    appPaths = str2cell(p, delimiter);
+    appPaths = str2cell_startup(p, delimiter);
 end
-if ~exist('options', 'var')
-    options = '';
-end
-
 for kk = 1:length(appPaths)
     if strfind(appPaths{kk}, '.git')
         continue;
@@ -181,7 +177,7 @@ end
 r = version('-release');
 msg = sprintf('Removing search paths for %s ...', appname);
 h = waitbar(0, msg);
-p = str2cell(p, delimiter);
+p = str2cell_startup(p, delimiter);
 for kk = 1:length(p)
     if mod(kk,100)==0
         waitbar(kk/length(p), h);
@@ -189,7 +185,7 @@ for kk = 1:length(p)
     if ~isempty(strfind(lower(p{kk}), 'matlab')) && ~isempty(strfind(p{kk}, r))
         continue;
     end
-    if ~isempty(strfind(filesepStandard(p{kk}), app))
+    if ~isempty(strfind(filesepStandard_startup(p{kk}), app))
         rmpath(p{kk});
     end
 end
@@ -201,25 +197,21 @@ fprintf('REMOVED search paths for app %s\n', app);
 
 % ----------------------------------------------------
 function   addDependenciesSearchPaths()
-d = dependencies();
-for ii = 1:length(d)
-    rootpath = '';
-    if exist([pwd, '/', d{ii}],'dir')
-        rootpath = [pwd, '/'];
-    elseif exist([pwd, '/../', d{ii}],'dir')
-        rootpath = [pwd, '/../'];
-    end
-    if ~exist([rootpath, d{ii}],'dir')
-        fprintf('ERROR: Could not find required dependency %s\n', d{ii})
+submodules = downloadDependencies();
+for ii = 1:size(submodules)
+    submodulespath = [pwd, '/', submodules{ii,end}];
+    if ~exist(submodulespath,'dir')
+        fprintf('ERROR: Could not find required dependency %s\n', submodules{ii,end})
         continue;
     end
-    addSearchPaths([rootpath, d{ii}]);
+    fprintf('Adding searchpaths for submodule %s\n', submodulespath);
+    addSearchPaths(submodulespath);
 end
 
 
 
 % -----------------------------------------------------------------------------
-function [C,k] = str2cell(str, delimiters, options)
+function [C,k] = str2cell_startup(str, delimiters, options)
 
 % Option tells weather to keep leading whitespaces. 
 % (Trailing whitespaces are always removed)
@@ -361,7 +353,7 @@ if ~ispathvalid(pname,'dir')
 end
 [~,f,e] = fileparts(pname);
 for ii = 1:length(exclList)
-    [c,d] = str2cell(exclList{ii},'*');
+    [c,d] = str2cell_startup(exclList{ii},'*');
     if isempty(d) && strcmp(c{1}, [f,e])
         return;
     end
@@ -408,4 +400,239 @@ elseif ~isempty(k)
 else
     diff = '';
 end
+
+
+
+% --------------------------------------------------------------------
+function pathname = filesepStandard_startup(pathname0, options)
+
+%
+% Usage:
+%    pathname = filesepStandard(pathname, options)
+%
+% Takes a pathname as argument and replaces any non-standard file/folder
+% separators with standard ones, that is '/'. It also gets rid of redundant
+% file seps
+%
+% Example:
+%
+%   >> pathname = 'C:\dir1\\\dir2\\dir3\test1/\test2/'
+%   >> pathname = filesepStandard(pathname)
+%
+%   pathname =
+%
+%   C:/dir1/dir2/dir3/test1/test2/
+%
+%
+
+pathname = '';
+
+if nargin==0
+    return
+end
+if isempty(pathname0)
+    return
+end
+if ~ischar(pathname0) && ~iscell(pathname0)
+    return
+end
+
+if ~exist('options', 'var')
+    options = '';
+end
+
+if ischar(pathname0)
+    pathname0 = removeExtraDots_startup(pathname0);
+    
+    % Do basic error check to see if path exists; if not wexist without
+    % doing anything 
+    if ~optionExists_startup(options,'nameonly')
+        if ~ispathvalid_startup(pathname0)
+            return
+        end
+    end
+    
+    % Change all path file separators to standard forward slash
+    idxs = [];        
+    k = find(pathname0=='\' | pathname0=='/');
+    for ii = 1:length(k)
+        if (ii>1) && (k(ii) == k(ii-1)+1)
+            idxs = [idxs, k(ii)]; %#ok<AGROW>
+            continue;
+        end
+        pathname0(k(ii)) = '/';
+    end
+    
+    % Remove any extraneous file separators
+    pathname0(idxs) = '';
+        
+    % Change path to full path if option requesting it exists
+    if optionExists_startup(options,'full') || optionExists_startup(options,'fullpath') || optionExists_startup(options,'absolute')
+        if ispathvalid_startup(pathname0)
+            pathname0 = fullpath_startup(pathname0);
+        end
+    end
+    
+    % Add traling separator only for directory path names 
+    if (isdir_private_startup(pathname0) || optionExists_startup(options, 'dir')) && ~optionExists_startup(options, 'file')
+        if pathname0(end) ~= '/'
+            pathname0(end+1) = '/';
+        end
+    elseif (isfile_private_startup(pathname0) || optionExists_startup(options, 'file')) && ~optionExists_startup(options, 'dir')
+        if pathname0(end) == '/'
+            pathname0(end) = '';
+        end
+    else
+        if pathname0(end) == '/'
+            pathname0(end) = '';
+        end
+    end
+        
+    % Change path to full path if option requesting it exists
+    pathname = pathname0;
+    return;
+end
+pathname = pathname0;
+
+% Call filesepStandard recursively for all path names in cell array
+for ii = 1:length(pathname)
+    pathname{ii} = filesepStandard_startup(pathname{ii}, options);
+end
+
+
+
+
+% ---------------------------------------------------------------------
+function b = isfile_private_startup(dirname)
+%
+% isfile_private() is a backward compatible version of matlab's isfile()
+% function.
+%
+% isfile() is a new matlab function that is an improvment over exist() to 
+% tell if a pathname is a file or not. But it didn't exist prior to R2017. 
+% Therefore we use try/catch to still be able to use isfile when it exists
+
+try
+    b = isfile(dirname);
+catch
+    b = (exist(dirname,'file') == 2);
+end
+
+
+
+
+% ---------------------------------------------------------------------
+function b = isdir_private_startup(dirname)
+%
+% isdir_private() is a backward compatible version of matlab's isdir()
+% function.
+%
+% isdir() is a new matlab function that is an improvment over exist() to 
+% tell if a pathname is a directory or not. But it didn't exist prior to R2017. 
+% Therefore we use try/catch to still be able to use isdir when it exists
+
+try
+    b = isdir(dirname);
+catch
+    b = (exist(dirname,'dir') == 7);
+end
+
+
+
+% ---------------------------------------------------------------------
+function pname = removeExtraDots_startup(pname)
+k = cell(4,3);
+
+% Case 1:
+k{1,1} = strfind(pname, '/./');
+k{2,1} = strfind(pname, '/.\');
+k{3,1} = strfind(pname, '\.\');
+k{4,1} = strfind(pname, '\./');
+for ii = 1:length(k(:,1))
+    for jj = length(k{ii,1}):-1:1
+        pname(k{ii,1}(jj)+1:k{ii,1}(jj)+2) = '';
+    end
+end
+
+% Case 2:
+k{1,2} = strfind(pname, '/.');
+k{2,2} = strfind(pname, '\.');
+for ii = 1:length(k(:,2))
+    if ~isempty(k{ii,2})
+        if k{ii,2}+1<length(pname)
+            continue
+        end
+        pname(k{ii,2}+1) = '';
+    end
+end
+
+
+
+
+% ---------------------------------------------------------------------
+function b = optionExists_startup(options, option)
+% Check if option (arg2) exists in a set of options (arg1)
+b = false;
+if isempty(options)
+    return;
+end
+if iscell(options)
+    options = options{1};
+end
+if ~ischar(options)
+    return;
+end
+
+if ~exist('option','var') || isempty(option)
+    b = false;
+    return;
+end
+options2 = str2cell_startup(options,{':',';',','});
+b = ~isempty(find(strcmp(options2,option))); %#ok<EFIND>
+
+% b = ~isempty(findstr(options, option)); %#ok<*FSTR>
+
+
+
+
+% ---------------------------------------------------------------------
+function b = ispathvalid_startup(p, options)
+% ispathvalid can replace matlab's o.isdir, o.isfile and exist functions
+% all of which have flaws (e.g., isdir not fully backwards compatible, 
+% exist has bugs where it'll confuse files and folders)
+%
+b = false;
+if ~exist('options','var')
+    options = '';
+end
+if ~ischar(options)
+    return;
+end
+if ~isempty(options)
+    if optionExists_startup(options,'file')
+        
+        % Err check 1.
+        if isdir_private_startup(p)
+            return;
+        end
+        
+        % Err check 2.
+        if optionExists_startup(options, 'checkextension')
+            [~, ~, ext] = fileparts(p);
+            if isempty(ext)
+                return;
+            end
+        end
+        
+    elseif optionExists_startup(options,'dir')
+        if isfile_private_startup(p)
+            return;
+        end
+    else
+        return;
+    end
+end
+b = ~isempty(dir(p));
+
+
 

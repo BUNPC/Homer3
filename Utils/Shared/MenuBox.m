@@ -1,4 +1,4 @@
-function selection = MenuBox(msg, bttns, relativePos, textLineWidth, options)
+function [selection, hf] = MenuBox(msg, bttns, relativePos, textLineWidth, options)
 
 %
 % SYNTAX:

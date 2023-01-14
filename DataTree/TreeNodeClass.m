@@ -1023,20 +1023,27 @@ classdef TreeNodeClass < handle
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            s = [];
+            
+            stim = [];
             switch(lower(datatype))
                 case datatypes.RAW
                     if isempty(obj.acquired)
                         return
                     end
                     [d, t] = obj.acquired.GetDataTimeSeries('', iBlk);
-                    s = obj.procStream.input.acquired.stim;
+                    if ~isempty(obj.procStream.input.acquired)
+                        stim = obj.procStream.input.acquired.stim;
+                    end
                 case datatypes.OPTICAL_DENSITY
                     [d, t] = obj.procStream.GetDataTimeSeries('od',iBlk);
-                    s = obj.procStream.input.acquired.stim;
+                    if ~isempty(obj.procStream.input.acquired)
+                        stim = obj.procStream.input.acquired.stim;
+                    end
                 case datatypes.CONCENTRATION
                     [d, t] = obj.procStream.GetDataTimeSeries('conc',iBlk);
-                    s = obj.procStream.input.acquired.stim;
+                    if ~isempty(obj.procStream.input.acquired)
+                        stim = obj.procStream.input.acquired.stim;
+                    end
                 case datatypes.HRF_OPTICAL_DENSITY
                     [d, t] = obj.procStream.GetDataTimeSeries('od hrf',iBlk);
                 case datatypes.HRF_OPTICAL_DENSITY_STD
@@ -1065,20 +1072,27 @@ classdef TreeNodeClass < handle
                 p1 = get(obj.hFig, 'position');
                 set(obj.hFig, 'name',figname, 'menubar','none', 'NumberTitle','off', 'position',[p1(1)/2, p1(2), p1(3)+namesize, p1(4)]);
             end
+            
+            % Plot data
             plot(hAxes, t, d(:,iChs));
             set(hAxes, 'xlim', [t(1), t(end)]);
             hold on
-            if ~isempty(s)
+
+            % TBD: Display probe
+
+            % Plot stims
+            if ~isempty(stim)
                 ylim = get(hAxes, 'ylim');
                 d = (1e-4)*(ylim(2)-ylim(1));
                 yrange = [ylim(1)+d, ylim(2)-d];
                 CondColTbl = obj.CondColTbl();
-                for jj = 1:length(s)
-                    for ii = 1:size(s(jj).data,1)
-                        plot(hAxes, s(jj).data(ii,1)*[1,1], yrange, 'color',CondColTbl(jj,:));
+                for jj = 1:length(stim)
+                    for ii = 1:size(stim(jj).data,1)
+                        plot(hAxes, stim(jj).data(ii,1)*[1,1], yrange, 'color',CondColTbl(jj,:));
                     end
                 end
             end
+            
             drawnow;
             pause(.1);
             hfig = obj.hFig;

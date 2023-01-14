@@ -73,7 +73,11 @@ obj.Load();
 t = obj.acquired.data(1).time;
 d = obj.acquired.data(1).dataTimeSeries;
 id = [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun];
-hfig = Plot(t, d, [6,7], obj.GetName(), 'raw', id);
+stim = [];
+if ~isempty(obj.procStream.input.acquired)
+    stim = obj.procStream.input.acquired.stim;
+end
+hfig = Plot(t, d, stim, [6,7], obj.GetName(), 'raw', id);
 pause(2);
 
 
@@ -86,7 +90,11 @@ obj = dataTree.groups(1).subjs(2).sess(1).runs(3);
 obj.Load();
 t = obj.acquired.data(1).time;
 d = obj.acquired.data(1).dataTimeSeries;
-hfig = Plot(t, d, [6,7], id, obj.GetName(), 'raw', hfig);
+stim = [];
+if ~isempty(obj.procStream.input.acquired)
+    stim = obj.procStream.input.acquired.stim;
+end
+hfig = Plot(t, d, stim, [6,7], id, obj.GetName(), 'raw', hfig);
 pause(2);
 
 
@@ -99,8 +107,9 @@ obj = dataTree.currElem;
 obj.Calc();
 t = obj.procStream.output.dcAvg.time;
 d = obj.procStream.output.dcAvg.dataTimeSeries;
+stim = [];
 id = [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun];
-hfig = Plot(t, d, [2,3,4], id, obj.GetName(), 'conc hrf', hfig);
+hfig = Plot(t, d, stim, [2,3,4], id, obj.GetName(), 'conc hrf', hfig);
 pause(2);
 
 
@@ -113,8 +122,9 @@ obj = dataTree.groups(1);
 obj.Calc();
 t = obj.procStream.output.dcAvg.time;
 d = obj.procStream.output.dcAvg.dataTimeSeries;
+stim = [];
 id = [obj.iGroup, obj.iSubj, obj.iSess, obj.iRun];
-Plot(t, d, [2,3,4], id, obj.GetName(), 'conc hrf', hfig);
+Plot(t, d, stim, [2,3,4], id, obj.GetName(), 'conc hrf', hfig);
 
 
 
@@ -127,7 +137,7 @@ obj.logger.Close();
 
 
 % ------------------------------------------------------------------------------------
-function hfig = Plot(t, d, iChs, id, name, datatype, hfig)
+function hfig = Plot(t, d, stim, iChs, id, name, datatype, hfig)
 if ~exist('hfig','var')
     hfig = [];
 end
@@ -141,9 +151,28 @@ namesize = uint32(length(figname)/2);
 set(hfig, 'units','characters');
 p1 = get(hfig, 'position');
 set(hfig, 'name',figname, 'menubar','none', 'NumberTitle','off', 'position',[p1(1)/2, p1(2), p1(3)+namesize, p1(4)]);
+
+% Plot data
 plot(t, d(:, iChs));
 hAxes = gca;
 set(hAxes, 'xlim', [t(1), t(end)]);
+
+% Plot stims
+hold on
+if ~isempty(stim)
+    ylim = get(hAxes, 'ylim');
+    d = (1e-4)*(ylim(2)-ylim(1));
+    yrange = [ylim(1)+d, ylim(2)-d];
+    CondColTbl = distinguishable_colors(10);
+    for jj = 1:length(stim)
+        for ii = 1:size(stim(jj).data,1)
+            plot(hAxes, stim(jj).data(ii,1)*[1,1], yrange, 'color',CondColTbl(jj,:));
+        end
+    end
+end
+hold off
+
+
 
 
 

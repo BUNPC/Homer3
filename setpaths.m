@@ -32,7 +32,7 @@ try
         
     % Create list of possible known similar apps that may conflic with current
     % app
-    appNameExclList = {'Homer3','Homer2_UI','brainScape','ResolveCommonFunctions'};
+    appNameExclList = {'Homer3','DataTree','Homer2_UI','brainScape','ResolveCommonFunctions'};
     appNameInclList = {'AtlasViewerGUI'};
     exclSearchList  = {'.git','.idea','Data','Docs','*_install','*.app','submodules'};
     
@@ -52,6 +52,13 @@ try
     % Find all root folders of apps to exclude from search paths
     for ii = 1:length(appNameExclList)
         foo = which([appNameExclList{ii}, '.m'],'-all');
+        
+        % Before giving up and concluding the path does not exist in list of matlab
+        % search paths, try appending the word 'Class' to path name. 
+        if isempty(foo)
+            foo = which([appNameExclList{ii}, 'Class.m'],'-all');
+        end
+        
         for jj = 1:length(foo)
             p = filesepStandard_startup(fileparts(foo{jj}));
             if pathscompare_startup(appThis, p)

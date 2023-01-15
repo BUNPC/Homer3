@@ -69,21 +69,25 @@ logger = Logger('DataTreeClass');
 cfg = ConfigFileClass();
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 1. Plot raw data for current element for channels 1 and 2
+% 1. Plot raw data for current element for channel 2
 % 2. Export stim for the current element
 % 3. Edit stim in the events TSV file
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 obj = dataTree.currElem;
 obj.Load();
-obj.Plot('raw',[1,2]);
+h = obj.Plot('raw', [1,2,0,1]);
+repositionFigures(h);         % Local function to reposition figures so they can be all be seen on screen at once
+
 obj.ExportStim();
 
 pause(2);
 
 EditEventsTsvFile_InMatlabEditor(obj, dataSetDir);
 
-obj.ReloadStim();
-obj.Plot('raw',[1,2]);
+obj.ClosePlots();
+dataTree.ReloadStim();
+h = obj.Plot('raw', [1,2,0,1]);
+repositionFigures(h);         % Local function to reposition figures so they can be all be seen on screen at once
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -116,5 +120,25 @@ end
 editorTab = editorTabs(ii);
 editorTab.makeActive;
 MenuBox('Please edit TSV stim file and save it, then click the ''OK'' button.');
+
+
+
+
+% -------------------------------------------------------------------
+function repositionFigures(h,i)
+if ~exist('i','var')
+    i = 1;
+end
+k = find(h(1,:)==-1)-1;
+set(h(1,k), 'units','normalized')
+set(h(2,k), 'units','normalized')
+p1 = get(h(1,k), 'position');
+p2 = get(h(2,k), 'position');
+set(h(1,k), 'position',[p1(1)-(p1(1)/2),  1.0-(p1(4)+i/10),  p1(3),  p1(4)])
+set(h(2,k), 'position',[p2(1)+(p2(1)/2),  1.0-(p2(4)+i/10),  p2(3),  p2(4)])
+
+
+
+
 
 

@@ -494,8 +494,10 @@ classdef DataClass < FileLoadSaveClass
             %                        will follow this order in linear form. That is, the order of ml will index the columns 
             %                        of d squeezed into 2 dimensions d(:,:)
             %       
-            %           'matrix'   - dataTimeSeries will not be modified but ml will be returned as a 2D matrix instead of a 
-            %                        MeasListClass structure. It's rows will have the same order as the structure elements. 
+            %           'matrix'   - This options refers to the measurement list type: if 'matrix' keyword is in the options 
+            %                        then ml will be returned as a 2D matrix instead of a MeasListClass object (that is the 
+            %                        object representing the measurementList SNIRF field). The rows of the 2d array will have 
+            %                        the same order as the original MeasListClass object elements. 
             %       
             %           'datatype' - used in combination with reshape. dataTimeSeries will be reshaped as above but the 
             %                        slowest dimensions to change will be reversed from left-to-right, that is, 
@@ -510,7 +512,7 @@ classdef DataClass < FileLoadSaveClass
             %       %%%% dc is a DataClass object containing concentration data, with 4 sources, 8 detectors, 9 sd pairs, and 3 Hb data types:  hbo, hbr, and hbt. 
             %
             %
-            %       % Example 1:  Return OD dataTimeSeries, time and  measurementList unchanged.
+            %       % Example 1:  Return OD dataTimeSeries, time and  measurementList (ml) unchanged, that is, as a MeasListClass object instead of Nx4 2D array.
             %       [d, t, ml, order] = dod.GetDataTimeSeries();
             %
             %

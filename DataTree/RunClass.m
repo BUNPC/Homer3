@@ -596,6 +596,10 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function bbox = GetSdgBbox(obj)
+            if obj.acquired.IsEmpty()
+                % No need to load whole of acquired data need only probe here
+                obj.acquired.LoadProbe(obj.acquired.GetFilename());
+            end
             bbox = obj.acquired.GetSdgBbox();
         end
         

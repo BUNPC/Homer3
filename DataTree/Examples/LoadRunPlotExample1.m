@@ -78,7 +78,8 @@ logger = Logger('DataTreeClass');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 obj = dataTree.currElem;
 obj.Load();
-h = obj.Plot('raw',[2,3,0,1; 3,5,0,1; 4,6,0,1]);
+sdPairsSelect = [2,3,0,1; 3,5,0,1; 4,6,0,1];  % Channels to plot: 2d array where each channel row is [source idx, detector idx, condition idx, datatype idx]
+h = obj.Plot('raw', sdPairsSelect);
 repositionFigures(h,1);         % Local function to reposition figures so they can be all be seen on screen at once
 pause(2);
 
@@ -96,7 +97,8 @@ pause(2);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 obj = dataTree.groups(1).subjs(2).sess(1).runs(3);
 obj.Load();
-h = obj.Plot('raw',[2,3,0,2; 3,5,0,2; 4,6,0,2]);
+sdPairsSelect = [2,3,0,2; 3,5,0,2; 4,6,0,2];  % Channels to plot: 2d array where each channel row is [source idx, detector idx, condition idx, datatype idx]
+h = obj.Plot('raw', sdPairsSelect);
 repositionFigures(h,2);          % Local function to reposition figures so they can be all be seen on screen at once
 pause(2);
 
@@ -116,7 +118,8 @@ pause(2);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 obj = dataTree.currElem;
 obj.Calc();
-h = obj.Plot('conc hrf',[2,3,1,2; 3,5,1,2; 4,6,1,2]);
+sdPairsSelect = [2,3,1,2; 3,5,1,2; 4,6,1,2];  % Channels to plot: 2d array where each channel row is [source idx, detector idx, condition idx, datatype idx]
+h = obj.Plot('conc hrf', sdPairsSelect);
 repositionFigures(h,3);         % Local function to reposition figures so they can be all be seen on screen at once
 pause(2);
 
@@ -135,7 +138,8 @@ pause(2);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 obj = dataTree.groups(1);
 obj.Calc();
-h = obj.Plot('conc hrf',[3,6,2,3; 4,8,2,3]);
+sdPairsSelect = [3,6,2,3; 4,8,2,3];  % Channels to plot: 2d array where each channel row is [source idx, detector idx, condition idx, datatype idx]
+h = obj.Plot('conc hrf', sdPairsSelect);
 repositionFigures(h,4);         % Local function to reposition figures so they can be all be seen on screen at once
 pause(2);
 

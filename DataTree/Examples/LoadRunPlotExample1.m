@@ -31,7 +31,7 @@ function LoadRunPlotExample(dataSetDir)
 % Parse arguments
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ~exist('dataSetDir','var')
-    f = which('LoadRunPlotExample');
+    f = which('LoadRunPlotExample1');
     dataSetDir = [fileparts(f), '/Example4_twNI']; 
 end
 

@@ -1284,7 +1284,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function probe = GetProbe(obj)
-           probe = obj.probe; 
+            obj.LoadProbe(obj.GetFilename());
+            probe = obj.probe;
         end
         
         

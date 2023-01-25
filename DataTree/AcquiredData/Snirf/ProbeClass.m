@@ -523,6 +523,40 @@ classdef ProbeClass < FileLoadSaveClass
             b = true;
         end
         
+        
+        
+        % ---------------------------------------------------------
+        function bbox = GetSdgBbox(obj)
+            bbox = [];
+            
+            optpos = [obj.GetSrcPos('2D'); obj.GetDetPos('2D')];
+            if isempty(optpos)
+                return
+            end
+            
+            xmax = max(optpos(:,1));
+            ymax = max(optpos(:,2));
+
+            xmin = min(optpos(:,1));
+            ymin = min(optpos(:,2));
+            
+            width = xmax-xmin;
+            height = ymax-ymin;
+            
+            if width==0
+                width = 1;
+            end
+            if height==0
+                height = 1;
+            end
+            
+            px = width * 0.05; 
+            py = height * 0.05; 
+
+            bbox = [xmin-px, xmax+px, ymin-py, ymax+py];
+        end
+        
+        
     end
     
 end

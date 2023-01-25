@@ -107,7 +107,7 @@ if ~exist('peerlessonly','var')
     peerlessonly = false;
 end
 
-fileTypes = {'.m','.txt','.cfg','.numberfiles','.fig','.gitmodules'};
+fileTypes = {'.m','.txt','.cfg','.numberfiles','.fig','.gitmodules','.snirf','.nirs'};
 for iRepo = 1:2
     for iFt = 1:length(fileTypes)
         if eval( sprintf('~exist(''f%d'',''var'')', iRepo) )

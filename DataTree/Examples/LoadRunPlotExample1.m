@@ -1,8 +1,8 @@
-function LoadRunPlotExample(dataSetDir)
+function LoadRunPlotExample1(dataSetDir)
 
 %
 %   Syntax:
-%       LoadRunPlotExample(dataSetDir)
+%       LoadRunPlotExample1(dataSetDir)
 %
 %   Description:
 %       This script does the following:
@@ -22,7 +22,7 @@ function LoadRunPlotExample(dataSetDir)
 %
 %   Examples:
 %       cd <local_path>/DataTree
-%       LoadRunPlotExample('./Examples/Example4_twNI')
+%       LoadRunPlotExample1('./Examples/Example4_twNI')
 %
 
 

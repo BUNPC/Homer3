@@ -1048,8 +1048,7 @@ classdef TreeNodeClass < handle
             if size(sdPairs, 2)==1
                 iChs = sdPairs;
                 return;
-            end
-            
+            end            
                         
             switch(lower(datatype))
                 case datatypes.RAW
@@ -1070,6 +1069,12 @@ classdef TreeNodeClass < handle
                 case datatypes.HRF_CONCENTRATION_STD
                     ml = obj.procStream.GetMeasurementList('matrix', iBlk, 'conc hrf std');
             end
+            
+            % Error checking
+            if isempty(ml)
+                return
+            end
+            
             for ii = 1:size(sdPairs,1)
                 k = find(ml(:,1)==sdPairs(ii,1)  &  ml(:,2)==sdPairs(ii,2)  &  ml(:,3)==sdPairs(ii,3)  &  ml(:,4)==sdPairs(ii,4));
                 if isempty(k)
@@ -1250,7 +1255,7 @@ classdef TreeNodeClass < handle
         
 
         % ----------------------------------------------------------------------------------
-        function hfig = Plot(obj, datatype, sdPairs, iBlk, hAxes)
+        function [hfig, iChs] = Plot(obj, datatype, sdPairs, iBlk, hAxes)
             %
             % SYNTAX:
             %   TreeNodeClass.Plot(datatype, iChs, iBlk, hAxes)
@@ -1334,6 +1339,12 @@ classdef TreeNodeClass < handle
             if ~exist('hAxes','var')
                 hAxes = [];
             end
+
+            % Remove zombie figure handles
+            if all(~ishandle(obj.hFig(:)))
+                obj.hFig = [-1; -1];
+            end
+
             
             % Convert channels in the form of a list of sd pairs to a column vector of indices into the measurement list
             iChs = obj.SdPairIdxs2vectorIdxs(datatype, sdPairs, iBlk);
@@ -1466,6 +1477,10 @@ classdef TreeNodeClass < handle
                     close(obj.hFig(2,ii))
                     obj.hFig(2,ii) = -1;
                 end
+            end
+            
+            if all(~ishandle(obj.hFig(:)))
+                obj.hFig = [-1; -1];
             end
         end
         

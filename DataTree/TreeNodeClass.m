@@ -35,8 +35,11 @@ classdef TreeNodeClass < handle
             global logger
             global cfg
 
-            obj.logger = InitLogger(logger);
-            obj.cfg    = InitConfig(cfg);
+            logger                  = InitLogger(logger, 'TreeNodeClass');
+            cfg                     = InitConfig(cfg);
+
+            obj.logger              = logger;
+            obj.cfg                 = cfg;
 
             obj.DEBUG = 0;
             

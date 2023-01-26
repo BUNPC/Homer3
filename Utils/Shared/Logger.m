@@ -313,6 +313,34 @@ classdef Logger < handle
         
         
         % -------------------------------------------------
+        function Delete(self, appname)
+            if ~exist('appname','var') || isempty(appname)
+                appname = self.appname;
+            end
+            
+            % If appname is passed and does not equal the associated log
+            % filename then it's not meant to closed in this call so exit 
+            % without closing file handle
+            [~, fname] = fileparts(self.filename);
+            if ~strcmp(appname, fname)
+                return;
+            end
+            
+            if self.fhandle < 0
+                return;
+            end
+            if ~strcmp(self.appname, appname)
+                return;
+            end
+            self.Close(appname);
+            try
+                delete(self.filename);
+            catch
+            end
+        end
+        
+        
+        % -------------------------------------------------
         function SetDebugLevel(self, options)
             if ~exist('options','var') || isempty(options)
                 options = self.CONSOLE_AND_FILE;

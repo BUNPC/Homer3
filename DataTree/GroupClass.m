@@ -26,9 +26,9 @@ classdef GroupClass < TreeNodeClass
             obj.oldDerivedPaths = {obj.path, [obj.path, 'homerOutput']};
             obj.derivedPathBidsCompliant = 'derivatives/homer';
             
-            if nargin<3 || ~strcmp(varargin{3}, 'noprint')
-                obj.logger.Write('Current GroupClass version %s\n', obj.GetVersionStr());
-            end
+%             if nargin<3 || ~strcmp(varargin{3}, 'noprint')
+%                 obj.logger.Write('Current GroupClass version %s\n', obj.GetVersionStr());
+%             end
             
             obj.type    = 'group';
             obj.subjs   = SubjClass().empty;
@@ -730,7 +730,7 @@ classdef GroupClass < TreeNodeClass
                 if isproperty(g, 'group') && isa(g.group, 'GroupClass')
                     if isproperty(g.group, 'version')
                         if ismethod(g.group, 'GetVersion')
-                            obj.logger.Write('Saved group data, version %s exists\n', g.group.GetVersionStr());
+                            % obj.logger.Write('Saved group data, version %s exists\n', g.group.GetVersionStr());
                             group = g.group;
                         end
                     end

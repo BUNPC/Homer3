@@ -7,8 +7,8 @@ classdef DataTreeClass <  handle
         dirnameGroups
         currElem
         reg
-        config
         logger
+        cfg
         warningflag
         dataStorageScheme
         warnings
@@ -27,9 +27,12 @@ classdef DataTreeClass <  handle
                        
             obj.InitNamespace();
             
-            obj.logger              = InitLogger(logger, 'DataTreeClass');
+            logger                  = InitLogger(logger, 'DataTreeClass');
             cfg                     = InitConfig(cfg);
 
+            obj.logger              = logger;
+            obj.cfg                 = cfg;
+            
             obj.groups              = GroupClass().empty();
             obj.currElem            = TreeNodeClass().empty();
             obj.reg                 = RegistriesClass().empty();
@@ -37,6 +40,11 @@ classdef DataTreeClass <  handle
             obj.warnings            = '';
             obj.errorStats        = [0,0,0];
             
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Announce who we are and our version number
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            logger.Write('DataTreeClass:  v%s\n', getVernum('DataTreeClass'));
+
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Parse args
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

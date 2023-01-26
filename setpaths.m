@@ -8,6 +8,7 @@ function setpaths(options)
 %   setpaths(0)
 %
 currdir = pwd;
+global logger
 
 try
     
@@ -28,7 +29,10 @@ try
     end
     
     % Add libraries on which Homer3 depends
-    addDependenciesSearchPaths()    
+    d = addDependenciesSearchPaths();
+
+    % Start logger only after adding library paths. Logger is in the Utils libary. 
+    logger = InitLogger([], 'setpaths');
         
     % Create list of possible known similar apps that may conflic with current
     % app
@@ -64,7 +68,7 @@ try
             if pathscompare_startup(appThis, p)
                 continue
             end
-            fprintf('Exclude paths for %s\n', p);
+            printMethod(sprintf('Exclude paths for %s\n', p));
             appExclList = [appExclList; p]; %#ok<AGROW>
         end
     end
@@ -76,11 +80,11 @@ try
             if jj > 1
                 p = filesepStandard_startup(fileparts(foo{jj}));
                 appExclList = [appExclList; p]; %#ok<AGROW>
-                fprintf('Exclude paths for %s\n', p);
+                printMethod(sprintf('Exclude paths for %s\n', p));
             else
                 p = filesepStandard_startup(fileparts(foo{jj}));
                 appInclList = [appInclList; p]; %#ok<AGROW>
-                fprintf('Include paths for %s\n', p);
+                printMethod(sprintf('Include paths for %s\n', p));
             end
         end
     end
@@ -117,18 +121,21 @@ try
     
     warning('on','MATLAB:rmpath:DirNotFound');
     
+    PrintSystemInfo(logger, ['Homer3', d{:}]);
+    logger.Close();
+    cd(currdir);
+    
 catch ME
     
+    printStack(ME)
+    if exist('logger','var')
+        logger.Close();
+    end
     cd(currdir);
-    close all force;
-    fclose all;
     rethrow(ME)
     
 end
 
-PrintSystemInfo([], appname)
-
-cd(currdir);
 
 
 % ---------------------------------------------------
@@ -143,13 +150,15 @@ d = {
 function setpermissions(appPath)
 if isunix() || ismac()
     if ~isempty(strfind(appPath, '/bin')) %#ok<*STREMP>
-        fprintf(sprintf('chmod 755 %s/*\n', appPath));
+        cmd = sprintf('chmod 755 %s/*\n', appPath);
+        logger.Write(cmd);
         files = dir([appPath, '/*']);
         if ~isempty(files)
-            system(sprintf('chmod 755 %s/*', appPath));
+            system(cmd);
         end
     end
 end
+
 
 
 % ----------------------------------------------------
@@ -170,7 +179,7 @@ for kk = 1:length(appPaths)
     addpath(appPaths{kk}, '-end');
     setpermissions(appPaths{kk});
 end
-fprintf('ADDED search paths for app %s\n', appPaths{1});
+printMethod(sprintf('ADDED search paths for app %s\n', appPaths{1}));
 
 
 
@@ -199,24 +208,25 @@ for kk = 1:length(p)
     end
 end
 close(h);
-fprintf('REMOVED search paths for app %s\n', app);
+printMethod(sprintf('REMOVED search paths for app %s\n', app));
 
 
 
 
 % ----------------------------------------------------
-function   addDependenciesSearchPaths()
+function   d = addDependenciesSearchPaths()
 if exist([pwd, '/Utils/submodules'],'dir')
     addpath([pwd, '/Utils/submodules'],'-end');
 end
 d = dependencies();
 for ii = 1:length(d)
     rootpath = findFolder(pwd, d{ii});
+    rootpath(rootpath=='\') = '/';
     if ispathvalid_startup([rootpath, '/Shared'],'dir')
         rootpath = [rootpath, '/Shared'];
     end
     if ~exist(rootpath,'dir')
-        fprintf('ERROR: Could not find required dependency %s\n', d{ii})
+        printMethod(sprintf('ERROR: Could not find required dependency %s\n', d{ii}));
         continue;
     end
     addSearchPaths(rootpath);
@@ -273,4 +283,17 @@ while ii<=length(j)
     kk=kk+1;
 end
 C(kk:end) = [];
+
+
+
+% -------------------------------------------------------------------------
+function printMethod(msg)
+global logger
+if isa(logger', 'Logger')
+    logger.Write(msg);
+else
+    fprintf(msg);
+end
+
+
 

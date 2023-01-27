@@ -290,7 +290,11 @@ C(kk:end) = [];
 function printMethod(msg)
 global logger
 if isa(logger', 'Logger')
-    logger.Write(msg);
+    try
+        logger.Write(msg);
+    catch
+        fprintf(msg);
+    end
 else
     fprintf(msg);
 end

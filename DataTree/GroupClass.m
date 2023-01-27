@@ -10,6 +10,7 @@ classdef GroupClass < TreeNodeClass
         outputFilename
         oldDerivedPaths
         derivedPathBidsCompliant
+        initsaveflag
     end
     
     
@@ -25,6 +26,7 @@ classdef GroupClass < TreeNodeClass
             obj.InitVersion();
             obj.oldDerivedPaths = {obj.path, [obj.path, 'homerOutput']};
             obj.derivedPathBidsCompliant = 'derivatives/homer';
+            obj.initsaveflag = false;
             
 %             if nargin<3 || ~strcmp(varargin{3}, 'noprint')
 %                 obj.logger.Write('Current GroupClass version %s\n', obj.GetVersionStr());
@@ -409,6 +411,7 @@ classdef GroupClass < TreeNodeClass
                     g.CopyFcalls(o.procStream, o.type);
                     
                 end
+                obj.initsaveflag = true;
                 
             end
         end
@@ -466,13 +469,19 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function InitProcStream(obj, procStreamCfgFile)
+        function InitProcStream(obj, procStreamCfgFile, options)
             if isempty(obj)
                 return;
             end
-            
             if ~exist('procStreamCfgFile','var')
                 procStreamCfgFile = '';
+            end
+            if ~exist('options','var')
+                options = '';
+            end
+            
+            if optionExists(options, 'noloadconfig')
+            	return
             end
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -491,7 +500,6 @@ classdef GroupClass < TreeNodeClass
             
             obj.ErrorCheckInitErr(procStreamCfgFile, status);                        
         end
-        
         
         
         
@@ -747,12 +755,7 @@ classdef GroupClass < TreeNodeClass
                 obj.Copy(group, 'conditional');
                 close(hwait);
             else
-                if exist([obj.path, obj.outputDirname, obj.outputFilename],'file')
-                    obj.logger.Write('Warning: This folder contains old version of processing results. Will move it to *_old.mat\n');
-                    [~,outputFilename] = fileparts(obj.outputFilename); %#ok<*PROPLC>
-                    movefile([obj.path, obj.outputDirname, obj.outputFilename], [obj.path, obj.outputDirname, outputFilename, '_old.mat'])
-                end
-                obj.Save();
+                obj.initsaveflag = true;
             end
             err = 0;
         end
@@ -764,6 +767,10 @@ classdef GroupClass < TreeNodeClass
             if ~exist('hwait','var')
                 hwait = [];
             end            
+            if obj.initsaveflag == false
+                obj.initsaveflag = true;
+                return
+            end
             
             obj.logger.Write('Saving processed data in %s\n', [obj.path, obj.outputDirname, obj.outputFilename]);
             
@@ -779,6 +786,7 @@ classdef GroupClass < TreeNodeClass
                 MessageBox(ME.message);
                 obj.logger.Write(ME.message);
             end            
+            obj.initsaveflag = true;
         end
         
         

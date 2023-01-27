@@ -84,7 +84,7 @@ try
             else
                 p = filesepStandard_startup(fileparts(foo{jj}));
                 appInclList = [appInclList; p]; %#ok<AGROW>
-                logger.Write('Include paths for %s\n', p);
+                printMethod(sprintf('Include paths for %s\n', p));
             end
         end
     end
@@ -276,12 +276,14 @@ C(kk:end) = [];
 function printMethod(msg)
 global logger
 if isa(logger', 'Logger')
-    logger.Write(msg);
+    try
+        logger.Write(msg);
+    catch
+    	fprintf(msg);    
+    end
 else
     fprintf(msg);
 end
-
-
 
 
 % -------------------------------------------------------------------------

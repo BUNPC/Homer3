@@ -213,18 +213,6 @@ classdef AcqDataClass < matlab.mixin.Copyable
         
         
         
-        % ---------------------------------------------------------
-        function bbox = GetSdgBbox(obj)
-            bbox = [];
-            if isa(obj, 'SnirfClass')
-                bbox = obj.probe.GetSdgBbox();
-            elseif isa(obj, 'NirsClass')
-                bbox = obj.SD.GetSdgBbox();
-            end
-        end
-        
-        
-        
         % ----------------------------------------------------------------------------------
         function varval = GetVar(obj, varname)
             if ismethod(obj,['Get_', varname])

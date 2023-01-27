@@ -185,7 +185,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 
                 % Optional fields
                 err = obj.LoadAux(fdata, err);
-                err = obj.LoadStims(fdata, err);
+                err = obj.LoadStim(fdata, err);
                 
             catch
                 
@@ -261,7 +261,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function err = LoadStims(obj, fdata, err)
+        function err = LoadStim(obj, fdata, err)
             if ischar(fdata)
                 fname = fdata;
                 
@@ -399,6 +399,20 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         
+        % --------------------------------------------------------------------
+        function b = EqualStim(obj, obj2)
+            b = false;
+            if length(obj.s) ~= length(obj2.s)
+                return;
+            end
+            if ~all(obj.s(:) == obj2.s(:))
+                return;
+            end            
+            b = true;
+        end
+        
+        
+        
         % -------------------------------------------------------
         function B = eq(obj, obj2)
             B = false;
@@ -466,7 +480,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             % If we're working off the snirf file instead of loading everything into memory
             % then we have to load stim here from file before accessing it.
             if strcmpi(obj.GetDataStorageScheme(), 'files')
-                obj.LoadStims(obj.GetFilename(), 0);
+                obj.LoadStim(obj.GetFilename(), 0);
             end
             
             % Generate new instance of NirsClass
@@ -562,22 +576,40 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             obj.d = val;
         end
         
+        
         % ---------------------------------------------------------
-        function val = GetDataTimeSeries(obj, ~, iBlk)
-            val = [];
-            if ~exist('iBlk','var') || isempty(iBlk)
-                iBlk=1;
+        function [d, t, ml] = GetDataTimeSeries(obj, options, ~)
+            d = obj.d;
+            t = obj.t;
+            ml = obj.GetMeasurementList(options);
+        end        
+        
+            
+        % ---------------------------------------------------------
+        function ml = GetMeasurementList(obj, matrixMode, ~)
+            if ~exist('matrixMode','var')
+                matrixMode = '';
             end
-            if iBlk>1
-                return
+            if strcmpi(matrixMode, 'matrix')
+                ml = obj.SD.MeasList;
+            else
+                ml = MeasListClass();
+                for ii = 1:size(obj.SD.MeasList,1)
+                    ml(ii).sourceIndex = obj.SD.MeasList(ii,1);
+                    ml(ii).detectorIndex = obj.SD.MeasList(ii,2);
+                    ml(ii).dataTypeIndex = 0;
+                    ml(ii).wavelengthIndex = obj.SD.MeasList(ii,4);
             end
-            val = obj.d;
+            end
         end
         
+                
+                
         % ---------------------------------------------------------
         function SetTime(obj, val)
             obj.t = val;
         end
+        
         
         % ---------------------------------------------------------
         function val = GetTime(obj, iBlk)
@@ -588,25 +620,30 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             val = obj.t;
         end
         
+        
         % ---------------------------------------------------------
         function val = GetSD(obj)
             val = obj.SD;
         end
+        
         
         % ---------------------------------------------------------
         function SetS(obj, val)
             obj.s = val;
         end
         
+        
         % ---------------------------------------------------------
         function val = GetS(obj)
             val = obj.s;
         end
         
+        
         % ---------------------------------------------------------
         function SetAux(obj, val)
             obj.aux = val;
         end
+        
         
         % ---------------------------------------------------------
         function val = GetAux(obj, options)
@@ -627,15 +664,48 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         end
         
         
-        
         % ---------------------------------------------------------
         function SetCondNames(obj, val)
             obj.CondNames = val;
         end
         
+        
         % ---------------------------------------------------------
         function val = GetCondNames(obj)
             val = obj.CondNames;
+        end
+        
+        
+        % ---------------------------------------------------------
+        function bbox = GetSdgBbox(obj)
+            bbox = [];
+            
+            optpos = [obj.SD.SrcPos; obj.SD.DetPos];
+            % optpos = [obj.SD.SrcPos; obj.SD.DetPos; obj.SD.DummyPos];
+            if isempty(optpos)
+                return
+            end
+            
+            xmax = max(optpos(:,1));
+            ymax = max(optpos(:,2));
+
+            xmin = min(optpos(:,1));
+            ymin = min(optpos(:,2));
+            
+            width = xmax-xmin;
+            height = ymax-ymin;
+            
+            if width==0
+                width = 1;
+            end
+            if height==0
+                height = 1;
+            end
+            
+            px = width * 0.05; 
+            py = height * 0.05; 
+
+            bbox = [xmin-px, xmax+px, ymin-py, ymax+py];
         end
         
     end
@@ -666,17 +736,6 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         % ---------------------------------------------------------
         function ml = GetMeasList(obj, ~)
             ml = obj.SD.MeasList;
-        end
-        
-        
-        % ---------------------------------------------------------
-        function ml = GetMeasurementList(obj, ~, ~)
-            ml = MeasListClass();
-            for ii = 1:size(obj.SD.MeasList,1)
-                ml(ii).sourceIndex = obj.SD.MeasList(ii,1);
-                ml(ii).detectorIndex = obj.SD.MeasList(ii,2);
-                ml(ii).wavelengthIndex = obj.SD.MeasList(ii,4);
-            end
         end
         
         
@@ -917,6 +976,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             return;
         end
         
+        
         % ----------------------------------------------------------------------------------
         function duration = GetStimDuration(~, ~)
             duration = [];
@@ -927,6 +987,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         function SetStimAmplitudes(~, ~, ~)
             return;
         end
+        
         
         
         % ----------------------------------------------------------------------------------
@@ -950,6 +1011,8 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             obj.CondNames{k} = newname;
             obj.SortStims();
         end
+        
+        
         
         % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
@@ -1054,6 +1117,13 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 end
             end
         end
+        
+        
+        % -------------------------------------------------------
+        function CopyStim(obj, obj2)
+            obj.s = obj2.s;
+            obj.CondNames = obj2.CondNames;
+        end        
         
         
         % ----------------------------------------------------------------------------------
@@ -1199,6 +1269,23 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             end
         end
         
+        
+        % -------------------------------------------------------
+        function changes = StimChangesMade(obj)                        
+            % Load stims from file
+            nirs = NirsClass();
+            nirs.SetFilename(obj.GetFilename())
+            nirs.LoadStim(obj.GetFilename());
+            changes = ~obj.EqualStim(nirs);
+        end
+        
+        
+        
+        % -------------------------------------------------------
+        function b = DataModified(obj)
+            b = obj.StimChangesMade();
+        end
+                
         
     end
     

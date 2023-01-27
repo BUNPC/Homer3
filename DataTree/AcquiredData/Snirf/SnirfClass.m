@@ -1045,6 +1045,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             val = obj.metaDataTags.Get('LengthUnit');
         end
         
+        
+        % ---------------------------------------------------------
+        function bbox = GetSdgBbox(obj)
+            bbox = obj.probe.GetSdgBbox();
+        end                
+        
     end
     
     

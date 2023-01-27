@@ -32,7 +32,7 @@ try
     d = addDependenciesSearchPaths();
 
     % Start logger only after adding library paths. Logger is in the Utils libary. 
-    logger = InitLogger([], 'setpaths');
+    logger = InitLogger([], [pwd, '/setpaths']);
         
     % Create list of possible known similar apps that may conflic with current
     % app
@@ -120,8 +120,9 @@ try
     end
     
     warning('on','MATLAB:rmpath:DirNotFound');
-    
-    PrintSystemInfo(logger, ['Homer3', d{:}]);
+        
+    PrintSystemInfo(logger, ['Homer3'; d]);
+    logger.CurrTime('Setpaths completed on ');
     logger.Close();
     cd(currdir);
     
@@ -140,10 +141,12 @@ end
 
 % ---------------------------------------------------
 function d = dependencies()
-d = {    
-    'DataTree';
-    'Utils';
-    };
+d = {};
+submodules = parseGitSubmodulesFile(pwd);
+temp = submodules(:,1);
+for ii = 1:length(temp)
+    [~, d{ii,1}] = fileparts(temp{ii});
+end
 
 
 % ---------------------------------------------------
@@ -300,4 +303,51 @@ else
 end
 
 
+
+
+% -------------------------------------------------------------------------
+function submodules = parseGitSubmodulesFile(repo)
+submodules = cell(0,3);
+
+if ~exist('repo','var') || isempty(repo)
+    repo = pwd;
+end
+currdir = pwd;
+if repo(end) ~= '/' && repo(end) ~= '\'
+    repo = [repo, '/'];
+end
+
+filename = [repo, '.gitmodules'];
+if ~exist(filename, 'file')
+    return;
+end
+cd(repo);
+
+fid = fopen(filename, 'rt');
+strs = textscan(fid, '%s');
+strs = strs{1};
+kk = 1;
+for ii = 1:length(strs)
+    if strcmp(strs{ii}, '[submodule')
+        jj = 1;
+        while ~strcmp(strs{ii+jj}, '[submodule')
+            if ii+jj+2>length(strs)
+                break;
+            end
+            if strcmp(strs{ii+jj}, 'path')
+                submodules{kk,2} = [pwd, '/', strs{ii+jj+2}];
+            end
+            if strcmp(strs{ii+jj}, 'path')
+                submodules{kk,3} = strs{ii+jj+2};
+            end
+            if strcmp(strs{ii+jj}, 'url')
+                submodules{kk,1} = strs{ii+jj+2};
+            end
+            jj = jj+1;
+        end
+        kk = kk+1;
+    end
+end
+fclose(fid);
+cd(currdir);
 

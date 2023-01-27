@@ -32,7 +32,7 @@ try
     submodules = addDependenciesSearchPaths();    
 
     % Start logger only after adding library paths. Logger is in the Utils libary. 
-    logger = InitLogger([], 'setpaths');
+    logger = InitLogger([], [pwd, '/setpaths']);
     
     % Create list of possible known similar apps that may conflic with current
     % app
@@ -122,6 +122,7 @@ try
     warning('on','MATLAB:rmpath:DirNotFound');
     
     PrintSystemInfo(logger, ['DataTreeClass'; submodules(:,end)]);
+    logger.CurrTime('Setpaths completed on ');
     logger.Close();
     cd(currdir);
     

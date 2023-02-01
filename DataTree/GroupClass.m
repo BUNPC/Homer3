@@ -10,6 +10,7 @@ classdef GroupClass < TreeNodeClass
         outputFilename
         oldDerivedPaths
         derivedPathBidsCompliant
+        initsaveflag
     end
     
     
@@ -25,10 +26,11 @@ classdef GroupClass < TreeNodeClass
             obj.InitVersion();
             obj.oldDerivedPaths = {obj.path, [obj.path, 'homerOutput']};
             obj.derivedPathBidsCompliant = 'derivatives/homer';
+            obj.initsaveflag = false;
             
-            if nargin<3 || ~strcmp(varargin{3}, 'noprint')
-                obj.logger.Write('Current GroupClass version %s\n', obj.GetVersionStr());
-            end
+%             if nargin<3 || ~strcmp(varargin{3}, 'noprint')
+%                 obj.logger.Write('Current GroupClass version %s\n', obj.GetVersionStr());
+%             end
             
             obj.type    = 'group';
             obj.subjs   = SubjClass().empty;
@@ -409,6 +411,7 @@ classdef GroupClass < TreeNodeClass
                     g.CopyFcalls(o.procStream, o.type);
                     
                 end
+                obj.initsaveflag = true;
                 
             end
         end
@@ -466,13 +469,19 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function InitProcStream(obj, procStreamCfgFile)
+        function InitProcStream(obj, procStreamCfgFile, options)
             if isempty(obj)
                 return;
             end
-            
             if ~exist('procStreamCfgFile','var')
                 procStreamCfgFile = '';
+            end
+            if ~exist('options','var')
+                options = '';
+            end
+            
+            if optionExists(options, 'noloadconfig')
+            	return
             end
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -491,7 +500,6 @@ classdef GroupClass < TreeNodeClass
             
             obj.ErrorCheckInitErr(procStreamCfgFile, status);                        
         end
-        
         
         
         
@@ -730,7 +738,7 @@ classdef GroupClass < TreeNodeClass
                 if isproperty(g, 'group') && isa(g.group, 'GroupClass')
                     if isproperty(g.group, 'version')
                         if ismethod(g.group, 'GetVersion')
-                            obj.logger.Write('Saved group data, version %s exists\n', g.group.GetVersionStr());
+                            % obj.logger.Write('Saved group data, version %s exists\n', g.group.GetVersionStr());
                             group = g.group;
                         end
                     end
@@ -747,12 +755,7 @@ classdef GroupClass < TreeNodeClass
                 obj.Copy(group, 'conditional');
                 close(hwait);
             else
-                if exist([obj.path, obj.outputDirname, obj.outputFilename],'file')
-                    obj.logger.Write('Warning: This folder contains old version of processing results. Will move it to *_old.mat\n');
-                    [~,outputFilename] = fileparts(obj.outputFilename); %#ok<*PROPLC>
-                    movefile([obj.path, obj.outputDirname, obj.outputFilename], [obj.path, obj.outputDirname, outputFilename, '_old.mat'])
-                end
-                obj.Save();
+                obj.initsaveflag = true;
             end
             err = 0;
         end
@@ -764,6 +767,10 @@ classdef GroupClass < TreeNodeClass
             if ~exist('hwait','var')
                 hwait = [];
             end            
+            if obj.initsaveflag == false
+                obj.initsaveflag = true;
+                return
+            end
             
             obj.logger.Write('Saving processed data in %s\n', [obj.path, obj.outputDirname, obj.outputFilename]);
             
@@ -779,6 +786,7 @@ classdef GroupClass < TreeNodeClass
                 MessageBox(ME.message);
                 obj.logger.Write(ME.message);
             end            
+            obj.initsaveflag = true;
         end
         
         
@@ -987,7 +995,7 @@ classdef GroupClass < TreeNodeClass
                     msg{1} = sprintf('Previous Homer3 processing output exists but is now inconsistent with the current ');
                     msg{2} = sprintf('data files. This output should be regenerated in the new Homer3 session to reflect the new file/folder names. ');
                     msg{3} = sprintf('The existing Homer processing output will be moved to %s. Is this okay?', obj.GetArchivedOutputDirname());
-                    q = MenuBox(msg,{'YES','NO'});
+                    q = MenuBox(msg, {'YES','NO'});
                     if q==1
                         if isempty(obj.outputDirname)
                             movefile('*.mat', obj.GetArchivedOutputDirname())
@@ -1111,13 +1119,13 @@ classdef GroupClass < TreeNodeClass
                     
                     % If we're here it means that old format homer3 data exists
                     % AND NO new homer3 format data exists
-                    q = MenuBox(sprintf('%s Do you want to move %s to the new folder?', msg, oldDerivedPathRel),{'Yes','No'});
+                    q = MenuBox(sprintf('%s Do you want to move %s to the new folder?', msg, oldDerivedPathRel), {'Yes','No'});
                     if q==1
                         if ispathvalid([obj.path, obj.outputDirname])
                             try
                                 rmdir([obj.path, obj.outputDirname], 's')
                             catch
-                                MenuBox(sprintf('ERROR:  Could not remove new derived folder'),{'OK'});
+                                MenuBox(sprintf('ERROR:  Could not remove new derived folder'), 'OK');
                                 return
                             end
                         end

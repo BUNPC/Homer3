@@ -35,11 +35,11 @@ sz2 = size(p2);
 ndim = max(sz1(sz1==sz2));
 if isempty(ndim)
     if length(sz1)>2 || length(sz1)~=length(sz2)
-        menu('nearest_point error: p1 and p2 number of dimensions incompatible','OK');
+        MenuBox('nearest_point error: p1 and p2 number of dimensions incompatible','OK');
         return;
     end
     if length(sz1)>2 || length(sz1)~=length(sz2)
-        menu('nearest_point error: p1 and p2 number of dimensions incompatible','OK');
+        MenuBox('nearest_point error: p1 and p2 number of dimensions incompatible','OK');
         return;
     end
     if ismember(1,sz1) && ismember(1,sz2)
@@ -47,7 +47,7 @@ if isempty(ndim)
     end
 end
 if ndim~=3 && ndim~=1
-    menu('nearest_point warning: currently only handles arguments in 1 and 3 dimensions.','OK');
+    MenuBox('nearest_point warning: currently only handles arguments in 1 and 3 dimensions.','OK');
     return;
 end
 

@@ -1,5 +1,5 @@
 % SYNTAX:
-% [yAvg, yAvgStd, tHRF, nTrials] = hmrS_RunAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, mlActRuns, nTrialsRuns)
+% [yAvg, yAvgStd, tHRF, nTrials] = hmrE_RunAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, mlActRuns, nTrialsRuns)
 %
 % UI NAME:
 % Run_Average
@@ -24,11 +24,11 @@
 % nTrials: the number of trials averaged for each condition across all runs
 %
 % USAGE OPTIONS:
-% Run_Average_on_Concentration_Data:  [dcAvg, dcAvgStd, tHRF, nTrials]    = hmrS_RunAvg_Nirs(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, tHRFRuns, mlActRuns, nTrialsRuns)
-% Run_Average_on_Delta_OD_Data:       [dodAvg, dodAvgStd, tHRF, nTrials]  = hmrS_RunAvg_Nirs(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, tHRFRuns, mlActRuns, nTrialsRuns)
+% Run_Average_on_Concentration_Data:  [dcAvg, dcAvgStd, tHRF, nTrials]    = hmrE_RunAvg_Nirs(dcAvgRuns, dcAvgStdRuns, dcSum2Runs, tHRFRuns, mlActRuns, nTrialsRuns)
+% Run_Average_on_Delta_OD_Data:       [dodAvg, dodAvgStd, tHRF, nTrials]  = hmrE_RunAvg_Nirs(dodAvgRuns, dodAvgStdRuns, dodSum2Runs, tHRFRuns, mlActRuns, nTrialsRuns)
 %
 
-function [yAvg, yAvgStd, tHRF, nTrials] = hmrS_RunAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, mlActRuns, nTrialsRuns)
+function [yAvg, yAvgStd, tHRF, nTrials] = hmrE_RunAvg_Nirs(yAvgRuns, yAvgStdRuns, ySum2Runs, tHRFRuns, mlActRuns, nTrialsRuns)
 
 yAvg = [];
 yAvgStd = [];

@@ -1,5 +1,5 @@
 % SYNTAX:
-% yAvgStd = hmrS_RunAvgStd2(yAvgRuns, ySum2Runs, mlActRuns, nTrialsRuns)
+% yAvgStd = hmrS_SessAvgStd2_oldversion_nirs(yAvgRuns, ySum2Runs, mlActRuns, nTrialsRuns)
 %
 % UI NAME:
 % Run_Average_Standard_Deviation
@@ -17,11 +17,11 @@
 % yAvgStdOut: the standard deviation across runs
 %
 % USAGE OPTIONS:
-% Run_Average_Standard_Deviation_on_Concentration_Data:  dcAvgStd  = hmrS_RunAvgStd2(dcAvgRuns, dcSum2Runs, mlActRuns, nTrialsRuns)
-% Run_Average_Standard_Deviation_on_Delta_OD_Data:       dodAvgStd = hmrS_RunAvgStd2(dodAvgRuns, dodSum2Runs, mlActRuns, nTrialsRuns)
+% Run_Average_Standard_Deviation_on_Concentration_Data:  dcAvgStd  = hmrS_SessAvgStd2_oldversion_nirs(dcAvgRuns, dcSum2Runs, mlActRuns, nTrialsRuns)
+% Run_Average_Standard_Deviation_on_Delta_OD_Data:       dodAvgStd = hmrS_SessAvgStd2_oldversion_nirs(dodAvgRuns, dodSum2Runs, mlActRuns, nTrialsRuns)
 %
 
-function yAvgStdOut = hmrS_RunAvgStd2(yAvgRuns, ySum2Runs, mlActRuns, nTrialsRuns)
+function yAvgStdOut = hmrS_SessAvgStd2_oldversion_nirs(yAvgRuns, ySum2Runs, mlActRuns, nTrialsRuns)
 
 yAvgStdOut = DataClass().empty();
 

@@ -47,7 +47,7 @@ if exist([dataSetDir, '/derivatives']','dir')
 end
 dataTree = DataTreeClass();
 if dataTree.IsEmpty()
-    MenuBox('No data set was loaded',{'OK'});
+    MenuBox('No data set was loaded', 'OK');
     return
 end
 
@@ -144,7 +144,7 @@ pause(2);
 % Close open log files
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 obj.logger.Close();
-MenuBox('When done, click okay button to close all plots','OK');
+MenuBox('When done, click okay button to close all plots', 'OK');
 for ii = 1:length(h(:))
     if ishandles(h(ii))
         close(h(ii))

@@ -50,7 +50,7 @@ if exist([dataSetDir, '/derivatives']','dir')
 end
 dataTree = DataTreeClass();
 if dataTree.IsEmpty()
-    MenuBox('No data set was loaded',{'OK'});
+    MenuBox('No data set was loaded', 'OK');
     return
 end
 
@@ -119,7 +119,7 @@ for ii = 1:length(editorTabs)
 end
 editorTab = editorTabs(ii);
 editorTab.makeActive;
-MenuBox('Please edit TSV stim file and save it, then click the ''OK'' button.');
+MenuBox('Please edit TSV stim file and save it, then click the ''OK'' button.', 'OK');
 
 
 

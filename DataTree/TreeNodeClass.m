@@ -830,7 +830,7 @@ classdef TreeNodeClass < handle
         function newname = ErrCheckNewCondName(obj, newname)
             msg1 = sprintf('Condition name ''%s'' already exists. New name must be unique. Do you want to choose another name?', newname);
             while ismember(newname, obj.CondNames)                
-                q = menu(msg1,'YES','NO');
+                q = MenuBox(msg1, {'YES','NO'});
                 if q==2
                     obj.err = -1;
                     return;
@@ -844,7 +844,7 @@ classdef TreeNodeClass < handle
             end
             msg2 = sprintf('Condition name is not valid. New name must be character string. Do you want to choose another name?');
             while ~ischar(newname)                
-                q = menu(msg2,'YES','NO');
+                q = MenuBox(msg2, {'YES','NO'});
                 if q==2
                     obj.err = -1;
                     return;
@@ -1929,7 +1929,7 @@ classdef TreeNodeClass < handle
             end
             status = 1;
                         
-            configFileOptions =  MenuBox('',{},[],[], 'dontAskAgainOptions');
+            configFileOptions =  MenuBox('', {}, [], [], 'dontAskAgainOptions');
             choices = { ...
                 sprintf('Continue Loading'); ...
                 sprintf('Quit Loading'); ...

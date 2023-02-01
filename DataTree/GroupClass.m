@@ -995,7 +995,7 @@ classdef GroupClass < TreeNodeClass
                     msg{1} = sprintf('Previous Homer3 processing output exists but is now inconsistent with the current ');
                     msg{2} = sprintf('data files. This output should be regenerated in the new Homer3 session to reflect the new file/folder names. ');
                     msg{3} = sprintf('The existing Homer processing output will be moved to %s. Is this okay?', obj.GetArchivedOutputDirname());
-                    q = MenuBox(msg,{'YES','NO'});
+                    q = MenuBox(msg, {'YES','NO'});
                     if q==1
                         if isempty(obj.outputDirname)
                             movefile('*.mat', obj.GetArchivedOutputDirname())
@@ -1119,13 +1119,13 @@ classdef GroupClass < TreeNodeClass
                     
                     % If we're here it means that old format homer3 data exists
                     % AND NO new homer3 format data exists
-                    q = MenuBox(sprintf('%s Do you want to move %s to the new folder?', msg, oldDerivedPathRel),{'Yes','No'});
+                    q = MenuBox(sprintf('%s Do you want to move %s to the new folder?', msg, oldDerivedPathRel), {'Yes','No'});
                     if q==1
                         if ispathvalid([obj.path, obj.outputDirname])
                             try
                                 rmdir([obj.path, obj.outputDirname], 's')
                             catch
-                                MenuBox(sprintf('ERROR:  Could not remove new derived folder'),{'OK'});
+                                MenuBox(sprintf('ERROR:  Could not remove new derived folder'), 'OK');
                                 return
                             end
                         end

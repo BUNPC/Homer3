@@ -1447,7 +1447,7 @@ classdef ProcStreamClass < handle
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasurementList(obj, matrixMode, iBlks, dataType)
+        function ml = GetMeasurementList(obj, matrixMode, iBlk, dataType)
             %  
             %  Syntax: 
             %     ml = GetMeasurementList(obj, matrixMode, iBlks, dataType)
@@ -1465,35 +1465,29 @@ classdef ProcStreamClass < handle
             if ~exist('matrixMode','var')
                 matrixMode = '';
             end
-            if ~exist('iBlks','var') || isempty(iBlks)
-                iBlks = 1;
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
             end
             if ~exist('dataType','var')
                 dataType = obj.datatypes.CONCENTRATION{1};
             end
-            for iBlk = 1:length(iBlks)
-                switch(lower(dataType))
-                    case obj.datatypes.OPTICAL_DENSITY
-                        if iBlk <= length(obj.output.dod)
-                            ml = [ml; obj.output.dod(iBlk).GetMeasurementList(matrixMode)];
-                        end
-                        break;
-                    case obj.datatypes.CONCENTRATION
-                        if iBlk <= length(obj.output.dc)
-                            ml = [ml; obj.output.dc(iBlk).GetMeasurementList(matrixMode)];
-                        end
-                        break;
-                    case [obj.datatypes.HRF_OPTICAL_DENSITY, obj.datatypes.HRF_OPTICAL_DENSITY_STD]
-                        if iBlk <= length(obj.output.dodAvg)
-                            ml = [ml; obj.output.dodAvg(iBlk).GetMeasurementList(matrixMode)];
-                        end
-                        break;
-                    case [obj.datatypes.HRF_CONCENTRATION, obj.datatypes.HRF_CONCENTRATION_STD]
-                        if iBlk <= length(obj.output.dcAvg)
-                            ml = [ml; obj.output.dcAvg(iBlk).GetMeasurementList(matrixMode)];
-                        end
-                        break;
-                end
+            switch(lower(dataType))
+                case obj.datatypes.OPTICAL_DENSITY
+                    if iBlk <= length(obj.output.dod)
+                        ml = obj.output.dod(iBlk).GetMeasurementList(matrixMode);
+                    end
+                case obj.datatypes.CONCENTRATION
+                    if iBlk <= length(obj.output.dc)
+                        ml = obj.output.dc(iBlk).GetMeasurementList(matrixMode);
+                    end
+                case [obj.datatypes.HRF_OPTICAL_DENSITY, obj.datatypes.HRF_OPTICAL_DENSITY_STD]
+                    if iBlk <= length(obj.output.dodAvg)
+                        ml = obj.output.dodAvg(iBlk).GetMeasurementList(matrixMode);
+                    end
+                case [obj.datatypes.HRF_CONCENTRATION, obj.datatypes.HRF_CONCENTRATION_STD]
+                    if iBlk <= length(obj.output.dcAvg)
+                        ml = obj.output.dcAvg(iBlk).GetMeasurementList(matrixMode);
+                    end
             end
         end        
 
@@ -1511,7 +1505,7 @@ classdef ProcStreamClass < handle
         
         
         % ---------------------------------------------------------
-        function dataTimeSeries = GetDataTimeSeries(obj, options, iBlk)
+        function [dataTimeSeries, time, measurementList] = GetDataTimeSeries(obj, options, iBlk)
             %  
             %  Syntax: 
             %     dataTimeSeries = GetDataTimeSeries(obj, options, iBlk)
@@ -1525,39 +1519,51 @@ classdef ProcStreamClass < handle
             %        HRF Concentration   :  'hb hrf' | 'conc hrf' | 'hb_hrf' | 'conc_hrf'
             %
             dataTimeSeries = [];
+            time = [];
+            measurementList = [];
             if ~exist('options','var')
                 options = obj.datatypes.CONCENTRATION{1};
             end
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            for ii = 1:length(iBlk)
-                switch(lower(options))
-                    case obj.datatypes.OPTICAL_DENSITY
-                        if ii <= length(obj.output.dod)
-                            dataTimeSeries = [dataTimeSeries, obj.output.dod(ii).dataTimeSeries];
-                        end
-                    case obj.datatypes.CONCENTRATION
-                        if ii <= length(obj.output.dc)
-                            dataTimeSeries = [dataTimeSeries; obj.output.dc(ii).dataTimeSeries];
-                        end
-                    case obj.datatypes.HRF_OPTICAL_DENSITY
-                        if ii <= length(obj.output.dodAvg)
-                            dataTimeSeries = [dataTimeSeries; obj.output.dodAvg(ii).dataTimeSeries];
-                        end
-                    case obj.datatypes.HRF_CONCENTRATION
-                        if ii <= length(obj.output.dcAvg)
-                            dataTimeSeries = [dataTimeSeries; obj.output.dcAvg(ii).dataTimeSeries];
-                        end
-                    case obj.datatypes.HRF_CONCENTRATION_STD
-                        if ii <= length(obj.output.dodAvg)
-                            dataTimeSeries = [dataTimeSeries; obj.output.dodAvgStd(ii).dataTimeSeries];
-                        end
-                    case obj.datatypes.HRF_OPTICAL_DENSITY_STD
-                        if ii <= length(obj.output.dcAvg)
-                            dataTimeSeries = [dataTimeSeries; obj.output.dcAvgStd(ii).dataTimeSeries];
-                        end
-                end
+            switch(lower(options))
+                case obj.datatypes.OPTICAL_DENSITY
+                    if iBlk <= length(obj.output.dod)
+                        dataTimeSeries = obj.output.dod(iBlk).dataTimeSeries;
+                        time = obj.output.dod(iBlk).time;
+                        measurementList = obj.output.dod(iBlk).GetMeasurementList('matrix');
+                    end
+                case obj.datatypes.CONCENTRATION
+                    if iBlk <= length(obj.output.dc)
+                        dataTimeSeries = obj.output.dc(iBlk).dataTimeSeries;
+                        time = obj.output.dc(iBlk).time;
+                        measurementList = obj.output.dc(iBlk).GetMeasurementList('matrix');
+                    end
+                case obj.datatypes.HRF_OPTICAL_DENSITY
+                    if iBlk <= length(obj.output.dodAvg)
+                        dataTimeSeries = obj.output.dodAvg(iBlk).dataTimeSeries;
+                        time = obj.output.dodAvg(iBlk).time;
+                        measurementList = obj.output.dodAvg(iBlk).GetMeasurementList('matrix');
+                    end
+                case obj.datatypes.HRF_CONCENTRATION
+                    if iBlk <= length(obj.output.dcAvg)
+                        dataTimeSeries = obj.output.dcAvg(iBlk).dataTimeSeries;
+                        time = obj.output.dcAvg(iBlk).time;
+                        measurementList = obj.output.dcAvg(iBlk).GetMeasurementList('matrix');
+                    end
+                case obj.datatypes.HRF_CONCENTRATION_STD
+                    if iBlk <= length(obj.output.dodAvg)
+                        dataTimeSeries = obj.output.dodAvgStd(iBlk).dataTimeSeries;
+                        time = obj.output.dodAvgStd(iBlk).time;
+                        measurementList = obj.output.dodAvgStd(iBlk).GetMeasurementList('matrix');
+                    end
+                case obj.datatypes.HRF_OPTICAL_DENSITY_STD
+                    if iBlk <= length(obj.output.dcAvg)
+                        dataTimeSeries = obj.output.dcAvgStd(iBlk).dataTimeSeries;
+                        time = obj.output.dcAvgStd(iBlk).time;
+                        measurementList = obj.output.dcAvgStd(iBlk).GetMeasurementList('matrix');
+                    end
             end
         end
         

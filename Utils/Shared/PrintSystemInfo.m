@@ -1,4 +1,4 @@
-function PrintSystemInfo(logger, appname, varargin)
+function logger = PrintSystemInfo(logger, appname, varargin)
 if ~exist('logger','var')
     logger = [];
 end

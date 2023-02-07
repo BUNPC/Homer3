@@ -25,6 +25,7 @@ classdef TreeNodeClass < handle
         outputDirname
         cfg
         chVis
+        hFig
     end
     
     methods        
@@ -34,8 +35,11 @@ classdef TreeNodeClass < handle
             global logger
             global cfg
 
-            obj.logger = InitLogger(logger);
-            obj.cfg    = InitConfig(cfg);
+            logger                  = InitLogger(logger, 'TreeNodeClass');
+            cfg                     = InitConfig(cfg);
+
+            obj.logger              = logger;
+            obj.cfg                 = cfg;
 
             obj.DEBUG = 0;
             
@@ -57,6 +61,7 @@ classdef TreeNodeClass < handle
 
             obj.InitParentAppFunc();
             obj.children = [];
+            obj.hFig = [-1; -1];
             
             % If this constructor is called from this class' copy method,
             % then we want to exit before we obliterate the persistent
@@ -593,7 +598,7 @@ classdef TreeNodeClass < handle
         
         
         % ---------------------------------------------------------
-        function ml = GetMeasurementList(obj, matrixMode, iBlks, dataType)
+        function ml = GetMeasurementList(obj, matrixMode, iBlk, dataType)
             ml = [];
             if ~exist('matrixMode','var')
                 matrixMode = '';
@@ -601,72 +606,60 @@ classdef TreeNodeClass < handle
             if ~exist('dataType','var')
                 dataType = 'raw';
             end
-            if ~exist('iBlk','var') || isempty(iBlks)
-                iBlks = 1;
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
             end
-            for iBlk = 1:length(iBlks)
-                switch(lower(dataType))
-                    case 'raw'
-                        if isempty(obj.acquired)
-                            continue
-                        end
-                        ml = [ml; obj.acquired.GetMeasurementList(matrixMode, iBlk)]; %#ok<*AGROW>
-                        break
-                    otherwise
-                        ml = [ml; obj.procStream.GetMeasurementList(matrixMode, iBlk, dataType)];
-                        break
-                end
+            switch(lower(dataType))
+                case 'raw'
+                    if isempty(obj.acquired)
+                        ml = obj.children(1).GetMeasurementList(matrixMode, iBlk); %#ok<*AGROW>
+                    else
+                        ml = obj.acquired.GetMeasurementList(matrixMode, iBlk); %#ok<*AGROW>
+                    end
+                otherwise
+                    ml = obj.procStream.GetMeasurementList(matrixMode, iBlk, dataType);
             end
         end
         
         
         
         % ---------------------------------------------------------
-        function [d, t, ml] = GetDataTimeSeries(obj, options, iBlk)
+        function [d, t, ml] = GetDataTimeSeries(obj, datatype, iBlk)
             d = [];
-            t = [];            
+            t = [];
             ml = [];
             datatypes = obj.procStream.GetDataTypes();
-            if ~exist('options','var')
-                options = 'RAW';
+            if ~exist('datatype','var')
+                datatype = 'RAW';
             end
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
-            for ii = 1:length(iBlk)
-                switch(lower(options))
-                    case datatypes.RAW
-                        if isempty(obj.acquired)
-                            continue
-                        end
-                        d = [d, obj.acquired.GetDataTimeSeries(ii)]; %#ok<*AGROW>
-                        t = [t; obj.GetTime(ii)];
-                        ml = [ml, obj.acquired.GetMeasurementList('matrix',ii)];
-                    case datatypes.OPTICAL_DENSITY
-                        d = [d, obj.procStream.GetDataTimeSeries('od',ii)];
-                        t = [t; obj.GetTime(ii)];
-                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'od')];
-                    case datatypes.CONCENTRATION
-                        d = [d, obj.procStream.GetDataTimeSeries('conc',ii)];
-                        t = [t; obj.GetTime(ii)];
-                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'conc')];
-                    case datatypes.HRF_OPTICAL_DENSITY
-                        d = [d, obj.procStream.GetDataTimeSeries('od hrf',ii)];
-                        t = [t; obj.procStream.GetTHRF(ii)];
-                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'od hrf')];
-                    case datatypes.HRF_OPTICAL_DENSITY_STD
-                        d = [d, obj.procStream.GetDataTimeSeries('od hrf std',ii)];
-                        t = [t; obj.procStream.GetTHRF(ii)];
-                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'od hrf std')];
-                    case datatypes.HRF_CONCENTRATION
-                        d = [d, obj.procStream.GetDataTimeSeries('conc hrf',ii)];
-                        t = [t; obj.procStream.GetTHRF(ii)];
-                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'conc hrf')];
-                    case datatypes.HRF_CONCENTRATION_STD
-                        d = [d, obj.procStream.GetDataTimeSeries('conc hrf std',ii)];
-                        t = [t; obj.procStream.GetTHRF(ii)];
-                        ml = [ml, obj.procStream.GetMeasurementList('matrix',ii,'conc hrf std')];
-                end
+            switch(lower(datatype))
+                case datatypes.RAW
+                    if isempty(obj.acquired)
+                        return
+                    end
+                    [d, t] = obj.acquired.GetDataTimeSeries(iBlk); %#ok<*AGROW>
+                    ml = obj.acquired.GetMeasurementList('matrix',iBlk);
+                case datatypes.OPTICAL_DENSITY
+                    [d, t] = obj.procStream.GetDataTimeSeries('od',iBlk);
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'od');
+                case datatypes.CONCENTRATION
+                    [d, t] = obj.procStream.GetDataTimeSeries('conc',iBlk);
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'conc');
+                case datatypes.HRF_OPTICAL_DENSITY
+                    [d, t] = obj.procStream.GetDataTimeSeries('od hrf',iBlk);
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'od hrf');
+                case datatypes.HRF_OPTICAL_DENSITY_STD
+                    [d, t] = obj.procStream.GetDataTimeSeries('od hrf std',iBlk);
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'od hrf std');
+                case datatypes.HRF_CONCENTRATION
+                    [d, t] = obj.procStream.GetDataTimeSeries('conc hrf',iBlk);
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'conc hrf');
+                case datatypes.HRF_CONCENTRATION_STD
+                    [d, t] = obj.procStream.GetDataTimeSeries('conc hrf std',iBlk);
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'conc hrf std');
             end
         end
         
@@ -674,7 +667,6 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function ch = GetMeasList(obj, options, iBlk)
-            ch = [];
             if ~exist('options','var')
                 options = '';
             end
@@ -696,24 +688,24 @@ classdef TreeNodeClass < handle
             if 0
                 
                 for ii = 1:length(obj.children) %#ok<UNRCH>
-                if isempty(ch)
-                    ch = obj.children(ii).GetMeasList(iBlk);
-                else
-                    temp = obj.children(ii).GetMeasList(iBlk);
-                    if length(ch.MeasListActMan) == length(temp.MeasListActMan)
-                        ch.MeasListActMan = ch.MeasListActMan | temp.MeasListActMan;
-                    end
-                    if length(ch.MeasListActAuto) == length(temp.MeasListActAuto)
-                        ch.MeasListActAuto = ch.MeasListActAuto | temp.MeasListActAuto;
+                    if isempty(ch)
+                        ch = obj.children(ii).GetMeasList(iBlk);
+                    else
+                        temp = obj.children(ii).GetMeasList(iBlk);
+                        if length(ch.MeasListActMan) == length(temp.MeasListActMan)
+                            ch.MeasListActMan = ch.MeasListActMan | temp.MeasListActMan;
+                        end
+                        if length(ch.MeasListActAuto) == length(temp.MeasListActAuto)
+                            ch.MeasListActAuto = ch.MeasListActAuto | temp.MeasListActAuto;
+                        end
                     end
                 end
-            end
                 
             else
                 
                 ch = obj.children(1).GetMeasList(iBlk);
 	            if strcmp(options,'reshape')
-	                    ch.MeasList = sortrows(ch.MeasList);
+                    ch.MeasList = sortrows(ch.MeasList);
 	            end
                 ch.MeasListActMan(:,3) = 1;
                 ch.MeasListActAuto(:,3) = 1;
@@ -838,7 +830,7 @@ classdef TreeNodeClass < handle
         function newname = ErrCheckNewCondName(obj, newname)
             msg1 = sprintf('Condition name ''%s'' already exists. New name must be unique. Do you want to choose another name?', newname);
             while ismember(newname, obj.CondNames)                
-                q = menu(msg1,'YES','NO');
+                q = MenuBox(msg1, {'YES','NO'});
                 if q==2
                     obj.err = -1;
                     return;
@@ -852,7 +844,7 @@ classdef TreeNodeClass < handle
             end
             msg2 = sprintf('Condition name is not valid. New name must be character string. Do you want to choose another name?');
             while ~ischar(newname)                
-                q = menu(msg2,'YES','NO');
+                q = MenuBox(msg2, {'YES','NO'});
                 if q==2
                     obj.err = -1;
                     return;
@@ -998,17 +990,508 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function Calc(obj)            
-            
+        function Calc(obj)                        
             % Make variables in this subject available to processing stream input
             obj.procStream.input.LoadVars(obj.inputVars);
 
             % Calculate processing stream
-            fcalls = obj.procStream.Calc([obj.path, obj.GetOutputFilename()]); %#ok<NASGU>
+            fcalls = obj.procStream.Calc([obj.path, obj.GetOutputFilename()]); %#ok<NASGU>            
+        end
+        
+    end
+        
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Data Plotting mthods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods
+        
+        % ----------------------------------------------------------------------------------
+        function iChs = SdPairIdxs2vectorIdxs(obj, datatype, sdPairs, iBlk)
+            %
+            % Syntax:
+            %   iChs = TreeNodeClass.SDPairsToChIdxs(obj, datatype, sdPairs, ml)
+            %
+            % Description:
+            %   Given a set of channels specified by [source idx, detector idx, condition idx, datatype idx]
+            %   convert to channel idx vector where each channel is specified by a single number idx.
+            % 
+            % Example:
+            %   % Convert concentration HRF source detectror pair [2,3] to single number indices
+            %   cd(<dataset_root_path>)
+            %   dataTree = DataTreeClass();
+            %   dataTree.currElem.Calc();
+            %   iChs = dataTree.currElem.SdPairIdxs2vectorIdxs('hrf conc', [2,3,2,1; 2,3,2,2; 2,3,2,3])
+            %
+            iChs = [];
+            datatypes = obj.procStream.GetDataTypes();
+            if ~exist('datatype','var')
+                datatype = 'conc hrf';
+            end
+            if ~exist('sdPairs','var')
+                sdPairs = [1,1,0,1];
+            end            
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
             
+            % Error Checking
+            if size(sdPairs, 2)>1 && size(sdPairs, 2)~=4
+                fprintf('ERROR: invalid sdPair. sdPair has to be a Nx4 2D array\n');
+                return;
+            end
+            
+            
+            % If sdPairs argument is a column vector then we are done because channels are 
+            % already specified in the output format i.e., as single number indices. 
+            if size(sdPairs, 2)==1
+                iChs = sdPairs;
+                return;
+            end            
+                        
+            switch(lower(datatype))
+                case datatypes.RAW
+                    if isempty(obj.acquired)
+                        return
+                    end
+                    ml = obj.acquired.GetMeasurementList('matrix', iBlk);
+                case datatypes.OPTICAL_DENSITY
+                    ml = obj.procStream.GetMeasurementList('matrix', iBlk, 'od');
+                case datatypes.CONCENTRATION
+                    ml = obj.procStream.GetMeasurementList('matrix', iBlk, 'conc');
+                case datatypes.HRF_OPTICAL_DENSITY
+                    ml = obj.procStream.GetMeasurementList('matrix', iBlk, 'od hrf');
+                case datatypes.HRF_OPTICAL_DENSITY_STD
+                    ml = obj.procStream.GetMeasurementList('matrix', iBlk, 'od hrf std');
+                case datatypes.HRF_CONCENTRATION
+                    ml = obj.procStream.GetMeasurementList('matrix', iBlk, 'conc hrf');
+                case datatypes.HRF_CONCENTRATION_STD
+                    ml = obj.procStream.GetMeasurementList('matrix', iBlk, 'conc hrf std');
+            end
+            
+            % Error checking
+            if isempty(ml)
+                return
+            end
+            
+            for ii = 1:size(sdPairs,1)
+                k = find(ml(:,1)==sdPairs(ii,1)  &  ml(:,2)==sdPairs(ii,2)  &  ml(:,3)==sdPairs(ii,3)  &  ml(:,4)==sdPairs(ii,4));
+                if isempty(k)
+                    continue;
+                end
+                iChs(ii,1) = k;
+            end
         end
         
         
+        
+        % ----------------------------------------------------------------------------------
+        function sdPairs = VectorIdxs2SdPairIdxs(obj, datatype, iChs, iBlk)
+            %
+            % Syntax:
+            %   iChs = TreeNodeClass.VectorIdxs2SdPairIdxs(obj, datatype, iChs , ml)
+            %
+            % Description:
+            %   Given a set of channels specified by a column vetor of channel idxs, convert to a 2d array 
+            %   channel idxs where each row representing a single channel is a tuple: 
+            %   [source idx, detector idx, condition idx, datatype idx]
+            % 
+            % Example:
+            %   % Convert concentration HRF source detectror pair [2,3] to single number indices
+            %   cd(<dataset_root_path>)
+            %   dataTree = DataTreeClass();
+            %   dataTree.currElem.Calc();
+            %   sdPairs = dataTree.currElem.SdPairIdxs2vectorIdxs('hrf conc',[34; 35; 36])
+            %
+            sdPairs = [];
+            datatypes = obj.procStream.GetDataTypes();
+            if ~exist('datatype','var') || isempty(datatype)
+                datatype = 'raw';
+            end
+            if ~exist('iChs','var')
+                iChs = 1;
+            end            
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            
+            % If sdPairs argument is not a column vector then we are done;  because the 
+            % channels are already specified in the output format i.e., as a 2d array. 
+            if size(iChs, 2)>1
+                sdPairs = iChs;
+                return;
+            end
+            
+            switch(lower(datatype))
+                case datatypes.RAW
+                    if isempty(obj.acquired)
+                        return
+                    end
+                    ml = obj.acquired.GetMeasurementList('matrix', iBlk);
+                case datatypes.OPTICAL_DENSITY
+                    ml = obj.procStream.GetMeasurementList('matrix', iBlk, 'od');
+                case datatypes.CONCENTRATION
+                    ml = obj.procStream.GetMeasurementList('matrix', iBlk, 'conc');
+                case datatypes.HRF_OPTICAL_DENSITY
+                    ml = obj.procStream.GetMeasurementList('matrix', iBlk, 'od hrf');
+                case datatypes.HRF_OPTICAL_DENSITY_STD
+                    ml = obj.procStream.GetMeasurementList('matrix', iBlk, 'od hrf std');
+                case datatypes.HRF_CONCENTRATION
+                    ml = obj.procStream.GetMeasurementList('matrix', iBlk, 'conc hrf');
+                case datatypes.HRF_CONCENTRATION_STD
+                    ml = obj.procStream.GetMeasurementList('matrix', iBlk, 'conc hrf std');
+            end
+            
+            % Remove any invalid indices
+            iChs(iChs==0) = [];
+            iChs(iChs>size(ml,1)) = [];
+            
+            sdPairs = ml(iChs,:);
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function hAxes = GenerateStandaloneAxes(obj, datatype, iChs)
+            k = find(obj.hFig(1,:)==-1);
+            obj.hFig(1,k(1)) = figure;
+            hAxes = gca;
+            plotname = sprintf('"%s" (%s);   %s data ;   channels idxs: [%s]', obj.GetName(), num2str([obj.iGroup, obj.iSubj, obj.iSess, obj.iRun]), ...
+                               datatype, num2str(iChs'));
+            namesize = uint32(length(plotname)/3);
+            set(obj.hFig(1,k(1)), 'units','characters');
+            p1 = get(obj.hFig(1,k(1)), 'position');
+            set(obj.hFig(1,k(1)), 'name',plotname, 'menubar','none', 'NumberTitle','off', 'position',[p1(1)/2, p1(2), p1(3)+namesize, p1(4)]);
+            obj.hFig(:,k(1)+1) = -1;
+        end
+           
+        
+            
+        % ----------------------------------------------------------------------------------
+        function hAxes = DisplayProbe(obj, chSelect, chSelectColors, hAxes)
+            % Parse args
+            if ~exist('chSelect','var')
+                chSelect = [];
+            end
+            if ~exist('chSelectColors','var')                
+                chSelectColors = repmat([1.0, 0.5, 0.2], size(chSelect,1),1);
+            end
+            if ~exist('hAxes','var')
+                hAxes = [];
+            end
+            
+            % If chSelect is in the form of a column vector rather than sd pairs
+            % then convert to sd pairs
+            chSelect = obj.VectorIdxs2SdPairIdxs('', chSelect);            
+            
+            freememoryflag = false;
+            if ~isempty(obj.acquired) && obj.acquired.IsEmpty()
+                obj.acquired.Load();
+                freememoryflag = true;
+            end
+            
+            % Set up the axes
+            bbox = obj.GetSdgBbox();
+            if isempty(hAxes)
+                k = find(obj.hFig(2,:)==-1);
+                
+                % See if there's a data plot associated with this probe display
+                % If there is get its name and use it to name this figure
+                plotname = '';
+                if ishandle(obj.hFig(1,k(1)))
+                    plotname = get(obj.hFig(1,k(1)), 'name');
+                end
+                obj.hFig(2,k(1)) = figure('menubar','none', 'NumberTitle','off', 'name',plotname);
+                hAxes = gca;
+            end
+            axis(hAxes, [bbox(1), bbox(2), bbox(3), bbox(4)]);
+            gridsize = get(hAxes, {'xlim', 'ylim', 'zlim'});
+            if ismac() || islinux()
+                fs = 18;
+            else
+                fs = 11;
+            end
+
+            % Get probe paramaters
+            probe = obj.GetProbe();
+            srcpos = probe.sourcePos2D;
+            detpos = probe.detectorPos2D;
+            ml = obj.GetMeasurementList('matrix');
+            lstSDPairs = find(ml(:,4)==1);
+            
+            % Draw all channels
+            for ii = 1:length(lstSDPairs)
+                hCh(ii) = line2(srcpos(ml(lstSDPairs(ii),1),:), detpos(ml(lstSDPairs(ii),2),:), [], gridsize, hAxes);
+                col = [1.00 1.00 1.00] * 0.85;
+                if ~isempty(chSelect)
+                    k = find(chSelect(:,1)==ml(lstSDPairs(ii),1) & chSelect(:,2)==ml(lstSDPairs(ii),2));
+                    if ~isempty(k)
+                        col = chSelectColors(k(1),:);
+                    end
+                end
+                set(hCh(ii), 'color',col, 'linewidth',2, 'linestyle','-', 'userdata',ml(lstSDPairs(ii),1:2));
+            end
+            
+            % ADD SOURCE AND DETECTOR LABELS
+            for iSrc = 1:size(srcpos,1)
+                if ~isempty(find(ml(:,1)==iSrc)) %#ok<*EFIND>
+                    hSD(iSrc) = text( srcpos(iSrc,1), srcpos(iSrc,2), sprintf('%d', iSrc), 'fontsize',fs, 'fontweight','bold', 'color','r' );
+                    set(hSD(iSrc), 'horizontalalignment','center', 'edgecolor','none', 'Clipping', 'on');
+                end
+            end
+            for iDet = 1:size(detpos,1)
+                if ~isempty(find(ml(:,2)==iDet))
+                    hSD(iDet+iSrc) = text( detpos(iDet,1), detpos(iDet,2), sprintf('%d', iDet), 'fontsize',fs, 'fontweight','bold', 'color','b' );
+                    set(hSD(iDet+iSrc), 'horizontalalignment','center', 'edgecolor','none', 'Clipping', 'on');
+                end
+            end
+            
+            if freememoryflag
+                obj.acquired.FreeMemory();
+            end            
+        end        
+        
+        
+
+        % ----------------------------------------------------------------------------------
+        function [hfig, iChs] = Plot(obj, datatype, sdPairs, iBlk, hAxes)
+            %
+            % SYNTAX:
+            %   TreeNodeClass.Plot(datatype, iChs, iBlk, hAxes)
+            % 
+            %
+            % DESCRIPTION:
+            %   Plot data from channels specified by 2d array where each row spoecifying a single channel
+            %   contains indices [source, detector, condition, wavelength]. In addtion to the data, this method 
+            %   plots any existing stims, and the probe associated with the SNIRF object from which the data 
+            %   was taken. NOTE: the args iBlk and hAxes can be ommitted and will default to 1 and current 
+            %   axes respectively.
+            %
+            %
+            % INPUT:
+            %   datatype -  Type of data to plot. It will be accessed either from the acquired field of the 
+            %               TreeNodeClass object or derived field (ie., procStream.output) of the 
+            %               TreeNodeClass object. Here's the list of possible string values for this argument
+            %
+            %       raw data:                 'raw' | 'raw data' | 'intensity'
+            %       optical density:          'od'}
+            %       concentration:            'conc' | 'hb' | 'hbo' | 'hbr' | 'hbt'
+            %       hrf concentration:        'hrf conc' | 'hrf_conc' | 'hb hrf' | 'conc hrf' | 'hb_hrf' | 'conc_hrf'
+            %       hrf optical density:      'hrf od' | 'hrf_od' | 'od hrf' | 'od_hrf'}} |  ...
+            %       hrf concentration std:    'hrf conc std' | 'hrf_conc_std' | 'hb hrf std' | 'conc hrf std' | 'hb_hrf_std' | 'conc_hrf_std'
+            %       hrf optical density std:  'hrf od std' | 'hrf_od_std' | 'od hrf std' | 'od_hrf_std'
+            %       
+            %   sdPairs - 2d array of channel indices where each row represents a channel consisting of the indices 
+            %             [source, detector, condition, datatype]
+            %
+            %   iBlk - Optional argument (defaults = 1). In theory SNIRF data field is an array of data blocks. This argunment selects the 
+            %          data block from which the plot data is taken.
+            %   
+            %   hAxes - Optional argument (default is current axes or gca()), specifying the axes handle of the axes in which to plot the data.
+            %
+            %
+            % EXAMPLES:
+            %
+            %   % 1. Load data set into dataTree and plot all wavelengths of the raw data for the source/detector pair [2,3] 
+            %   %    of the current element
+            %   cd(<dataset_root_folder>);
+            %   dataTree = DataTreeClass();
+            %   dataTree.currElem.Plot('raw', [2,3,0,1; 2,3,0,2])
+            %
+            %   % 2. Calculate and plot concentration HRF data (HbR), for condition 5, source/detector pair [2,3], 
+            %   %    of the current element
+            %   dataTree.currElem.Calc();
+            %   dataTree.currElem.Plot('hrf conc', [2,3,2,5])
+            %
+            %   % 3. Calculate and plot concentration HRF data (HbR and HbT), for condition 1, source/detector pair [2,3], 
+            %   %    of group 1
+            %   dataTree.groups(1).Calc();
+            %   dataTree.groups(1).Plot('hrf conc', [2,3,1,2; 2,3,1,3])
+            %
+            %   % 4. Calculate and plot All concentration HRF data (HbO, HbR and HbT), for condition 4, source/detector pair [2,3], 
+            %   %    of group 1
+            %   dataTree.groups(1).Calc();
+            %   dataTree.groups(1).Plot('hrf conc', [2,3,4,1; 2,3,4,2; 2,3,4,3])
+            %
+            %   % 5. Calculate and plot All concentration HRF data (HbO), for condition 4, source/detector pairs 
+            %   %    [3,5] and [4,7], of group 1
+            %   dataTree.groups(1).Calc();
+            %   dataTree.groups(1).Plot('hrf conc', [3,5,4,1; 4,7,4,1])
+            %
+            %
+            
+            d = [];
+            t = [];
+            datatypes = obj.procStream.GetDataTypes();
+            hfig = [];
+
+            % Parse input args
+            if ~exist('datatype','var')
+                datatype = 'conc hrf';
+            end
+            if ~exist('sdPairs','var')
+                sdPairs = [1,1,0,1];
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            if ~exist('hAxes','var')
+                hAxes = [];
+            end
+
+            % Remove zombie figure handles
+            if all(~ishandle(obj.hFig(:)))
+                obj.hFig = [-1; -1];
+            end
+
+            
+            % Convert channels in the form of a list of sd pairs to a column vector of indices into the measurement list
+            iChs = obj.SdPairIdxs2vectorIdxs(datatype, sdPairs, iBlk);
+            
+            
+            % Extract SNIRF parameters for plotting:  probe, data, time, measuremntList and stim
+            stim = [];
+            switch(lower(datatype))
+                case datatypes.RAW
+                    if isempty(obj.acquired)
+                        return
+                    end
+                    [d, t, ml] = obj.acquired.GetDataTimeSeries('matrix', iBlk);
+                    if ~isempty(obj.procStream.input.acquired)
+                        stim = obj.procStream.input.acquired.stim;
+                    end
+                case datatypes.OPTICAL_DENSITY
+                    [d, t, ml] = obj.procStream.GetDataTimeSeries('od',iBlk);
+                    if ~isempty(obj.procStream.input.acquired)
+                        stim = obj.procStream.input.acquired.stim;
+                    end
+                case datatypes.CONCENTRATION
+                    [d, t, ml] = obj.procStream.GetDataTimeSeries('conc',iBlk);
+                    if ~isempty(obj.procStream.input.acquired)
+                        stim = obj.procStream.input.acquired.stim;
+                    end
+                case datatypes.HRF_OPTICAL_DENSITY
+                    [d, t, ml] = obj.procStream.GetDataTimeSeries('od hrf',iBlk);
+                case datatypes.HRF_OPTICAL_DENSITY_STD
+                    [d, t, ml] = obj.procStream.GetDataTimeSeries('od hrf std',iBlk);
+                case datatypes.HRF_CONCENTRATION
+                    [d, t, ml] = obj.procStream.GetDataTimeSeries('conc hrf',iBlk);
+                case datatypes.HRF_CONCENTRATION_STD
+                    [d, t, ml] = obj.procStream.GetDataTimeSeries('conc hrf std',iBlk);
+            end
+            
+            % If there's no data to plot then exit
+            if isempty(d)
+                fprintf('No data to plot\n');
+                return;
+            end
+            
+            
+            % Set up standalone figure with axes for plotting data, if axes handle was not passed down from caller 
+            % in the last arg. There will be a separate figure displaying the probe associated with this data plot. 
+            % a few lines down in DisplayProbe.
+            if isempty(hAxes)
+                hAxes = obj.GenerateStandaloneAxes(datatype, iChs);
+            end
+            
+            
+            % Plot data
+            hold on
+            chSelect = [];
+            for ii = 1:length(iChs)
+                hdata(ii) = plot(hAxes, t, d(:,iChs(ii)), 'linewidth',2);
+                chSelect(ii,:) = [ml(iChs(ii),1), ml(iChs(ii),2), ml(iChs(ii),3), ml(iChs(ii),4), get(hdata(ii), 'color')]; 
+            end
+            set(hAxes, 'xlim', [t(1), t(end)]);
+
+            
+            % Plot stim
+            if ~isempty(stim)
+                hCond = [];
+                iCond = [];
+                kk = 1;
+                ylim = get(hAxes, 'ylim');
+                d = (1e-4)*(ylim(2)-ylim(1));
+                yrange = [ylim(1)+d, ylim(2)-d];
+                CondColTbl = obj.CondColTbl();
+                for jj = 1:length(stim)
+                    h = [];
+                    for ii = 1:size(stim(jj).data,1)
+                        h = plot(hAxes, stim(jj).data(ii,1)*[1,1], yrange, 'color',CondColTbl(jj,:));
+                    end
+                    if ~isempty(h)
+                        hCond(kk) = h; 
+                        iCond(kk) = jj;
+                        kk = kk+1;                    
+                    end
+                end
+                [iCond, k] = sort(iCond);
+                CondNames = obj.CondNames;
+                if ishandles(hCond)
+                    legend(hAxes, hCond(k), CondNames(iCond));
+                end
+            end
+            
+            
+            % Display probe in separate figure
+            if isempty(chSelect)
+                fprintf('ERROR: no valid channels were selelcted');
+                obj.DisplayProbe();
+            else
+                obj.DisplayProbe(chSelect(:,1:2), chSelect(:,5:7));
+            end
+            
+            
+            % Wrap up before exiting
+            drawnow;
+            pause(.1);
+            hfig = obj.hFig;
+            hold off
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function ClosePlots(obj, option)
+            if ~exist('option','var')
+                option = '';
+            end
+            if strcmp(option, 'all')
+                for kk = 1:length(obj.children)
+                    obj.children(kk).ClosePlots('all');
+                end
+            end
+
+            % Data plots            
+            for ii = 1:length(obj.hFig(1,:))
+                if ishandles(obj.hFig(1,ii))
+                    close(obj.hFig(1,ii))
+                    obj.hFig(1,ii) = -1;
+                end
+            end
+            
+            % Probe plots
+            for ii = 1:length(obj.hFig(2,:))
+                if ishandles(obj.hFig(2,ii))
+                    close(obj.hFig(2,ii))
+                    obj.hFig(2,ii) = -1;
+                end
+            end
+            
+            if all(~ishandle(obj.hFig(:)))
+                obj.hFig = [-1; -1];
+            end
+        end
+        
+    end
+       
+    
+   
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % Export mthods
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods        
 
         % ----------------------------------------------------------------------------------
         function ExportProcStreamFunctionsOpen(obj)
@@ -1082,8 +1565,12 @@ classdef TreeNodeClass < handle
                 
         % ----------------------------------------------------------------------------------
         function ExportStim(obj, options)
+            global cfg
             if ~exist('options','var')
                 options = '';
+                if strcmpi(cfg.GetValue('Load Stim from TSV file'), 'no')
+                    options = 'regenerate';
+                end
             end
             for ii = 1:length(obj.children)
                 obj.children(ii).ExportStim(options);
@@ -1442,7 +1929,7 @@ classdef TreeNodeClass < handle
             end
             status = 1;
                         
-            configFileOptions =  MenuBox('',{},[],[], 'dontAskAgainOptions');
+            configFileOptions =  MenuBox('', {}, [], [], 'dontAskAgainOptions');
             choices = { ...
                 sprintf('Continue Loading'); ...
                 sprintf('Quit Loading'); ...

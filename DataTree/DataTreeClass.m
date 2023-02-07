@@ -7,8 +7,8 @@ classdef DataTreeClass <  handle
         dirnameGroups
         currElem
         reg
-        config
         logger
+        cfg
         warningflag
         dataStorageScheme
         warnings
@@ -27,9 +27,12 @@ classdef DataTreeClass <  handle
                        
             obj.InitNamespace();
             
-            obj.logger              = InitLogger(logger, 'DataTreeClass');
+            logger                  = InitLogger(logger, 'DataTreeClass');
             cfg                     = InitConfig(cfg);
 
+            obj.logger              = logger;
+            obj.cfg                 = cfg;
+            
             obj.groups              = GroupClass().empty();
             obj.currElem            = TreeNodeClass().empty();
             obj.reg                 = RegistriesClass().empty();
@@ -37,6 +40,11 @@ classdef DataTreeClass <  handle
             obj.warnings            = '';
             obj.errorStats        = [0,0,0];
             
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Announce who we are and our version number
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            logger.Write('DataTreeClass:  v%s\n', getVernum('DataTreeClass'));
+
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Parse args
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -80,6 +88,13 @@ classdef DataTreeClass <  handle
             % Estimate amount of memory required and set the data storage scheme
             obj.SetDataStorageScheme();
             
+            % Load user function registry
+            obj.reg = RegistriesClass();
+            if ~isempty(obj.reg.GetSavedRegistryPath())
+                obj.logger.Write('Loaded saved registry %s\n', obj.reg.GetSavedRegistryPath());
+            end
+
+            % Load data
             obj.FindAndLoadGroups(groupDirs, fmt, procStreamCfgFile, options);
             if obj.IsEmpty()
                 return;
@@ -91,12 +106,6 @@ classdef DataTreeClass <  handle
             % change the current folder to whatever is the current working
             % group.
             cd(obj.groups(end).path);
-            
-            % Load user function registry
-            obj.reg = RegistriesClass();
-            if ~isempty(obj.reg.GetSavedRegistryPath())
-                obj.logger.Write('Loaded saved registry %s\n', obj.reg.GetSavedRegistryPath());
-            end
             
             % Initialize the current processing element within the group
             obj.SetCurrElem(1,1,1,1);
@@ -383,22 +392,26 @@ classdef DataTreeClass <  handle
             end
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % Load derived or post-acquisition data from a file if it
-            % exists
+            % Load dataTree group structure from file. Not that this 
+            % might not include processed output if storage scheme 
+            % is 'file' instead of 'memory'.
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.groups(iGroup).Load('init');
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Initialize procStream for all tree nodes
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            if ~optionExists(options, 'noloadconfig')
-            	obj.groups(iGroup).InitProcStream(procStreamCfgFile);
-            end
+            obj.groups(iGroup).InitProcStream(procStreamCfgFile, options);
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Generate the stimulus conditions for the group tree
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.groups(iGroup).SetConditions();
+
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % Save
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            obj.groups(iGroup).Save();
 
         end
         

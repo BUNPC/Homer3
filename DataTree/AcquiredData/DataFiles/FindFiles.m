@@ -93,8 +93,8 @@ while files.IsEmpty()
         case {'nirs','.nirs'}
             files = DataFilesClass(dirnameGroup, 'nirs');
         otherwise
-            q = menu(sprintf('Homer3 only supports file formats: {%s}. Please choose one.', cell2str(supportedFormats(:,1))), ...
-                    'OK','CANCEL');
+            q = MenuBox(sprintf('Homer3 only supports file formats: {%s}. Please choose one.', cell2str(supportedFormats(:,1))), ...
+                    {'OK','CANCEL'}); 
             if q==2
                 return;
             else

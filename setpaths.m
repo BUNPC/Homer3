@@ -8,6 +8,7 @@ function setpaths(options)
 %   setpaths(0)
 %
 currdir = pwd;
+global logger
 
 try
     
@@ -28,11 +29,14 @@ try
     end
     
     % Add libraries on which Homer3 depends
-    addDependenciesSearchPaths()    
+    d = addDependenciesSearchPaths();
+
+    % Start logger only after adding library paths. Logger is in the Utils libary. 
+    logger = InitLogger([], [pwd, '/setpaths']);
         
     % Create list of possible known similar apps that may conflic with current
     % app
-    appNameExclList = {'Homer3','Homer2_UI','brainScape','ResolveCommonFunctions'};
+    appNameExclList = {'Homer3','DataTree','Homer2_UI','brainScape','ResolveCommonFunctions'};
     appNameInclList = {'AtlasViewerGUI'};
     exclSearchList  = {'.git','.idea','Data','Docs','*_install','*.app','submodules'};
     
@@ -52,12 +56,19 @@ try
     % Find all root folders of apps to exclude from search paths
     for ii = 1:length(appNameExclList)
         foo = which([appNameExclList{ii}, '.m'],'-all');
+        
+        % Before giving up and concluding the path does not exist in list of matlab
+        % search paths, try appending the word 'Class' to path name. 
+        if isempty(foo)
+            foo = which([appNameExclList{ii}, 'Class.m'],'-all');
+        end
+        
         for jj = 1:length(foo)
             p = filesepStandard_startup(fileparts(foo{jj}));
             if pathscompare_startup(appThis, p)
                 continue
             end
-            fprintf('Exclude paths for %s\n', p);
+            printMethod(sprintf('Exclude paths for %s\n', p));
             appExclList = [appExclList; p]; %#ok<AGROW>
         end
     end
@@ -69,11 +80,11 @@ try
             if jj > 1
                 p = filesepStandard_startup(fileparts(foo{jj}));
                 appExclList = [appExclList; p]; %#ok<AGROW>
-                fprintf('Exclude paths for %s\n', p);
+                printMethod(sprintf('Exclude paths for %s\n', p));
             else
                 p = filesepStandard_startup(fileparts(foo{jj}));
                 appInclList = [appInclList; p]; %#ok<AGROW>
-                fprintf('Include paths for %s\n', p);
+                printMethod(sprintf('Include paths for %s\n', p));
             end
         end
     end
@@ -109,40 +120,48 @@ try
     end
     
     warning('on','MATLAB:rmpath:DirNotFound');
+        
+    PrintSystemInfo(logger, ['Homer3'; d]);
+    logger.CurrTime('Setpaths completed on ');
+    logger.Close();
+    cd(currdir);
     
 catch ME
     
+    printStack(ME)
+    if exist('logger','var')
+        logger.Close();
+    end
     cd(currdir);
-    close all force;
-    fclose all;
     rethrow(ME)
     
 end
 
-PrintSystemInfo([], appname)
-
-cd(currdir);
 
 
 % ---------------------------------------------------
 function d = dependencies()
-d = {    
-    'DataTree';
-    'Utils';
-    };
+d = {};
+submodules = parseGitSubmodulesFile(pwd);
+temp = submodules(:,1);
+for ii = 1:length(temp)
+    [~, d{ii,1}] = fileparts(temp{ii});
+end
 
 
 % ---------------------------------------------------
 function setpermissions(appPath)
 if isunix() || ismac()
     if ~isempty(strfind(appPath, '/bin')) %#ok<*STREMP>
-        fprintf(sprintf('chmod 755 %s/*\n', appPath));
+        cmd = sprintf('chmod 755 %s/*\n', appPath);
+        logger.Write(cmd);
         files = dir([appPath, '/*']);
         if ~isempty(files)
-            system(sprintf('chmod 755 %s/*', appPath));
+            system(cmd);
         end
     end
 end
+
 
 
 % ----------------------------------------------------
@@ -163,7 +182,7 @@ for kk = 1:length(appPaths)
     addpath(appPaths{kk}, '-end');
     setpermissions(appPaths{kk});
 end
-fprintf('ADDED search paths for app %s\n', appPaths{1});
+printMethod(sprintf('ADDED search paths for app %s\n', appPaths{1}));
 
 
 
@@ -192,24 +211,25 @@ for kk = 1:length(p)
     end
 end
 close(h);
-fprintf('REMOVED search paths for app %s\n', app);
+printMethod(sprintf('REMOVED search paths for app %s\n', app));
 
 
 
 
 % ----------------------------------------------------
-function   addDependenciesSearchPaths()
+function   d = addDependenciesSearchPaths()
 if exist([pwd, '/Utils/submodules'],'dir')
     addpath([pwd, '/Utils/submodules'],'-end');
 end
 d = dependencies();
 for ii = 1:length(d)
     rootpath = findFolder(pwd, d{ii});
+    rootpath(rootpath=='\') = '/';
     if ispathvalid_startup([rootpath, '/Shared'],'dir')
         rootpath = [rootpath, '/Shared'];
     end
     if ~exist(rootpath,'dir')
-        fprintf('ERROR: Could not find required dependency %s\n', d{ii})
+        printMethod(sprintf('ERROR: Could not find required dependency %s\n', d{ii}));
         continue;
     end
     addSearchPaths(rootpath);
@@ -266,4 +286,68 @@ while ii<=length(j)
     kk=kk+1;
 end
 C(kk:end) = [];
+
+
+
+% -------------------------------------------------------------------------
+function printMethod(msg)
+global logger
+if isa(logger', 'Logger')
+    try
+        logger.Write(msg);
+    catch
+        fprintf(msg);
+    end
+else
+    fprintf(msg);
+end
+
+
+
+
+% -------------------------------------------------------------------------
+function submodules = parseGitSubmodulesFile(repo)
+submodules = cell(0,3);
+
+if ~exist('repo','var') || isempty(repo)
+    repo = pwd;
+end
+currdir = pwd;
+if repo(end) ~= '/' && repo(end) ~= '\'
+    repo = [repo, '/'];
+end
+
+filename = [repo, '.gitmodules'];
+if ~exist(filename, 'file')
+    return;
+end
+cd(repo);
+
+fid = fopen(filename, 'rt');
+strs = textscan(fid, '%s');
+strs = strs{1};
+kk = 1;
+for ii = 1:length(strs)
+    if strcmp(strs{ii}, '[submodule')
+        jj = 1;
+        while ~strcmp(strs{ii+jj}, '[submodule')
+            if ii+jj+2>length(strs)
+                break;
+            end
+            if strcmp(strs{ii+jj}, 'path')
+                submodules{kk,2} = [pwd, '/', strs{ii+jj+2}];
+            end
+            if strcmp(strs{ii+jj}, 'path')
+                submodules{kk,3} = strs{ii+jj+2};
+            end
+            if strcmp(strs{ii+jj}, 'url')
+                submodules{kk,1} = strs{ii+jj+2};
+            end
+            jj = jj+1;
+        end
+        kk = kk+1;
+    end
+end
+fclose(fid);
+cd(currdir);
 

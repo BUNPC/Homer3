@@ -596,6 +596,10 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------
         function bbox = GetSdgBbox(obj)
+            if obj.acquired.IsEmpty()
+                % No need to load whole of acquired data need only probe here
+                obj.acquired.LoadProbe(obj.acquired.GetFilename());
+            end
             bbox = obj.acquired.GetSdgBbox();
         end
         
@@ -866,8 +870,12 @@ classdef RunClass < TreeNodeClass
         
         % ----------------------------------------------------------------------------------        
         function ExportStim(obj, options)            
+            global cfg
             if ~exist('options','var')
                 options = '';
+                if strcmpi(cfg.GetValue('Load Stim from TSV file'), 'no')
+                    options = 'regenerate';
+                end
             end
             SnirfFile2Tsv(obj.acquired, '', options);
         end

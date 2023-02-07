@@ -507,6 +507,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % -------------------------------------------------------
         function err = LoadProbe(obj, fileobj, ~)
+            % metaDataTags is a prerequisite for load probe, so check to make sure its already been loaded
+            if isempty(obj.metaDataTags)
+                obj.LoadMetaDataTags(fileobj);
+            end
+                
             % get lenth unit through class method
             LengthUnit = obj.metaDataTags.Get('LengthUnit');
             obj.probe = ProbeClass();
@@ -1040,6 +1045,12 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             val = obj.metaDataTags.Get('LengthUnit');
         end
         
+        
+        % ---------------------------------------------------------
+        function bbox = GetSdgBbox(obj)
+            bbox = obj.probe.GetSdgBbox();
+        end                
+        
     end
     
     
@@ -1070,11 +1081,17 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if ~exist('iBlk','var') || isempty(iBlk)
                 iBlk = 1;
             end
+            freememory = false;
+            if isempty(obj.data)
+                obj.LoadData(obj.GetFilename());
+                freememory = true;
+            end
             if iBlk>length(obj.data)
                 return;
             end
-            for ii = 1:length(iBlk)
-                ml = [ml; obj.data(ii).GetMeasurementList(matrixMode)];
+            ml = obj.data(iBlk).GetMeasurementList(matrixMode);
+            if freememory 
+                obj.FreeMemory(obj.GetFilename());
             end
         end
         
@@ -1273,7 +1290,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function probe = GetProbe(obj)
-           probe = obj.probe; 
+            obj.LoadProbe(obj.GetFilename());
+            probe = obj.probe;
         end
         
         

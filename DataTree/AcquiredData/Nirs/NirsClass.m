@@ -220,17 +220,17 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 err = 0;
             end
             
-            if isproperty(fdata,'t')
+            if isproperty(fdata,'t') && isproperty(fdata,'d') 
                 obj.t = fdata.t;
                 if ~isempty(obj.t)
                     obj.errmargin = min(diff(obj.t))/10;
                 elseif err == 0
                     err = -3;
                 end
+                if length(fdata.t) ~= size(fdata.d,1) && err == 0
+                    err = -3;
+                end
             elseif err == 0
-                err = -3;
-            end
-            if length(fdata.t) ~= size(fdata.d,1) && err == 0
                 err = -3;
             end
         end

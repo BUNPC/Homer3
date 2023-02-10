@@ -55,12 +55,15 @@ classdef ProbeClass < FileLoadSaveClass
                     else
                         obj.detectorPos3D  = SD.DetPos;
                     end
-                    if isfield(SD,'refpts')
-                        obj.landmarkPos3D = SD.refpts.pos;
-                        obj.landmarkLabels = SD.refpts.labels;
-                        if isfield(SD,'refpts2D')
-                            obj.landmarkPos2D = SD.refpts2D.pos;
+                    if isfield(SD,'Landmarks3D')
+                        obj.landmarkPos3D = SD.Landmarks3D.pos;
+                        obj.landmarkLabels = SD.Landmarks3D.labels;
+                        if isfield(SD,'Landmarks2D')
+                            obj.landmarkPos2D = SD.Landmarks2D.pos;
                         end
+                    else
+                        obj.landmarkPos3D = SD.DummyPos;
+                        obj.landmarkLabels = SD.Landmarks3D.labels;
                     end
                     obj.frequencies  = 1;
                     obj.timeDelays  = 0;

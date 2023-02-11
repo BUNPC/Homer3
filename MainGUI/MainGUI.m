@@ -2195,11 +2195,7 @@ maingui.dataTree.currElem.ExportStim();
 
 
 % --------------------------------------------------------------------
-function menuItemReloadStim_Callback(~, ~, handles)
+function menuItemReloadStim_Callback(hObject, ~, handles)
 global maingui
-[iGroup, iSubj, iSess, iRun] = maingui.dataTree.GetCurrElemIndexID();
-maingui.dataTree.ReloadStim();
-Update('DataTreeClass',[iGroup, iSubj, iSess, iRun]);
-DisplayStim(handles);
-
+maingui.dataTree.currElem.EditStim();
 

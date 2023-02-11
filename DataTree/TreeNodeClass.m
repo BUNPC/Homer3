@@ -574,7 +574,7 @@ classdef TreeNodeClass < handle
                 end
                 editorTab = editorTabs(ii);
                 editorTab.makeActive;
-                MenuBox('Please edit TSV stim file and save it, then click the ''OK'' button.');
+                % MenuBox('Please edit TSV stim file and save it, then click the ''OK'' button.');
             else
                 if ispc()
                     cmd = sprintf('start notepad %s', filenameEvents);

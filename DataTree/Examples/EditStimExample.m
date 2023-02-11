@@ -82,7 +82,7 @@ obj.ExportStim();
 
 pause(2);
 
-EditEventsTsvFile_InMatlabEditor(obj, dataSetDir);
+obj.EditStim();
 
 obj.ClosePlots();
 dataTree.ReloadStim();

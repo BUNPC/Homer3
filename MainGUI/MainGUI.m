@@ -2197,6 +2197,4 @@ maingui.dataTree.currElem.ExportStim();
 % --------------------------------------------------------------------
 function menuItemReloadStim_Callback(hObject, ~, handles)
 global maingui
-maingui.dataTree.ReloadStim();
-DisplayData(handles, hObject);
-
+maingui.dataTree.currElem.EditStim();

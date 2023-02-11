@@ -548,6 +548,49 @@ classdef TreeNodeClass < handle
         
         
         
+        % ----------------------------------------------------------------------------------
+        function EditStim(obj)
+            if isempty(obj.acquired)
+                MenuBox(sprintf('%s level processing does not have stims. Please select a run to edit stim marks\n', [upper(obj.type(1)), obj.type(2:end)]));
+                return;
+            end
+            filenameData = [obj.path, obj.GetFilename()];
+            [p,f] = fileparts(filenameData);
+            
+            % From data file name get events TSV file and load in matlab editor
+            filenameEvents = [p, '/', f, '_events.tsv'];
+            obj.logger.Write('Editing %s\n', filenameEvents);
+            
+            % Edit commands
+            if ~isdeployed()
+                edit(filenameEvents);
+                editorTabs = matlab.desktop.editor.getAll;
+                
+                % Search for editor tab containing loaded file and make it active
+                for ii = 1:length(editorTabs)
+                    if pathscompare(editorTabs(ii).Filename, filenameEvents)
+                        break
+                    end
+                end
+                editorTab = editorTabs(ii);
+                editorTab.makeActive;
+                % MenuBox('Please edit TSV stim file and save it, then click the ''OK'' button.');
+            else
+                if ispc()
+                    cmd = sprintf('start notepad %s', filenameEvents);
+                    obj.logger.Write('cmd:  "%s"', cmd);
+                    system(cmd);
+                elseif ismac()
+                    cmd = sprintf('open -a TextEdit %s', filenameEvents);
+                    obj.logger.Write('cmd:  "%s"', cmd);
+                    system(cmd);                    
+                    % MenuBox(sprintf('The events file associated with the current processing element is\n%s\n Open the file in a text editor to modify stim marks', filenameEvents));
+                end
+            end
+        end
+        
+        
+        
         % --------------------------------------------------------------
         function CopyStimAcquired(obj)
             obj.procStream.CopyStims(obj.acquired);

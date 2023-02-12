@@ -555,10 +555,14 @@ classdef TreeNodeClass < handle
                 return;
             end
             filenameData = [obj.path, obj.GetFilename()];
-            [p,f] = fileparts(filenameData);
+            [p1,f1] = fileparts(filenameData);
             
             % From data file name get events TSV file and load in matlab editor
-            filenameEvents = [p, '/', f, '_events.tsv'];
+            filenameEvents = [p1, '/', f1, '_events.tsv'];
+            if ~ispathvalid(filenameEvents)
+                obj.logger.Write('Events TSV file for %s doesn''t exist.\n', filenameData);
+                obj.ExportStim();
+            end
             obj.logger.Write('Editing %s\n', filenameEvents);
             
             % Edit commands

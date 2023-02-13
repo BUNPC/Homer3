@@ -57,6 +57,8 @@ if ~start
         pname = filesepStandard([rootpath, groupFolders{ii}]);
         logger.Write('Deleting *.snirf files in %s: \n', pname);
         DeleteDataFiles(pname, '.snirf');
+        logger.Write('Rolling back GIT changes in %s\n', pname);
+        gitRevert(pname);
     end
     logger.Write('\n\n');
 end

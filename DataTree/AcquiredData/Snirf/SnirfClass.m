@@ -516,7 +516,6 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             LengthUnit = obj.metaDataTags.Get('LengthUnit');
             obj.probe = ProbeClass();
             err = obj.probe.LoadHdf5(fileobj, [obj.location, '/probe'], LengthUnit);
-            obj.metaDataTags.Set('LengthUnit','mm');
             
             % This is a required field. If it's empty means the whole snirf object is bad
             if isempty(obj.probe)

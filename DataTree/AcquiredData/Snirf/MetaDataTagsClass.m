@@ -16,8 +16,8 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
             obj.tags.LengthUnit = 'mm';
             obj.tags.TimeUnit = 'unknown';
             obj.tags.FrequencyUnit = 'unknown';
-            obj.tags.AppName  = 'snirf-homer3';
-            
+            obj.tags.AppName  = 'homer3-DataTree';
+
             if nargin==1 && ~isempty(varargin{1})
                 obj.SetFilename(varargin{1});
                 obj.Load();
@@ -83,7 +83,7 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
                 
             end
             obj.SetError(err);
-            
+
         end
         
         
@@ -105,8 +105,8 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
                 fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
                 H5F.close(fid);
             end
-            props = propnames(obj.tags);
-            for ii=1:length(props)
+            props = propnames(obj.tags);            
+            for ii = 1:length(props)
                 eval(sprintf('hdf5write_safe(fileobj, [location, ''/%s''], obj.tags.%s);', props{ii}, props{ii}));
             end
         end

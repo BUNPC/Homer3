@@ -20,6 +20,10 @@ classdef ProbeClass < FileLoadSaveClass
         landmarkLabels
     end
     
+    properties (Access = private)
+        scaling
+    end
+    
     
     
     methods
@@ -28,11 +32,13 @@ classdef ProbeClass < FileLoadSaveClass
         function obj = ProbeClass(varargin)
             % Set class properties not part of the SNIRF format
             obj.SetFileFormat('hdf5');
+            obj.scaling = 1;            
             
             % Set SNIRF fomat properties
             if nargin>0
                 if isstruct(varargin{1})
-                    SD = varargin{1};
+                    n = NirsClass(varargin{1});
+                    SD = n.SD;
                     obj.wavelengths = SD.Lambda;
                     obj.wavelengthsEmission  = [];
                     if isfield(SD,'SrcPos2D') &  ~isempty(SD.SrcPos2D)
@@ -250,18 +256,16 @@ classdef ProbeClass < FileLoadSaveClass
             end
             
             % Arg3
-            scaling = 1;
             if exist('LengthUnit','var')
-                if strcmpi(LengthUnit,'m')
-                    scaling = 1000;
-                elseif strcmpi(LengthUnit,'cm')
-                    scaling = 10;
+                % Figure out the scaling factor to multiple by to get the coorinates to be in mm units
+                if strcmpi(LengthUnit,'m')  % meter units
+                    obj.scaling = 100;
+                elseif strcmpi(LengthUnit,'cm')  % centimeter units
+                    obj.scaling = 10;
                 end
             end
             
             
-
-              
             % Error checking            
             if ~isempty(fileobj) && ischar(fileobj)
                 obj.SetFilename(fileobj);
@@ -280,12 +284,12 @@ classdef ProbeClass < FileLoadSaveClass
                 % Load datasets
                 obj.wavelengths               = HDF5_DatasetLoad(gid, 'wavelengths');
                 obj.wavelengthsEmission       = HDF5_DatasetLoad(gid, 'wavelengthsEmission');
-                obj.sourcePos2D               = HDF5_DatasetLoad(gid, 'sourcePos2D', [], '2D')*scaling;
-                obj.detectorPos2D             = HDF5_DatasetLoad(gid, 'detectorPos2D', [], '2D')*scaling;
-                obj.landmarkPos2D             = HDF5_DatasetLoad(gid, 'landmarkPos2D', [], '2D')*scaling;
-                obj.sourcePos3D               = HDF5_DatasetLoad(gid, 'sourcePos3D', [], '3D')*scaling;
-                obj.detectorPos3D             = HDF5_DatasetLoad(gid, 'detectorPos3D', [], '3D')*scaling;
-                obj.landmarkPos3D             = HDF5_DatasetLoad(gid, 'landmarkPos3D', [], '2D')*scaling;
+                obj.sourcePos2D               = HDF5_DatasetLoad(gid, 'sourcePos2D', [], '2D') * obj.scaling;
+                obj.detectorPos2D             = HDF5_DatasetLoad(gid, 'detectorPos2D', [], '2D') * obj.scaling;
+                obj.landmarkPos2D             = HDF5_DatasetLoad(gid, 'landmarkPos2D', [], '2D') * obj.scaling;
+                obj.sourcePos3D               = HDF5_DatasetLoad(gid, 'sourcePos3D', [], '3D') * obj.scaling;
+                obj.detectorPos3D             = HDF5_DatasetLoad(gid, 'detectorPos3D', [], '3D') * obj.scaling;
+                obj.landmarkPos3D             = HDF5_DatasetLoad(gid, 'landmarkPos3D', [], '2D') * obj.scaling;
                 obj.frequencies               = HDF5_DatasetLoad(gid, 'frequencies');
                 obj.timeDelays                 = HDF5_DatasetLoad(gid, 'timeDelays');
                 obj.timeDelayWidths            = HDF5_DatasetLoad(gid, 'timeDelayWidths');
@@ -350,6 +354,16 @@ classdef ProbeClass < FileLoadSaveClass
                 H5F.close(fid);
             end 
             
+            % Multiple all coordinates by reciprocal of scaling factor when saving to get the 
+            % coordinates back to original.
+            obj.sourcePos2D    = obj.sourcePos2D / obj.scaling;
+            obj.detectorPos2D  = obj.detectorPos2D / obj.scaling;
+            obj.landmarkPos2D  = obj.landmarkPos2D / obj.scaling;
+            obj.sourcePos3D    = obj.sourcePos3D / obj.scaling;
+            obj.detectorPos3D  = obj.detectorPos3D / obj.scaling;
+            obj.landmarkPos3D  = obj.landmarkPos3D / obj.scaling;
+            
+            % Now save
             hdf5write_safe(fileobj, [location, '/wavelengths'], obj.wavelengths, 'array');
             hdf5write_safe(fileobj, [location, '/wavelengthsEmission'], obj.wavelengthsEmission, 'array');
             hdf5write_safe(fileobj, [location, '/sourcePos2D'], obj.sourcePos2D, 'array');

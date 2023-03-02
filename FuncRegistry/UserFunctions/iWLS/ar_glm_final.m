@@ -22,7 +22,7 @@ function [dmoco, beta, tstat, pval, sigma, CovB, dfe, w, P, f] = ar_glm_final( d
             
             res = y-X*B;
             
-            Pmax = 100;
+            Pmax = 10;
             a = robust_ar_fit(res, Pmax);
             f = [1; -a(2:end)];
             

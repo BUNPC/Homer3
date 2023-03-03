@@ -376,10 +376,16 @@ classdef ProcStreamClass < handle
         % ----------------------------------------------------------------------------------        
         function mlActMan = CompressMlActMan(obj)
             mlActMan = [];
-            if isempty(obj.input.mlActMan)
+
+            % We don't need to compress mlAct man because it is usually not that big 
+            % But even did then we have to modify compressLogicalArray to handle 2d arrays 
+            % instead of just vectors.
+            % mlActMan = compressLogicalArray(obj.input.mlActMan{1});
+            temp = obj.GetVar('mlActMan');
+            if isempty(temp)
                 return
             end
-            mlActMan = compressLogicalArray(obj.input.mlActMan{1});
+            mlActMan = temp{1};
         end
         
         

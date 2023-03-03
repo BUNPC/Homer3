@@ -763,6 +763,24 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function mlAct = GetActiveChannels(obj)
+            mlAct = [];
+            for ii = 1:length(obj.children)
+                m = obj.children(1).GetActiveChannels();
+                if isempty(m)
+                    continue;
+                end
+                if isempty(mlAct)
+                    mlAct = m;
+                else
+                    mlAct(:,3) = mlAct(:,3) | m(:,3);                    
+                end
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
         function SetMeasListActMan(obj, ml)
             if ~exist('ml','var')
                 ml = [];

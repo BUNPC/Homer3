@@ -771,6 +771,9 @@ classdef DataClass < FileLoadSaveClass
                 ml = obj.measurementList;
                 ml(order) = ml;
             end
+            if contains(options, 'reshape')
+                ml = measurementListSDpairs;
+            end
 
             obj.SimulateErrors(d);
         end

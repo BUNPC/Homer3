@@ -1,4 +1,4 @@
-function [dmoco, beta, tstat, pval, sigma, CovB, dfe, w, P, f] = ar_glm_final( d,X,tune )
+function [dmoco, beta, tstat, pval, sigma, CovB, dfe, w, P, f] = ar_glm_final( d,X,Pmax )
 
     % preallocation
     dmoco = zeros(size(d));
@@ -22,7 +22,6 @@ function [dmoco, beta, tstat, pval, sigma, CovB, dfe, w, P, f] = ar_glm_final( d
             
             res = y-X*B;
             
-            Pmax = 100;
             a = robust_ar_fit(res, Pmax);
             f = [1; -a(2:end)];
             

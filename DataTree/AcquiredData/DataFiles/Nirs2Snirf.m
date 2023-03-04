@@ -54,7 +54,7 @@ for ii=1:length(nirsfiles)
     fprintf('Converting %s to %s\n', src, dst);
     waitbar_improved(ii/length(nirsfiles), h, sprintf('Converting %s to SNIRF: %d of %d', nirsfiles(ii).name, ii, length(nirsfiles)));
 
-    nirs = load(src,'-mat');
+    nirs = NirsClass(src);
     
     if DEBUG==false
         snirf(ii) = SnirfClass(nirs);

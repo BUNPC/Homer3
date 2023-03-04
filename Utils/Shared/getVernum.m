@@ -1,7 +1,13 @@
-function v = getVernum(appname, appdir)
+function [v, appname] = getVernum(appname, appdir)
 v = '';
 if ~exist('appname','var') || isempty(appname)
-    [~,f,e] = fileparts(pwd);
+    if ~exist('appdir','var') || isempty(appdir)
+        appdir = getAppDir();
+    end
+    if appdir(end)=='/' || appdir(end)=='\'
+        appdir(end) = '';
+    end
+    [~,f,e] = fileparts(appdir);
     appname = [f,e];
 end
 if ~exist('appdir','var') || isempty(appdir)

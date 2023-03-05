@@ -290,7 +290,15 @@ cfgGui.filedata.SetValue(hObject.Tag, s);
 % -------------------------------------------------------------
 function cfgSave(hObject, ~) %#ok<*DEFNU>
 global cfgGui
+global cfg
 cfgGui.filedata.Save();
+
+% This is the only place in configSettingsGUI that we access global cfg.
+% We only use it to update the global variable when we to save changes
+if isa(cfg, 'ConfigFileClass')
+    cfg.Update();
+end
+
 hObject.BackgroundColor = getappdata(hObject, 'backgroundcolororiginal'); 
 hObject.ForegroundColor = getappdata(hObject, 'foregroundcolororiginal'); 
 if optionExists(cfgGui.options, {'keepopen','stayopen'})

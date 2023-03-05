@@ -43,7 +43,6 @@ classdef ProcStreamClass < handle
                 return;
             end
             obj.CreateDefault();
-            obj.ExportProcStreamFunctions(false);
         end
         
         
@@ -402,14 +401,15 @@ classdef ProcStreamClass < handle
                 
         % ----------------------------------------------------------------------------------        
         function ExportProcStream(obj, filename, fcalls)
-            global logger             
+            global logger
+            global cfg
             temp = obj.output.SetFilename(filename);
             if isempty(temp)
                 return;
             end
-            [p,f,e] = fileparts(temp); 
+            [p,f] = fileparts(temp); 
             fname = [filesepStandard(p), f, '_processing.json'];
-            if obj.ExportProcStreamFunctions()==true
+            if strcmpi(cfg.GetValue('Export Processing Stream Functions'), 'yes')
                 logger.Write('Saving processing stream  %s:\n', fname);
                 appname = sprintf('%s', getNamespace());
                 vernum  = sprintf('v%s', getVernum(appname));
@@ -1967,24 +1967,7 @@ classdef ProcStreamClass < handle
         end
         
     end
-    
-    
-    
-    methods (Static)
         
-        % ----------------------------------------------------------------------------------
-        function out = ExportProcStreamFunctions(arg)
-            persistent saveProcStream;
-            if nargin == 0
-                out = saveProcStream;
-                return;
-            end
-            saveProcStream = arg;
-            out = saveProcStream;
-        end
-        
-    end
-    
 end
 
 

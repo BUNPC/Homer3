@@ -1559,26 +1559,14 @@ classdef TreeNodeClass < handle
     methods        
 
         % ----------------------------------------------------------------------------------
-        function ExportProcStreamFunctionsOpen(obj)
-            val = obj.cfg.GetValue('Export Processing Stream Functions');
-            if strcmpi(val, 'yes')
-                obj.procStream.ExportProcStreamFunctions(true);
-            elseif strcmpi(val, 'no')
-                obj.procStream.ExportProcStreamFunctions(false);
-            end
-        end
-        
-        
-        
-        % ----------------------------------------------------------------------------------
-        function ExportProcStreamFunctionsClose(obj)
+        function ExportProcStreamFunctions(obj)
             if ispathvalid([obj.path, obj.outputDirname, 'ProcStreamFunctionsSummary.txt'])
                 try
                     delete([obj.path, obj.outputDirname, 'ProcStreamFunctionsSummary.txt'])
                 catch
                 end
             end
-            if ~obj.procStream.ExportProcStreamFunctions()
+            if strcmpi(obj.cfg.GetValue('Export Processing Stream Functions'), 'no')
                 return
             end
             obj.ExportProcStreamFunctionsSummary();

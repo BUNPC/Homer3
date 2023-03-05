@@ -6,7 +6,7 @@ end
 if ~exist('piece','var')
     piece = '';
 end
-repoFull = filesepStandard_startup(repo,'full');
+repoFull = filesepStandard(repo,'full');
 currdir = pwd;
 
 ii = 1;

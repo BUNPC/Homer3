@@ -1063,7 +1063,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 'xmax',0, ...
                 'ymin',0, ...
                 'ymax',0, ...
-                'auxChannels',[] ...
+                'auxChannels',{{}} ...
                 );
         end
         
@@ -1078,8 +1078,8 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 end
             elseif strcmpi(spatialUnitNew,'cm')
                 if strcmpi(obj.SD.SpatialUnit,'mm')
-                scaling = 1/10;
-            end            
+                    scaling = 1/10;
+                end
             else
                 spatialUnitNew = '';
             end
@@ -1162,16 +1162,20 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function CopyProbe(obj, SD)            
+        function CopyProbe(obj, SD)             %#ok<INUSD>
             fields = propnames(obj.SD);
             for ii = 1:length(fields)
                 if eval( sprintf('isfield(SD, ''%s'')', fields{ii}) )
                     if eval( sprintf('strcmp(class(obj.SD.%s), class(SD.%s))', fields{ii}, fields{ii}) )
-                    eval( sprintf('obj.SD.%s = SD.%s;', fields{ii}, fields{ii}) );
+                        eval( sprintf('obj.SD.%s = SD.%s;', fields{ii}, fields{ii}) );
                     elseif eval( sprintf('isnumeric(obj.SD.%s)  &&  iscell(SD.%s)', fields{ii}, fields{ii}) )
                         if eval( sprintf('~isempty(SD.%s)', fields{ii}) )
-                            eval( sprintf('obj.SD.%s = cell2array(SD.%s);', fields{ii}, fields{ii}) );
-                end
+                            for kk = 1:length(eval( sprintf('SD.%s', fields{ii}) ))
+                                if eval( sprintf('isnumeric(SD.%s{kk}) && (length(SD.%s{kk})==1)', fields{ii}, fields{ii}) )
+                                    eval( sprintf('obj.SD.%s(kk) = SD.%s{kk};', fields{ii}, fields{ii}) );
+                                end
+                            end
+                        end
                     elseif eval( sprintf('isscalar(obj.SD.%s)  &&  isscalar(SD.%s)', fields{ii}, fields{ii}) )
                         eval( sprintf('obj.SD.%s = SD.%s;', fields{ii}, fields{ii}) );
                     end
@@ -1224,8 +1228,8 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 elseif d>1
                     obj.SD.MeasListAct(end-d:end) = [];
                 end
-        end
-        
+            end
+            
         end
         
         

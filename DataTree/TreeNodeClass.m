@@ -1617,7 +1617,13 @@ classdef TreeNodeClass < handle
                 fprintf(fid, '%s :\n', [fname, ext]);
                 fprintf(fid, '%s\n', uint32('-') + uint32(zeros(1, length([fname, ext])+2)));
                 txt = loadjson(procStreamFunctionsExportFilenames{ii});
-                fcalls = txt.Processing.FunctionsCalls;
+                
+                % Backwards compatability
+                if isfield(txt.Processing,'FunctionCalls')
+                    fcalls = txt.Processing.FunctionCalls;
+                elseif isfield(txt.Processing,'FunctionsCalls')
+                    fcalls = txt.Processing.FunctionsCalls;
+                end
                 for kk = 1:length(fcalls)
                     fprintf(fid, '%s\n', fcalls{kk});
                 end

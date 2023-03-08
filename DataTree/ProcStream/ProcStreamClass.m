@@ -442,7 +442,7 @@ classdef ProcStreamClass < handle
             depStruct = struct();
             [d, v] = dependencies();
             for ii = 1:length(d)
-                eval( sprintf('depStruct.%s_Library_Version = ''v%s'';', d{ii}, v{ii}) );
+                eval( sprintf('depStruct.%s = ''v%s'';', d{ii}, v{ii}) );
             end
         end
 

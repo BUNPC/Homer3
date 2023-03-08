@@ -574,6 +574,12 @@ classdef ProbeClass < FileLoadSaveClass
         end
         
         
+        % ---------------------------------------------------------
+        function val = GetScaleFactor(obj)
+            val = obj.scaling;
+        end
+        
+        
     end
     
 end

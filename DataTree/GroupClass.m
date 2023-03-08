@@ -2,7 +2,6 @@ classdef GroupClass < TreeNodeClass
     
     properties % (Access = private)
         version;
-        versionStr;
         subjs;
     end
     
@@ -27,11 +26,7 @@ classdef GroupClass < TreeNodeClass
             obj.oldDerivedPaths = {obj.path, [obj.path, 'homerOutput']};
             obj.derivedPathBidsCompliant = 'derivatives/homer';
             obj.initsaveflag = false;
-            
-%             if nargin<3 || ~strcmp(varargin{3}, 'noprint')
-%                 obj.logger.Write('Current GroupClass version %s\n', obj.GetVersionStr());
-%             end
-            
+                        
             obj.type    = 'group';
             obj.subjs   = SubjClass().empty;
                         
@@ -72,38 +67,12 @@ classdef GroupClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function InitVersion(obj)
             obj.SetVersion(getVernum('DataTree'));
-            obj.InitVersionStrFull();
         end
         
         
         % ----------------------------------------------------------------------------------
         function SetVersion(obj, vernum)
-            % Version number should be incremented whenever properties are added, deleted or changed in 
-            % GroupClass, SubjectClass, RunClass OR acquisition class, like AcqDataClass, SnirfClass and 
-            % its sub-classes or NirsClass 
-            
-            if nargin==1
-                obj.version{1} = '2';   % Major version #
-                obj.version{2} = '0';   % Major sub-version #
-                obj.version{3} = '0';   % Minor version #
-                obj.version{4} = '0';   % Minor sub-version # or patch #: 'p1', 'p2', etc
-            elseif iscell(vernum)
-                if ~isnumber([vernum{:}])
-                    return;
-                end
-                for ii=1:length(vernum)
-                    obj.version{ii} = vernum{ii};
-                end
-            elseif ischar(vernum)
-                vernum = str2cell(vernum,'.');
-                if ~isnumber([vernum{:}])
-                    return;
-                end
-                obj.version = cell(length(vernum),1);
-                for ii=1:length(vernum)
-                    obj.version{ii} = vernum{ii};
-                end
-            end
+            obj.version = vernum;
         end
         
         
@@ -114,72 +83,25 @@ classdef GroupClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function verstr = GetVersionStr(obj)
-            verstr = version2string(obj.version);
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
         function filename = GetFilename(obj)
             filename = obj.outputFilename;
         end
         
         
         % ----------------------------------------------------------------------------------
-        function InitVersionStrFull(obj)
-            if isempty(obj.version)
-                return;
-            end
-            verstr = version2string(obj.version);
-            obj.versionStr = sprintf('GroupClass v%s', verstr);
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
         function res = CompareVersions(obj, obj2)
-            res = 1;
-            if ~isproperty(obj, 'version')
-                return;
-            elseif ~ischar(obj2.version) && ~iscell(obj2.version) 
-                return;
-            elseif ischar(obj2.version)
-                if ~isnumber(obj2.version)
-                    return;                    
-                end
-                v2 = str2cell(obj2.version,'.');
-            elseif iscell(obj2.version)
-                v2 = obj2.version;
-            end
-            v1 = obj.version;
-            
-            for ii=1:length(v1)
-                v1{ii} = str2num(v1{ii}); %#ok<*ST2NM>
-            end
-            for ii=1:length(v2)
-                v2{ii} = str2num(v2{ii});
+            v1 = versionstr2num(obj.version);
+            v2 = versionstr2num(obj2.version);
+            if v1 == v2
+                res = 0;
+            elseif v1 < v2
+                res = 1;
+            elseif v1 > v2
+                res = -1;
             end
             
-            % Now that we have the version numbers of both objects, we can
-            % do an actual numeric comparison
+            % TBD: not sure how to handle this. For now just return 0
             res = 0;
-            for ii=1:max(length(v1), length(v2))
-                if ii>length(v1)
-                    res = -1;
-                    break;
-                end
-                if ii>length(v2)
-                    res = 1;
-                    break;
-                end
-                if v1{ii}>v2{ii}
-                    res = 1;
-                    break;
-                end
-                if v1{ii}<v2{ii}
-                    res = -1;
-                    break;
-                end
-            end
         end
         
         
@@ -747,7 +669,7 @@ classdef GroupClass < TreeNodeClass
             
             % Copy saved group to current group if versions are compatible. obj.CompareVersions==0 
             % means the versions of the saved group and current one are equal.
-            if ~isempty(group) && obj.CompareVersions(group)<=0
+            if ~isempty(group) && obj.CompareVersions(group) >= 0
                 % Do a conditional copy of group from saved processing output file. Conditional copy copies ONLY 
                 % derived data, that is, only from procStream but NOT acqruired. We do not want to 
                 % overwrite the real acquired data loaded from acquisition files 

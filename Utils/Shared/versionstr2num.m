@@ -1,6 +1,10 @@
 function [n0, n1] = versionstr2num(s)
 n0 = 0;
-c = str2cell(s,'.');
+if iscell(s)
+    c = s;
+else
+	c = str2cell(s,'.');
+end
 n1 = zeros(1,length(c));
 m = length(c);
 b = 100;

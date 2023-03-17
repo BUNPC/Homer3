@@ -41,22 +41,22 @@ classdef ProbeClass < FileLoadSaveClass
                     SD = n.SD;
                     obj.wavelengths = SD.Lambda;
                     obj.wavelengthsEmission  = [];
-                    if isfield(SD,'SrcPos2D') &  ~isempty(SD.SrcPos2D)
+                    if isfield(SD,'SrcPos2D') &&  ~isempty(SD.SrcPos2D)
                         obj.sourcePos2D  = SD.SrcPos2D;
                     else
                         obj.sourcePos2D  = SD.SrcPos;
                     end
-                    if isfield(SD,'DetPos2D') & ~isempty(SD.DetPos2D)
+                    if isfield(SD,'DetPos2D') && ~isempty(SD.DetPos2D)
                         obj.detectorPos2D  = SD.DetPos2D;
                     else
                         obj.detectorPos2D  = SD.DetPos;
                     end
-                    if isfield(SD,'SrcPos3D') & ~isempty(SD.SrcPos3D)
+                    if isfield(SD,'SrcPos3D') && ~isempty(SD.SrcPos3D)
                         obj.sourcePos3D  = SD.SrcPos3D;
                     else
                         obj.sourcePos3D  = SD.SrcPos;
                     end
-                    if isfield(SD,'DetPos3D') & ~isempty(SD.DetPos3D)
+                    if isfield(SD,'DetPos3D') && ~isempty(SD.DetPos3D)
                         obj.detectorPos3D  = SD.DetPos3D;
                     else
                         obj.detectorPos3D  = SD.DetPos;
@@ -132,19 +132,6 @@ classdef ProbeClass < FileLoadSaveClass
             end
         end
         
-        % -------------------------------------------------------------------------------
-        function xy = convert_optodepos_to_circlular_2D_pos(obj, pos, T, norm_factor)
-            pos = [pos ones(size(pos,1),1)];
-            pos_unit_sphere = pos*T;
-            pos_unit_sphere_norm = sqrt(sum(pos_unit_sphere.^2,2));
-            pos_unit_sphere = pos_unit_sphere./pos_unit_sphere_norm ;
-
-            [azimuth,elevation,r] = cart2sph(pos_unit_sphere(:,1),pos_unit_sphere(:,2),pos_unit_sphere(:,3));
-            elevation = pi/2-elevation;
-            [x,y] = pol2cart(azimuth,elevation);      % get plane coordinates
-            xy = [x y];
-            xy = xy/norm_factor;               % set maximum to unit length
-        end
         
         
         % ----------------------------------------------
@@ -161,9 +148,10 @@ classdef ProbeClass < FileLoadSaveClass
             end 
         end
 
+        
+        
         % -------------------------------------------------------
-        function Project_3D_to_2D(obj) 
-            
+        function Project_3D_to_2D(obj)             
             if isempty(obj.sourcePos2D) && isempty(obj.detectorPos2D)
                 if isempty(obj.landmarkPos3D) || ~obj.isValidLandmarkLabels()
                     nSource = size(obj.sourcePos3D,1);
@@ -230,8 +218,8 @@ classdef ProbeClass < FileLoadSaveClass
                         obj.landmarkPos2D = refpts_2D.pos;
 
                         %
-                        obj.sourcePos2D = convert_optodepos_to_circlular_2D_pos(obj, obj.sourcePos3D, T, norm_factor);
-                        obj.detectorPos2D = convert_optodepos_to_circlular_2D_pos(obj, obj.detectorPos3D, T, norm_factor);
+                        obj.sourcePos2D = convert_optodepos_to_circlular_2D_pos(obj.sourcePos3D, T, norm_factor);
+                        obj.detectorPos2D = convert_optodepos_to_circlular_2D_pos(obj.detectorPos3D, T, norm_factor);
                     end
                 end
             end
@@ -259,7 +247,7 @@ classdef ProbeClass < FileLoadSaveClass
             if exist('LengthUnit','var')
                 % Figure out the scaling factor to multiple by to get the coorinates to be in mm units
                 if strcmpi(LengthUnit,'m')  % meter units
-                    obj.scaling = 100;
+                    obj.scaling = 1000;
                 elseif strcmpi(LengthUnit,'cm')  % centimeter units
                     obj.scaling = 10;
                 end

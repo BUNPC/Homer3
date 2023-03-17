@@ -1,7 +1,7 @@
-function [status, versold, versnew, apps, appdirs] = updateVersions(changelevel)
+function [status, versold, versnew, apps, appdirs] = updateVersions(changelevel, appname)
 %  
 % Syntax:
-%   [status, versold, versnew, apps, appdirs] = updateVersions(changelevel)
+%   [status, versold, versnew, apps, appdirs] = updateVersions(changelevel, appname)
 %
 % Description:  
 %   Update version numbers of main repo and supporting libraries with independent versions
@@ -28,6 +28,29 @@ function [status, versold, versnew, apps, appdirs] = updateVersions(changelevel)
 %       DataTree:		v1.6.0  -->  v1.7.0
 %       FuncRegistry:		no changes
 %       homer3:		v1.72.0  -->  v1.73.0
+%
+%
+%   [status, versold, versnew] = updateVersions('major', 'AtlasViewerGUI');
+%       Utils:		v1.1.2  -->  v1.2.0
+%       DataTree:		v1.6.0  -->  v1.7.0
+%       FuncRegistry:		no changes
+%       homer3:		v1.72.0  -->  v1.73.0
+%
+%
+%
+if ~exist('appname','var') || isempty(appname)
+    appname = getNamespace();
+    msg = sprintf('App name missing. Namespace not set to app name. Please provide app name.\n');    
+    if isempty(appname)
+        fprintf(msg);
+        return;                
+    end
+    if isempty(which([appname, '.m']))
+        fprintf(msg);
+        return
+    end
+end
+setNamespace(appname);
 
 [apps, vers, appdirs] = getVersions();
 
@@ -53,6 +76,7 @@ for ii = 1:length(apps)
         fprintf('%s:\t\tno changes\n', apps{ii});        
     end
 end
+deleteNamespace(appname);
 
 
 
@@ -84,5 +108,19 @@ end
 fd = fopen(versionFile, 'w');
 fprintf(fd, vernew);
 fclose(fd);
+
+
+
+
+% --------------------------------------------------------------------------
+function appname = getAppName()
+appname = getNamespace();
+if ~isempty(appname)
+    return
+end
+pname = which('setpaths.m');
+p = fileparts(pname);
+[~, appname] = fileparts(p);
+setNamespace(appname);
 
 

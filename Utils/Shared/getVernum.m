@@ -1,6 +1,7 @@
 function [v, appname] = getVernum(appname, appdir)
 v = '';
 if ~exist('appname','var') || isempty(appname)
+    appname = '';
     if ~exist('appdir','var') || isempty(appdir)
         appdir = getAppDir();
     end

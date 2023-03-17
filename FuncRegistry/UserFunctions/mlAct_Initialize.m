@@ -7,7 +7,7 @@ function mlAct = mlAct_Initialize(mlAct0, ml)
 k = 1:size(ml,1);
 if isvector(mlAct0) && (length(mlAct0) == length(k))
     if size(ml,2)==4
-    	mlAct = [ ml(:,1:2), mlAct0, ml(:,4) ];
+        mlAct = [ ml(:,1:2), mlAct0, ml(:,4) ];
     else
         mlAct = [ ml(:,1:2), mlAct0, ones(size(ml,1),1) ];
     end

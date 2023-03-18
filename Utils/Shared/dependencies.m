@@ -1,6 +1,7 @@
 function [apps, vers, appdirs] = dependencies()
 apps = {};
 vers = {};
+appdirs = {};
 submodules = parseGitSubmodulesFile(getAppDir());
 temp = submodules(:,1);
 for ii = 1:length(temp)

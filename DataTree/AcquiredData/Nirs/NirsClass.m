@@ -1056,7 +1056,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 'MeasList',[], ...
                 'MeasListAct',[], ...
                 'SpringList',[], ...
-                'AnchorList',[], ...
+                'AnchorList',{{}}, ...
                 'SrcMap',[], ...
                 'SpatialUnit','', ...
                 'xmin',0, ...
@@ -1070,19 +1070,35 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetProbeSpatialUnit(obj, spatialUnitNew)
-            scaling = 1;            
-            if strcmpi(spatialUnitNew,'mm')
-                if strcmpi(obj.SD.SpatialUnit,'cm')
-                scaling = 10;
+        function SetProbeSpatialUnit(obj, spatialUnitNew, scaling)
+            % Set scaling based on current units and desired units if they do not match AND
+            % scaling was not explcitly specified (i.e., passed in as an argument). 
+            if ~exist('scaling','var') || isempty(scaling)
+                scaling = 1;
+                if strcmpi(spatialUnitNew,'mm')
+                    if strcmpi(obj.SD.SpatialUnit,'cm')
+                        scaling = 10;
+                    elseif strcmpi(obj.SD.SpatialUnit,'m')
+                        scaling = 1000;
+                    end
+                elseif strcmpi(spatialUnitNew,'cm')
+                    if strcmpi(obj.SD.SpatialUnit,'mm')
+                        scaling = 1/10;
+                    elseif strcmpi(obj.SD.SpatialUnit,'m')
+                        scaling = 100;
+                    end
+                elseif strcmpi(spatialUnitNew,'m')
+                    if strcmpi(obj.SD.SpatialUnit,'mm')
+                        scaling = 1/1000;
+                    elseif strcmpi(obj.SD.SpatialUnit,'cm')
+                        scaling = 1/100;
+                    end
+                else
+                    spatialUnitNew = '';
                 end
-            elseif strcmpi(spatialUnitNew,'cm')
-                if strcmpi(obj.SD.SpatialUnit,'mm')
-                    scaling = 1/10;
-                end
-            else
-                spatialUnitNew = '';
-            end
+            end 
+            
+            
             obj.SD.SpatialUnit = spatialUnitNew;
             obj.SD.SrcPos = obj.SD.SrcPos * scaling;
             obj.SD.DetPos = obj.SD.DetPos * scaling;
@@ -1102,22 +1118,25 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         function FixProbeSpatialUnit(obj)        
             if isempty(obj.SD.SpatialUnit)
                 q = MenuBox('Spatial units not provided in probe data. Please specify spatial units of the optode coordinates?', ...
-                    {'mm','cm',sprintf('do not know')});
+                    {'mm','cm','m'});
                 if q==1
                     obj.SD.SpatialUnit = 'mm';
                 elseif q==2
                     obj.SD.SpatialUnit = 'cm';
                 elseif q==3
-                    obj.SD.SpatialUnit = '';
+                    obj.SD.SpatialUnit = 'm';
                 end
             end
-            if ~strcmpi(obj.SD.SpatialUnit,'mm')
-                q = MenuBox(sprintf('This probe uses ''%s'' units for probe coordinates. We recommend converting to ''mm'' units, to be consistent with Homer. Do you want to convert probe coordinates from %s to mm?', ...
-                    obj.SD.SpatialUnit), {'YES','NO'}, 'upperleft');
-                if q==1
-                    obj.SetProbeSpatialUnit('mm')       
-                end
-            end
+            % We don't need to force anything on the user since homer and AV do internal conversions to 'mm'
+            %
+            %             if ~strcmpi(obj.SD.SpatialUnit,'mm')
+            %                 q = MenuBox(sprintf('This probe uses ''%s'' units for probe coordinates. We recommend converting to ''mm'' units, to be consistent with Homer. Do you want to convert probe coordinates from %s to mm?', ...
+            %                     obj.SD.SpatialUnit), {'YES','NO'}, 'upperleft');
+            %                 if q==1
+            %                     obj.SetProbeSpatialUnit('mm')
+            %                 end
+            %             end
+            %
         end
         
         
@@ -1181,9 +1200,9 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                     end
                 end
             end
-            
+
             % Fill in any fields that don't conform to standard SD data structure 
-            
+                        
             % SrcGrommetType
             d1 = size(obj.SD.SrcPos,1) - length(obj.SD.SrcGrommetType);
             if d1 > 0

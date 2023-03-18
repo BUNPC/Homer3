@@ -165,7 +165,6 @@ for iBlk = 1:length(data_y)
     tInc = tIncAuto{iBlk};
     
     dt = t(2) - t(1);
-    fq = 1/dt;
     nPre = round(trange(1)/dt);
     nPost = round(trange(2)/dt);
     nTpts = size(y,1);
@@ -601,7 +600,7 @@ for iBlk = 1:length(data_y)
                     ytmp = y(lstInc,conc,lstML);
                     for chanIdx=1:length(lstML)
                         ytmp2 = y(lstInc,conc,lstML(chanIdx));
-                        [dmoco, beta, tstat(:,lstML(chanIdx),conc), pval(:,lstML(chanIdx),conc), sigma, CovB(:,:,lstML(chanIdx),conc), dfe, w, P, f] = ar_glm_final(squeeze(ytmp2),At(lstInc,:), round(fq*2));
+                        [dmoco, beta, tstat(:,lstML(chanIdx),conc), pval(:,lstML(chanIdx),conc), sigma, CovB(:,:,lstML(chanIdx),conc), dfe, w, P, f] = ar_glm_final(squeeze(ytmp2),At(lstInc,:));
 
                         foo(:,lstML(chanIdx),conc)=beta;
                         ytmp(:,1,chanIdx) = dmoco; %We also need to keep my version of "Yvar" and "Bvar"                    

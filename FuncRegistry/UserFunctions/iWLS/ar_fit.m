@@ -26,10 +26,7 @@ if(nosearch)
     coef = invR * Q'*yy(lstValid);
     res = yy(lstValid) - X(lstValid,:)*coef;
 else
-    [B,SE,PVAL,in,stats,nextstep,history] = stepwisefit(X(lstValid,:), yy(lstValid),'Display','off');
-    coef = B;
-    res = stats.yr; 
-%     [coef, res] = stepwisefit(X(lstValid,:), yy(lstValid));
+    [coef, res] = stepwise(X(lstValid,:), yy(lstValid));
 end
 res = res(1:n);
 yhat = y - res;

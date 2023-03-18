@@ -1794,6 +1794,79 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             
         end
         
+        
+        
+        % -----------------------------------------------------------------------
+        function [md2d, md3d] = GetChannelsMeanDistance(obj)
+            ml = obj.data(1).GetMeasListSrcDetPairs();
+            d1 = zeros(size(ml,1),1);
+            for ii = 1:length(d1)
+                d1(ii) = dist3(obj.probe.sourcePos2D(ml(ii,1),:), obj.probe.detectorPos2D(ml(ii,2),:)); 
+                d2(ii) = dist3(obj.probe.sourcePos3D(ml(ii,1),:), obj.probe.detectorPos3D(ml(ii,2),:)); 
+            end
+            md2d = mean(d1);
+            md3d = mean(d2);
+        end
+        
+        
+        
+        % -----------------------------------------------------------------------
+        function err = ErrorCheckSpatialUnits(obj)
+            err = 0;
+            msg = [];
+            [md2d, md3d] = obj.GetChannelsMeanDistance();
+            LengthUnitDeclared = obj.metaDataTags.GetLengthUnit();            
+            magnitudeMm = log10(30);
+            magnitudeCm = log10(3);
+            magnitudeM  = log10(.03);
+            
+            % 2D coordinates
+            diffMm = abs(magnitudeMm - log10(md2d));
+            diffCm = abs(magnitudeCm - log10(md2d));
+            diffM = abs(magnitudeM - log10(md2d));
+            [~, idx] =  min([diffMm, diffCm, diffM]);
+            if idx == 1
+                LengthUnitActual2D = 'mm';
+            elseif idx == 2
+                LengthUnitActual2D = 'cm';
+            elseif idx == 3
+                LengthUnitActual2D = 'm';
+            end
+            if ~strcmpi(LengthUnitDeclared, LengthUnitActual2D)
+                msg{1} = sprintf('WARNING: Declared LengthUnit (%s) might not match the likely actual units (%s) of the 2D coordinates\n', ...
+                    LengthUnitDeclared, LengthUnitActual2D);
+            end
+            
+            % 2D coordinates
+            diffMm = abs(magnitudeMm - log10(md3d));
+            diffCm = abs(magnitudeCm - log10(md3d));
+            diffM = abs(magnitudeM - log10(md3d));
+            [~, idx] =  min([diffMm, diffCm, diffM]);
+            if idx == 1
+                LengthUnitActual3D = 'mm';
+            elseif idx == 2
+                LengthUnitActual3D = 'cm';
+            elseif idx == 3
+                LengthUnitActual3D = 'm';
+            end
+            if ~strcmpi(LengthUnitDeclared, LengthUnitActual3D)
+                msg{2} = sprintf('WARNING: Declared LengthUnit (%s) might not match the likely actual units (%s) of the 3D coordinates\n\n', ...
+                    LengthUnitDeclared, LengthUnitActual3D);
+            end
+            
+            % Compare 2D units with 3D units
+            if ~strcmpi(LengthUnitActual2D, LengthUnitActual3D)
+                msg{3} = sprintf('WARNING: The likely actual units of the 2D coordinates (%s) might not match the like actual units of the 3D coordinates (%s)\n\n', ...
+                    LengthUnitActual3D, LengthUnitActual3D);
+            end
+            
+            if ~isempty(msg)
+                MenuBox(msg);
+            end
+        end
+        
+        
+        
     end
     
     

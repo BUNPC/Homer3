@@ -349,9 +349,22 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             fields{2} = propnames(obj2.SD);
             
             fieldsToExclude = { ...
+                'MeasList'; ...
                 'MeasListAct'; ...
                 'SrcMap'; ...
                 };
+            
+            
+            % Check MeasList explicitely
+            if (isfield(obj.SD,'MeasList') && ~isfield(obj2.SD,'MeasList')) || ~isfield(obj.SD,'MeasList') && isfield(obj2.SD,'MeasList')
+                return;
+            end
+            [~, k1] = sortrows(obj.SD.MeasList);
+            [~, k2] = sortrows(obj2.SD.MeasList);
+            if ~all(obj.SD.MeasList(k1,:) == obj2.SD.MeasList(k2,:))
+                return;
+            end            
+
             
             for kk = 1:length(fields)
                 for jj = 1:length(fields{kk})
@@ -363,7 +376,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                     end                    
                     
                     % Now compare field
-                    if ~isfield(obj.SD,field) || ~isfield(obj2.SD,field)
+                    if (isfield(obj.SD,field) && ~isfield(obj2.SD,field)) || ~isfield(obj.SD,field) && isfield(obj2.SD,field) 
                         return;
                     end
                     if eval( sprintf('~strcmp(class(obj.SD.%s), class(obj2.SD.%s))', field, field) )
@@ -1070,7 +1083,11 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function SetProbeSpatialUnit(obj, spatialUnitNew, scaling)
+        function SetProbeSpatialUnit(obj, spatialUnitNew, scaling, ndims)
+            if ~exist('ndims','var')
+                ndims = '2d';
+            end
+            
             % Set scaling based on current units and desired units if they do not match AND
             % scaling was not explcitly specified (i.e., passed in as an argument). 
             if ~exist('scaling','var') || isempty(scaling)
@@ -1100,16 +1117,24 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             
             
             obj.SD.SpatialUnit = spatialUnitNew;
-            obj.SD.SrcPos = obj.SD.SrcPos * scaling;
-            obj.SD.DetPos = obj.SD.DetPos * scaling;
-            obj.SD.DummyPos = obj.SD.DummyPos * scaling;
-            if size(obj.SD.SpringList,2)==3
-                lst = find(obj.SD.SpringList(:,3)~=-1);
-                obj.SD.SpringList(lst,3) = obj.SD.SpringList(lst,3) * scaling;
+            
+            if isempty(ndims) || strcmpi(ndims, '2D')
+                obj.SD.SrcPos = obj.SD.SrcPos * scaling;
+                obj.SD.DetPos = obj.SD.DetPos * scaling;
+                obj.SD.DummyPos = obj.SD.DummyPos * scaling;
+                if size(obj.SD.SpringList,2)==3
+                    lst = find(obj.SD.SpringList(:,3)~=-1);
+                    obj.SD.SpringList(lst,3) = obj.SD.SpringList(lst,3) * scaling;
+                end
+                obj.SD.Landmarks.pos = obj.SD.Landmarks.pos * scaling;
             end
-            obj.SD.Landmarks.pos = obj.SD.Landmarks.pos * scaling;
-            obj.SD.Landmarks3D.pos = obj.SD.Landmarks3D.pos * scaling;
-            obj.SD.Landmarks2D.pos = obj.SD.Landmarks2D.pos * scaling;
+            
+            if isempty(ndims) || strcmpi(ndims, '3D')
+                obj.SD.SrcPos3D = obj.SD.SrcPos3D * scaling;
+                obj.SD.DetPos3D = obj.SD.DetPos3D * scaling;
+                obj.SD.DummyPos3D = obj.SD.DummyPos3D * scaling;
+                obj.SD.Landmarks3D.pos = obj.SD.Landmarks3D.pos * scaling;
+            end
         end
         
         
@@ -1261,6 +1286,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         end        
         
         
+        
         % ----------------------------------------------------------------------------------
         function CopyStruct(obj, s)            
             fields = propnames(obj);
@@ -1295,11 +1321,13 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         end
         
         
+        
         % ----------------------------------------------------------------------------------
         function ConvertSnirfData(obj, snirf)
             obj.d = snirf.data(1).dataTimeSeries;
             obj.t = snirf.data(1).time;
         end
+        
         
         
         % ----------------------------------------------------------------------------------
@@ -1325,6 +1353,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         end
         
         
+        
         % ----------------------------------------------------------------------------------
         function ConvertSnirfAux(obj, snirf)
             obj.aux = zeros(length(obj.t), length(snirf.aux));
@@ -1332,6 +1361,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 obj.aux(:,ii) = snirf.aux(ii).dataTimeSeries;
             end
         end
+        
         
         
         % ----------------------------------------------------------------------------------
@@ -1343,6 +1373,27 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             obj.ConvertSnirfAux(snirf);
         end
 
+        
+        
+        % -----------------------------------------------------------------------
+        function [md2d, md3d] = GetChannelsMeanDistance(obj)
+            md2d = [];
+            md3d = [];            
+            ml = obj.SD.MeasList;
+            if isempty(ml)
+                return
+            end
+            k = find(ml(:,4)==1);
+            ml = ml(k,:);
+            d1 = zeros(size(ml,1),1);
+            for ii = 1:length(d1)
+                d1(ii) = dist3(obj.SD.SrcPos(ml(ii,1),:), obj.SD.DetPos(ml(ii,2),:)); 
+                d2(ii) = dist3(obj.SD.SrcPos3D(ml(ii,1),:), obj.SD.DetPos3D(ml(ii,2),:)); 
+            end
+            md2d = mean(d1);
+            md3d = mean(d2);
+        end
+        
         
         
         % ----------------------------------------------------------------------------------        
@@ -1391,6 +1442,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         end
         
         
+        
         % ----------------------------------------------------------------
         function [str, fields] = Properties2String(obj)
             str = '';
@@ -1403,6 +1455,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 end
             end
         end
+        
         
         
         % -------------------------------------------------------

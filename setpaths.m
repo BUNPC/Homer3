@@ -1,10 +1,19 @@
-function setpaths(options)
+function setpaths(addremove)
 
 %
 % USAGE:
 %
+%   % 1. Add all search paths for this repo
 %   setpaths
+%
+%   % 2. Same as 1.. Add all search paths for this repo
 %   setpaths(1)
+%
+%   % 3. Add all search paths for this repo while removing search 
+%   %    paths of all similar workspaces
+%   setpaths(2)
+%
+%   % 4. Remove all search paths for this repo
 %   setpaths(0)
 %
 currdir = pwd;
@@ -17,22 +26,15 @@ try
     appname = 'Homer3';
     
     % Parse arguments
+    if ~exist('addremove','var')
     addremove = 1;
-    if ~exist('options','var')
-        options = '';
-    elseif isnumeric(options)
-        if options == 0
-            addremove = 0;
-        else
-            options = '';
-        end
     end
     
     % Add libraries on which Homer3 depends
     d = addDependenciesSearchPaths();
 
     % Start logger only after adding library paths. Logger is in the Utils libary. 
-    logger = InitLogger([], [pwd, '/setpaths']);
+    logger = Logger('setpaths');
         
     % Create list of possible known similar apps that may conflic with current
     % app
@@ -42,12 +44,16 @@ try
     
     appThis         = filesepStandard_startup(pwd);
     appThisPaths    = findDotMFolders(appThis, exclSearchList);
+    
     if addremove == 0
         if ~isempty(which('deleteNamespace.m'))
             deleteNamespace(appname);
         end
         removeSearchPaths(appThis);
         return;
+    elseif addremove == 2
+        appNameExclList = [appNameExclList, appNameInclList];
+        appNameInclList = {};
     end
     
     appExclList = {};
@@ -116,7 +122,7 @@ try
     end
     
     if  ~isempty(which('setpaths_proprietary.m'))
-        setpaths_proprietary(options);
+        setpaths_proprietary(addremove);
     end
     
     warning('on','MATLAB:rmpath:DirNotFound');
@@ -152,6 +158,7 @@ end
 % ---------------------------------------------------
 function setpermissions(appPath)
 if isunix() || ismac()
+    global logger
     if ~isempty(strfind(appPath, '/bin')) %#ok<*STREMP>
         cmd = sprintf('chmod 755 %s/*\n', appPath);
         logger.Write(cmd);

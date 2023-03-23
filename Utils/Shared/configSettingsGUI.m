@@ -113,7 +113,10 @@ cfgGui.xsizeBttn = 25*fx;
 cfgGui.ysizeGap = 1*fy;
 cfgGui.xsizeGap = 2*fx;
 
-cfgGui.fontsizeVals = 9;
+cfgGui.fontsizes = [15, 11, 10, 9];
+if ismac()
+    cfgGui.fontsizes = cfgGui.fontsizes+4;
+end
 cfgGui.posParam     = [.10,.10,.80,.80];
 
 cfgGui.options = options;
@@ -194,14 +197,14 @@ for i = 1:cfgGui.ncols
         ip = cfgGui.nParamsPerCol*(i-1) + j;
         if ip>np
             if np==0
-                uicontrol(hf, 'Style','text', 'string','CONFIG FILE IS EMPTY', 'FontSize',11, ...
+                uicontrol(hf, 'Style','text', 'string','CONFIG FILE IS EMPTY', 'FontSize',cfgGui.fontsizes(2), ...
                           'fontweight','bold', 'units',cfgGui.units, 'Position',posPanel, 'foregroundcolor',[.6,.3,.1]);
             end
             break;
         end
 
         % Draw param panel
-        hp(ip) = uipanel('parent',hf, 'Title',cfgGui.filedata.GetParamName(ip), 'FontSize',10, 'fontweight','bold', 'foregroundcolor',[.6,.3,.1], ...
+        hp(ip) = uipanel('parent',hf, 'Title',cfgGui.filedata.GetParamName(ip), 'FontSize',cfgGui.fontsizes(3), 'fontweight','bold', 'foregroundcolor',[.6,.3,.1], ...
             'units',cfgGui.units, 'Position',posPanel);        
         
         % Draw param values control within panel. Note all controls have same relative position within panel 
@@ -210,12 +213,12 @@ for i = 1:cfgGui.ncols
             pval = '';
         end
         if isempty(cfgGui.filedata.GetParamValueOptions(ip))
-            hv = uicontrol(hp(ip), 'Style','edit', 'string',pval, 'FontSize',cfgGui.fontsizeVals, 'fontweight','bold', 'Tag',cfgGui.filedata.GetParamName(ip), ...
-                'units','normalized', 'position',cfgGui.posParam);
+            hv = uicontrol(hp(ip), 'Style','edit', 'string',pval, 'FontSize',cfgGui.fontsizes(4), 'fontweight','bold', 'Tag',cfgGui.filedata.GetParamName(ip), ...
+                           'units','normalized', 'position',cfgGui.posParam);
         else
             hv = uicontrol(hp(ip), 'Style','popupmenu', 'string',cfgGui.filedata.GetParamValueOptions(ip), ...
-                'FontSize',cfgGui.fontsizeVals, 'fontweight','bold', 'Tag',cfgGui.filedata.GetParamName(ip), ...
-                'units','normalized', 'position',cfgGui.posParam);
+                           'FontSize',cfgGui.fontsizes(4), 'fontweight','bold', 'Tag',cfgGui.filedata.GetParamName(ip), ...
+                           'units','normalized', 'position',cfgGui.posParam);
             k = find(strcmp(cfgGui.filedata.GetParamValueOptions(ip), pval));
             if isempty(k)
                 set(hv, 'string',[{''}; cfgGui.filedata.GetParamValueOptions(ip)]);
@@ -247,10 +250,10 @@ else
     k = 5;
 end
 xoffset = cfgGui.xsizeTotal/k;
-hBttnSave = uicontrol(hf, 'Style','pushbutton', 'FontSize',15, 'Units',cfgGui.units, 'String','SAVE', ...
+hBttnSave = uicontrol(hf, 'Style','pushbutton', 'FontSize',cfgGui.fontsizes(1), 'Units',cfgGui.units, 'String','SAVE', ...
     'Position', [xoffset, cfgGui.ysizeTotal-(cfgGui.ysizeParamsAll+cfgGui.ysizeParam), cfgGui.xsizeBttn, cfgGui.ysizeBttn]);
 hBttnSave.Callback = @cfgSave;
-hBttnExit = uicontrol(hf, 'Style','pushbutton', 'FontSize',15, 'Units',cfgGui.units, 'String','EXIT', ...
+hBttnExit = uicontrol(hf, 'Style','pushbutton', 'FontSize',cfgGui.fontsizes(1), 'Units',cfgGui.units, 'String','EXIT', ...
     'Position', [cfgGui.xsizeTotal-(cfgGui.xsizeBttn+xoffset), cfgGui.ysizeTotal-(cfgGui.ysizeParamsAll+cfgGui.ysizeParam), cfgGui.xsizeBttn, cfgGui.ysizeBttn]);
 hBttnExit.Callback = @cfgExit;
 setappdata(hBttnSave, 'backgroundcolororiginal',hBttnSave.BackgroundColor); 

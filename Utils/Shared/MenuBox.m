@@ -67,6 +67,12 @@ if isempty(msg)
     return;
 end
 
+fs(1) = 10;
+fs(2) = 8;
+if ismac()
+    fs = fs + 4;
+end
+
 ncheckboxes = length(checkboxes);
 nbttns       = length(bttns)+ncheckboxes;
 
@@ -75,7 +81,7 @@ nbttns       = length(bttns)+ncheckboxes;
 Wtext = 70;
 
 Hk = 1.2;
-nNewLines = length(find(msg == sprintf('\n')))+2;
+nNewLines = length(find(msg == sprintf('\n')))+2; %#ok<SPRINTFN>
 nLines = ceil(length(msg) / Wtext)*Hk;
 Htext = max([nNewLines, nLines]);
 HtextGap0 = 1;
@@ -103,7 +109,7 @@ end
 
 % Initial Y size and position of buttons
 Hbttn = 1;
-HbttnGap = 1.5;
+HbttnGap = 2;
 
 % Calculate standard height of buttons
 for ii = 1:length(bttns)    
@@ -160,7 +166,7 @@ pF = get(hf, 'position');
 
 YbttnStart = Htext + HtextGap;
 
-ht = uicontrol('parent',hf, 'style','text', 'units','characters', 'string',msg, 'fontsize',8, ...
+ht = uicontrol('parent',hf, 'style','text', 'units','characters', 'string',msg, 'fontsize',fs(1), ...
     'position',[XtextOffset, pF(4)-(HtextGap0+Htext), Wtext, Htext], 'horizontalalignment','left', ...
     'userdata',2);    
 for k = 1:nbttns
@@ -179,10 +185,10 @@ for k = 1:nbttns
                 'tag',sprintf('%d', k), 'callback',@pushbuttonGroup_Callback);
             
             uicontrol('parent',hf, 'style','text', 'string',bttns{k}, 'units','characters', 'position',[p(1)+4, p(2), p(3), p(4)], ...
-                'horizontalalignment','left', 'fontsize',8, 'userdata',2, 'backgroundcolor',[1,1,1]);
+                'horizontalalignment','left', 'fontsize',fs(2), 'userdata',2, 'backgroundcolor',[1,1,1]);
         else
             uicontrol('parent',hf, 'style',selectionStyle, 'string',bttns{k}, 'units','characters', 'position',[p(1), p(2), p(3), p(4)+Hbttn/2], ...
-                'tag',sprintf('%d', k), 'fontsize',8, 'callback',@pushbuttonGroup_Callback, 'userdata',2, 'backgroundcolor',[1,1,1]);
+                'tag',sprintf('%d', k), 'fontsize',fs(2), 'callback',@pushbuttonGroup_Callback, 'userdata',2, 'backgroundcolor',[1,1,1]);
         end
     end
 end

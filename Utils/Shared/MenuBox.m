@@ -80,9 +80,8 @@ nbttns       = length(bttns)+ncheckboxes;
 % Initial X size and position of text
 Wtext = 70;
 
-Hk = 1.2;
-nNewLines = length(find(msg == sprintf('\n')))+2; %#ok<SPRINTFN>
-nLines = ceil(length(msg) / Wtext)*Hk;
+nNewLines = length(find(msg == sprintf('\n')))+4; %#ok<SPRINTFN>
+nLines = ceil(length(msg) / Wtext)*1.5;
 Htext = max([nNewLines, nLines]);
 HtextGap0 = 1;
 HtextGap = 2;
@@ -182,13 +181,13 @@ for k = 1:nbttns
     else
         if strcmpi(selectionStyle, 'radiobutton')
             hb = uicontrol('parent',hf, 'style',selectionStyle, 'string','', 'units','characters', 'position',[p(1), p(2), 4, p(4)], ...
-                'tag',sprintf('%d', k), 'callback',@pushbuttonGroup_Callback);
+                'tag',sprintf('%d', k), 'callback',@pushbuttonGroup_Callback,  'backgroundcolor',[0.80, 0.80, 0.80]);
             
             uicontrol('parent',hf, 'style','text', 'string',bttns{k}, 'units','characters', 'position',[p(1)+4, p(2), p(3), p(4)], ...
-                'horizontalalignment','left', 'fontsize',fs(2), 'userdata',2, 'backgroundcolor',[1,1,1]);
+                'horizontalalignment','left', 'fontsize',fs(2), 'userdata',2, 'backgroundcolor',[1.0, 1.0, 1.0]);
         else
             uicontrol('parent',hf, 'style',selectionStyle, 'string',bttns{k}, 'units','characters', 'position',[p(1), p(2), p(3), p(4)+Hbttn/2], ...
-                'tag',sprintf('%d', k), 'fontsize',fs(2), 'callback',@pushbuttonGroup_Callback, 'userdata',2, 'backgroundcolor',[1,1,1]);
+                'tag',sprintf('%d', k), 'fontsize',fs(2), 'callback',@pushbuttonGroup_Callback, 'userdata',2, 'backgroundcolor',[1.0, 1.0, 1.0]);
         end
     end
 end

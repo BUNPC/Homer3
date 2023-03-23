@@ -1386,17 +1386,22 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             k = find(ml(:,4)==1);
             ml = ml(k,:);
             d1 = zeros(size(ml,1),1);
-            for ii = 1:length(d1)
-                d1(ii) = dist3(obj.SD.SrcPos(ml(ii,1),:), obj.SD.DetPos(ml(ii,2),:)); 
-                d2(ii) = dist3(obj.SD.SrcPos3D(ml(ii,1),:), obj.SD.DetPos3D(ml(ii,2),:)); 
+            d2 = zeros(size(ml,1),1);
+            for ii = 1:size(ml,1)
+                if ml(ii,1) <= size(obj.SD.SrcPos,1) && ml(ii,2) <= size(obj.SD.DetPos,1)
+                    d1(ii) = dist3(obj.SD.SrcPos(ml(ii,1),:), obj.SD.DetPos(ml(ii,2),:));
+                end
+                if ml(ii,1) <= size(obj.SD.SrcPos3D,1) && ml(ii,2) <= size(obj.SD.DetPos3D,1)
+                    d2(ii) = dist3(obj.SD.SrcPos3D(ml(ii,1),:), obj.SD.DetPos3D(ml(ii,2),:));
+                end
             end
             md2d = mean(d1);
             md3d = mean(d2);
         end
         
         
-        
-        % ----------------------------------------------------------------------------------        
+                        
+        % -----------------------------------------------------------------------
         function ErrorCheck(obj)
             if isempty(obj)
                 return

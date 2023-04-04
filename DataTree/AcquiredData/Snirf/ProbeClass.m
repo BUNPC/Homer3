@@ -382,11 +382,8 @@ classdef ProbeClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function srcpos = GetSrcPos(obj,flag2d)
-            if ~exist('flag2d','var')
-                flag2d = 0;
-            end
-            if flag2d==0
+        function srcpos = GetSrcPos(obj, ~)
+            if ~isempty(obj.sourcePos3D)
                 srcpos = obj.sourcePos3D;
             else
                 srcpos = obj.sourcePos2D;
@@ -395,11 +392,8 @@ classdef ProbeClass < FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function detpos = GetDetPos(obj,flag2d)
-            if ~exist('flag2d','var')
-                flag2d = 0;
-            end
-            if flag2d==0
+        function detpos = GetDetPos(obj, ~)
+            if ~isempty(obj.detectorPos3D)
                 detpos = obj.detectorPos3D;
             else
                 detpos = obj.detectorPos2D;

@@ -1057,12 +1057,15 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 'SrcPos3D',[], ...
                 'DetPos3D',[], ...
                 'DummyPos3D',[], ...
+                'nSrcs',0,...
+                'nDets',0,...
+                'nDummys',0,...
                 'SrcGrommetType',{{}}, ...
                 'DetGrommetType',{{}}, ...
                 'DummyGrommetType',{{}}, ...
-                'SrcGrommetRot',[], ...
-                'DetGrommetRot',[], ...
-                'DummyGrommetRot',[], ...
+                'SrcGrommetRot',{{}}, ...
+                'DetGrommetRot',{{}}, ...
+                'DummyGrommetRot',{{}}, ...
                 'Landmarks',obj.InitLandmarks(), ...
                 'Landmarks2D',obj.InitLandmarks(), ...
                 'Landmarks3D',obj.InitLandmarks(), ...
@@ -1237,7 +1240,13 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             % SrcGrommetRot
             d2 = size(obj.SD.SrcPos,1) - length(obj.SD.SrcGrommetRot);
             if d2 > 0
-                obj.SD.SrcGrommetRot(end+1:end+d2) = zeros(d2,1);
+                for ii = length(obj.SD.SrcGrommetRot)+1:length(obj.SD.SrcGrommetRot)+d2
+                    if iscell(obj.SD.SrcGrommetRot)
+                        obj.SD.SrcGrommetRot{ii} = 0;
+                    else
+                        obj.SD.SrcGrommetRot(ii) = 0;
+                    end
+                end
             end
             
             % DetGrommetType
@@ -1249,7 +1258,13 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             % DetGrommetRot
             d2 = size(obj.SD.DetPos,1) - length(obj.SD.DetGrommetRot);
             if d2 > 0
-                obj.SD.DetGrommetRot(end+1:end+d2) = zeros(d2,1);
+                for ii = length(obj.SD.SrcGrommetRot)+1:length(obj.SD.SrcGrommetRot)+d2
+                    if iscell(obj.SD.DetGrommetRot)
+                        obj.SD.DetGrommetRot{ii} = 0;
+                    else
+                        obj.SD.DetGrommetRot(ii) = 0;
+                    end
+                end
             end
 
             % DummyGrommetType
@@ -1261,7 +1276,13 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             % DummyGrommetRot
             d2 = size(obj.SD.DummyPos,1) - length(obj.SD.DummyGrommetRot);
             if d2 > 0
-                obj.SD.DummyGrommetRot(end+1:end+d2) = zeros(d2,1);
+                for ii = length(obj.SD.DummyGrommetRot)+1:length(obj.SD.DummyGrommetRot)+d2
+                    if iscell(obj.SD.DummyGrommetRot)
+                        obj.SD.DummyGrommetRot{ii} = 0;
+                    else
+                        obj.SD.DummyGrommetRot(ii) = 0;
+                    end
+                end
             end 
                                     
             % MesListAct
@@ -1274,6 +1295,9 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 end
             end
             
+            obj.SD.nSrcs = size(obj.SD.SrcPos,1);
+            obj.SD.nDets = size(obj.SD.DetPos,1);
+            obj.SD.nDummys = size(obj.SD.DummyPos,1);
         end
         
         

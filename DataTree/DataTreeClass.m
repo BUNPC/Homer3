@@ -798,9 +798,8 @@ classdef DataTreeClass <  handle
         function CalcCurrElem(obj)
             banner = sprintf('Calculating derived data at %s with the following processing stream:\n\n', char(datetime(datetime, 'Format','HH:mm:ss, MMMM d, yyyy')));
             obj.PrintProcStream(banner);
-            obj.currElem.ExportProcStreamFunctionsOpen();
             obj.currElem.Calc();
-            obj.currElem.ExportProcStreamFunctionsClose();
+            obj.currElem.ExportProcStreamFunctions();
         end
 
         

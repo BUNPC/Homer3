@@ -1559,26 +1559,14 @@ classdef TreeNodeClass < handle
     methods        
 
         % ----------------------------------------------------------------------------------
-        function ExportProcStreamFunctionsOpen(obj)
-            val = obj.cfg.GetValue('Export Processing Stream Functions');
-            if strcmpi(val, 'yes')
-                obj.procStream.ExportProcStreamFunctions(true);
-            elseif strcmpi(val, 'no')
-                obj.procStream.ExportProcStreamFunctions(false);
-            end
-        end
-        
-        
-        
-        % ----------------------------------------------------------------------------------
-        function ExportProcStreamFunctionsClose(obj)
+        function ExportProcStreamFunctions(obj)
             if ispathvalid([obj.path, obj.outputDirname, 'ProcStreamFunctionsSummary.txt'])
                 try
                     delete([obj.path, obj.outputDirname, 'ProcStreamFunctionsSummary.txt'])
                 catch
                 end
             end
-            if ~obj.procStream.ExportProcStreamFunctions()
+            if strcmpi(obj.cfg.GetValue('Export Processing Stream Functions'), 'no')
                 return
             end
             obj.ExportProcStreamFunctionsSummary();
@@ -1617,7 +1605,13 @@ classdef TreeNodeClass < handle
                 fprintf(fid, '%s :\n', [fname, ext]);
                 fprintf(fid, '%s\n', uint32('-') + uint32(zeros(1, length([fname, ext])+2)));
                 txt = loadjson(procStreamFunctionsExportFilenames{ii});
-                fcalls = txt.Processing.FunctionsCalls;
+                
+                % Backwards compatability
+                if isfield(txt.Processing,'FunctionCalls')
+                    fcalls = txt.Processing.FunctionCalls;
+                elseif isfield(txt.Processing,'FunctionsCalls')
+                    fcalls = txt.Processing.FunctionsCalls;
+                end
                 for kk = 1:length(fcalls)
                     fprintf(fid, '%s\n', fcalls{kk});
                 end

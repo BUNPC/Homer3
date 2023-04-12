@@ -1040,8 +1040,29 @@ classdef DataClass < FileLoadSaveClass
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
         
+        
+        
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2)
+            if isempty(obj)
+                obj = DataClass();
+            end
+            if isempty(obj2)
+                obj = DataClass();
+                return;
+            end
+            if ~isa(obj2, 'DataClass')
+                return;
+            end
+            obj.CopyMeasurementList(obj2);
+            obj.dataTimeSeries = obj2.dataTimeSeries;
+            obj.time = obj2.time;
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function CopyMeasurementList(obj, obj2)
             if isempty(obj)
                 obj = DataClass();
             end
@@ -1055,9 +1076,8 @@ classdef DataClass < FileLoadSaveClass
             for ii=1:length(obj2.measurementList)
                 obj.measurementList(ii) = obj2.measurementList(ii).copy();      % shallow copy ok because MeasListClass has no handle properties
             end
-            obj.dataTimeSeries = obj2.dataTimeSeries;
-            obj.time = obj2.time;
         end
+        
         
         
         % -------------------------------------------------------
@@ -1081,6 +1101,16 @@ classdef DataClass < FileLoadSaveClass
             if length(obj.measurementList)~=length(obj2.measurementList)
                 return;
             end
+            if ~obj.EqualMeasurementLists(obj2)
+                return;
+            end
+            B = true;
+        end
+        
+        
+        % -------------------------------------------------------
+        function B = EqualMeasurementLists(obj, obj2)
+            B = false;
             for ii=1:length(obj.measurementList)
                 if obj.measurementList(ii)~=obj2.measurementList(ii)
                     return;

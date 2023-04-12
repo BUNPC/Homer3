@@ -43,7 +43,6 @@ classdef ProcStreamClass < handle
                 return;
             end
             obj.CreateDefault();
-            obj.ExportProcStreamFunctions(false);
         end
         
         
@@ -402,20 +401,24 @@ classdef ProcStreamClass < handle
                 
         % ----------------------------------------------------------------------------------        
         function ExportProcStream(obj, filename, fcalls)
-            global logger             
+            global logger
+            global cfg
             temp = obj.output.SetFilename(filename);
             if isempty(temp)
                 return;
             end
             [p,f] = fileparts(temp); 
             fname = [filesepStandard(p), f, '_processing.json'];
-            if obj.ExportProcStreamFunctions()==true
+            if strcmpi(cfg.GetValue('Export Processing Stream Functions'), 'yes')
                 logger.Write('Saving processing stream  %s:\n', fname);
-                appname = sprintf('%s, (v%s)', getNamespace(), getVernum(getNamespace()));
+                appname = sprintf('%s', getNamespace());
+                vernum  = sprintf('v%s', getVernum(appname));
                 dt      = sprintf('%s', char(datetime(datetime, 'Format','MMMM d, yyyy,   HH:mm:ss')));
                 mlActManCompressed = obj.CompressMlActMan();
                 tIncManCompressed = obj.CompresstIncMan();
-                jsonstruct = struct('ApplicationName',appname, 'DateTime',dt, 'tIncMan',tIncManCompressed, 'mlActMan',mlActManCompressed, 'FunctionsCalls',{fcalls});
+                jsonstruct = struct('ProcessingElement',f, 'ApplicationName',appname, 'Version',vernum, ...
+                                    'Dependencies',obj.ExportProcStreamDependencies(), 'DateTime',dt, 'tIncMan',tIncManCompressed, ...
+                                    'mlActMan',mlActManCompressed, 'FunctionCalls',{fcalls});
                 jsonStr = savejson('Processing', jsonstruct);
                 fid = fopen(fname, 'w');
                 fwrite(fid, jsonStr, 'uint8');
@@ -429,10 +432,23 @@ classdef ProcStreamClass < handle
                     end
                 end
             end
-        end        
+        end
         
         
-        % ----------------------------------------------------------------------------------        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function depStruct = ExportProcStreamDependencies(obj)
+            depStruct = struct();
+            [d, v] = dependencies();
+            for ii = 1:length(d)
+                eval( sprintf('depStruct.%s = ''v%s'';', d{ii}, v{ii}) );
+            end
+        end
+
+        
+        
+        % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
             nbytes(1) = obj.input.MemoryRequired();
             nbytes(2) = obj.output.MemoryRequired();
@@ -1951,24 +1967,7 @@ classdef ProcStreamClass < handle
         end
         
     end
-    
-    
-    
-    methods (Static)
         
-        % ----------------------------------------------------------------------------------
-        function out = ExportProcStreamFunctions(arg)
-            persistent saveProcStream;
-            if nargin == 0
-                out = saveProcStream;
-                return;
-            end
-            saveProcStream = arg;
-            out = saveProcStream;
-        end
-        
-    end
-    
 end
 
 

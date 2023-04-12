@@ -1,10 +1,19 @@
-function setpaths(options)
+function setpaths(addremove)
 
 %
 % USAGE:
 %
+%   % 1. Add all search paths for this repo
 %   setpaths
+%
+%   % 2. Same as 1.. Add all search paths for this repo
 %   setpaths(1)
+%
+%   % 3. Add all search paths for this repo while removing search 
+%   %    paths of all similar workspaces
+%   setpaths(2)
+%
+%   % 4. Remove all search paths for this repo
 %   setpaths(0)
 %
 currdir = pwd;
@@ -17,37 +26,34 @@ try
     appname = 'DataTreeClass';
     
     % Parse arguments
-    addremove = 1;
-    if ~exist('options','var')
-        options = '';
-    elseif isnumeric(options)
-        if options == 0
-            addremove = 0;
-        else
-            options = '';
-        end
+    if ~exist('addremove','var')
+    	addremove = 1;
     end
     
     % Add libraries on which DataTreeClass depends
-    submodules = addDependenciesSearchPaths();    
+    d = addDependenciesSearchPaths();
 
     % Start logger only after adding library paths. Logger is in the Utils libary. 
-    logger = InitLogger([], [pwd, '/setpaths']);
+    logger = Logger('setpaths');
     
     % Create list of possible known similar apps that may conflic with current
     % app
     appNameExclList = {'DataTree','AtlasViewerGUI','Homer3','Homer2_UI','brainScape','ResolveCommonFunctions'};
     appNameInclList = {};
-    exclSearchList  = {'.git','Data','Docs','*_install','*.app'};
+    exclSearchList  = {'.git','.idea','Data','Docs','*_install','*.app','submodules'};
     
     appThis         = filesepStandard_startup(pwd);
     appThisPaths    = findDotMFolders(appThis, exclSearchList);
+    
     if addremove == 0
         if ~isempty(which('deleteNamespace.m'))
             deleteNamespace(appname);
         end
         removeSearchPaths(appThis);
         return;
+    elseif addremove == 2
+        appNameExclList = [appNameExclList, appNameInclList];
+        appNameInclList = {};
     end
     
     appExclList = {};
@@ -116,12 +122,12 @@ try
     end
         
     if  ~isempty(which('setpaths_proprietary.m'))
-        setpaths_proprietary(options);
+        setpaths_proprietary(addremove);
     end
     
     warning('on','MATLAB:rmpath:DirNotFound');
     
-    PrintSystemInfo(logger, ['DataTreeClass'; submodules(:,end)]);
+    PrintSystemInfo(logger, ['DataTreeClass'; d]);
     logger.CurrTime('Setpaths completed on ');
     logger.Close();
     cd(currdir);
@@ -139,10 +145,20 @@ end
 
 
 
+% ---------------------------------------------------
+function d = dependencies()
+d = {};
+submodules = parseGitSubmodulesFile(pwd);
+temp = submodules(:,1);
+for ii = 1:length(temp)
+    [~, d{ii,1}] = fileparts(temp{ii});
+end
+
 
 % ---------------------------------------------------
 function setpermissions(appPath)
 if isunix() || ismac()
+    global logger
     if ~isempty(strfind(appPath, '/bin')) %#ok<*STREMP>
         cmd = sprintf('chmod 755 %s/*\n', appPath);
         logger.Write(cmd);
@@ -164,7 +180,7 @@ if ischar(appPaths)
     else
         delimiter = ':';
     end        
-    appPaths = str2cell_startup(p, delimiter);
+    appPaths = str2cell(p, delimiter);
 end
 for kk = 1:length(appPaths)
     if strfind(appPaths{kk}, '.git')
@@ -208,24 +224,29 @@ printMethod(sprintf('REMOVED search paths for app %s\n', app));
 
 
 % ----------------------------------------------------
-function  submodules = addDependenciesSearchPaths()
-global logger
-submodules = downloadDependencies();
-for ii = 1:size(submodules)
-    submodulespath = [pwd, '/', submodules{ii,end}];
-    submodulespath(submodulespath=='\') = '/';
-    if ~exist(submodulespath,'dir')
+function   d = addDependenciesSearchPaths()
+if exist([pwd, '/Utils/submodules'],'dir')
+    addpath([pwd, '/Utils/submodules'],'-end');
+end
+d = dependencies();
+for ii = 1:length(d)
+    rootpath = findFolder(pwd, d{ii});
+    rootpath(rootpath=='\') = '/';
+    if ispathvalid_startup([rootpath, '/Shared'],'dir')
+        rootpath = [rootpath, '/Shared'];
+    end
+    if ~exist(rootpath,'dir')
         printMethod(sprintf('ERROR: Could not find required dependency %s\n', d{ii}));
         continue;
     end
-    printMethod(sprintf('Adding searchpaths for submodule %s\n', submodulespath));
-    addSearchPaths(submodulespath);
+    addSearchPaths(rootpath);
 end
 
 
 
+
 % -----------------------------------------------------------------------------
-function [C,k] = str2cell_startup(str, delimiters, options)
+function [C,k] = str2cell(str, delimiters, options)
 
 % Option tells weather to keep leading whitespaces. 
 % (Trailing whitespaces are always removed)
@@ -285,6 +306,30 @@ if isa(logger', 'Logger')
 else
     fprintf(msg);
 end
+
+
+
+
+% -------------------------------------------------------------------------
+function dirpath = findFolder(repo, dirname)
+dirpath = '';
+if ~exist('repo','var')
+    repo = filesepStandard_startup(pwd);
+end
+dirpaths = findDotMFolders(repo, {'.git', '.idea'});
+
+for ii = 1:length(dirpaths)
+    [~, f, e] = fileparts(dirpaths{ii}(1:end-1));
+    if strcmp(dirname, [f,e])
+        dirpath = dirpaths{ii};
+        break;
+    end
+    if ispathvalid_startup([dirname, dirpaths{ii}])
+        dirpath = dirpaths{ii};
+        break;
+    end
+end
+
 
 
 % -------------------------------------------------------------------------

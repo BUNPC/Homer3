@@ -192,6 +192,16 @@ classdef MetaDataTagsClass  < FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
+        function val = GetLengthUnit(obj)
+            val = '';
+            if isempty(obj)
+                return
+            end
+            val = obj.tags.LengthUnit;
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function nbytes = MemoryRequired(obj)
             nbytes = 0;
             fields = propnames(obj.tags);

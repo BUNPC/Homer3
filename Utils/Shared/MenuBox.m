@@ -1,4 +1,4 @@
-function [selection, hf] = MenuBox(msg, bttns, relativePos, textLineWidth, options)
+function [answer, hf] = MenuBox(msg, bttns, relativePos, textLineWidth, options)
 
 %
 % SYNTAX:
@@ -18,12 +18,19 @@ function [selection, hf] = MenuBox(msg, bttns, relativePos, textLineWidth, optio
 %   q = MenuBox('Please select option',{'option1','option2','option3'},'centerright',[],'dontAskAgainOptions');
 %   q = MenuBox('Please select option',{'option1','option2','option3'},[],75,'dontAskAgain');
 %
+%   % Next few examples use radio button selection style
+%   q = MenuBox('Please select option',{'option1','option2','option3'},[],[],'radiobutton');
+%   q = MenuBox('Please select option',{'option1','option2','option3'},[],[],'dontAskAgain:radiobutton');
+%   q = MenuBox('Please select option',{'option1','option2','option3'},'upperright',80,'askEveryTime:radiobutton');
+%
+hf = [];
 
 global bttnIds
-bttnIds = 0;
+global selection
+global selectionStyle
 
-DEBUG=0;
-DEBUG2=0;
+bttnIds = 0;
+selection = 0;
 
 % Parse args
 if iscell(msg)
@@ -46,123 +53,145 @@ end
 
 title = 'MENU';
 
-bttnstrlenmax = 0;
-for ii = 1:length(bttns)
-    if length(bttns{ii})>bttnstrlenmax
-        bttnstrlenmax = length(bttns{ii});
-    end
+if optionExists(options, 'radiobutton')
+    selectionStyle = 'radiobutton';
+else
+    selectionStyle = 'pushbutton';
 end
-bttnstrlenmin = 7;
 
 % Syntax for special call of MenuBox to ONLY get back the selection of
 % "ask/don't ask" checkbox strings, then exit function
 checkboxes  = getCheckboxes(options);
 if isempty(msg)
-    selection = checkboxes;
+    answer = checkboxes;
     return;
 end
 
-length(find(msg == sprintf('\n'))); %#ok<*SPRINTFN>
+fs(1) = 10;
+fs(2) = 8;
+if ismac()
+    fs = fs + 4;
+end
 
-nchar        = length(msg);
-nNewLines    = length(find(msg == sprintf('\n'))); %#ok<*SPRINTFN>
-ncheckboxes  = length(checkboxes);
+ncheckboxes = length(checkboxes);
 nbttns       = length(bttns)+ncheckboxes;
-if bttnstrlenmax<bttnstrlenmin
-    Wbttn = 2.1*bttnstrlenmin;
+
+
+% Initial X size and position of text
+Wtext = 70;
+
+nNewLines = length(find(msg == sprintf('\n')))+4; %#ok<SPRINTFN>
+nLines = ceil(length(msg) / Wtext)*1.5;
+Htext = max([nNewLines, nLines]);
+HtextGap0 = 1;
+HtextGap = 2;
+
+% Initial X sizes and positions of buttons
+Wbttn = 65;
+WbttnMin = 20;
+XbttnOffset = 5;
+
+
+% Calculate standard width of buttons
+WbttnMaxActual = length(bttns{1});
+for ii = 1:length(bttns)
+    if length(bttns{ii}) > WbttnMaxActual
+        WbttnMaxActual = length(bttns{ii});
+    end
+end
+if WbttnMaxActual < Wbttn
+    Wbttn = WbttnMaxActual;
+end
+if WbttnMaxActual < WbttnMin
+    Wbttn = WbttnMin;
+end
+
+% Initial Y size and position of buttons
+Hbttn = 1;
+HbttnGap = 2;
+
+% Calculate standard height of buttons
+for ii = 1:length(bttns)    
+    temp = ceil(length(bttns{ii}) / Wbttn);
+    if temp > Hbttn
+        Hbttn = temp;
+    end
+end
+
+
+% Character size doesn't quite equal character units so we compensate by multiplying by 
+% scaling factor in the x and y directions
+Wbttn = Wbttn*1.2;
+Hbttn = Hbttn*1.2;
+
+
+% Figure size and position 
+if strcmpi(selectionStyle, 'radiobutton')
+    Hc = 7;
 else
-    Wbttn = 2.1*bttnstrlenmax;
+    Hc = 4;
 end
-Hbttn = 2.7;
+XtextOffset = Wtext/8;
+Wfig = Wtext + 2*XtextOffset;
 
-if Wbttn < textLineWidth
-    Wtext = textLineWidth;                       % In char units
-else
-    Wtext = 1.1 * Wbttn;
-end
-Htext = round(nchar / Wtext)+4 + nNewLines;
+HfigBottom = nbttns * (Hbttn + HbttnGap) + Hc;
+HfigTop = HtextGap0 + Htext + HtextGap;
+Hfig = HfigTop + HfigBottom;
 
-% Position/dimensions in the X direction
-a    = 5;
-Wfig = Wtext+0.1*Wtext;                % GUI width
-
-% Position/dimensions in the Y direction
-vertgap = 1.2;
-Hfig    = (Htext+vertgap+1) + nbttns*(Hbttn+vertgap) + vertgap*1.5;
-
-% Get position of parent GUI in character units
-hParent = get(groot,'CurrentFigure');
-if isempty(hParent)
-    hParent = 0;
-end
-set(hParent, 'units','characters');
-if hParent==0
-    posParent = get(hParent,'MonitorPositions');
-else
-    posParent = get(hParent, 'position');
-end
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Calculate GUI objects position/dimensions in the Y and Y
-% directions, in characters units
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-hf = figure('numbertitle', 'off', 'menubar','none', 'toolbar','none', 'name',title);
-set(hf, 'visible','off');
+hf = figure('numbertitle', 'off', 'menubar','none', 'toolbar','none', 'name',title, 'resize','on');
+%set(hf, 'visible','off');
 set(hf, 'units','characters');
 
+hParent = get(groot,'CurrentFigure');
+if isempty(hParent)
+    hParent = hf;
+end
+set(hParent, 'units','characters');
+posParent = get(hParent, 'position');
+
 % Determine optimal position of MenuBox relative to parent GUI
-[pX, pY] = positionRelative(hf, posParent, relativePos);
-posBox = [pX, pY, Wfig, Hfig];
-
-if DEBUG
-    fprintf('posBox = [%0.1f, %0.1f, %0.1f, %0.1f]\n', posBox(1), posBox(2), posBox(3), posBox(4));
-end
-
-
-% Set GUI position/size
-set(hf, 'position', posBox);
-p = get(hf, 'position');
-
-% Display message
-if DEBUG2
-    fprintf('message position:   [%0.1f, %0.1f, %0.1f, %0.1f]\n', a, p(4)-Htext-vertgap, Wtext, Htext);
-    ht = uicontrol('parent',hf, 'style','text', 'units','characters', 'string',msg, ...
-        'position',[a, p(4)-(Htext+vertgap+1), Wtext, Htext], 'horizontalalignment','left', ...
-        'backgroundcolor',[.2,.2,.2], 'foregroundcolor',[.9,.9,.9]);
+if hf == hParent
+    pX = posParent(1);
+    pY = posParent(2);
 else
-    ht = uicontrol('parent',hf, 'style','text', 'units','characters', 'string',msg, ...
-        'position',[a, p(4)-(Htext+vertgap+1), Wtext, Htext], 'horizontalalignment','left');
+    [pX, pY] = positionRelative(hf, posParent, relativePos);
 end
+posBox = [pX, pY, Wfig, Hfig];
+set(hf, 'position', posBox);
+if strcmpi(selectionStyle, 'radiobutton')
+    DispSaveCancelBttns(hf);
+end
+pF = get(hf, 'position');
 
-% Draw button options
-hb = zeros(nbttns,1);
-p  = zeros(nbttns,4);
-TextPos = get(ht, 'position');
+YbttnStart = Htext + HtextGap;
 
+ht = uicontrol('parent',hf, 'style','text', 'units','characters', 'string',msg, 'fontsize',fs(1), ...
+    'position',[XtextOffset, pF(4)-(HtextGap0+Htext), Wtext, Htext], 'horizontalalignment','left', ...
+    'userdata',2);    
 for k = 1:nbttns
-    Ypfk = TextPos(2) - k*(Hbttn+vertgap);
-    p(k,:) = [2*a, Ypfk, Wbttn, Hbttn];
-    
-    if DEBUG2
-        fprintf('%d) %s:   p1 = [%0.1f, %0.1f, %0.1f, %0.1f]\n', k, bttns{k}, p(k,1), p(k,2), p(k,3), p(k,4));
-    end
-    
+    Ypfk = pF(4) - (YbttnStart + k*(Hbttn+HbttnGap));
+    p = [XbttnOffset, Ypfk, Wbttn, Hbttn];    
     if k > (nbttns-ncheckboxes)
         val = GetCheckboxValue(k, nbttns, ncheckboxes, options);
         hb(k) = uicontrol('parent',hf, 'style','checkbox', 'string',checkboxes{k-(nbttns-ncheckboxes)}, 'units','characters', ...
-            'position',[p(k,1), p(k,2), 2*length(checkboxes{k-(nbttns-ncheckboxes)}), p(k,4)], 'value',val, ...
+            'position',[p(1), p(2), 2*length(checkboxes{k-(nbttns-ncheckboxes)}), p(4)], 'value',val, ...
             'tag',sprintf('%d', k-(nbttns-ncheckboxes)), 'callback',{@checkboxDontAskOptions_Callback, hf});
         
         checkboxDontAskOptions_Callback(hb(k), [], hf);
     else
-        hb(k) = uicontrol('parent',hf, 'style','pushbutton', 'string',bttns{k}, 'units','characters', 'position',p(k,:), ...
-            'tag',sprintf('%d', k), 'callback',@pushbuttonGroup_Callback);
+        if strcmpi(selectionStyle, 'radiobutton')
+            hb = uicontrol('parent',hf, 'style',selectionStyle, 'string','', 'units','characters', 'position',[p(1), p(2), 4, p(4)], ...
+                'tag',sprintf('%d', k), 'callback',@pushbuttonGroup_Callback,  'backgroundcolor',[0.80, 0.80, 0.80]);
+            
+            uicontrol('parent',hf, 'style','text', 'string',bttns{k}, 'units','characters', 'position',[p(1)+4, p(2), p(3), p(4)], ...
+                'horizontalalignment','left', 'fontsize',fs(2), 'userdata',2, 'backgroundcolor',[1.0, 1.0, 1.0]);
+        else
+            uicontrol('parent',hf, 'style',selectionStyle, 'string',bttns{k}, 'units','characters', 'position',[p(1), p(2), p(3), p(4)+Hbttn/2], ...
+                'tag',sprintf('%d', k), 'fontsize',fs(2), 'callback',@pushbuttonGroup_Callback, 'userdata',2, 'backgroundcolor',[1.0, 1.0, 1.0]);
+        end
     end
 end
 
-% Need to make sure position data is saved in pixel units at end of function
-% to as these are the units used to reposition GUI later if needed
 setGuiFonts(hf);
 p = guiOutsideScreenBorders(hf);
 
@@ -172,12 +201,11 @@ set(hf, 'visible','on', 'units','normalized', 'position',p);
 
 % Change units back to characters
 set(hf, 'units','characters');
-
-% Wait for user to respond before exiting
+normalizeObjPos(hf);
 
 % Wait for user to respond before exiting
 t = 0;
-while bttnIds(1)==0 && ishandles(hf)
+while selection(1)==0 && ishandles(hf)
     t=t+1;
     pause(.2);
     if mod(t,30)==0
@@ -188,27 +216,46 @@ while bttnIds(1)==0 && ishandles(hf)
     end
 end
 
-
 % Call this callback in case default is preselected in the code, that way
 % we make sure that if one of the checkboxes is preselected not by user
 % action but by code, that we detect that.
 checkboxDontAskOptions_Callback([], [], hf)
 
-% Assign button selctions to function output
-selection = bttnIds;
+answer = selection;
 
 if ishandles(hf)
     delete(hf);
 else
-    selection=0;
+    if strcmpi(selectionStyle, 'pushbutton')
+        answer = 0;
+    end
 end
+
+
 
 
 
 % -------------------------------------------------------------
 function pushbuttonGroup_Callback(hObject, ~, ~)
 global bttnIds
+global selection
+global selectionStyle
 bttnIds(1) = str2num(get(hObject, 'tag'));
+if strcmpi(selectionStyle, 'pushbutton')
+    selection = bttnIds;
+    return;
+end
+hp = get(hObject,'parent');
+hc = get(hp, 'children');
+for ii = 1:length(hc)
+    if strcmpi(get(hc(ii),'type'), 'uicontrol')
+        if strcmpi(get(hc(ii),'style'), 'radiobutton')
+            if ~strcmpi(get(hc(ii), 'tag'), get(hObject, 'tag'))
+                set(hc(ii), 'value',0);
+            end
+        end
+    end
+end
 
 
 
@@ -230,6 +277,7 @@ if ishandles(hObject)
     end
 else
     for ii = 1:length(hb)
+        if strcmp(get(hb(ii), 'type'),'uicontrol')
         if strcmp(get(hb(ii), 'style'),'checkbox')
             if get(hb(ii), 'value')
                 checkboxId = str2num(get(hb(ii), 'tag'));
@@ -237,6 +285,7 @@ else
             end
         end
     end
+end
 end
 
 if isempty(checkboxId)
@@ -346,4 +395,48 @@ elseif optionExists(options, 'askEveryTimeOptions')
         val = 0;
     end
 end
+
+
+
+% -------------------------------------------------------------
+function [hBttnSave, hBttnExit] = DispSaveCancelBttns(hf)
+uhf0 = get(hf, 'units');
+set(hf, 'units','characters');
+phf = get(hf, 'position');
+set(hf, 'position',[phf(1), phf(2), phf(3), phf(4)+phf(4)*.2]);
+xsize = 20;
+ysize = 3;
+xpos  = .1*phf(3);
+ypos  = .1*phf(4);
+hBttnSave = uicontrol(hf, 'Style','pushbutton', 'FontSize',15, 'Units','normalized', 'String','SAVE', 'units','characters', 'Position',[xpos, ypos, xsize, ysize]);
+hBttnExit = uicontrol(hf, 'Style','pushbutton', 'FontSize',15, 'Units','normalized', 'String','CANCEL', 'units','characters', 'Position',[phf(3) - (xsize + .1*phf(3)),  ypos, xsize, ysize]);
+hBttnSave.Callback = @cfgSave;
+hBttnExit.Callback = @cfgExit;
+set(hf, 'units',uhf0)
+
+
+
+% -------------------------------------------------------------
+function cfgSave(hObject, ~) %#ok<*DEFNU>
+global bttnIds
+global selection
+selection = bttnIds;
+close;
+
+
+
+% -------------------------------------------------------------
+function cfgExit(~,~)
+close;
+
+
+
+% -------------------------------------------------------------
+function normalizeObjPos(hf)
+hc = get(hf, 'children');
+for ii = 1:length(hc)
+    set(hc(ii), 'units','normalized');
+end
+
+
 

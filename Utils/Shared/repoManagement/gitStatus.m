@@ -1,4 +1,4 @@
-function [modified, added, deleted, untracked, cmds, errs, msgs] = gitStatus(repo)
+function [modified, added, deleted, untracked, cmds, errs, msgs] = gitStatus(repo, piece)
 modified = {};
 added = {};
 deleted = {};
@@ -8,12 +8,19 @@ cmds = {};
 if ~exist('repo','var') || isempty(repo)
     repo = [pwd, '/'];
 end
+if ~exist('piece','var')
+    piece = '';
+end
 currdir = pwd;
 repoFull = filesepStandard(repo,'full');
 
 ii = 1;
 cmds{ii,1} = sprintf('cd %s', repoFull); ii = ii+1;
-cmds{ii,1} = sprintf('git status'); ii = ii+1; kk = ii-1;
+if isempty(piece)
+	cmds{ii,1} = sprintf('git status'); ii = ii+1; kk = ii-1;
+else
+    cmds{ii,1} = sprintf('git status %s', piece); ii = ii+1; kk = ii-1;
+end
 cmds{ii,1} = sprintf('cd %s', currdir);
 
 [errs, msgs] = exeShellCmds(cmds, false, true);

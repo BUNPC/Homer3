@@ -14,7 +14,7 @@ if ~exist('quiet','var')
 end
 for ii = 1:length(cmds)
     if preview == false
-        c = str2cell_startup(cmds{ii}, ' ');
+        c = str2cell(cmds{ii}, ' ');
         if strcmp(c{1}, 'cd')
             try
                 cd(c{2})

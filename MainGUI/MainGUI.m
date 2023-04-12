@@ -860,29 +860,46 @@ global maingui
 LaunchChildGuiFromMenu('PlotProbeGUI', hObject, GetDatatype(handles), maingui.condition);
 
 % --------------------------------------------------------------------
-% function menuItemPlotProbe2_Callback(hObject, ~, handles)
-% global maingui
-
-%%%% It will be in the next release
-% procElem = maingui.dataTree.currElem;
-% % Derived data that we want to save in a Snirf file.
-% % To save in a snirf file we need to create a SnirfClass
-% % object. A SnirfClass object is DataTree's implementation 
-% % of the Snirf format.  
-% data(1) = procElem.procStream.output.dcAvg; 
+function menuItemPlotProbe2_Callback(hObject, ~, handles)
+global maingui
+procElem = maingui.dataTree.currElem;
+% Derived data that we want to save in a Snirf file.
+% To save in a snirf file we need to create a SnirfClass
+% object. A SnirfClass object is DataTree's implementation 
+% of the Snirf format.  
+data(1) = procElem.procStream.output.dcAvg; 
 % data(2) = procElem.procStream.output.dod;
-% 
-% % To complete SnirfClass object arguments we need to supply these
-% % which we get from acquired data of the first run associated with 
-% % our procElem.
-% probe = procElem.acquired.probe;
-% stim = procElem.acquired.stim;
-% metaDataTags = procElem.acquired.metaDataTags;
-% 
-% obj = SnirfClass(data, stim, probe, metaDataTags);
-% 
-% % call PlotProbe2 GUI
-% PlotProbe2(obj);
+
+% To complete SnirfClass object arguments we need to supply these
+% which we get from acquired data of the first run associated with 
+% our procElem.
+if strcmp(procElem.type,'sess')
+    maingui.dataTree.SetCurrElem(procElem.iGroup, procElem.iSubj, procElem.iSess, 1);
+    maingui.dataTree.LoadCurrElem()
+    procElem = maingui.dataTree.currElem;
+    maingui.dataTree.SetCurrElem(procElem.iGroup, procElem.iSubj, procElem.iSess);
+    maingui.dataTree.LoadCurrElem()
+elseif strcmp(procElem.type,'subj')
+    maingui.dataTree.SetCurrElem(procElem.iGroup, procElem.iSubj, 1, 1);
+    maingui.dataTree.LoadCurrElem()
+    procElem = maingui.dataTree.currElem;
+     maingui.dataTree.SetCurrElem(procElem.iGroup, procElem.iSubj);
+    maingui.dataTree.LoadCurrElem()
+elseif strcmp(procElem.type,'group')
+    maingui.dataTree.SetCurrElem(procElem.iGroup, 1, 1, 1);
+    maingui.dataTree.LoadCurrElem()
+    procElem = maingui.dataTree.currElem;
+    maingui.dataTree.SetCurrElem(procElem.iGroup);
+    maingui.dataTree.LoadCurrElem()
+end
+probe = procElem.acquired.probe;
+stim = procElem.acquired.stim;
+metaDataTags = procElem.acquired.metaDataTags;
+
+obj = SnirfClass(data, stim, probe, metaDataTags);
+
+% call PlotProbe2 GUI
+PlotProbe2(obj);
 
 
 

@@ -27,7 +27,7 @@ try
     
     % Parse arguments
     if ~exist('addremove','var')
-    addremove = 1;
+    	addremove = 1;
     end
     
     % Add libraries on which Homer3 depends
@@ -241,9 +241,7 @@ for ii = 1:length(d)
     end
     addSearchPaths(rootpath);
 end
-if exist([pwd, '/Utils/submodules'],'dir')
-    addpath([pwd, '/Utils/submodules'],'-end');
-end
+
 
 
 

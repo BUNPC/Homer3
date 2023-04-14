@@ -82,7 +82,7 @@ obj.ExportStim();
 
 pause(2);
 
-obj.EditStim();
+obj.EditStim(1);
 
 obj.ClosePlots();
 dataTree.ReloadStim();

@@ -455,7 +455,10 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         function err = LoadStim(obj, fileobj)
             err = 0;
             
-            if obj.LoadStimOverride(obj.GetFilename())                
+            if obj.LoadStimOverride(obj.GetFilename())
+%                 if obj.GetError()<0
+%                     err = -1;
+%                 end
                 return
             end
             

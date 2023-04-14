@@ -47,7 +47,7 @@ end
 if ~exist('textLineWidth','var') || isempty(textLineWidth)
     textLineWidth = 70;
 end
-if ~exist('options','var')
+if ~exist('options','var') || isempty(options)
     options = '';
 end
 
@@ -78,7 +78,7 @@ nbttns       = length(bttns)+ncheckboxes;
 
 
 % Initial X size and position of text
-Wtext = 70;
+Wtext = textLineWidth;
 
 nNewLines = length(find(msg == sprintf('\n')))+4; %#ok<SPRINTFN>
 nLines = ceil(length(msg) / Wtext)*1.5;
@@ -186,6 +186,9 @@ for k = 1:nbttns
             uicontrol('parent',hf, 'style','text', 'string',bttns{k}, 'units','characters', 'position',[p(1)+4, p(2), p(3), p(4)], ...
                 'horizontalalignment','left', 'fontsize',fs(2), 'userdata',2, 'backgroundcolor',[1.0, 1.0, 1.0]);
         else
+            if nbttns==1
+                p(1) = floor(Wfig/2 - Wbttn/2);
+            end
             uicontrol('parent',hf, 'style',selectionStyle, 'string',bttns{k}, 'units','characters', 'position',[p(1), p(2), p(3), p(4)+Hbttn/2], ...
                 'tag',sprintf('%d', k), 'fontsize',fs(2), 'callback',@pushbuttonGroup_Callback, 'userdata',2, 'backgroundcolor',[1.0, 1.0, 1.0]);
         end

@@ -55,7 +55,7 @@ function err = hdf5write_safe(fname, name, val, options)
         return
     elseif isinteger(val)
         if length(val) > 1 && ~force_scalar || force_array
-            write_numeric_array(fid, fname, name, val);  % As of now, no integer arrays exist
+            write_numeric_array(fname, name, val);  % As of now, no integer arrays exist
         else
             write_integer(fid, fname, name, val);
         end

@@ -20,7 +20,7 @@ url = gitGetOrigin(repoFull);
 urlroot = fileparts(url);
 branch = gitGetBranch(repoFull);
 
-if strcmp(options, 'update')
+if optionExists(options, 'update')
     try
         rmdir([repoFull, '/submodules'],'s')
     catch

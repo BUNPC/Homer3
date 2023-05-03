@@ -665,7 +665,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         
         % -------------------------------------------------------
         function SaveData(obj, fileobj)
-            for ii=1:length(obj.data)
+            for ii = 1:length(obj.data)
                 obj.data(ii).SaveHdf5(fileobj, [obj.location, '/data', num2str(ii)]);
             end
         end
@@ -701,8 +701,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         end
         
         
+        
         % -------------------------------------------------------
-        function SaveHdf5(obj, fileobj, ~)
+        function err = SaveHdf5(obj, fileobj, ~)
+            err = 0;
+            
             % Arg 1
             if ~exist('fileobj','var') || isempty(fileobj)
                 error('Unable to save file. No file name given.')
@@ -712,31 +715,49 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             if exist(fileobj, 'file')
                 delete(fileobj);
             end
-            obj.fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
-            H5F.close(obj.fid);
+
+            % Convert file object to HDF5 file descriptor
+            obj.fid = HDF5_GetFileDescriptor(fileobj);
+            if obj.fid < 0
+                err = -1;
+                return;
+            end
             
             %%%%% Save this object's properties
-            
-            % Save formatVersion
-            if isempty(obj.formatVersion)
-                obj.formatVersion = '1.1';
+            try
+                
+                % Save formatVersion
+                if isempty(obj.formatVersion)
+                    obj.formatVersion = '1.1';
+                end
+                hdf5write_safe(obj.fid, '/formatVersion', obj.formatVersion);
+                
+                % Save metaDataTags
+                obj.SaveMetaDataTags(obj.fid);
+                
+                % Save data
+                obj.SaveData(obj.fid);
+                
+                % Save stim
+                obj.SaveStim(obj.fid);
+                
+                % Save sd
+                obj.SaveProbe(obj.fid);
+                
+                % Save aux
+                obj.SaveAux(obj.fid);
+                
+            catch ME
+                
+                H5F.close(obj.fid);
+                if ispathvalid(fileobj)
+                    delete(fileobj);
+                end
+                rethrow(ME)
+                
             end
-            hdf5write_safe(fileobj, '/formatVersion', obj.formatVersion);
             
-            % Save metaDataTags
-            obj.SaveMetaDataTags(fileobj);
-            
-            % Save data
-            obj.SaveData(fileobj);
-            
-            % Save stim
-            obj.SaveStim(fileobj);
-            
-            % Save sd
-            obj.SaveProbe(fileobj);
-            
-            % Save aux
-            obj.SaveAux(fileobj);
+            H5F.close(obj.fid);
         end
         
         

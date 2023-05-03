@@ -116,7 +116,9 @@ classdef AuxClass < FileLoadSaveClass
 
         
         % -------------------------------------------------------
-        function SaveHdf5(obj, fileobj, location)
+        function err = SaveHdf5(obj, fileobj, location)
+            err = 0;
+            
             % Arg 1
             if ~exist('fileobj', 'var') || isempty(fileobj)
                 error('Unable to save file. No file name given.')
@@ -129,19 +131,21 @@ classdef AuxClass < FileLoadSaveClass
                 location = ['/',location];
             end
             
-            if ~exist(fileobj, 'file')
-                fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
-                H5F.close(fid);
-            end     
+            % Convert file object to HDF5 file descriptor
+            fid = HDF5_GetFileDescriptor(fileobj);
+            if fid < 0
+                err = -1;
+                return;
+            end
             
             if obj.debuglevel.Get() == obj.debuglevel.SimulateBadData()
                 obj.SimulateBadData();
             end
             
-            hdf5write_safe(fileobj, [location, '/name'], obj.name);
-            hdf5write_safe(fileobj, [location, '/dataTimeSeries'], obj.dataTimeSeries, 'array');
-            hdf5write_safe(fileobj, [location, '/time'], obj.time, 'array');
-            hdf5write_safe(fileobj, [location, '/timeOffset'], obj.timeOffset, 'array');
+            hdf5write_safe(fid, [location, '/name'], obj.name);
+            hdf5write_safe(fid, [location, '/dataTimeSeries'], obj.dataTimeSeries, 'array');
+            hdf5write_safe(fid, [location, '/time'], obj.time, 'array');
+            hdf5write_safe(fid, [location, '/timeOffset'], obj.timeOffset, 'array');
         end
         
         

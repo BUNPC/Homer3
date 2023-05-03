@@ -206,13 +206,6 @@ classdef DataClass < FileLoadSaveClass
                 fileobj = obj.GetFilename();
             end
             
-            % Convert file object to HDF5 file descriptor
-            obj.fid = HDF5_GetFileDescriptor(fileobj);
-            if obj.fid < 0
-                err = -1;
-                return;
-            end
-            
             try
                 % Open group
                 [gid, fid] = HDF5_GroupOpen(fileobj, location);

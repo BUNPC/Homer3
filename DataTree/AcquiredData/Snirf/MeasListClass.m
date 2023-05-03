@@ -126,7 +126,7 @@ classdef MeasListClass < FileLoadSaveClass
                 obj.moduleIndex     = HDF5_DatasetLoad(gid, 'moduleIndex');
                 
                 HDF5_GroupClose(fileobj, gid, fid);
-            catch ME
+            catch
                 err = -1;
                 return
             end
@@ -146,8 +146,9 @@ classdef MeasListClass < FileLoadSaveClass
 
         
         % -------------------------------------------------------
-        function SaveHdf5(obj, fileobj, location)
-
+        function err = SaveHdf5(obj, fileobj, location)
+            err = 0;
+            
             % Arg 1
             if ~exist('fileobj', 'var') || isempty(fileobj)
                 error('Unable to save file. No file name given.')
@@ -159,21 +160,23 @@ classdef MeasListClass < FileLoadSaveClass
             elseif location(1)~='/'
                 location = ['/',location];
             end
-            
-            if ~exist(fileobj, 'file')
-                fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
-                H5F.close(fid);
+
+            % Convert file object to HDF5 file descriptor
+            fid = HDF5_GetFileDescriptor(fileobj);
+            if fid < 0
+                err = -1;
+                return;
             end
             
-            hdf5write_safe(fileobj, [location, '/sourceIndex'], uint64(obj.sourceIndex));
-            hdf5write_safe(fileobj, [location, '/detectorIndex'], uint64(obj.detectorIndex));
-            hdf5write_safe(fileobj, [location, '/wavelengthIndex'], uint64(obj.wavelengthIndex));
-            hdf5write_safe(fileobj, [location, '/dataType'], uint64(obj.dataType));
-            hdf5write_safe(fileobj, [location, '/dataTypeLabel'], obj.dataTypeLabel);
-            hdf5write_safe(fileobj, [location, '/dataTypeIndex'], uint64(obj.dataTypeIndex));
-            hdf5write_safe(fileobj, [location, '/sourcePower'], obj.sourcePower);
-            hdf5write_safe(fileobj, [location, '/detectorGain'], obj.detectorGain);
-            hdf5write_safe(fileobj, [location, '/moduleIndex'], uint64(obj.moduleIndex));
+            hdf5write_safe(fid, [location, '/sourceIndex'], uint64(obj.sourceIndex));
+            hdf5write_safe(fid, [location, '/detectorIndex'], uint64(obj.detectorIndex));
+            hdf5write_safe(fid, [location, '/wavelengthIndex'], uint64(obj.wavelengthIndex));
+            hdf5write_safe(fid, [location, '/dataType'], uint64(obj.dataType));
+            hdf5write_safe(fid, [location, '/dataTypeLabel'], obj.dataTypeLabel);
+            hdf5write_safe(fid, [location, '/dataTypeIndex'], uint64(obj.dataTypeIndex));
+            hdf5write_safe(fid, [location, '/sourcePower'], obj.sourcePower);
+            hdf5write_safe(fid, [location, '/detectorGain'], obj.detectorGain);
+            hdf5write_safe(fid, [location, '/moduleIndex'], uint64(obj.moduleIndex));
         end
 
                 

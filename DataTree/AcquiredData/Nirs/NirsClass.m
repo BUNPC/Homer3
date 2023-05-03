@@ -1258,7 +1258,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             % DetGrommetRot
             d2 = size(obj.SD.DetPos,1) - length(obj.SD.DetGrommetRot);
             if d2 > 0
-                for ii = length(obj.SD.SrcGrommetRot)+1:length(obj.SD.SrcGrommetRot)+d2
+                for ii = length(obj.SD.DetGrommetRot)+1:length(obj.SD.DetGrommetRot)+d2
                     if iscell(obj.SD.DetGrommetRot)
                         obj.SD.DetGrommetRot{ii} = 0;
                     else
@@ -1336,12 +1336,21 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             obj.SD.DetPos3D = snirf.probe.detectorPos3D;
             obj.SD.MeasList = snirf.GetMeasList();
             obj.SD.SpatialUnit = snirf.GetLengthUnit();
-            obj.SD.Landmarks.pos        = snirf.probe.landmarkPos2D;
-            obj.SD.Landmarks2D.pos      = snirf.probe.landmarkPos2D;
-            obj.SD.Landmarks3D.pos      = snirf.probe.landmarkPos3D;
-            obj.SD.Landmarks.labels     = snirf.probe.landmarkLabels;
-            obj.SD.Landmarks2D.labels   = snirf.probe.landmarkLabels;
-            obj.SD.Landmarks3D.labels   = snirf.probe.landmarkLabels;
+            if length(snirf.probe.landmarkLabels) == size(snirf.probe.landmarkPos3D,1)
+                obj.SD.Landmarks3D.labels   = snirf.probe.landmarkLabels;
+            	obj.SD.Landmarks3D.pos      = snirf.probe.landmarkPos3D;
+            end
+            if length(snirf.probe.landmarkLabels) == size(snirf.probe.landmarkPos2D,1)
+            	obj.SD.Landmarks2D.labels   = snirf.probe.landmarkLabels;
+                obj.SD.Landmarks2D.pos      = snirf.probe.landmarkPos2D;
+        	end
+            if     ~isempty(obj.SD.Landmarks3D.labels)
+                obj.SD.Landmarks.pos        = obj.SD.Landmarks3D.pos;
+                obj.SD.Landmarks.labels     = obj.SD.Landmarks3D.labels;
+            elseif ~isempty(obj.SD.Landmarks2D.labels)
+                obj.SD.Landmarks.pos        = obj.SD.Landmarks2D.pos;
+                obj.SD.Landmarks.labels     = obj.SD.Landmarks2D.labels;
+            end                
         end
         
         
@@ -1391,8 +1400,10 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         % ----------------------------------------------------------------------------------
         function ConvertSnirf(obj, snirf)
             obj.ConvertSnirfProbe(snirf);
-            obj.d = snirf.data(1).dataTimeSeries;
-            obj.t = snirf.data(1).time;
+            if ~isempty(snirf.data)
+                obj.d = snirf.data(1).dataTimeSeries;
+                obj.t = snirf.data(1).time;
+            end
             obj.ConvertSnirfStim(snirf);
             obj.ConvertSnirfAux(snirf);
         end
@@ -1447,17 +1458,17 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             end
             if isempty(obj.SD.SrcGrommetRot)
                 for ii = 1:size(obj.SD.SrcPos,1)
-                    obj.SD.SrcGrommetRot(ii) = 0;
+                    obj.SD.SrcGrommetRot{ii} = 0;
                 end
             end
             if isempty(obj.SD.DetGrommetRot)
                 for ii = 1:size(obj.SD.DetPos,1)
-                    obj.SD.DetGrommetRot(ii) = 0;
+                    obj.SD.DetGrommetRot{ii} = 0;
                 end
             end
             if isempty(obj.SD.DummyGrommetRot)
                 for ii = 1:size(obj.SD.DummyPos,1)
-                    obj.SD.DummyGrommetRot(ii) = 0;
+                    obj.SD.DummyGrommetRot{ii} = 0;
                 end
             end
             if isempty(obj.CondNames)

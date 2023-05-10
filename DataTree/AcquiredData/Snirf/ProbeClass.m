@@ -387,7 +387,7 @@ classdef ProbeClass < FileLoadSaveClass
         
         % ---------------------------------------------------------
         function srcpos = GetSrcPos(obj, options) %#ok<*INUSD>
-            if ~exists('options','var')
+            if ~exist('options','var')
                 options = '';
             end
             if optionExists(options,'2D')
@@ -397,12 +397,12 @@ classdef ProbeClass < FileLoadSaveClass
                     srcpos = obj.sourcePos3D;
                 end
             else
-	            if ~isempty(obj.sourcePos3D)
-	                srcpos = obj.sourcePos3D;
-	            else
-	                srcpos = obj.sourcePos2D;
-	            end                
-	        end
+                if ~isempty(obj.sourcePos3D)
+                    srcpos = obj.sourcePos3D;
+                else
+                    srcpos = obj.sourcePos2D;
+                end
+            end
         end
         
         

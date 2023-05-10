@@ -644,6 +644,7 @@ classdef TreeNodeClass < handle
         end
         
                 
+                
         % ----------------------------------------------------------------------------------
         function idx = GetConditionIdx(obj, CondName)
             C = obj.GetConditions();
@@ -651,9 +652,48 @@ classdef TreeNodeClass < handle
         end
         
         
+        
+        % ----------------------------------------------------------------------------------
+        function SD = GetSDG(obj, option)            
+            if exist('option','var')
+                SD = obj.runs(1).GetSDG(option);
+            else
+                SD = obj.runs(1).GetSDG();
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function srcpos = GetSrcPos(obj, options)
+            srcpos = [];
+            if exist('options','var')
+                options = '';
+            end
+            if isempty(obj.children)
+                return;
+            end
+            srcpos = obj.children(1).GetSrcPos(options);
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function detpos = GetDetPos(obj, options)
+            detpos = [];
+            if exist('options','var')
+                options = '';
+            end
+            if isempty(obj.children)
+                return;
+            end
+            detpos = obj.children(1).GetDetPos(options);
+        end
+        
+        
+        
         % ---------------------------------------------------------
         function ml = GetMeasurementList(obj, matrixMode, iBlk, dataType)
-            ml = [];
             if ~exist('matrixMode','var')
                 matrixMode = '';
             end
@@ -718,6 +758,18 @@ classdef TreeNodeClass < handle
         end
         
         
+
+        % -----------------------------------------------------------------------
+        function [md2d, md3d] = GetChannelsMeanDistance(obj)
+            md2d = [];
+            md3d = [];
+            if isempty(obj.acquired)
+                return;
+            end
+            [md2d, md3d] = obj.acquired.GetChannelsMeanDistance();
+        end
+        
+                
         
         % ----------------------------------------------------------------------------------
         function ch = GetMeasList(obj, options, iBlk)

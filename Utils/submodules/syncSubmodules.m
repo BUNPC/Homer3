@@ -70,7 +70,13 @@ ii = 1;
 
 submodules = parseGitSubmodulesFile(synctool.repoParentFull);
 [cmds, errs, msgs] = gitSubmodulesClone(synctool.repoParentFull, false, options);
-
+fprintf('\n');
+for ii = 2:length(errs)
+    if errs(ii) > 0
+        [~,submodulename] = fileparts(submodules{ii-1,1});
+        fprintf('WARNING - Problem cloning %s: %s', submodulename, msgs{ii});
+    end
+end
 fprintf('\n');
 
 cmds{ii,1} = sprintf('cd %s', synctool.repoParentFull); ii = ii+1;

@@ -794,14 +794,45 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ---------------------------------------------------------
-        function srcpos = GetSrcPos(obj, ~)
+        function srcpos = GetSrcPos(obj, options) %#ok<*INUSD>
+            if ~exist('options','var')
+                options = '';
+            end
+            if optionExists(options,'2D')
+                if ~isempty(obj.SD.SrcPos)
             srcpos = obj.SD.SrcPos;
+                else
+                    srcpos = obj.SD.SrcPos3D;
+                end
+            else
+                if ~isempty(obj.SD.SrcPos3D)
+                    srcpos = obj.SD.SrcPos3D;
+                else
+                    srcpos = obj.SD.SrcPos;
+                end
+            end
         end
         
         
+        
         % ---------------------------------------------------------
-        function detpos = GetDetPos(obj, ~)
-            detpos = obj.SD.DetPos;
+        function detpos = GetDetPos(obj, options)
+            if ~exist('options','var')
+                options = '';
+            end
+            if optionExists(options,'2D')
+                if ~isempty(obj.SD.DetPos)
+                    detpos = obj.SD.DetPos;
+                else
+                    detpos = obj.SD.DetPos3D;
+                end
+            else
+                if ~isempty(obj.SD.DetPos3D)
+                    detpos = obj.SD.DetPos3D;
+                else
+                    detpos = obj.SD.DetPos;
+                end
+            end
         end
         
         
@@ -1048,12 +1079,27 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function SD = InitProbe(obj)
+        function SD = InitProbe(obj, srcpos, detpos, ml, lambda, dummypos)
+            if nargin<2
+                srcpos = [];
+            end
+            if nargin<3
+                detpos = [];
+            end
+            if nargin<4
+                ml = [];
+            end
+            if nargin<5
+                lambda = [];
+            end
+            if nargin<6
+                dummypos = [];
+            end
             SD = struct(...
-                'Lambda',[], ...
-                'SrcPos',[], ...
-                'DetPos',[], ...
-                'DummyPos',[], ...
+                'Lambda',lambda, ...
+                'SrcPos',srcpos, ...
+                'DetPos',detpos, ...
+                'DummyPos',dummypos, ...
                 'SrcPos3D',[], ...
                 'DetPos3D',[], ...
                 'DummyPos3D',[], ...
@@ -1069,7 +1115,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 'Landmarks',obj.InitLandmarks(), ...
                 'Landmarks2D',obj.InitLandmarks(), ...
                 'Landmarks3D',obj.InitLandmarks(), ...
-                'MeasList',[], ...
+                'MeasList',ml, ...
                 'MeasListAct',[], ...
                 'SpringList',[], ...
                 'AnchorList',{{}}, ...

@@ -32,7 +32,7 @@ if all(errs==0)
         ds = '';
         %ds = char(datetime('now','TimeZone','local','Format','yyyy-MM-dd HH:mm:ss'));
     end
-    [dateNum, dateStr] = datestr2datenum(ds);   
+    [dateNum, dateStr] = datestr2datenum(ds(1:20));   
 end
 cd(currdir)
 

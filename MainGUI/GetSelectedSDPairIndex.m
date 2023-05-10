@@ -1,7 +1,7 @@
 function iSD = GetSelectedSDPairIndex(iS, iD)
 global maingui
 
-SD       = maingui.dataTree.currElem.GetSDG();
+SD       = maingui.dataTree.currElem.GetSDG('2D');
 iSrcDet  = maingui.axesSDG.iSrcDet;
 nSDPairsSelected = size(iSrcDet,1);
 

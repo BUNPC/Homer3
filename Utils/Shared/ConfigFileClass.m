@@ -375,6 +375,9 @@ classdef ConfigFileClass < handle
             else
                 valOptions = strtrim_improve(obj.linestr(ii:jj));
                 valOptions = split(valOptions,', ');
+                for ii = 1:length(valOptions)
+                    valOptions{ii} = strtrim_improve(valOptions{ii});
+                end
             end
         end
         
@@ -416,7 +419,28 @@ classdef ConfigFileClass < handle
             end
         end
         
-         % -------------------------------------------------------------------------------------------------
+        
+        
+        % -------------------------------------------------------------------------------------------------
+        function valOptions = GetValueOptions(obj, paramName)
+            valOptions = '';
+            if nargin<2
+                return;
+            end
+            if ~ischar(paramName)
+                return;
+            end
+            for ii = 1:length(obj.params)
+                if strcmpi(obj.params(ii).name, paramName)
+                    valOptions = obj.params(ii).valOptions;
+                    break;
+                end
+            end
+        end
+        
+        
+        
+        % -------------------------------------------------------------------------------------------------
         function val = GetMultiValues(obj, paramName)
             val = '';
             if nargin<2
@@ -435,11 +459,24 @@ classdef ConfigFileClass < handle
             end
         end
         
+        
+        
         % -------------------------------------------------------------------------------------------------
-        function SetValue(obj, paramName, val)
+        function SetValue(obj, paramName, val, autosave)
             if nargin<3
                 return;
             end
+            if ~exist('autosave','var')
+                autosave = 0;
+            end
+            if ischar(autosave) 
+                if strcmpi(autosave,'autosave')
+                    autosave = true;
+                end
+            else
+                autosave = false;
+            end
+            
             if ~ischar(paramName)
                 return;
             end
@@ -447,6 +484,10 @@ classdef ConfigFileClass < handle
                 if strcmp(obj.params(ii).name, paramName)
                     obj.params(ii).val{1} = val;
                 end
+            end
+            
+            if autosave
+                obj.Save();
             end
         end
         

@@ -549,6 +549,17 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function fnameTsv = GetStimTsvFilename(obj)
+            fnameTsv = [];
+            if isempty(obj.acquired)
+                return;
+            end
+            fnameTsv = obj.acquired.GetStimTsvFilename();
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
         function EditStim(obj, waitForInput)
             if ~exist('waitForInput','var')
                 waitForInput = 0;
@@ -558,10 +569,9 @@ classdef TreeNodeClass < handle
                 return;
             end
             filenameData = [obj.path, obj.GetFilename()];
-            [p1,f1] = fileparts(filenameData);
             
             % From data file name get events TSV file and load in matlab editor
-            filenameEvents = [p1, '/', f1, '_events.tsv'];
+            filenameEvents = obj.GetStimTsvFilename();
             if ~ispathvalid(filenameEvents)
                 obj.logger.Write('Events TSV file for %s doesn''t exist.\n', filenameData);
                 obj.ExportStim();

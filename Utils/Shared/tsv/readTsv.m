@@ -1,5 +1,6 @@
 function [tsv, err] = readTsv(filename, option)
 global cfg
+
 cfg = InitConfig(cfg);
 err = 0;
 
@@ -26,7 +27,7 @@ end
 fid = fopen(filename, 'rt');
 nLines = 0;
 ncols = 0;
-tabReplacefFlag = [];
+tabReplacefFlag = false;
 while 1
     line = fgetl(fid);
     if line==-1
@@ -51,15 +52,18 @@ while 1
     end
     
     % Check for errors
-    if errorCheck([f,e], nLines, c, ncols, delimiter)<0
+    err = errorCheck([f,e], nLines, c, ncols, delimiter);
+    if err < 0
         err = -1;
         return;
     end
     
     % If delimiter contains non-tab spaces then raise flag that
     % they need to be replaces by tabs in a tav file
-    if ~isempty(find(strcmp(delimiter,' ')))
-        tabReplacefFlag = [tabReplacefFlag, nLines];
+    if err > 0
+        tabReplacefFlag = true;
+        line(line==' ') = sprintf('\t');
+        c = str2cell(strtrim(line), delimiter);
     end
     
     if isempty(tsv)
@@ -78,18 +82,10 @@ fclose(fid);
 
 % If delimiter contains non-tab spaces then raise flag that
 % they need to be replaces by tabs in a tsv file
-if ~isempty(tabReplacefFlag)
-    fprintf('WARNING: File  "%s"  uses space separators instead of tabs at lines:  [ %s ]. This could confuse some applications\n', ...
-        [f,e], num2str(tabReplacefFlag));
-    val = '';
-    if ~isempty(cfg)
-        val = cfg.GetValue('Replace TSV File Tabs with Spaces');
-    end
-    if strcmpi(val, 'Yes')
-        printMethod(sprintf('Rewriting file %s to replace space separators with tabs\n', filename));
-        copyfile(filename, [filename, '.orig']);
-        writeTsv(filename, tsv);
-    end
+if tabReplacefFlag
+    printMethod(sprintf('Rewriting file %s to replace space separators with tabs\n', filename));
+    copyfile(filename, [filename, '.orig']);
+    writeTsv(filename, tsv);
 end
 
 
@@ -124,9 +120,9 @@ end
 
 
 
-
 % -----------------------------------------------------------
 function err = errorCheck(filename, nLines, c, ncols, delimiter)
+global cfg
 err = 0;
 errmsg = '';
 if length(c) ~= ncols
@@ -144,10 +140,30 @@ end
 if ~isempty(errmsg)
     errmsgLen = length([errmsg{:}]);
     if errmsgLen > 70 
-        errmsgLen = 100;
+        errmsgLen = 130;
     end
-    MenuBox(errmsg,{},[],errmsgLen);
-    err = -1;
+    cfgval = cfg.GetValue('Replace TSV File Tabs with Spaces');
+    cfgvalOptions = cfg.GetValueOptions('Replace TSV File Tabs with Spaces');
+    if strcmpi(cfgval, 'ask me')
+	    MenuBox(errmsg,{},[],errmsgLen);
+	    msg = sprintf('Do you want to replace TSV File Tabs with Spaces for file %s', filename);
+	    q = MenuBox(msg, {'Yes','No'},[],[],'dontAskAgain');
+	    if q(1) == 1
+	        if q(2) == 1
+	            cfg.SetValue('Replace TSV File Tabs with Spaces', cfgvalOptions{1}, 'autosave');
+	        end
+	        err = 2;
+	    elseif q(1) == 2
+	        if q(2) == 1
+	            cfg.SetValue('Replace TSV File Tabs with Spaces', cfgvalOptions{3}, 'autosave');
+	        end
+	        err = -1;
+	    end
+    elseif  strcmpi(cfgval, cfgvalOptions{1})
+        err = 2;
+    elseif  strcmpi(cfgval, cfgvalOptions{3})
+	    err = -1;
+    end
 end
 printMethod(errmsg);
 

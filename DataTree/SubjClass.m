@@ -519,26 +519,6 @@ classdef SubjClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function srcpos = GetSrcPos(obj,option)
-            if exist('option','var')
-                srcpos = obj.sess(1).GetSrcPos(option);
-            else
-                srcpos = obj.sess(1).GetSrcPos();
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function detpos = GetDetPos(obj,option)
-            if exist('option','var')
-                detpos = obj.sess(1).GetDetPos(option);
-            else
-                detpos = obj.sess(1).GetDetPos();
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
         function bbox = GetSdgBbox(obj)
             bbox = obj.sess(1).GetSdgBbox();
         end
@@ -547,13 +527,6 @@ classdef SubjClass < TreeNodeClass
         % ----------------------------------------------------------------------------------
         function probe = GetProbe(obj)
             probe = obj.sess(1).GetProbe();
-%             for sess = obj.sess
-%                for run = sess.runs
-%                     if ~(probe == run.GetProbe()) 
-%                         warning(['Probe ', run.name, 'differs from ', obj.sess(1).runs(1).name]) 
-%                     end
-%                end   
-%            end
         end
         
         

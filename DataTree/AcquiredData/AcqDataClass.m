@@ -92,7 +92,6 @@ classdef AcqDataClass < matlab.mixin.Copyable
             if ~ischar(fileobj)
                 fileobj = '';
             end
-            obj.LoadBids(fileobj);           
         end
 
 
@@ -162,7 +161,11 @@ classdef AcqDataClass < matlab.mixin.Copyable
             if isempty(file)
                 return
             end
-            obj.bids.stim = readTsv([filesepStandard(p), file(1).name],'numstr2num');
+            [obj.bids.stim, err] = readTsv([filesepStandard(p), file(1).name],'numstr2num');
+%             if err < 0
+%                 obj.SetError(-8);
+%                 return;
+%             end
             if isempty(obj.bids.stim)
                 return
             end

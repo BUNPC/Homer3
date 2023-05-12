@@ -452,13 +452,8 @@ classdef SessClass < TreeNodeClass
         
         
         % ----------------------------------------------------------------------------------
-        function probe = GetProbe(obj, option)
+        function probe = GetProbe(obj, ~)
             probe = obj.runs(1).GetProbe();
-%             for run = obj.runs
-%                if ~(probe == run.GetProbe()) 
-%                   warning(['Probe ', run.name, 'differs from ', obj.runs(1).name]) 
-%                end
-%             end
         end
         
         
@@ -468,26 +463,6 @@ classdef SessClass < TreeNodeClass
                 SD = obj.runs(1).GetSDG(option);
             else
                 SD = obj.runs(1).GetSDG();
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function srcpos = GetSrcPos(obj,option)
-            if exist('option','var')
-                srcpos = obj.runs(1).GetSrcPos(option);
-            else
-                srcpos = obj.runs(1).GetSrcPos();
-            end
-        end
-        
-        
-        % ----------------------------------------------------------------------------------
-        function detpos = GetDetPos(obj,option)
-            if exist('option','var')
-                detpos = obj.runs(1).GetDetPos(option);
-            else
-                detpos = obj.runs(1).GetDetPos();
             end
         end
         

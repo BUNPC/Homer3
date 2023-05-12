@@ -138,7 +138,6 @@ classdef DataClass < FileLoadSaveClass
                return;
             end
             
-            
             try
                 % Open group
                 [gid, fid] = HDF5_GroupOpen(fileobj, location);
@@ -183,6 +182,7 @@ classdef DataClass < FileLoadSaveClass
         end
         
         
+        
         % -------------------------------------------------------
         function err = LoadTime(obj, fileobj, location)
             err = 0;
@@ -205,11 +205,6 @@ classdef DataClass < FileLoadSaveClass
             elseif isempty(fileobj)
                 fileobj = obj.GetFilename();
             end
-            if isempty(fileobj)
-               err = -1;
-               return;
-            end
-            
             
             try
                 % Open group
@@ -222,13 +217,13 @@ classdef DataClass < FileLoadSaveClass
             catch
                 err = -1;
             end
-            
             err = ErrorCheck(obj, err, {'time'});
         end
         
         
         % -------------------------------------------------------
-        function SaveHdf5(obj, fileobj, location)
+        function err = SaveHdf5(obj, fileobj, location)
+            err = 0;
             if ~exist('fileobj', 'var') || isempty(fileobj)
                 error('Unable to save file. No file name given.')
             end
@@ -240,16 +235,17 @@ classdef DataClass < FileLoadSaveClass
                 location = ['/',location];
             end
             
-            if ~exist(fileobj, 'file')
-                fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
-                H5F.close(fid);
+            fid = HDF5_GetFileDescriptor(fileobj);
+            if fid < 0
+                err = -1;
+                return;
             end
             
-            hdf5write_safe(fileobj, [location, '/dataTimeSeries'], obj.dataTimeSeries, 'array');
-            hdf5write_safe(fileobj, [location, '/time'], obj.time, 'array');
+            hdf5write_safe(fid, [location, '/dataTimeSeries'], obj.dataTimeSeries, 'array');
+            hdf5write_safe(fid, [location, '/time'], obj.time, 'array');
             
-            for ii=1:length(obj.measurementList)
-                obj.measurementList(ii).SaveHdf5(fileobj, [location, '/measurementList', num2str(ii)]);
+            for ii = 1:length(obj.measurementList)
+                obj.measurementList(ii).SaveHdf5(fid, [location, '/measurementList', num2str(ii)]);
             end
         end
         
@@ -1093,7 +1089,11 @@ classdef DataClass < FileLoadSaveClass
                 return;
             end
             if ~all(obj.dataTimeSeries(:)==obj2.dataTimeSeries(:))
-                return;
+                obj.dataTimeSeries( isnan(obj.dataTimeSeries(:)) | isinf(obj.dataTimeSeries(:)) ) = 0;
+                obj2.dataTimeSeries( isnan(obj2.dataTimeSeries(:)) | isinf(obj2.dataTimeSeries(:)) ) = 0;
+                if ~all(obj.dataTimeSeries(:)==obj2.dataTimeSeries(:))
+                    return;
+                end
             end
             if ~all(obj.time(:)==obj2.time(:))
                 return;

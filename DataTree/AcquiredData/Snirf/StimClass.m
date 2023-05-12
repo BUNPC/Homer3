@@ -144,7 +144,9 @@ classdef StimClass < FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function SaveHdf5(obj, fileobj, location)
+        function err = SaveHdf5(obj, fileobj, location)
+            err = 0;
+
             if isempty(obj.data)
                 obj.data = 0;
             end
@@ -161,11 +163,13 @@ classdef StimClass < FileLoadSaveClass
                 location = ['/',location];
             end
 
-            if ~ispathvalid(fileobj, 'file')
-                fid = H5F.create(fileobj, 'H5F_ACC_TRUNC', 'H5P_DEFAULT', 'H5P_DEFAULT');
-                H5F.close(fid);
+            % Convert file object to HDF5 file descriptor
+            fid = HDF5_GetFileDescriptor(fileobj);
+            if fid < 0
+                err = -1;
+                return;
             end
-            
+                        
             if obj.debuglevel.Get() == obj.debuglevel.SimulateBadData()
                 obj.SimulateBadData();
             end

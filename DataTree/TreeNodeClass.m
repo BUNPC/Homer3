@@ -549,16 +549,29 @@ classdef TreeNodeClass < handle
         
         
         % ----------------------------------------------------------------------------------
-        function EditStim(obj)
+        function fnameTsv = GetStimTsvFilename(obj)
+            fnameTsv = [];
+            if isempty(obj.acquired)
+                return;
+            end
+            fnameTsv = obj.acquired.GetStimTsvFilename();
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function EditStim(obj, waitForInput)
+            if ~exist('waitForInput','var')
+                waitForInput = 0;
+            end
             if isempty(obj.acquired)
                 MenuBox(sprintf('%s level processing does not have stims. Please select a run to edit stim marks\n', [upper(obj.type(1)), obj.type(2:end)]));
                 return;
             end
             filenameData = [obj.path, obj.GetFilename()];
-            [p1,f1] = fileparts(filenameData);
             
             % From data file name get events TSV file and load in matlab editor
-            filenameEvents = [p1, '/', f1, '_events.tsv'];
+            filenameEvents = obj.GetStimTsvFilename();
             if ~ispathvalid(filenameEvents)
                 obj.logger.Write('Events TSV file for %s doesn''t exist.\n', filenameData);
                 obj.ExportStim();
@@ -578,7 +591,9 @@ classdef TreeNodeClass < handle
                 end
                 editorTab = editorTabs(ii);
                 editorTab.makeActive;
-                % MenuBox('Please edit TSV stim file and save it, then click the ''OK'' button.');
+                if waitForInput
+                    MenuBox('Please edit TSV stim file and save it, then click the ''OK'' button.');
+                end
             else
                 if ispc()
                     cmd = sprintf('start notepad %s', filenameEvents);
@@ -588,7 +603,9 @@ classdef TreeNodeClass < handle
                     cmd = sprintf('open -a TextEdit %s', filenameEvents);
                     obj.logger.Write('cmd:  "%s"', cmd);
                     system(cmd);                    
-                    % MenuBox(sprintf('The events file associated with the current processing element is\n%s\n Open the file in a text editor to modify stim marks', filenameEvents));
+                    if waitForInput
+                        MenuBox(sprintf('The events file associated with the current processing element is\n%s\n Open the file in a text editor to modify stim marks', filenameEvents));
+                    end
                 end
             end
         end
@@ -637,6 +654,7 @@ classdef TreeNodeClass < handle
         end
         
                 
+                
         % ----------------------------------------------------------------------------------
         function idx = GetConditionIdx(obj, CondName)
             C = obj.GetConditions();
@@ -644,9 +662,48 @@ classdef TreeNodeClass < handle
         end
         
         
+        
+        % ----------------------------------------------------------------------------------
+        function SD = GetSDG(obj, option)            
+            if exist('option','var')
+                SD = obj.runs(1).GetSDG(option);
+            else
+                SD = obj.runs(1).GetSDG();
+            end
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function srcpos = GetSrcPos(obj, options)
+            srcpos = [];
+            if exist('options','var')
+                options = '';
+            end
+            if isempty(obj.children)
+                return;
+            end
+            srcpos = obj.children(1).GetSrcPos(options);
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function detpos = GetDetPos(obj, options)
+            detpos = [];
+            if exist('options','var')
+                options = '';
+            end
+            if isempty(obj.children)
+                return;
+            end
+            detpos = obj.children(1).GetDetPos(options);
+        end
+        
+        
+        
         % ---------------------------------------------------------
         function ml = GetMeasurementList(obj, matrixMode, iBlk, dataType)
-            ml = [];
             if ~exist('matrixMode','var')
                 matrixMode = '';
             end
@@ -711,6 +768,18 @@ classdef TreeNodeClass < handle
         end
         
         
+
+        % -----------------------------------------------------------------------
+        function [md2d, md3d] = GetChannelsMeanDistance(obj)
+            md2d = [];
+            md3d = [];
+            if isempty(obj.acquired)
+                return;
+            end
+            [md2d, md3d] = obj.acquired.GetChannelsMeanDistance();
+        end
+        
+                
         
         % ----------------------------------------------------------------------------------
         function ch = GetMeasList(obj, options, iBlk)

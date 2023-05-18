@@ -25,6 +25,8 @@ p = get(hObject,'position');
 % Don't do anything if within screen borders in all directions
 if ((p(1)+p(3)) < 1) && (p(1) > 0)
     if ((p(2)+p(4)) < 1) && (p(2) > 0)
+        set(0,'units',us0);
+        set(hObject, 'units',uf0);
         return
     end
 end

@@ -770,6 +770,12 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         end
         
         
+        % ---------------------------------------------------------
+        function s = GetStim(obj)
+            s = obj.s;
+        end
+        
+        
         % ----------------------------------------------------------------------------------
         function SetConditions(obj, CondNames)
             if nargin==1

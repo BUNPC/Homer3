@@ -1769,7 +1769,7 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function checkboxShowExcludedTimeManual_Callback(hObject, eventdata, handles)
+function checkboxShowExcludedTimeManual_Callback(hObject, ~, handles)
 
 if get(hObject, 'value')==1
     set(handles.checkboxShowExcludedTimeAuto, 'value',0) 
@@ -1780,7 +1780,7 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function checkboxShowExcludedTimeAuto_Callback(hObject, eventdata, handles)
+function checkboxShowExcludedTimeAuto_Callback(hObject, ~, handles)
 
 if get(hObject, 'value')==1
     set(handles.checkboxShowExcludedTimeManual, 'value',0) 
@@ -1791,7 +1791,7 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function checkboxShowExcludedTimeAutoByChannel_Callback(hObject, eventdata, handles)
+function checkboxShowExcludedTimeAutoByChannel_Callback(hObject, ~, handles)
 
 if get(hObject, 'value')==1
     set(handles.checkboxShowExcludedTimeManual, 'value',0) 
@@ -1802,7 +1802,7 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function menuItemExportHRF_Callback(hObject, eventdata, handles)
+function menuItemExportHRF_Callback(~, ~, ~)
 global maingui
 
 out = ExportDataGUI(maingui.dataTree.currElem.name,'.txt','HRF', 'userargs');
@@ -1821,14 +1821,26 @@ maingui.dataTree.currElem.ExportHRF(procElemSelect);
 
 
 % --------------------------------------------------------------------
-function menuItemExportSnirf_Callback(hObject, eventdata, handles)
+function menuItemExportSnirf_Callback(~, ~, ~)
 global maingui
-ExportSnirfGUI(maingui.dataTree.currElem);
+% ExportSnirfGUI(maingui.dataTree.currElem);
+out = ExportDataGUI(maingui.dataTree.currElem.name, '.snirf', 'Derived Data', 'userargs');
+if isempty(out.datatype)
+    return;
+end
+switch(out.procElemSelect)
+    case 'currentonly'
+        procElemSelect = 'current';
+    case 'all'
+        procElemSelect = 'all';
+    otherwise
+end
+maingui.dataTree.currElem.ExportDerivedData(procElemSelect);
 
 
 
 % --------------------------------------------------------------------
-function menuItemExportHRFMean_Callback(hObject, eventdata, handles)
+function menuItemExportHRFMean_Callback(~, ~, ~)
 global maingui
 global cfg
 

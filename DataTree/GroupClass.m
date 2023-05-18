@@ -709,6 +709,15 @@ classdef GroupClass < TreeNodeClass
                 obj.logger.Write(ME.message);
             end            
             obj.initsaveflag = true;
+
+            % Clean up folder of .error files
+            if exist([pwd, '/.error'],'file')
+                try
+                    delete([pwd, '/.error'])
+                catch
+                end
+            end
+
         end
         
         

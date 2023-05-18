@@ -199,6 +199,12 @@ classdef ProcInputClass < handle
     methods
         
         % ----------------------------------------------------------------------------------
+        function stim = GetStim(obj)
+            stim = obj.acquired.GetStim();
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function vals = GetStimValSettings(obj)
             vals = obj.stimValSettings;
         end

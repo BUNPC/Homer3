@@ -35,10 +35,10 @@ exportvar.filename = '';
 exportvar.hFigPlot = -1;
 exportvar.format = '';
 % exportvar.formatchoices = {'.txt','.xls'};
-exportvar.formatchoices = {'.txt','.tsv'};
+exportvar.formatchoices = {'.txt','.tsv','.snirf'};
 
 exportvar.datatype = '';
-exportvar.datatypechoices = {'HRF','HRF mean','Stim'};
+exportvar.datatypechoices = {'HRF','HRF mean','Stim','Derived Data'};
 
 exportvar.trange = [0,0];
 

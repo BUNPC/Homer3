@@ -84,13 +84,17 @@ function MainGUI_EnableDisableGUI(handles, val)
    
 % Processing element panel
 set(handles.listboxGroupTree, 'enable', val);
-set(handles.listboxFilesErr, 'enable', val);
+if strcmp(get(handles.listboxFilesErr, 'visible'), 'on')
+    set(handles.listboxFilesErr, 'enable','on');
+else
+    set(handles.listboxFilesErr, 'enable',val);
+end
 set(handles.pushbuttonHideErrors, 'enable',val);
 set(handles.radiobuttonProcTypeGroup, 'enable', val);
 set(handles.radiobuttonProcTypeSubj, 'enable', val);
 set(handles.radiobuttonProcTypeSess, 'enable', val);
 set(handles.radiobuttonProcTypeRun, 'enable', val);
-set(handles.textStatus, 'enable', val);
+set(handles.textStatus, 'enable','on');
 
 % Data plot panel
 set(handles.textPanLeftRight, 'enable', val);
@@ -153,12 +157,17 @@ function MainGUI_EnableDisablePlotEditMode(handles, val)
 
 % Processing element panel
 set(handles.listboxGroupTree, 'enable', val);
-set(handles.listboxFilesErr, 'enable', val);
+if strcmp(get(handles.listboxFilesErr, 'visible'), 'on')
+    set(handles.listboxFilesErr, 'enable','on');
+else
+    set(handles.listboxFilesErr, 'enable',val);
+end
+set(handles.textStatus, 'enable','on');
+set(handles.pushbuttonHideErrors, 'enable',val);
 set(handles.radiobuttonProcTypeGroup, 'enable', val);
 set(handles.radiobuttonProcTypeSubj, 'enable', val);
 set(handles.radiobuttonProcTypeSess, 'enable', val);
 set(handles.radiobuttonProcTypeRun, 'enable', val);
-set(handles.textStatus, 'enable', val);
 
 % Control
 set(handles.pushbuttonCalcProcStream, 'enable', val);
@@ -246,6 +255,7 @@ maingui.childguis(6) = ChildGuiClass('configSettingsGUI');
 % Load date files into group tree object
 maingui.dataTree = LoadDataTree(maingui.groupDirs, maingui.format, procStreamFile);
 if maingui.dataTree.IsEmpty()
+    DisplayGroupTree(handles);
     return;
 end
 if ~isempty(maingui.unitTest)
@@ -367,7 +377,7 @@ global maingui;
 % Initialize listboxGroupTree params struct
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 maingui.listboxGroupTreeParams = struct('listMaps',struct('names',{{}}, 'idxs', []), ...
-                                        'views', struct('GROUP',1, 'SUBJS',2, 'SESS',3, 'NOSESS',4, 'RUNS',5), ...
+                                        'views',struct('GROUP',1, 'SUBJS',2, 'SESS',3, 'NOSESS',4, 'RUNS',5), ...
                                         'viewSetting',0);
                       
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -379,13 +389,16 @@ maingui.listboxGroupTreeParams = struct('listMaps',struct('names',{{}}, 'idxs', 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Determine the best view for the data files 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[viewSetting, views] = SetView(handles, nSubjs, nSess, nRuns);
+[viewSetting, ~] = SetView(handles, nSubjs, nSess, nRuns);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set listbox used for displaying valid data
 % Get the GUI listboxGroupTree setting 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-listboxGroup = maingui.listboxGroupTreeParams.listMaps(viewSetting).names;
+listboxGroup = {};
+if viewSetting <= length(maingui.listboxGroupTreeParams.listMaps)
+    listboxGroup = maingui.listboxGroupTreeParams.listMaps(viewSetting).names;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set listbox used for displaying files that did not load correctly
@@ -417,8 +430,16 @@ if ~isempty(handles)
     if nFilesFailed > 0 || nFilesWarning > 0
         set(handles.textStatus, 'foregroundcolor',maingui.errcolor);
         if nFilesFailed > 0
-            set(handles.listboxFilesErr, 'visible','on', 'value',1, 'string',listboxFilesErr)
+            set(handles.listboxFilesErr, 'visible','on', 'enable','on','value',1, 'string',listboxFilesErr)
             set(handles.pushbuttonHideErrors, 'visible','on');
+            if nFileSuccess==0
+                set(handles.pushbuttonHideErrors, 'visible','off');
+                p1 = get(handles.listboxGroupTree, 'position');
+                p2 = get(handles.listboxFilesErr, 'position');
+                offset_y = p1(4)/2;
+                set(handles.listboxGroupTree, 'position',[p1(1), p1(2)+offset_y, p1(3), offset_y])
+                set(handles.listboxFilesErr, 'position',[p2(1), p2(2), p2(3), p2(4)+offset_y])
+            end
         else
             set(handles.listboxFilesErr, 'visible','off');
             set(handles.pushbuttonHideErrors, 'visible','off');
@@ -435,6 +456,9 @@ if ~isempty(handles)
         pos2 = get(handles.listboxFilesErr, 'position');
         set(handles.listboxGroupTree, 'position', [pos1(1) pos2(2) pos1(3) .98-pos2(2)]);
     end
+end
+if nFileSuccess==0
+    return
 end
 
 % Select initial data tree processing element in the 'Current Processing Element' panel

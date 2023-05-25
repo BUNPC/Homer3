@@ -289,6 +289,8 @@ classdef DataClass < FileLoadSaveClass
             if ~exist('params','var')
                 params = propnames(obj);
             end
+            
+            % Check dataTimeSeries
             if ismember('dataTimeSeries',params)
                 if obj.IsEmpty()
                     err = -2;
@@ -304,6 +306,8 @@ classdef DataClass < FileLoadSaveClass
                     err = 5;
                 end
             end
+            
+            % Check time 
             if ismember('time',params)
                 if isempty(obj.time)
                     err = -6;
@@ -311,6 +315,25 @@ classdef DataClass < FileLoadSaveClass
                 end
                 if all(obj.time==0)
                     err = 7;
+                end
+            end
+            
+            % Check measurement list
+            if ismember('measurementList',params)
+                ml = sortrows(obj.GetMeasurementList('matrix'));
+                nDatatypes = length(unique(ml(:,4))) * length(unique(ml(:,3)));
+                i = 1;
+                while i <= size(ml,1)
+                    k = find(ml(:,1)==ml(i,1) & ml(:,2)==ml(i,2));
+                    if length(k) < nDatatypes
+                        err = -7;
+                    elseif length(k) > nDatatypes
+                        err = -8;
+                    end
+                    if err < 0
+                        break
+                    end
+                    i = i+length(k);
                 end
             end
         end

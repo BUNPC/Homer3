@@ -5,7 +5,10 @@ global maingui
 % a linear index used to select a listbox entry
 
 viewSetting = maingui.listboxGroupTreeParams.viewSetting;
-idxs = maingui.listboxGroupTreeParams.listMaps(viewSetting).idxs;
+idxs = [];
+if viewSetting <= length(maingui.listboxGroupTreeParams.listMaps)
+    idxs = maingui.listboxGroupTreeParams.listMaps(viewSetting).idxs;
+end
 
 % Convert processing element tuple index to a scalar
 scalar0 = index2scalar(iGroup, iSubj, iSess, iRun);

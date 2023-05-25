@@ -267,7 +267,9 @@ classdef DataTreeClass <  handle
                     while dataInit.GetError() < 0
                         dataInit = FindFiles(obj.dirnameGroups{kk}, fmt, options);
                         if isempty(dataInit) || dataInit.IsEmpty()
-                            obj.filesErr = dataInit.filesErr;
+                            if ~isempty(dataInit)
+                                obj.filesErr = dataInit.filesErr;
+                            end
                             ErrorCheckLoadedFiles(obj);
                             return;
                         end

@@ -728,6 +728,48 @@ classdef TreeNodeClass < handle
         
         
         % ---------------------------------------------------------
+        function [d, t, ml] = GetData(obj, datatype, iBlk)
+            d = [];
+            t = [];
+            ml = [];
+            datatypes = obj.procStream.GetDataTypes();
+            if ~exist('datatype','var')
+                datatype = 'raw';
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            switch(lower(datatype))
+                case datatypes.RAW
+                    if isempty(obj.acquired)
+                        return
+                    end
+                    [d, t] = obj.acquired.GetData(); %#ok<*AGROW>
+                    ml = obj.acquired.GetMeasurementList('matrix',iBlk);
+                case datatypes.OPTICAL_DENSITY
+                    [d, t] = obj.procStream.GetData('od');
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'od');
+                case datatypes.CONCENTRATION
+                    [d, t] = obj.procStream.GetData('conc');
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'conc');
+                case datatypes.HRF_OPTICAL_DENSITY
+                    [d, t] = obj.procStream.GetData('od hrf');
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'od hrf');
+                case datatypes.HRF_OPTICAL_DENSITY_STD
+                    [d, t] = obj.procStream.GetData('od hrf std');
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'od hrf std');
+                case datatypes.HRF_CONCENTRATION
+                    [d, t] = obj.procStream.GetData('conc hrf');
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'conc hrf');
+                case datatypes.HRF_CONCENTRATION_STD
+                    [d, t] = obj.procStream.GetData('conc hrf std');
+                    ml = obj.procStream.GetMeasurementList('matrix',iBlk,'conc hrf std');
+            end
+        end
+        
+        
+
+        % ---------------------------------------------------------
         function [d, t, ml] = GetDataTimeSeries(obj, datatype, iBlk)
             d = [];
             t = [];
@@ -1129,8 +1171,67 @@ classdef TreeNodeClass < handle
             obj.procStream.input.LoadVars(obj.inputVars);
 
             % Calculate processing stream
-            fcalls = obj.procStream.Calc([obj.path, obj.GetOutputFilename()]); %#ok<NASGU>            
+            fcalls = obj.procStream.Calc([obj.path, obj.GetOutputFilename()]); %#ok<NASGU>
+
+            % Clean up folder of .error files
+            if exist([pwd, '/.error'],'file')
+                try
+                    delete([pwd, '/.error'])
+                catch
+                end
+            end
+
         end
+        
+        
+         % ----------------------------------------------------------------------------------
+         function stim = GetStim(obj)
+             stim = [];
+             if ~isempty(obj.children)
+                 return;
+             end
+             stim = obj.procStream.GetStim();
+         end
+         
+         
+         
+         % ----------------------------------------------------------------------------------
+         function ExportDerivedData(obj, procElemSelect, hwait)
+             global logger
+             if ~exist('hwait','var')
+                 hwait = [];
+             end
+
+             flag = false;
+             if ~ishandles(hwait)
+                 hwait = waitbar_improved(0, 'Exporting Derived Data ... Please Wait');
+                 flag = 1;
+                 pause(1);
+             end
+
+             obj.Load();
+             s = SnirfClass();
+             s.probe = obj.GetProbe();
+             s.data(1) = obj.GetData('conc hrf');
+             [pname, fname] = fileparts(obj.GetOutputFilename());
+             filename = [obj.path, filesepStandard(pname), fname, '.snirf'];
+             logger.Write('Exporting derived data %s', filename);
+
+             [~, fname, ext] = fileparts(filename);
+             waitbar_improved(0, hwait, sprintf('Exporting %s ...', [fname, ext]));
+             s.Save(filename);
+
+             % If all under it selected
+             if strcmp(procElemSelect, 'all')
+                 for ii = 1:length(obj.children)
+                     obj.children(ii).ExportDerivedData(procElemSelect, hwait);
+                 end
+             end
+
+             if flag
+                 close(hwait)
+             end
+         end
         
     end
         
@@ -1143,21 +1244,6 @@ classdef TreeNodeClass < handle
         
         % ----------------------------------------------------------------------------------
         function iChs = SdPairIdxs2vectorIdxs(obj, datatype, sdPairs, iBlk)
-            %
-            % Syntax:
-            %   iChs = TreeNodeClass.SDPairsToChIdxs(obj, datatype, sdPairs, ml)
-            %
-            % Description:
-            %   Given a set of channels specified by [source idx, detector idx, condition idx, datatype idx]
-            %   convert to channel idx vector where each channel is specified by a single number idx.
-            % 
-            % Example:
-            %   % Convert concentration HRF source detectror pair [2,3] to single number indices
-            %   cd(<dataset_root_path>)
-            %   dataTree = DataTreeClass();
-            %   dataTree.currElem.Calc();
-            %   iChs = dataTree.currElem.SdPairIdxs2vectorIdxs('hrf conc', [2,3,2,1; 2,3,2,2; 2,3,2,3])
-            %
             iChs = [];
             datatypes = obj.procStream.GetDataTypes();
             if ~exist('datatype','var')

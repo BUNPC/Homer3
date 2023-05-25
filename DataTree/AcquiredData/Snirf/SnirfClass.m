@@ -16,6 +16,7 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         nirsdatanum
         nirs_tb
         stim0
+        hFig
     end
     
     methods
@@ -78,6 +79,8 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             obj.SetFileFormat('hdf5');
             obj.location = '/nirs';
             obj.nirsdatanum = 1;
+            obj.hFig = [-1; -1];
+
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Between 1 and 4 arguments covers the following syntax variants
@@ -1005,8 +1008,17 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         end
         
         % ---------------------------------------------------------
-        function val = GetData(obj)
-            val = obj.data;
+        function [val, t] = GetData(obj, iBlk)
+            val = [];
+            t = [];
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            if isempty(obj) || isempty(obj.data)
+                return;
+            end
+            val = obj.data(iBlk);
+            t = obj.data(iBlk).time;
         end
         
         % ---------------------------------------------------------
@@ -1886,9 +1898,261 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                 MenuBox(msg);
             end
         end
+
+
+
+        % ----------------------------------------------------------------------------------
+        function hAxes = GenerateStandaloneAxes(obj, datatype, iChs)
+            k = find(obj.hFig(1,:)==-1);
+            obj.hFig(1,k(1)) = figure;
+            hAxes = gca;
+            plotname = sprintf('"%s";   %s data ;   channels idxs: [%s]', obj.GetFilename(),  datatype, num2str(iChs'));
+            namesize = uint32(length(plotname)/3);
+            set(obj.hFig(1,k(1)), 'units','characters');
+            p1 = get(obj.hFig(1,k(1)), 'position');
+            set(obj.hFig(1,k(1)), 'name',plotname, 'menubar','none', 'NumberTitle','off', 'position',[p1(1)/2, p1(2), p1(3)+namesize, p1(4)]);
+            obj.hFig(:,k(1)+1) = -1;
+        end
+           
+        
+            
+        % ----------------------------------------------------------------------------------
+        function Plot(obj, sdPairs, iBlk)
+            %
+            % SYNTAX:
+            %   TreeNodeClass.Plot(iChs, iBlk)
+            % 
+            %
+            % DESCRIPTION:
+            %   Plot data from channels specified by 2d array where each row spoecifying a single channel
+            %   contains indices [source, detector, condition, wavelength]. In addtion to the data, this method 
+            %   plots any existing stims, and the probe associated with the SNIRF object from which the data 
+            %   was taken. NOTE: the args iBlk and hAxes can be ommitted and will default to 1 and current 
+            %   axes respectively.
+            %
+            %
+            % INPUT:
+            %   sdPairs - 2d array of channel indices where each row represents a channel consisting of the indices
+            %             [source, detector, condition, datatype]
+            %
+            %   iBlk - Optional argument (defaults = 1). In theory SNIRF data field is an array of data blocks. This argunment selects the 
+            %          data block from which the plot data is taken.
+            %   
+            %   hAxes - Optional argument (default is current axes or gca()), specifying the axes handle of the axes in which to plot the data.
+            %
+            %
+            
+            % Parse input args
+            if ~exist('sdPairs','var')
+                sdPairs = [1,1,0,1];
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+
+            
+            % Convert channels in the form of a list of sd pairs to a column vector of indices into the measurement list
+            iChs = obj.SdPairIdxs2vectorIdxs(sdPairs, iBlk);
+            
+            
+            % Extract SNIRF parameters for plotting:  probe, data, time, measuremntList and stim
+            d = obj.data(1).dataTimeSeries;
+            t = obj.data(1).time;
+            ml = obj.data(1).GetMeasurementList('matrix');
+            
+            % If there's no data to plot then exit
+            if isempty(d)
+                fprintf('No data to plot\n');
+                return;
+            end
+            
+            
+            % Set up standalone figure with axes for plotting data, if axes handle was not passed down from caller 
+            % in the last arg. There will be a separate figure displaying the probe associated with this data plot. 
+            % a few lines down in DisplayProbe.
+            hAxes = obj.GenerateStandaloneAxes('HRF', iChs);            
+                        
+            % Plot data
+            hold on
+            chSelect = [];
+            for ii = 1:length(iChs)
+                hdata(ii) = plot(hAxes, t, d(:,iChs(ii)), 'linewidth',2);
+                chSelect(ii,:) = [ml(iChs(ii),1), ml(iChs(ii),2), ml(iChs(ii),3), ml(iChs(ii),4), get(hdata(ii), 'color')]; 
+            end
+            set(hAxes, 'xlim', [t(1), t(end)]);                        
+            
+            % Display probe in separate figure
+            if isempty(chSelect)
+                fprintf('ERROR: no valid channels were selelcted\n');
+                obj.DisplayProbe();
+            else
+                obj.DisplayProbe(chSelect(:,1:2), chSelect(:,5:7));
+            end
+            
+            
+            % Wrap up before exiting
+            drawnow;
+            pause(.1);
+            hold off
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
+        function iChs = SdPairIdxs2vectorIdxs(obj, sdPairs, iBlk)
+            iChs = [];
+            if ~exist('sdPairs','var')
+                sdPairs = [1,1,0,1];
+            end            
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            
+            % Error Checking
+            if size(sdPairs, 2)>1 && size(sdPairs, 2)~=4
+                fprintf('ERROR: invalid sdPair. sdPair has to be a Nx4 2D array\n');
+                return;
+            end
+            
+            
+            % If sdPairs argument is a column vector then we are done because channels are 
+            % already specified in the output format i.e., as single number indices. 
+            if size(sdPairs, 2)==1
+                iChs = sdPairs;
+                return;
+            end            
+                        
+            ml = obj.data(1).GetMeasurementList('matrix', iBlk);
+            
+            % Error checking
+            if isempty(ml)
+                return
+            end
+            
+            for ii = 1:size(sdPairs,1)
+                k = find(ml(:,1)==sdPairs(ii,1)  &  ml(:,2)==sdPairs(ii,2)  &  ml(:,3)==sdPairs(ii,3)  &  ml(:,4)==sdPairs(ii,4));
+                if isempty(k)
+                    continue;
+                end
+                iChs(ii,1) = k;
+            end
+        end
         
         
         
+        % ----------------------------------------------------------------------------------
+        function sdPairs = VectorIdxs2SdPairIdxs(obj, iChs, iBlk)
+            if ~exist('iChs','var')
+                iChs = 1;
+            end            
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            
+            % If sdPairs argument is not a column vector then we are done;  because the 
+            % channels are already specified in the output format i.e., as a 2d array. 
+            if size(iChs, 2)>1
+                sdPairs = iChs;
+                return;
+            end
+            
+            ml = obj.data(1).GetMeasurementList('matrix', iBlk);
+            
+            % Remove any invalid indices
+            iChs(iChs==0) = [];
+            iChs(iChs>size(ml,1)) = [];
+            
+            sdPairs = ml(iChs,:);
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function hAxes = DisplayProbe(obj, chSelect, chSelectColors, hAxes)
+            % Parse args
+            if ~exist('chSelect','var')
+                chSelect = [];
+            end
+            if ~exist('chSelectColors','var')                
+                chSelectColors = repmat([1.0, 0.5, 0.2], size(chSelect,1),1);
+            end
+            if ~exist('hAxes','var')
+                hAxes = [];
+            end
+            
+            % If chSelect is in the form of a column vector rather than sd pairs
+            % then convert to sd pairs
+            chSelect = obj.VectorIdxs2SdPairIdxs(chSelect);            
+            
+            freememoryflag = false;
+            if ~isempty(obj) && obj.IsEmpty()
+                obj.acquired.Load();
+                freememoryflag = true;
+            end
+            
+            % Set up the axes
+            bbox = obj.GetSdgBbox();
+            if isempty(hAxes)
+                k = find(obj.hFig(2,:)==-1);
+                
+                % See if there's a data plot associated with this probe display
+                % If there is get its name and use it to name this figure
+                plotname = '';
+                if ishandle(obj.hFig(1,k(1)))
+                    plotname = get(obj.hFig(1,k(1)), 'name');
+                end
+                obj.hFig(2,k(1)) = figure('menubar','none', 'NumberTitle','off', 'name',plotname);
+                hAxes = gca;
+            end
+
+            axis(hAxes, [bbox(1), bbox(2), bbox(3), bbox(4)]);
+            gridsize = get(hAxes, {'xlim', 'ylim', 'zlim'});
+            if ismac() || islinux()
+                fs = 18;
+            else
+                fs = 11;
+            end
+
+            % Get probe paramaters
+            probe = obj.GetProbe();
+            srcpos = probe.sourcePos2D;
+            detpos = probe.detectorPos2D;
+            ml = obj.GetMeasurementList('matrix');
+            lstSDPairs = find(ml(:,4)==1);
+            
+            % Draw all channels
+            for ii = 1:length(lstSDPairs)
+                hCh(ii) = line2(srcpos(ml(lstSDPairs(ii),1),:), detpos(ml(lstSDPairs(ii),2),:), [], gridsize, hAxes);
+                col = [1.00 1.00 1.00] * 0.85;
+                if ~isempty(chSelect)
+                    k = find(chSelect(:,1)==ml(lstSDPairs(ii),1) & chSelect(:,2)==ml(lstSDPairs(ii),2));
+                    if ~isempty(k)
+                        col = chSelectColors(k(1),:);
+                    end
+                end
+                set(hCh(ii), 'color',col, 'linewidth',2, 'linestyle','-', 'userdata',ml(lstSDPairs(ii),1:2));
+            end
+            
+            % ADD SOURCE AND DETECTOR LABELS
+            for iSrc = 1:size(srcpos,1)
+                if ~isempty(find(ml(:,1)==iSrc)) %#ok<*EFIND>
+                    hSD(iSrc) = text( srcpos(iSrc,1), srcpos(iSrc,2), sprintf('%d', iSrc), 'fontsize',fs, 'fontweight','bold', 'color','r' );
+                    set(hSD(iSrc), 'horizontalalignment','center', 'edgecolor','none', 'Clipping', 'on');
+                end
+            end
+            for iDet = 1:size(detpos,1)
+                if ~isempty(find(ml(:,2)==iDet))
+                    hSD(iDet+iSrc) = text( detpos(iDet,1), detpos(iDet,2), sprintf('%d', iDet), 'fontsize',fs, 'fontweight','bold', 'color','b' );
+                    set(hSD(iDet+iSrc), 'horizontalalignment','center', 'edgecolor','none', 'Clipping', 'on');
+                end
+            end
+            
+            if freememoryflag
+                obj.FreeMemory();
+            end            
+        end        
+        
+        
+
     end
     
     

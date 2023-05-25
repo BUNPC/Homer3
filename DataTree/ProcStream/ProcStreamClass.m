@@ -1590,7 +1590,60 @@ classdef ProcStreamClass < handle
         end
         
 
+
+        % ---------------------------------------------------------
+        function [data, time, measurementList] = GetData(obj, options, iBlk)
+            data = [];
+            time = [];
+            measurementList = [];
+            if ~exist('options','var')
+                options = obj.datatypes.CONCENTRATION{1};
+            end
+            if ~exist('iBlk','var') || isempty(iBlk)
+                iBlk = 1;
+            end
+            switch(lower(options))
+                case obj.datatypes.OPTICAL_DENSITY
+                    if iBlk <= length(obj.output.dod)
+                        data = obj.output.dod(iBlk);
+                        time = obj.output.dod(iBlk).time;
+                        measurementList = obj.output.dod(iBlk).GetMeasurementList('matrix');
+                    end
+                case obj.datatypes.CONCENTRATION
+                    if iBlk <= length(obj.output.dc)
+                        data = obj.output.dc(iBlk);
+                        time = obj.output.dc(iBlk).time;
+                        measurementList = obj.output.dc(iBlk).GetMeasurementList('matrix');
+                    end
+                case obj.datatypes.HRF_OPTICAL_DENSITY
+                    if iBlk <= length(obj.output.dodAvg)
+                        data = obj.output.dodAvg(iBlk);
+                        time = obj.output.dodAvg(iBlk).time;
+                        measurementList = obj.output.dodAvg(iBlk).GetMeasurementList('matrix');
+                    end
+                case obj.datatypes.HRF_CONCENTRATION
+                    if iBlk <= length(obj.output.dcAvg)
+                        data = obj.output.dcAvg(iBlk);
+                        time = obj.output.dcAvg(iBlk).time;
+                        measurementList = obj.output.dcAvg(iBlk).GetMeasurementList('matrix');
+                    end
+                case obj.datatypes.HRF_CONCENTRATION_STD
+                    if iBlk <= length(obj.output.dodAvg)
+                        data = obj.output.dodAvgStd(iBlk);
+                        time = obj.output.dodAvgStd(iBlk).time;
+                        measurementList = obj.output.dodAvgStd(iBlk).GetMeasurementList('matrix');
+                    end
+                case obj.datatypes.HRF_OPTICAL_DENSITY_STD
+                    if iBlk <= length(obj.output.dcAvg)
+                        data = obj.output.dcAvgStd(iBlk);
+                        time = obj.output.dcAvgStd(iBlk).time;
+                        measurementList = obj.output.dcAvgStd(iBlk).GetMeasurementList('matrix');
+                    end
+            end
+        end
         
+
+
         % ----------------------------------------------------------------------------------
         function SetTincMan(obj, val, iBlk)
             if ~exist('iBlk','var')
@@ -1744,6 +1797,12 @@ classdef ProcStreamClass < handle
             obj.input.RenameStimColumn(oldname, newname);
         end
         
+        % ----------------------------------------------------------------------------------
+        function stim = GetStim(obj)
+            stim = obj.input.GetStim();
+        end
+        
+    
         % ----------------------------------------------------------------------------------
         function data = GetStimData(obj, icond)
             data = obj.input.GetStimData(icond);

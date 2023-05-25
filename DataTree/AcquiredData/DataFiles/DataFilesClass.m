@@ -15,6 +15,7 @@ classdef DataFilesClass < handle
     
     properties (Access = private)
         lookupTable
+        excludedFolders
     end
     
     methods
@@ -38,6 +39,7 @@ classdef DataFilesClass < handle
             
             obj.logger = logger;
             obj.lookupTable = [];
+            obj.excludedFolders = {};
             
             skipconfigfile = false;
             askToFixNameConflicts = [];
@@ -74,7 +76,7 @@ classdef DataFilesClass < handle
             obj.rootdir = filesepStandard(obj.rootdir,'full');           
             
             % Configuration parameters
-            obj.config = struct('RegressionTestActive','','AskToFixNameConflicts',1);
+            obj.config = struct('RegressionTestActive','',  'AskToFixNameConflicts',1, 'DerivedDataDir','');
             if skipconfigfile==false
                 str = cfg.GetValue('Regression Test Active');
                 if strcmp(str,'true')
@@ -96,6 +98,18 @@ classdef DataFilesClass < handle
                 obj.config.SuppressErrorChecking = true;                
             end
             
+            [p, f] = fileparts(cfg.GetValue('Output Folder Name'));
+            if isempty(p)
+                obj.config.DerivedDataDir = f;
+            else
+                obj.config.DerivedDataDir = p;
+            end
+            obj.excludedFolders = {...
+                [obj.rootdir, obj.config.DerivedDataDir];
+                [obj.rootdir, 'fw'];
+                [obj.rootdir, 'imagerecon'];
+                [obj.rootdir, 'anatomical'];
+                };
             if nargin==0
                 return;
             end
@@ -222,6 +236,14 @@ classdef DataFilesClass < handle
                 return
             end
             parentdir = filesepStandard(parentdir);
+            
+            % Check if folder is excluded, if yes don't search there
+            for ii = 1:length(obj.excludedFolders)
+                if includes(parentdir, obj.excludedFolders{ii})
+                    return;
+                end
+            end
+            
             pattern = obj.dirFormats.choices{iFormat}{iPattern};
             
             dirs = mydir([parentdir, pattern], obj.rootdir);
@@ -307,9 +329,9 @@ classdef DataFilesClass < handle
             obj.ErrorCheckName();
             
             % Find all acquisition files in group folder
-            fileNames = findTypeFiles(obj.rootdir, ['.', obj.filetype]);
+            fileNames = findTypeFiles(obj.rootdir, ['.', obj.filetype], obj.excludedFolders);
             
-            % Make alist of all files excluded from current data set  
+            % Make a list of all files excluded from current data set  
             for ii = 1:length(fileNames)
                 filefound = false;
                 

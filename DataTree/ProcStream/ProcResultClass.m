@@ -661,6 +661,26 @@ classdef ProcResultClass < handle
         
         
         % ----------------------------------------------------------------------------------
+        function s = GetData(obj, datatype)
+            if nargin==1
+                t = [];
+            end
+            s = obj.GetVar('s');
+            if isempty(s)
+                if isempty(obj.dod) || ~isa(obj.dod, 'DataClass')
+                    return;
+                end
+                stim = obj.GetVar('stim');
+                if isempty(stim)
+                    return;
+                end
+                snirf = SnirfClass(obj.dod, stim);
+                s = snirf.GetStims(t);
+            end
+        end
+        
+        
+        % ----------------------------------------------------------------------------------
         function val = GetTincAuto(obj, iBlk)
             val = {};
             if ~exist('iBlk','var') || isempty(iBlk)

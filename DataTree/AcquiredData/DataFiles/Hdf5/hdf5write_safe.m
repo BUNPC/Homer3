@@ -1,6 +1,6 @@
 function err = hdf5write_safe(fileobj, name, val, options)
 err = -1;
-if isempty(val)
+if ~exist('val','var')
     return;
 end
 if ~exist('options','var')
@@ -95,13 +95,30 @@ err = 0;
 % -----------------------------------------------------------------
 function err = write_integer(fid, name, val)
 warning off;  % Suppress the int truncation warning
-tid = H5T.copy('H5T_NATIVE_ULONG');
+switch class(val)
+    case 'int8'
+        hdftype = 'H5T_STD_8LE';
+    case 'uint8'
+        hdftype = 'H5T_STD_U8LE';      
+    case 'int16'
+        hdftype = 'H5T_STD_16LE';
+    case 'uint16'
+        hdftype = 'H5T_STD_U16LE';
+    case 'int32'
+        hdftype = 'H5T_STD_32LE';
+    case 'uint32'
+        hdftype = 'H5T_STD_U32LE';
+    case 'int64'
+        hdftype = 'H5T_STD_64LE';
+    case 'uint64'
+        hdftype = 'H5T_STD_U64LE';        
+end
+tid = H5T.copy(hdftype);
 sid = H5S.create('H5S_SCALAR');
 dsid = H5D.create(fid, name, tid, sid, 'H5P_DEFAULT');
-H5D.write(dsid, tid, 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT', int32(val));
+H5D.write(dsid, tid, 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT', val);
 err = 0;
 warning on;
-
 
 
 % -----------------------------------------------------------------

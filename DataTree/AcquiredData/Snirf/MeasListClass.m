@@ -5,12 +5,17 @@ classdef MeasListClass < FileLoadSaveClass
         sourceIndex
         detectorIndex
         wavelengthIndex
+        wavelengthActual
+        wavelengthEmissionActual
         dataType
+        dataUnit        
         dataTypeLabel
         dataTypeIndex   % Used for condition when dataType=99999 ("Processed") and dataTypeLabel='HRF...'
         sourcePower
         detectorGain
         moduleIndex
+        sourceModuleIndex
+        detectorModuleIndex
     end
     
        
@@ -43,12 +48,17 @@ classdef MeasListClass < FileLoadSaveClass
             obj.sourceIndex      = 0;
             obj.detectorIndex    = 0;
             obj.wavelengthIndex  = 0;
+            obj.wavelengthActual            = 0;
+            obj.wavelengthEmissionActual    = 0;
             obj.dataType         = 0;
+            obj.dataUnit                    = '';
             obj.dataTypeLabel    = '';
             obj.dataTypeIndex    = 0;
             obj.sourcePower      = 0;
             obj.detectorGain     = 0;
             obj.moduleIndex      = 0;
+            obj.sourceModuleIndex           = 0;
+            obj.detectorModuleIndex         = 0;
             
             dataTypeValues = DataTypeValues();
 
@@ -117,13 +127,17 @@ classdef MeasListClass < FileLoadSaveClass
                 obj.sourceIndex     = HDF5_DatasetLoad(gid, 'sourceIndex');
                 obj.detectorIndex   = HDF5_DatasetLoad(gid, 'detectorIndex');
                 obj.wavelengthIndex = HDF5_DatasetLoad(gid, 'wavelengthIndex');
+                obj.wavelengthActual            = HDF5_DatasetLoad(gid, 'wavelengthActual');
+                obj.wavelengthEmissionActual    = HDF5_DatasetLoad(gid, 'wavelengthEmissionActual');
                 obj.dataType        = HDF5_DatasetLoad(gid, 'dataType');
+                obj.dataUnit                    = HDF5_DatasetLoad(gid, 'dataUnit', obj.dataUnit);
                 obj.dataTypeIndex   = HDF5_DatasetLoad(gid, 'dataTypeIndex');
                 obj.dataTypeLabel   = HDF5_DatasetLoad(gid, 'dataTypeLabel', obj.dataTypeLabel);
-                obj.detectorIndex   = HDF5_DatasetLoad(gid, 'detectorIndex');
-                obj.sourcePower     = HDF5_DatasetLoad(gid, 'sourcePower');
                 obj.sourcePower     = HDF5_DatasetLoad(gid, 'sourcePower');
                 obj.moduleIndex     = HDF5_DatasetLoad(gid, 'moduleIndex');
+                obj.detectorGain                = HDF5_DatasetLoad(gid, 'detectorGain');
+                obj.sourceModuleIndex           = HDF5_DatasetLoad(gid, 'sourceModuleIndex');
+                obj.detectorModuleIndex         = HDF5_DatasetLoad(gid, 'detectorModuleIndex');
                 
                 HDF5_GroupClose(fileobj, gid, fid);
             catch

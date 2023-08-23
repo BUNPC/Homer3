@@ -213,7 +213,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         % ---------------------------------------------------------
         function err = LoadTime(obj, fdata, err)
             if nargin == 1
-                fdata = load(obj.GetFilename(),'-mat', 't');
+                load(obj.GetFilename(),'-mat', 't');
                 err = 0;
                 return
             elseif nargin == 2
@@ -1380,29 +1380,40 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function ConvertSnirfProbe(obj, snirf)
-            obj.SD.Lambda = snirf.probe.wavelengths;
-            obj.SD.SrcPos = snirf.probe.sourcePos2D;
-            obj.SD.DetPos = snirf.probe.detectorPos2D;
-            obj.SD.SrcPos3D = snirf.probe.sourcePos3D;
-            obj.SD.DetPos3D = snirf.probe.detectorPos3D;
-            obj.SD.MeasList = snirf.GetMeasList();
-            obj.SD.SpatialUnit = snirf.GetLengthUnit();
-            if length(snirf.probe.landmarkLabels) == size(snirf.probe.landmarkPos3D,1)
-                obj.SD.Landmarks3D.labels   = snirf.probe.landmarkLabels;
-            	obj.SD.Landmarks3D.pos      = snirf.probe.landmarkPos3D;
+        function err = ConvertSnirfProbe(obj, snirf)
+            err = 0;
+            if isempty(snirf)
+                return
             end
-            if length(snirf.probe.landmarkLabels) == size(snirf.probe.landmarkPos2D,1)
-            	obj.SD.Landmarks2D.labels   = snirf.probe.landmarkLabels;
-                obj.SD.Landmarks2D.pos      = snirf.probe.landmarkPos2D;
-        	end
-            if     ~isempty(obj.SD.Landmarks3D.labels)
-                obj.SD.Landmarks.pos        = obj.SD.Landmarks3D.pos;
-                obj.SD.Landmarks.labels     = obj.SD.Landmarks3D.labels;
-            elseif ~isempty(obj.SD.Landmarks2D.labels)
-                obj.SD.Landmarks.pos        = obj.SD.Landmarks2D.pos;
-                obj.SD.Landmarks.labels     = obj.SD.Landmarks2D.labels;
-            end                
+            if isempty(snirf.probe)
+                return
+            end
+            try
+	            obj.SD.Lambda = snirf.probe.wavelengths;
+	            obj.SD.SrcPos = snirf.probe.sourcePos2D;
+	            obj.SD.DetPos = snirf.probe.detectorPos2D;
+	            obj.SD.SrcPos3D = snirf.probe.sourcePos3D;
+	            obj.SD.DetPos3D = snirf.probe.detectorPos3D;
+	            obj.SD.MeasList = snirf.GetMeasList();
+	            obj.SD.SpatialUnit = snirf.GetLengthUnit();
+	            if length(snirf.probe.landmarkLabels) == size(snirf.probe.landmarkPos3D,1)
+	                obj.SD.Landmarks3D.labels   = snirf.probe.landmarkLabels;
+	            	obj.SD.Landmarks3D.pos      = snirf.probe.landmarkPos3D;
+	            end
+	            if length(snirf.probe.landmarkLabels) == size(snirf.probe.landmarkPos2D,1)
+	            	obj.SD.Landmarks2D.labels   = snirf.probe.landmarkLabels;
+	                obj.SD.Landmarks2D.pos      = snirf.probe.landmarkPos2D;
+	        	end
+	            if     ~isempty(obj.SD.Landmarks3D.labels)
+	                obj.SD.Landmarks.pos        = obj.SD.Landmarks3D.pos;
+	                obj.SD.Landmarks.labels     = obj.SD.Landmarks3D.labels;
+	            elseif ~isempty(obj.SD.Landmarks2D.labels)
+	                obj.SD.Landmarks.pos        = obj.SD.Landmarks2D.pos;
+	                obj.SD.Landmarks.labels     = obj.SD.Landmarks2D.labels;
+	            end                
+            catch
+                err = -1;
+            end
         end
         
         

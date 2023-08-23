@@ -254,7 +254,12 @@ classdef DataFilesClass < handle
                     continue;
                 end
                 if dirs(ii).IsFile()
-                    if strcmp(pattern, '*')
+                    % If the pattern that found this file has no extension
+                    % that means this pattern is meant ONLY for folders. 
+                    % Therefore any file matches should be skipped. 
+                    % Bug Fix - JD, Jun 20, 2023
+                    [~,~,ext] = fileparts(pattern);
+                    if isempty(ext)  
                         continue
                     end
                     if includes(dirs(ii).name, obj.filetype)

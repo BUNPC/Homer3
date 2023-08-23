@@ -3,21 +3,21 @@ classdef ProbeClass < FileLoadSaveClass
     properties
         wavelengths
         wavelengthsEmission
+        sourceLabels
         sourcePos2D
+        sourcePos3D
+        detectorLabels
         detectorPos2D
+        detectorPos3D
+        landmarkLabels
         landmarkPos2D
         landmarkPos3D
-        sourcePos3D
-        detectorPos3D
         frequencies
         timeDelays
         timeDelayWidths
         momentOrders
         correlationTimeDelays
         correlationTimeDelayWidths
-        sourceLabels
-        detectorLabels
-        landmarkLabels
     end
     
     properties (Access = private)

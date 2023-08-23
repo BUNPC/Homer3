@@ -357,12 +357,9 @@ deleteNamespace('Homer3');
 % --------------------------------------------------------------------
 function [nFileSuccess, nFilesWarning, nFilesFailed] = WarningsReport(handles)
 global maingui
-warnings = maingui.dataTree.GetWarningsReport();
 [nFileSuccess, nFilesWarning, nFilesFailed] = maingui.dataTree.GetErrorStats();
-if ~isempty(warnings)
-    set(handles.MainGUI,'visible','on')
-    MessageBox(warnings, 'WARNINGS')
-    %set(handles.listboxGroupTree, 'foregroundcolor',maingui.errcolor)
+if sum([nFilesWarning, nFilesFailed]) > 0
+    set(handles.pushbuttonHideErrors,'visible','on')
 end
 
 
@@ -431,7 +428,7 @@ if ~isempty(handles)
         set(handles.textStatus, 'foregroundcolor',maingui.errcolor);
         if nFilesFailed > 0
             set(handles.listboxFilesErr, 'visible','on', 'enable','on','value',1, 'string',listboxFilesErr)
-            set(handles.pushbuttonHideErrors, 'visible','on');
+            set(handles.pushbuttonHideErrors, 'visible','on', 'tooltipstring','Show/Hide Error Report Window.');
             if nFileSuccess==0
                 set(handles.pushbuttonHideErrors, 'visible','off');
                 p1 = get(handles.listboxGroupTree, 'position');
@@ -645,6 +642,9 @@ idx = get(hObject, 'value');
 msg = sprintf('%s:  %s', maingui.dataTree.filesErr(idx).filename, ...
     maingui.dataTree.filesErr(idx).GetErrorMsg());
 fprintf('%s\n', msg);
+if isempty(maingui.handles)
+    maingui.handles.msgbox = [];
+end
 if ishandle(maingui.handles.msgbox)
     delete(maingui.handles.msgbox);
 end
@@ -2220,6 +2220,16 @@ end
 
 % ---------------------------------------------------------
 function pushbuttonHideErrors_Callback(hObject, ~, handles)
+global maingui
+warnings = maingui.dataTree.GetWarningsReport();
+if strcmpi(get(handles.listboxFilesErr, 'enable'), 'off')
+    if ~isempty(warnings)
+        set(handles.MainGUI,'visible','on')
+        MessageBox(warnings, 'WARNINGS');
+    end
+    return;
+end
+
 pos2 = get(handles.listboxFilesErr, 'position');
 pos1 = get(handles.listboxGroupTree, 'position');
 x = pos2(4);
@@ -2231,6 +2241,10 @@ else
     set(handles.listboxFilesErr, 'visible','off');
     set(hObject, 'string','/\');
     set(handles.listboxGroupTree, 'position', [pos1(1), pos1(2)-x, pos1(3), pos1(4)+x]);
+end
+if ~isempty(warnings) && strcmpi(get(handles.listboxFilesErr, 'visible'), 'off')
+    set(handles.MainGUI,'visible','on')
+    MessageBox(warnings, 'WARNINGS');
 end
 
 

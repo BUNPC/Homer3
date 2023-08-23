@@ -46,7 +46,7 @@ if strcmp(cfg.GetValue('Logging'), 'off')
 end
 
 PrintSystemInfo(logger, 'Homer3', getArgs(groupDirs, inputFileFormat, unitTest, nargin));
-checkForHomerUpdates();
+checkForUpdates('Homer3');
 gdir = cfg.GetValue('Last Group Folder');
 if isempty(gdir)
     if isdeployed()

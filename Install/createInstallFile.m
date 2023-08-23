@@ -14,7 +14,7 @@ setNamespace(exename)
 
 % Generate a LastCheckForUpdates.dat in case that we  haven't run Homer
 % before creating a build
-checkForHomerUpdates()
+checkForUpdates('Homer3')
 
 if ~exist('options','var') || isempty(options)
     options = 'all';

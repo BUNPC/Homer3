@@ -179,16 +179,14 @@ classdef AuxClass < FileLoadSaveClass
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2)
             if isempty(obj)
-                obj = DataClass();
+                obj = AuxClass();
             end
-            if ~isa(obj2, 'DataClass')
+            if ~isa(obj2, 'AuxClass')
                 return;
             end
-            for ii=1:length(obj2.measurementList)
-                obj.measurementList(ii) = obj2.measurementList(ii).copy();      % shallow copy ok because MeasListClass has no handle properties
-            end
-            obj.dataTimeSeries = obj2.dataTimeSeries;
-            obj.time = obj2.time;
+            obj.dataTimeSeries  = obj2.dataTimeSeries;
+            obj.time            = obj2.time;
+            obj.timeOffset      = obj2.timeOffset;
         end
         
         

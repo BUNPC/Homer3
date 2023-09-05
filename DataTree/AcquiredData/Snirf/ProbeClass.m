@@ -18,6 +18,9 @@ classdef ProbeClass < FileLoadSaveClass
         momentOrders
         correlationTimeDelays
         correlationTimeDelayWidths
+        coordinateSystem
+        coordinateSystemDescription
+        useLocalIndex
     end
     
     properties (Access = private)
@@ -33,6 +36,24 @@ classdef ProbeClass < FileLoadSaveClass
             % Set class properties not part of the SNIRF format
             obj.SetFileFormat('hdf5');
             obj.scaling = 1;            
+
+            obj.wavelengths          = [];
+            obj.wavelengthsEmission  = [];
+            obj.sourcePos2D  = [];
+            obj.detectorPos2D  = [];
+            obj.sourcePos3D  = [];
+            obj.detectorPos3D  = [];
+            obj.frequencies  = [];
+            obj.timeDelays  = [];
+            obj.timeDelayWidths  = [];
+            obj.momentOrders = [];
+            obj.correlationTimeDelays = [];
+            obj.correlationTimeDelayWidths = [];
+            obj.sourceLabels = {};
+            obj.detectorLabels = {};
+            obj.coordinateSystem = '';
+            obj.coordinateSystemDescription = '';
+            obj.useLocalIndex = 0;
             
             % Set SNIRF fomat properties
             if nargin>0
@@ -71,37 +92,16 @@ classdef ProbeClass < FileLoadSaveClass
                         obj.landmarkPos3D = SD.DummyPos;
                         obj.landmarkLabels = SD.Landmarks3D.labels;
                     end
-                    obj.frequencies  = 1;
-                    obj.timeDelays  = 0;
-                    obj.timeDelayWidths  = 0;
-                    obj.momentOrders = [];
-                    obj.correlationTimeDelays = 0;
-                    obj.correlationTimeDelayWidths = 0;
-                    for ii=1:size(SD.SrcPos)
+                    for ii = 1:size(SD.SrcPos)
                         obj.sourceLabels{ii} = ['S',num2str(ii)];
                     end
-                    for ii=1:size(SD.DetPos)
+                    for ii = 1:size(SD.DetPos)
                         obj.detectorLabels{ii} = ['D',num2str(ii)];
                     end
                 elseif ischar(varargin{1})
                     obj.SetFilename(varargin{1});
                     obj.Load(varargin{1});
                 end
-            else
-                obj.wavelengths          = [];
-                obj.wavelengthsEmission  = [];
-                obj.sourcePos2D  = [];
-                obj.detectorPos2D  = [];
-                obj.sourcePos3D  = [];
-                obj.detectorPos3D  = [];
-                obj.frequencies  = 1;
-                obj.timeDelays  = 0;
-                obj.timeDelayWidths  = 0;
-                obj.momentOrders = [];
-                obj.correlationTimeDelays = 0;
-                obj.correlationTimeDelayWidths = 0;
-                obj.sourceLabels = {};
-                obj.detectorLabels = {};
             end
         end
 
@@ -356,23 +356,44 @@ classdef ProbeClass < FileLoadSaveClass
             obj.landmarkPos3D  = obj.landmarkPos3D / obj.scaling;
             
             % Now save
-            hdf5write_safe(fid, [location, '/wavelengths'], obj.wavelengths, 'array');
-            hdf5write_safe(fid, [location, '/wavelengthsEmission'], obj.wavelengthsEmission, 'array');
+            hdf5write_safe(fid, [location, '/wavelengths'], obj.wavelengths, 'vector');
             hdf5write_safe(fid, [location, '/sourcePos2D'], obj.sourcePos2D, 'array');
             hdf5write_safe(fid, [location, '/detectorPos2D'], obj.detectorPos2D, 'array');
             hdf5write_safe(fid, [location, '/landmarkPos2D'], obj.landmarkPos2D, 'array');
             hdf5write_safe(fid, [location, '/sourcePos3D'], obj.sourcePos3D, 'array');
             hdf5write_safe(fid, [location, '/detectorPos3D'], obj.detectorPos3D, 'array');
             hdf5write_safe(fid, [location, '/landmarkPos3D'], obj.landmarkPos3D, 'array');
-            hdf5write_safe(fid, [location, '/frequencies'], obj.frequencies, 'array');
-            hdf5write_safe(fid, [location, '/timeDelays'], obj.timeDelays, 'array');
-            hdf5write_safe(fid, [location, '/timeDelayWidths'], obj.timeDelayWidths, 'array');
-            hdf5write_safe(fid, [location, '/momentOrders'], obj.momentOrders, 'array');
-            hdf5write_safe(fid, [location, '/correlationTimeDelays'], obj.correlationTimeDelays, 'array');
-            hdf5write_safe(fid, [location, '/correlationTimeDelayWidths'], obj.correlationTimeDelayWidths, 'array');
-            hdf5write_safe(fid, [location, '/sourceLabels'], obj.sourceLabels, 'array');
-            hdf5write_safe(fid, [location, '/detectorLabels'], obj.detectorLabels, 'array');
-            hdf5write_safe(fid, [location, '/landmarkLabels'], obj.landmarkLabels, 'array');
+            
+            if ~isempty(obj.sourceLabels)
+                hdf5write_safe(fid, [location, '/sourceLabels'], obj.sourceLabels, 'array');
+            end
+            if ~isempty(obj.detectorLabels)
+                hdf5write_safe(fid, [location, '/detectorLabels'], obj.detectorLabels, 'array');
+            end
+            if ~isempty(obj.landmarkLabels)
+                hdf5write_safe(fid, [location, '/landmarkLabels'], obj.landmarkLabels, 'array');
+            end
+            if ~isempty(obj.wavelengthsEmission)
+                hdf5write_safe(fid, [location, '/wavelengthsEmission'], obj.wavelengthsEmission, 'vector');
+            end
+            if ~isempty(obj.frequencies)
+                hdf5write_safe(fid, [location, '/frequencies'], obj.frequencies, 'vector');
+            end
+            if ~isempty(obj.timeDelays)
+                hdf5write_safe(fid, [location, '/timeDelays'], obj.timeDelays, 'vector');
+            end
+            if ~isempty(obj.timeDelayWidths)
+                hdf5write_safe(fid, [location, '/timeDelayWidths'], obj.timeDelayWidths, 'vector');
+            end
+            if ~isempty(obj.momentOrders)
+                hdf5write_safe(fid, [location, '/momentOrders'], obj.momentOrders, 'vector');
+            end
+            if ~isempty(obj.correlationTimeDelays)
+                hdf5write_safe(fid, [location, '/correlationTimeDelays'], obj.correlationTimeDelays, 'vector');
+            end
+            if ~isempty(obj.correlationTimeDelayWidths)
+                hdf5write_safe(fid, [location, '/correlationTimeDelayWidths'], obj.correlationTimeDelayWidths, 'vector');
+            end
         end
         
         

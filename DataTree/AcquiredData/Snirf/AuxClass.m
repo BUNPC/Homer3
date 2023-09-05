@@ -144,8 +144,8 @@ classdef AuxClass < FileLoadSaveClass
             
             hdf5write_safe(fid, [location, '/name'], obj.name);
             hdf5write_safe(fid, [location, '/dataTimeSeries'], obj.dataTimeSeries, 'array');
-            hdf5write_safe(fid, [location, '/time'], obj.time, 'array');
-            hdf5write_safe(fid, [location, '/timeOffset'], obj.timeOffset, 'array');
+            hdf5write_safe(fid, [location, '/time'], obj.time, 'vector');
+            hdf5write_safe(fid, [location, '/timeOffset'], obj.timeOffset, 'vector');
         end
         
         

@@ -242,7 +242,7 @@ classdef DataClass < FileLoadSaveClass
             end
             
             hdf5write_safe(fid, [location, '/dataTimeSeries'], obj.dataTimeSeries, 'array');
-            hdf5write_safe(fid, [location, '/time'], obj.time, 'array');
+            hdf5write_safe(fid, [location, '/time'], obj.time, 'vector');
             
             for ii = 1:length(obj.measurementList)
                 obj.measurementList(ii).SaveHdf5(fid, [location, '/measurementList', num2str(ii)]);

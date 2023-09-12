@@ -1391,12 +1391,12 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         % ----------------------------------------------------------------------------------
         function b = IsProbeFlat(obj)
             b = false;
-            if length(obj.SD.SrcPos) == length(obj.SD.SrcPos3D)
+            if all(size(obj.SD.SrcPos) == size(obj.SD.SrcPos3D))
                 if ~all(obj.SD.SrcPos == obj.SD.SrcPos3D)
                     return;
                 end
             end
-            if length(obj.SD.DetPos) == length(obj.SD.DetPos3D)
+            if all(size(obj.SD.DetPos) == size(obj.SD.DetPos3D))
                 if ~all(obj.SD.DetPos == obj.SD.DetPos3D)
                     return
                 end

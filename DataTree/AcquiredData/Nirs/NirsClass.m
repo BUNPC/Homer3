@@ -421,6 +421,54 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         
+        % -------------------------------------------------------
+        function b = ProbeSimilar(obj, obj2)
+            b = false;
+                                              
+            % MeasList
+            [~, k1] = sortrows(obj.SD.MeasList);
+            [~, k2] = sortrows(obj2.SD.MeasList);
+            if ~all( size(obj.SD.MeasList) == size(obj2.SD.MeasList) )
+                return;
+            end
+            if ~all(obj.SD.MeasList(k1,:) == obj2.SD.MeasList(k2,:))
+                return;
+            end
+            
+            if ~all( size(obj.SD.SrcPos) == size(obj2.SD.SrcPos) )
+                return;
+            end
+            if ~all(obj.SD.SrcPos == obj2.SD.SrcPos)
+                return;
+            end
+            
+            if ~all( size(obj.SD.SrcPos3D) == size(obj2.SD.SrcPos3D) )
+                return;
+            end
+            if ~all( obj.SD.SrcPos3D == obj2.SD.SrcPos3D )
+                return;
+            end
+                        
+            if ~all( size(obj.SD.DetPos) == size(obj2.SD.DetPos) )
+                return;
+            end
+            if ~all( obj.SD.DetPos == obj2.SD.DetPos )
+                return;
+            end
+            
+            if ~all( size(obj.SD.DetPos3D) == size(obj2.SD.DetPos3D) )
+                return;
+            end
+            if ~all( obj.SD.DetPos3D == obj2.SD.DetPos3D )
+                return;
+            end
+            
+            
+            b = true;
+        end
+        
+        
+        
         % --------------------------------------------------------------------
         function b = EqualStim(obj, obj2)
             b = false;
@@ -469,8 +517,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             end
             if ~all(obj.aux(:) == obj2.aux(:))
                 return;
-            end
-            
+            end            
             B = true;
         end
         
@@ -621,7 +668,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                     ml(ii).detectorIndex = obj.SD.MeasList(ii,2);
                     ml(ii).dataTypeIndex = 0;
                     ml(ii).wavelengthIndex = obj.SD.MeasList(ii,4);
-            end
+                end
             end
         end
         
@@ -1390,24 +1437,41 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         % ----------------------------------------------------------------------------------
         function b = IsProbeFlat(obj)
-            b = false;
             if all(size(obj.SD.SrcPos) == size(obj.SD.SrcPos3D))
                 if ~all(obj.SD.SrcPos == obj.SD.SrcPos3D)
+                    b = false;
                     return;
                 end
             end
             if all(size(obj.SD.DetPos) == size(obj.SD.DetPos3D))
                 if ~all(obj.SD.DetPos == obj.SD.DetPos3D)
+                    b = false;
                     return
                 end
             end
             optpos = [obj.SD.SrcPos3D; obj.SD.DetPos3D];
             ncoord = size(optpos, 2);
             for ii = 1:ncoord
-                if length(unique(optpos(:,ii)))==1
+                if length(unique(optpos(:,ii))) == 1
                     b = true;
                     return
                 end
+            end
+            if isempty(optpos)
+                b = true;
+                return
+            end                
+            optpos = [obj.SD.SrcPos; obj.SD.DetPos];
+            ncoord = size(optpos, 2);
+            flag = zeros(1, ncoord);
+            for ii = 1:ncoord
+                if length(unique(optpos(:,ii))) > 1
+                    flag(ii) = 1;
+                end
+            end
+            if sum(flag) == ncoord
+                b = false;
+                return
             end
             b = true;
         end
@@ -1614,6 +1678,11 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             if obj.Are3DLandmarksFlat() && ~obj.AreLandmarksFlat()
                 obj.SD.Landmarks3D.pos      = obj.SD.Landmarks.pos;
                 obj.SD.Landmarks3D.labels   = obj.SD.Landmarks.labels;
+            end
+            for ii = 1:length(obj.SD.AnchorList)
+                if ischar(obj.SD.AnchorList{ii,1})
+                    obj.SD.AnchorList{ii,1} = str2num(obj.SD.AnchorList{ii,1});
+                end
             end
         end
         

@@ -4,45 +4,42 @@
 % Motion_Artifacts_By_Channel
 %
 %
-% Identifies motion artifacts in input data. If any active data channel exhibits
-% a signal change greater than amp_thresh or variation greater than determined 
-% by std_thresh, then a segment of data around that time point is marked as 
-% a motion artifact. The channel-wise motion artifacts are recorded in the 
-% output cell array tIncCh. If any channel has a motion artifact, it is indicated
-% by the cell array tInc.
+% Identifies motion artifacts in an input data matrix d. If any active 
+% data channel exhibits a signal change greater than std_thresh or
+% amp_thresh, then a segment of data around that time point is marked as a
+% motion artifact. The channel-wise motion artifacts are recorded in the
+% output matrix tIncCh. If any channel has a motion artifact, it is
+% indicated by the vector tInc.
 %
 %
 % INPUTS:
 % data: SNIRF data structure data, containing time course data
-% probe:  SNIRF data structure probe, containing probe source/detector geometry
-% tIncMan: Cell array for each data block with vectors of length time points
-%          where 1's indicate data included and 0's indicate motion
-%          artifact. It represents manually excluded time points.
+% probe:   SNIRF data structure probe, containing probe source/detector geometry
+% tIncMan: Cell array of vectors corresponding to the number of time bases in data. 
+%          tIncMan has been manually excluded. 0-excluded. 1-included. Vector same length as d.
 % mlActMan: Cell array of vectors, one for each time base in data, specifying 
-%           active/inactive channels with 1 meaning active, 0 meaning inactive
+%        active/inactive channels with 1 meaning active, 0 meaning inactive
 % mlActAuto: Cell array of vectors, one for each time base in data, specifying 
-%            active/inactive channels with 1 meaning active, 0 meaning inactive
-% tMotion: Check for a signal change indicative of a motion artifact over
-%          time range tMotion. Units of seconds.
+%        active/inactive channels with 1 meaning active, 0 meaning inactive
+% tMotion: Check for signal change indicative of a motion artifact over
+%     time range tMotion. Units of seconds.
 % tMask: Mark data over +/- tMask seconds around the identified motion 
-%        artifact as a motion artifact. Units of seconds.
-% STDEVthresh: If the signal for any given active channel changes by more
-%              than stdev_thresh * stdev(d) over the time interval tMotion, 
-%              then this time point is marked as a motion artifact. The standard
-%              deviation is determined for each channel independently.
-% AMPthresh: If the signal for any given active channel changes by more
-%            than amp_thresh over the time interval tMotion, then this time point
-%            is marked as a motion artifact.
+%     artifact as a motion artifact. Units of seconds.
+% STDEVthresh: If the signal d for any given active channel changes by more
+%     that stdev_thresh * stdev(d) over the time interval tMotion, then
+%     this time point is marked as a motion artifact. The standard deviation is
+%     determined for each channel independently.
+% AMPthresh: If the signal d for any given active channel changes by more
+%     that amp_thresh over the time interval tMotion, then this time point
+%     is marked as a motion artifact.
 %
 %
 % OUTPUTS:
-% tInc: A cell array of vectors corresponding to the number of time bases. 
-%       Each array element is a vector of length time points with 1's 
-%       indicating data included and 0's indicate motion artifact
-% tIncCh: A cell array of vectors corresponding to the number of time bases. 
-%         Each array element is a vector of length #time points x #channels,
-%         with 1's indicating data included and 0's indicating motion artifacts 
-%         on a channel by channel basis
+% tInc: a vector of length time points with 1's indicating data included
+%       and 0's indicate motion artifact
+% tIncCh: a matrix with #time points x #channels, with 1's indicating data
+%       included and 0's indicating motion artifacts on a channel by
+%       channel basis
 %
 % USAGE OPTIONS:
 % Motion_Artifacts_By_Channel:  [tIncAuto, tIncAutoCh] = hmrR_MotionArtifactByChannel(dod, probe, mlActMan, mlActAuto, tIncMan, tMotion, tMask, STDEVthresh, AMPthresh)
@@ -62,7 +59,7 @@
 % Sept. 23, 2010
 % Modified by DAB 3/17/2011 to not act on a single channel by default
 % DAB 4/20/2011 added tMotion and tMask and hard coded stdev option.
-% DAB 8/4/2011 added amp_thresh to work at the same time as std_thresh
+% DAB 8/4/2011 added amp_thresh to work at same time as std_thresh
 %
 % TO DO:
 % Consider tIncMan
@@ -72,7 +69,7 @@ function [tInc, tIncCh] = hmrR_MotionArtifactByChannel(data, probe, mlActMan, ml
 tInc   = cell(length(data), 1);
 tIncCh = cell(length(data), 1);
 
-% Input processing. Check required inputs, throw errors if necessary.
+% Input processing.  Check required inputs, throw errors if necessary.
 if nargin<3
     error('First and second inputs must be data and probe SNIRF objects of type DataClass and ProbeClass.')
 end
@@ -92,99 +89,69 @@ if isempty(mlActAuto)
     mlActAuto = cell(length(data),1);
 end
 
-for iBlk=1:length(data)
+for iBlk = 1:length(data)
     
     d           = data(iBlk).GetDataTimeSeries();
     fs          = data(iBlk).GetTime();
     MeasList    = data(iBlk).GetMeasList();
-    Lambda      = probe.GetWls();
-    
+
     if length(fs)~=1
         fs = 1/(fs(2)-fs(1));
     end
        
     if isempty(tIncMan{iBlk})
         tIncMan{iBlk} = ones(size(d,1),1);
-    end
-    
+    end    
     tInc{iBlk}   = ones(size(d,1),1);
-    tIncCh{iBlk} = ones(size(d,1), size(MeasList,1));
+    tIncCh{iBlk} = tIncCh_Initialize(tIncCh{iBlk}, d, MeasList);
+
+    % get list of active channels
+    mlActMan{iBlk} = mlAct_Initialize(mlActMan{iBlk}, MeasList);
+    mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, MeasList);
+    lstAct1 = mlAct_Matrix2IndexList(mlActAuto{iBlk}, MeasList);
+    lstAct2 = mlAct_Matrix2IndexList(mlActMan{iBlk}, MeasList);
+    lstAct = unique([lstAct1(:)', lstAct2(:)']);
     
-    if isempty(mlActMan{iBlk})
-        mlActMan{iBlk} = ones(size(MeasList,1),1);
-    end
-    if isempty(mlActAuto{iBlk})
-        mlActAuto{iBlk} = ones(size(MeasList,1),1);
-    end
-    MeasListAct = mlActMan{iBlk} & mlActAuto{iBlk};      
-        
-    % Calculate the diff of d to to set the threshold
-    diff_d = diff(d);
-       
-    % Set artifact buffer for tMask seconds on each side of spike
-    art_buffer = round(tMask*fs); % time in seconds times sample rate
+    % set artifact buffer for tMask seconds on each side of spike
+    art_buffer = round(tMask*fs); % time in seconds times sample rate    
     
-    % Get list of active channels
-    %lstAct = find(MeasListAct==1);
-    lstAct = zeros(size(MeasList,1),1);
-    nLambda = length(Lambda);
-    lst1 = find(MeasList(:,4)==1);
-    for ii=1:nLambda
-        for jj=1:length(lst1)
-            lst(jj) = find(MeasList(:,1)==MeasList(lst1(jj),1) & ...
-                           MeasList(:,2)==MeasList(lst1(jj),2) & ...
-                           MeasList(:,4)==ii );
-            lstAct(lst(jj)) = MeasListAct(jj);
-        end
-    end
-    lstAct = find(lstAct==1);
-    
-    % Loop over channels
+    % LOOP OVER CHANNELS
     for iCh = 1:length(lstAct)
         
         lstActTmp = find(MeasList(:,1)==MeasList(lstAct(iCh),1) & ...
                          MeasList(:,2)==MeasList(lstAct(iCh),2) );
         
-        % Calculate std_diff for each channel
-        std_diff = std(d(2:end,lstActTmp)-d(1:end-1,lstActTmp),0,1);
+        % calculate std_diff for each channel
+        std_diff = std( d(2:end, lstActTmp) - d(1:end-1, lstActTmp), 0, 1);
         
-        % Calculate max_diff across channels for different time delays
-        max_diff = zeros(size(d,1)-1,length(lstActTmp));
-        for ii=1:round(tMotion*fs)
+        % calculate max_diff across channels for different time delays
+        max_diff = zeros(size(d,1)-1, length(lstActTmp));
+        for ii = 1:round(tMotion*fs)
             max_diff=max([abs(d((ii+1):end,lstActTmp)-d(1:(end-ii),lstActTmp)); zeros(ii-1,length(lstActTmp))], max_diff);
         end
         
-        % Find indices with motion artifacts based on std_thresh or amp_thresh
+        % find indices with motion artifacts based on std_thresh or amp_thresh
         bad_inds = zeros(size(max_diff));
-        mc_thresh=std_diff*std_thresh;
-        for ii=1:length(lstActTmp)
-            bad_inds(:,ii) = max( [max_diff(:,ii)>mc_thresh(ii) max_diff(:,ii)>amp_thresh], [],2);
+        mc_thresh = std_diff*std_thresh;
+        for ii = 1:length(lstActTmp)
+            bad_inds(:,ii) = max( [ max_diff(:,ii)>mc_thresh(ii), max_diff(:,ii)>amp_thresh ], [], 2);
         end
         bad_inds = find(max(bad_inds,[],2)==1);
         
         % Eliminate time points before or after motion artifacts
         if ~isempty(bad_inds)
-            bad_inds=repmat(bad_inds, 1, 2*art_buffer+1)+repmat(-art_buffer:art_buffer,length(bad_inds), 1);
-            bad_inds=bad_inds((bad_inds>0)&(bad_inds<=(size(d, 1)-1)));
+            bad_inds = repmat(bad_inds, 1, 2*art_buffer+1) + repmat(-art_buffer:art_buffer, length(bad_inds), 1);
+            bad_inds = bad_inds((bad_inds>0) & (bad_inds<=(size(d, 1)-1)));
             
-            % Exclude points that were manually excluded
+            % exclude points that were manually excluded
             bad_inds(find(tIncMan{iBlk}(bad_inds)==0)) = [];
             
             % Set t and diff of data to 0 at the bad inds
-            tInc{iBlk}(1+bad_inds)=0; % bad inds calculated on diff so add 1
-            tIncCh{iBlk}(1+bad_inds,lstAct(iCh)) = 0;
+            tInc{iBlk}(1+bad_inds) = 0; % bad inds calculated on diff so add 1
+            tIncCh{iBlk}(1+bad_inds, lstAct(iCh)) = 0;
         end
         
-    end
-    
-    tInc{iBlk}(find(tIncMan{iBlk}==0)) = 0;
-    tIncCh{iBlk}(find(tIncMan{iBlk}==0),:) = 0;
-    
-    % Calculate the variance due to motion relative to total variance
-    lst = find(tInc{iBlk}==0);
-    dstd0 = std(d(lst,:),[],1);
-    lst = find(tInc{iBlk}==1);
-    dstd1 = std(d(lst,:),[],1);
+    end % loop over channels
     
 end
 

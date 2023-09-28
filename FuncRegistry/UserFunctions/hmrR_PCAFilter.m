@@ -12,7 +12,9 @@
 %    data, then the columns are channels as described in ml. If
 %    y is concentration data, then the third dimension is channels and the
 %    second dimension indicates HbO and HbR.
-% mlAct: cell array that defines active channels (1 to indicate active)
+% mlAct: List of active / inactive channels in the form of a Nx4 matrix where
+%    N is the number of channels. Every row represents a channel with
+%    columns [ source, detector, active status, datatype (e.g. wavelength or Hb type) ] 
 % tInc: This is a vector of length number of time points and is 1 to
 %    indicate that a time point is included in the analysis and 0 if it is to
 %    be excluded. This is useful for ignoring periods of time with strong
@@ -62,19 +64,28 @@ if ~exist('nSV','var')
     return
 end
 
-for iBlk=1:length(data_y)
+for iBlk = 1:length(data_y)
     
     % Initialize the main output data with the input data
     data_yc(iBlk) = DataClass(data_y(iBlk));
         
-    % Get all the input data from the arguments
-    y        = data_y(iBlk).GetDataTimeSeries('reshape');
-    t        = data_y(iBlk).GetTime();
-    MeasList = data_y(iBlk).GetMeasList();
-    if isempty(mlAct{iBlk})
-        mlAct{iBlk} = ones(size(MeasList,1),1);
+    if ~isempty(data_yc(iBlk).measurementList)
+	    if data_yc(iBlk).measurementList(1).wavelengthIndex > 0
+	        option = '';
+	    else
+	        option = 'reshape';
+	    end
+    else
+	    option = '';
     end
-    MeasListAct = mlAct{iBlk};
+    
+    % Get all the input data from the arguments
+    y           = data_y(iBlk).GetDataTimeSeries(option);
+    t           = data_y(iBlk).GetTime();
+    MeasList    = data_y(iBlk).GetMeasList(option);
+    mlActMatrix = mlAct_Initialize(mlAct{iBlk}, MeasList);
+    mlAct       = mlAct_Matrix2BinaryVector(mlActMatrix, MeasList);
+    MeasListAct = mlAct;
     if isempty(tInc{iBlk})
         tInc{iBlk} = ones(length(t),1);
     end
@@ -101,9 +112,9 @@ for iBlk=1:length(data_y)
         yc = y;
         for iConc = 1:2
             y = squeeze(yo(:,iConc,:));
-            y=detrend(y);
+            y = detrend(y);
             c = y.' * y;
-            [v,s,foo] = svd(c);
+            [v,s] = svd(c);
             u = y*v*inv(s);
             svs{iBlk}(:,iConc) = diag(s)/sum(diag(s));
             if nSV{iBlk}(iConc)<1 % find number of SV to get variance up to nSV
@@ -134,7 +145,7 @@ for iBlk=1:length(data_y)
             y = squeeze(yo);
             
             c = y.' * y;
-            [V,St,foo] = svd(c);
+            [V,St] = svd(c);
             svs{iBlk} = diag(St) / sum(diag(St));
             %        [foo,St,V] = svd(y);
             %        svs{iBlk} = diag(St).^2/sum(diag(St).^2);
@@ -154,6 +165,7 @@ for iBlk=1:length(data_y)
             yc(lstInc,lstAct) = yo - y*V*ev*V';
             
         elseif length(nSV{iBlk})==2
+            
             % apply to each wavelength individually
             % verify that length(nSV{iBlk})==length(wavelengths)
             yc = y;
@@ -163,7 +175,7 @@ for iBlk=1:length(data_y)
                 yo = squeeze(yo);
                 
                 c = yo.' * yo;
-                [V,St,foo] = svd(c);
+                [V,St] = svd(c);
                 svs{iBlk}(:,iW) = diag(St) / sum(diag(St));
                 %        [foo,St,V] = svd(y);
                 %        svs{iBlk} = diag(St).^2/sum(diag(St).^2);

@@ -5,7 +5,7 @@ global procStreamStyle
 global testidx;
 global logger
 
-t_local = tic;
+t1 = tic;
 
 reg = RegistriesClass('reset');
 
@@ -17,7 +17,7 @@ DEBUG1=0;
 testidx=0;
 procStreamStyle = 'nirs';
 
-CleanUp(standalone);
+UnitTests_Init(standalone);
 logger = InitLogger(logger, 'UnitTestsAll_Nirs');
 logger.WriteNoNewline('################################################################');
 logger.CurrTime('Starting UnitTestsAll_Nirs ...');
@@ -53,7 +53,7 @@ for ii = 1:nGroups
 end
 
 reportResults(status);
-toc(t_local)
+toc(t1)
 logger.Close('UnitTestsAll_Nirs');
 
 

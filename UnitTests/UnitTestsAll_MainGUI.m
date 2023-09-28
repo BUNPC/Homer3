@@ -3,7 +3,7 @@ global logger
 global testidx
 global procStreamStyle
 
-t_local = tic;
+t1 = tic;
 testidx=0;
 procStreamStyle = 'snirf';
 
@@ -12,8 +12,8 @@ if ~exist('standalone','var')
 end
 
 % Clean up before we start
-CleanUp(standalone);
-logger = InitLogger(logger, 'UnitTests_MainGUI');
+UnitTests_Init(standalone, true, 'UnitTests_MainGUI');
+
 logger.WriteNoNewline('################################################################');
 logger.CurrTime('Starting UnitTests_MainGUI ...');
 
@@ -35,7 +35,7 @@ for ii = 1:nGroups
 end
 
 reportResults(status);
-toc(t_local);
+toc(t1);
 logger.Close('UnitTests_MainGUI');
 close(ut.handles.MainGUI);
 
@@ -50,8 +50,8 @@ userInterrupt(standalone)
 
 % ---------------------------------------------------
 function configureAppSettings()
-c = ConfigFileClass();
-c.SetValue('Regression Test Active','true');
-c.SetValue('Default Processing Stream Style','SNIRF');
-c.Save();
+global cfg
+cfg.SetValue('Regression Test Active','true');
+cfg.SetValue('Default Processing Stream Style','SNIRF');
+cfg.Save();
 

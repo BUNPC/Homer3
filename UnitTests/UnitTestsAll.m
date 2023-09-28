@@ -1,30 +1,28 @@
 function UnitTestsAll()
-global logger
+global cfg
 
-t_local = tic;
+t1 = tic;
 
 setNamespace('Homer3')
 
-CleanUp(true);
+UnitTests_Init(true, true, 'UnitTestsAll');
 
 cleanupObj = onCleanup(@()userInterrupt_Callback(true));
 
-logger = Logger('UnitTestsAll');
-
-c = ConfigFileClass();
-c.SetValue('Regression Test Active','true');
-
-c.SetValue('Include Archived User Functions','Yes');
-c.SetValue('Default Processing Stream Style','NIRS');
-c.Save();
+cfg.SetValue('Regression Test Active','true');
+cfg.SetValue('Include Archived User Functions','Yes');
+cfg.SetValue('Default Processing Stream Style','NIRS');
+cfg.SetValue('Export Stim To TSV File','No');
+cfg.SetValue('Quiet Mode','On');
+cfg.Save();
 % UnitTestsAll_Nirs(false);
 
-c.SetValue('Default Processing Stream Style','SNIRF');
-c.Save();
+cfg.SetValue('Default Processing Stream Style','SNIRF');
+cfg.Save();
 UnitTestsAll_Snirf(false);
 UnitTestsAll_MainGUI(false)
 
-toc(t_local);
+toc(t1);
 
 
 

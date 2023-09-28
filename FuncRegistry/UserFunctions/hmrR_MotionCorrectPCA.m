@@ -6,8 +6,7 @@
 %
 % This function uses PCA to filter only the segments of data identified as
 % a motion artifact. The motion artifacts are indicated in the tInc vector
-% by the value of 0. The number of principal components to remove is
-% determined by the nSV value.  
+% by the value of 0.
 %
 %
 % INPUTS
@@ -16,15 +15,14 @@
 %        active/inactive channels with 1 meaning active, 0 meaning inactive
 % mlActAuto: Cell array of vectors, one for each time base in data, specifying 
 %        active/inactive channels with 1 meaning active, 0 meaning inactive
-% tIncMan: Cell array for each data block with vectors of length time points
+% tIncMan: Cell array for eqach data block with vectors of length time points
 %          where 1's indicating data included and 0's indicating motion artifact
-% tIncAuto: Cell array for each data block with vectors of length time points
+% tIncAuto: Cell array for eqach data block with vectors of length time points
 %          where 1's indicating data included and 0's indicating motion artifact
-% nSV: Cell array for each data block defining the proportion of principal 
-%      components to remove from each data block. It ranges between [0.0, 1.0]
-%      and determines the number of principal components to remove. PCA 
-%      filter removes the first n components of the data that removes
-%      a proportion of the variance up to nSV.
+% nSV: Cell array for each data block with the number of principal components to remove
+%      from each data block. If this number is less than 1, then the filter removes the first n
+%      components of the data that removes a fraction of the variance up to nSV. Percent variance 
+%      you want to remove, or give an integer for number ofcomponents to remove
 %
 %
 % OUTPUTS
@@ -42,7 +40,7 @@
 % PREREQUISITES:
 % Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
 %
-function [data_dN, svs, nSV] = hmrR_MotionCorrectPCA(data_d, mlActMan, mlActAuto, tIncMan, tIncAuto, nSV)
+function [data_dN, svs, nSV] = hmrR_MotionCorrectPCA(data_d,  mlActMan, mlActAuto, tIncMan, tIncAuto, nSV)
 
 % Init output 
 data_dN = DataClass.empty();
@@ -70,15 +68,9 @@ for iBlk=1:length(data_d)
 
     d           = data_d(iBlk).GetDataTimeSeries();
     MeasList    = data_d(iBlk).GetMeasList();
-    if isempty(mlActMan{iBlk})
-        mlActMan{iBlk} = ones(size(MeasList,1),1);
-    end
-    if isempty(mlActAuto{iBlk})  
-        mlActAuto{iBlk} = ones(size(MeasList,1),1);
-    end
-    
-    % Determine overall channels: 1-active and 0-inactive
-    mlAct = mlActMan{iBlk} & mlActAuto{iBlk};
+    mlActMan{iBlk} = mlAct_Initialize(mlActMan{iBlk}, MeasList);
+    mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, MeasList);    
+    mlAct = mlActMan{iBlk}(:,3) & mlActAuto{iBlk}(:,3);
 
     if isempty(tIncMan{iBlk})
         tIncMan{iBlk} = ones(size(d,1),1);
@@ -86,8 +78,6 @@ for iBlk=1:length(data_d)
     if isempty(tIncAuto{iBlk})
         tIncAuto{iBlk} = ones(size(d,1),1);
     end
-    
-    % Determine overall timepoints: 1-included, 0-motion artifact
     tInc = tIncMan{iBlk} & tIncAuto{iBlk};
     
     lstNoInc = find(tInc==0);
@@ -124,7 +114,7 @@ for iBlk=1:length(data_d)
     yc = yo - y*V*ev*V';
     
     %
-    % Splice the segments of data together
+    % splice the segments of data together
     %
     lstMs = find(diff(tInc)==-1);
     lstMf = find(diff(tInc)==1);

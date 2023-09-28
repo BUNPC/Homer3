@@ -16,8 +16,7 @@ testidx=0;
 procStreamStyle = 'snirf';
 
 % Clean up before we start
-CleanUp(standalone);
-logger = InitLogger(logger, 'UnitTestsAll_Snirf');
+UnitTests_Init(standalone, true, 'UnitTestsAll_Snirf');
 logger.WriteNoNewline('################################################################');
 logger.CurrTime('Starting UnitTestsAll_Snirf ...');
 
@@ -66,7 +65,7 @@ userInterrupt(standalone)
 
 % ---------------------------------------------------
 function configureAppSettings()
-c = ConfigFileClass();
-c.SetValue('Regression Test Active','true');
-c.SetValue('Default Processing Stream Style','SNIRF');
-c.Save();
+global cfg
+cfg.SetValue('Regression Test Active','true');
+cfg.SetValue('Default Processing Stream Style','SNIRF');
+cfg.Save();

@@ -27,7 +27,7 @@ if ~iscell(files)
     end
 end
 
-[~,name,~] = fileparts(files); 
+[~,name,~] = fileparts(files);
 
 fsn = inputdlg( 'Select the time range (in seconds) for the segment of data to save in a separate file. You can enter multiple time ranges, separated by a '';'', to save different segments to different files. For example, [0 100; 300 400] would give you two segments of the original file from 0 to 100 and 300 to 400', 'Segment SNIRF file', 1 );
 if isempty(fsn)
@@ -51,8 +51,8 @@ for iFile = 1:length(files)
     if fsn(1,1) == 0 % if time starts from 0, take the first data sample!
         fsn(1,1) = 1/fs;
     end
-       
-        
+    
+    
     for P = 1:size(fsn,1) % loop over different parts
         snirfData = SnirfClass(files{iFile});
         if fsn(P,1)> maxT || fsn(P,2) > maxT
@@ -66,7 +66,9 @@ for iFile = 1:length(files)
         snirfData.data.dataTimeSeries = snirfData.data.dataTimeSeries(round(fsn(P,1)*fs):round(fsn(P,2)*fs),:);
         snirfData.data.time = snirfData.data.time(round(fsn(P,1)*fs):round(fsn(P,2)*fs));
         for iStim = 1:length(snirfData.stim)
-            snirfData.stim(iStim).data = snirfData.stim(iStim).data(snirfData.stim(iStim).data(:,1)>fsn(P,1) & snirfData.stim(iStim).data(:,1)<fsn(P,2),:);
+            if ~isempty(snirfData.stim(iStim).data)
+                snirfData.stim(iStim).data = snirfData.stim(iStim).data(snirfData.stim(iStim).data(:,1)>fsn(P,1) & snirfData.stim(iStim).data(:,1)<fsn(P,2),:);
+            end
         end
         for iAux = 1:length(snirfData.aux)
             snirfData.aux(iAux).dataTimeSeries = snirfData.aux(iAux).dataTimeSeries(round(fsn(P,1)*fs):round(fsn(P,2)*fs));
@@ -85,7 +87,7 @@ movefile (files{1}, new_name);
 %     %Nothing
 % else
 %     for iFile = 1:length(files)
-%         
+%
 %         maingui.dataTree.
 %     end
 % end

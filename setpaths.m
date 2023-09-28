@@ -1,91 +1,23 @@
-function setpaths(options)
+function setpaths(addremove)
 
 %
 % USAGE:
 %
+%   % 1. Add all search paths for this repo
 %   setpaths
+%
+%   % 2. Same as 1.. Add all search paths for this repo
 %   setpaths(1)
-%   setpaths(0)
-%   setpaths(options)
 %
-% DESCRIPTION:
+%   % 3. Add all search paths for this repo while removing search 
+%   %    paths of all similar workspaces
+%   setpaths(2)
 %
-%   Sets all the paths needed by the app in the current folder. It also uses git commands to downloasd
-%   all its associated submodules if they exist and changes their branch and origin to match the parent app.
-%
-%   If GIT is NOT available, setpaths will try to download and install the non-git versions of the submodules
-%   after asking the user to input the source branch that matches the parent app.
-%
-%   options:
-%        1. no arguments
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize
-%           all submodules to same branch and origin as parent app equivalent to numeric argument 1 or string
-%           argument 'init'.
-%
-%        2. 1
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize all
-%           submodules to same branch and origin as parent app equivalent to string argument 'init' or no arguments
-%
-%        3. 0
-%           Remove search paths for parent app under current folder and all its associated submodules
-%
-%        4. 'init'
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize all
-%           submodules to same branch and origin as parent app equivalent to numeric argument 1 or no arguments
-%
-%        5. 'update'
-%           Update all submodules to their latest revision for their current branches. If used on a newly
-%           downloaded parent app it will do the equivalent of setpaths with no args, setpaths('init')
-%           or setpaths(1).
-%
-%        6. 'branch: <branchname>'
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize all
-%           submodules to same branch and origin as parent app. Checkout branch <branchname> for parent app and
-%           submodules. If branch <branchname> doesn't exist create based off current branch and then check it out.
-%
-%        7. 'branch: <branchname src>, <branchname dst>'
-%           Add search paths for parent app under current folder and all its associated submodules. Initialize all
-%           submodules and parent repo to <branchname src> and change submodule origin to match parent app. The branch
-%           <branchname src> must exist (otherwise setpaths will fail to checkout the appropriate branch). Then create
-%           new branch <branchname dst> if it does not exist already based off <branchname src>. If branch
-%           <branchname dst> DOES exist then simply check it out.
-%
-%
-% EXAMPLES:
-%
-%   % Example 1:   Set search paths for parent app in the current folder and any associated submodules.
-%   %   Download associated submodule and change their branch and origin to match that of parent app.
-%
-%   setpaths
-%
-%
-%   % Example 2:   Remove all search paths for parent app in the current folder and its associated submodules
-%
+%   % 4. Remove all search paths for this repo
 %   setpaths(0)
 %
-%
-%   % Example 3:   Update all submodules to their latest revision for their current branches. If used on a
-%   %   newly downloaded repo it will do the equivalent of setpaths with no args or setpaths('init').
-%
-%   setpaths('update')
-%
-%
-%   % Example 4:   Set search paths for parent app in the current folder and any associated submodules.
-%   %   Change submodule current branch and origin to match parent app. Then create/checkout branch
-%   %   'mynewbranch1'. If 'mynewbranch1' is new it will be based off 'development' branch in the parent
-%   %   app AND all submodules.
-%
-%   setpaths('branch: development, mynewbranch1')
-%
-%
-%   % Example 5:   Set search paths for parent app in the current folder and any associated submodules.
-%   %   Download associated submodule and change their branch and origin to match that of parent app.
-%   %   Then create/checkout branch 'mynewbranch1'. If 'mynewbranch1' is new it will be created in the
-%   %   parent app AND all submodules based off the current branch in each of those repos.
-%
-%   setpaths('branch: mynewbranch1')
-
 currdir = pwd;
+global logger
 
 try
     
@@ -94,35 +26,38 @@ try
     appname = 'Homer3';
     
     % Parse arguments
-    addremove = 1;
-    if ~exist('options','var')
-        options = 'init';
-    elseif isnumeric(options)
-        if options == 0
-            addremove = 0;
-        else
-            options = 'init';
-        end
+    if ~exist('addremove','var')
+    	addremove = 1;
     end
     
-    % Add startup searchpath
-    if exist([pwd, '/Utils/submodules'],'dir')
-        %addpath([pwd, '/Utils'],'-end');
-        addpath([pwd, '/Utils/submodules'],'-end');
+    % Add libraries on which Homer3 depends
+    d = addDependenciesSearchPaths();
+
+    if ~isempty(which('setNamespace.m'))
+        setNamespace(appname);
     end
     
+    % Start logger only after adding library paths. Logger is in the Utils libary. 
+    logger = Logger('setpaths');
+        
     % Create list of possible known similar apps that may conflic with current
     % app
-    appNameExclList = {'Homer3','Homer2_UI','brainScape','ResolveCommonFunctions'};
+    appNameExclList = {appname,'DataTree','Homer2_UI','brainScape','ResolveCommonFunctions'};
     appNameInclList = {'AtlasViewerGUI'};
-    exclSearchList  = {'.git','Data','Docs','*_install','*.app'};
+    exclSearchList  = {'.git','.idea','Data','Docs','*_install','*.app','submodules'};
     
     appThis         = filesepStandard_startup(pwd);
     appThisPaths    = findDotMFolders(appThis, exclSearchList);
+    
     if addremove == 0
-        deleteNamespace(appname);
+        if ~isempty(which('deleteNamespace.m'))
+            deleteNamespace(appname);
+        end
         removeSearchPaths(appThis);
         return;
+    elseif addremove == 2
+        appNameExclList = [appNameExclList, appNameInclList];
+        appNameInclList = {};
     end
     
     appExclList = {};
@@ -131,12 +66,19 @@ try
     % Find all root folders of apps to exclude from search paths
     for ii = 1:length(appNameExclList)
         foo = which([appNameExclList{ii}, '.m'],'-all');
+        
+        % Before giving up and concluding the path does not exist in list of matlab
+        % search paths, try appending the word 'Class' to path name. 
+        if isempty(foo)
+            foo = which([appNameExclList{ii}, 'Class.m'],'-all');
+        end
+        
         for jj = 1:length(foo)
             p = filesepStandard_startup(fileparts(foo{jj}));
             if pathscompare_startup(appThis, p)
                 continue
             end
-            fprintf('Exclude paths for %s\n', p);
+            printMethod(sprintf('Exclude paths for %s\n', p));
             appExclList = [appExclList; p]; %#ok<AGROW>
         end
     end
@@ -148,17 +90,17 @@ try
             if jj > 1
                 p = filesepStandard_startup(fileparts(foo{jj}));
                 appExclList = [appExclList; p]; %#ok<AGROW>
-                fprintf('Exclude paths for %s\n', p);
+                printMethod(sprintf('Exclude paths for %s\n', p));
             else
                 p = filesepStandard_startup(fileparts(foo{jj}));
                 appInclList = [appInclList; p]; %#ok<AGROW>
-                fprintf('Include paths for %s\n', p);
+                printMethod(sprintf('Include paths for %s\n', p));
             end
         end
     end
     
     % Remove all search paths for all other apps except for current one, to
-    % make that we use only search from the current app for download shared
+    % make sure that we use only search from the current app for download shared
     % libraries (i.e, submodules).
     for ii = 1:length(appExclList)
         removeSearchPaths(appExclList{ii})
@@ -168,16 +110,6 @@ try
     end
     
     addSearchPaths(appThisPaths);
-    
-    % Download submodules
-    status = downloadLibraries(options, appname);
-    if status<0
-        cd(currdir);
-        fprintf('ERROR: Could not download shared libraries required by this application...\n')
-        return;
-    end
-    setNamespace(appname);
-    
     
     % Add back all search paths for all other apps except for current app
     for ii = 1:length(appInclList)
@@ -189,63 +121,74 @@ try
         addSearchPaths(foo);
     end
     
-    if exist([pwd, '/Utils/Shared/setpaths_proprietary.m'],'file')
-        setpaths_proprietary(options);
+    if  ~isempty(which('setpaths_proprietary.m'))
+        setpaths_proprietary(addremove);
     end
     
     warning('on','MATLAB:rmpath:DirNotFound');
+        
+    PrintSystemInfo(logger, [appname; d]);
+    logger.CurrTime('Setpaths completed on ');
+    logger.Close();
+    cd(currdir);
     
 catch ME
     
+    if exist('logger','var') && isa(logger, 'Logger')
+        logger.Close();
+    end
     cd(currdir);
-    close all force;
-    fclose all;
     rethrow(ME)
     
 end
 
-cd(currdir);
 
 
-
-% ----------------------------------------------------
-function status = downloadLibraries(options, appname)
-status = 0;
-nTries = 2;
-h = waitbar(0,'Downloading shared libraries.');
-for iTry = 1:nTries
-    [cmds, errs, msgs] = downloadSharedLibs(options, appname); %#ok<ASGLU>
-    if all(errs==0 | errs == -2)
-        break
-    end
+% ---------------------------------------------------
+function d = dependencies()
+d = {};
+submodules = parseGitSubmodulesFile(pwd);
+temp = submodules(:,1);
+for ii = 1:length(temp)
+    [~, d{ii,1}] = fileparts(temp{ii});
 end
-close(h)
-if all(errs==0)
-    return
-end
-status = -1;
 
 
 % ---------------------------------------------------
 function setpermissions(appPath)
 if isunix() || ismac()
+    global logger
     if ~isempty(strfind(appPath, '/bin')) %#ok<*STREMP>
-        fprintf(sprintf('chmod 755 %s/*\n', appPath));
+        cmd = sprintf('chmod 755 %s/*\n', appPath);
+        logger.Write(cmd);
         files = dir([appPath, '/*']);
         if ~isempty(files)
-            system(sprintf('chmod 755 %s/*', appPath));
+            system(cmd);
         end
     end
 end
 
 
+
 % ----------------------------------------------------
 function addSearchPaths(appPaths)
+if ischar(appPaths)
+    p = genpath(appPaths);
+    if ispc
+        delimiter = ';';
+    else
+        delimiter = ':';
+    end        
+    appPaths = str2cell_startup(p, delimiter);
+end
 for kk = 1:length(appPaths)
+    if strfind(appPaths{kk}, '.git')
+        continue;
+    end
     addpath(appPaths{kk}, '-end');
     setpermissions(appPaths{kk});
 end
-fprintf('ADDED search paths for app %s\n', appPaths{1});
+printMethod(sprintf('ADDED search paths for app %s\n', appPaths{1}));
 
 
 
@@ -274,5 +217,677 @@ for kk = 1:length(p)
     end
 end
 close(h);
-fprintf('REMOVED search paths for app %s\n', app);
+printMethod(sprintf('REMOVED search paths for app %s\n', app));
+
+
+
+
+% ----------------------------------------------------
+function   d = addDependenciesSearchPaths()
+if exist([pwd, '/Utils/submodules'],'dir')
+    addpath([pwd, '/Utils/submodules'],'-end');
+end
+d = dependencies();
+for ii = 1:length(d)
+    rootpath = findFolder(pwd, d{ii});
+    rootpath(rootpath=='\') = '/';
+    if ispathvalid_startup([rootpath, '/Shared'],'dir')
+        rootpath = [rootpath, '/Shared'];
+    end
+    if ~exist(rootpath,'dir')
+        printMethod(sprintf('ERROR: Could not find required dependency %s\n', d{ii}));
+        continue;
+    end
+    addSearchPaths(rootpath);
+end
+
+
+
+
+% -----------------------------------------------------------------------------
+function [C,k] = str2cell_startup(str, delimiters, options)
+
+% Option tells weather to keep leading whitespaces. 
+% (Trailing whitespaces are always removed)
+if ~exist('options','var')
+    options = '';
+end
+
+if ~strcmpi(options, 'keepblanks')
+    str = strtrim(str);
+end
+str = deblank(str);
+
+if ~exist('delimiters','var') || isempty(delimiters)
+    delimiters{1} = sprintf('\n');
+elseif ~iscell(delimiters)
+    foo{1} = delimiters;
+    delimiters = foo;
+end
+
+% Get indices of all the delimiters
+k=[];
+for kk=1:length(delimiters)
+    k = [k, find(str==delimiters{kk})];
+end
+j = find(~ismember(1:length(str),k));
+
+% The following line seems to hurt performance a little bit. It was 
+% meant to preallocate to speed things up but it does not seem to do that.
+% C = repmat({blanks(max(diff([k,length(str)])))}, length(k)+1, 1);
+C = {};
+ii=1; kk=1; 
+while ii<=length(j)
+    C{kk} = str(j(ii));
+    ii=ii+1;
+    jj=2;
+    while (ii<=length(j)) && ((j(ii)-j(ii-1))==1)
+        C{kk}(jj) = str(j(ii));
+        jj=jj+1;
+        ii=ii+1;
+    end
+    C{kk}(jj:end)='';
+    kk=kk+1;
+end
+C(kk:end) = [];
+
+
+
+% -------------------------------------------------------------------------
+function printMethod(msg)
+global logger
+if isa(logger', 'Logger')
+    try
+        logger.Write(msg);
+    catch
+        fprintf(msg);
+    end
+else
+    fprintf(msg);
+end
+
+
+
+
+% -------------------------------------------------------------------------
+function submodules = parseGitSubmodulesFile(repo)
+submodules = cell(0,3);
+
+if ~exist('repo','var') || isempty(repo)
+    repo = pwd;
+end
+currdir = pwd;
+if repo(end) ~= '/' && repo(end) ~= '\'
+    repo = [repo, '/'];
+end
+
+filename = [repo, '.gitmodules'];
+if ~exist(filename, 'file')
+    return;
+end
+cd(repo);
+
+fid = fopen(filename, 'rt');
+strs = textscan(fid, '%s');
+strs = strs{1};
+kk = 1;
+for ii = 1:length(strs)
+    if strcmp(strs{ii}, '[submodule')
+        jj = 1;
+        while ~strcmp(strs{ii+jj}, '[submodule')
+            if ii+jj+2>length(strs)
+                break;
+            end
+            if strcmp(strs{ii+jj}, 'path')
+                submodules{kk,2} = [pwd, '/', strs{ii+jj+2}];
+            end
+            if strcmp(strs{ii+jj}, 'path')
+                submodules{kk,3} = strs{ii+jj+2};
+            end
+            if strcmp(strs{ii+jj}, 'url')
+                submodules{kk,1} = strs{ii+jj+2};
+            end
+            jj = jj+1;
+        end
+        kk = kk+1;
+    end
+end
+fclose(fid);
+cd(currdir);
+
+
+
+
+% -------------------------------------------------------------------------
+function dirpath = findFolder(repo, dirname)
+dirpath = '';
+if ~exist('repo','var')
+    repo = filesepStandard_startup(pwd);
+end
+dirpaths = findDotMFolders(repo, {'.git', '.idea'});
+
+for ii = 1:length(dirpaths)
+    [~, f, e] = fileparts(dirpaths{ii}(1:end-1));
+    if strcmp(dirname, [f,e])
+        dirpath = dirpaths{ii};
+        break;
+    end
+    if ispathvalid_startup([dirname, dirpaths{ii}])
+        dirpath = dirpaths{ii};
+        break;
+    end
+end
+
+
+
+% -------------------------------------------------------------------------
+function dotmfolders = findDotMFolders(subdir, exclList)
+global logger
+global MAXPATHLENGTH
+MAXPATHLENGTH = 8;
+
+dotmfolders = {};
+
+if ~exist('subdir','var')
+    subdir = pwd;
+end
+if ~exist('exclList','var')
+    exclList = {};
+end
+
+if ~iscell(exclList)
+    exclList = {exclList};
+end
+
+subdirFullpath = filesepStandard_startup(subdir,'full');
+
+if ~ispathvalid_startup(subdirFullpath, 'dir')
+    logger.Write('Warning: folder %s doesn''t exist\n', subdirFullpath);
+    return;
+end
+
+% If current subjdir is in the exclList then go back to curr dir and exit
+if isExcluded(subdirFullpath, exclList)
+    return;
+end
+
+dirs = dir([subdirFullpath, '*']);
+if isempty(dirs)
+    return;
+end
+
+if isdotmfolder(subdirFullpath)
+    dotmfolders = {filesepStandard_startup(subdirFullpath, 'nameonly')};
+end
+
+for ii = 1:length(dirs)
+    if ~dirs(ii).isdir
+        continue;
+    end
+    if dirs(ii).name(1) == '.'
+        continue;
+    end
+    dotmfolders = [dotmfolders; findDotMFolders([subdirFullpath, dirs(ii).name], exclList)]; %#ok<AGROW>
+end
+
+
+
+
+
+% -------------------------------------------------------------------------
+function b = isdotmfolder(folder)
+global MAXPATHLENGTH
+b = false;
+if ~ispathvalid_startup(folder, 'dir')
+    return
+end
+if isempty(dir([folder,'/*.m']))
+    % Exceptions to rule that 'dotm' folder must have at least one '.m' file: 
+    % it is a an executable folder (i.e. '/bin')
+    if ~isempty(strfind(folder, '/bin/')) %#ok<*STREMP>
+        b = true;
+        return
+    end
+    return;
+else
+    rootdir = which('findDotMFolders');
+    rootdir = fileparts(rootdir);
+    rootdir = pathsubtract(rootdir, 'Utils/submodules','nochange');
+    p = pathsubtract(folder, rootdir);
+    if length(find(p=='/')) > MAXPATHLENGTH
+        return
+    end
+end
+b = true;
+
+
+
+
+% -------------------------------------------------------------------------
+function b = isExcluded(pname, exclList)
+b = true;
+if pname(end)=='/'
+    pname(end) = '';
+end
+if ~ispathvalid_startup(pname,'dir')
+    return;
+end
+[~,f,e] = fileparts(pname);
+for ii = 1:length(exclList)
+    [c,d] = str2cell_startup(exclList{ii},'*');
+    if isempty(d) && strcmp(c{1}, [f,e])
+        return;
+    end
+
+    % Get list of all folders matching exclList{ii} pattern, whether it be
+    % a single folder name or a wildcard pattern
+    for jj = 1:length(c)
+        k = strfind(c{jj}, [f,e]);
+        if isempty(k)
+            break;
+        end
+    end
+    if ~isempty(k)
+        return;
+    end
+end
+b = false;
+
+
+
+% -------------------------------------------------------------------------
+function diff = pathsubtract(p2_0, p1_0, options)
+if ~exist('options','var')
+    options = '';
+end
+if optionExists_startup(options, 'nochange')
+    option = '';
+else
+    option = 'full';
+end
+p1 = filesepStandard_startup(p1_0, option);
+p2 = filesepStandard_startup(p2_0, option);
+if isempty(p1)
+    p1 = p1_0;
+end
+if isempty(p2)
+    p2 = p2_0;
+end
+k = strfind(p2, p1);
+if ~isempty(k) && k(1)==1
+    diff = p2(k(1)+length(p1):end);
+elseif ~isempty(k)
+    diff = p2(1:k(1)-1);
+else
+    diff = '';
+end
+
+
+
+% --------------------------------------------------------------------
+function pathname = filesepStandard_startup(pathname0, options)
+
+%
+% Usage:
+%    pathname = filesepStandard_startup(pathname, options)
+%
+% Takes a pathname as argument and replaces any non-standard file/folder
+% separators with standard ones, that is '/'. It also gets rid of redundant
+% file seps
+%
+% Example:
+%
+%   >> pathname = 'C:\dir1\\\dir2\\dir3\test1/\test2/'
+%   >> pathname = filesepStandard_startup(pathname)
+%
+%   pathname =
+%
+%   C:/dir1/dir2/dir3/test1/test2/
+%
+%
+
+pathname = '';
+
+if nargin==0
+    return
+end
+if isempty(pathname0)
+    return
+end
+if ~ischar(pathname0) && ~iscell(pathname0)
+    return
+end
+
+if ~exist('options', 'var')
+    options = '';
+end
+
+if ischar(pathname0)
+    pathname0 = removeExtraDots_startup(pathname0);
+    
+    % Do basic error check to see if path exists; if not wexist without
+    % doing anything 
+    if ~optionExists_startup(options,'nameonly')
+        if ~ispathvalid_startup(pathname0)
+            return
+        end
+    end
+    
+    % Change all path file separators to standard forward slash
+    idxs = [];        
+    k = find(pathname0=='\' | pathname0=='/');
+    for ii = 1:length(k)
+        if (ii>1) && (k(ii) == k(ii-1)+1)
+            idxs = [idxs, k(ii)]; %#ok<AGROW>
+            continue;
+        end
+        pathname0(k(ii)) = '/';
+    end
+    
+    % Remove any extraneous file separators
+    pathname0(idxs) = '';
+        
+    % Change path to full path if option requesting it exists
+    if optionExists_startup(options,'full') || optionExists_startup(options,'fullpath') || optionExists_startup(options,'absolute')
+        if ispathvalid_startup(pathname0)
+            pathname0 = fullpath_startup(pathname0);
+        end
+    end
+    
+    % Add traling separator only for directory path names 
+    if (isdir_private_startup(pathname0) || optionExists_startup(options, 'dir')) && ~optionExists_startup(options, 'file')
+        if pathname0(end) ~= '/'
+            pathname0(end+1) = '/';
+        end
+    elseif (isfile_private_startup(pathname0) || optionExists_startup(options, 'file')) && ~optionExists_startup(options, 'dir')
+        if pathname0(end) == '/'
+            pathname0(end) = '';
+        end
+    else
+        if pathname0(end) == '/'
+            pathname0(end) = '';
+        end
+    end
+        
+    % Change path to full path if option requesting it exists
+    pathname = pathname0;
+    return;
+end
+pathname = pathname0;
+
+% Call filesepStandard recursively for all path names in cell array
+for ii = 1:length(pathname)
+    pathname{ii} = filesepStandard_startup(pathname{ii}, options);
+end
+
+
+
+
+% ---------------------------------------------------------------------
+function b = isfile_private_startup(dirname)
+%
+% isfile_private() is a backward compatible version of matlab's isfile()
+% function.
+%
+% isfile() is a new matlab function that is an improvment over exist() to 
+% tell if a pathname is a file or not. But it didn't exist prior to R2017. 
+% Therefore we use try/catch to still be able to use isfile when it exists
+
+try
+    b = isfile(dirname);
+catch
+    b = (exist(dirname,'file') == 2);
+end
+
+
+
+
+% ---------------------------------------------------------------------
+function b = isdir_private_startup(dirname)
+%
+% isdir_private() is a backward compatible version of matlab's isdir()
+% function.
+%
+% isdir() is a new matlab function that is an improvment over exist() to 
+% tell if a pathname is a directory or not. But it didn't exist prior to R2017. 
+% Therefore we use try/catch to still be able to use isdir when it exists
+
+try
+    b = isdir(dirname);
+catch
+    b = (exist(dirname,'dir') == 7);
+end
+
+
+
+% ---------------------------------------------------------------------
+function pname = removeExtraDots_startup(pname)
+k = cell(4,3);
+
+% Case 1:
+k{1,1} = strfind(pname, '/./');
+k{2,1} = strfind(pname, '/.\');
+k{3,1} = strfind(pname, '\.\');
+k{4,1} = strfind(pname, '\./');
+for ii = 1:length(k(:,1))
+    for jj = length(k{ii,1}):-1:1
+        pname(k{ii,1}(jj)+1:k{ii,1}(jj)+2) = '';
+    end
+end
+
+% Case 2:
+k{1,2} = strfind(pname, '/.');
+k{2,2} = strfind(pname, '\.');
+for ii = 1:length(k(:,2))
+    if ~isempty(k{ii,2})
+        if k{ii,2}+1<length(pname)
+            continue
+        end
+        pname(k{ii,2}+1) = '';
+    end
+end
+
+
+
+
+% ---------------------------------------------------------------------
+function b = optionExists_startup(options, option)
+% Check if option (arg2) exists in a set of options (arg1)
+b = false;
+if isempty(options)
+    return;
+end
+if iscell(options)
+    options = options{1};
+end
+if ~ischar(options)
+    return;
+end
+
+if ~exist('option','var') || isempty(option)
+    b = false;
+    return;
+end
+options2 = str2cell_startup(options,{':',';',','});
+b = ~isempty(find(strcmp(options2,option))); %#ok<EFIND>
+
+% b = ~isempty(findstr(options, option)); %#ok<*FSTR>
+
+
+
+
+% ---------------------------------------------------------------------
+function b = ispathvalid_startup(p, options)
+% ispathvalid can replace matlab's o.isdir, o.isfile and exist functions
+% all of which have flaws (e.g., isdir not fully backwards compatible, 
+% exist has bugs where it'll confuse files and folders)
+%
+b = false;
+if ~exist('options','var')
+    options = '';
+end
+if ~ischar(options)
+    return;
+end
+if ~isempty(options)
+    if optionExists_startup(options,'file')
+        
+        % Err check 1.
+        if isdir_private_startup(p)
+            return;
+        end
+        
+        % Err check 2.
+        if optionExists_startup(options, 'checkextension')
+            [~, ~, ext] = fileparts(p);
+            if isempty(ext)
+                return;
+            end
+        end
+        
+    elseif optionExists_startup(options,'dir')
+        if isfile_private_startup(p)
+            return;
+        end
+    else
+        return;
+    end
+end
+b = ~isempty(dir(p));
+
+
+
+
+% -------------------------------------------------------------------------
+function b = pathscompare_startup(path1, path2, options)
+
+b = 0;
+
+if ~exist('options','var')
+    options = '';
+end
+if optionExists_startup(options,'nameonly')
+    b = pathsCompareNameOnly(path1, path2);
+    return;
+end
+
+if exist(path1,'file') ~= exist(path2,'file')
+    return;
+end
+if exist(path1,'file')==0
+    return;
+end
+if exist(path2,'file')==0
+    return;
+end
+
+currdir = pwd;
+
+% If paths are files, compare just the file names, then the folders 
+fullpath1 = filesepStandard_startup(path1, 'full');
+fullpath2 = filesepStandard_startup(path2, 'full');
+
+
+% Compare folders
+b = strcmpi(fullpath1, fullpath2);
+
+cd(currdir);
+
+
+
+% -------------------------------------------------------------------------
+function b = pathsCompareNameOnly(path1, path2)
+b = 0;
+if ispc()
+    path1 = lower(path1);
+    path2 = lower(path2);
+end
+p1 = str2cell_startup(path1,{'\','/'});
+p2 = str2cell_startup(path2,{'\','/'});
+if length(p1) ~= length(p2)
+    return;
+end
+for ii = 1:length(p1)
+    if ~strcmp(p1{ii},p2{ii})
+        return
+    end
+end
+b = true;
+
+
+
+% -------------------------------------------------------------------------
+function pnamefull = fullpath_startup(pname, style)
+
+pnamefull = '';
+
+if ~exist('pname','var')
+    return;
+end
+if ~exist(pname,'file')
+    return;
+end
+if ~exist('style','var')
+    style = 'linux';
+end
+
+% If path is file, extract pathname
+p = ''; 
+f = '';
+e = '';
+if strcmp(pname, '.')
+    p = pwd; f = ''; e = '';
+elseif strcmp(pname, '..')
+    currdir = pwd;
+    cd('..');
+    p = pwd; f = ''; e = '';
+    cd(currdir);
+else
+    [p,f,e] = fileparts(pname);
+    if length(f)==1 && f=='.' && length(e)==1 && e=='.' 
+        f = ''; 
+        e = '';
+    elseif isempty(f) && length(e)==1 && e=='.' 
+        e = '';
+    end
+end
+pname = removeExtraDots_startup(p);
+
+% If path to file wasn't specified at all, that is, if only the filename was
+% provided without an absolute or relative path, the add './' prefix to file name.
+if isempty(pname)
+    p = fileparts(['./', pname]);
+    pname = p;
+end
+
+
+% get full pathname 
+currdir = pwd;
+
+try
+    cd(pname);
+catch
+    try 
+        cd(p)
+    catch        
+        return;
+    end
+end
+
+if strcmp(style, 'linux')
+    sep = '/';
+else
+    sep = filesep;
+end
+pnamefull = [pwd,sep,f,e];
+if ~exist(pnamefull, 'file')
+    pnamefull = '';
+    cd(currdir);
+    return;
+end
+
+pnamefull(pnamefull=='/' | pnamefull=='\') = sep;
+
+cd(currdir);
+
 

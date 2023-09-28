@@ -21,8 +21,6 @@ else
 end
 
 raw_checked  = get(handles.radiobuttonPlotRaw, 'value');
-OD_checked   = get(handles.radiobuttonPlotOD, 'value');
-Conc_checked = get(handles.radiobuttonPlotConc, 'value');
 if strcmp(get(handles.radiobuttonPlotRaw, 'enable'), 'on')
     raw_enable  = true;
 else

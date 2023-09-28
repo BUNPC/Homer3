@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Homer3"
+url: "https://github.com/BUNPC/Homer3"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Huppert"
+    given-names: "Theodore J"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+  - family-names: "Diamond"
+    given-names: "Solomon G"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+  - family-names: "Franceschini"
+    given-names: "Maria A"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+  - family-names: "Boas"
+    given-names: "David A"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+  doi: "10.1364/ao.48.00d280"
+  journal: "Appl Opt"
+  month: 3
+  start: D280
+  end: D298
+  title: "HomER: a review of time-series analysis methods for near-infrared spectroscopy of the brain "
+  issue: 10
+  volume: 48
+  year: 2009

@@ -12,6 +12,10 @@ installfilename = sprintf('%s_install', lower(getAppname()));
 
 setNamespace(exename)
 
+% Generate a LastCheckForUpdates.dat in case that we  haven't run Homer
+% before creating a build
+checkForUpdates('Homer3')
+
 if ~exist('options','var') || isempty(options)
     options = 'all';
 end
@@ -136,6 +140,15 @@ end
 if exist([dirnameApp, 'SDGcolors.csv'],'file')
     copyfile([dirnameApp, 'SDGcolors.csv'], [dirnameInstall, installfilename]);
 end
+
+if exist([dirnameApp, 'Version.txt'],'file')
+    copyfile([dirnameApp, 'Version.txt'], [dirnameInstall, installfilename]);
+end
+
+if exist([dirnameApp, 'LastCheckForUpdates.dat'],'file')
+    copyfile([dirnameApp, 'LastCheckForUpdates.dat'], [dirnameInstall, installfilename]);
+end
+
 
 
 % Zip it all up into a single installation file

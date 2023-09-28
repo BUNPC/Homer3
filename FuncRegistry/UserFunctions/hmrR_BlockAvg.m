@@ -70,19 +70,19 @@ for kk=1:length(data)
     nTpts = size(y,1);
     tHRF = nPre*dt:dt:nPost*dt; % time axis for averaged response (HRF)
     if strncmp(datatype{1}, 'Hb', 2)
-        ml = data(kk).GetMeasListSrcDetPairs();
+        ml = data(kk).GetMeasListSrcDetPairs('reshape');
         % initialize array containing all Hb signals (HbO, HbR and Hbt)
         % shape: time x nHb x nTrials x nConditions
         yblk = zeros(nPost-nPre+1,size(y,2),size(y,3),size(s,2));
     elseif strcmp(datatype{1}, 'dOD')
-        ml = data(kk).GetMeasList();
+        ml = data(kk).GetMeasList('reshape');
         % initialize array containing all OD signals 
-        % shape: time x nOD x nTrials x nConditions        
+        % shape: time x nOD x nTrials x nConditions 
         yblk = zeros(nPost-nPre+1,size(y,2),size(s,2));
     else
         return;
     end
-           
+
     for iC = 1:size(s,2) % iterate over experimental conditions
         lstS = find(s(:,iC)==1); % get stimuli onsets
         nBlk = 0; % valid trials counter

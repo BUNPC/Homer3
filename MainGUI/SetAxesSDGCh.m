@@ -18,7 +18,7 @@ for iBlk = 1:nDataBlks
 end
 
 % Maximum number of channels that can be selected simultaneously
-maxCh    = size(maingui.axesSDG.linecolor,1);
+maxCh    = size(maingui.axesSDG.SDPairColors,1);
 
 h = hAxesSDG;
 while ~strcmpi(get(h,'type'),'figure')

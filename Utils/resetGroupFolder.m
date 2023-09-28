@@ -1,6 +1,13 @@
 function resetGroupFolder(dirname, options)
+global maingui
+global cfg
 
-global maingui;
+if isempty(getNamespace())
+    setNamespace('Homer3')
+end
+
+cfg = InitConfig(cfg);
+
 if ~exist('dirname','var') || isempty(dirname)
     dirname = [pwd,'/'];
 end
@@ -8,7 +15,6 @@ if ~exist('options','var') || isempty(options)
     options = 'registry_reset';
 end
 
-cfg = ConfigFileClass();
 outputDir           = cfg.GetValue('Output Folder Name');
 procStreamCfgFile   = cfg.GetValue('Processing Stream Config File');
 

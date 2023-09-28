@@ -56,9 +56,9 @@ for iBlk = 1:nDataBlks
         if strncmp(datatype{1}, 'HRF Hb', length('HRF Hb'))
             % get source-detector pairs (renders nChans x 2 matrix; 
             % 1st column contains source indeces, 2nd column contains dectector indices)
-            ml    = yAvgSubjs{iSubj}(iBlk).GetMeasListSrcDetPairs();
+            ml    = yAvgSubjs{iSubj}(iBlk).GetMeasListSrcDetPairs('reshape');
         elseif strcmp(datatype{1}, 'HRF dOD')
-            ml    = yAvgSubjs{iSubj}(iBlk).GetMeasList();
+            ml    = yAvgSubjs{iSubj}(iBlk).GetMeasList('reshape');
         end
                 
         nCond = size(nT,2);  % number of conditions to average over
@@ -87,17 +87,28 @@ for iBlk = 1:nDataBlks
                 lstPass = find(~isnan(squeeze(mean(yAvg(:,1,:,iC),1))) == 1);
                 
                 if iSubj==1 | iC>nStim
-                    for iPass=1:length(lstPass)
-                        for iHb=1:3
-                            % Make sure 3rd arg to interp1 is column vector to guarauntee interp1 output is column vector
-                            % which matches grp1 dimensions when adding the two.
+                    for iPass = 1:length(lstPass)
+                        for iHb = 1:3
+                            % Check if channel is active or if it was
+                            % inactive (pruned for whatever reason)
+                            if all(isnan(yAvg(:,iHb,lstPass(iPass),iC)))
+                                continue;
+                            end
+                            
+                            % Initialize grp1 with 1st subject's data
                             grp1(:,iHb,lstPass(iPass),iC) = interp1(tHRF, yAvg(:,iHb,lstPass(iPass),iC), tHRF(:));
                         end
                     end
                     nStim = iC;
                 else
-                    for iPass=1:length(lstPass)
-                        for iHb=1:3
+                    for iPass = 1:length(lstPass)
+                        for iHb = 1:3
+                            % Check if channel is active or if it was
+                            % inactive (pruned for whatever reason)
+                            if all(isnan(yAvg(:,iHb,lstPass(iPass),iC)))
+                                continue;
+                            end
+                            
                             % Make sure 3rd arg to interp1 is column vector to guarauntee interp1 output is column vector
                             % which matches grp1 dimensions when adding the two.
                             grp1(:,iHb,lstPass(iPass),iC) = grp1(:, iHb, lstPass(iPass), iC) + interp1(tHRF, yAvg(:,iHb,lstPass(iPass),iC), tHRF(:));
@@ -105,12 +116,12 @@ for iBlk = 1:nDataBlks
                     end
                 end
                 % keep count of number of conditions (i.e. number of times
-                % the averages were added) to compute mean afterwards                
-                subjCh(:,iC) = subjCh(:,iC) + 1; %#ok<*AGROW>
+                % the averages were added) to compute mean afterwards 
+                subjCh(lstPass,iC) = subjCh(lstPass,iC) + 1; %#ok<*AGROW>
             end
             
             yAvg = [];
-            if ~isempty(grp1)
+            if iSubj == length(yAvgSubjs)
                 for iC = 1:size(grp1,4)
                     for iCh = 1:size(grp1,3)
                         % compute group mean
@@ -124,9 +135,7 @@ for iBlk = 1:nDataBlks
                         end
                     end
                 end
-                if iSubj == nSubj                
-                    yAvgOut(iBlk).AppendDataTimeSeries(yAvg);
-                end
+                yAvgOut(iBlk).AppendDataTimeSeries(yAvg);
             end
             
         elseif strcmp(datatype{1}, 'HRF dOD')
@@ -150,11 +159,24 @@ for iBlk = 1:nDataBlks
                     % based on the subjects' standard error and store result in iCh
                     if iSubj==1 | iC>nStim
                         for iCh = 1:nCh
+                            % Check if channel is active or if it was
+                            % inactive (pruned for whatever reason)
+                            if all(isnan(yAvg(:,iCh,iC)))
+                                continue;
+                            end
+                            
+                            % Initialize grp1 with 1st subject's data
                             grp1(:,iCh,iC) = interp1(tHRF, yAvg(:,iCh,iC), tHRF(:));
                         end
                         nStim = iC;
                     else
                         for iCh = 1:size(yAvg,2)
+                            % Check if channel is active or if it was
+                            % inactive (pruned for whatever reason)
+                            if all(isnan(yAvg(:,iCh,iC)))
+                                continue;
+                            end
+                            
                             % Make sure 3rd arg to interp1 is column vector to guarauntee interp1 output is column vector
                             % which matches grp1 dimensions when adding the two.
                             grp1(:,iCh,iC) = grp1(:,iCh,iC) + interp1(tHRF, yAvg(:,iCh,iC), tHRF(:));
@@ -165,19 +187,15 @@ for iBlk = 1:nDataBlks
             end
             
             yAvg = [];
-            if ~isempty(grp1)
+            if iSubj == length(yAvgSubjs)
                 for iC = 1:size(grp1,3)
                     for iCh = 1:size(grp1,2)
                         yAvg(:,:,iC) = grp1(:,:,iC) / subjCh(iCh,iC);
-                        if iSubj == nSubj
-                            yAvgOut(iBlk).AddChannelDod(ml(iCh,1), ml(iCh,2), ml(iCh,4), iC);
-                        end
+                        yAvgOut(iBlk).AddChannelDod(ml(iCh,1), ml(iCh,2), ml(iCh,4), iC);
                     end
                 end
-                if iSubj == nSubj % check if the computation has been done over all subjects
-                    % save the average over subjects in output data array
-                    yAvgOut(iBlk).AppendDataTimeSeries(yAvg);
-                end
+                % save the average over subjects in output data array
+                yAvgOut(iBlk).AppendDataTimeSeries(yAvg);
             end
             
         end

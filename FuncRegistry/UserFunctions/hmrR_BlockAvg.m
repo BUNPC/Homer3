@@ -69,15 +69,15 @@ for kk=1:length(data)
     nTpts = size(y,1);
     tHRF = nPre*dt:dt:nPost*dt;
     if strncmp(datatype{1}, 'Hb', 2)
-        ml = data(kk).GetMeasListSrcDetPairs();
+        ml = data(kk).GetMeasListSrcDetPairs('reshape');
         yblk = zeros(nPost-nPre+1,size(y,2),size(y,3),size(s,2));
     elseif strcmp(datatype{1}, 'dOD')
-        ml = data(kk).GetMeasList();
+        ml = data(kk).GetMeasList('reshape');
         yblk = zeros(nPost-nPre+1,size(y,2),size(s,2));
     else
         return;
     end
-           
+    
     for iC = 1:size(s,2)
         lstS = find(s(:,iC)==1);
         nBlk = 0;

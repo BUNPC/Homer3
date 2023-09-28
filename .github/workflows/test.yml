@@ -1,0 +1,24 @@
+name: UnitTestsAll_Snirf (2021a)
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+      - development
+jobs:
+  my-job:
+    name: Run MATLAB Commands
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v1
+        with:
+          release: R2021a
+      - name: setpaths and run tests
+        uses: matlab-actions/run-command@v1
+        with:
+          command: setpaths, UnitTestsAll_Snirf

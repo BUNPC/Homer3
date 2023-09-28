@@ -23,7 +23,7 @@ function d = hmrR_PreprocessIntensity_Negative( intensity )
 
 for ii=1:length(intensity)
     d = intensity(ii).GetDataTimeSeries();
-    lst = find(d(:)==0);
+    lst = find(d(:)<=0);
     if ~isempty(lst)
         quest = {'Intensity signal has negative values.'};
         dlgtitle = 'Warning';

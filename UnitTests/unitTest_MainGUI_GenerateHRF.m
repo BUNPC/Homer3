@@ -77,14 +77,22 @@ switch(level)
     case 1
         set(ut.handles.radiobuttonProcTypeGroup, 'value', 1);
         set(ut.handles.radiobuttonProcTypeSubj, 'value', 0);
+        set(ut.handles.radiobuttonProcTypeSess, 'value', 0);
         set(ut.handles.radiobuttonProcTypeRun, 'value', 0);
     case 2
         set(ut.handles.radiobuttonProcTypeGroup, 'value', 0);
         set(ut.handles.radiobuttonProcTypeSubj, 'value', 1);
+        set(ut.handles.radiobuttonProcTypeSess, 'value', 0);
         set(ut.handles.radiobuttonProcTypeRun, 'value', 0);
     case 3
         set(ut.handles.radiobuttonProcTypeGroup, 'value', 0);
         set(ut.handles.radiobuttonProcTypeSubj, 'value', 0);
+        set(ut.handles.radiobuttonProcTypeSess, 'value', 1);
+        set(ut.handles.radiobuttonProcTypeRun, 'value', 0);
+    case 4
+        set(ut.handles.radiobuttonProcTypeGroup, 'value', 0);
+        set(ut.handles.radiobuttonProcTypeSubj, 'value', 0);
+        set(ut.handles.radiobuttonProcTypeSess, 'value', 0);
         set(ut.handles.radiobuttonProcTypeRun, 'value', 1);
 end
 

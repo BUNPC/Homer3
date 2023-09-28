@@ -19,8 +19,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Compare dcAvg
+group_h3.group.Load();
 if strcmp(datatype, 'dcAvg')
-    yAvg_h2  = group_h2.group.procResult.dcAvg;
+    yAvg_h2  = group_h2.group.procResult.dcAvg;    
     yAvg_h3  = group_h3.group.procStream.output.GetDcAvg('dcAvg');
 elseif strcmp(datatype, 'dcAvgStd')
     yAvg_h2  = group_h2.group.procResult.dcAvgStd;

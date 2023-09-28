@@ -1,4 +1,7 @@
 function dotmfolders = findDotMFolders(subdir, exclList)
+global MAXPATHLENGTH
+MAXPATHLENGTH = 8;
+
 dotmfolders = {};
 
 if ~exist('subdir','var')
@@ -49,6 +52,7 @@ end
 
 % -------------------------------------------------------------------------
 function b = isdotmfolder(folder)
+global MAXPATHLENGTH
 b = false;
 if ~ispathvalid_startup(folder, 'dir')
     return
@@ -61,6 +65,14 @@ if isempty(dir([folder,'/*.m']))
         return
     end
     return;
+else
+    rootdir = which('findDotMFolders');
+    rootdir = fileparts(rootdir);
+    rootdir = pathsubtract_startup(rootdir, 'Utils/submodules','nochange');
+    p = pathsubtract_startup(folder, rootdir);
+    if length(find(p=='/')) > MAXPATHLENGTH
+        return
+    end
 end
 b = true;
 
@@ -86,7 +98,7 @@ for ii = 1:length(exclList)
     % Get list of all folders matching exclList{ii} pattern, whether it be
     % a single folder name or a wildcard pattern
     for jj = 1:length(c)
-        k = strfind([f,e], c{jj});
+        k = strfind(c{jj}, [f,e]);
         if isempty(k)
             break;
         end

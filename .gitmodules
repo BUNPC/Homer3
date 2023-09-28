@@ -1,8 +1,9 @@
 [submodule "Utils/Shared"]
 	path = Utils/Shared
 	url = https://github.com/BUNPC/Utils
-	branch = development
 [submodule "DataTree"]
 	path = DataTree
 	url = https://github.com/BUNPC/DataTree
-	branch = development
+[submodule "FuncRegistry"]
+	path = FuncRegistry
+	url = https://github.com/BUNPC/FuncRegistry

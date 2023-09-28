@@ -343,6 +343,16 @@ classdef StringsClass < handle
             n = length(obj.c);
         end
         
+        
+        % ------------------------------------------------------
+        function b = IsEmpty(obj)
+            b = true;
+            if isempty(obj.c)
+                return
+            end
+            b = false;
+        end
+        
     end
 end
 

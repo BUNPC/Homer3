@@ -42,7 +42,7 @@ if ~isempty(nCond)
             if iSubj == 1
                 tHRF      = yAvgSubjs{iSubj}(iBlk).GetTime();
                 fq = abs(1/(tHRF(1)-tHRF(2)));
-                ml    = yAvgSubjs{iSubj}(iBlk).GetMeasListSrcDetPairs();
+                ml    = yAvgSubjs{iSubj}(iBlk).GetMeasListSrcDetPairs('reshape');
                 
                 % error check
                 if tHRFrange(1)>max(tHRF) || tHRFrange(2)>max(tHRF) || tHRFrange(1)>=tHRFrange(2) 

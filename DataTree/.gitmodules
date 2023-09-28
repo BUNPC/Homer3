@@ -1,0 +1,6 @@
+[submodule "Utils"]
+	path = Utils
+	url = https://github.com/BUNPC/Utils
+[submodule "FuncRegistry"]
+	path = FuncRegistry
+	url = https://github.com/BUNPC/FuncRegistry

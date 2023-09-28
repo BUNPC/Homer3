@@ -54,7 +54,7 @@ classdef ExportTable < handle
                 case {'spreadsheet'}
                     obj.ext = '.xls';
             end
-            fprintf('Exporting   %s  to  %s%s\n', fname, obj.filename, obj.ext);
+            %fprintf('Exporting   %s  to  %s%s\n', fname, obj.filename, obj.ext);
            
             obj.cells = cells;
 
@@ -65,6 +65,9 @@ classdef ExportTable < handle
                 end
             end
             
+            if isempty(cells)
+                return;
+            end
             obj.Open();
             obj.Save();
             obj.Close();
@@ -110,6 +113,13 @@ classdef ExportTable < handle
             obj.fd = -1;
         end
         
+        
+        
+        % ----------------------------------------------------------------
+        function filenameFull = GetFilenameFull(obj)
+            filenameFull = [obj.pathname, obj.filename, obj.ext];
+        end
+        
     end
     
     
@@ -126,7 +136,9 @@ classdef ExportTable < handle
 %             fprintf('%s\n', obj.datatitle);
             h =  waitbar_improved(0, sprintf('Exporting %s to text ... 0%% complete.', obj.filename));
             for ii=1:size(obj.cells,1)
-                waitbar_improved(ii/size(obj.cells,1), h, sprintf('Exporting %s to text ... %d%% complete', obj.filename, uint32(100 * ii/size(obj.cells,1))));
+                if mod(ii,100)==0
+                    waitbar_improved(ii/size(obj.cells,1), h, sprintf('Exporting %s to text ... %d%% complete', obj.filename, uint32(100 * ii/size(obj.cells,1))));
+                end
                 for jj=1:size(obj.cells,2)
                     obj.cells(ii,jj).Write(obj.fd);
                 end

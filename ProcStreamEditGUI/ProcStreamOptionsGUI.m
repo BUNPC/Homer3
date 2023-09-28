@@ -27,7 +27,7 @@ if nargin==0
     return;
 end
 handles = varargin{1};
-ParseArgs(varargin);
+ParseArgs(varargin(2:end));
 Display(handles);
 
 
@@ -41,7 +41,7 @@ procStreamOptions.updateParentGui('ProcStreamOptionsGUI');
 
 
 % -------------------------------------------------------------
-function varargout = ProcStreamOptionsGUI_OutputFcn(hObject, eventdata, handles)
+function varargout = ProcStreamOptionsGUI_OutputFcn(hObject, ~, handles)
 handles.updateptr = @ProcStreamOptionsGUI_Update;
 handles.closeptr = @ProcStreamOptionsGUI_Close;
 if ~ishandles(hObject)
@@ -61,7 +61,9 @@ procStreamOptions.status = -1;
 
 % These are the parameters that are assigned from external sources,
 % either from GUI arguments or parent GUI. 
+procStreamOptions.groupDirs = {filesepStandard(pwd)};
 procStreamOptions.format = '';
+procStreamOptions.currElemIdx = [];
 procStreamOptions.applyEditCurrNodeOnly = [];
 procStreamOptions.pos = [];
 procStreamOptions.handles = [];
@@ -78,7 +80,11 @@ if ~exist('args','var')
     return;
 end
 
-varargin = args;
+iE = length(args);
+if iE>0 && strcmp(args{end}, 'userargs')
+    iE = length(args)-1;
+end
+varargin = args(1:iE);
 
 %%%% These are the parameters that are assigned from external soutrces,
 %%%% either from GUI arguments or parent GUI. 
@@ -89,27 +95,34 @@ varargin = args;
 %
 
 % Arguments take precedence over parent gui parameters
-if length(varargin)==0
+if isempty(varargin)
     return;                                                         % ProcStreamOptionsGUI()
 elseif length(varargin)==1
     procStreamOptions.groupDirs = varargin{1};                      % ProcStreamOptionsGUI(groupDirs)
 elseif length(varargin)==2
     procStreamOptions.groupDirs = varargin{1};                      
-    if ischar(varargin{1})                
+    if ischar(varargin{2})
         procStreamOptions.format = varargin{2};                     % ProcStreamOptionsGUI(groupDirs, format)
+    elseif iswholenum(varargin{2}) && length(varargin{2})==4
+        procStreamOptions.currElemIdx = varargin{2};
     end
 elseif length(varargin)==3
     procStreamOptions.groupDirs = varargin{1};
     if ischar(varargin{2})
         procStreamOptions.format = varargin{2};
-        if isreal(varargin{3}) & length(varargin{3})==4     
+        if isreal(varargin{3}) && length(varargin{3})==4     
             procStreamOptions.pos = varargin{3};                    % PlotProbeGUI(groupDirs, format, pos)
-        elseif iswholenum(varargin{3}) & length(varargin{3})==1
+        elseif iswholenum(varargin{3}) && length(varargin{3})==1
             procStreamOptions.applyEditCurrNodeOnly = varargin{3};  % PlotProbeGUI(groupDirs, format, applyEditCurrNodeOnly)
         end
     else
-        procStreamOptions.applyEditCurrNodeOnly = varargin{2};      % PlotProbeGUI(groupDirs, applyEditCurrNodeOnly, pos)
-        procStreamOptions.pos = varargin{3};
+        if iswholenum(varargin{2}) && length(varargin{2})==1
+            procStreamOptions.applyEditCurrNodeOnly = varargin{2};      % PlotProbeGUI(groupDirs, applyEditCurrNodeOnly, pos)
+            procStreamOptions.pos = varargin{3};
+        elseif iswholenum(varargin{2}) && length(varargin{2})==4
+            procStreamOptions.currElemIdx = varargin{2};
+            procStreamOptions.format = varargin{3};
+        end
     end
 elseif length(varargin)==4
     procStreamOptions.groupDirs              = varargin{1};
@@ -124,6 +137,9 @@ if isempty(maingui)
     if isempty(procStreamOptions.format)
         procStreamOptions.format = 'snirf';
     end
+    if isempty(procStreamOptions.currElemIdx)
+        procStreamOptions.currElemIdx = [1,1,1,1];
+    end
     if isempty(procStreamOptions.applyEditCurrNodeOnly)
         procStreamOptions.applyEditCurrNodeOnly = false;
     end
@@ -131,10 +147,16 @@ else
     procStreamOptions.format = maingui.format;
     procStreamOptions.applyEditCurrNodeOnly = maingui.applyEditCurrNodeOnly;
 end
+if ischar(procStreamOptions.groupDirs)
+    procStreamOptions.groupDirs = {procStreamOptions.groupDirs};
+end
+if isnumeric(procStreamOptions.groupDirs{1})
+    procStreamOptions.groupDirs{1} = filesepStandard(pwd);
+end
 
 
 % ----------------------------------------------------------
-function ProcStreamOptionsGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+function ProcStreamOptionsGUI_OpeningFcn(hObject, ~, handles, varargin)
 %
 %  Syntax:
 %
@@ -143,10 +165,11 @@ function ProcStreamOptionsGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 %     ProcStreamOptionsGUI()
 %     ProcStreamOptionsGUI(groupDirs)
 %     ProcStreamOptionsGUI(groupDirs, format)
+%     ProcStreamOptionsGUI(groupDirs, currElemIdx)
+%     ProcStreamOptionsGUI(groupDirs, currElemIdx, format)
 %     ProcStreamOptionsGUI(groupDirs, format, pos)
 %     ProcStreamOptionsGUI(groupDirs, format, applyEditCurrNodeOnly)
 %     ProcStreamOptionsGUI(groupDirs, format, applyEditCurrNodeOnly, pos)
-%     ProcStreamOptionsGUI(groupDirs, pos)
 %     ProcStreamOptionsGUI(groupDirs, applyEditCurrNodeOnly)
 %     ProcStreamOptionsGUI(groupDirs, applyEditCurrNodeOnly, pos)
 %  
@@ -176,6 +199,7 @@ Initialize(handles);
 ParseArgs(varargin);
 
 procStreamOptions.err=0;
+procStreamOptions.psPrev = ProcStreamClass();
 
 if ~isempty(maingui)
     procStreamOptions.updateParentGui = maingui.Update;
@@ -194,7 +218,13 @@ if ~isempty(p)
 end
 
 procStreamOptions.version  = get(hObject, 'name');
-procStreamOptions.dataTree = LoadDataTree(pwd, procStreamOptions.format, '', maingui);
+procStreamOptions.dataTree = LoadDataTree(procStreamOptions.groupDirs{1}, procStreamOptions.format, '', maingui);
+if ~isempty(procStreamOptions.currElemIdx)
+    procStreamOptions.dataTree.SetCurrElem(procStreamOptions.currElemIdx(1), ...
+                                           procStreamOptions.currElemIdx(2), ...
+                                           procStreamOptions.currElemIdx(3), ...
+                                           procStreamOptions.currElemIdx(4));
+end
 if procStreamOptions.dataTree.IsEmpty()
     return;
 end
@@ -223,22 +253,18 @@ global procStreamOptions
 DEBUG = 0;
 hObject = handles.figure;
 
-ResetDisplay(handles);
-
 ps = procStreamOptions.dataTree.currElem.procStream;
-
-if isempty(ps.fcalls)
-    menu('Processing stream is empty. Please check the registry to see if any user functions were loaded.', 'OK');
-    procStreamOptions.err=-1;
-    return;
+if ps.isequal(procStreamOptions.psPrev)
+    return
 end
+procStreamOptions.psPrev.CopyFcalls(ps);
+
+ResetDisplay(handles);
 
 fcalls = ps.fcalls;
 nFcalls = length(fcalls);
-
-% If no functions, throw up empty gui
 if nFcalls==0
-    uicontrol(hObject, 'style','text', 'string','');
+    figure(handles.figure);
     return;
 end
 
@@ -247,7 +273,7 @@ end
 set(hObject, 'units','characters');
 
 if DEBUG
-    set(hObject, 'visible','on');
+    set(hObject, 'visible','on'); %#ok<*UNRCH>
     bgc = [0.10, 0.05, 0.03];
     fgc = [0.80, 0.75, 0.95];
 else
@@ -276,7 +302,6 @@ Xp1   = Xsf + a;
 Xp2   = Xp1 + a;
 Xp3   = Xp2 + Xsp;
 Xp4   = Xp3 + a;
-Xp5   = Xp4 + Xse;
 Xst   = Xsf + Xsp + Xse + Xsb + 4*a;                   % GUI width
 
 % Position/dimensions in the Y direction
@@ -295,7 +320,8 @@ SetExitButtonPosSize(handles, Ys);
 
 % Loop over all functions in proc stream and draw each one starting from the 
 % top of the gui going down
-h=[]; p=[];
+h = []; 
+p = [];
 for k = 1:nFcalls
     Ypfk = Yst - (yoffset + k*b + Sigma(k, Ys, m));
     
@@ -304,9 +330,13 @@ for k = 1:nFcalls
     end
     
     % Draw function call divider for clarity
-    p(end+1,:) = [0, Ypfk+b/2, Xst, .3];
-    h(end+1,:) = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',p(end,:),...
-                                    'enable','off');
+    p(end+1,:) = [0, Ypfk+b/2, Xst, .3]; %#ok<*AGROW>
+    h(end+1,:) = uicontrol(hObject, 'style','pushbutton', 'units','characters', 'position',p(end,:), 'enable','off');
+    if DEBUG
+        fprintf('    %d) Divider:   p = [%0.1f, %0.1f, %0.1f, %0.1f]\n', k, p(1), p(2), p(3), p(4));
+    end
+    
+    
     % Draw function call
     p(end+1,:) = [a, Ypfk, Xsf, Ys];
     if numUsages(k)>1
@@ -320,7 +350,7 @@ for k = 1:nFcalls
                                     'tooltipstring',fcalls(k).GetHelp());
     
     % Draw parameter list names and corresponding edit boxes with the current values
-    for j=1:fcalls(k).GetParamNum()
+    for j = 1:fcalls(k).GetParamNum()
         Ypfkj = Yst - (yoffset + k*b + Sigma(k, Ys, m) + Ys*(j-1));
         
         if DEBUG
@@ -343,6 +373,7 @@ for k = 1:nFcalls
                                         'horizontalalignment','center', ...
                                         'Callback',fcn);
     end
+    
 end
 
 % Set all GUI objects except figure to normalized units, so it can be
@@ -355,16 +386,19 @@ set(h, 'units','normalized');
 setGuiFonts(hObject);
 rePositionGuiWithinScreen(hObject);
 
+p = get(hObject, 'position');
+fprintf('ProcStreamOptionsGUI  size: [%0.2f, %0.2f]\n', p(3), p(4));
+
 figure(handles.figure);
 set(handles.pushbuttonExit, 'units','normalized');
 
 
+
 % ----------------------------------------------------------
-function edit_Callback(hObject, eventdata, handles) 
+function edit_Callback(hObject, eventdata, ~) 
 global procStreamOptions
 
 dataTree = procStreamOptions.dataTree;
-iG = dataTree.GetCurrElemIndexID();
 
 iFcall  = eventdata(1);
 iParam = eventdata(2);
@@ -400,32 +434,20 @@ set(hObject, 'value', str2num(str));  % Actually update the value
 % Check if we should apply the param edit to all nodes of the current nodes
 % level
 if ~procStreamOptions.applyEditCurrNodeOnly
-    if dataTree.currElem.iSubj>0 && dataTree.currElem.iRun==0
-        for ii=1:length(dataTree.groups(iG).subjs)
-            dataTree.groups(iG).subjs(ii).procStream.EditParam(iFcall, iParam, val);
-        end
-    elseif dataTree.currElem.iSubj>0 && dataTree.currElem.iRun>0
-        for ii=1:length(dataTree.groups(iG).subjs)
-            for jj=1:length(dataTree.groups(iG).subjs(ii).runs)
-                dataTree.groups(iG).subjs(ii).runs(jj).procStream.EditParam(iFcall, iParam, val);
-            end
-        end
-    end
+    dataTree.ApplyParamEditsToAll(iFcall, iParam, val);
 end
 
 
-% --------------------------------------------------------------------
-function menuExit_Callback(hObject, eventdata, handles)
 
-hGui=get(get(hObject,'parent'),'parent');
+% --------------------------------------------------------------------
+function menuExit_Callback(hObject, ~, ~)
+hGui = get(get(hObject,'parent'),'parent');
 close(hGui);
 
 
 
-
-
 % -------------------------------------------------------------------
-function pushbuttonExit_Callback(hObject, eventdata, handles)
+function pushbuttonExit_Callback(~, ~, handles) %#ok<*DEFNU>
 if ishandles(handles.figure)
     delete(handles.figure);
 end
@@ -434,9 +456,12 @@ end
 
 % -------------------------------------------------------------------
 function ResetDisplay(handles)
-
+global procStreamOptions
+ps = procStreamOptions.dataTree.currElem.procStream;
+fcalls = ps.fcalls;
+nFcalls = length(fcalls);
 hc = get(handles.figure, 'children');
-for ii=1:length(hc)
+for ii = 1:length(hc)
     if ~ishandles(hc(ii))
         continue;
     end
@@ -446,8 +471,18 @@ for ii=1:length(hc)
     if hc(ii)==handles.pushbuttonExit
         continue;
     end
+    if hc(ii)==handles.textEmptyMsg
+        continue;
+    end
     delete(hc(ii));
 end
+if nFcalls==0
+    set(handles.textEmptyMsg, 'visible','on');
+    setGuiFonts(handles.figure);
+else
+    set(handles.textEmptyMsg, 'visible','off');
+end
+
 
 
 
@@ -467,7 +502,7 @@ set(handles.pushbuttonExit, 'position', [Xp, Ypb, pB(3), Yb]);
 
 
 % --------------------------------------------------------------------
-function menuItemChangeGroup_Callback(hObject, eventdata, handles)
+function menuItemChangeGroup_Callback(~, ~, ~)
 pathname = uigetdir(pwd, 'Select a NIRS data group folder');
 if pathname==0
     return;
@@ -479,10 +514,12 @@ ProcStreamOptionsGUI();
 
 
 % --------------------------------------------------------------------
-function menuItemSaveGroup_Callback(hObject, eventdata, handles)
+function menuItemSaveGroup_Callback(hObject, ~, ~)
 global procStreamOptions
 if ~ishandles(hObject)
     return;
 end
 procStreamOptions.dataTree.currElem.Save();
+
+
 

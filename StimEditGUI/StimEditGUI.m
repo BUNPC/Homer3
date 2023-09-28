@@ -20,6 +20,7 @@ else
 end
 
 
+
 % -------------------------------------------------------------
 function StimEditGUI_Close()
 global stimEdit
@@ -30,7 +31,7 @@ end
 
 
 % -------------------------------------------------------------
-function varargout = StimEditGUI_OutputFcn(hObject, eventdata, handles)
+function varargout = StimEditGUI_OutputFcn(~, ~, handles)
 handles.updateptr = @Update;
 handles.closeptr = @StimEditGUI_Close;
 handles.saveptr = @Save;
@@ -39,7 +40,7 @@ varargout{1} = handles;
 
 
 % -------------------------------------------------------------------
-function StimEditGUI_OpeningFcn(hObject, eventdata, handles, varargin)
+function StimEditGUI_OpeningFcn(hObject, ~, handles, varargin)
 %
 %  Syntax:
 %
@@ -85,8 +86,8 @@ stimEdit.format = '';
 stimEdit.pos = [];
 stimEdit.updateParentGui = [];
 stimEdit.newCondWarning = false;
-
-stimEdit.config.autoSaveAcqFiles = cfg.GetValue('Auto Save Acquisition Files');
+stimEdit.idx = [];
+stimEdit.filename = '';
 
 if ~isempty(maingui)
     stimEdit.groupDirs = maingui.groupDirs;
@@ -99,17 +100,28 @@ if ~isempty(maingui)
     set(handles.menuItemSaveGroup, 'enable','off');
     set(handles.menuItemSyncBrowsing, 'enable','on');
 else
+    setNamespace('Homer3');
     set(handles.menuItemChangeGroup, 'enable','on');
     set(handles.menuItemSaveGroup, 'enable','on');
     set(handles.menuItemSyncBrowsing, 'enable','off');
 end
+cfg = ConfigFileClass();
+
+stimEdit.config.autoSaveAcqFiles = cfg.GetValue('Auto Save Acquisition Files');
 
 % Group dirs argument
 if isempty(stimEdit.groupDirs)
     if length(varargin)<1
         stimEdit.groupDirs = filesepStandard({pwd});
     elseif ischar(varargin{1})
-        stimEdit.groupDirs = varargin{1};
+        if ispathvalid(varargin{1}, 'dir')
+            stimEdit.groupDirs = varargin{1};
+        elseif ispathvalid(varargin{1}, 'file')
+            stimEdit.filename = filesepStandard(varargin{1});
+            stimEdit.groupDirs = filesepStandard({pwd});
+        end
+    else
+        stimEdit.idx = varargin{1};
     end
 end
 
@@ -145,12 +157,18 @@ waitbar(istep/nsteps, h, waitmsg); istep = istep+1;
 
 stimEdit.version = get(hObject, 'name');
 stimEdit.dataTree = LoadDataTree(stimEdit.groupDirs, stimEdit.format, '', maingui);
+if ~isempty(stimEdit.idx)
+    stimEdit.dataTree.SetCurrElem(stimEdit.idx(1), stimEdit.idx(2), stimEdit.idx(3), stimEdit.idx(4));
+elseif ~isempty(stimEdit.filename)
+    stimEdit.idx = stimEdit.dataTree.FindProcElem(stimEdit.filename);
+    stimEdit.dataTree.SetCurrElem(stimEdit.idx(1), stimEdit.idx(2), stimEdit.idx(3), stimEdit.idx(4));
+end
 if stimEdit.dataTree.IsEmpty()
     close(h);
     return;
 end
 if isempty(stimEdit.dataTree)
-    EnableGuiObjects('off', hObject);
+    EnableGuiObjects('off', handles);
     close(h);
     return;
 end
@@ -163,7 +181,7 @@ waitbar(istep/nsteps, h, waitmsg); istep = istep+1;
 
 InitCurrElem(stimEdit);
 
-waitbar(istep/nsteps, h, waitmsg); istep = istep+1;
+waitbar(istep/nsteps, h, waitmsg);
 
 set(get(handles.axes1,'children'), 'ButtonDownFcn', @axes1_ButtonDownFcn);
 zoom(hObject,'off');
@@ -178,24 +196,35 @@ stimEdit.status=0;
 waitbar(1, h, waitmsg);
 close(h);
 
+if strcmpi(cfg.GetValue('Load Stim From TSV File'), 'yes')
+    %EnableGuiObjects('off', handles);
+    MakeInvisibleGuiObjects(handles);
+    set(handles.menuItemReloadStim, 'enable','on')
+else
+    set(handles.menuItemReloadStim, 'enable','off')
+end
+
+
 
 % --------------------------------------------------------------------
-function pushbuttonExit_Callback(hObject, eventdata, handles)
+function pushbuttonExit_Callback(~, ~, handles)
 if ishandles(handles.figure)
     delete(handles.figure);
 end
 
 
+
 % --------------------------------------------------------------------
-function popupmenuConditions_Callback(hObject, eventdata, handles)
+function popupmenuConditions_Callback(hObject, ~, handles)
 conditions = get(hObject, 'string');
 idx = get(hObject, 'value');
 condition = conditions{idx};
 SetUitableStimInfo(condition, handles);
 
 
+
 %---------------------------------------------------------------------------
-function editSelectTpts_Callback(hObject, eventdata, handles)
+function editSelectTpts_Callback(hObject, ~, handles)
 global stimEdit
 tPts_select = str2num(get(hObject,'string'));
 if isempty(tPts_select)
@@ -214,6 +243,7 @@ figure(handles.figure);
 % Reset status only should be set/reset in top-level gui functions (ie
 % callbacks)
 stimEdit.status=0;
+
 
 
 %---------------------------------------------------------------------------
@@ -236,8 +266,9 @@ Display(handles);
 figure(handles.figure);
 
 
+
 %---------------------------------------------------------------------------
-function menuItemRenameCondition_Callback(hObject, eventdata, handles)
+function menuItemRenameCondition_Callback(~, ~, handles)
 global stimEdit
 
 % Function to rename a condition. Important to remeber that changing the
@@ -253,7 +284,7 @@ global stimEdit
 
 % Get the name of the condition you want to rename
 conditions = get(handles.popupmenuConditions, 'string');
-[index, tf] = listdlg('PromptString', {'Rename which condition?', 'This action is applied to all runs and cannot be undone!'},...
+index = listdlg('PromptString', {'Rename which condition?', 'This action is applied to all runs and cannot be undone!'},...
         'SelectionMode', 'single', 'ListString', conditions);
 if isempty(index)
    return 
@@ -284,9 +315,16 @@ Display(handles);
 figure(handles.figure);
 
 
+
 %---------------------------------------------------------------------------
-function axes1_ButtonDownFcn(hObject, eventdata, handles)
+function axes1_ButtonDownFcn(~, ~, handles)
 global stimEdit
+
+% There's no disbale property for axes therefore we simulate the disable property by doing 
+% nothing if other main gui objects are disabled
+if ~IsGuiEnabled(handles)
+    return
+end
 
 [point1, point2, err] = extractButtondownPoints();
 if err<0
@@ -338,6 +376,7 @@ s2 = sum(abs(s(tPts_idxs_select,:)),2);
 stims_select = find(s2>=1);
 
 
+
 % ------------------------------------------------
 function h = HighlightStims(t, t_select, s, handles)
 h = [];
@@ -357,6 +396,7 @@ hold off
 drawnow
 
 
+
 % ------------------------------------------------
 function EditSelectRange(t1, t2, handles)
 global stimEdit
@@ -371,7 +411,7 @@ else
     tPts_idxs_select = min(find(abs(t-t1)<tVals));
 end
 stims_select = GetStimsFromTpts(tPts_idxs_select);
-if isempty(stims_select) & ~all(t1==t2)
+if isempty(stims_select) && ~all(t1==t2)
     MessageBox( 'Drag mouse around the stim to edit.');
     return;
 end
@@ -382,6 +422,7 @@ AddEditDelete(tPts_idxs_select, stims_select);
 if ~isempty(h)
     delete(h);
 end
+
 
 
 % ------------------------------------------------
@@ -448,13 +489,9 @@ menu_choice = MenuBox(menuTitleStr, actionLst, 'centerright');
 
 
 % ------------------------------------------------
-function err = IsCondError(CondName, overrideLength)
+function err = IsCondError(CondName, ~)
 global stimEdit
 err = 0;
-
-if ~exist('overrideLength','var')
-    overrideLength = false;
-end
 
 iG = stimEdit.locDataTree.GetCurrElemIndexID();
 CondNamesGroup = stimEdit.locDataTree.groups(iG).GetConditions();
@@ -497,6 +534,7 @@ if q==3
 elseif q==2
     status = -1;
 end
+
 
 
 % ------------------------------------------------
@@ -629,6 +667,7 @@ iG = stimEdit.locDataTree.GetCurrElemIndexID();
 stimEdit.locDataTree.groups(iG).SetConditions();
 
 
+
 % ------------------------------------------------
 function SetStimDuration(icond, duration)
 global stimEdit
@@ -642,6 +681,7 @@ if isempty(stimEdit.dataTreeHandle.currElem)
     return;
 end
 stimEdit.dataTreeHandle.currElem.SetStimDuration(icond, duration);
+
 
 
 % ------------------------------------------------
@@ -659,12 +699,14 @@ end
 duration = stimEdit.dataTreeHandle.currElem.GetStimDuration(icond);
 
 
+
 % -------------------------------------------------------------------
 function SetStimData(icond, data)
 global stimEdit
 stimEdit.dataTreeHandle.currElem.SetStimTpts(icond, data(:,1));
 stimEdit.dataTreeHandle.currElem.SetStimDuration(icond, data(:,2));
 stimEdit.dataTreeHandle.currElem.SetStimAmplitudes(icond, data(:,3));
+
 
 
 % -------------------------------------------------------------------
@@ -705,24 +747,26 @@ end
 stimEdit.dataTree.CopyStims(stimEdit.locDataTree);
 
 % Update acquisition file with new contents
-h = waitbar_improved(0, 'Saving new stim marks to %s...', stimEdit.dataTreeHandle.currElem.name);
+h = waitbar_improved(0, sprintf('Saving new stim marks to %s...', stimEdit.dataTreeHandle.currElem.name));
 stimEdit.dataTree.currElem.SaveAcquiredData()
 idx = stimEdit.dataTree.currElem.GetIndexID();
 stimEdit.dataTree.groups(idx(1)).Save()    %Need to save derived data on disk for consistency (groupResults.mat)
-waitbar_improved(1, h, 'Saving new stim marks to %s...', stimEdit.dataTreeHandle.currElem.name);
+waitbar_improved(1, h, sprintf('Saving new stim marks to %s...', stimEdit.dataTreeHandle.currElem.name));
 if ~isempty(stimEdit.updateParentGui)
     stimEdit.updateParentGui('StimEditGUI');
 end
 close(h)
 
 
+
 % --------------------------------------------------------------------
-function pushbuttonWriteToFile_Callback(hObject, eventdata, handles)
+function pushbuttonWriteToFile_Callback(~, ~, ~)
 Save()
 
 
+
 % -------------------------------------------------------------------
-function StimEditGUI_DeleteFcn(hObject, eventdata, handles)
+function StimEditGUI_DeleteFcn(~, ~, ~)
 global stimEdit
 global cfg
 
@@ -749,8 +793,9 @@ end
 Save()
 
 
+
 % --------------------------------------------------------------------
-function menuItemChangeGroup_Callback(hObject, eventdata, handles)
+function menuItemChangeGroup_Callback(~, ~, ~)
 pathname = uigetdir(pwd, 'Select a NIRS data group folder');
 if pathname==0
     return;
@@ -759,13 +804,15 @@ cd(pathname);
 StimEditGUI();
 
 
+
 % --------------------------------------------------------------------
-function menuItemSaveGroup_Callback(hObject, eventdata, handles)
+function menuItemSaveGroup_Callback(hObject, ~, ~)
 global stimEdit
 if ~ishandles(hObject)
     return;
 end
 stimEdit.dataTreeHandle.currElem.Save();
+
 
 
 % --------------------------------------------------------------------
@@ -789,13 +836,18 @@ end
 SetTextFilename(handles);
 
 % Try to keep the same condition as old run
+stimEdit.dataTreeHandle.currElem.Load();
 conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
 [icond, conditions] = GetConditionIdxFromPopupmenu(conditions, handles);
+if isempty(conditions)
+    return;
+end
 set(handles.popupmenuConditions, 'value',icond);
 set(handles.popupmenuConditions, 'string',conditions);
 SetUitableStimInfo(conditions{icond}, handles);
 Display(handles);
 figure(handles.figure);
+
 
 
 % -----------------------------------------------------------
@@ -807,16 +859,59 @@ if ~isstruct(handles)
     return;
 end
 fields = fieldnames(handles);
-for ii=1:length(fields)
-    sprintf('enableHandle(%s, onoff);', fields{ii});
+for ii = 1:length(fields)
+    if eval(sprintf('isa(handles.%s, ''matlab.ui.container.Menu'')', fields{ii}))
+        continue
+    end
+    eval( sprintf('enableHandle(handles.%s, onoff);', fields{ii}) );
 end
+
 
 
 % -----------------------------------------------------------
 function enableHandle(handle, onoff)
-if eval( sprintf('ishandles(obj.handles.%s)', handle) )
-    eval( sprintf('set(obj.handles.%s, ''enable'',onoff);', handle) );
+if ishandle(handle)
+    if ~isprop(handle, 'enable')
+        return
+    end
+    set(handle, 'enable',onoff);
 end
+
+
+
+% -----------------------------------------------------------
+function MakeInvisibleGuiObjects(handles)
+if ~exist('handles','var') || isempty(handles)
+    return;
+end
+if ~isstruct(handles)
+    return;
+end
+fields = fieldnames(handles);
+for ii = 1:length(fields)
+    eval( sprintf('makeInvisibleHandle(handles.%s);', fields{ii}) );
+end
+
+
+
+% -----------------------------------------------------------
+function makeInvisibleHandle(handle)
+if isa(handle, 'matlab.ui.container.Menu')
+    return
+end
+if isa(handle, 'matlab.graphics.axis.Axes')
+    return
+end
+if strncmp(get(handle,'tag'),'textFilename',length('textFilename'))
+    return;
+end
+if ishandle(handle)
+    if ~isprop(handle, 'visible')
+        return
+    end
+    set(handle, 'visible','off');
+end
+
 
 
 % -----------------------------------------------------------
@@ -832,6 +927,7 @@ icond = find(strcmp(conditions, condition));
 if isempty(icond)
     icond = 1;
 end
+
 
 
 % -----------------------------------------------------------
@@ -990,7 +1086,7 @@ if ~isempty(conditions)
     set(handles.popupmenuConditions, 'enable', 'on');
     condition = conditions{idx};
 else  % If no stim conditions at all, disable display and prevent crash
-    enableDisableButtons('off')
+    enableDisableButtons(handles, 'off')
     conditions = {' '};
     condition = ' ';
     set(handles.popupmenuConditions, 'enable', 'off');
@@ -999,12 +1095,14 @@ end
 SetUitableStimInfo(condition, handles); 
 
 
+
 % -----------------------------------------------------------
 function Lines = InitStimLines(n)
 if ~exist('n','var')
     n = 0;
 end
 Lines = repmat( struct('handle',[], 'color',[], 'widthReg',2, 'widthHighl',4), n,1);
+
 
 
 % -----------------------------------------------------------
@@ -1038,6 +1136,8 @@ set(handles.uitableStimInfo, ...
     'ColumnName', labels, ...
     'ColumnEditable', editable);
 
+
+
 % --------------------------------------------------------------------
 function StimEditGUI_AddStims(condition, onsets, duration, amplitude)
 global stimEdit
@@ -1055,6 +1155,7 @@ else
     other = [];
 end
 stimEdit.dataTreeHandle.currElem.AddStims(onsets, condition, dur, amp, other);
+
 
 
 % --------------------------------------------------------------------
@@ -1092,8 +1193,9 @@ end
 return
 
 
+
 % --------------------------------------------------------------------
-function editThresh_Callback(hObject, eventdata, handles)
+function editThresh_Callback(hObject, ~, handles)
 val = str2double(hObject.String);
 if isnan(val)
    set(hObject ,'String', hObject.Value);
@@ -1103,8 +1205,9 @@ end
 Display(handles);
 
 
+
 % --------------------------------------------------------------------
-function pushbuttonGenerate_Callback(hObject, eventdata, handles)
+function pushbuttonGenerate_Callback(~, ~, handles)
 global stimEdit; 
 iaux = handles.listboxAuxSelect.Value;
 currAux = stimEdit.dataTreeHandle.currElem.acquired.aux(iaux);
@@ -1122,13 +1225,15 @@ AddEditDelete(onsets_idx);
 Display(handles);
     
 
+
 % --------------------------------------------------------------------
-function listboxAuxSelect_Callback(hObject, eventdata, handles)
+function listboxAuxSelect_Callback(~, ~, handles)
 Display(handles);
 
 
+
 % --------------------------------------------------------------------
-function listboxAuxSelect_CreateFcn(hObject, eventdata, handles)
+function listboxAuxSelect_CreateFcn(hObject, ~, ~)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
@@ -1147,28 +1252,33 @@ catch
 end
 
 
+
 % --------------------------------------------------------------------
-function editThresh_CreateFcn(hObject, eventdata, handles)
+function editThresh_CreateFcn(hObject, ~, ~)
 set(hObject ,'String', '0.0');
 
 
+
 % --------------------------------------------------------------------
-function checkboxPreview_Callback(hObject, eventdata, handles)
+function checkboxPreview_Callback(~, ~, handles)
 Display(handles);
 
 
+
 % --------------------------------------------------------------------
-function radiobuttonFallingEdge_Callback(hObject, eventdata, handles)
+function radiobuttonFallingEdge_Callback(~, ~, handles)
 Display(handles);
 
 
+
 % --------------------------------------------------------------------
-function radiobuttonRisingEdge_Callback(hObject, eventdata, handles)
+function radiobuttonRisingEdge_Callback(~, ~, handles)
 Display(handles);
 
 
+
 % --------------------------------------------------------------------
-function editLPF_Callback(hObject, eventdata, handles)
+function editLPF_Callback(hObject, ~, handles)
 val = abs(floor(str2num(hObject.String))); %#ok<ST2NM>
 if isnan(val)
    set(hObject ,'String', hObject.Value);
@@ -1179,13 +1289,15 @@ end
 Display(handles);
 
 
+
 % --------------------------------------------------------------------
-function editLPF_CreateFcn(hObject, eventdata, handles)
+function editLPF_CreateFcn(hObject, ~, ~)
 hObject.Value = floor(str2double(hObject.String));
 
 
+
 % --------------------------------------------------------------------
-function menuItemSyncBrowsing_Callback(hObject, eventdata, handles)
+function menuItemSyncBrowsing_Callback(hObject, ~, handles)
 global stimEdit
 if strcmpi(get(hObject, 'checked'), 'off')
     set(hObject, 'checked', 'on')
@@ -1197,13 +1309,15 @@ else
 end
 
 
+
 % --------------------------------------------------------------------
-function uitableStimInfo_ButtonDownFcn(hObject, eventdata, handles)
+function uitableStimInfo_ButtonDownFcn(~, ~, ~)
 % Pass
 
 
+
 % --------------------------------------------------------------------
-function pushbuttonEditColumns_Callback(hObject, eventdata, handles)
+function pushbuttonEditColumns_Callback(~, ~, handles)
 global stimEdit
 conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
 icond = GetConditionIdxFromPopupmenu(conditions, handles);
@@ -1226,6 +1340,8 @@ if size(stimEdit.dataTreeHandle.currElem.procStream.input.acquired.stim(icond).d
 else
     errordlg('There are no additional data columns to rename!', 'No columns to rename')
 end
+
+
 
 % --------------------------------------------------------------------
 function datarow = stimValueDialog()
@@ -1258,8 +1374,10 @@ while isempty(datarow)
     end
 end
 
+
+
 % --------------------------------------------------------------------
-function pushbuttonDeleteColumn_Callback(hObject, eventdata, handles)
+function pushbuttonDeleteColumn_Callback(~, ~, handles)
 global stimEdit
 conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
 icond = GetConditionIdxFromPopupmenu(conditions, handles);
@@ -1281,6 +1399,7 @@ else
 end
 
 
+
 % --------------------------------------------------------------------
 function enableDisableButtons(handles, enable)
 handles.pushbuttonAddColumn.Enable = enable;
@@ -1288,8 +1407,9 @@ handles.pushbuttonDeleteColumn.Enable = enable;
 handles.pushbuttonEditColumns.Enable = enable;
 
 
+
 % --------------------------------------------------------------------
-function pushbuttonAddColumn_Callback(hObject, eventdata, handles)
+function pushbuttonAddColumn_Callback(~, ~, handles)
 global stimEdit
 conditions =  stimEdit.dataTreeHandle.currElem.GetConditions();
 icond = GetConditionIdxFromPopupmenu(conditions, handles);
@@ -1314,7 +1434,7 @@ Display(handles);
 
 
 % --------------------------------------------------------------------
-function StimCSV_Read_Callback(hObject, eventdata, handles)
+function StimCSV_Read_Callback(~, ~, handles)
 % hObject    handle to StimCSV_Read (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -1341,11 +1461,9 @@ stimEdit.locDataTree.groups(iG).SetConditions();
 Display(handles);
 
 
+
 % --------------------------------------------------------------------
-function StimCSV_Write_Callback(hObject, eventdata, handles)
-% hObject    handle to CSV_Write (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+function StimCSV_Write_Callback(~, ~, ~)
 global stimEdit
 conds = stimEdit.dataTreeHandle.currElem.GetConditions();
 for i = 1:length(conds)
@@ -1353,3 +1471,38 @@ for i = 1:length(conds)
     stimLabels{:,i} = stimEdit.dataTreeHandle.currElem.GetStimDataLabels(i);
 end
 StimCSV_Write(conds,stimLabels,stimData);
+
+
+
+% --------------------------------------------------------------------
+function menuItemReloadStim_Callback(~, ~, handles)
+global stimEdit
+global cfg 
+
+if strcmpi(cfg.GetValue('Load Stim From TSV File'), 'yes')
+    EnableGuiObjects('on', handles);
+    set(handles.menuItemReloadStim, 'enable','on')
+else
+    set(handles.menuItemReloadStim, 'enable','off')
+end
+
+stimEdit.locDataTree.ReloadStim();
+stimEdit.dataTree.CopyStims(stimEdit.locDataTree)
+Display(handles);
+if ~isempty(stimEdit.updateParentGui)
+    stimEdit.updateParentGui('StimEditGUI');
+end
+
+
+
+% --------------------------------------------------------------------
+function b = IsGuiEnabled(handles)
+b = true;
+if strcmp(get(handles.uitableStimInfo, 'visible'), 'off')
+    if strcmp(get(handles.uibuttongroupGenStimFromAux, 'visible'), 'off')
+        b = false;
+    end
+end
+
+
+

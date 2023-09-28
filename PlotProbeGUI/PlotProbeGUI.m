@@ -46,10 +46,15 @@ plotprobe.condition = [];
 plotprobe.pos = [];
 
 % Rest of the parameters 
-plotprobe.datatypeVals = struct('RAW',1, 'RAW_HRF',2, 'OD',4, 'OD_HRF',8, 'CONC',16, 'CONC_HRF',32);
+plotprobe.datatype = [];
+plotprobe.datatypeVals = [];
 plotprobe.name = 'plotprobe';
 plotprobe.y = {};
+plotprobe.yStd = {};
 plotprobe.t = {};
+plotprobe.ml = {};
+plotprobe.SD = [];
+
 SetGuiControls(handles)
 
 setGuiFonts(handles.figure);
@@ -66,10 +71,48 @@ plotprobe.tMarkShow   = get(handles.radiobuttonShowTimeMarkers, 'value');
 plotprobe.tMarkUnits  = str2num(get(handles.textTimeMarkersAmpUnits, 'string'));
 
 
+
+% ----------------------------------------------------------------------
+function InheritParentGuiParams()
+global plotprobe
+global maingui
+
+% Now whichever of the above parameters weren't assigned values
+% obtain values either from parent gui or assign default value
+if isempty(maingui)
+    if isempty(plotprobe.groupDirs)
+        plotprobe.groupDirs = filesepStandard({pwd});
+    end
+    if isempty(plotprobe.format)
+        plotprobe.format = 'snirf';
+    end
+    if isempty(plotprobe.condition)
+        plotprobe.condition = 1;
+    end
+    if isempty(plotprobe.datatypeVals)
+        plotprobe.datatypeVals = struct('RAW',1, 'RAW_HRF',2, 'OD',4, 'OD_HRF',8, 'CONC',16, 'CONC_HRF',32);
+    end
+    if isempty(plotprobe.datatype)
+        plotprobe.datatype = plotprobe.datatypeVals.CONC_HRF;
+    end
+else
+    if isempty(plotprobe.groupDirs)
+        plotprobe.groupDirs = maingui.groupDirs;
+    end
+    if isempty(plotprobe.format)
+        plotprobe.format = maingui.format;
+    end
+    plotprobe.condition = maingui.condition;
+    plotprobe.datatypeVals = maingui.buttonVals;
+    plotprobe.datatype = maingui.datatype;
+end
+
+
+
+
 % ----------------------------------------------------------------------
 function ParseArgs(args)
 global plotprobe
-global maingui
 
 if ~exist('args','var')
     return;
@@ -152,32 +195,7 @@ elseif length(varargin)==5
     plotprobe.pos       = varargin{5};                      % PlotProbeGUI(groupDirs, format, datatype, condition, pos)
 end
 
-% Now whichever of the above parameters weren't assigned values
-% obtain values either from parent gui or assign default value
-if isempty(maingui)
-    if isempty(plotprobe.groupDirs)
-        plotprobe.groupDirs = filesepStandard({pwd});
-    end
-    if isempty(plotprobe.format)
-        plotprobe.format = 'snirf';
-    end
-    if isempty(plotprobe.condition)
-        plotprobe.condition = 1;
-    end
-else
-    if isempty(plotprobe.groupDirs)
-        plotprobe.groupDirs = maingui.groupDirs;
-    end
-    if isempty(plotprobe.format)
-        plotprobe.format = maingui.format;
-    end
-    if isempty(plotprobe.condition)
-        plotprobe.condition = maingui.condition;
-    end
-end
-if isempty(plotprobe.datatype)
-    plotprobe.datatype = plotprobe.datatypeVals.CONC_HRF;
-end
+InheritParentGuiParams()
 
 
 
@@ -265,6 +283,7 @@ else
     set(handles.menuItemSaveGroup, 'enable','on');
     set(handles.menuItemSyncBrowsing, 'enable','off');
 end
+plotprobe.dataTypeWarning = struct('datatype','', 'selection',[0,false], 'menuboxoption','askEveryTime');
 
 setappdata(hObject, 'figures',hObject);
 setappdata(hObject, 'data',{});
@@ -273,8 +292,9 @@ SetTextFilename(handles);
 DisplayData(handles, hObject);
 
 if ~menuItemSyncBrowsing_Callback(handles.menuItemSyncBrowsing, 'get')
-    menuItemSyncBrowsing_Callback(handles.menuItemSyncBrowsing, '', handles);
+    menuItemSyncBrowsing_Callback(handles.menuItemSyncBrowsing, '');
 end
+
 
 
 
@@ -310,8 +330,6 @@ set(handles.axes1, 'xlim', [0,1], 'ylim', [0,1]);
 cla(handles.axes1); 
 axis off;
 
-condition = plotprobe.condition;
-datatype  = plotprobe.datatype;
 currElem  = plotprobe.dataTreeHandle.currElem;
 
 % Load current element data from file
@@ -323,27 +341,7 @@ SetWindowTitle(handles)
 
 % Clear axes of previous data, before redisplaying it
 ClearAxesData(handles);
-
-hold on
-nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
-plotprobe.y = cell(nDataBlks,1);
-plotprobe.t = cell(nDataBlks,1);
-for iBlk=1:nDataBlks
-    if datatype == plotprobe.datatypeVals.OD_HRF
-        plotprobe.y{iBlk} = currElem.GetDodAvg(condition, iBlk);
-        plotprobe.ystd{iBlk} = plotprobe.dataTree.currElem.GetDodAvgStd(condition, iBlk);
-        plotprobe.t{iBlk} = currElem.GetTHRF();
-        plotprobe.tMarkUnits='(AU)';
-    elseif datatype == plotprobe.datatypeVals.CONC_HRF
-        plotprobe.y{iBlk} = currElem.GetDcAvg(condition, iBlk);
-        plotprobe.ystd{iBlk} = plotprobe.dataTree.currElem.GetDcAvgStd(condition, iBlk);
-        plotprobe.t{iBlk} = currElem.GetTHRF();
-        plotprobe.tMarkAmp = plotprobe.tMarkAmp/1e6;
-        plotprobe.tMarkUnits = '(micro-molars)';
-    end
-    plotProbeAndSetProperties(handles, iBlk);
-end
-hold off
+plotProbeAndSetProperties(handles);
 
 
 
@@ -363,10 +361,7 @@ plotprobe.axScl = foo;
 ClearAxesData(handles);
 
 set(hObject,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
-nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
-for iBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iBlk);
-end
+plotProbeAndSetProperties(handles);
 
 
 
@@ -381,11 +376,8 @@ set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 
 % Clear axes of previous data, before redisplaying it
 ClearAxesData(handles);
+plotProbeAndSetProperties(handles);
 
-nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
-for iBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iBlk);
-end
 
 
 
@@ -400,11 +392,7 @@ set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 
 % Clear axes of previous data, before redisplaying it
 ClearAxesData(handles);
-
-nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
-for iBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iBlk);
-end
+plotProbeAndSetProperties(handles);
 
 
 
@@ -418,11 +406,7 @@ set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
 
 % Clear axes of previous data, before redisplaying it
 ClearAxesData(handles);
-
-nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
-for iBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iBlk);
-end
+plotProbeAndSetProperties(handles);
 
 
 
@@ -434,33 +418,29 @@ hEditScl = handles.editPlotProbeAxScl;
 
 plotprobe.axScl(1) = plotprobe.axScl(1) + 0.1;
 set(hEditScl,'string', sprintf('%0.1f %0.1f', plotprobe.axScl) );
-nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
 
 % Clear axes of previous data, before redisplaying it
 ClearAxesData(handles);
+plotProbeAndSetProperties(handles);
 
-for iBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iBlk);
-end
 
 
 
 % ----------------------------------------------------------------------
 function radiobuttonShowTimeMarkers_Callback(hObject, ~, handles)
 global plotprobe
-
 data = getappdata(handles.figure, 'data');
 plotprobe.tMarkShow = get(hObject,'value');
 nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
-for iBlk=1:nDataBlks
-    ml = plotprobe.dataTree.currElem.GetMeasList(iBlk);
-    lst = find(ml.MeasList(:,4)==1);
-    mlVis = ml.MeasListVis(lst);
-    if ~isempty(data{iBlk})
-        if plotprobe.tMarkShow
-            set(data{iBlk}(logical(mlVis), 4:end), 'visible','on');
-        else
-            set(data{iBlk}(:,4:end), 'visible', 'off');    
+for iBlk = 1:nDataBlks
+    for iSD = 1:size(data{iBlk},1)
+        k = find(data{iBlk}(iSD,4:end)>0);
+        if ~isempty(data{iBlk})
+            if plotprobe.tMarkShow
+                set(data{iBlk}(iSD,4+k-1), 'visible', 'on');
+            else
+                set(data{iBlk}(iSD,4+k-1), 'visible', 'off');
+            end
         end
     end
 end
@@ -471,21 +451,14 @@ end
 function editPlotProbeTimeMarkersAmp_Callback(hObject, ~, handles)
 global plotprobe
 
-datatype     = plotprobe.datatype;
-datatypeVals = plotprobe.datatypeVals;
-
 plotprobe.tMarkAmp = str2num(get(hObject,'string'));
-if datatype == datatypeVals.CONC_HRF
+if plotprobe.datatype == plotprobe.datatypeVals.CONC_HRF
     plotprobe.tMarkAmp = plotprobe.tMarkAmp/1e6;
 end
 
 % Clear axes of previous data, before redisplaying it
 ClearAxesData(handles);
-
-nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
-for iBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iBlk);
-end
+plotProbeAndSetProperties(handles);
 
 
 
@@ -500,7 +473,7 @@ if length(foo)~=1
     foo = plotprobe.tMarkInt;
 elseif ~isnumeric(foo)
     foo = plotprobe.tMarkInt;
-elseif foo<5 || foo>t(end)
+elseif foo<2 || foo>t(end)
     foo = plotprobe.tMarkInt;
 end
 plotprobe.tMarkInt = foo;
@@ -508,11 +481,7 @@ set(hObject,'string', sprintf('%0.1f ',plotprobe.tMarkInt) );
 
 % Clear axes of previous data, before redisplaying it
 ClearAxesData(handles);
-
-nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
-for iBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iBlk);
-end
+plotProbeAndSetProperties(handles);
 
 
 
@@ -553,10 +522,7 @@ uicontrol('parent',figures(iNew), 'style','text', 'string',hname.String, 'units'
 uipanel('parent',figures(iNew), 'units',hdiv.Units, 'position',hdiv.Position, 'bordertype',hdiv.BorderType);
        
 % Display data
-nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
-for iBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iBlk, length(figures));
-end
+plotProbeAndSetProperties(handles, length(figures));
 rePositionGuiWithinScreen(figures(iNew));
 
 
@@ -689,35 +655,16 @@ axes(handles.axes1);
 SetWindowTitle(handles)
 SetTextFilename(handles);
 
-condition = plotprobe.condition;
-datatype  = plotprobe.datatype;
 
 % Load current element data from file
 if plotprobe.dataTreeHandle.currElem.IsEmpty()
     plotprobe.dataTreeHandle.currElem.Load();
 end
 
-nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
-plotprobe.y = cell(nDataBlks,1);
-plotprobe.t = cell(nDataBlks,1);
-   
-for iBlk = 1:nDataBlks
-    if datatype == plotprobe.datatypeVals.OD_HRF
-        plotprobe.y{iBlk} = plotprobe.dataTreeHandle.currElem.GetDodAvg(condition, iBlk);
-        plotprobe.t{iBlk} = plotprobe.dataTreeHandle.currElem.GetTHRF();
-        plotprobe.tMarkUnits='(AU)';
-    elseif datatype == plotprobe.datatypeVals.CONC_HRF
-        plotprobe.y{iBlk} = plotprobe.dataTreeHandle.currElem.GetDcAvg(condition, iBlk);
-        plotprobe.t{iBlk} = plotprobe.dataTreeHandle.currElem.GetTHRF();
-        plotprobe.tMarkAmp = plotprobe.tMarkAmp/1e6;
-        plotprobe.tMarkUnits = '(micro-molars)';
-    end
-    
-    % Clear axes of previous data, before redisplaying it
-    ClearAxesData(handles);    
-    plotProbeAndSetProperties(handles);
-    figure(handles.figure)
-end
+% Clear axes of previous data, before redisplaying it
+ClearAxesData(handles);
+plotProbeAndSetProperties(handles);
+figure(handles.figure)
 
 
 
@@ -783,24 +730,25 @@ end
 % Set name of current processing element and the length of the text box
 % framing it
 if ~isempty(CondNames)
-    name = sprintf('   %s,    condition: ''%s''', treeNodeName, CondNames{plotprobe.condition});
+    if plotprobe.datatype == plotprobe.datatypeVals.CONC_HRF || ...
+       plotprobe.datatype == plotprobe.datatypeVals.OD_HRF
+        name = sprintf('   %s,    condition: ''%s''', treeNodeName, CondNames{plotprobe.condition});
+    else
+        name = sprintf('   %s,    condition:  N/A', treeNodeName);
+    end
 else
-    name = sprintf('   %s,    condition:  none', treeNodeName, CondNames{plotprobe.condition});
+    name = sprintf('   %s,    condition:  N/A', treeNodeName);
 end
-n = length(name) + 0.20*length(name);
+n = length(name) + 0.5*length(name);
 set(handles.textFilename, 'units','characters');
 p1 = get(handles.textFilename, 'position');
 set(handles.textFilename, 'position',[p1(1), p1(2), n, p1(4)], 'string',name);
-
-set(handles.textFilename, 'units','centimeters');
-set(handles.textFilenameFrame, 'units','centimeters');
+p1 = get(handles.textFilename, 'position');
 
 % Set the border frame size and position to be relative to text box holding the name 
-p1 = get(handles.textFilename, 'position');
+set(handles.textFilenameFrame, 'units','characters');
 p2 = get(handles.textFilenameFrame, 'position');
-set(handles.textFilename, 'position',[p2(1)+abs(p1(2)-p2(2)), p1(2), p1(3), p1(4)]);
-p1 = get(handles.textFilename, 'position');
-set(handles.textFilenameFrame, 'position',[p2(1), p2(2), p1(3)+(2*abs(p1(1)-p2(1))), p2(4)]);
+set(handles.textFilenameFrame, 'position',[p2(1), p2(2), p1(3)+(2.5*abs(p1(1)-p2(1))), p2(4)]);
 
 % Return to normalized units for textbox
 set(handles.textFilename, 'units','normalized');
@@ -841,9 +789,6 @@ end
 
 % --------------------------------------------------------------------
 function radiobuttonShowStd_Callback(~, ~, handles)
-global plotprobe
 ClearAxesData(handles);
-nDataBlks = plotprobe.dataTreeHandle.currElem.GetDataBlocksNum();
-for iBlk=1:nDataBlks
-    plotProbeAndSetProperties(handles, iBlk);
-end
+plotProbeAndSetProperties(handles);
+

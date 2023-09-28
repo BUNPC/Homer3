@@ -75,6 +75,7 @@ MainGUI_EnableDisableGUI(handles, 'off')
 if ~isempty(maingui.unitTest)
     maingui.unitTest.Initialize(handles, @UnitTestInit);
 end
+maingui.errcolor = [0.70, 0.20, 0.10];
 
 
 
@@ -83,11 +84,17 @@ function MainGUI_EnableDisableGUI(handles, val)
    
 % Processing element panel
 set(handles.listboxGroupTree, 'enable', val);
-set(handles.listboxFilesErr, 'enable', val);
+if strcmp(get(handles.listboxFilesErr, 'visible'), 'on')
+    set(handles.listboxFilesErr, 'enable','on');
+else
+    set(handles.listboxFilesErr, 'enable',val);
+end
+set(handles.pushbuttonHideErrors, 'enable',val);
 set(handles.radiobuttonProcTypeGroup, 'enable', val);
 set(handles.radiobuttonProcTypeSubj, 'enable', val);
+set(handles.radiobuttonProcTypeSess, 'enable', val);
 set(handles.radiobuttonProcTypeRun, 'enable', val);
-set(handles.textStatus, 'enable', val);
+set(handles.textStatus, 'enable','on');
 
 % Data plot panel
 set(handles.textPanLeftRight, 'enable', val);
@@ -112,13 +119,15 @@ set(handles.textPanDisplay, 'enable', val);
 % Plot type selected panel
 set(handles.listboxPlotConc, 'enable', val);
 set(handles.listboxPlotWavelength, 'enable', val);
+
 set(handles.radiobuttonPlotRaw, 'enable', val);
 set(handles.radiobuttonPlotOD,  'enable', val);
 set(handles.radiobuttonPlotConc, 'enable', val);
+set(handles.checkboxPlotHRF, 'enable', val);
+
 set(handles.popupmenuAux, 'enable', val);
 set(handles.checkboxPlotAux, 'enable', val);
 set(handles.popupmenuConditions, 'enable', val);
-set(handles.checkboxPlotHRF, 'enable', val);
 
 % Motion artifact panel
 set(handles.checkboxShowExcludedTimeManual, 'enable', val);
@@ -136,7 +145,7 @@ set(handles.checkboxApplyProcStreamEditToAll, 'enable', val);
 % Menu
 set(handles.ToolsMenu, 'enable', val);
 set(handles.ViewMenu, 'enable', val);
-set(handles.menuItemSaveGroup, 'enable', val);
+set(handles.menuItemSaveGroups, 'enable', val);
 set(handles.menuItemExport, 'enable', val);
 set(handles.menuItemReset, 'enable', val);
 set(handles.menuItemResetGroupFolder, 'enable', val)
@@ -148,11 +157,17 @@ function MainGUI_EnableDisablePlotEditMode(handles, val)
 
 % Processing element panel
 set(handles.listboxGroupTree, 'enable', val);
-set(handles.listboxFilesErr, 'enable', val);
+if strcmp(get(handles.listboxFilesErr, 'visible'), 'on')
+    set(handles.listboxFilesErr, 'enable','on');
+else
+    set(handles.listboxFilesErr, 'enable',val);
+end
+set(handles.textStatus, 'enable','on');
+set(handles.pushbuttonHideErrors, 'enable',val);
 set(handles.radiobuttonProcTypeGroup, 'enable', val);
 set(handles.radiobuttonProcTypeSubj, 'enable', val);
+set(handles.radiobuttonProcTypeSess, 'enable', val);
 set(handles.radiobuttonProcTypeRun, 'enable', val);
-set(handles.textStatus, 'enable', val);
 
 % Control
 set(handles.pushbuttonCalcProcStream, 'enable', val);
@@ -162,7 +177,7 @@ set(handles.checkboxApplyProcStreamEditToAll, 'enable', val);
 % Menu
 set(handles.ToolsMenu, 'enable', val);
 set(handles.ViewMenu, 'enable', val);
-set(handles.menuItemSaveGroup, 'enable', val);
+set(handles.menuItemSaveGroups, 'enable', val);
 set(handles.menuItemExport, 'enable', val);
 set(handles.menuItemReset, 'enable', val);
 set(handles.menuItemResetGroupFolder, 'enable', val)
@@ -173,6 +188,7 @@ set(handles.menuItemResetGroupFolder, 'enable', val)
 function eventdata = MainGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 global maingui
 global logger
+global cfg
 
 setNamespace('Homer3');
 
@@ -210,7 +226,8 @@ end
 
 maingui.gid = 1;
 maingui.sid = 2;
-maingui.rid = 3;
+maingui.eid = 3;
+maingui.rid = 4;
 
 maingui.dataTree = [];
 maingui.Update = @Update;
@@ -221,8 +238,7 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 % Set the main GUI version number
-[~, V] = MainGUIVersion(hObject, 'exclpath');
-maingui.version = V;
+MainGUIVersion(hObject, 'exclpath');
 maingui.childguis = ChildGuiClass().empty();
 
 % Disable and reset all window gui objects
@@ -234,10 +250,12 @@ maingui.childguis(2) = ChildGuiClass('ProcStreamOptionsGUI');
 maingui.childguis(3) = ChildGuiClass('StimEditGUI');
 maingui.childguis(4) = ChildGuiClass('PlotProbeGUI');
 maingui.childguis(5) = ChildGuiClass('PvaluesDisplayGUI');
+maingui.childguis(6) = ChildGuiClass('configSettingsGUI');
 
 % Load date files into group tree object
-maingui.dataTree  = LoadDataTree(maingui.groupDirs, maingui.format, procStreamFile);
+maingui.dataTree = LoadDataTree(maingui.groupDirs, maingui.format, procStreamFile);
 if maingui.dataTree.IsEmpty()
+    DisplayGroupTree(handles);
     return;
 end
 if ~isempty(maingui.unitTest)
@@ -248,6 +266,10 @@ InitGuiControls(handles);
 
 % Display data from currently selected processing element
 DisplayGroupTree(handles);
+
+% If data set has no errors enable window gui objects
+MainGUI_EnableDisableGUI(handles,'on');
+
 Display(handles, hObject);
 
 % Store Original X and Y Lims for AxesSDG
@@ -255,6 +277,7 @@ maingui.axesSDG.xlim = maingui.axesSDG.handles.axes.XLim;
 maingui.axesSDG.ylim = maingui.axesSDG.handles.axes.YLim;
 
 maingui.handles = handles;
+maingui.handles.msgbox = [];
 
 % Set path in GUI window title
 s = get(hObject,'name');
@@ -264,13 +287,18 @@ set(hObject,'name', title);
 maingui.logger.InitChapters()
 maingui.logger.CurrTime(sprintf('MainGUI: Startup time - %0.1f seconds\n', toc(startuptimer)));
 
-% If data set has no errors enable window gui objects
-MainGUI_EnableDisableGUI(handles,'on');
+if strcmpi(cfg.GetValue('Load Stim From TSV File'), 'yes')
+    set(handles.menuItemStimEditGUI, 'visible','off')
+    set(handles.menuItemReloadStim, 'visible','on')
+else
+    set(handles.menuItemStimEditGUI, 'visible','on')
+    set(handles.menuItemReloadStim, 'visible','off')
+end
 
 
 
 % --------------------------------------------------------------------
-function varargout = MainGUI_OutputFcn(hObject, eventdata, handles)
+function varargout = MainGUI_OutputFcn(~, ~, ~)
 global maingui
 varargout{1} = maingui.unitTest;
 
@@ -284,6 +312,7 @@ global cfg
 if ishandles(hObject)
     delete(hObject)
 end
+
 if isa(cfg, 'ConfigFileClass')
     cfg.Close();
 end
@@ -291,6 +320,12 @@ end
 if isempty(maingui)
     deleteNamespace('Homer3');
     return;
+end
+
+if isfield(maingui,'handles') && isfield(maingui.handles, 'msgbox')
+    if ishandle(maingui.handles.msgbox)
+        delete(maingui.handles.msgbox);
+    end
 end
 if isfield(maingui,'logger') && ~isempty(maingui.logger)
     maingui.logger.Close('Homer3');
@@ -301,7 +336,7 @@ if isempty(maingui.dataTree)
 end
 
 % Delete Child GUIs before deleted the dataTree that all GUIs use.
-for ii=1:length(maingui.childguis)
+for ii = 1:length(maingui.childguis)
     maingui.childguis(ii).Close();
 end
 delete(maingui.dataTree);
@@ -311,55 +346,66 @@ deleteNamespace('Homer3');
 
 
 
+
 % --------------------------------------------------------------------
-function [eventdata, handles] = MainGUI_CloseFcn(hObject, eventdata, handles)
+function [eventdata, handles] = MainGUI_CloseFcn(~, eventdata, handles)
 deleteNamespace('Homer3');
+
+
+
+
+% --------------------------------------------------------------------
+function [nFileSuccess, nFilesWarning, nFilesFailed] = WarningsReport(handles)
+global maingui
+[nFileSuccess, nFilesWarning, nFilesFailed] = maingui.dataTree.GetErrorStats();
+if sum([nFilesWarning, nFilesFailed]) > 0
+    set(handles.pushbuttonHideErrors,'visible','on')
+end
+
+
 
 
 % --------------------------------------------------------------------------------------------
 function DisplayGroupTree(handles)
 global maingui;
+[nFileSuccess, nFilesWarning, nFilesFailed] = WarningsReport(handles);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Initialize listboxGroupTree params struct
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 maingui.listboxGroupTreeParams = struct('listMaps',struct('names',{{}}, 'idxs', []), ...
-                                        'views', struct('GROUP',1, 'SUBJS',2, 'RUNS',3), ...
+                                        'views',struct('GROUP',1, 'SUBJS',2, 'SESS',3, 'NOSESS',4, 'RUNS',5), ...
                                         'viewSetting',0);
                       
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Generate linear lists from group tree nodes for the 3 group views
 % in listboxGroupTree
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[nSubjs, nRuns] = GenerateGroupDisplayLists();
+[nSubjs, nSess, nRuns] = GenerateGroupDisplayLists();
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Determine the best view for the data files 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[viewSetting, views] = SetView(handles, nSubjs, nRuns);
+[viewSetting, ~] = SetView(handles, nSubjs, nSess, nRuns);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set listbox used for displaying valid data
 % Get the GUI listboxGroupTree setting 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-listboxGroup = maingui.listboxGroupTreeParams.listMaps(viewSetting).names;
-nFiles = length(maingui.listboxGroupTreeParams.listMaps(views.RUNS).names);
+listboxGroup = {};
+if viewSetting <= length(maingui.listboxGroupTreeParams.listMaps)
+    listboxGroup = maingui.listboxGroupTreeParams.listMaps(viewSetting).names;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set listbox used for displaying files that did not load correctly
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-listboxFilesErr = cell(length(maingui.dataTree.filesErr),1);
-nFilesErr=0;
-for ii=1:length(maingui.dataTree.filesErr)
-    if maingui.dataTree.filesErr(ii).isdir
-        listboxFilesErr{ii} = maingui.dataTree.filesErr(ii).name;
-    elseif ~isempty(maingui.dataTree.filesErr(ii).subjdir)
-        listboxFilesErr{ii} = ['    ', maingui.dataTree.filesErr(ii).name];
-        nFilesErr=nFilesErr+1;
-    else
-        listboxFilesErr{ii} = maingui.dataTree.filesErr(ii).name;
-        nFilesErr=nFilesErr+1;
-    end
+listboxFilesErr = {};
+kk = 1;
+for ii = 1:length(maingui.dataTree.filesErr)
+    nspaces = 0;
+    listboxFilesErr{kk}   = sprintf('%s%s', blanks(nspaces), filesepStandard(maingui.dataTree.filesErr(ii).name, 'filesepwide'));
+    kk = kk+1;
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -368,8 +414,9 @@ end
 if ~isempty(handles)
     % Report status in the status text object
     set( handles.textStatus, 'string', { ...
-        sprintf('%d files loaded successfully',nFiles), ...
-        sprintf('%d files failed to load',nFilesErr) ...
+        sprintf('%d files loaded successfully', nFileSuccess), ...
+        sprintf('%d files loaded with warnings',nFilesWarning), ...
+        sprintf('%d files failed to load', nFilesFailed) ...
         } );
     
     if ~isempty(listboxGroup)
@@ -377,26 +424,48 @@ if ~isempty(handles)
         set(handles.listboxGroupTree, 'string',listboxGroup)
     end
     
-    if ~isempty(listboxFilesErr)
-        set(handles.listboxFilesErr, 'visible','on');
-        set(handles.listboxFilesErr, 'value',1);
-        set(handles.listboxFilesErr, 'string',listboxFilesErr)
+    if nFilesFailed > 0 || nFilesWarning > 0
+        set(handles.textStatus, 'foregroundcolor',maingui.errcolor);
+        if nFilesFailed > 0
+            set(handles.listboxFilesErr, 'visible','on', 'enable','on','value',1, 'string',listboxFilesErr)
+            set(handles.pushbuttonHideErrors, 'visible','on', 'tooltipstring','Show/Hide Error Report Window.');
+            if nFileSuccess==0
+                set(handles.pushbuttonHideErrors, 'visible','off');
+                p1 = get(handles.listboxGroupTree, 'position');
+                p2 = get(handles.listboxFilesErr, 'position');
+                offset_y = p1(4)/2;
+                set(handles.listboxGroupTree, 'position',[p1(1), p1(2)+offset_y, p1(3), offset_y])
+                set(handles.listboxFilesErr, 'position',[p2(1), p2(2), p2(3), p2(4)+offset_y])
+            end
+        else
+            set(handles.listboxFilesErr, 'visible','off');
+            set(handles.pushbuttonHideErrors, 'visible','off');
+            pos1 = get(handles.listboxGroupTree, 'position');
+            pos2 = get(handles.listboxFilesErr, 'position');
+            set(handles.listboxGroupTree, 'position', [pos1(1) pos2(2) pos1(3) .98-pos2(2)]);
+        end
+        warningMsg = 'WARNING: Not all data files loaded successfully. Please see Homer3 GUI for details.';
+        maingui.logger.Write(warningMsg);
     else
         set(handles.listboxFilesErr, 'visible','off');
+        set(handles.pushbuttonHideErrors, 'visible','off');
         pos1 = get(handles.listboxGroupTree, 'position');
         pos2 = get(handles.listboxFilesErr, 'position');
         set(handles.listboxGroupTree, 'position', [pos1(1) pos2(2) pos1(3) .98-pos2(2)]);
     end
 end
+if nFileSuccess==0
+    return
+end
 
 % Select initial data tree processing element in the 'Current Processing Element' panel
-idx = [1,1,1];
+idx = [1,1,1,1];
 listboxGroupTree_Callback([], idx, handles)
 
 % Update GUI Current Element panel proc level radio button to reflect 
 % processing level the selected element
 proclevel = GetProclevel(handles);
-SetGuiProcLevel(handles, idx(1), idx(2), idx(3), proclevel);
+SetGuiProcLevel(handles, idx(1), idx(2), idx(3), idx(4), proclevel);
 
 
 
@@ -409,7 +478,7 @@ if isempty(hObject)
 end
 proclevel = GetProclevel(handles);
 iList = get(handles.listboxGroupTree,'value');
-[iGroup,iSubj,iRun] = MapList2GroupTree(iList);
+[iGroup, iSubj, iSess, iRun] = MapList2GroupTree(iList);
 switch(proclevel)
 	case maingui.gid
         if iGroup==0
@@ -424,6 +493,17 @@ switch(proclevel)
             iSubj=1;
         end
         maingui.dataTree.SetCurrElem(iGroup, iSubj);
+    case maingui.eid
+        if iGroup==0
+            iGroup=1;
+        end
+        if iSubj==0
+            iSubj=1;
+        end
+        if iSess==0
+            iSess=1;
+        end
+        maingui.dataTree.SetCurrElem(iGroup, iSubj, iSess);
     case maingui.rid
         if iGroup==0
             iGroup=1;
@@ -431,18 +511,21 @@ switch(proclevel)
         if iSubj==0
             iSubj=1;
         end
+        if iSess==0
+            iSess=1;
+        end
         if iRun==0
             iRun=1;
         end
-        maingui.dataTree.SetCurrElem(iGroup, iSubj, iRun);
+        maingui.dataTree.SetCurrElem(iGroup, iSubj, iSess, iRun);
 end
-[iGroup, iSubj, iRun] = maingui.dataTree.GetCurrElemIndexID();
+[iGroup, iSubj, iSess, iRun] = maingui.dataTree.GetCurrElemIndexID();
 if iRun == 0
     set(handles.menuItemPowerSpectrum, 'enable', 'off')
 else
     set(handles.menuItemPowerSpectrum, 'enable', 'on')
 end
-listboxGroupTree_Callback([], [iGroup,iSubj,iRun], handles)
+listboxGroupTree_Callback([], [iGroup, iSubj, iSess, iRun], handles)
 Display(handles, hObject);
 
 
@@ -465,25 +548,27 @@ end
 if isa(eventdata, 'matlab.ui.eventdata.ActionData') || isempty(eventdata)
     
     % Get the [iGroup,iSubj,iRun] mapping of the clicked lisboxFiles entry
-    [iGroup, iSubj, iRun] = MapList2GroupTree(iList);
+    [iGroup, iSubj, iSess, iRun] = MapList2GroupTree(iList);
     
     % Get the current processing level radio buttons setting
     proclevel = GetProclevel(handles);
         
     % Set new gui state based on current gui selections of listboxGroupTree
     % (iGroup, iSubj, iRun) and proc level radio buttons (proclevel)
-    SetGuiProcLevel(handles, iGroup, iSubj, iRun, proclevel);
+    SetGuiProcLevel(handles, iGroup, iSubj, iSess, iRun, proclevel);
     
 elseif ~isempty(eventdata)
     
     iGroup = eventdata(1);
     iSubj = eventdata(2);
-    iRun = eventdata(3);
-    iList = MapGroupTree2List(iGroup, iSubj, iRun);
+    iSess = eventdata(3);
+    iRun = eventdata(4);
+    iList = MapGroupTree2List(iGroup, iSubj, iSess, iRun);
     if iList==0
         return;
     end
     set(hObject,'value', iList);
+    drawnow
     
 end
 
@@ -535,7 +620,7 @@ end
 % Restore original selection listboxGroupTree
 set(handles.listboxGroupTree, 'value',val0);
 
-h = waitbar(0,'Auto-saving processing results. Please wait ...');
+h = waitbar_improved(0,'Auto-saving processing results. Please wait ...');
 maingui.dataTree.Save(h);
 close(h);
 Display(handles, hObject);
@@ -549,11 +634,21 @@ MainGUI_EnableDisableGUI(handles,'on');
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = listboxFilesErr_Callback(hObject, eventdata, handles)
+global maingui
 if ~ishandles(hObject)
     return;
 end
-
-% TBD: We may want to try fix files with errors
+idx = get(hObject, 'value');
+msg = sprintf('%s:  %s', maingui.dataTree.filesErr(idx).filename, ...
+    maingui.dataTree.filesErr(idx).GetErrorMsg());
+fprintf('%s\n', msg);
+if isempty(maingui.handles)
+    maingui.handles.msgbox = [];
+end
+if ishandle(maingui.handles.msgbox)
+    delete(maingui.handles.msgbox);
+end
+maingui.handles.msgbox = msgbox(msg);
 
 
 
@@ -688,11 +783,15 @@ Display(handles, hObject);
 % --------------------------------------------------------------------
 function [eventdata, handles] = menuItemChangeGroup_Callback(hObject, eventdata, handles)
 global maingui
+global cfg
 if ~ishandles(hObject)
     return;
 end
 fmt = maingui.format;
 unitTest = maingui.unitTest;
+
+% Update config settings
+cfg = ConfigFileClass();
 
 % Change directory
 pathnm = uigetdir( cd, 'Pick the new directory' );
@@ -733,31 +832,6 @@ Display(handles, hObject);
 
 
 
-% --------------------------------------------------------------------
-function [eventdata, handles] = menuCopyCurrentPlot_Callback(hObject, eventdata, handles)
-global maingui
-if ~ishandles(hObject)
-    return;
-end
-
-currElem = maingui.dataTree.currElem;
-hf = figure;
-set(hf, 'color', [1 1 1]);
-fields = fieldnames(maingui.buttonVals);
-plotname = sprintf('%s_%s', currElem.name, fields{GetDatatype(handles)});
-set(hf,'name', plotname);
-
-
-% DISPLAY DATA
-maingui.axesData.handles.axes = axes('position',[0.05 0.05 0.6 0.9]);
-
-% DISPLAY SDG
-maingui.axesSDG.handles.axes = axes('position',[0.65 0.05 0.3 0.9]);
-axis off
-
-% TBD: Display current element without help from dataTree
-
-
 
 % --------------------------------------------------------------------
 function [eventdata, handles] = pushbuttonProcStreamOptionsGUI_Callback(hObject, eventdata, handles)
@@ -768,7 +842,7 @@ end
 
 idx = FindChildGuiIdx('ProcStreamOptionsGUI');
 if get(hObject, 'value')
-    maingui.childguis(idx).Launch(maingui.applyEditCurrNodeOnly);
+    maingui.childguis(idx).Launch(maingui.dataTree.dirnameGroups, maingui.applyEditCurrNodeOnly);
 else
     maingui.childguis(idx).Close();
 end
@@ -805,14 +879,56 @@ end
 
 
 % --------------------------------------------------------------------
-function menuItemPlotProbeGUI_Callback(hObject, eventdata, handles) %#ok<DEFNU>
+function menuItemPlotProbeGUI_Callback(hObject, ~, handles)
 global maingui
 LaunchChildGuiFromMenu('PlotProbeGUI', hObject, GetDatatype(handles), maingui.condition);
+
+% --------------------------------------------------------------------
+function menuItemPlotProbe2_Callback(hObject, ~, handles)
+global maingui
+procElem = maingui.dataTree.currElem;
+% Derived data that we want to save in a Snirf file.
+% To save in a snirf file we need to create a SnirfClass
+% object. A SnirfClass object is DataTree's implementation 
+% of the Snirf format.  
+data(1) = procElem.procStream.output.dcAvg; 
+% data(2) = procElem.procStream.output.dod;
+
+% To complete SnirfClass object arguments we need to supply these
+% which we get from acquired data of the first run associated with 
+% our procElem.
+if strcmp(procElem.type,'sess')
+    maingui.dataTree.SetCurrElem(procElem.iGroup, procElem.iSubj, procElem.iSess, 1);
+    maingui.dataTree.LoadCurrElem()
+    procElem = maingui.dataTree.currElem;
+    maingui.dataTree.SetCurrElem(procElem.iGroup, procElem.iSubj, procElem.iSess);
+    maingui.dataTree.LoadCurrElem()
+elseif strcmp(procElem.type,'subj')
+    maingui.dataTree.SetCurrElem(procElem.iGroup, procElem.iSubj, 1, 1);
+    maingui.dataTree.LoadCurrElem()
+    procElem = maingui.dataTree.currElem;
+     maingui.dataTree.SetCurrElem(procElem.iGroup, procElem.iSubj);
+    maingui.dataTree.LoadCurrElem()
+elseif strcmp(procElem.type,'group')
+    maingui.dataTree.SetCurrElem(procElem.iGroup, 1, 1, 1);
+    maingui.dataTree.LoadCurrElem()
+    procElem = maingui.dataTree.currElem;
+    maingui.dataTree.SetCurrElem(procElem.iGroup);
+    maingui.dataTree.LoadCurrElem()
+end
+probe = procElem.acquired.probe;
+stim = procElem.acquired.stim;
+metaDataTags = procElem.acquired.metaDataTags;
+
+obj = SnirfClass(data, stim, probe, metaDataTags);
+
+% call PlotProbe2 GUI
+PlotProbe2(obj);
 
 
 
 % -------------------------------------------------------------------
-function [eventdata, handles] = menuItemStimEditGUI_Callback(hObject, eventdata, handles) %#ok<DEFNU>
+function [eventdata, handles] = menuItemStimEditGUI_Callback(hObject, eventdata, handles)
 LaunchChildGuiFromMenu('StimEditGUI', hObject);
 
 
@@ -824,18 +940,18 @@ LaunchChildGuiFromMenu('ProcStreamEditGUI', hObject);
 
 
 % --------------------------------------------------------------------
-function menuItemDisplayPvalues_Callback(hObject, eventdata, handles)
+function menuItemDisplayPvalues_Callback(hObject, ~, ~)
 LaunchChildGuiFromMenu('PvaluesDisplayGUI', hObject);
 
 
 
 % --------------------------------------------------------------------
-function [eventdata, handles] = menuItemSaveGroup_Callback(hObject, eventdata, handles)
+function [eventdata, handles] = menuItemSaveGroups_Callback(hObject, eventdata, handles)
 global maingui
 if ~ishandles(hObject)
     return;
 end
-maingui.dataTree.currElem.Save();
+maingui.dataTree.Save();
 
 
 
@@ -859,7 +975,6 @@ global maingui
 if ~ishandles(hObject)
     return;
 end
-
 if get(hObject, 'value')
     maingui.applyEditCurrNodeOnly = false;
 else
@@ -868,16 +983,17 @@ end
 UpdateArgsChildGuis(handles);
 
 
+
 % --------------------------------------------------------------------
 function idx = FindChildGuiIdx(name)
 global maingui
-
-for ii=1:length(maingui.childguis)
+for ii = 1:length(maingui.childguis)
     if strcmp(maingui.childguis(ii).GetName, name)
         break;
     end
 end
 idx = ii;
+
 
 
 % --------------------------------------------------------------------
@@ -886,9 +1002,9 @@ global maingui
 if isempty(maingui.childguis)
     return;
 end
-
 maingui.childguis(FindChildGuiIdx('PlotProbeGUI')).UpdateArgs(GetDatatype(handles), GetCondition(handles));
-maingui.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(maingui.applyEditCurrNodeOnly);
+maingui.childguis(FindChildGuiIdx('ProcStreamOptionsGUI')).UpdateArgs(maingui.dataTree.dirnameGroups, ...
+                                                                      maingui.applyEditCurrNodeOnly);
 
 
 % --------------------------------------------------------------------
@@ -898,7 +1014,7 @@ if isempty(maingui.childguis)
     return;
 end
 UpdateArgsChildGuis(handles)
-for ii=1:length(maingui.childguis)
+for ii = 1:length(maingui.childguis)
     maingui.childguis(ii).Update();
 end
 
@@ -931,33 +1047,34 @@ end
 
 
 % ----------------------------------------------------------------------------------
-function hObject = DisplayData(handles, hObject, hAxes)
+function hObject = DisplayData(handles, hObject)
 global maingui
 
-if nargin<3
-    hAxes = handles.axesData;
+if ~exist('handles','var')
+    handles = [];
 end
-if ~ishandles(hAxes)
+if ~exist('hObject','var')
+    hObject = [];
+end
+
+if isempty(handles)
     return;
 end
-hf = get(hAxes,'parent');
 
 % Some callbacks which call DisplayData serve double duty as called functions 
 % from other callbacks which in turn call DisplayData. To avoid double or
 % triple redisplaying in a single thread, exit DisplayData if hObject is
 % not a handle. 
-if ~exist('hObject','var')
-    hObject=[];
-end
-if ~ishandles(hObject) && nargin<3
-    return;
-end
-if isempty(handles)
+if ~ishandles(hObject) && nargin<2
     return;
 end
 
-dataTree = maingui.dataTree;
-procElem = dataTree.currElem;
+hAxes = handles.axesData;
+if ~ishandles(hAxes)
+    return;
+end
+hf = get(hAxes,'parent');
+
 EnableDisableGuiPlotBttns(handles);
 
 axes(hAxes)
@@ -969,120 +1086,70 @@ set(hAxes,'ygrid','on');
 xlabel(hAxes, '');
 ylabel(hAxes, '');
 
+ml = GetMeasurementList(handles);
+iCh = GetSelectedChannels(handles);
+[d, dStd, t]  = GetDataTimeSeries(handles);
+chVis = maingui.dataTree.currElem.chVis;
+[linecolors, linestyles, linewidths] = SetDataPlotLineStyles(handles, iCh);
 
-linecolor  = maingui.axesData.linecolor;
-linestyle  = maingui.axesData.linestyle;
-datatype   = GetDatatype(handles);
-condition  = GetCondition(handles);
-iCh0       = maingui.axesSDG.iCh;
-iWl        = GetWl(handles);
-hbType     = GetHbType(handles);
-sclConc    = maingui.sclConc;        % convert Conc from Molar to uMolar
-showStdErr = GetShowStdErrEnabled(handles);
+maingui.logger.Write('Displaying   time: [%dx%d],    data: [%dx%d],   channels [%s]\n', size(t,1), size(t,2), size(d,1), size(d,2), num2str(iCh(:)'))
 
-[iDataBlks, iCh] = procElem.GetDataBlocksIdxs(iCh0);
-maingui.logger.Write(sprintf('Displaying channels [%s] in data blocks [%s]\n', num2str(iCh0(:)'), num2str(iDataBlks(:)')))
-iColor = 1;
-for iBlk = iDataBlks
-
-    if isempty(iCh)
-        iChBlk  = [];
+%%% Plot data
+if ~isempty(d)
+    
+    xx = xlim(hAxes);
+    yy = ylim(hAxes);
+    if strcmpi(get(hAxes,'ylimmode'),'manual')
+        flagReset = 0;
     else
-        iChBlk  = iCh{iBlk};
+        flagReset = 1;
+    end
+    hold(hAxes, 'on');
+    
+    % Set the axes ranges
+    if flagReset==1
+        set(hAxes,'xlim',[t(1), t(end)]);
+        set(hAxes,'ylimmode','auto');
+    else
+        set(hAxes,'xlim',xx);
+        set(hAxes,'ylim',yy);
+    end
+	
+    % Plot data
+    h = zeros(1, length(iCh));
+    for ii = 1:length(iCh)
+        k = find(chVis(:,1) == ml(iCh(ii),1) & chVis(:,2) == ml(iCh(ii),2));
+        if ~isempty(k)
+            if chVis(k, 3) == false
+                continue
+            end
+        end
+        h(ii) = plot(hAxes, t, d(:,iCh(ii)));
+        set(h(ii), 'color',     linecolors(ii,:));
+        set(h(ii), 'linestyle', linestyles{ii});
+        set(h(ii), 'linewidth', linewidths(ii));
+        if ~isempty(dStd)
+            idxs = 1:10:length(t);
+            h2 = errorbar(hAxes, t(idxs), d(idxs, iCh(ii)), dStd(idxs, iCh(ii)),'.');
+            set(h2,'color', linecolors(ii,:));
+        end        
     end
     
-    ch      = procElem.GetMeasList(iBlk);
-    chVis   = find(ch.MeasListVis(iChBlk)==1);
-    d       = [];
-    dStd    = [];
-    t       = [];
-    nTrials = [];    
+    % Set the x-axis label
+    xlabel(hAxes, 'Time (s)', 'FontSize', 11);
     
-    % Get plot data from dataTree
-    if datatype == maingui.buttonVals.RAW
-        d = procElem.GetDataTimeSeries('same', iBlk);
-        t = procElem.GetTime(iBlk);
-    elseif datatype == maingui.buttonVals.OD
-        d = procElem.GetDod(iBlk);
-        t = procElem.GetTime(iBlk);
-    elseif datatype == maingui.buttonVals.CONC
-        d = procElem.GetDc(iBlk);
-        t = procElem.GetTime(iBlk);
-    elseif datatype == maingui.buttonVals.OD_HRF
-        d = procElem.GetDodAvg([], iBlk);
-        t = procElem.GetTHRF(iBlk);
-        if showStdErr
-            dStd = procElem.GetDodAvgStd(iBlk);
-        end
-        nTrials = procElem.GetNtrials(iBlk);
-        if isempty(condition)
-            return;
-        end
-    elseif datatype == maingui.buttonVals.CONC_HRF
-        d = procElem.GetDcAvg([], iBlk);
-        t = procElem.GetTHRF(iBlk);
-        if showStdErr
-            dStd = procElem.GetDcAvgStd([], iBlk) * sclConc;
-        end
-        nTrials = procElem.GetNtrials(iBlk);
-        if isempty(condition)
-            return;
-        end
-    end
-    
-    %%% Plot data
-    if ~isempty(d)
-        xx = xlim(hAxes);
-        yy = ylim(hAxes);
-        if strcmpi(get(hAxes,'ylimmode'),'manual')
-            flagReset = 0;
+    % Set the y-axis label
+    datatype = GetDatatype(handles);
+    if datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
+        ppf  		= maingui.dataTree.currElem.GetVar('ppf');
+        lengthUnit 	= maingui.dataTree.currElem.GetVar('LengthUnit');
+        if any(ppf==1) && ~isempty(lengthUnit)
+            ylabel(hAxes, ['\muM ' lengthUnit], 'FontSize', 11);
         else
-            flagReset = 1;
-        end
-        hold(hAxes, 'on');
-        
-        % Set the axes ranges
-        if flagReset==1
-            set(hAxes,'xlim',[t(1), t(end)]);
-            set(hAxes,'ylimmode','auto');
-        else
-            set(hAxes,'xlim',xx);
-            set(hAxes,'ylim',yy);
-        end
-        
-        linecolors = linecolor(iColor:iColor+length(iChBlk)-1,:);
-        
-        % Plot data
-        if datatype == maingui.buttonVals.RAW || datatype == maingui.buttonVals.OD || datatype == maingui.buttonVals.OD_HRF
-            if  datatype == maingui.buttonVals.OD_HRF
-                d = d(:,:,condition);
-            end
-            d = procElem.reshape_y(d, ch.MeasList);
-            DisplayDataRawOrOD(hAxes, t, d, dStd, iWl, iChBlk, chVis, nTrials, condition, linecolors);
-
-            % Set the x-axis label
-            xlabel(hAxes, 'Time (s)', 'FontSize', 11);
-        elseif datatype == maingui.buttonVals.CONC || datatype == maingui.buttonVals.CONC_HRF
-            if  datatype == maingui.buttonVals.CONC_HRF
-                d = d(:,:,:,condition);
-            end
-            d = d * sclConc;
-            DisplayDataConc(hAxes, t, d, dStd, hbType, iChBlk, chVis, nTrials, condition, linecolors);
-            
-            % Set the x-axis label
-            xlabel(hAxes, 'Time (s)', 'FontSize', 11);
-
-            % Set the y-axis label
-            ppf  		= procElem.GetVar('ppf');
-            lengthUnit 	= procElem.GetVar('LengthUnit');
-            if any(ppf==1) && ~isempty(lengthUnit)
-                ylabel(hAxes, ['\muM ' lengthUnit], 'FontSize', 11);
-            else
-                ylabel(hAxes, '\muM', 'FontSize', 11);
-            end
+            ylabel(hAxes, '\muM', 'FontSize', 11);
         end
     end
-    iColor = iColor+length(iChBlk);
+    
 end
 
 % Set Zoom on/off
@@ -1110,15 +1177,7 @@ else
 end
 
 DisplayAux(handles, hAxes);
-if get(handles.checkboxShowExcludedTimeManual, 'value')
-    DisplayExcludedTime(handles, 'manual', hAxes);
-end
-if get(handles.checkboxShowExcludedTimeAuto, 'value')
-    DisplayExcludedTime(handles, 'auto', hAxes);
-end
-if get(handles.checkboxShowExcludedTimeAutoByChannel, 'value')
-    DisplayExcludedTime(handles, 'autoch', hAxes);
-end
+DisplayExcludedTime(handles, hAxes, ml, iCh, chVis, linecolors);
 DisplayStim(handles, hAxes);
 UpdateCondPopupmenu(handles);
 UpdateDatatypePanel(handles);
@@ -1146,12 +1205,14 @@ procElem = dataTree.currElem;
 if ~strcmp(procElem.type, 'run')
     return;
 end
+if ~exist('hAxes','var')
+    hAxes = handles.axesData;
+end
 if ~ishandles(hAxes)
     return;
 end
 axes(hAxes);
 hold(hAxes,'on');
-
 datatype = GetDatatype(handles);
 if datatype == maingui.buttonVals.RAW_HRF
     return;
@@ -1264,6 +1325,9 @@ if isempty(aux) || isempty({aux.name})
     set(handles.checkboxPlotAux, 'enable','off');
     set(handles.popupmenuAux, 'enable','off');
     return;
+else
+    set(handles.checkboxPlotAux, 'enable','on');
+    set(handles.popupmenuAux, 'enable','on');    
 end
 
 % Enable aux gui objects and set their values based on the aux values
@@ -1341,9 +1405,10 @@ switch(guiname)
         if ~isempty(maingui.handles)
             iGroup = varargin{2}(1);
             iSubj = varargin{2}(2);
-            iRun = varargin{2}(3);
-            maingui.logger.Write(sprintf('Processing iGroup=%d, iSubj=%d, iRun=%d\n', iGroup, iSubj, iRun));
-            listboxGroupTree_Callback([], [iGroup, iSubj, iRun], maingui.handles);
+            iSess = varargin{2}(3);
+            iRun = varargin{2}(4);
+            maingui.logger.Write('Processing iGroup=%d, iSubj=%d, iSess=%d, iRun=%d\n', iGroup, iSubj, iSess, iRun);
+            listboxGroupTree_Callback([], [iGroup, iSubj, iSess, iRun], maingui.handles);
         end
     case 'PatchCallback'
         % Redisplay data axes since stims might have edited
@@ -1421,7 +1486,7 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function checkboxFixRangeX_Callback(hObject, eventdata, handles)
+function checkboxFixRangeX_Callback(hObject, ~, handles)
 global maingui
 if get(hObject,'value')==1
     maingui.plotViewOptions.ranges.X = str2num(get(handles.editFixRangeX, 'string'));
@@ -1433,7 +1498,7 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function checkboxFixRangeY_Callback(hObject, eventdata, handles)
+function checkboxFixRangeY_Callback(hObject, ~, handles)
 global maingui
 if get(hObject,'value')==1
     maingui.plotViewOptions.ranges.Y = str2num(get(handles.editFixRangeY, 'string'));
@@ -1446,19 +1511,19 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function editFixRangeX_Callback(hObject, eventdata, handles)
+function editFixRangeX_Callback(~, eventdata, handles)
 checkboxFixRangeX_Callback(handles.checkboxFixRangeX, eventdata, handles);
 
 
 % --------------------------------------------------------------------
-function editFixRangeY_Callback(hObject, eventdata, handles)
+function editFixRangeY_Callback(~, eventdata, handles)
 checkboxFixRangeY_Callback(handles.checkboxFixRangeY, eventdata, handles);
 
 
 
 
 % --------------------------------------------------------------------
-function menuItemGroupViewSettingGroup_Callback(hObject, eventdata, handles)
+function menuItemGroupViewSettingGroup_Callback(hObject, ~, handles)
 global maingui
 
 if strcmp(get(hObject, 'checked'), 'off')
@@ -1473,6 +1538,8 @@ if strcmp(get(hObject, 'checked'), 'on')
 
     maingui.listboxGroupTreeParams.viewSetting = views.GROUP;    
     set(handles.menuItemGroupViewSettingSubjects,'checked','off');
+    set(handles.menuItemGroupViewSettingSessions,'checked','off');
+    set(handles.menuItemGroupViewSettingNoSessions,'checked','off');
     set(handles.menuItemGroupViewSettingRuns,'checked','off');
 end
 
@@ -1480,7 +1547,7 @@ end
 
 
 % --------------------------------------------------------------------
-function menuItemGroupViewSettingSubjects_Callback(hObject, eventdata, handles)
+function menuItemGroupViewSettingSubjects_Callback(hObject, ~, handles)
 global maingui
 
 if strcmp(get(hObject, 'checked'), 'off')
@@ -1495,14 +1562,61 @@ if strcmp(get(hObject, 'checked'), 'on')
 
     maingui.listboxGroupTreeParams.viewSetting = views.SUBJS;
     set(handles.menuItemGroupViewSettingGroup,'checked','off');
+    set(handles.menuItemGroupViewSettingSessions,'checked','off');
+    set(handles.menuItemGroupViewSettingNoSessions,'checked','off');
     set(handles.menuItemGroupViewSettingRuns,'checked','off');
 end
 
 
 
+% --------------------------------------------------------------------
+function menuItemGroupViewSettingSessions_Callback(hObject, ~, handles)
+global maingui
+
+if strcmp(get(hObject, 'checked'), 'off')
+    set(hObject, 'checked','on');
+else
+    return;
+end
+views = maingui.listboxGroupTreeParams.views;
+if strcmp(get(hObject, 'checked'), 'on')
+    iListNew = FindGroupDisplayListMatch(views.SESS);
+    set(handles.listboxGroupTree, 'value',iListNew, 'string', maingui.listboxGroupTreeParams.listMaps(views.SESS).names);
+
+    maingui.listboxGroupTreeParams.viewSetting = views.SESS;
+    set(handles.menuItemGroupViewSettingGroup,'checked','off');
+    set(handles.menuItemGroupViewSettingSubjects,'checked','off');
+    set(handles.menuItemGroupViewSettingNoSessions,'checked','off');
+    set(handles.menuItemGroupViewSettingRuns,'checked','off');
+end
+
+
 
 % --------------------------------------------------------------------
-function menuItemGroupViewSettingRuns_Callback(hObject, eventdata, handles)
+function menuItemGroupViewSettingNoSessions_Callback(hObject, ~, handles)
+global maingui
+
+if strcmp(get(hObject, 'checked'), 'off')
+    set(hObject, 'checked','on');
+else
+    return;
+end
+views = maingui.listboxGroupTreeParams.views;
+if strcmp(get(hObject, 'checked'), 'on')
+    iListNew = FindGroupDisplayListMatch(views.NOSESS);
+    set(handles.listboxGroupTree, 'value',iListNew, 'string', maingui.listboxGroupTreeParams.listMaps(views.NOSESS).names);
+
+    maingui.listboxGroupTreeParams.viewSetting = views.NOSESS;
+    set(handles.menuItemGroupViewSettingGroup,'checked','off');
+    set(handles.menuItemGroupViewSettingSubjects,'checked','off');
+    set(handles.menuItemGroupViewSettingSessions,'checked','off');
+    set(handles.menuItemGroupViewSettingRuns,'checked','off');
+end
+
+
+
+% --------------------------------------------------------------------
+function menuItemGroupViewSettingRuns_Callback(hObject, ~, handles)
 global maingui
 
 if strcmp(get(hObject, 'checked'), 'off')
@@ -1518,48 +1632,51 @@ if strcmp(get(hObject, 'checked'), 'on')
     maingui.listboxGroupTreeParams.viewSetting = views.RUNS;
     set(handles.menuItemGroupViewSettingGroup,'checked','off');
     set(handles.menuItemGroupViewSettingSubjects,'checked','off');
+    set(handles.menuItemGroupViewSettingSessions,'checked','off');    
+    set(handles.menuItemGroupViewSettingNoSessions,'checked','off');
 end
 
 
+
 % --------------------------------------------------------------------
-function checkboxPlotAux_Callback(hObject, eventdata, handles)
+function checkboxPlotAux_Callback(hObject, ~, handles)
 Display(handles, hObject);
 
 
 
 % --------------------------------------------------------------------
-function popupmenuAux_Callback(hObject, eventdata, handles)
+function popupmenuAux_Callback(hObject, ~, handles)
 Display(handles, hObject);
 
 
 
 % --------------------------------------------------------------------
-function menuItemCopyPlots_Callback(hObject, eventdata, handles)
+function menuItemCopyPlots_Callback(hObject, ~, handles)
+global maingui
 
 xf = 1.5;
 yf = 1.5;
 hf = figure();
-set(hf, 'units','characters');
 p = get(hf, 'position');
-set(hf,'position',[p(1), p(2), xf*p(3), yf*p(4)]);
+fields = fieldnames(maingui.buttonVals);
+set(hf, 'position',[p(1), p(2), xf*p(3), yf*p(4)], 'menubar','none', 'toolbar','none', 'NumberTitle','off', ...
+    'name',sprintf('%s:     %s', maingui.dataTree.currElem.GetName(), fields{log2(GetDatatype(handles))+1}));
 rePositionGuiWithinScreen(hf);
 
-figure(hf);
-
 % DISPLAY DATA
-hAxesData = axes('units','normalized', 'position',[0.05 0.30 0.60 0.50]);
-DisplayData(handles, [], hAxesData);
-
 figure(hf);
+handles.axesData = axes('units','normalized', 'position',[0.05 0.30 0.60 0.50]);
+DisplayData(handles, hObject);
 
 % DISPLAY SDG
-hAxesSDG = axes('units','normalized', 'position',[0.67 0.30 0.30 0.50]);
-DisplayAxesSDG(hAxesSDG);
+figure(hf);
+handles.axesSDG = axes('units','normalized', 'position',[0.67 0.30 0.30 0.50], 'ytick',[], 'xtick',[]);
+DisplayAxesSDG(handles);
 
 
 
 % --------------------------------------------------------------------
-function checkboxExcludeTime_Callback(hObject, eventdata, handles)
+function checkboxExcludeTime_Callback(hObject, ~, handles)
 global maingui
 
 hAxesData = maingui.axesData.handles.axes;
@@ -1676,7 +1793,7 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function checkboxShowExcludedTimeManual_Callback(hObject, eventdata, handles)
+function checkboxShowExcludedTimeManual_Callback(hObject, ~, handles)
 
 if get(hObject, 'value')==1
     set(handles.checkboxShowExcludedTimeAuto, 'value',0) 
@@ -1687,7 +1804,7 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function checkboxShowExcludedTimeAuto_Callback(hObject, eventdata, handles)
+function checkboxShowExcludedTimeAuto_Callback(hObject, ~, handles)
 
 if get(hObject, 'value')==1
     set(handles.checkboxShowExcludedTimeManual, 'value',0) 
@@ -1698,7 +1815,7 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function checkboxShowExcludedTimeAutoByChannel_Callback(hObject, eventdata, handles)
+function checkboxShowExcludedTimeAutoByChannel_Callback(hObject, ~, handles)
 
 if get(hObject, 'value')==1
     set(handles.checkboxShowExcludedTimeManual, 'value',0) 
@@ -1709,7 +1826,7 @@ Display(handles, hObject);
 
 
 % --------------------------------------------------------------------
-function menuItemExportHRF_Callback(hObject, eventdata, handles)
+function menuItemExportHRF_Callback(~, ~, ~)
 global maingui
 
 out = ExportDataGUI(maingui.dataTree.currElem.name,'.txt','HRF', 'userargs');
@@ -1728,24 +1845,55 @@ maingui.dataTree.currElem.ExportHRF(procElemSelect);
 
 
 % --------------------------------------------------------------------
-function menuItemExportSubjHRFMean_Callback(hObject, eventdata, handles)
+function menuItemExportSnirf_Callback(~, ~, ~)
 global maingui
-
-if  ~maingui.dataTree.currElem.IsGroup()
-    MessageBox('Exporting mean HRF at this time, only applies to the currently selected group. Please select a group in the Current Processing Element panel. Then rerun the export')
-    return 
-end
-
-out = ExportDataGUI(maingui.dataTree.currElem.name,'.txt','Subjects HRF mean');
+% ExportSnirfGUI(maingui.dataTree.currElem);
+out = ExportDataGUI(maingui.dataTree.currElem.name, '.snirf', 'Derived Data', 'userargs');
 if isempty(out.datatype)
     return;
 end
-maingui.dataTree.currElem.ExportMeanHRF(out.trange);
+switch(out.procElemSelect)
+    case 'currentonly'
+        procElemSelect = 'current';
+    case 'all'
+        procElemSelect = 'all';
+    otherwise
+end
+maingui.dataTree.currElem.ExportDerivedData(procElemSelect);
 
 
 
 % --------------------------------------------------------------------
-function menuItemUpdateCheck_Callback(hObject, eventdata, handles)
+function menuItemExportHRFMean_Callback(~, ~, ~)
+global maingui
+global cfg
+
+out = ExportDataGUI(maingui.dataTree.currElem.name, '.txt', 'HRF mean', 'userargs');
+if isempty(out.datatype)
+    return;
+end
+switch(out.procElemSelect)
+    case 'currentonly'
+        procElemSelect = 'current';
+    case 'all'
+        procElemSelect = 'all';
+    otherwise
+end
+
+% Update config since this could change during homer session 
+cfg = ConfigFileClass();
+
+style = cfg.GetValue('Export HRF Mean Output Style');
+if strcmp(style, 'one processing element per file')
+    maingui.dataTree.currElem.ExportMeanHRF(procElemSelect, out.trange);
+elseif strcmp(style, 'all child processing elements in one file')
+    maingui.dataTree.currElem.ExportMeanHRF_Alt(procElemSelect, out.trange);
+end
+
+
+
+% --------------------------------------------------------------------
+function menuItemUpdateCheck_Callback(hObject, ~, ~)
 global cfg
 
 if (strcmp(hObject.Checked,'on'))
@@ -1769,7 +1917,7 @@ iCh = maingui.axesSDG.iCh;
 n_channels = length(iCh);
 if n_channels > 0
     iSrcDet = maingui.axesSDG.iSrcDet;
-    colors = maingui.axesSDG.linecolor;
+    colors = maingui.axesSDG.SDPairColors;
     d = maingui.dataTree.currElem.GetDataTimeSeries();
     t = maingui.dataTree.currElem.GetTime();
     if isempty(t)
@@ -1973,8 +2121,20 @@ maingui.axesSDG.ylim = bbox(3:4);
 
 
 % --------------------------------------------------------------------
-function menuItemAppConfigGUI_Callback(~, ~, ~)
-configSettingsGUI();
+function menuItemAppConfigGUI_Callback(~, ~, handles)
+global maingui
+global cfg
+idx = FindChildGuiIdx('configSettingsGUI');
+maingui.childguis(idx).LaunchWaitForExit();
+cfg.Update();
+if strcmpi(cfg.GetValue('Load Stim From TSV File'), 'yes')
+    set(handles.menuItemStimEditGUI, 'visible','off')
+    set(handles.menuItemReloadStim, 'visible','on')
+else
+    set(handles.menuItemStimEditGUI, 'visible','on')
+    set(handles.menuItemReloadStim, 'visible','off')
+end
+
 
 
 
@@ -2008,6 +2168,7 @@ end
 % Override
 callbacks.radiobuttonProcTypeGroup = @uipanelProcessingType_SelectionChangeFcn;
 callbacks.radiobuttonProcTypeSubj = @uipanelProcessingType_SelectionChangeFcn;
+callbacks.radiobuttonProcTypeSess = @uipanelProcessingType_SelectionChangeFcn;
 callbacks.radiobuttonProcTypeRun = @uipanelProcessingType_SelectionChangeFcn;
 
 
@@ -2022,7 +2183,7 @@ iCh = maingui.axesSDG.iCh;
 n_channels = length(iCh);
 if n_channels > 0
     iSrcDet = maingui.axesSDG.iSrcDet;
-    colors = maingui.axesSDG.linecolor;
+    colors = maingui.axesSDG.SDPairColors;
     d = maingui.dataTree.currElem.GetDataTimeSeries();
     t = maingui.dataTree.currElem.GetTime();
     if isempty(t)
@@ -2055,3 +2216,52 @@ else
     errordlg('Cannot calculate power spectra with no channels selected.', 'No channels selected'); 
 end
 
+
+
+% ---------------------------------------------------------
+function pushbuttonHideErrors_Callback(hObject, ~, handles)
+global maingui
+warnings = maingui.dataTree.GetWarningsReport();
+if strcmpi(get(handles.listboxFilesErr, 'enable'), 'off')
+    if ~isempty(warnings)
+        set(handles.MainGUI,'visible','on')
+        MessageBox(warnings, 'WARNINGS');
+    end
+    return;
+end
+
+pos2 = get(handles.listboxFilesErr, 'position');
+pos1 = get(handles.listboxGroupTree, 'position');
+x = pos2(4);
+if hObject.Value == 0
+    set(handles.listboxFilesErr, 'visible','on')
+    set(hObject, 'string','\/');
+    set(handles.listboxGroupTree, 'position', [pos1(1), pos1(2)+x, pos1(3), pos1(4)-x]);
+else
+    set(handles.listboxFilesErr, 'visible','off');
+    set(hObject, 'string','/\');
+    set(handles.listboxGroupTree, 'position', [pos1(1), pos1(2)-x, pos1(3), pos1(4)+x]);
+end
+if ~isempty(warnings) && strcmpi(get(handles.listboxFilesErr, 'visible'), 'off')
+    set(handles.MainGUI,'visible','on')
+    MessageBox(warnings, 'WARNINGS');
+end
+
+
+
+% ----------------------------------------------------------
+function menuItemExportStim_Callback(~, ~, ~)
+global maingui
+out = ExportDataGUI(maingui.dataTree.currElem.name,'.tsv','Stim', 'userargs');
+if isempty(out.format) && isempty(out.datatype)
+    return;
+end
+maingui.dataTree.currElem.ExportStim();
+
+
+
+
+% --------------------------------------------------------------------
+function menuItemReloadStim_Callback(hObject, ~, handles)
+global maingui
+maingui.dataTree.currElem.EditStim();

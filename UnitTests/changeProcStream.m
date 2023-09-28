@@ -3,7 +3,7 @@ global procStreamStyle
 
 dataTree = [];
 
-% Set globals 
+% Set globals
 if isempty(procStreamStyle)
     procStreamStyle = datafmt;
 end
@@ -20,7 +20,7 @@ if ~exist('funcName','var')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Get dataTree, based on the requested file data format 
+% Get dataTree, based on the requested file data format
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if includes(procStreamStyle, 'snirf') && includes(datafmt,'snirf')
     procStreamConfigFile = [procStreamCfg, '_snirf.cfg'];
@@ -56,29 +56,32 @@ if isempty(funcName)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Otherwise if more than one agument, we're not just retrieving datatree but 
+% Otherwise if more than one agument, we're not just retrieving datatree but
 % also changing the proc stream
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 igroup = 1;
 isubj = 1;
+isess = 1;
 irun = 1;
 
-iFcall = dataTree.groups(igroup).subjs(isubj).runs(irun).procStream.GetFuncCallIdx(funcName);
+iFcall = dataTree.groups(igroup).subjs(isubj).sess(isess).runs(irun).procStream.GetFuncCallIdx(funcName);
 if isempty(iFcall)
     return;
 end
-paramIdx = dataTree.groups(igroup).subjs(isubj).runs(irun).procStream.fcalls(iFcall).GetParamIdx(paramName);
+paramIdx = dataTree.groups(igroup).subjs(isubj).sess(isess).runs(irun).procStream.fcalls(iFcall).GetParamIdx(paramName);
 if isempty(paramIdx)
     return;
 end
-oldval = dataTree.groups(igroup).subjs(isubj).runs(irun).procStream.fcalls(iFcall).GetParamVal(paramName);
+oldval = dataTree.groups(igroup).subjs(isubj).sess(isess).runs(irun).procStream.fcalls(iFcall).GetParamVal(paramName);
 if ~exist('newval','var') || isempty(newval)
     newval = oldval;
 end
 
-for iSubj=1:length(dataTree.groups(igroup).subjs)
-    for iRun=1:length(dataTree.groups(igroup).subjs(iSubj).runs)
-        dataTree.groups(igroup).subjs(iSubj).runs(iRun).procStream.EditParam(iFcall, paramIdx, newval);
+for iSubj = 1:length(dataTree.groups(igroup).subjs)
+    for iSess = 1:length(dataTree.groups(igroup).subjs(iSubj).sess)
+        for iRun = 1:length(dataTree.groups(igroup).subjs(iSubj).sess(iSess).runs)
+            dataTree.groups(igroup).subjs(iSubj).sess(iSess).runs(iRun).procStream.EditParam(iFcall, paramIdx, newval);
+        end
     end
 end
 

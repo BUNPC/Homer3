@@ -98,7 +98,7 @@ warning off;  % Suppress the int truncation warning
 tid = H5T.copy('H5T_NATIVE_ULONG');
 sid = H5S.create('H5S_SCALAR');
 dsid = H5D.create(fid, name, tid, sid, 'H5P_DEFAULT');
-H5D.write(dsid, tid, 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT', int32(val));
+H5D.write(dsid, tid, 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT', uint64(val));
 err = 0;
 warning on;
 

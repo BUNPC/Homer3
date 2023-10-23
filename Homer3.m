@@ -12,6 +12,14 @@ function unitTest = Homer3(groupDirs, inputFileFormat, unitTest)
 global logger
 global cfg
 
+
+% Check if namespace loaded (proxy for setpaths being initialized)
+namespaceLoaded = exist('setNamespace','file');
+
+if(~namespaceLoaded)
+    setpaths();
+end
+
 setNamespace('Homer3');
 
 if ~exist('groupDirs','var') || isempty(groupDirs)

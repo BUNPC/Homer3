@@ -196,6 +196,12 @@ classdef AuxClass < FileLoadSaveClass
             if ~strcmp(obj.name, obj2.name)
                 return;
             end
+            if ~all(size(obj.dataTimeSeries)==size(obj2.dataTimeSeries))
+                return;
+            end
+            if ~all(size(obj.time)==size(obj2.time))
+                return;
+            end
             if ~all(obj.dataTimeSeries(:)==obj2.dataTimeSeries(:))
                 return;
             end

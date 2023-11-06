@@ -151,7 +151,39 @@ classdef ProbeClass < FileLoadSaveClass
         
         
         % -------------------------------------------------------
+        function ScaleProjection2D(obj)
+            if size(obj.sourcePos2D,1)
+                dm_src2d = distmatrix([obj.sourcePos2D, zeros(size(obj.sourcePos2D,1),1)]);
+            else
+                dm_src2d = distmatrix(obj.sourcePos2D, zeros);
+            end
+            dm_src3d = distmatrix(obj.sourcePos3D);
+            exp = round(log10(mean(dm_src3d(dm_src3d(:)>0)))) - round(log10(mean(dm_src2d(dm_src2d(:)>0))));
+            scaleFactor = 10^exp;
+            obj.sourcePos2D = obj.sourcePos2D*scaleFactor;
+
+            if size(obj.detectorPos2D,1)
+                dm_det2d = distmatrix([obj.detectorPos2D, zeros(size(obj.detectorPos2D,1),1)]);
+            else
+                dm_det2d = distmatrix(obj.detectorPos2D, zeros);
+            end
+            dm_det3d = distmatrix(obj.detectorPos3D);
+            exp = round(log10(mean(dm_det3d(dm_det3d(:)>0)))) - round(log10(mean(dm_det2d(dm_det2d(:)>0))));
+            scaleFactor = 10^exp;
+            obj.detectorPos2D = obj.detectorPos2D*scaleFactor;
+        end
+            
+        
+        
+        
+        % -------------------------------------------------------
         function Project_3D_to_2D(obj)             
+            if all(obj.sourcePos2D(:)==0)
+                obj.sourcePos2D = [];
+            end
+            if all(obj.detectorPos2D(:)==0)
+                obj.detectorPos2D = [];
+            end
             if isempty(obj.sourcePos2D) && isempty(obj.detectorPos2D)
                 if isempty(obj.landmarkPos3D) || ~obj.isValidLandmarkLabels()
                     nSource = size(obj.sourcePos3D,1);
@@ -220,6 +252,7 @@ classdef ProbeClass < FileLoadSaveClass
                         %
                         obj.sourcePos2D = convert_optodepos_to_circlular_2D_pos(obj.sourcePos3D, T, norm_factor);
                         obj.detectorPos2D = convert_optodepos_to_circlular_2D_pos(obj.detectorPos3D, T, norm_factor);
+                        obj.ScaleProjection2D();
                     end
                 end
             end

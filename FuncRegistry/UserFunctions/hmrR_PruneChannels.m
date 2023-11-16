@@ -30,8 +30,8 @@
 % Prune_Channels: mlActAuto = hmrR_PruneChannels(data, probe, mlActMan, tIncMan, dRange, SNRthresh, SDrange)
 %
 % PARAMETERS:
-% dRange: [1e4, 1e7]
-% SNRthresh: 2
+% dRange: [1.0e4, 1.0e7]
+% SNRthresh: 2.0
 % SDrange: [0.0, 45.0]
 %
 % TO DO:

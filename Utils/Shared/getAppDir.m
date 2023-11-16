@@ -75,7 +75,9 @@ if isdeployed() || strcmp(isdeployed_override, 'isdeployed')
 else
     dirname = fileparts(which('Homer3.m'));
 end
-
+if ~ispathvalid(dirname)
+    dirname = filesepStandard(pwd);
+end
 dirname(dirname=='\') = '/';
 if dirname(end) ~= '/'
     dirname(end+1) = '/';

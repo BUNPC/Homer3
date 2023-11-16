@@ -1178,7 +1178,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     p = length(obj2.GetTime());
                     q = length(obj.aux(ii).GetTime());
                 end
-                datamat(:,ii) = resample(obj.aux(ii).GetDataTimeSeries(), p, q);
+                m = resamplee(obj.aux(ii).GetDataTimeSeries(), p, q);
+                if isrow(m)
+                    m = m';
+                end
+                datamat = [datamat, m]; %#ok<AGROW>
             end
         end
         

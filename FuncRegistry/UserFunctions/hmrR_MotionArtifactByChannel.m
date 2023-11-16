@@ -108,9 +108,7 @@ for iBlk = 1:length(data)
     % get list of active channels
     mlActMan{iBlk} = mlAct_Initialize(mlActMan{iBlk}, MeasList);
     mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, MeasList);
-    lstAct1 = mlAct_Matrix2IndexList(mlActAuto{iBlk}, MeasList);
-    lstAct2 = mlAct_Matrix2IndexList(mlActMan{iBlk}, MeasList);
-    lstAct = unique([lstAct1(:)', lstAct2(:)']);
+    lstAct = mlAct_CombineIndexLists( mlActMan{iBlk}, mlActAuto{iBlk}, MeasList );
     
     % set artifact buffer for tMask seconds on each side of spike
     art_buffer = round(tMask*fs); % time in seconds times sample rate    

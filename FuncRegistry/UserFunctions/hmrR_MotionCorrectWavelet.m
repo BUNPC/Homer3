@@ -70,9 +70,7 @@ for iBlk = 1:length(data_dod)
     
     mlActMan{iBlk} = mlAct_Initialize(mlActMan{iBlk}, MeasList);
     mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, MeasList);
-    lstAct1 = mlAct_Matrix2IndexList(mlActAuto{iBlk}, MeasList);
-    lstAct2 = mlAct_Matrix2IndexList(mlActMan{iBlk}, MeasList);
-    lstAct = unique([lstAct1(:)', lstAct2(:)']);
+    lstAct = mlAct_CombineIndexLists( mlActMan{iBlk}, mlActAuto{iBlk}, MeasList );
     
     SignalLength = size(dod,1); % #time points of original signal
     N = ceil(log2(SignalLength)); % #of levels for the wavelet decomposition

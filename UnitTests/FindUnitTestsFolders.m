@@ -1,6 +1,6 @@
 function groupFolders = FindUnitTestsFolders()
 global logger
-global SCRAMBLE
+global SCRAMBLE_CHANNELS
 
 logger = InitLogger(logger);
 
@@ -22,7 +22,7 @@ for ii = 1:length(dirs)
     groupFolders{kk} = dirs(ii).name;
     logger.Write('Found unit test folder %s\n', pathfull);
     
-    if SCRAMBLE
+    if SCRAMBLE_CHANNELS
         ScrambleChannelsForGroup(pathfull);
     end
     kk = kk+1;

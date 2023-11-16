@@ -99,9 +99,7 @@ for iBlk = 1:length(data)
     % Get list of active channels 
     mlActMan{iBlk} = mlAct_Initialize(mlActMan{iBlk}, MeasList);
     mlActAuto{iBlk} = mlAct_Initialize(mlActAuto{iBlk}, MeasList);
-    lstAct1 = mlAct_Matrix2IndexList(mlActAuto{iBlk}, MeasList);
-    lstAct2 = mlAct_Matrix2IndexList(mlActMan{iBlk}, MeasList);
-    lstAct = unique([lstAct1(:)', lstAct2(:)']);
+    lstAct = mlAct_CombineIndexLists( mlActMan{iBlk}, mlActAuto{iBlk}, MeasList );
     
     if length(fs)~=1
         fs = 1/(fs(2)-fs(1));

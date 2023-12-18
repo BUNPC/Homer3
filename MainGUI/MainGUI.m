@@ -884,7 +884,7 @@ global maingui
 LaunchChildGuiFromMenu('PlotProbeGUI', hObject, GetDatatype(handles), maingui.condition);
 
 % --------------------------------------------------------------------
-function menuItemPlotProbe2_Callback(hObject, ~, handles)
+function menuItemPlotProbe2GUI_Callback(hObject, ~, handles)
 global maingui
 procElem = maingui.dataTree.currElem;
 % Derived data that we want to save in a Snirf file.
@@ -917,7 +917,7 @@ elseif strcmp(procElem.type,'group')
     maingui.dataTree.LoadCurrElem()
 end
 probe = procElem.acquired.probe;
-stim = procElem.acquired.stim;
+stim = procElem.procStream.input.acquired.stim;
 metaDataTags = procElem.acquired.metaDataTags;
 
 obj = SnirfClass(data, stim, probe, metaDataTags);

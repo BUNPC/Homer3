@@ -6,27 +6,25 @@
 %
 % DESCRIPTION:
 % Prune channels from the measurement list if their signal is too weak, too
-% strong, their signal-to-noise ratio (SNR) or standard deviation (SD) 
-% is too great. This function outputs mlActAuto based on whether data meets
-% the conditions specified by 'dRange', 'SNRthresh' and 'SDrange'.
+% strong, or their standard deviation is too great. This function
+% updates MeasListAct based on whether data 'd' meets these conditions
+% as specified by'dRange' and 'SNRthresh'.
 %
 % INPUTS:
-% data - SNIRF object containing time course data (timepoints x channels)
-% probe - SNIRF object describing the probe - optode positions and wavelengths
-% mlActMan - cell array of vectors, specifying active/inactive channels 
-%            with 1 meaning active, 0 meaning inactive 
+% d - SNIRF object containing time course data (nTpts x nChannels )
+% probe - SNIRF object describing the probe - optode positions and wavelengths.
+% mlActMan - 
 % dRange - if mean(d) < dRange(1) or > dRange(2) then it is excluded as an
-%          active channel
+%      active channel
 % SNRthresh - if mean(d)/std(d) < SNRthresh then it is excluded as an
-%             active channel
+%      active channel
 % SDrange - will prune channels with a source-detector separation <
 %           SDrange(1) or > SDrange(2)
 %
 % OUTPUTS:
-% mlActAuto - cell array of vectors, one for each time base in data, 
-%             specifying active/inactive channels with 1 meaning active, 0 meaning
-%             inactive.
-%                    
+% mlAct - cell array of all data blocks - each data block is an array
+%         of true/false for all channels in the contanining data block
+%         specifying active/inactive status. (# of data blocks x # of Channels)
 %
 % USAGE OPTIONS:
 % Prune_Channels: mlActAuto = hmrR_PruneChannels(data, probe, mlActMan, tIncMan, dRange, SNRthresh, SDrange)

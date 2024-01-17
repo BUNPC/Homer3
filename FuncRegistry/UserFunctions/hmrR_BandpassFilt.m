@@ -6,8 +6,6 @@
 %
 % DESCRIPTION:
 % Perform a bandpass filter on time course data.
-% The type of filter used is a Butterworth filter of order 3 for the
-% lowpass case and 5 for the highpass. 
 %
 % INPUT:
 % data - SNIRF data type containing data time course to filter, time vector, and channels.
@@ -23,7 +21,7 @@
 % Bandpass_Filter_OpticalDensity: dod = hmrR_BandpassFilt(dod, hpf, lpf)
 % Bandpass_Filter_Auxiliary: aux = hmrR_BandpassFilt(aux, hpf, lpf)
 %
-% DEFAULT PARAMETERS:
+% PARAMETERS:
 % hpf: [0.000]
 % lpf: [0.500]
 %
@@ -31,14 +29,11 @@
 % Intensity_to_Delta_OD: dod = hmrR_Intensity2OD( intensity )
 
 function [data2, ylpf] = hmrR_BandpassFilt( data, hpf, lpf )
-
-% instantiate output data object where computation will be performed
 if isa(data, 'DataClass')
     data2 = DataClass().empty();
 elseif isa(data, 'AuxClass')
     data2 = AuxClass().empty();
 end
-
 ylpf = [];
 for ii=1:length(data)
     if isa(data, 'DataClass')
@@ -75,23 +70,22 @@ for ii=1:length(data)
     
     % low pass filter
     lpf_norm = lpf / (fs / 2);
-    if lpf_norm > 0  % No lowpass if cutoff is <= 0
+    if lpf_norm > 0  % No lowpass if filter is 
         FilterOrder = 3;
         [z, p, k] = butter(FilterOrder, lpf_norm, 'low');
-        [sos, g] = zp2sos(z, p, k); % zero-pole-gain to second-order sections model conversion
+        [sos, g] = zp2sos(z, p, k);
         y2 = filtfilt(sos, g, double(y)); 
     end
     
     % high pass filter
     hpf_norm = hpf / (fs / 2);
-    if hpf_norm > 0 % No highpass if cutoff is <= 0
+    if hpf_norm > 0
         FilterOrder = 5;
         [z, p, k] = butter(FilterOrder, hpf_norm, 'high');
-        [sos, g] = zp2sos(z, p, k); % zero-pole-gain to second-order sections model conversion
+        [sos, g] = zp2sos(z, p, k);
         y2 = filtfilt(sos, g, y2);
     end
     
-    % store filtered time series in output data object
     data2(ii).SetDataTimeSeries(y2);
     
 end

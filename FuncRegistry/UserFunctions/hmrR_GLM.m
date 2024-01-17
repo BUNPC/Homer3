@@ -1,7 +1,6 @@
 % SYNTAX:
 % [data_yavg, data_yavgstd, nTrials, data_ynew, data_yresid, data_ysum2, beta_blks, yR_blks, hmrstats] = ...
-% hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis,...
-% paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
+% hmrR_GLM(data_y, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 %
 % UI NAME:
 % GLM_HRF_Drift_SS
@@ -18,12 +17,11 @@
 % data - this is the concentration data with dimensions #time points x [HbO/HbR/HbT] x #channels
 % stim - stimulation vector (# time points x #conditions)=1 at stim onset otherwise =0
 % probe - source detector stucture (units should be consistent with rhoSD_ssThresh)
-% mlActAuto - cell array of vectors, one for each time base in data, specifying 
-%             active/inactive channels with 1 meaning active, 0 meaning inactive
-% Aaux - a matrix of auxilliary regressors (#time points x #Aux channels)
+% mlActAuto -
+% Aaux - A matrix of auxilliary regressors (#time points x #Aux channels)
 % tIncAuto - a vector (#time points x 1) indicating which data time points
 %            are motion (=0) or not (=1)
-% rcMap - an array of cells (1 x #fNIRS channels) containing aux regressor
+% rcMap - An array of cells (1 x #fNIRS channels) containing aux regressor
 %           indices for individual regressor-channel mapping. Currently
 %           only relevant when flagNuisanceRMethod = 3 (tCCA regressors).
 % trange - defines the range for the block average [tPre tPost dt]. If dt
@@ -47,7 +45,7 @@
 % 			         (t/(p*q))^p * exp(p-t/q)
 %                Defaults: p=8.6 q=0.547
 %                The peak is at time p*q.  The FWHM is about 2.3*sqrt(p)*q.
-% paramsBasis - parameters for the basis function (chosen via idxBasis)
+% paramsBasis - Parameters for the basis function (chosen via idxBasis)
 %               if idxBasis=1 [stdev step ~ ~ ~ ~] where stdev is the width of the
 %                  gaussian and step is the temporal spacing between
 %                  consecutive gaussians
@@ -71,8 +69,8 @@
 %            2. if performed with average of all short separation channels.
 %            3. uses tCCA regressors for nuisance regression, in Aaux,
 %            mapped by rcMap, provided by hmr_tCCA()
-% driftOrder - polynomial drift correction of this order
-% c_vector - contrast vector, has values 1, -1 or 0. E.g. to contrast cond
+% driftOrder - Polynomial drift correction of this order
+% c_vector - Contrast vector, has values 1, -1 or 0. E.g. to contrast cond
 %           2 to cond 3 in an experimental paradigm with four conditions, c_vector is
 %           [0 1 -1 0]
 %
@@ -86,7 +84,7 @@
 % yresid - the residual between the data y and the GLM fit
 % ysum2 - an intermediate matrix for calculating stdev across runs
 % beta - the coefficients of the temporal basis function fit for the HRF
-%        (#coefficients x HbX x #Channels x #conditions)
+%           (#coefficients x HbX x #Channels x #conditions)
 % R - the correlation coefficient of the GLM fit to the data
 %     (#Channels x HbX)
 % hmrstats - outputs t and p values for GLM and the corresponding beta_label and ml
@@ -94,11 +92,9 @@
 %     (#Channels x HbX) for contrasts 
 %
 % USAGE OPTIONS:
-% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R, hmrstats] = ...
-% hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis,...
-% paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
+% GLM_HRF_Drift_SS_Concentration: [dcAvg, dcAvgStd, nTrials, dcNew, dcResid, dcSum2, beta, R, hmrstats] = hmrR_GLM(dc, stim, probe, mlActAuto, Aaux, tIncAuto, rcMap, trange, glmSolveMethod, idxBasis, paramsBasis, rhoSD_ssThresh, flagNuisanceRMethod, driftOrder, c_vector)
 %
-% DEFAULT PARAMETERS:
+% PARAMETERS:
 % trange: [-2.0, 20.0]
 % glmSolveMethod: 1
 % idxBasis: 1
@@ -128,7 +124,6 @@ hmrstats        = [];
 
 % Check input args
 if isempty(tIncAuto)
-    % assume there are no motion artefacts, include all data points
     tIncAuto = cell(length(data_y),1);
 end
 if isempty(mlActAuto)

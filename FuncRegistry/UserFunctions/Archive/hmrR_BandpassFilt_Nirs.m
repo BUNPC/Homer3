@@ -42,26 +42,19 @@ FilterOrder = 3;
 %[fa,fb]=butter(FilterOrder,lpf*2/fs);
 if FilterType==1 | FilterType==5
     [fb,fa] = MakeFilter(FilterType,FilterOrder,fs,lpf,'low');
-elseif FilterType==4
-%    [fb,fa] = MakeFilter(FilterType,FilterOrder,fs,lpf,'low',Filter_Rp,Filter_Rs);
-else
-%    [fb,fa] = MakeFilter(FilterType,FilterOrder,fs,lpf,'low',Filter_Rp);
 end
 ylpf=filtfilt(fb,fa,y);
 
+y2 = ylpf;
+
 % high pass filter
+if hpf ~= 0
 FilterType = 1;
 FilterOrder = 5;
 if FilterType==1 | FilterType==5
     [fb,fa] = MakeFilter(FilterType,FilterOrder,fs,hpf,'high');
-elseif FilterType==4
-%    [fb,fa] = MakeFilter(FilterType,FilterOrder,fs,hpf,'high',Filter_Rp,Filter_Rs);
-else
-%    [fb,fa] = MakeFilter(FilterType,FilterOrder,fs,hpf,'high',Filter_Rp);
+end
+y2=filtfilt(fb,fa,ylpf); 
 end
 
-if FilterType~=5
-    y2=filtfilt(fb,fa,ylpf); 
-else
-    y2 = ylpf;
-end
+

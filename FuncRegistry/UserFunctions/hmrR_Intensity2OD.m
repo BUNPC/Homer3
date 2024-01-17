@@ -16,9 +16,6 @@
 % USAGE OPTIONS:
 % Intensity_to_Delta_OD: dod = hmrR_Intensity2OD(data)
 %
-% Note: Delta_OD are computed by dividing intensity time series over mean
-% intensity per channel, instead of dividing by the intensity of emitted
-% light
 function dod = hmrR_Intensity2OD( intensity )
 
 % convert to dod
@@ -26,12 +23,10 @@ dod = DataClass().empty();
 for ii=1:length(intensity)
     dod(ii) = DataClass();
     d = intensity(ii).GetDataTimeSeries();
-    dm = mean(abs(d),1); % get mean intensity per channel
+    dm = mean(abs(d),1);
     nTpts = size(d,1);
     dod(ii).SetTime(intensity(ii).GetTime());
-    % comput ODs by dividing intensity time series over mean intensity per channel
     dod(ii).SetDataTimeSeries(-log(abs(d)./(ones(nTpts,1)*dm)));
-    % set measurement information
     dod(ii).SetMl(intensity(ii).GetMl());
     dod(ii).SetDataTypeDod();
 end

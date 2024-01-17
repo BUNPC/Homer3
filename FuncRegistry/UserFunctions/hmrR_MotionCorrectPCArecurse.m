@@ -7,20 +7,10 @@
 %
 %
 % DESCRIPTION:
-% This function uses PCA to iteratively filter the segments of data 
-% identified as motion artifacts. After the correction, the residual 
-% motion artefacts are re-identified and corrected again. The procedure is 
-% repeated up to maxIter times. Set maxIter=0 to skip this function.
-% 
-% Motion artifacts are identified using hmrR_MotionArtifact function. If
-% any active data channel exhibits a signal change greater than STDEVthresh
-% or AMPthresh, then a segment of data around that time point is marked as 
-% a motion artifact. The motion artifacts are indicated in the tInc vector
-% by the value of 0. 
-%
-% PCA filter is only applied on the segments of data identified as a motion
-% artifact. The number of principal components to remove is determined by 
-% the nSV value. 
+% Identified motion artifacts in an input data matrix d. If any active
+% data channel exhibits a signal change greater than STDEVthresh or
+% AMPthresh, then a segment of data around that time point is marked as a
+% motion artifact. Set maxIter=0 to skip this function.
 %
 %
 % INPUTS:
@@ -31,7 +21,7 @@
 %        active/inactive channels with 1 meaning active, 0 meaning inactive
 % mlActAuto: Cell array of vectors, one for each time base in data, specifying
 %        active/inactive channels with 1 meaning active, 0 meaning inactive
-% tIncMan: Data that has been manually excluded. 0-excluded, 1-included.
+% tIncMan: Data that has been manually excluded. 0-excluded. 1-included.
 %          Vector same length as d.
 % tMotion: Check for signal change indicative of a motion artifact over
 %     time range tMotion. Units of seconds. Typically tMotion=0.5.
@@ -44,16 +34,17 @@
 % AMPthresh: If the signal d for any given active channel changes by more
 %     that AMPthresh over the time interval tMotion, then this time point
 %     is marked as a motion artifact.
-% nSV: Ranges between [0.0, 1.0] and determines the number of principal 
-%      components to remove. PCA filter removes the first n components of the
-%      data that removes a proportion of the variance up to nSV.
-% maxIter: Maximum number of iterations. Yucel et al. uses maxIter=5;
+% nSV: This is the number of principal components to remove from the data.
+%      If this number is less than 1, then the filter removes the first n
+%      components of the data that removes a fraction of the variance
+%      up to nSV. Yucel et al uses nSV=0.97.
+% maxIter: Maximum number of iterations. Yucel et al uses maxIter=5;
 %
 %
 % OUTPUTS:
-% data_dN: This is the motion corrected data.
+% data_dN: This is the the motion corrected data.
 % tInc: a vector of length time points with 1's indicating data included
-%       and 0's indicating motion artifact AFTER correction of motion
+%       and 0's indicate motion artifact AFTER correction of motion
 %       artifacts
 % svs: the singular values of the PCA for each iteration in each column
 %      vector

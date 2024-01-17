@@ -6,24 +6,29 @@
 %
 % DESCRIPTION:
 % Perform a cubic spline correction of the motion artifacts identified in
-% tIncCh. The algorithm follows the procedure describe by
+% tIncCh. The algorithm follows the procedure described by
 % Scholkmann et al., Physiol. Meas. 31, 649-662 (2010). Set p = -1 to skip
 % this function.
 %
 % INPUTS:
 % data_dod: SNIRF data structure containing delta_OD 
-% mlAct:
-% tIncCh:   Matrix of included time points (1=included; 0=not included (movement)
+% mlAct:    Cell array of vectors, specifies active/inactive channels with 
+%           1 meaning active, 0 meaning inactive
+% tIncCh:   Matrix of included time points (1=included, 0=motion artifact)
 %           The matrix is #time points x #channels and usually comes from
 %           hmrR_MotionArtifactByChannel()
-% p:        Parameter p used in the spline interpolation. The value
-%           recommended in the literature is 0.99. Use -1 if you want to skip this
-%           motion correction.
-% turnon:   Optional argument to enable/disable this function in a processing stream chain
+% p:        Parameter p used in the spline interpolation. Ranges between (0, 1).
+%           This value determines the degree of the spline function. With 
+%           p=0, the interpolation would be a straight line, while p=1 would
+%           lead to cubic interpolation. The value recommended in the literature
+%           is 0.99. Use -1 if you want to skip this motion correction.
+% turnon:   Optional argument to enable/disable this function in a processing 
+%           stream chain
 %
 % OUTPUTS:
-% dod:   SNIRF data structure containing delta_OD after spline interpolation correction, 
-%        same size as dod (Channels that are not in the active ml remain unchanged)
+% dod:   SNIRF data structure containing delta_OD after spline interpolation 
+%        correction, the same size as dod. Channels that are marked inactive in 
+%        the mlAct remain unchanged.
 %
 % USAGE OPTIONS:
 % Spline_Motion_Correction: dod = hmrR_MotionCorrectSpline(dod, mlActAuto, tIncAutoCh, p, turnon)

@@ -5,24 +5,35 @@
 % SplineSG_Motion_Correction
 %
 % DESCRIPTION:
-% The function first identifies the baseline shifts and spikes in the signal. The baseline shifts are corrected using
-% a spline interpolation method. The remaining spikes are corrected by Savitzky-Golay filtering, which is a digital smoothing filter
-% that substitutes each value of the signal series with a new value obtained by applying a cubic fitting to a subset of adjacent data points.
-% The length of the subset is defined by the parameter FrameSize_sec.
+% The function first identifies the baseline shifts and spikes in the signal. 
+% The baseline shifts are corrected using a spline interpolation method. 
+% The remaining spikes are corrected with Savitzky-Golay filtering, which is
+% a digital smoothing filter that substitutes each value of the signal series
+% with a new value obtained by applying a cubic fitting to a subset of 
+% adjacent data points. The length of the subset is defined by the parameter
+% FrameSize_sec.
+%
 % The method is described in the following paper.
 % Citation: Jahani et al., Neurophotonics, 2018; doi: 10.1117/1.NPh.5.1.015003. 
 % 
 % INPUTS:
 % data_d:        SNIRF object containing time course data
-% mlActAuto:
-% p:             Parameter p used in the spline interpolation. The value
-%                recommended in the literature is 0.99. Use -1 if you want to skip this
+% mlActAuto:     Cell array of vectors, specifying active/inactive channels
+%                with 1 meaning active, 0 meaning inactive
+% p:             Parameter p used in the spline interpolation. Ranges between
+%                (0, 1). This value determines the degree of the spline function. 
+%                With p=0, the interpolation would be a straight line, while
+%                p=1 would lead to cubic interpolation. The value recommended 
+%                in the literature is 0.99. Use -1 if you want to skip this
 %                motion correction.
-% FrameSize_sec: The step lenght in seconds that a least-squares minimization will be applied using a cubic Savitzky-Golay filter.  
-% turnon:        Optional argument to enable/disable this function in a processing stream chain
+% FrameSize_sec: The step length in seconds that a least-squares minimization 
+%                will be applied using a cubic Savitzky-Golay filter.  
+% turnon:        Optional argument to enable/disable this function in a 
+%                processing stream chain.
 %
 % OUTPUTS:
-% data_d:        SNIRF object containing time course data after spline interpolation correction
+% data_d:        SNIRF object containing time course data after spline interpolation
+%                correction.
 %
 % USAGE OPTIONS:
 % SplineSG_Motion_Correction: dod = hmrR_MotionCorrectSplineSG(dod, mlActAuto, p, FrameSize_sec, turnon)

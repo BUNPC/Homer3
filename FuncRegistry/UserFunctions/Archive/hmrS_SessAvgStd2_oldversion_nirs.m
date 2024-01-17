@@ -5,13 +5,13 @@
 % Run_Average_Standard_Deviation
 %
 % DESCRIPTION:
-% Calculate avearge HRF standard deviation of all runs for one subject. 
+% Calculate average HRF standard deviation  of all runs for one subject. 
 %
 % INPUTS:
-% yAvgRuns:
-% ySum2Runs:
-% mlActRuns:
-% nTrialsRuns:
+% yAvgRuns: all runs for one subject, cell array of size [Number of runs X Number of data blocks]
+% ySum2Runs: ???
+% mlActRuns: logical cell array of size [Number of runs X Number of data blocks x Data channels*], determines active trials
+% nTrialsRuns: the number of trials averaged for each condition across all runs
 %
 % OUTPUTS:
 % yAvgStdOut: the standard deviation across runs

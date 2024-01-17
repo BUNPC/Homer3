@@ -5,15 +5,18 @@
 % Motion_Correct_RLOESS
 %
 % DESCRIPTION:
+% Applies robust locally weighted regression that acts as a smoothing filter
+% on delta_OD data
 %
 % INPUTS:
 % data_dod: SNIRF data structure containing delta_OD
-% span:
-% turnon:   Optional argument to enable/disable this function in a processing stream chain
+% span:     Determines the number of data points for calculating the smoothed
+%           value
+% turnon:   Optional argument to enable/disable this function in a processing
+%           stream chain
 %
 % OUTPUTS:
-% data_dod: SNIRF data structure containing delta_OD after motion correction,
-%           same size as dod (Channels that are not in the active ml remain unchanged)
+% data_dod: SNIRF data structure containing delta_OD after 
 %
 % USAGE OPTIONS:
 % Motion_Correct_RLOESS: dod = hmrR_MotionCorrectRLOESS(dod, span, turnon)

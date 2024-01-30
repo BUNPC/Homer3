@@ -459,7 +459,7 @@ classdef StimClass < FileLoadSaveClass
                 amp = ones(length(tPts),1);
             end
             if ~exist('more', 'var')
-               more = 1;
+               more = [];
             end
             
             if length(duration) < length(tPts)

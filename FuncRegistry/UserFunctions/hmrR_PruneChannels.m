@@ -127,6 +127,22 @@ for iBlk = 1:length(data)
     
     chanList = chanList(:) & mlActMan{iBlk}(:,3);
     
+    nChannelsFirstWavelength = length(chanList)/2;
+
+    firstWavelengthChannel_idx = chanList(1:nChannelsFirstWavelength);
+    secondWavelengthChannel_idx = chanList(nChannelsFirstWavelength+1:end);
+    
+    %set secondWavelengthChannel_idx to zero if firstWavelengthChannel_idx
+    %is zero and vice versa
+    secondWavelengthChannel_idx(~firstWavelengthChannel_idx) = 0; 
+    firstWavelengthChannel_idx(~secondWavelengthChannel_idx) = 0;
+    
+    % combine both
+    chanList = [firstWavelengthChannel_idx; secondWavelengthChannel_idx];
+    
+    % sanity check - total_num_channels should be number of channel pairs
+    total_num_channels_check = sum(chanList(1:nChannelsFirstWavelength) == chanList(nChannelsFirstWavelength+1:end));
+    
     % update MeasListAct  
     mlActAuto{iBlk} = mlAct_Initialize(chanList, MeasList);
 end

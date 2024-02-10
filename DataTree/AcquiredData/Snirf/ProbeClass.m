@@ -595,11 +595,31 @@ classdef ProbeClass < FileLoadSaveClass
                     return;
                 end
             end
+            if ~isempty(obj.sourcePos2D)
+                if size(obj.sourcePos2D,2) < 2
+                    return;
+                end
+            end
+            if ~isempty(obj.sourcePos3D)
+                if size(obj.sourcePos3D,2) < 3
+                    return;
+                end
+            end
             if iscolumn(obj.detectorPos2D)
                 return;
             end
             if length(obj.detectorPos2D)>4
                 if size(obj.detectorPos2D,2) > size(obj.detectorPos2D,1)
+                    return;
+                end
+            end
+            if ~isempty(obj.detectorPos2D)
+                if size(obj.detectorPos2D,2) < 2
+                    return;
+                end
+            end
+            if ~isempty(obj.detectorPos3D)
+                if size(obj.detectorPos3D,2) < 3
                     return;
                 end
             end

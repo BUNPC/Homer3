@@ -88,6 +88,8 @@ classdef FileClass < matlab.mixin.Copyable
             obj.filename     = obj2.name;
             obj.name         = getPathRelative(rootpath, obj2.rootdir);
             obj.rootdir 	 = obj2.rootdir;
+            obj.date         = obj2.date;
+            obj.datenum      = datestr2datenum(obj.date);
             obj.err          = 0;          % Set error to NO ERROR            
         end
         

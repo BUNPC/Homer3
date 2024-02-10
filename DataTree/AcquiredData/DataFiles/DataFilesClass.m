@@ -16,6 +16,7 @@ classdef DataFilesClass < handle
     properties (Access = private)
         lookupTable
         excludedFolders
+        savedFilename
     end
     
     methods
@@ -30,6 +31,7 @@ classdef DataFilesClass < handle
             obj.err = -1;
             obj.errmsg = {};
             obj.dirFormats = struct('type',0, 'choices',{{}});
+            obj.lookupTable = [];
 
             global logger
             global cfg
@@ -38,7 +40,6 @@ classdef DataFilesClass < handle
             cfg    = InitConfig(cfg);
             
             obj.logger = logger;
-            obj.lookupTable = [];
             obj.excludedFolders = {};
             
             skipconfigfile = false;
@@ -110,108 +111,178 @@ classdef DataFilesClass < handle
                 [obj.rootdir, 'imagerecon'];
                 [obj.rootdir, 'anatomical'];
                 };
+            derivedDataRootDir = [obj.rootdir, obj.config.DerivedDataDir, '/', f, '/'];
+            obj.savedFilename = [derivedDataRootDir, 'DatasetFiles', '_', obj.filetype, '.mat'];
             if nargin==0
                 return;
             end
             
             obj.err = 0;
-            
-            obj.InitFolderFromats();
-            obj.GetDataSet();
+            obj.InitFolderFormats();
+            if ~obj.LoadDataSet()
+                obj.GetDataSet();
+                obj.logger.Write('Saving DataFilesClass object in %s\n', obj.savedFilename);
+                if ~exist(derivedDataRootDir, 'dir')
+                    mkdir(derivedDataRootDir)
+                end
+                save(obj.savedFilename, '-mat', 'obj');
+            end
         end
         
         
         
         % -----------------------------------------------------------------------------------
-        function GetDataSet(obj)
+        function [b, obj2] = HasChanged(obj)
+            b = true;
+            obj2 = DataFilesClass();
+            obj2.rootdir = obj.rootdir;
+            obj2.filetype = obj.filetype;
+            obj2.dirFormats = obj.dirFormats;
+            obj2.GetDataSet()
+            files1 = [obj.files, obj.filesErr];
+            files2 = [obj2.files, obj2.filesErr];
+            if length(files1) ~= length(files2)
+                return
+            end
+            errs = zeros(length(files1),1)-1;
+            for ii = 1:length(files1)
+                for jj = 1:length(files2)
+                    if strcmp(files1(ii).name, files2(jj).name)
+                        if files1(ii).datenum < files2(jj).datenum
+                            obj.logger.Write('Mismatch in dates for saved data in %s\n', files1(ii).name);
+                            return
+                        else
+                            errs(ii) = 0;
+                        end
+                    end
+                end
+            end
+            if sum(errs)<0
+                return
+            end
+            b = false;
+        end
+        
+
+ 
+        % -----------------------------------------------------------------------------------
+        function b = LoadDataSet(obj)
+            b = false;
+            if ~exist(obj.savedFilename, 'file')
+                return
+            end
+            dataset = load(obj.savedFilename);
+            if dataset.obj.HasChanged()
+                return
+            end
+            obj.logger.Write('Loaded saved DataFilesClass object:    %s\n', obj.savedFilename);
+            obj.Copy(dataset.obj);
+            b = true;
+        end
+        
+        
+        
+        % -----------------------------------------------------------------------------------
+        function GetDataSet(obj)            
+            mode = '';            
+            if obj.dirFormats.type == 0
+                iFormats = 1:length(obj.dirFormats.choices);
+            else
+                iFormats = obj.dirFormats.type;
+                mode = 'noerrorcheck';
+            end
             if exist(obj.rootdir, 'dir')~=7
                 error('Invalid subject folder: ''%s''', obj.rootdir);
             end
-            
-            for ii = 1:length(obj.dirFormats.choices)
+            for ii = iFormats
                 obj.InitLookupTable();
                 obj.FindDataSet(ii);
                 
+                if strcmp(mode,'noerrorcheck')
+                    continue
+                end
                 % Remove any files that cannot pass the basic test of loading
                 % its data
                 obj.ErrorCheck();
                 if ~isempty(obj.files)
                     break
                 end
+            end            
+            if strcmp(mode,'noerrorcheck')
+                return
             end
-            
             obj.ErrorCheckFinal();
         end
 
         
         
         % -----------------------------------------------------------------------------------
-        function InitFolderFromats(obj)
+        function InitFolderFormats(obj)
             obj.dirFormats.choices = {
                 
                 %%%% 1. Flat #1
                 {
-                ['*_run*.', obj.filetype];
+                    ['*_run*.', obj.filetype];
                 }
 
                 %%%% 2. Flat #2
                 {
-                ['*.', obj.filetype];
+                    ['*.', obj.filetype];
                 }
                 
                 %%%% 3. Subjects 
                 {
-                '*';
-                ['*.', obj.filetype];
+                    '*';
+                    ['*.', obj.filetype];
                 }
 
                 %%%% 4. BIDS #1,    sub-<label>[_ses-<label>][_task-<label>][_run-<index>]_nirs.snirf
                 {                
-                'sub-*';
-                'ses-*';
-                ['nirs/sub-*_run-*_nirs.', obj.filetype];
+                    'sub-*';
+                    'ses-*';
+                    ['nirs/sub-*_run-*_nirs.', obj.filetype];
                 }
                                 
                 %%%% 5. BIDS #2 
                 {
-                'sub-*';
-                ['nirs/sub-*_run-*_nirs.', obj.filetype];
+                    'sub-*';
+                    ['nirs/sub-*_run-*_nirs.', obj.filetype];
                 }
                 
                 %%%% 6. BIDS #3
                 {
-                'sub-*';
-                ['nirs/sub-*_*_nirs.', obj.filetype];
+                    'sub-*';
+                    ['nirs/sub-*_*_nirs.', obj.filetype];
                 }
                 
                 %%%% 7. BIDS #4 
                 {
-                '*';
-                ['nirs/sub-*_*_nirs.', obj.filetype];
+                    '*';
+                    ['nirs/sub-*_*_nirs.', obj.filetype];
                 }
                 
                 %%%% 8. BIDS folder structure
                 {
-                'sub-*';
-                'ses-*';
-                ['nirs/sub-*_run-*_nirs.', obj.filetype];
+                    'sub-*';
+                    'ses-*';
+                    ['nirs/sub-*_run-*_nirs.', obj.filetype];
                 }
                                
                 %%%% 9. BIDS-like folder structure without file naming restrictions
                 {
-                'sub-*';
-                'ses-*';
-                ['nirs/*.', obj.filetype];
+                    'sub-*';
+                    'ses-*';
+                    ['nirs/*.', obj.filetype];
                 }
                                 
                 %%%% 10. BIDS-like folder structure without nirs sub-folder
                 {
-                'sub-*';
-                'ses-*';
-                ['*.', obj.filetype];
+                    'sub-*';
+                    'ses-*';
+                    ['*.', obj.filetype];
                 }
-                                
-                };
+                
+            };
         end
         
 
@@ -284,18 +355,13 @@ classdef DataFilesClass < handle
         % ----------------------------------------------------
         function AddParentDirs(obj, dirname)
             pathrel = getPathRelative([dirname.rootdir, dirname.name], obj.rootdir);
-            subdirs = str2cell_fast(pathrel, {'/','\'});
-            N = length(subdirs);
-            for ii = 1:N-1
-                if strcmp(subdirs{ii}, 'nirs')
-                    continue;
-                end
-                pathrel2 = buildpathfrompathparts(subdirs(1:ii));
-                if obj.SearchLookupTable(pathrel2)
-                    continue;
-                end
-                obj.files(end+1) = FileClass([obj.rootdir, '/', pathrel2], obj.rootdir);
-                obj.AddLookupTable(obj.files(end).name)
+            p = fileparts(pathrel);
+            if isempty(p)
+                return
+            end
+            if ~obj.SearchLookupTable(p)
+                obj.files(end+1) = FileClass([obj.rootdir, '/', p], obj.rootdir);
+                obj.AddLookupTable(p)
             end
         end
         
@@ -305,7 +371,6 @@ classdef DataFilesClass < handle
         function AddFile(obj, file)
             obj.files(end+1) = file;
             obj.nfiles = obj.nfiles+1;
-            obj.AddLookupTable(obj.files(end).filename)
         end
         
         
@@ -416,7 +481,7 @@ classdef DataFilesClass < handle
             msg{3} = sprintf('it may cause incorrect results in processing. Do you want to rename this %s?', filetype);
             errmsg = [msg{:}];            
         end
-        
+
 
         
         % -------------------------------------------------------
@@ -524,6 +589,7 @@ classdef DataFilesClass < handle
             
             if dataflag==false
                 obj.files = FileClass.empty();
+                obj.nfiles = 0;
             else
                 for jj = 1:length(errorIdxs)
                     obj.filesErr(end+1) = obj.files(errorIdxs(jj)).copy;
@@ -544,6 +610,7 @@ classdef DataFilesClass < handle
             err = obj.err;
         end
                 
+        
         % ----------------------------------------------------------
         function PrintFolderStructure(obj, options)
             if ~exist('options','var')
@@ -582,6 +649,20 @@ classdef DataFilesClass < handle
             end
             obj.logger.Write('\n');
         end
+
+        
+        
+        % ----------------------------------------------------------
+        function Copy(obj, obj2)
+            obj.files       = obj2.files.copy();
+            obj.filesErr    = obj2.filesErr.copy();
+            obj.filetype    = obj2.filetype;
+            obj.nfiles      = obj2.nfiles;
+            obj.err         = obj2.err;
+            obj.errmsg      = obj2.errmsg;
+            obj.dirFormats  = obj2.dirFormats;
+        end
+        
         
     end
         
@@ -613,6 +694,18 @@ classdef DataFilesClass < handle
             b = obj.lookupTable(string2hash(str, n));
         end
         
+
         
+        % ----------------------------------------------------------
+        function Print(obj)
+            for ii = 1:length(obj.files)
+                if obj.files(ii).isdir
+                    continue
+                end
+                fprintf('%s\n', obj.files(ii).name);                
+            end
+        end
+               
     end
+                        
 end

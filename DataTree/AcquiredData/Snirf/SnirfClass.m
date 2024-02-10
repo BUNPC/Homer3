@@ -1258,6 +1258,26 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
         end
         
         
+        
+        % ---------------------------------------------------------
+        function s = EditStates_MatInput(obj, s, t)
+            if nargin<2
+                return
+            end
+            if isempty(t)
+                return;
+            end
+            errmargin = mean(diff(t));
+            for ii = 1:size(s,2)
+                tidxs = find(s(:,ii)~=0);
+                for jj = 1:length(tidxs)
+                    obj.stim(ii).EditState(t(tidxs(jj)), s(tidxs(jj),ii), errmargin);
+                end
+            end
+        end
+        
+
+        
         % ---------------------------------------------------------
         function s = GetStims(obj, t)
             % Returns a .nirs style stim signal. Stim state marks are

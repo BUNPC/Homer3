@@ -17,6 +17,7 @@ classdef DataFilesClass < handle
         lookupTable
         excludedFolders
         savedFilename
+        changed
     end
     
     methods
@@ -32,6 +33,7 @@ classdef DataFilesClass < handle
             obj.errmsg = {};
             obj.dirFormats = struct('type',0, 'choices',{{}});
             obj.lookupTable = [];
+            obj.changed = false;
 
             global logger
             global cfg
@@ -77,7 +79,7 @@ classdef DataFilesClass < handle
             obj.rootdir = filesepStandard(obj.rootdir,'full');           
             
             % Configuration parameters
-            obj.config = struct('RegressionTestActive','',  'AskToFixNameConflicts',1, 'DerivedDataDir','');
+            obj.config = struct('RegressionTestActive','',  'AskToFixNameConflicts',1, 'DerivedDataDir','', 'DerivedDataRootDir','');
             if skipconfigfile==false
                 str = cfg.GetValue('Regression Test Active');
                 if strcmp(str,'true')
@@ -111,56 +113,146 @@ classdef DataFilesClass < handle
                 [obj.rootdir, 'imagerecon'];
                 [obj.rootdir, 'anatomical'];
                 };
-            derivedDataRootDir = [obj.rootdir, obj.config.DerivedDataDir, '/', f, '/'];
-            obj.savedFilename = [derivedDataRootDir, 'DatasetFiles', '_', obj.filetype, '.mat'];
+            obj.config.DerivedDataRootDir = [obj.rootdir, obj.config.DerivedDataDir, '/', f, '/'];
+            obj.savedFilename = [obj.config.DerivedDataRootDir, 'DatasetFiles', '_', obj.filetype, '.mat'];
             if nargin==0
                 return;
             end
             
             obj.err = 0;
             obj.InitFolderFormats();
-            if ~obj.LoadDataSet()
-                obj.GetDataSet();
-                obj.logger.Write('Saving DataFilesClass object in %s\n', obj.savedFilename);
-                if ~exist(derivedDataRootDir, 'dir')
-                    mkdir(derivedDataRootDir)
-                end
-                save(obj.savedFilename, '-mat', 'obj');
-            end
+            obj.GetDataSet();
+            obj.SaveDataSet();
         end
         
         
         
         % -----------------------------------------------------------------------------------
-        function [b, obj2] = HasChanged(obj)
-            b = true;
+        function Compare(obj)
+            if obj.IsEmpty()
+                return
+            end
             obj2 = DataFilesClass();
             obj2.rootdir = obj.rootdir;
             obj2.filetype = obj.filetype;
             obj2.dirFormats = obj.dirFormats;
-            obj2.GetDataSet()
-            files1 = [obj.files, obj.filesErr];
-            files2 = [obj2.files, obj2.filesErr];
-            if length(files1) ~= length(files2)
-                return
+            obj2.GetDataSet('skipsaveddata')
+            
+            %%%% Create list of all the saved names for sorting later
+            filesSaved = cell(length(obj.files),1);
+            filesSavedErr = cell(length(obj.filesErr),1);
+            for ii = 1:length(obj.files)
+                filesSaved{ii} = obj.files(ii).name;
             end
-            errs = zeros(length(files1),1)-1;
-            for ii = 1:length(files1)
-                for jj = 1:length(files2)
-                    if strcmp(files1(ii).name, files2(jj).name)
-                        if files1(ii).datenum < files2(jj).datenum
-                            obj.logger.Write('Mismatch in dates for saved data in %s\n', files1(ii).name);
-                            return
-                        else
-                            errs(ii) = 0;
+            for ii = 1:length(obj.filesErr)
+                filesSavedErr{ii} = obj.filesErr(ii).name;
+            end
+
+            %%%% Move any files from saved error list that have been updated to nonerror list 
+            N = length(obj.filesErr);
+            for ii = N:-1:1
+                for jj = 1:length(obj2.files)
+                    if strcmp(obj.filesErr(ii).name, obj2.files(jj).name)
+                        if obj.filesErr(ii).datenum ~= obj2.files(jj).datenum
+                            obj.filesErr(ii) = [];
+                            filesSavedErr{ii} = [];
+                            obj.files(end+1) = obj2.files(jj);
+                            if ~obj2.files(jj).isdir
+                                obj.nfiles = obj.nfiles+1;
+                            end
+                            filesSaved{end+1} = obj2.files(jj).name;        %#ok<AGROW>
+                            obj.logger.Write('%d. Mismatch in dates for saved data in %s. Will re-validate this file.\n', jj, obj.filesErr(ii).name);
+                            obj.changed = true;                            
                         end
+                        break
                     end
                 end
             end
-            if sum(errs)<0
+            
+                        
+            %%%% Now check saved object nonerror list
+            N = length(obj.files);
+            for ii = N:-1:1
+	            found = false;            
+                for jj = 1:length(obj2.files)
+                    if strcmp(obj.files(ii).name, obj2.files(jj).name)
+                        found = true;
+                        if obj.files(ii).datenum ~= obj2.files(jj).datenum
+                            obj.files(ii) = obj2.files(jj).copy();
+                            obj.logger.Write('%d. Mismatch in dates for saved data in %s. Will re-validate this file.\n', jj, obj.files(ii).name);
+                            obj.changed = true;
+                        end
+                        break
+                    end
+                end
+                if ~found
+                    obj.logger.Write('%d. Deleting file %s from saved data.\n', ii, obj.files(ii).name);
+                    if ~obj.files(ii).isdir
+                        obj.nfiles = obj.nfiles-1;
+                    end
+                    obj.files(ii) = [];
+                    filesSaved(ii) = [];                    
+                    obj.changed = true;
+                end     
+            end
+            
+            % We don't need to check if files were added if there's no
+            % change and the number of current files found is same as saved
+            % number of files. Exist early. 
+            if obj.changed == false
+                if (length(obj.files) + length(obj.filesErr)) == length(obj2.files)
+                    return
+                end
+            end
+            
+            
+            %%%% Find which files were added to current dataset and add
+            %%%% them to saved object
+            for ii = 1:length(obj2.files)
+                found = false;
+                for jj = 1:length(obj.files)
+                    if strcmp(obj2.files(ii).name, obj.files(jj).name)
+                        found = true;
+                        break
+                    end
+                end
+                
+                % If the current file filesCurr(ii) is not found in saved dataset then it's a new file. 
+                % Add new file from current dataset to saved dataset
+                if ~found
+                    obj.files(end+1) = obj2.files(ii);
+                    if ~obj2.files(ii).isdir
+                        obj.nfiles = obj.nfiles+1;
+                    end
+                    filesSaved{end+1} = obj2.files(ii).name; %#ok<AGROW>
+                    obj.logger.Write('%d. Adding new file %s to saved data.\n', jj, obj2.files(ii).name);
+                    obj.changed = true;
+                end
+            end
+
+            
+            % Sort non-error files
+            if obj.changed
+                [~, order] = sort(filesSaved);
+                obj.files = obj.files(order);
+                obj.logger.Write('\n');
+            end
+            
+        end
+        
+
+ 
+        % -----------------------------------------------------------------------------------
+        function SaveDataSet(obj)
+            if ~obj.changed
                 return
             end
-            b = false;
+            obj.changed = false;
+            obj.logger.Write('Saving DataFilesClass object in %s\n', obj.savedFilename);
+            if ~exist(obj.config.DerivedDataRootDir, 'dir')
+                mkdir(obj.config.DerivedDataRootDir)
+            end
+            save(obj.savedFilename, '-mat', 'obj');
         end
         
 
@@ -172,18 +264,33 @@ classdef DataFilesClass < handle
                 return
             end
             dataset = load(obj.savedFilename);
-            if dataset.obj.HasChanged()
+            dataset.obj.Compare();
+            if isempty(dataset.obj.files) && isempty(dataset.obj.filesErr)
                 return
             end
             obj.logger.Write('Loaded saved DataFilesClass object:    %s\n', obj.savedFilename);
             obj.Copy(dataset.obj);
+
+            obj.ErrorCheck()
+            obj.ErrorCheckName()
             b = true;
         end
         
         
         
         % -----------------------------------------------------------------------------------
-        function GetDataSet(obj)            
+        function GetDataSet(obj, skipsaveddata)
+            if ~exist('skipsaveddata','var')
+                skipsaveddata = '';
+            end
+            if ~strcmp(skipsaveddata, 'skipsaveddata')
+                if obj.LoadDataSet()
+                    return
+                end
+            end
+
+            obj.changed = true;
+
             mode = '';            
             if obj.dirFormats.type == 0
                 iFormats = 1:length(obj.dirFormats.choices);
@@ -201,6 +308,10 @@ classdef DataFilesClass < handle
                 if strcmp(mode,'noerrorcheck')
                     continue
                 end
+                if isempty(obj.files)
+                    continue
+                end                
+                
                 % Remove any files that cannot pass the basic test of loading
                 % its data
                 obj.ErrorCheck();
@@ -355,13 +466,18 @@ classdef DataFilesClass < handle
         % ----------------------------------------------------
         function AddParentDirs(obj, dirname)
             pathrel = getPathRelative([dirname.rootdir, dirname.name], obj.rootdir);
-            p = fileparts(pathrel);
-            if isempty(p)
-                return
-            end
-            if ~obj.SearchLookupTable(p)
-                obj.files(end+1) = FileClass([obj.rootdir, '/', p], obj.rootdir);
-                obj.AddLookupTable(p)
+            subdirs = str2cell_fast(pathrel, {'/','\'});
+            N = length(subdirs);
+            for ii = 1:N-1
+                if strcmp(subdirs{ii}, 'nirs')
+                    continue;
+                end
+                pathrel2 = buildpathfrompathparts(subdirs(1:ii));
+                if obj.SearchLookupTable(pathrel2)
+                    continue;
+                end
+                obj.files(end+1) = FileClass([obj.rootdir, '/', pathrel2], obj.rootdir);
+                obj.AddLookupTable(pathrel2)
             end
         end
         
@@ -369,7 +485,8 @@ classdef DataFilesClass < handle
         
         % ----------------------------------------------------
         function AddFile(obj, file)
-            obj.files(end+1) = file;
+            obj.files(end+1) = FileClass();
+            obj.files(end).Add(file);
             obj.nfiles = obj.nfiles+1;
         end
         
@@ -378,6 +495,9 @@ classdef DataFilesClass < handle
         % ----------------------------------------------------
         function ErrorCheckName(obj)
             for ii = length(obj.files):-1:1
+                if ~obj.files(ii).IsValidated()
+                    continue;
+                end
                 if obj.files(ii).ErrorCheckName()<0
                     q = obj.AskToFixNameConflicts(ii);                    
                     if q == 1
@@ -564,6 +684,10 @@ classdef DataFilesClass < handle
                 if obj.files(ii).isdir
                     continue;
                 end
+                if obj.files(ii).IsValidated()
+                    dataflag = true;
+                    continue;
+                end
                 filename = [obj.rootdir, obj.files(ii).name]; %#ok<NASGU>
                 eval( sprintf('o = %s(filename);', constructor) );
                 if  o.GetError() < 0
@@ -583,6 +707,8 @@ classdef DataFilesClass < handle
                 end
                 if ~isempty(o.GetErrorMsg())
                     obj.files(ii).SetError(o.GetErrorMsg());
+                else
+                    obj.files(ii).SetValid();                    
                 end
                 hwait = waitbar_improved(ii/length(obj.files), hwait, msg);
             end
@@ -641,9 +767,10 @@ classdef DataFilesClass < handle
                     if optionExists(options, 'numbered')
                         n = k*stepsize+stepsize+j;
                         obj.logger.Write(sprintf('%d.%s%s\n', ii, blanks(n), obj.files(ii).filename));
+                        c = c+1;
                     else
                         n = k*stepsize+stepsize;
-                        obj.logger.Write(sprintf('%s%s\n', blanks(n), obj.files(ii).filename));
+                        obj.logger.Write(sprintf('%d.%s%s\n', ii, blanks(n), obj.files(ii).filename));
                     end
                 end
             end
@@ -661,8 +788,35 @@ classdef DataFilesClass < handle
             obj.err         = obj2.err;
             obj.errmsg      = obj2.errmsg;
             obj.dirFormats  = obj2.dirFormats;
+            obj.changed     = obj2.changed;
         end
         
+        
+        
+        % ----------------------------------------------------------
+        function b = eq(obj, obj2)
+            b = false;
+            if length(obj.files) ~= length(obj2.files)
+                return
+            end
+            if length(obj.filesErr) ~= length(obj2.filesErr)
+                return
+            end
+            for ii = 1:length(obj.files)
+                if obj.files ~= obj2.files
+                    return
+                end
+            end
+            for ii = 1:length(obj.filesErr)
+                if obj.filesErr ~= obj2.filesErr
+                    return
+                end
+            end
+            if obj.filetype ~= obj2.filetype
+                return
+            end
+            b = true;
+        end
         
     end
         

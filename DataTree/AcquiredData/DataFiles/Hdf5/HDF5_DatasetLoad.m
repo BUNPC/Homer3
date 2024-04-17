@@ -8,8 +8,20 @@ if ~exist('options','var')
 end
 
 try
-    dsetid = H5D.open(gid, name);
 
+    if ~H5L.exists(gid, name, 'H5P_DEFAULT')
+        switch(class(val0))
+            case 'char'
+                val = '';
+            case 'cell'
+                val = {};
+            otherwise
+                val = [];
+        end
+        return
+    end
+
+    dsetid = H5D.open(gid, name);
     % NOTE: HDF5 stores contiguous muti-dimensional arrays in row-major order.
     % Matlab stores them in row-major order. We want to transpose the loaded data 
     % it back to Matlab's column-major storage order and thus get back the 
@@ -29,3 +41,5 @@ catch
             val = [];
     end
 end
+
+

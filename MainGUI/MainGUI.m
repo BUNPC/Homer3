@@ -1199,6 +1199,11 @@ end
 % ----------------------------------------------------------------------------------
 function DisplayStim(handles, hAxes)
 global maingui
+
+if strcmp(get(handles.menuItemHideStims, 'checked'), 'on')
+    return;
+end
+
 dataTree = maingui.dataTree;
 procElem = dataTree.currElem;
 
@@ -2264,3 +2269,16 @@ maingui.dataTree.currElem.ExportStim();
 function menuItemReloadStim_Callback(hObject, ~, handles)
 global maingui
 maingui.dataTree.currElem.EditStim();
+
+
+
+
+% --------------------------------------------------------------------
+function menuItemHideStims_Callback(hObject, ~, handles)
+if strcmp(get(hObject, 'checked'), 'on')
+    set(hObject, 'checked','off');
+elseif strcmp(get(hObject, 'checked'), 'off')
+    set(hObject, 'checked','on');
+end
+DisplayData(handles, hObject);
+

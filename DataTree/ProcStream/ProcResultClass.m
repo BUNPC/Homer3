@@ -283,7 +283,7 @@ classdef ProcResultClass < handle
             end
             output = ProcResultClass();
             
-            obj.logger.Write(sprintf('Initializing empty derived data output file:   %s', [filesepStandard(pathname), filename, '.mat']));
+            obj.logger.WriteFileOnly(sprintf('Initializing empty derived data output file:   %s', [filesepStandard(pathname), filename, '.mat']), 661, 529, 23); 
             save([filesepStandard(pathname), filename, '.mat'], '-mat', 'output');
         end
         

@@ -410,7 +410,7 @@ classdef ProcStreamClass < handle
             [p,f] = fileparts(temp); 
             fname = [filesepStandard(p), f, '_processing.json'];
             if strcmpi(cfg.GetValue('Export Processing Stream Functions'), 'yes')
-                logger.Write('Saving processing stream  %s:\n', fname);
+                logger.Write('Saving processing stream function call chain in %s:\n', fname);
                 appname = sprintf('%s', getNamespace());
                 vernum  = sprintf('v%s', getVernum(appname));
                 dt      = sprintf('%s', char(datetime(datetime, 'Format','MMMM d, yyyy,   HH:mm:ss')));

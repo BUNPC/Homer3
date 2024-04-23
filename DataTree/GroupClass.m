@@ -308,9 +308,7 @@ classdef GroupClass < TreeNodeClass
                 if ~exist(fnameFull, 'file')
                     procStreamDefault.SaveConfigFile(fnameFull, o.type);
                 end
-                
-                obj.logger.Write('Attempting to load %s-level proc stream from %s\n', o.type, fnameFull);
-                
+                               
                 % Load file to the first empty procStream in the dataTree at each processing level
                 err = o.LoadProcStreamConfigFile(fnameFull);
 
@@ -329,7 +327,7 @@ classdef GroupClass < TreeNodeClass
                 % disseminate it to all subjects and all runs in this group
                 else
                     
-                    obj.logger.Write('Loading proc stream from %s\n', fnameFull);
+                    obj.logger.Write('Loading %s-level proc stream from %s\n', o.type, fnameFull);
                     g.CopyFcalls(o.procStream, o.type);
                     
                 end
@@ -694,7 +692,7 @@ classdef GroupClass < TreeNodeClass
                 return
             end
             
-            obj.logger.Write('Saving processed data in %s\n', [obj.path, obj.outputDirname, obj.outputFilename]);
+            obj.logger.Write('Saving group tree processing stream input in  %s\n', [obj.path, obj.outputDirname, obj.outputFilename]);
             
             if ishandle(hwait)
                 obj.logger.Write('Auto-saving processing results ...\n', obj.logger.ProgressBar(), hwait);

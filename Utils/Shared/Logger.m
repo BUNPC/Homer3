@@ -195,6 +195,20 @@ classdef Logger < handle
                 
         
         % -------------------------------------------------
+        function WriteFileOnly(self, s, varargin)
+            optionsValueOrig = self.options.value;
+            self.SetFileOnly();
+            if isempty(varargin)
+                self.Write(s, varargin);
+            else
+                self.Write(s, varargin{:});
+            end
+            self.options.value = optionsValueOrig;
+        end
+        
+        
+        
+        % -------------------------------------------------
         function ct = CurrTime(self, msg, options, hwait)
             ct = '';
             if ~exist('msg','var')
@@ -363,8 +377,15 @@ classdef Logger < handle
         
         
         % -------------------------------------------------
-        function val = FileOnly(self)
-            val = self.options.FILE_ONLY;
+        function SetFileOnly(self)
+            self.options.value = self.options.FILE_ONLY;
+        end
+        
+        
+        
+        % -------------------------------------------------
+        function SetConsoleOnly(self)
+            self.options.value = self.options.CONSOLE_ONLY;
         end
         
         
@@ -372,13 +393,6 @@ classdef Logger < handle
         % -------------------------------------------------
         function val = Null(self)
             val = self.options.NULL;
-        end
-        
-        
-        
-        % -------------------------------------------------
-        function val = ConsoleOnly(self)
-            val = self.options.CONSOLE_ONLY;
         end
         
         

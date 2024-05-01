@@ -108,7 +108,7 @@ myCopyFile([dirnameSrc, 'db2.mat'],           dirnameDst);
 myCopyFile([dirnameSrc, 'AppSettings.cfg'],   dirnameDst);
 myCopyFile([dirnameSrc, 'DataTree'],          [dirnameDst, 'DataTree']);
 myCopyFile([dirnameSrc, 'FuncRegistry'],      [dirnameDst, 'FuncRegistry']);
-myCopyFile([dirnameSrc, 'SubjDataSample'],    [dirnameDst, 'SubjDataSample']);
+myCopyFile([dirnameSrc, 'SampleData'],    [dirnameDst, 'SampleData']);
 myCopyFile([dirnameSrc, 'SDGcolors.csv'],     dirnameDst);
 myCopyFile([dirnameSrc, 'Version.txt'],     dirnameDst);
 myCopyFile([dirnameSrc, 'LastCheckForUpdates.dat'],     dirnameDst);
@@ -207,7 +207,7 @@ try
         cmd = sprintf('call "%s\\createShortcut.bat" "%s" %s.exe', dirnameSrc(1:end-1), dirnameDst, exename);
         system(cmd);
         
-        cmd = sprintf('call "%s\\createShortcut.bat" "%s" SubjDataSample', dirnameSrc(1:end-1), dirnameDst(1:end-1));
+        cmd = sprintf('call "%s\\createShortcut.bat" "%s" SampleData', dirnameSrc(1:end-1), dirnameDst(1:end-1));
         system(cmd);
         
     elseif islinux()

@@ -151,7 +151,6 @@ for ic=1:size(stim,2)
         yHBT=meanvalues(:,ll+2); %hbt
         sdHBO=stdvalues(:,ll);
         sdHBR=stdvalues(:,ll+1);
-        sdHBT=stdvalues(:,ll+2);
 
 
         ALLHBO=[];ALLHBR=[];%creating a matrix for All HbO and HbR data
@@ -179,7 +178,7 @@ for ic=1:size(stim,2)
         end
 
 %%% Plot section 
-        f=figure(Visible=show);
+        f=figure();
         ax1=subplot('Position',[0.35 0.58 0.33 0.34 ]);
         txt=['Source ',num2str(dc.measurementList(1,ll).sourceIndex),' detector ', num2str(dc.measurementList(1,ll).detectorIndex)];
 

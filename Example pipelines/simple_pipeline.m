@@ -13,8 +13,9 @@
 clear all; close all;
 
 % Select data file to process
+p = fileparts(which('simple_pipeline.m'));
 while 1
-    [fname, pname] = uigetfile('*.snirf', 'Select snirf file(s)', 'MultiSelect', 'on');
+    [fname, pname] = uigetfile([p, '/../SampleData/', '*.snirf'], 'Select snirf file(s)', 'MultiSelect', 'on');
     if fname == 0
         q = menu('You have not selected a data file. Click OK to continue or CANCEL to quit', ...
             {'OK','CANCEL'});
@@ -84,7 +85,7 @@ dod = hmrR_Intensity2OD(intensity_nirs);
 % a similar manner by the vector _tIncAuto_.
 
 % PARAMETERS:
-tMotion = 0.5;
+tMotion = 1.0;
 tMask = 1.0;
 STDEVthresh = 10;
 AMPthresh = 1.00;
@@ -199,7 +200,7 @@ linkaxes(axes_array, 'x')
 % Pinti et al., 2018>) in the healthy adult population. We will additionally filter 
 % frequencies bellow 0.01 Hz, and we will do so bu means of a bandpass filter.
 
-dhbFilt = hmrR_BandpassFilt(dhb, 0.01, 0.1);
+dhbFilt = hmrR_BandpassFilt(dhb, 0.01, 0.5);
 %% Average Over Trials
 % Averaging of data is usually first done across trials per condition, and, 
 % if available, over different sessions (also called runs), and then over subjects 

@@ -12,8 +12,9 @@
 clear all; close all;
 
 % Select data file to process
+p = fileparts(which('simple_pipeline.m'));
 while 1
-    [fname, pname] = uigetfile('*.snirf', 'Select snirf file(s)', 'MultiSelect', 'on');
+    [fname, pname] = uigetfile([p, '/../SampleData/', '*.snirf'], 'Select snirf file(s)', 'MultiSelect', 'on');
     if fname == 0
         q = menu('You have not selected a data file. Click OK to continue or CANCEL to quit', ...
             {'OK','CANCEL'});

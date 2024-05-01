@@ -50,7 +50,7 @@ checkForUpdates('Homer3');
 gdir = cfg.GetValue('Last Group Folder');
 if isempty(gdir)
     if isdeployed()
-        groupDirs = {[getAppDir(), 'SubjDataSample']};
+        groupDirs = {[getAppDir(), 'SampleData']};
     end
 end
 

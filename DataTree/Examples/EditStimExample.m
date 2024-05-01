@@ -24,7 +24,7 @@ function EditStimExample(dataSetDir)
 %
 %   Examples:
 %       cd <local_path>/DataTree
-%       EditStimExample('./Examples/SubjDataSample')
+%       EditStimExample('./Examples/SampleData')
 %
 
 
@@ -33,7 +33,7 @@ function EditStimExample(dataSetDir)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ~exist('dataSetDir','var')
     f = which('EditStimExample');
-    dataSetDir = [fileparts(f), '/SubjDataSample']; 
+    dataSetDir = [fileparts(f), '/SampleData']; 
 end
 
 

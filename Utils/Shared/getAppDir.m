@@ -42,6 +42,9 @@ if isdeployed() || strcmp(isdeployed_override, 'isdeployed')
         dirname = [dirnameHome, '/atlasviewer/'];
         cd(currdir);
     end
+    if ~ispathvalid(dirname)
+        mkdir(dirname);
+    end
 else
     dirname = fileparts(which('AtlasViewerGUI.m'));
 end
@@ -72,6 +75,9 @@ if isdeployed() || strcmp(isdeployed_override, 'isdeployed')
         dirname = [dirnameHome, '/homer3/'];
         cd(currdir);
     end
+    if ~ispathvalid(dirname)
+        mkdir(dirname);
+    end
 else
     dirname = fileparts(which('Homer3.m'));
 end
@@ -101,6 +107,9 @@ if isdeployed() || strcmp(isdeployed_override, 'isdeployed')
         dirnameHome = pwd;
         dirname = [dirnameHome, '/datatree/'];
         cd(currdir);
+    end
+    if ~ispathvalid(dirname)
+        mkdir(dirname);
     end
 else
     dirname = fileparts(which('DataTreeClass.m'));

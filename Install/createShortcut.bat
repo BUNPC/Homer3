@@ -1,6 +1,10 @@
 
 @echo ====================================
-@echo Inside createShortcut.bat %1 %2 
+if not "%~3"=="" (
+    @echo Inside createShortcut.bat %1 %2 %3
+) else if not "%~2"==""  (
+    @echo Inside createShortcut.bat %1 %2
+)
 
 @SET DESKTOP_REG_ENTRY="HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
 @SET DESKTOP_REG_KEY="Desktop"
@@ -16,8 +20,13 @@
 @echo IF EXIST "%DESKTOP_DIR%"\%2.lnk (del /Q "%DESKTOP_DIR%"\%2.lnk)
 @IF EXIST "%DESKTOP_DIR%"\%2.lnk (del /Q "%DESKTOP_DIR%"\%2.lnk)
 
-@echo cscript "%dirnameSrc%"\createShortcut.vbs %1\%2
-@cscript "%dirnameSrc%"\createShortcut.vbs %1\%2
+if not "%~3"=="" (
+    @echo cscript "%dirnameSrc%"\createShortcut.vbs %1\%2\%3
+    @cscript "%dirnameSrc%"\createShortcut.vbs %1\%2\%3
+) else if not "%~2"==""  (
+    @echo cscript "%dirnameSrc%"\createShortcut.vbs %1\%2
+    @cscript "%dirnameSrc%"\createShortcut.vbs %1\%2
+) 
 
 @echo IF EXIST %1\%2.lnk (move %1\%2.lnk "%DESKTOP_DIR%"\%2.lnk)
 @IF EXIST %1\%2.lnk (move %1\%2.lnk "%DESKTOP_DIR%"\%2.lnk)

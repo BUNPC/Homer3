@@ -1033,6 +1033,7 @@ if maingui.dataTree.LoadCurrElem() < 0
     MessageBox('Could not load current processing element. Acquisition files might be outdated or corrupted');
     return;
 end
+set(handles.textFileWarning, 'string',maingui.dataTree.currElem.GetErrorMsg(), 'fontsize',8, 'fontweight','bold');
 
 DisplayAxesSDG(handles);
 hObject = DisplayData(handles, hObject);

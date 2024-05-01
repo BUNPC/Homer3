@@ -724,6 +724,9 @@ classdef DataFilesClass < handle
                 obj.nfiles = obj.nfiles - length(errorIdxs);
             end
             close(hwait);
+
+            obj.logger.Write('\n');
+            
         end
         
         

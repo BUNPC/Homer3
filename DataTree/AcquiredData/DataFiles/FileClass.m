@@ -450,19 +450,22 @@ classdef FileClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------
         function err = ErrorCheckName(obj)
+            err = 0;
             [p1,f1] = fileparts(obj.name);
             [p2,f2] = fileparts(filesepStandard(obj.rootdir,'nameonly:file'));
             [~,f3]  = fileparts(p2);
             if strcmp(f1, p1)
-                obj.err = -1;
+                err = -1;
             end
             if strcmp(f1, f2)
-                obj.err = -2;
+                err = -2;
             end
             if strcmp(f1, f3)
-                obj.err = -3;
+                err = -3;
             end
-            err = obj.err;
+            if err ~= 0
+                obj.err = err;
+            end
         end
         
         

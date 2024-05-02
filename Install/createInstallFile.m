@@ -14,7 +14,7 @@ setNamespace(exename)
 
 % Generate a LastCheckForUpdates.dat in case that we  haven't run Homer
 % before creating a build
-checkForHomerUpdates()
+checkForUpdates('Homer3')
 
 if ~exist('options','var') || isempty(options)
     options = 'all';
@@ -48,7 +48,7 @@ end
 mkdir([dirnameInstall, installfilename]);
 mkdir([dirnameInstall, installfilename, '/FuncRegistry']);
 mkdir([dirnameInstall, installfilename, '/FuncRegistry/UserFunctions']);
-mkdir([dirnameInstall, installfilename, '/SubjDataSample']);
+mkdir([dirnameInstall, installfilename, '/SampleData']);
 
 % Generate executables
 if ~strcmp(options, 'nobuild')
@@ -86,8 +86,8 @@ for ii = 1:length(platform.setup_exe)
     end
 end
 
-if exist([dirnameApp, 'SubjDataSample'],'dir')
-    copyfile([dirnameApp, 'SubjDataSample'], [dirnameInstall, installfilename, '/SubjDataSample']);
+if exist([dirnameApp, 'SampleData'],'dir')
+    copyfile([dirnameApp, 'SampleData'], [dirnameInstall, installfilename, '/SampleData']);
 end
 
 for ii=1:length(platform.createshort_script)

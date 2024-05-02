@@ -53,7 +53,7 @@ for iBlk=1:length(snirf.data)
     s = snirf.GetStims(t);
     
     dt = (t(end)-t(1))/length(t);
-    tRangeIdx = [floor(tRange(1)/dt):ceil(tRange(2)/dt)];
+    tRangeIdx = floor(tRange(1)/dt):ceil(tRange(2)/dt);
     
     smax = max(s,[],2);
     lstS = find(smax==1);
@@ -66,7 +66,7 @@ for iBlk=1:length(snirf.data)
             s(lstS(iS),:) = -1*abs(s(lstS(iS),:));
         end
     end
-    snirf.SetStims_MatInput(s, t);
+    snirf.EditStates_MatInput(s, t);
 end
 stim = snirf.stim;
 

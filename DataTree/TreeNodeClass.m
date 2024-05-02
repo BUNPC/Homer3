@@ -2187,6 +2187,17 @@ classdef TreeNodeClass < handle
         
         
         % ------------------------------------------------------------
+        function msg = GetErrorMsg(obj)
+            msg = '';
+            if isempty(obj.acquired)
+                return;
+            end
+            msg = obj.acquired.GetErrorMsg();
+        end
+
+        
+        
+        % ------------------------------------------------------------
         function Print(obj, indent)
             obj.logger.Write('%s%s\n', blanks(indent), obj.procStream.output.SetFilename([obj.path, obj.GetOutputFilename()]) );
         end

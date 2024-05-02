@@ -1,4 +1,4 @@
-function pretty_print_struct(st, indent, option, logger)
+function pretty_print_struct(st, indent, option)
 spaces = '';
 
 if ~exist('st','var') || isempty(st)
@@ -10,11 +10,6 @@ end
 if ~exist('option','var') || isempty(option)
     option = 1;
 end
-if ~exist('logger','var')
-    logger = [];
-end
-logger = InitLogger(logger);
-
 if iswholenum(indent)
     spaces = blanks(indent);
 elseif ischar(indent)
@@ -22,6 +17,7 @@ elseif ischar(indent)
 end
 
 if isstruct(st) || isobject(st)
+    fields = properties(st);    
     s = evalc('disp(st)');
     c = str2cell_fast(s, char(10));
     for ii=1:length(c)

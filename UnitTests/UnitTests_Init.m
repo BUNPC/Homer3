@@ -6,7 +6,7 @@ global testidx;
 global logger
 global cfg
 global maingui
-global SCRAMBLE
+global SCRAMBLE_CHANNELS
 global ERROR_ODDS_CONST
 
 if ~exist('standalone','var') || isempty(standalone)
@@ -44,7 +44,7 @@ if start
     reg = RegistriesClass();
     reg.DeleteSaved();
     
-    SCRAMBLE         = true;
+    SCRAMBLE_CHANNELS  = true;
     ERROR_ODDS_CONST = generateErrorOddsConstant(0);    
 end
 

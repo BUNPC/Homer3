@@ -228,7 +228,9 @@ classdef StimClass < FileLoadSaveClass
             end
             
             % Now check contents
-            if ~all( abs(obj.data(:)-obj2.data(:)) < (obj.errmargin/10) )
+            d1 = sortrows(obj.data);
+            d2 = sortrows(obj2.data);
+            if ~all( abs(d1(:)-d2(:)) < (obj.errmargin/10) )
                 return;
             end
             
@@ -487,14 +489,18 @@ classdef StimClass < FileLoadSaveClass
 
         
         % ----------------------------------------------------------------------------------
-        function EditState(obj, tPts, state)
-            if isempty(obj.data)
-                return;
-            end
+        function EditState(obj, tPts, state, errmargin)
             if ~exist('state','var')
                 state = 1;
             end
-            k = GetIncludedStimIdxs(obj, tPts);
+            if isempty(obj.data)
+                return;
+            end
+            if exist('errmargin','var')
+                k = obj.GetIncludedStimIdxs(tPts, errmargin);
+            else
+                k = obj.GetIncludedStimIdxs(tPts);
+            end
             obj.states(k,2) = state;
         end
         
@@ -529,12 +535,14 @@ classdef StimClass < FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function k = GetIncludedStimIdxs(obj, tPts)
+        function k = GetIncludedStimIdxs(obj, tPts, errmargin)
             k = [];
-            if length(tPts)<2
-                errmargin = obj.errmargin;
-            else
-                errmargin = mean(diff(tPts));
+            if ~exist('errmargin','var')
+                if length(tPts)<2
+                    errmargin = obj.errmargin;
+                else
+                    errmargin = mean(diff(tPts));
+                end
             end
             for ii = 1:size(obj.data,1)
                 if ~isempty(find( abs(obj.data(ii,1)-tPts) < errmargin))
@@ -555,7 +563,7 @@ classdef StimClass < FileLoadSaveClass
             if ~exist('tPts','var')
                 tPts = obj.data(:,1);
             end
-            k = GetIncludedStimIdxs(obj, tPts);
+            k = obj.GetIncludedStimIdxs(tPts);
             obj.data(k,2) = duration;
         end
 

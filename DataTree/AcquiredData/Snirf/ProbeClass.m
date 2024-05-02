@@ -3,21 +3,24 @@ classdef ProbeClass < FileLoadSaveClass
     properties
         wavelengths
         wavelengthsEmission
+        sourceLabels
         sourcePos2D
+        sourcePos3D
+        detectorLabels
         detectorPos2D
+        detectorPos3D
+        landmarkLabels
         landmarkPos2D
         landmarkPos3D
-        sourcePos3D
-        detectorPos3D
         frequencies
         timeDelays
         timeDelayWidths
         momentOrders
         correlationTimeDelays
         correlationTimeDelayWidths
-        sourceLabels
-        detectorLabels
-        landmarkLabels
+        coordinateSystem
+        coordinateSystemDescription
+        useLocalIndex
     end
     
     properties (Access = private)
@@ -33,6 +36,24 @@ classdef ProbeClass < FileLoadSaveClass
             % Set class properties not part of the SNIRF format
             obj.SetFileFormat('hdf5');
             obj.scaling = 1;            
+
+            obj.wavelengths          = [];
+            obj.wavelengthsEmission  = [];
+            obj.sourcePos2D  = [];
+            obj.detectorPos2D  = [];
+            obj.sourcePos3D  = [];
+            obj.detectorPos3D  = [];
+            obj.frequencies  = [];
+            obj.timeDelays  = [];
+            obj.timeDelayWidths  = [];
+            obj.momentOrders = [];
+            obj.correlationTimeDelays = [];
+            obj.correlationTimeDelayWidths = [];
+            obj.sourceLabels = {};
+            obj.detectorLabels = {};
+            obj.coordinateSystem = '';
+            obj.coordinateSystemDescription = '';
+            obj.useLocalIndex = 0;
             
             % Set SNIRF fomat properties
             if nargin>0
@@ -71,37 +92,16 @@ classdef ProbeClass < FileLoadSaveClass
                         obj.landmarkPos3D = SD.DummyPos;
                         obj.landmarkLabels = SD.Landmarks3D.labels;
                     end
-                    obj.frequencies  = 1;
-                    obj.timeDelays  = 0;
-                    obj.timeDelayWidths  = 0;
-                    obj.momentOrders = [];
-                    obj.correlationTimeDelays = 0;
-                    obj.correlationTimeDelayWidths = 0;
-                    for ii=1:size(SD.SrcPos)
+                    for ii = 1:size(SD.SrcPos)
                         obj.sourceLabels{ii} = ['S',num2str(ii)];
                     end
-                    for ii=1:size(SD.DetPos)
+                    for ii = 1:size(SD.DetPos)
                         obj.detectorLabels{ii} = ['D',num2str(ii)];
                     end
                 elseif ischar(varargin{1})
                     obj.SetFilename(varargin{1});
                     obj.Load(varargin{1});
                 end
-            else
-                obj.wavelengths          = [];
-                obj.wavelengthsEmission  = [];
-                obj.sourcePos2D  = [];
-                obj.detectorPos2D  = [];
-                obj.sourcePos3D  = [];
-                obj.detectorPos3D  = [];
-                obj.frequencies  = 1;
-                obj.timeDelays  = 0;
-                obj.timeDelayWidths  = 0;
-                obj.momentOrders = [];
-                obj.correlationTimeDelays = 0;
-                obj.correlationTimeDelayWidths = 0;
-                obj.sourceLabels = {};
-                obj.detectorLabels = {};
             end
         end
 
@@ -151,7 +151,39 @@ classdef ProbeClass < FileLoadSaveClass
         
         
         % -------------------------------------------------------
+        function ScaleProjection2D(obj)
+            if size(obj.sourcePos2D,1)
+                dm_src2d = distmatrix([obj.sourcePos2D, zeros(size(obj.sourcePos2D,1),1)]);
+            else
+                dm_src2d = distmatrix(obj.sourcePos2D, zeros);
+            end
+            dm_src3d = distmatrix(obj.sourcePos3D);
+            exp = round(log10(mean(dm_src3d(dm_src3d(:)>0)))) - round(log10(mean(dm_src2d(dm_src2d(:)>0))));
+            scaleFactor = 10^exp;
+            obj.sourcePos2D = obj.sourcePos2D*scaleFactor;
+
+            if size(obj.detectorPos2D,1)
+                dm_det2d = distmatrix([obj.detectorPos2D, zeros(size(obj.detectorPos2D,1),1)]);
+            else
+                dm_det2d = distmatrix(obj.detectorPos2D, zeros);
+            end
+            dm_det3d = distmatrix(obj.detectorPos3D);
+            exp = round(log10(mean(dm_det3d(dm_det3d(:)>0)))) - round(log10(mean(dm_det2d(dm_det2d(:)>0))));
+            scaleFactor = 10^exp;
+            obj.detectorPos2D = obj.detectorPos2D*scaleFactor;
+        end
+            
+        
+        
+        
+        % -------------------------------------------------------
         function Project_3D_to_2D(obj)             
+            if all(obj.sourcePos2D(:)==0)
+                obj.sourcePos2D = [];
+            end
+            if all(obj.detectorPos2D(:)==0)
+                obj.detectorPos2D = [];
+            end
             if isempty(obj.sourcePos2D) && isempty(obj.detectorPos2D)
                 if isempty(obj.landmarkPos3D) || ~obj.isValidLandmarkLabels()
                     nSource = size(obj.sourcePos3D,1);
@@ -220,6 +252,7 @@ classdef ProbeClass < FileLoadSaveClass
                         %
                         obj.sourcePos2D = convert_optodepos_to_circlular_2D_pos(obj.sourcePos3D, T, norm_factor);
                         obj.detectorPos2D = convert_optodepos_to_circlular_2D_pos(obj.detectorPos3D, T, norm_factor);
+                        obj.ScaleProjection2D();
                     end
                 end
             end
@@ -356,23 +389,44 @@ classdef ProbeClass < FileLoadSaveClass
             obj.landmarkPos3D  = obj.landmarkPos3D / obj.scaling;
             
             % Now save
-            hdf5write_safe(fid, [location, '/wavelengths'], obj.wavelengths, 'array');
-            hdf5write_safe(fid, [location, '/wavelengthsEmission'], obj.wavelengthsEmission, 'array');
+            hdf5write_safe(fid, [location, '/wavelengths'], obj.wavelengths, 'vector');
             hdf5write_safe(fid, [location, '/sourcePos2D'], obj.sourcePos2D, 'array');
             hdf5write_safe(fid, [location, '/detectorPos2D'], obj.detectorPos2D, 'array');
             hdf5write_safe(fid, [location, '/landmarkPos2D'], obj.landmarkPos2D, 'array');
             hdf5write_safe(fid, [location, '/sourcePos3D'], obj.sourcePos3D, 'array');
             hdf5write_safe(fid, [location, '/detectorPos3D'], obj.detectorPos3D, 'array');
             hdf5write_safe(fid, [location, '/landmarkPos3D'], obj.landmarkPos3D, 'array');
-            hdf5write_safe(fid, [location, '/frequencies'], obj.frequencies, 'array');
-            hdf5write_safe(fid, [location, '/timeDelays'], obj.timeDelays, 'array');
-            hdf5write_safe(fid, [location, '/timeDelayWidths'], obj.timeDelayWidths, 'array');
-            hdf5write_safe(fid, [location, '/momentOrders'], obj.momentOrders, 'array');
-            hdf5write_safe(fid, [location, '/correlationTimeDelays'], obj.correlationTimeDelays, 'array');
-            hdf5write_safe(fid, [location, '/correlationTimeDelayWidths'], obj.correlationTimeDelayWidths, 'array');
-            hdf5write_safe(fid, [location, '/sourceLabels'], obj.sourceLabels, 'array');
-            hdf5write_safe(fid, [location, '/detectorLabels'], obj.detectorLabels, 'array');
-            hdf5write_safe(fid, [location, '/landmarkLabels'], obj.landmarkLabels, 'array');
+            
+            if ~isempty(obj.sourceLabels)
+                hdf5write_safe(fid, [location, '/sourceLabels'], obj.sourceLabels, 'array');
+            end
+            if ~isempty(obj.detectorLabels)
+                hdf5write_safe(fid, [location, '/detectorLabels'], obj.detectorLabels, 'array');
+            end
+            if ~isempty(obj.landmarkLabels)
+                hdf5write_safe(fid, [location, '/landmarkLabels'], obj.landmarkLabels, 'array');
+            end
+            if ~isempty(obj.wavelengthsEmission)
+                hdf5write_safe(fid, [location, '/wavelengthsEmission'], obj.wavelengthsEmission, 'vector');
+            end
+            if ~isempty(obj.frequencies)
+                hdf5write_safe(fid, [location, '/frequencies'], obj.frequencies, 'vector');
+            end
+            if ~isempty(obj.timeDelays)
+                hdf5write_safe(fid, [location, '/timeDelays'], obj.timeDelays, 'vector');
+            end
+            if ~isempty(obj.timeDelayWidths)
+                hdf5write_safe(fid, [location, '/timeDelayWidths'], obj.timeDelayWidths, 'vector');
+            end
+            if ~isempty(obj.momentOrders)
+                hdf5write_safe(fid, [location, '/momentOrders'], obj.momentOrders, 'vector');
+            end
+            if ~isempty(obj.correlationTimeDelays)
+                hdf5write_safe(fid, [location, '/correlationTimeDelays'], obj.correlationTimeDelays, 'vector');
+            end
+            if ~isempty(obj.correlationTimeDelayWidths)
+                hdf5write_safe(fid, [location, '/correlationTimeDelayWidths'], obj.correlationTimeDelayWidths, 'vector');
+            end
         end
         
         
@@ -541,11 +595,31 @@ classdef ProbeClass < FileLoadSaveClass
                     return;
                 end
             end
+            if ~isempty(obj.sourcePos2D)
+                if size(obj.sourcePos2D,2) < 2
+                    return;
+                end
+            end
+            if ~isempty(obj.sourcePos3D)
+                if size(obj.sourcePos3D,2) < 3
+                    return;
+                end
+            end
             if iscolumn(obj.detectorPos2D)
                 return;
             end
             if length(obj.detectorPos2D)>4
                 if size(obj.detectorPos2D,2) > size(obj.detectorPos2D,1)
+                    return;
+                end
+            end
+            if ~isempty(obj.detectorPos2D)
+                if size(obj.detectorPos2D,2) < 2
+                    return;
+                end
+            end
+            if ~isempty(obj.detectorPos3D)
+                if size(obj.detectorPos3D,2) < 3
                     return;
                 end
             end

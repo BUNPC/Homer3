@@ -76,7 +76,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             if ~ischar(varargin{1}) && nargin==1
                 obj.ErrorCheck();
                 return
-            end
+            end           
             
             if nargin==2
                 obj.SetDataStorageScheme(varargin{2});
@@ -213,7 +213,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         % ---------------------------------------------------------
         function err = LoadTime(obj, fdata, err)
             if nargin == 1
-                fdata = load(obj.GetFilename(),'-mat', 't');
+                load(obj.GetFilename(),'-mat', 't');
                 err = 0;
                 return
             elseif nargin == 2
@@ -238,8 +238,12 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         % ---------------------------------------------------------
         function err = LoadProbeMeasList(obj, fdata, err)
-            if isproperty(fdata,'SD')
-                obj.CopyProbe(fdata.SD);
+            SD = fdata;
+            while isproperty(SD,'SD')
+                SD = SD.SD;
+            end
+            if isproperty(SD,'SrcPos')
+                obj.CopyProbe(SD);
                 if isempty(obj.SD) && err == 0
                     err = -4;
                 end
@@ -361,10 +365,15 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             end
             [~, k1] = sortrows(obj.SD.MeasList);
             [~, k2] = sortrows(obj2.SD.MeasList);
+            
+            % Compare meas list dimensions first - if that's not equal then the probes aren't equal
+            if ~all( size(obj.SD.MeasList(k1,:)) == size(obj2.SD.MeasList(k2,:)) )
+                return;
+            end
+
             if ~all(obj.SD.MeasList(k1,:) == obj2.SD.MeasList(k2,:))
                 return;
-            end            
-
+            end
             
             for kk = 1:length(fields)
                 for jj = 1:length(fields{kk})
@@ -407,6 +416,54 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                     end
                 end
             end
+            b = true;
+        end
+        
+        
+        
+        % -------------------------------------------------------
+        function b = ProbeSimilar(obj, obj2)
+            b = false;
+                                              
+            % MeasList
+            [~, k1] = sortrows(obj.SD.MeasList);
+            [~, k2] = sortrows(obj2.SD.MeasList);
+            if ~all( size(obj.SD.MeasList) == size(obj2.SD.MeasList) )
+                return;
+            end
+            if ~all(obj.SD.MeasList(k1,:) == obj2.SD.MeasList(k2,:))
+                return;
+            end
+            
+            if ~all( size(obj.SD.SrcPos) == size(obj2.SD.SrcPos) )
+                return;
+            end
+            if ~all(obj.SD.SrcPos == obj2.SD.SrcPos)
+                return;
+            end
+            
+            if ~all( size(obj.SD.SrcPos3D) == size(obj2.SD.SrcPos3D) )
+                return;
+            end
+            if ~all( obj.SD.SrcPos3D == obj2.SD.SrcPos3D )
+                return;
+            end
+                        
+            if ~all( size(obj.SD.DetPos) == size(obj2.SD.DetPos) )
+                return;
+            end
+            if ~all( obj.SD.DetPos == obj2.SD.DetPos )
+                return;
+            end
+            
+            if ~all( size(obj.SD.DetPos3D) == size(obj2.SD.DetPos3D) )
+                return;
+            end
+            if ~all( obj.SD.DetPos3D == obj2.SD.DetPos3D )
+                return;
+            end
+            
+            
             b = true;
         end
         
@@ -460,8 +517,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
             end
             if ~all(obj.aux(:) == obj2.aux(:))
                 return;
-            end
-            
+            end            
             B = true;
         end
         
@@ -612,7 +668,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                     ml(ii).detectorIndex = obj.SD.MeasList(ii,2);
                     ml(ii).dataTypeIndex = 0;
                     ml(ii).wavelengthIndex = obj.SD.MeasList(ii,4);
-            end
+                end
             end
         end
         
@@ -1261,7 +1317,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         
         % ----------------------------------------------------------------------------------
-        function CopyProbe(obj, SD)             %#ok<INUSD>
+        function CopyProbe(obj, SD)
             fields = propnames(obj.SD);
             for ii = 1:length(fields)
                 if eval( sprintf('isfield(SD, ''%s'')', fields{ii}) )
@@ -1339,7 +1395,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                                     
             % MesListAct
             if size(obj.SD.MeasListAct,1) < size(obj.SD.MeasList,1)
-                d = size(obj.SD.MeasListAct,1) - size(obj.SD.MeasList,1);
+                d = size(obj.SD.MeasListAct,1) - size(obj.SD.MeasList,1); %#ok<*PROPLC>
                 if d < 0
                     obj.SD.MeasListAct(end+1:end+abs(d)) = ones(abs(d),1);
                 elseif d>1
@@ -1376,33 +1432,121 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 end
             end
         end
-
+        
         
         
         % ----------------------------------------------------------------------------------
-        function ConvertSnirfProbe(obj, snirf)
-            obj.SD.Lambda = snirf.probe.wavelengths;
-            obj.SD.SrcPos = snirf.probe.sourcePos2D;
-            obj.SD.DetPos = snirf.probe.detectorPos2D;
-            obj.SD.SrcPos3D = snirf.probe.sourcePos3D;
-            obj.SD.DetPos3D = snirf.probe.detectorPos3D;
-            obj.SD.MeasList = snirf.GetMeasList();
-            obj.SD.SpatialUnit = snirf.GetLengthUnit();
-            if length(snirf.probe.landmarkLabels) == size(snirf.probe.landmarkPos3D,1)
-                obj.SD.Landmarks3D.labels   = snirf.probe.landmarkLabels;
-            	obj.SD.Landmarks3D.pos      = snirf.probe.landmarkPos3D;
+        function b = IsProbeFlat(obj)
+            if all(size(obj.SD.SrcPos) == size(obj.SD.SrcPos3D))
+                if ~all(obj.SD.SrcPos == obj.SD.SrcPos3D)
+                    b = false;
+                    return;
+                end
             end
-            if length(snirf.probe.landmarkLabels) == size(snirf.probe.landmarkPos2D,1)
-            	obj.SD.Landmarks2D.labels   = snirf.probe.landmarkLabels;
-                obj.SD.Landmarks2D.pos      = snirf.probe.landmarkPos2D;
-        	end
-            if     ~isempty(obj.SD.Landmarks3D.labels)
-                obj.SD.Landmarks.pos        = obj.SD.Landmarks3D.pos;
-                obj.SD.Landmarks.labels     = obj.SD.Landmarks3D.labels;
-            elseif ~isempty(obj.SD.Landmarks2D.labels)
-                obj.SD.Landmarks.pos        = obj.SD.Landmarks2D.pos;
-                obj.SD.Landmarks.labels     = obj.SD.Landmarks2D.labels;
+            if all(size(obj.SD.DetPos) == size(obj.SD.DetPos3D))
+                if ~all(obj.SD.DetPos == obj.SD.DetPos3D)
+                    b = false;
+                    return
+                end
+            end
+            optpos = [obj.SD.SrcPos3D; obj.SD.DetPos3D];
+            ncoord = size(optpos, 2);
+            for ii = 1:ncoord
+                if length(unique(optpos(:,ii))) == 1
+                    b = true;
+                    return
+                end
+            end
+            if isempty(optpos)
+                b = true;
+                return
             end                
+            optpos = [obj.SD.SrcPos; obj.SD.DetPos];
+            ncoord = size(optpos, 2);
+            flag = zeros(1, ncoord);
+            for ii = 1:ncoord
+                if length(unique(optpos(:,ii))) > 1
+                    flag(ii) = 1;
+                end
+            end
+            if sum(flag) == ncoord
+                b = false;
+                return
+            end
+            b = true;
+        end
+        
+        
+        
+        % ----------------------------------------------------------------------------------
+        function b = Are3DLandmarksFlat(obj)
+            b = true;
+            if isempty(obj.SD.Landmarks3D.pos)
+                return;
+            end
+            ncoord = size(obj.SD.Landmarks3D.pos, 2);
+            for ii = 1:ncoord
+                if length(unique(obj.SD.Landmarks3D.pos(:,ii)))==1
+                    return;
+                end
+            end
+            b = false;
+        end
+        
+
+        
+        % ----------------------------------------------------------------------------------
+        function b = AreLandmarksFlat(obj)
+            b = true;
+            if isempty(obj.SD.Landmarks.pos)
+                return;
+            end
+            ncoord = size(obj.SD.Landmarks.pos, 2);
+            for ii = 1:ncoord
+                if length(unique(obj.SD.Landmarks.pos(:,ii)))==1
+                    return;
+                end
+            end
+            b = false;
+        end
+        
+
+        
+        % ----------------------------------------------------------------------------------
+        function err = ConvertSnirfProbe(obj, snirf)
+            err = 0;
+            if isempty(snirf)
+                return
+            end
+            if isempty(snirf.probe)
+                return
+            end
+            try
+	            obj.SD.Lambda = snirf.probe.wavelengths;
+	            obj.SD.SrcPos = snirf.probe.sourcePos2D;
+	            obj.SD.DetPos = snirf.probe.detectorPos2D;                
+	            obj.SD.SrcPos3D = snirf.probe.sourcePos3D;
+	            obj.SD.DetPos3D = snirf.probe.detectorPos3D;
+	            obj.SD.MeasList = snirf.GetMeasList();
+	            obj.SD.SpatialUnit = snirf.GetLengthUnit();
+	            if length(snirf.probe.landmarkLabels) == size(snirf.probe.landmarkPos3D,1)
+	                obj.SD.Landmarks3D.labels   = snirf.probe.landmarkLabels;
+	            	obj.SD.Landmarks3D.pos      = snirf.probe.landmarkPos3D;
+	            end
+                if length(snirf.probe.landmarkLabels) == size(snirf.probe.landmarkPos2D,1)
+                    obj.SD.Landmarks2D.labels   = snirf.probe.landmarkLabels;
+                    obj.SD.Landmarks2D.pos      = snirf.probe.landmarkPos2D;
+                end
+                if     ~isempty(obj.SD.Landmarks3D.labels)
+                    obj.SD.Landmarks.pos        = obj.SD.Landmarks3D.pos;
+                    obj.SD.Landmarks.labels     = obj.SD.Landmarks3D.labels;
+                elseif ~isempty(obj.SD.Landmarks2D.labels)
+                    obj.SD.Landmarks.pos        = obj.SD.Landmarks2D.pos;
+                    obj.SD.Landmarks.labels     = obj.SD.Landmarks2D.labels;
+                end
+            catch
+                err = -1;
+            end
         end
         
         
@@ -1441,10 +1585,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
         
         % ----------------------------------------------------------------------------------
         function ConvertSnirfAux(obj, snirf)
-            obj.aux = zeros(length(obj.t), length(snirf.aux));
-            for ii = 1:length(snirf.aux)
-                obj.aux(:,ii) = snirf.aux(ii).dataTimeSeries;
-            end
+            obj.aux = snirf.GetAuxDataMatrix();
         end
         
         
@@ -1530,7 +1671,19 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                     end
                 end
             end
-            
+            if obj.IsProbeFlat()
+                obj.SD.SrcPos3D = [];
+                obj.SD.DetPos3D = [];
+            end
+            if obj.Are3DLandmarksFlat() && ~obj.AreLandmarksFlat()
+                obj.SD.Landmarks3D.pos      = obj.SD.Landmarks.pos;
+                obj.SD.Landmarks3D.labels   = obj.SD.Landmarks.labels;
+            end
+            for ii = 1:length(obj.SD.AnchorList)
+                if ischar(obj.SD.AnchorList{ii,1})
+                    obj.SD.AnchorList{ii,1} = str2num(obj.SD.AnchorList{ii,1});
+                end
+            end
         end
         
         

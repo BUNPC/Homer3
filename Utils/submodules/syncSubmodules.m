@@ -79,7 +79,6 @@ for ii = 2:length(errs)
 end
 fprintf('\n');
 
-cmds{ii,1} = sprintf('cd %s', synctool.repoParentFull); ii = ii+1;
 for jj = 1:size(submodules,1)
     submodulename = getRepos(submodules, jj, options);
     

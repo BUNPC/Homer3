@@ -1178,7 +1178,11 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
                     p = length(obj2.GetTime());
                     q = length(obj.aux(ii).GetTime());
                 end
-                datamat(:,ii) = resample(obj.aux(ii).GetDataTimeSeries(), p, q);
+                m = resamplee(obj.aux(ii).GetDataTimeSeries(), p, q);
+                if isrow(m)
+                    m = m';
+                end
+                datamat = [datamat, m]; %#ok<AGROW>
             end
         end
         
@@ -1253,6 +1257,26 @@ classdef SnirfClass < AcqDataClass & FileLoadSaveClass
             end
         end
         
+        
+        
+        % ---------------------------------------------------------
+        function s = EditStates_MatInput(obj, s, t)
+            if nargin<2
+                return
+            end
+            if isempty(t)
+                return;
+            end
+            errmargin = mean(diff(t));
+            for ii = 1:size(s,2)
+                tidxs = find(s(:,ii)~=0);
+                for jj = 1:length(tidxs)
+                    obj.stim(ii).EditState(t(tidxs(jj)), s(tidxs(jj),ii), errmargin);
+                end
+            end
+        end
+        
+
         
         % ---------------------------------------------------------
         function s = GetStims(obj, t)

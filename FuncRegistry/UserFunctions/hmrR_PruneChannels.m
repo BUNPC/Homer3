@@ -30,8 +30,8 @@
 % Prune_Channels: mlActAuto = hmrR_PruneChannels(data, probe, mlActMan, tIncMan, dRange, SNRthresh, SDrange)
 %
 % PARAMETERS:
-% dRange: [1e4, 1e7]
-% SNRthresh: 2
+% dRange: [1.0e4, 1.0e7]
+% SNRthresh: 2.0
 % SDrange: [0.0, 45.0]
 %
 % TO DO:
@@ -126,6 +126,22 @@ for iBlk = 1:length(data)
     end
     
     chanList = chanList(:) & mlActMan{iBlk}(:,3);
+    
+    nChannelsFirstWavelength = length(chanList)/2;
+
+    firstWavelengthChannel_idx = chanList(1:nChannelsFirstWavelength);
+    secondWavelengthChannel_idx = chanList(nChannelsFirstWavelength+1:end);
+    
+    %set secondWavelengthChannel_idx to zero if firstWavelengthChannel_idx
+    %is zero and vice versa
+    secondWavelengthChannel_idx(~firstWavelengthChannel_idx) = 0; 
+    firstWavelengthChannel_idx(~secondWavelengthChannel_idx) = 0;
+    
+    % combine both
+    chanList = [firstWavelengthChannel_idx; secondWavelengthChannel_idx];
+    
+    % sanity check - total_num_channels should be number of channel pairs
+    total_num_channels_check = sum(chanList(1:nChannelsFirstWavelength) == chanList(nChannelsFirstWavelength+1:end));
     
     % update MeasListAct  
     mlActAuto{iBlk} = mlAct_Initialize(chanList, MeasList);

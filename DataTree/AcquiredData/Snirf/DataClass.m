@@ -242,7 +242,7 @@ classdef DataClass < FileLoadSaveClass
             end
             
             hdf5write_safe(fid, [location, '/dataTimeSeries'], obj.dataTimeSeries, 'array');
-            hdf5write_safe(fid, [location, '/time'], obj.time, 'array');
+            hdf5write_safe(fid, [location, '/time'], obj.time, 'vector');
             
             for ii = 1:length(obj.measurementList)
                 obj.measurementList(ii).SaveHdf5(fid, [location, '/measurementList', num2str(ii)]);
@@ -280,7 +280,16 @@ classdef DataClass < FileLoadSaveClass
                     return;
                 end
             end
+            if all(obj.dataTimeSeries==0)
+                return
+            end
             b = true;
+        end
+        
+        
+        % -------------------------------------------------------
+        function b = IsValid(obj)
+            b = obj.IsDataValid();
         end
         
         
@@ -1067,7 +1076,6 @@ classdef DataClass < FileLoadSaveClass
                 obj = DataClass();
             end
             if isempty(obj2)
-                obj = DataClass();
                 return;
             end
             if ~isa(obj2, 'DataClass')
@@ -1086,7 +1094,6 @@ classdef DataClass < FileLoadSaveClass
                 obj = DataClass();
             end
             if isempty(obj2)
-                obj = DataClass();
                 return;
             end
             if ~isa(obj2, 'DataClass')

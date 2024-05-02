@@ -144,8 +144,8 @@ classdef AuxClass < FileLoadSaveClass
             
             hdf5write_safe(fid, [location, '/name'], obj.name);
             hdf5write_safe(fid, [location, '/dataTimeSeries'], obj.dataTimeSeries, 'array');
-            hdf5write_safe(fid, [location, '/time'], obj.time, 'array');
-            hdf5write_safe(fid, [location, '/timeOffset'], obj.timeOffset, 'array');
+            hdf5write_safe(fid, [location, '/time'], obj.time, 'vector');
+            hdf5write_safe(fid, [location, '/timeOffset'], obj.timeOffset, 'vector');
         end
         
         
@@ -179,16 +179,14 @@ classdef AuxClass < FileLoadSaveClass
         % ----------------------------------------------------------------------------------
         function Copy(obj, obj2)
             if isempty(obj)
-                obj = DataClass();
+                obj = AuxClass();
             end
-            if ~isa(obj2, 'DataClass')
+            if ~isa(obj2, 'AuxClass')
                 return;
             end
-            for ii=1:length(obj2.measurementList)
-                obj.measurementList(ii) = obj2.measurementList(ii).copy();      % shallow copy ok because MeasListClass has no handle properties
-            end
-            obj.dataTimeSeries = obj2.dataTimeSeries;
-            obj.time = obj2.time;
+            obj.dataTimeSeries  = obj2.dataTimeSeries;
+            obj.time            = obj2.time;
+            obj.timeOffset      = obj2.timeOffset;
         end
         
         
@@ -196,6 +194,12 @@ classdef AuxClass < FileLoadSaveClass
         function B = eq(obj, obj2)
             B = false;
             if ~strcmp(obj.name, obj2.name)
+                return;
+            end
+            if ~all(size(obj.dataTimeSeries)==size(obj2.dataTimeSeries))
+                return;
+            end
+            if ~all(size(obj.time)==size(obj2.time))
                 return;
             end
             if ~all(obj.dataTimeSeries(:)==obj2.dataTimeSeries(:))

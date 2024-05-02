@@ -20,6 +20,7 @@ classdef FileClass < matlab.mixin.Copyable
         err
         logger
         errmsg
+        errcodeUnvalidated
     end
     
     methods
@@ -40,8 +41,8 @@ classdef FileClass < matlab.mixin.Copyable
             obj.rootdir    = '';
             obj.errmsg     = '';          % Assume file is not loadable
             obj.logger     = InitLogger(logger);            
-            obj.errmsg    = '';
             
+            obj.errcodeUnvalidated = -9999;
             
             if nargin==0
                 return;
@@ -88,7 +89,13 @@ classdef FileClass < matlab.mixin.Copyable
             obj.filename     = obj2.name;
             obj.name         = getPathRelative(rootpath, obj2.rootdir);
             obj.rootdir 	 = obj2.rootdir;
-            obj.err          = 0;          % Set error to NO ERROR            
+            obj.date         = obj2.date;
+            obj.datenum      = datestr2datenum(obj.date);
+            if obj.IsFile()
+                obj.err          = obj.errcodeUnvalidated;          % Set error to unvalidated
+            else
+                obj.err          = 0;
+            end
         end
         
         
@@ -434,7 +441,7 @@ classdef FileClass < matlab.mixin.Copyable
             if isempty(obj.name)
                 return;
             end
-            if obj.err ~= 0
+            if (obj.err ~= 0)  &&  (obj.IsValidated)
                 return;
             end
             b = false;            
@@ -443,19 +450,22 @@ classdef FileClass < matlab.mixin.Copyable
         
         % ----------------------------------------------------
         function err = ErrorCheckName(obj)
+            err = 0;
             [p1,f1] = fileparts(obj.name);
             [p2,f2] = fileparts(filesepStandard(obj.rootdir,'nameonly:file'));
             [~,f3]  = fileparts(p2);
             if strcmp(f1, p1)
-                obj.err = -1;
+                err = -1;
             end
             if strcmp(f1, f2)
-                obj.err = -2;
+                err = -2;
             end
             if strcmp(f1, f3)
-                obj.err = -3;
+                err = -3;
             end
-            err = obj.err;
+            if err ~= 0
+                obj.err = err;
+            end
         end
         
         
@@ -545,12 +555,69 @@ classdef FileClass < matlab.mixin.Copyable
         % -----------------------------------------------------
         function SetError(obj, errmsg)
             obj.errmsg = errmsg;
+            obj.err = -1;
         end
         
         
         % -----------------------------------------------------
         function msg = GetErrorMsg(obj)
             msg = obj.errmsg;
+        end
+        
+        
+        % -----------------------------------------------------
+        function SetValid(obj)
+            obj.err = 0;
+        end
+
+        
+        % -----------------------------------------------------
+        function SetErrorUnvalidated(obj)
+            obj.err = obj.errcodeUnvalidated;
+        end
+
+        
+        % -----------------------------------------------------
+        function b = IsValidated(obj)
+            b = false;
+            if obj.err == obj.errcodeUnvalidated
+                return 
+            end
+            b = true;
+        end
+        
+        
+        
+        % -----------------------------------------------------
+        function b = IsUnValidated(obj)
+            b = true;
+            if obj.err == obj.errcodeUnvalidated
+                return 
+            end
+            b = false;
+        end
+
+        
+        
+        % ----------------------------------------------------------
+        function b = eq(obj, obj2)
+            b = false;
+            if ~strcmp(obj.name, obj2.name)
+                return;
+            end
+            if ~strcmp(obj.date, obj2.date)
+                return;
+            end
+            if obj.isdir ~= obj2.isdir
+                return;
+            end
+            if obj.bytes ~= obj2.bytes
+                return;
+            end
+            if obj.datenum ~= obj2.datenum
+                return;
+            end
+            b = true;
         end
         
     end

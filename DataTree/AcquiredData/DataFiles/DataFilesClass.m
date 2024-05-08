@@ -318,7 +318,15 @@ classdef DataFilesClass < handle
                 if ~isempty(obj.files)
                     break
                 end
-            end            
+                
+                % If we're here it means we still have not found a valid dataset in any of the formats looked 
+                % at so far, but obj.dirFormats.type may have been set to non-zero because a invalid dataset 
+                % may have been found by obj.FindDataSet() then flagged as invalid by obj.ErrorCheck(). So make 
+                % sure to reset format type here otherwise wrong format could be associated with saved dataset. 
+                % To reproduce comment out this fix and add ONE error snirf file that does NOT belong in the 
+                % dataset due to being in incompatible format folder structure. BUG FIX: Jay Dubb, May 8, 2024
+                obj.dirFormats.type = 0;
+            end
             if strcmp(mode,'noerrorcheck')
                 return
             end

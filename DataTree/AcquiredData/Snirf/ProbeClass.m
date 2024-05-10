@@ -177,11 +177,9 @@ classdef ProbeClass < FileLoadSaveClass
         
         
         % -------------------------------------------------------
-        function Project_3D_to_2D(obj)             
-            if all(obj.sourcePos2D(:)==0)
+        function Project_3D_to_2D(obj)
+            if all(obj.sourcePos2D(:)==0) && all(obj.detectorPos2D(:)==0)
                 obj.sourcePos2D = [];
-            end
-            if all(obj.detectorPos2D(:)==0)
                 obj.detectorPos2D = [];
             end
             if isempty(obj.sourcePos2D) && isempty(obj.detectorPos2D)
@@ -303,23 +301,23 @@ classdef ProbeClass < FileLoadSaveClass
                 [gid, fid] = HDF5_GroupOpen(fileobj, location);
                 
                 % Load datasets
-                obj.wavelengths               = HDF5_DatasetLoad(gid, 'wavelengths');
-                obj.wavelengthsEmission       = HDF5_DatasetLoad(gid, 'wavelengthsEmission');
-                obj.sourcePos2D               = HDF5_DatasetLoad(gid, 'sourcePos2D', [], '2D') * obj.scaling;
-                obj.detectorPos2D             = HDF5_DatasetLoad(gid, 'detectorPos2D', [], '2D') * obj.scaling;
-                obj.landmarkPos2D             = HDF5_DatasetLoad(gid, 'landmarkPos2D', [], '2D') * obj.scaling;
-                obj.sourcePos3D               = HDF5_DatasetLoad(gid, 'sourcePos3D', [], '3D') * obj.scaling;
-                obj.detectorPos3D             = HDF5_DatasetLoad(gid, 'detectorPos3D', [], '3D') * obj.scaling;
-                obj.landmarkPos3D             = HDF5_DatasetLoad(gid, 'landmarkPos3D', [], '2D') * obj.scaling;
-                obj.frequencies               = HDF5_DatasetLoad(gid, 'frequencies');
+                obj.wavelengths                = HDF5_DatasetLoad(gid, 'wavelengths');
+                obj.wavelengthsEmission        = HDF5_DatasetLoad(gid, 'wavelengthsEmission');
+                obj.sourcePos2D                = HDF5_DatasetLoad(gid, 'sourcePos2D', [], '2D') * obj.scaling;
+                obj.detectorPos2D              = HDF5_DatasetLoad(gid, 'detectorPos2D', [], '2D') * obj.scaling;
+                obj.landmarkPos2D              = HDF5_DatasetLoad(gid, 'landmarkPos2D', [], '2D') * obj.scaling;
+                obj.sourcePos3D                = HDF5_DatasetLoad(gid, 'sourcePos3D', [], '3D') * obj.scaling;
+                obj.detectorPos3D              = HDF5_DatasetLoad(gid, 'detectorPos3D', [], '3D') * obj.scaling;
+                obj.landmarkPos3D              = HDF5_DatasetLoad(gid, 'landmarkPos3D', [], '2D') * obj.scaling;
+                obj.frequencies                = HDF5_DatasetLoad(gid, 'frequencies');
                 obj.timeDelays                 = HDF5_DatasetLoad(gid, 'timeDelays');
                 obj.timeDelayWidths            = HDF5_DatasetLoad(gid, 'timeDelayWidths');
                 obj.momentOrders               = HDF5_DatasetLoad(gid, 'momentOrders');
                 obj.correlationTimeDelays      = HDF5_DatasetLoad(gid, 'correlationTimeDelays');
                 obj.correlationTimeDelayWidths = HDF5_DatasetLoad(gid, 'correlationTimeDelayWidths');
-                obj.sourceLabels              = HDF5_DatasetLoad(gid, 'sourceLabels', obj.sourceLabels);
-                obj.detectorLabels            = HDF5_DatasetLoad(gid, 'detectorLabels', obj.detectorLabels);
-                obj.landmarkLabels            = HDF5_DatasetLoad(gid, 'landmarkLabels', obj.landmarkLabels);
+                obj.sourceLabels               = HDF5_DatasetLoad(gid, 'sourceLabels', obj.sourceLabels);
+                obj.detectorLabels             = HDF5_DatasetLoad(gid, 'detectorLabels', obj.detectorLabels);
+                obj.landmarkLabels             = HDF5_DatasetLoad(gid, 'landmarkLabels', obj.landmarkLabels);
                 
                 obj.Project_3D_to_2D();
                 

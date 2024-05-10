@@ -186,19 +186,19 @@ function hdftype = convert_to_hdf5_type(val)
 hdftype = '';
 switch class(val)
     case 'int8'
-        hdftype = 'H5T_STD_8LE';
+        hdftype = 'H5T_STD_I8LE';
     case 'uint8'
         hdftype = 'H5T_STD_U8LE';
     case 'int16'
-        hdftype = 'H5T_STD_16LE';
+        hdftype = 'H5T_STD_I16LE';
     case 'uint16'
         hdftype = 'H5T_STD_U16LE';
     case 'int32'
-        hdftype = 'H5T_STD_32LE';
+        hdftype = 'H5T_STD_I32LE';
     case 'uint32'
         hdftype = 'H5T_STD_U32LE';
     case 'int64'
-        hdftype = 'H5T_STD_64LE';
+        hdftype = 'H5T_STD_I64LE';
     case 'uint64'
         hdftype = 'H5T_STD_U64LE';
     case 'double'

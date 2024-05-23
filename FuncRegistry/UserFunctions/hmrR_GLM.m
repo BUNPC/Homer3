@@ -147,7 +147,7 @@ for iBlk = 1:length(data_y)
     data_yavg(iBlk)    = DataClass();
     data_yavgstd(iBlk) = DataClass();
     data_ysum2(iBlk)   = DataClass();
-    data_ynew(iBlk)    = DataClass(data_y(iBlk));
+    data_ynew(iBlk)    = DataClass(); %data_y(iBlk));
     data_yresid(iBlk)  = DataClass(data_y(iBlk));
     
     y      = data_y(iBlk).GetDataTimeSeries('reshape');
@@ -792,7 +792,15 @@ for iBlk = 1:length(data_y)
     data_ysum2(iBlk).SetTime(tHRF, true);
     
     % Set data vectors for the dc-parallel data
-    data_ynew(iBlk).SetDataTimeSeries(reshape(ynew,[size(ynew,1) size(ynew,2)*size(ynew,3)]) );
+%    data_ynew(iBlk).SetDataTimeSeries(reshape(ynew,[size(ynew,1) size(ynew,2)*size(ynew,3)]) );
+    for iCh = 1:size(ynew,3)
+        for iHb = 1:size(ynew,2)
+            data_ynew(iBlk).AddChannelHb(ml(iCh,1), ml(iCh,2), iHb, 0);
+        end
+    end
+    data_ynew(iBlk).AppendDataTimeSeries(ynew);
+    data_ynew(iBlk).SetTime(data_y.time, true);
+
     data_yresid(iBlk).SetDataTimeSeries(yresid);
     
     % Set other data blocks

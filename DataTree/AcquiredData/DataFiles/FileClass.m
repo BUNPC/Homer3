@@ -90,7 +90,7 @@ classdef FileClass < matlab.mixin.Copyable
             obj.name         = getPathRelative(rootpath, obj2.rootdir);
             obj.rootdir 	 = obj2.rootdir;
             obj.date         = obj2.date;
-            obj.datenum      = datestr2datenum(obj.date);
+            obj.datenum      = obj2.datenum;
             if obj.IsFile()
                 obj.err          = obj.errcodeUnvalidated;          % Set error to unvalidated
             else

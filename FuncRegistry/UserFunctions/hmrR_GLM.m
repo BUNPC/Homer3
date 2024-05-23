@@ -792,7 +792,7 @@ for iBlk = 1:length(data_y)
     data_ysum2(iBlk).SetTime(tHRF, true);
     
     % Set data vectors for the dc-parallel data
-    data_ynew(iBlk).SetDataTimeSeries(ynew);
+    data_ynew(iBlk).SetDataTimeSeries(reshape(ynew,[size(ynew,1) size(ynew,2)*size(ynew,3)]) );
     data_yresid(iBlk).SetDataTimeSeries(yresid);
     
     % Set other data blocks

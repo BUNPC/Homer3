@@ -11,14 +11,14 @@ base_day = 86400;      % 24*60*60;
 base_hr  = 3600;       % 60*60;
 base_min = 60;
 
-date_standard_fmt = char(datetime(datetimeStr, 'TimeZone','local','Format','MMM-dd-yyyy HH:mm:ss'));
+date_object = datetime(datetimeStr, 'TimeZone','local','Format','MMM-dd-yyyy HH:mm:ss');
 
-year    = str2num(date_standard_fmt(8:11)) - START_YEAR;
-month   = find(strcmpi(MONTHS, date_standard_fmt(1:3)));
-day     = str2num(date_standard_fmt(5:6));
-hour    = str2num(date_standard_fmt(13:14));
-min     = str2num(date_standard_fmt(16:17));
-sec     = str2num(date_standard_fmt(19:20));
+year    = date_object.Year - START_YEAR;
+month   = date_object.Month;
+day     = date_object.Day;
+hour    = date_object.Hour;
+min     = date_object.Minute;
+sec     = date_object.Second;
 
 % Now that we have a numeric date, check it for errors
 if year<0

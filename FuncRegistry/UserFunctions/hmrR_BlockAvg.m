@@ -73,7 +73,7 @@ for kk=1:length(data)
         yblk = zeros(nPost-nPre+1,size(y,2),size(y,3),size(s,2));
     elseif strcmp(datatype{1}, 'dOD')
         ml = data(kk).GetMeasList('reshape');
-        yblk = zeros(nPost-nPre+1,size(y,2),size(s,2));
+        yblk = zeros(nPost-nPre+1,size(y,2),size(y,3),size(s,2));
     else
         return;
     end
@@ -88,7 +88,7 @@ for kk=1:length(data)
                     yblk(:,:,:,nBlk) = y(lstS(iT)+[nPre:nPost],:,:); %changed from yblk(:,:,:,end+1)
                 elseif strcmp(datatype{1}, 'dOD')
                     nBlk = nBlk + 1;
-                    yblk(:,:,nBlk) = y(lstS(iT)+[nPre:nPost],:); % changd from yblk(:,:,end+1)
+                    yblk(:,:,:,nBlk) = y(lstS(iT)+[nPre:nPost],:,:); % changd from yblk(:,:,end+1)
                 end
             else
                 fprintf('WARNING: Trial %d for Condition %d EXCLUDED because of time range\n',iT,iC);
@@ -133,31 +133,35 @@ for kk=1:length(data)
             data_std(kk).AppendDataTimeSeries(ystd(:,:,:,iC));
             data_sum2(kk).AppendDataTimeSeries(ysum2(:,:,:,iC));
         elseif strcmp(datatype{1}, 'dOD')
-            yTrials(iC).yblk = yblk(:,:,1:nBlk);
-            yavg(:,:,iC) = mean(yblk(:,:,1:nBlk),3);
-            ystd(:,:,iC) = std(yblk(:,:,1:nBlk),[],3);
+            yTrials(iC).yblk = yblk(:,:,:,1:nBlk);
+            yavg(:,:,:,iC) = mean(yblk(:,:,:,1:nBlk),4);
+            ystd(:,:,:,iC) = std(yblk(:,:,:,1:nBlk),[],4);
             nTrials{kk}(iC) = nBlk;
 
-            % Loop over all wavelengths
-            for ii=1:size(yavg,2)
-                foom = ones(size(yavg,1),1)*mean(yavg(1:-nPre,ii,iC),1);
-                yavg(:,ii,iC) = yavg(:,ii,iC) - foom;
+            % Loop over all channels
+            for ii=1:size(yavg,3)
+                foom = ones(size(yavg,1),1)*mean(yavg(1:-nPre,:,ii,iC),1);
+                yavg(:,:,ii,iC) = yavg(:,:,ii,iC) - foom;
                 
                 for iBlk = 1:nBlk
-                    yTrials(iC).yblk(:,ii,iBlk) = yTrials(iC).yblk(:,ii,iBlk) - foom;
+                    yTrials(iC).yblk(:,:,ii,iBlk) = yTrials(iC).yblk(:,:,ii,iBlk) - foom;
                 end
-                ysum2(:,ii,iC) = sum( yTrials(iC).yblk(:,ii,1:nBlk).^2 ,3);
+                ysum2(:,:,ii,iC) = sum( yTrials(iC).yblk(:,:,ii,1:nBlk).^2 ,4);
 
                 % Snirf stuff: set channel descriptors
-                data_avg(kk).AddChannelDod(ml(ii,1), ml(ii,2), ml(ii,4), iC);
-                data_std(kk).AddChannelDod(ml(ii,1), ml(ii,2), ml(ii,4), iC);
-                data_sum2(kk).AddChannelDod(ml(ii,1), ml(ii,2), ml(ii,4), iC);
+                data_avg(kk).AddChannelDod(ml((ii-1)*2+1,1), ml((ii-1)*2+1,2), ml((ii-1)*2+1,4), iC);
+                data_std(kk).AddChannelDod(ml((ii-1)*2+1,1), ml((ii-1)*2+1,2), ml((ii-1)*2+1,4), iC);
+                data_sum2(kk).AddChannelDod(ml((ii-1)*2+1,1), ml((ii-1)*2+1,2), ml((ii-1)*2+1,4), iC);
+
+                data_avg(kk).AddChannelDod(ml(ii*2,1), ml(ii*2,2), ml(ii*2,4), iC);
+                data_std(kk).AddChannelDod(ml(ii*2,1), ml(ii*2,2), ml(ii*2,4), iC);
+                data_sum2(kk).AddChannelDod(ml(ii*2,1), ml(ii*2,2), ml(ii*2,4), iC);
             end
             
             % Snirf stuff: set data vectors
-            data_avg(kk).AppendDataTimeSeries(yavg(:,:,iC));
-            data_std(kk).AppendDataTimeSeries(ystd(:,:,iC));
-            data_sum2(kk).AppendDataTimeSeries(ysum2(:,:,iC));
+            data_avg(kk).AppendDataTimeSeries(yavg(:,:,:,iC));
+            data_std(kk).AppendDataTimeSeries(ystd(:,:,:,iC));
+            data_sum2(kk).AppendDataTimeSeries(ysum2(:,:,:,iC));
         end
     end
     

@@ -168,6 +168,7 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                     return;
                 end
                 
+                
                 warning('off', 'MATLAB:load:variableNotFound');
                 fdata = load(fname,'-mat', 'SD','t','d','s','aux','CondNames');
                 
@@ -358,20 +359,8 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                 'SrcMap'; ...
                 };
             
-            
             % Check MeasList explicitely
-            if (isfield(obj.SD,'MeasList') && ~isfield(obj2.SD,'MeasList')) || ~isfield(obj.SD,'MeasList') && isfield(obj2.SD,'MeasList')
-                return;
-            end
-            [~, k1] = sortrows(obj.SD.MeasList);
-            [~, k2] = sortrows(obj2.SD.MeasList);
-            
-            % Compare meas list dimensions first - if that's not equal then the probes aren't equal
-            if ~all( size(obj.SD.MeasList(k1,:)) == size(obj2.SD.MeasList(k2,:)) )
-                return;
-            end
-
-            if ~all(obj.SD.MeasList(k1,:) == obj2.SD.MeasList(k2,:))
+            if ~obj.MeasListEqual(obj2)
                 return;
             end
             
@@ -416,6 +405,31 @@ classdef NirsClass < AcqDataClass & FileLoadSaveClass
                     end
                 end
             end
+            b = true;
+        end
+        
+        
+        
+        % -------------------------------------------------------
+        function b = MeasListEqual(obj, obj2)
+            b = false;
+
+            % Check MeasList explicitely
+            if (isfield(obj.SD,'MeasList') && ~isfield(obj2.SD,'MeasList')) || ~isfield(obj.SD,'MeasList') && isfield(obj2.SD,'MeasList')
+                return;
+            end
+            [~, k1] = sortrows(obj.SD.MeasList);
+            [~, k2] = sortrows(obj2.SD.MeasList);
+            
+            % Compare meas list dimensions first - if that's not equal then the probes aren't equal
+            if ~all( size(obj.SD.MeasList(k1,:)) == size(obj2.SD.MeasList(k2,:)) )
+                return;
+            end
+
+            if ~all(obj.SD.MeasList(k1,:) == obj2.SD.MeasList(k2,:))
+                return;
+            end
+            
             b = true;
         end
         

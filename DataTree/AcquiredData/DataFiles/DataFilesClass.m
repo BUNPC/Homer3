@@ -133,10 +133,12 @@ classdef DataFilesClass < handle
                 return
             end
             obj2 = DataFilesClass();
-            obj2.rootdir = obj.rootdir;
             obj2.filetype = obj.filetype;
             obj2.dirFormats = obj.dirFormats;
             obj2.GetDataSet('skipsaveddata')
+            
+            % BUG fix:  rootdir must be same for both objects. But the saved object could have
+            obj.rootdir = obj2.rootdir;
             
             %%%% Create list of all the saved names for sorting later
             filesSaved = cell(length(obj.files),1);

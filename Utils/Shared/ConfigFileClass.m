@@ -635,7 +635,13 @@ classdef ConfigFileClass < handle
         function FindCfgFiles(obj, rootdir)
             if nargin == 1
                 rootdir = pwd;
-            end            
+            end
+            
+            % if rootdir is actually a file then we found our one config file, 
+            % assign that one file to obj.filename and exit            
+            if ispathvalid(rootdir, 'file')
+                obj.filenames{1} = rootdir;
+            end
             if ~ispathvalid(rootdir, 'dir')
                 return;
             end

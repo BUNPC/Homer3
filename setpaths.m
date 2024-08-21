@@ -577,9 +577,10 @@ if ischar(pathname0)
     idxs = [];        
     k = find(pathname0=='\' | pathname0=='/');
     for ii = 1:length(k)
-        if (ii>1) && (k(ii) == k(ii-1)+1)
+        if (ii>1) && (k(ii) == k(ii-1)+1) && (k(ii) > 2)
+            % adjacent two values are same, and the values are not the
+            % first two characters (for paths like \\ad\eng\ ...)
             idxs = [idxs, k(ii)]; %#ok<AGROW>
-            continue;
         end
         pathname0(k(ii)) = '/';
     end
